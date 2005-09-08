@@ -53,6 +53,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -290,8 +291,17 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             }
         }
     }
-
-
+    
+    public /*@Override*/ PasteType getDropType(Transferable t, int action, int index) {        
+        PasteType pasteType = super.getDropType(t, action, index);
+        //The pasteType can be:
+        // 1) PackagePasteType - the t.flavor is package flavor
+        // 2) null or DataPasteType - the t.flavor in not package flavor
+        if (pasteType instanceof PackageViewChildren.PackagePasteType) {
+            ((PackageViewChildren.PackagePasteType)pasteType).setOperation (action);
+        }
+        return pasteType;
+    }
 
     // Private methods ---------------------------------------------------------
     
@@ -428,7 +438,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
      */
     static SearchInfo alwaysSearchableSearchInfo(SearchInfo i) {
         return new AlwaysSearchableSearchInfo(i);
-    }
+    }    
     
     private static final class AlwaysSearchableSearchInfo implements SearchInfo {
         

@@ -604,6 +604,15 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
             }
         }
+        
+        public /*@Override*/ Transferable drag () throws IOException {
+            try {
+                return new PackageTransferable (this, DnDConstants.ACTION_NONE);
+            } catch (ClassNotFoundException e) {
+                Exception ioe = new IOException ();
+                throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
+            }
+        }
 
         public PasteType[] getPasteTypes(Transferable t) {
             if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
@@ -632,6 +641,37 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 }
                 else {
                     return super.getPasteTypes(t);
+                }
+            }
+        }
+        
+        public /*@Override*/ PasteType getDropType (Transferable t, int action, int index) {
+            if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
+                try {
+                    MultiTransferObject mto = (MultiTransferObject) t.getTransferData (ExTransferable.multiFlavor);
+                    boolean hasPackageFlavor = false;
+                    for (int i=0; i < mto.getCount(); i++) {
+                        DataFlavor[] flavors = mto.getTransferDataFlavors(i);
+                        if (isPackageFlavor(flavors)) {
+                            hasPackageFlavor = true;
+                        }
+                    }
+                    return hasPackageFlavor ? null : super.getDropType (t, action, index);
+                } catch (UnsupportedFlavorException e) {
+                    ErrorManager.getDefault().notify(e);
+                    return null;
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                    return null;
+                }
+            }
+            else {
+                DataFlavor[] flavors = t.getTransferDataFlavors();
+                if (isPackageFlavor(flavors)) {
+                    return null;
+                }
+                else {
+                    return super.getDropType (t, action, index);
                 }
             }
         }
@@ -1028,13 +1068,18 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         private FileObject srcRoot;
 
         public PackagePasteType (FileObject srcRoot, PackageNode[] node, int op) {
-            assert op == DnDConstants.ACTION_COPY || op == DnDConstants.ACTION_MOVE : "Invalid DnD operation";  //NOI18N
+            assert op == DnDConstants.ACTION_COPY || op == DnDConstants.ACTION_MOVE  || op == DnDConstants.ACTION_NONE : "Invalid DnD operation";  //NOI18N
             this.nodes = node;
             this.op = op;
             this.srcRoot = srcRoot;
         }
+        
+        public void setOperation (int op) {
+            this.op = op;
+        }
 
         public Transferable paste() throws IOException {
+            assert this.op != DnDConstants.ACTION_NONE;
             for (int ni=0; ni< nodes.length; ni++) {
                 FileObject fo = srcRoot;
                 if (!nodes[ni].isDefaultPackage) {
