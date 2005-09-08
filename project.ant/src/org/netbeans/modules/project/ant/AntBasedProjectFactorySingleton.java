@@ -138,7 +138,10 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
             return null;
         }
         File projectDiskFile = FileUtil.toFile(projectFile);
-        assert projectDiskFile != null && projectDiskFile.exists() : "projectDiskFile=" + String.valueOf(projectDiskFile) + ", projectDirectory=" + FileUtil.getFileDisplayName(projectDirectory);
+        //#63834: if projectFile exists and projectDiskFile does not, do nothing:
+        if (projectDiskFile == null) {
+            return null;
+        }
         Document projectXml;
         try {
             projectXml = XMLUtil.parse(new InputSource(projectDiskFile.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
