@@ -53,6 +53,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private DiffView                currentDiff;
     private int                     currentDifferenceIndex;
     private int                     currentIndex;
+    private boolean                 dividerSet;
 
     public DiffResultsView(List results) {
         this.results = results;
@@ -68,11 +69,14 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     public void ancestorAdded(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.addPropertyChangeListener(this);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                diffView.setDividerLocation(0.33);
-            }
-        });
+        if (!dividerSet) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    dividerSet = true;
+                    diffView.setDividerLocation(0.33);
+                }
+            });
+        }
     }
 
     public void ancestorMoved(AncestorEvent event) {

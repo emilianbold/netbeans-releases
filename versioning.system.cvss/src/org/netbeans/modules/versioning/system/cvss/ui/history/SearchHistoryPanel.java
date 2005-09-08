@@ -63,7 +63,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         explorerManager = new ExplorerManager ();
         initComponents();
         setupComponents();
-        refreshComponents();
+        refreshComponents(true);
     }
 
     private void setupComponents() {
@@ -99,7 +99,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     public void actionPerformed(ActionEvent e) {
         if (e.getID() == Divider.DIVIDER_CLICKED) {
             criteriaVisible = !criteriaVisible;
-            refreshComponents();
+            refreshComponents(false);
         }
     }
 
@@ -127,36 +127,38 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return explorerManager;
     }
     
-    private void refreshComponents() {
+    private void refreshComponents(boolean refreshResults) {
         bNext.setEnabled(!tbSummary.isSelected());
         bPrev.setEnabled(!tbSummary.isSelected());
-        resultsPanel.removeAll();
-        if (results == null) {
-            if (searchInProgress) {
-                resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching")));
-            } else {
-                resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults")));
-            }
-        } else {
-            if (tbSummary.isSelected()) {
-                if (summaryView == null) {
-                    summaryView = new SummaryView(this, dispResults);
+        if (refreshResults) {
+            resultsPanel.removeAll();
+            if (results == null) {
+                if (searchInProgress) {
+                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching")));
+                } else {
+                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults")));
                 }
-                resultsPanel.add(summaryView.getComponent());
             } else {
-                if (diffView == null) {
-                    diffView = new DiffResultsView(dispResults);
+                if (tbSummary.isSelected()) {
+                    if (summaryView == null) {
+                        summaryView = new SummaryView(this, dispResults);
+                    }
+                    resultsPanel.add(summaryView.getComponent());
+                } else {
+                    if (diffView == null) {
+                        diffView = new DiffResultsView(dispResults);
+                    }
+                    resultsPanel.add(diffView.getComponent());
                 }
-                resultsPanel.add(diffView.getComponent());
             }
+            resultsPanel.revalidate();
+            resultsPanel.repaint();
         }
 
         divider.setArrowDirection(criteriaVisible ? Divider.UP : Divider.DOWN);
         searchCriteriaPanel.setVisible(criteriaVisible);
         bSearch.setVisible(criteriaVisible);
-        resultsPanel.revalidate();
         revalidate();
-        resultsPanel.repaint();
         repaint();
     }
     
@@ -170,7 +172,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.searchInProgress = searching;
         summaryView = null;
         diffView = null;
-        refreshComponents();
+        refreshComponents(true);
     }
     
     public File[] getRoots() {
@@ -237,13 +239,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     void showDiff(LogInformation.Revision revision) {
         tbDiff.setSelected(true);
-        refreshComponents();
+        refreshComponents(false);
         diffView.select(revision);
     }
 
     public void showDiff(ResultsContainer container) {
         tbDiff.setSelected(true);
-        refreshComponents();
+        refreshComponents(false);
         diffView.select(container);
     }
 
@@ -470,7 +472,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }//GEN-LAST:event_onNext
 
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle
-        refreshComponents();
+        refreshComponents(true);
     }//GEN-LAST:event_onViewToggle
     
     
