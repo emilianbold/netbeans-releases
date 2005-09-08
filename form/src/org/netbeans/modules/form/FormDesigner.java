@@ -15,7 +15,6 @@ package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
@@ -35,12 +34,14 @@ import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerUtils;
+import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 
 import org.netbeans.modules.form.wizard.ConnectionWizard;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.palette.PaletteUtils;
+
 
 /**
  * This is a TopComponent subclass holding the form designer. It consist of two
@@ -1684,8 +1685,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     }
                 }
                 else if (type == FormModelEvent.COMPONENT_PROPERTY_CHANGED) {
-                    replicator.updateComponentProperty(
-                                 ev.getComponentProperty());
+
+                    RADProperty eventProperty = ev.getComponentProperty();
+                    RADComponent eventComponent = ev.getComponent();
+                    
+                    replicator.updateComponentProperty(eventProperty);
+                    updateConnectedProperties(eventProperty, eventComponent);
+                    
                     updateDone = true;
                 }
                 else if (type == FormModelEvent.SYNTHETIC_PROPERTY_CHANGED
@@ -1717,6 +1723,35 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 updateComponentLayer();
                 getLayoutDesigner().externalSizeChangeHappened();
             }
+        }
+        
+        private void updateConnectedProperties(RADProperty eventProperty, RADComponent eventComponent){
+            Iterator it = formModel.getMetaComponents().iterator();            
+            while(it.hasNext()){
+                RADComponent component = (RADComponent) it.next();
+                RADProperty[] properties = component.getKnownBeanProperties();
+                for(int i = 0; i < properties.length; i++){
+                    try{
+                        if(properties[i].getValue() instanceof RADConnectionPropertyEditor.RADConnectionDesignValue){
+
+                            RADConnectionPropertyEditor.RADConnectionDesignValue propertyValue = 
+                                (RADConnectionPropertyEditor.RADConnectionDesignValue) properties[i].getValue();
+
+                            if(   propertyValue.getRADComponent() != null 
+                               && propertyValue.getProperty() != null    
+                               && eventComponent.getName().equals(propertyValue.getRADComponent().getName())
+                               && eventProperty.getName().equals(propertyValue.getProperty().getName())) {
+
+                                replicator.updateComponentProperty(properties[i]);                                                                                
+                            }
+
+                        }
+                    } catch(Exception e){
+                        ErrorManager.getDefault().notify(e);
+                    }                                                        
+                }
+            }
+                                
         }
     }
     
