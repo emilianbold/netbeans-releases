@@ -193,7 +193,7 @@ public class ResultWindow extends TopComponent {
     /**
      */
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
     
     /**
