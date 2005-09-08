@@ -57,7 +57,9 @@ import org.openide.filesystems.FileObject;
  * <ol>
  * <li><p>When a project is opened using
  * {@link org.netbeans.spi.project.ui.ProjectOpenedHook} it should add any paths
- * it defines or uses. When closed it should remove them.</p></li>
+ * it defines, i.e. paths it might return from a
+ * {@link org.netbeans.spi.java.classpath.ClassPathProvider}.
+ * When closed it should remove them.</p></li>
  * <li><p>The <b>Fast&nbsp;Open</b> feature of the editor and other features which
  * require a global list of relevant sources should use {@link #getSourceRoots} or
  * the equivalent.</p></li>
