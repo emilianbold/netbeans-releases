@@ -108,17 +108,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     Set testableInstantiate(File dirF, String name, String j2eeLevel,
             String serverInstanceID, String contextPath, String warName, String jarName,
             String platformName, String sourceLevel) throws IOException {
-        Set resultSet = new TreeSet(new Comparator() {
-            public int compare(Object o1, Object o2) {
-                FileObject f1 = (FileObject)o1;
-                FileObject f2 = (FileObject)o2;
-                if(f1.getName().endsWith("-ear") || f1.getName().endsWith("-war")) return -1;
-                else return f1.getName().compareTo(f2.getName());
-            }
-            public boolean equals(Object obj) {
-                return false;
-            }
-        });
+        Set resultSet = new HashSet();
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath, sourceLevel);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
@@ -158,7 +148,6 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
-            resultSet.add(dir2);
         }
         if (null != jarName) {
             File ejbJarDir = new File(dirF,name+"-ejb"); // NOI18N
@@ -170,12 +159,13 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
-            resultSet.add(dir2);
         }
         
-        resultSet.add(dir);
+        
         // Returning set of FileObject of project diretory.
         // Project will be open and set as main
+        resultSet.add(dir);
+        
         return resultSet;
     }
     
