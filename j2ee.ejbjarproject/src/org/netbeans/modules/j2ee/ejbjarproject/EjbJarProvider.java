@@ -57,6 +57,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     EjbJarProvider(EjbJarProject project, AntProjectHelper helper) {
         this.project = project;
         this.helper = helper;
+        project.evaluator().addPropertyChangeListener (this);
     }
     
     public FileObject getDeploymentDescriptor() {
@@ -260,6 +261,13 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
                 String newVersion = (String) evt.getNewValue();
                 vl.versionChanged(oldVersion, newVersion);
             }
+        } else if (evt.getPropertyName ().equals (EjbJarProjectProperties.J2EE_SERVER_TYPE)) {
+            fireServerChange ((String) evt.getOldValue (), (String) evt.getNewValue ());
+        } else if (evt.getPropertyName ().equals (EjbJarProjectProperties.J2EE_SERVER_INSTANCE)) {
+            Deployment d = Deployment.getDefault ();
+            String oldServerID = evt.getOldValue () == null ? null : d.getServerID ((String) evt.getOldValue ());
+            String newServerID = evt.getNewValue () == null ? null : d.getServerID ((String) evt.getNewValue ());
+            fireServerChange (oldServerID, newServerID);
         }
     }
     
