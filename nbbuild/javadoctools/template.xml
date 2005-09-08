@@ -106,6 +106,9 @@ cause it to fail.
         <condition property="javadoc.reference.generated" >
             <isset property="javadoc.docs.${javadoc.name}" />
         </condition>
+
+        <!-- Make sure XHTML DTDs exist: -->
+        <ant dir="../../libs/external" target="unzip"/>
     </target>
     
     <target name="javadoc-generate-references" depends="javadoc-init" unless="javadoc.reference.generated" >
@@ -268,7 +271,6 @@ cause it to fail.
         </style>
     </target>
     <target name="javadoc-stage-init-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
-        <ant dir="../../libs/external" target="unzip"/>
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
     </target>
 
