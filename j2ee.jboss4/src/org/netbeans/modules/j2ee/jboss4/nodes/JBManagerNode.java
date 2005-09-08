@@ -75,9 +75,9 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
             properties = Sheet.createPropertiesSet();
             sheet.put(properties);
         }
-        final InstanceProperties instanceProperties = InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl());
-        String serverDir = (String)InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) ;
-        String serverName = (String)InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_SERVER) ;
+        final InstanceProperties ip = InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl());
+        String serverDir = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) ;
+        String serverName = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER) ;
         
         Node.Property property=null;
         
@@ -89,11 +89,11 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
                 NbBundle.getMessage(JBManagerNode.class, "HINT_DISPLAY_NAME")   // NOI18N
                 ) {
             public Object getValue() {
-                return instanceProperties.getProperty(JBInstantiatingIterator.PROPERTY_DISPLAY_NAME);
+                return ip.getProperty(JBInstantiatingIterator.PROPERTY_DISPLAY_NAME);
             }
             
             public void setValue(Object val) {
-                instanceProperties.setProperty(JBInstantiatingIterator.PROPERTY_DISPLAY_NAME, (String)val);
+                ip.setProperty(JBInstantiatingIterator.PROPERTY_DISPLAY_NAME, (String)val);
             }
         };
         
@@ -107,7 +107,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
                 NbBundle.getMessage(JBManagerNode.class, "HINT_SERVER_NAME")   // NOI18N
                 ) {
             public Object getValue() {
-                return instanceProperties.getProperty(JBInstantiatingIterator.PROPERTY_SERVER);
+                return ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER);
             }
         };
         properties.put(property);
@@ -120,7 +120,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
                 NbBundle.getMessage(JBManagerNode.class, "HINT_SERVER_PATH")   // NOI18N
                 ) {
             public Object getValue() {
-                return instanceProperties.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR);
+                return ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR);
             }
         };
         properties.put(property);
@@ -133,7 +133,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
                 NbBundle.getMessage(JBManagerNode.class, "HINT_HOST")   // NOI18N
                 ) {
             public Object getValue() {
-                return instanceProperties.getProperty(JBInstantiatingIterator.PROPERTY_HOST);
+                return ip.getProperty(JBInstantiatingIterator.PROPERTY_HOST);
             }
         };
         properties.put(property);
@@ -146,7 +146,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
                 NbBundle.getMessage(JBManagerNode.class, "HINT_PORT")   // NOI18N
                 ) {
             public Object getValue() {
-                return new Integer(instanceProperties.getProperty(JBInstantiatingIterator.PROPERTY_PORT));
+                return new Integer(ip.getProperty(JBInstantiatingIterator.PROPERTY_PORT));
             }
         };
         properties.put(property);
@@ -165,11 +165,12 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
-
-    public String getShortDescription() {
-        String host = (String)InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_HOST);
-        String port = (String)InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_PORT);
-        return  HTTP_HEADER + host + ":" + port + "/";
-    }
     
+    public String getShortDescription() {
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl());
+        String host = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_HOST);
+        String port = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_PORT);
+        return  HTTP_HEADER + host + ":" + port + "/"; // NOI18N
+    }    
 }
+
