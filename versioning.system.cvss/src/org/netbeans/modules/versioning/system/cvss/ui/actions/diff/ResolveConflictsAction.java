@@ -16,7 +16,9 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
+import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -58,9 +60,18 @@ public class ResolveConflictsAction extends AbstractSystemAction {
                 NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflicts")));
             return;
         }
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < nodes.length; i++) {
-            ResolveConflictsExecutor rce = new ResolveConflictsExecutor();
-            rce.exec(nodes[i].getFile());
+            File file = nodes[i].getFile();
+            FileInformation info = cache.getStatus(file);
+            Entry entry = info.getEntry(file);
+            if (entry == null) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(ResolveConflictsAction.class, "MSG_MoveAwayLocalFileConflict", file.getName())));
+            } else {
+                ResolveConflictsExecutor rce = new ResolveConflictsExecutor();
+                rce.exec(file);
+            }
         }
     }
 }

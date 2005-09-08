@@ -531,6 +531,10 @@ public class FileStatusCache {
             } else {
                 return FILE_INFORMATION_UNKNOWN;
             }
+        } else if (repositoryStatus == REPOSITORY_STATUS_CONFLICT) {
+            // happens for files that exist locally and are also in repository
+            // CVS reports: cvs.exe update: move away THIS_FILE; it is in the way
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, false);
         }
         throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus);
     }
