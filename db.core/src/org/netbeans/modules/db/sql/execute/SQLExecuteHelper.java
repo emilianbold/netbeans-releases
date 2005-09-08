@@ -34,12 +34,8 @@ public final class SQLExecuteHelper {
         List/*<Statement>*/ statementList = new ArrayList();
         List/*<ResultSet>*/ resultSetList = new ArrayList();
                 
-        int[] typeConcurrency = getSupportedResultSetTypeConcurrency(conn);
-        int type = typeConcurrency[0];
-        int concurrency = typeConcurrency[1];
-        
         for (int i = 0; i < statements.length; i++) {
-            Statement stmt = conn.createStatement(type, concurrency);
+            Statement stmt = conn.createStatement();
             statementList.add(stmt);
             
             String sql = removeComments(statements[i]).trim();
@@ -59,6 +55,9 @@ public final class SQLExecuteHelper {
     }
     
     private static int[] getSupportedResultSetTypeConcurrency(Connection conn) throws SQLException {
+        // XXX some drivers don't implement the DMD.supportsResultSetConcurrency() method
+        // for example the MSSQL WebLogic driver 4v70rel510 always throws AbstractMethodError
+        
         DatabaseMetaData dmd = conn.getMetaData();
         
         int type = ResultSet.TYPE_SCROLL_INSENSITIVE;
