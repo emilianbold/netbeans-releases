@@ -56,7 +56,7 @@ public class WebServicesPortNode  extends AbstractNode {
          */
         
         String portName = (String)port.getProperty(WebServiceData.PORT_PROPERTY_NAME);
-        setIconBaseWithExtension("org/netbeans/modules/websvs/registry/resources/wsport.png");
+        setIconBaseWithExtension("org/netbeans/modules/websvc/registry/resources/wsport.png");
         setName(portName);
     }
 
