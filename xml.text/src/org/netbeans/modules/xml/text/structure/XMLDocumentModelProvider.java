@@ -208,8 +208,6 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             
             //scan the document for syntax elements - from startOffset to endOffset
             while(sel != null && getSyntaxElementEndOffset(sel) <= endOffset) {
-//                if(debug) System.out.println("--- found syntax element ---\n"+sel.toString());
-                
                 if(sel instanceof SyntaxElement.Error) {
                     if(debug) System.out.println("Error found! => breaking the generation.");
                     throw new DocumentModelException("XML File is unparsable.");
@@ -235,7 +233,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     }
                     
                     //add the tag syntax element into stack
-                    elementsStack.add(sel);
+                    elementsStack.push(sel);
                     
                 } else if(sel instanceof EndTag) {
                     if(!elementsStack.isEmpty()) {
@@ -320,7 +318,12 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 }
                 //find next syntax element
-                sel = sel.getNext();
+//                sel = sel.getNext();
+                try {
+                    sel = sup.getElementChain(sel.getElementOffset() + sel.getElementLength() + 1 );
+                }catch(BadLocationException ble) {
+                    sel = null;
+                }
             }
             
             //*** elements removal ***

@@ -351,14 +351,14 @@ public final class DocumentModel {
         }
     }
     
-    private DocumentModel.DocumentModelModificationTransaction createTransaction() {
-        return new DocumentModelModificationTransaction();
+    private DocumentModel.DocumentModelModificationTransaction createTransaction(boolean init) {
+        return new DocumentModelModificationTransaction(init);
     }
     
     //generate elements for the entire document
     private void initDocumentModel() throws DocumentModelException {
         try {
-            DocumentModel.DocumentModelModificationTransaction trans = createTransaction();
+            DocumentModel.DocumentModelModificationTransaction trans = createTransaction(true);
             provider.updateModel(trans, this, new DocumentChange[]{new DocumentChange(getDocument().getStartPosition(), getDocument().getLength(), DocumentChange.INSERT)});
             trans.commit();
         }catch(DocumentModelTransactionCancelledException e) {
@@ -402,7 +402,7 @@ public final class DocumentModel {
     
     private void updateModel() throws DocumentModelException {
         //create a new transaction
-        modelUpdateTransaction = createTransaction();
+        modelUpdateTransaction = createTransaction(false);
         DocumentChange[] changes = changesWatcher.getDocumentChanges();
         
         //clear all elements with an empty body
@@ -465,7 +465,7 @@ public final class DocumentModel {
     
     private void addRootElement() {
         try {
-            DocumentModelModificationTransaction dmt = createTransaction();
+            DocumentModelModificationTransaction dmt = createTransaction(false);
             this.rootElement = dmt.addDocumentElement("root", DOCUMENT_ROOT_ELEMENT_TYPE, Collections.EMPTY_MAP,
                     0, getDocument().getLength());
             dmt.commit();
@@ -654,7 +654,7 @@ public final class DocumentModel {
      */
     private void checkForClearedElements() {
         Iterator i = getElementsSet().iterator();
-        DocumentModel.DocumentModelModificationTransaction tran = createTransaction();
+        DocumentModel.DocumentModelModificationTransaction tran = createTransaction(false);
         try {
             while(i.hasNext()) {
                 DocumentElement de = (DocumentElement)i.next();
@@ -758,6 +758,11 @@ public final class DocumentModel {
         
         private ArrayList/*<DocumentModelModification>*/ modifications = new ArrayList();
         private boolean transactionCancelled = false;
+        private boolean init;
+        
+        DocumentModelModificationTransaction(boolean init) {
+            this.init = init;
+        }
         
         /** Creates a new DocumentElement and adds it into the transaction.
          *
@@ -900,12 +905,15 @@ public final class DocumentModel {
             //this is ensured by using a set and proper DocumentElement.equals() implementation
             
             if(getElementsSet().add(de)) {
-                List children = de.getChildren();
-                DocumentElement parent = (DocumentElement)de.getParentElement();
-                
                 //clear caches
                 clearChildrenCache();
                 clearParentsCache();
+                
+                //no need to fire events when initializing model - there si noone to listen on them
+                if(init) return ;
+                
+                List children = de.getChildren();
+                DocumentElement parent = (DocumentElement)de.getParentElement();
                 
                 /* events firing:
                  * If the added element has a children, we have to fire remove event
