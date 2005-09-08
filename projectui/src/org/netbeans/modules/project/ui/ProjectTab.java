@@ -46,6 +46,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
@@ -288,15 +289,11 @@ public class ProjectTab extends TopComponent
     
     // SEARCHING NODES
     
-    public boolean selectNode( Object object ) {
-        return selectNode (object, true);
-    }
-    
     // Called from the SelectNodeAction
     
     private final RequestProcessor RP = new RequestProcessor();
     
-    public void selectNodeAsync( final Object object ) {
+    public void selectNodeAsync(final FileObject object) {
         
         setCursor( Utilities.createProgressCursor( this ) );
         open();
@@ -333,7 +330,7 @@ public class ProjectTab extends TopComponent
          
     }
     
-    public boolean selectNode( Object object, boolean requestFocus ) {
+    public boolean selectNode(FileObject object) {
         // System.out.println("Selecting node " + id + " : " + object + " -AWT- " + SwingUtilities.isEventDispatchThread() );
         
         ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
@@ -341,10 +338,6 @@ public class ProjectTab extends TopComponent
         if ( selectedNode != null ) {
             try {                
                 manager.setSelectedNodes( new Node[] { selectedNode } );                
-                if (requestFocus) {
-                    open();
-                    requestActive();                
-                }
                 btv.scrollToNode(selectedNode);
                 return true;
             }
@@ -355,54 +348,11 @@ public class ProjectTab extends TopComponent
         }
         
         return false;
-        
-                
-        /* Nice old version with lookup and names 
-        Node root = manager.getRootContext();
-        
-        Collection pathResolvers  = root.getLookup().lookup( new Lookup.Template( NodePathResolver.class ) ).allInstances();
-        
-        String path[] = null;
-        for( Iterator it = pathResolvers.iterator(); it.hasNext(); ) {
-            NodePathResolver npr = (NodePathResolver)it.next();
-            path = npr.getNodePath( object );
-            if ( path != null ) {
-                try {
-                    Node selectedNode = NodeOp.findPath( root, path );
-                    if ( selectedNode != null ) {
-                        open();
-                        requestActive();
-                        manager.setSelectedNodes( new Node[] { selectedNode } );
-                        return;
-                    }
-                }
-                catch ( NodeNotFoundException e ) {
-                    // The nNode does not exist keep searching     
-                    // System.out.println("NOT FOUND " );
-                    // print( path );
-                }
-                catch ( PropertyVetoException e ) {
-                    // Bad day node found but can't be selected
-                    return;
-                }
-            }            
-        }
-        */
-        
     }
     
     public void expandNode( Node node ) {
         btv.expandNode( node );
     }
-    
-    /*
-    private static  void print( String[] path ) {
-        for( int i = 0; i < path.length; i++ ) {
-            System.out.print( path[i] + "/" );
-        }
-        System.out.println("");
-    }
-    */
     
     private List /*<String[]>*/ getSelectedPaths() {
         Node selectedNodes[] = manager.getSelectedNodes();

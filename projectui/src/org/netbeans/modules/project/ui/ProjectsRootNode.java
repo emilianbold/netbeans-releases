@@ -116,21 +116,14 @@ public class ProjectsRootNode extends AbstractNode {
     /** Finds node for given object in the view
      * @return the node or null if the node was not found
      */
-    Node findNode( Object target ) {        
+    Node findNode(FileObject target) {        
         
         ProjectChildren ch = (ProjectChildren)getChildren();
         
         if ( ch.type == LOGICAL_VIEW ) {
             Node[] nodes = ch.getNodes( true );
             // Speed up search in case we have an owner project - look in its node first.
-            Project ownerProject;
-            if (target instanceof FileObject) {
-                ownerProject = FileOwnerQuery.getOwner((FileObject) target);
-            } else if (target instanceof DataObject) {
-                ownerProject = FileOwnerQuery.getOwner(((DataObject) target).getPrimaryFile());
-            } else {
-                ownerProject = null;
-            }
+            Project ownerProject = FileOwnerQuery.getOwner(target);
             for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
                 for (int i = 0; i < nodes.length; i++) {
                     Project p = (Project) nodes[i].getLookup().lookup(Project.class);
@@ -140,6 +133,9 @@ public class ProjectsRootNode extends AbstractNode {
                     }
                     LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
                     if (lvp != null) {
+                        // XXX (cf. #63554): really should be calling this on DataObject usually, since
+                        // DataNode does *not* currently have a FileObject in its lookup (should it?)
+                        // ...but it is not clear who has implemented findPath to assume FileObject!
                         Node selectedNode = lvp.findPath(nodes[i], target);
                         if (selectedNode != null) {
                             return selectedNode;
