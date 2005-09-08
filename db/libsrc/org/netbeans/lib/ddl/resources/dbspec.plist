@@ -829,8 +829,8 @@
 //      UPDATE = UPDATE;
 //      DELETE = DELETE;
 //    };
-    SizelessTypes = (BIGINT,CLOB,DATE,INTEGER,"LONG VARCHAR",SMALLINT,TIME,TIMESTAMP);
-    DecimalTypes = (DECIMAL,DOUBLE,NUMERIC,REAL);
+    SizelessTypes = (BIGINT,CLOB,DATE,DOUBLE,INTEGER,"LONG VARCHAR",REAL,SMALLINT,TIME,TIMESTAMP);
+    DecimalTypes = (DECIMAL,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 
     TypePrefixSuffixMap = {
