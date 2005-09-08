@@ -1732,19 +1732,20 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 RADProperty[] properties = component.getKnownBeanProperties();
                 for(int i = 0; i < properties.length; i++){
                     try{
-                        if(properties[i].getValue() instanceof RADConnectionPropertyEditor.RADConnectionDesignValue){
+                        if (properties[i].isChanged()) {
+                            Object value = properties[i].getValue();
+                            if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+                                RADConnectionPropertyEditor.RADConnectionDesignValue propertyValue = 
+                                    (RADConnectionPropertyEditor.RADConnectionDesignValue)value;
 
-                            RADConnectionPropertyEditor.RADConnectionDesignValue propertyValue = 
-                                (RADConnectionPropertyEditor.RADConnectionDesignValue) properties[i].getValue();
+                                if (propertyValue.getRADComponent() != null
+                                   && propertyValue.getProperty() != null
+                                   && eventComponent.getName().equals(propertyValue.getRADComponent().getName())
+                                   && eventProperty.getName().equals(propertyValue.getProperty().getName())) {
 
-                            if(   propertyValue.getRADComponent() != null 
-                               && propertyValue.getProperty() != null    
-                               && eventComponent.getName().equals(propertyValue.getRADComponent().getName())
-                               && eventProperty.getName().equals(propertyValue.getProperty().getName())) {
-
-                                replicator.updateComponentProperty(properties[i]);                                                                                
+                                    replicator.updateComponentProperty(properties[i]);
+                                }
                             }
-
                         }
                     } catch(Exception e){
                         ErrorManager.getDefault().notify(e);
