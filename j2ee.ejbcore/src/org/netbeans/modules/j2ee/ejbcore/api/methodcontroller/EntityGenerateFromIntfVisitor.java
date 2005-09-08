@@ -59,29 +59,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         //implMethod.setBody(TODO + implMethod.getName().getName());
         String body = TODO + implMethod.getName();
         Type type= implMethod.getType();
-        if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.VOID)) {
-            
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.BOOLEAN)){
-            body+="\nreturn false;";
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.BYTE)){
-            body+="\nreturn 0;";
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.CHAR)){
-            body+="\nreturn '0';";
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.DOUBLE)) {
-            body+="\nreturn 0.0;";
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.FLOAT)) {
-            body+="\nreturn 0.0;";
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.INT)) {
-            body+="\nreturn 0;";
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.LONG)) {
-            body+="\nreturn 0;";
-        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.SHORT)) {
-            body+="\nreturn 0;";
-        } else{
-            body+="\nreturn null;";
-            
-        }
-        
+        body += getReturnStatement(type);
         implMethod.setBodyText(body);
     }
     
@@ -91,8 +69,9 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
         implMethod.setName(newName);
         implMethod.setModifiers(Modifier.PUBLIC);
-        implMethod.setType(JMIUtils.resolveType(dd.getPrimKeyClass()));
-        implMethod.setBodyText(TODO + newName);
+        Type type = JMIUtils.resolveType(dd.getPrimKeyClass());
+        implMethod.setType(type);
+        implMethod.setBodyText(TODO + newName + getReturnStatement(type));
 
         secondaryMethod = JMIUtils.duplicate(cmt.getMethodElement());
         origName = secondaryMethod.getName();
@@ -109,7 +88,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         String newName = prependAndUpper(origName,"ejbHome"); //NOI18N
         implMethod.setName(newName);
         implMethod.setModifiers(Modifier.PUBLIC);
-        implMethod.setBodyText(TODO + implMethod.getName());
+        implMethod.setBodyText(TODO + implMethod.getName() + getReturnStatement(implMethod.getType()));
     }
     
     public void visit(FinderMethodType fmt) {
@@ -129,5 +108,31 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         StringBuffer sb = new StringBuffer(fullName);
         sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
         return prefix+sb.toString();
+    }
+    
+    private static String getReturnStatement(Type type) {
+        String result = "";
+        if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.VOID)) {
+            
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.BOOLEAN)){
+            result = "\nreturn false;";
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.BYTE)){
+            result = "\nreturn 0;";
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.CHAR)){
+            result ="\nreturn '0';";
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.DOUBLE)) {
+            result ="\nreturn 0.0;";
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.FLOAT)) {
+            result ="\nreturn 0.0;";
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.INT)) {
+            result ="\nreturn 0;";
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.LONG)) {
+            result ="\nreturn 0;";
+        } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.SHORT)) {
+            result ="\nreturn 0;";
+        } else{
+            result ="\nreturn null;";
+        }
+        return result;
     }
 }
