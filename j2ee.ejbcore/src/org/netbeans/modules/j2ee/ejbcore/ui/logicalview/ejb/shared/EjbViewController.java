@@ -24,6 +24,8 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -33,6 +35,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
@@ -80,6 +83,22 @@ public class EjbViewController {
             J2eeModuleProvider pwm = (J2eeModuleProvider) myProject.getLookup ().lookup (J2eeModuleProvider.class);
             pwm.getConfigSupport().ensureConfigurationReady();
             deleteTraces();
+            // for MDBs remove message destination from assembly descriptor
+            if (model instanceof MessageDriven) { 
+                try {
+                    AssemblyDescriptor assemblyDescriptor = module.getSingleAssemblyDescriptor();
+                    String mdLinkName = ((MessageDriven) model).getMessageDestinationLink();
+                    MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
+                    for (int i = 0; i < messageDestinations.length; i++) {
+                        if (messageDestinations[i].getMessageDestinationName().equals(mdLinkName)) {
+                            assemblyDescriptor.removeMessageDestination(messageDestinations[i]);
+                            break;
+                        }
+                    }
+                } catch (VersionNotSupportedException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
             beans.removeEjb(model);
             writeDD();
             if (deleteClasses) {
