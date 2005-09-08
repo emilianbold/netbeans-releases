@@ -49,15 +49,31 @@ import org.openide.util.NbBundle;
  */
 public class AddServerPropertiesVisualPanel extends JPanel {
     
-    private final Set listeners = new HashSet();
+    private final Set listeners = new HashSet();  
+            
+    private javax.swing.JComboBox  domainField;  // Domain name (list of registered domains) can be edited
+    private javax.swing.JTextField domainPathField;  //   
+    private javax.swing.JLabel     domainLabel;
+    private javax.swing.JLabel     domainPathLabel;
+    private javax.swing.JLabel     label1;
+    private javax.swing.JPanel     panel1;
+    private javax.swing.JLabel     hostLabel;
+    private javax.swing.JTextField hostField;   
+    private javax.swing.JLabel     portLabel;
+    private javax.swing.JTextField portField;   
+    private javax.swing.JLabel     userLabel;
+    private javax.swing.JTextField userField;    
+    private javax.swing.JLabel     passwordLabel;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JComboBox  serverType;  // Local or Remote
+
     
     /** Creates a new instance of AddServerPropertiesVisualPanel */
     public AddServerPropertiesVisualPanel() {
         init();
         setName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "TITLE_ServerProperties")); //NOI18N 
     }
-    
-    
+      
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -70,13 +86,10 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         }
     }
     
-    
-    
     private void somethingChanged() {
         fireChangeEvent();
     }
-    
-    
+      
     private void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -88,31 +101,34 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         }
     }
     
-    
     public boolean isLocalServer(){
         if (serverType.getSelectedItem().equals("Local"))
             return true;
         else
             return false;
     }
+    
     public String getHost(){
         return hostField.getText().trim();
     }
+    
     public String getPort(){
         return portField.getText().trim();
     }
+    
     public String getUser(){
         return userField.getText();
     }
+    
     public String getPassword(){
         return new String(passwordField.getPassword());
     }
+    
     public String getDomainPath(){
         return domainPathField.getText();
     }
+    
     public String getDomain(){
-        
-  
         return (String)domainField.getSelectedItem();
     }
    
@@ -125,18 +141,15 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             domainPathField.setText(path);
         } 
     //    serverChanged();
-        fireChangeEvent();
-        
+        fireChangeEvent(); 
     }
-    
     
     private void serverTypeChanged(){
         
         if (serverType.getSelectedItem().equals("Local")){  //NOI18N 
             domainLabel.setVisible(true);
             domainField.setVisible(true);
-            
-            
+                    
             domainPathLabel.setVisible(true);
             domainPathField.setVisible(true);
 //            browseButton.setVisible(true);
@@ -183,13 +196,18 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         domainLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain")); //NOI18N
         domainPathLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));//NOI18N
         domainPathField = new JTextField();
+        domainPathField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));
+        domainPathField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));
+        
                
         panel1 = new JPanel();
+        
+        //Domain combobox
         domainField = new JComboBox(new DomainComboModel(JBPluginUtils.getRegisteredDomains()));
+        domainField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
+        domainField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
         //domainField.setEditable(true);
         domainField.addActionListener(new ActionListener(){
-            
-            
             public void actionPerformed(ActionEvent e) {
                 domainChanged();
             }
@@ -200,17 +218,18 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         hostLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));//NOI18N
         hostField = new JTextField();
         hostField.setEditable(false);
+        hostField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));
+        hostField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));
         hostField.addKeyListener(new SomeChangesListener());
         
         
         
         portLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));//NOI18N
         portField = new JTextField();
+        portField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));
+        portField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));
         //portField.setEditable(false);
         portField.addKeyListener(new SomeChangesListener());
-        
-        
-        
         
         userLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_User"));//NOI18N
         userField = new JTextField();
@@ -384,7 +403,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     }
     
     
-    
     class SomeChangesListener implements KeyListener{
         
         public void keyTyped(KeyEvent e){}
@@ -393,37 +411,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         public void keyReleased(KeyEvent e){ somethingChanged();}
         
-    }
-    
-    
-    
-    
-    
-//    private javax.swing.JButton    browseButton; // Browse domain location
-    
-    private javax.swing.JComboBox  domainField;  // Domain name (list of registered domains) can be edited
-    private javax.swing.JTextField domainPathField;  //
-    
-    private javax.swing.JLabel     domainLabel;
-    private javax.swing.JLabel     domainPathLabel;
-    
-    private javax.swing.JLabel     label1;
-    private javax.swing.JPanel     panel1;
-    
-    private javax.swing.JLabel     hostLabel;
-    private javax.swing.JTextField hostField;
-    
-    private javax.swing.JLabel     portLabel;
-    private javax.swing.JTextField portField;
-    
-    private javax.swing.JLabel     userLabel;
-    private javax.swing.JTextField userField;
-    
-    private javax.swing.JLabel     passwordLabel;
-    private javax.swing.JPasswordField passwordField;
-    
-    private javax.swing.JComboBox  serverType;  // Local or Remote
-    
+    }      
     
     private String browseDomainLocation(){
         String insLocation = null;
