@@ -78,6 +78,7 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
     void refresh(Set/*<Project>*/ subModules) {
+        reloadProperties();
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
         this.moduleListModel = null;

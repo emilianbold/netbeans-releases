@@ -50,7 +50,7 @@ final class SuiteUtils {
     // XXX also match "${dir}/somedir/${anotherdir}"
     private static final String ANT_PURE_PROPERTY_REFERENCE_REGEXP = "\\$\\{\\p{Graph}+\\}"; // NOI18N
     
-    private static final String MODULES_PROPERTY = "modules"; // NOI18N
+    static final String MODULES_PROPERTY = "modules"; // NOI18N
     
     private final SuiteProperties suiteProps;
     
@@ -67,6 +67,7 @@ final class SuiteUtils {
         for (Iterator it = origSubModules.iterator(); it.hasNext(); ) {
             NbModuleProject origModule = (NbModuleProject) it.next();
             if (!currentModules.contains(origModule)) {
+                Util.err.log("Removing module: " + origModule); // NOI18N
                 utils.removeModule(origModule);
             }
         }
@@ -194,6 +195,9 @@ final class SuiteUtils {
                 }
                 break;
             }
+        }
+        if (!removed) {
+            Util.err.log("Removing of " + moduleToRemove + " was unsuccessful."); // NOI18N
         }
         return removed;
     }

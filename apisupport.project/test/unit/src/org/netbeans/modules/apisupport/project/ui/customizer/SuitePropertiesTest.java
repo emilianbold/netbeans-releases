@@ -211,7 +211,7 @@ public class SuitePropertiesTest extends TestBase {
         assertFalse("module2a is not part of suite2", suite2spp.getSubprojects().contains(module2a));
     }
     
-    public void testRemovingOneModuleFromThree_63307() throws Exception {
+    public void testRemovingSecondModuleFromThree_63307() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         assert suite1 != null;
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
@@ -232,6 +232,18 @@ public class SuitePropertiesTest extends TestBase {
         
         suiteProps.refresh(spp.getSubprojects());
         assertEquals("two module suite components", 2, suiteProps.getModulesListModel().getSize());
+    }
+    
+    public void testRefreshing_63307() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        SubprojectProvider spp = getSubProjectProvider(suite1);
+        SuiteProperties suiteProps = getSuiteProperties(suite1);
+        assertEquals("one module", "${project.module1}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
+        NbModuleProject module2 = TestBase.generateSuiteComponent(suite1, "module2");
+        suiteProps.refresh(spp.getSubprojects());
+        assertEquals("two modules", "${project.module1}:${project.module2}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
+        assertEquals("two module suite component", 2, suiteProps.getModulesListModel().getSize());
     }
     
     public void testCustomPropertiesReferences_61318() throws Exception {
