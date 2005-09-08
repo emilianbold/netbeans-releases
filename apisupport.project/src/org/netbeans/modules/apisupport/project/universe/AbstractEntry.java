@@ -69,7 +69,12 @@ abstract class AbstractEntry implements ModuleEntry {
                 publicClassNames = computePublicClassNamesInMainModule();
                 String[] cpext = PropertyUtils.tokenizePath(getClassPathExtensions());
                 for (int i = 0; i < cpext.length; i++) {
-                    scanJarForPublicClassNames(publicClassNames, new File(cpext[i]));
+                    File ext = new File(cpext[i]);
+                    if (!ext.isFile()) {
+                        Util.err.log(ErrorManager.WARNING, "Could not find Class-Path extension " + ext + " of " + this);
+                        continue;
+                    }
+                    scanJarForPublicClassNames(publicClassNames, ext);
                 }
             } catch (IOException e) {
                 publicClassNames = Collections.EMPTY_SET;
