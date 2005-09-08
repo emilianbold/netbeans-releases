@@ -136,7 +136,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.xml.api</package>
+                <package>org.netbeans.modules.xml.api.model</package>
+                <package>org.netbeans.modules.xml.spi.dom</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
