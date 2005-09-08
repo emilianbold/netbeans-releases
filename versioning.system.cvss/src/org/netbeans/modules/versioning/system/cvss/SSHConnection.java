@@ -62,7 +62,7 @@ public class SSHConnection extends AbstractConnection {
         this.socketFactory = socketFactory;
         this.host = host;
         this.port = port;
-        this.username = username;
+        this.username = username != null ? username : System.getProperty("user.name");
         this.password = password;
     }
 
