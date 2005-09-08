@@ -164,9 +164,10 @@ public class J2SEProjectUtil {
             Type clazz;
             
             JavaModel.setClassPath (cp);
-            clazz=JavaModel.getDefaultExtent().getType().resolve(className);
-            if (clazz != null) {
-                isMain =  clazz.getResource().getMain().contains(clazz);
+            clazz = JavaModel.getDefaultExtent().getType().resolve(className);
+            Resource res;
+            if (clazz != null && (res = clazz.getResource()) != null ) {    //UnresolvedClass.getResource() returns null
+                isMain =  res.getMain().contains(clazz);
             }
         } finally {
             JavaModel.getJavaRepository ().endTrans ();
