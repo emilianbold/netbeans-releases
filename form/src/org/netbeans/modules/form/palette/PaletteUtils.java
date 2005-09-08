@@ -249,9 +249,20 @@ public final class PaletteUtils {
      */
     static boolean isValidCategoryNode( Node node, boolean visible ) {
         DataFolder df = (DataFolder) node.getCookie(DataFolder.class);
-        return df != null
-               && (!visible 
-                    || !Boolean.FALSE.equals(df.getPrimaryFile().getAttribute(PaletteController.ATTR_IS_VISIBLE)));
+        return (df != null) && (!visible || representsVisibleCategory(node));
     }
-    
+
+    private static boolean representsVisibleCategory(Node node) {
+        Object value = node.getValue("psa_" + PaletteController.ATTR_IS_VISIBLE); // NOI18N
+        DataFolder df = (DataFolder) node.getCookie(DataFolder.class);
+        if (null == value || "null".equals(value)) { // NOI18N
+            value = df.getPrimaryFile().getAttribute(PaletteController.ATTR_IS_VISIBLE);
+        }
+        if (value == null) {
+            value = Boolean.TRUE;
+        }
+        return Boolean.valueOf(value.toString()).booleanValue()
+            && !Boolean.TRUE.equals(df.getPrimaryFile().getAttribute("isNoPaletteCategory")); // NOI18N
+    }
+
 }
