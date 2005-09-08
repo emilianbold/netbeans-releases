@@ -108,7 +108,9 @@ final class TestMethodNode extends AbstractNode {
     public Action getPreferredAction() {
         Report.Trouble trouble = testcase.trouble;
         String callstackFrameInfo =
-                ((trouble != null) && (trouble.stackTrace.length != 0))
+                ((trouble != null)
+                        && (trouble.stackTrace != null)
+                        && (trouble.stackTrace.length != 0))
                 ? trouble.stackTrace[0]
                 : null;
         
