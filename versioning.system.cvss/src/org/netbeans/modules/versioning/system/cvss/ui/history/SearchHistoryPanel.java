@@ -94,6 +94,30 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (d1.width > d2.width) {
             tbDiff.setPreferredSize(d1);
         }
+        
+        Action nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png"))) {
+            {
+                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
+                                                   getString("CTL_DiffPanel_Next_Tooltip"));                
+            }
+            public void actionPerformed(ActionEvent e) {
+                diffView.onNextButton();
+            }
+        };
+        Action prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png"))) {
+            {
+                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
+                                                   getString("CTL_DiffPanel_Prev_Tooltip"));                
+            }
+            public void actionPerformed(ActionEvent e) {
+                diffView.onPrevButton();
+            }
+        };
+        bNext.setAction(nextAction);
+        bPrev.setAction(prevAction);
+
+        getActionMap().put("jumpNext", nextAction);
+        getActionMap().put("jumpPrev", prevAction);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -239,13 +263,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     void showDiff(LogInformation.Revision revision) {
         tbDiff.setSelected(true);
-        refreshComponents(false);
+        refreshComponents(true);
         diffView.select(revision);
     }
 
     public void showDiff(ResultsContainer container) {
         tbDiff.setSelected(true);
-        refreshComponents(false);
+        refreshComponents(true);
         diffView.select(container);
     }
 
@@ -424,21 +448,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jToolBar1.add(jSeparator2);
 
         bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png")));
-        bNext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onNext(evt);
-            }
-        });
-
         jToolBar1.add(bNext);
 
         bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png")));
-        bPrev.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onPrev(evt);
-            }
-        });
-
         jToolBar1.add(bPrev);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -462,14 +474,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     }
     // </editor-fold>//GEN-END:initComponents
-
-    private void onPrev(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onPrev
-        diffView.onPrevButton();
-    }//GEN-LAST:event_onPrev
-
-    private void onNext(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onNext
-        diffView.onNextButton();
-    }//GEN-LAST:event_onNext
 
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle
         refreshComponents(true);
