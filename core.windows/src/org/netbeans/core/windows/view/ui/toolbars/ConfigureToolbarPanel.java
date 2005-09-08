@@ -71,7 +71,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
 
         final JLabel lblWait = new JLabel( getBundleString("LBL_PleaseWait") );
         lblWait.setHorizontalAlignment( JLabel.CENTER );
-        palettePanel.setPreferredSize( new Dimension( 350, 350 ) );
+        palettePanel.setPreferredSize( new Dimension( 440, 350 ) );
         palettePanel.add( lblWait );
         RequestProcessor.getDefault().post( new Runnable() {
             public void run() {
