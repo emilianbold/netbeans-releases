@@ -16,7 +16,7 @@ package org.netbeans.modules.web.jsf;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.xml.core.lib.EncodingHelper;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -84,7 +84,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     public void saveDocument () throws java.io.IOException {
         final javax.swing.text.StyledDocument doc = getDocument();
         // dependency on xml/core
-        String enc = EncodingHelper.detectEncoding(doc);
+        String enc = EncodingUtil.detectEncoding(doc);
         if (enc == null) enc = "UTF8"; //!!! // NOI18N
         
         try {

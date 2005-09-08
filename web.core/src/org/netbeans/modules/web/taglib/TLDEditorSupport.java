@@ -27,7 +27,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.xml.core.lib.EncodingHelper;
+import org.netbeans.modules.xml.api.EncodingUtil;
 /**
  * Text editor support that handles I/O encoding
  * @author  mkuchtiak
@@ -50,7 +50,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     public void saveDocument () throws java.io.IOException {
         final javax.swing.text.StyledDocument doc = getDocument();
         // dependency on xml/core
-        String enc = EncodingHelper.detectEncoding(doc);
+        String enc = EncodingUtil.detectEncoding(doc);
         if (enc == null) enc = "UTF8"; //!!! // NOI18N
         
         try {
