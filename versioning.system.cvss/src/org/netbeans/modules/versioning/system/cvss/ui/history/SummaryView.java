@@ -67,7 +67,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     public void componentResized(ComponentEvent e) {
+        int [] selection = resultsList.getSelectedIndices();
         resultsList.setModel(new SummaryListModel());
+        resultsList.setSelectedIndices(selection);
     }
 
     public void componentHidden(ComponentEvent e) {

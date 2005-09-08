@@ -138,7 +138,6 @@ class DiffTreeTable extends TreeTableView {
 
     public void addNotify() {
         super.addNotify();
-        rootNode = new RevisionsRootNode();
         ExplorerManager em = ExplorerManager.find(this);
         em.setRootContext(rootNode);
         setDefaultColumnSizes();
@@ -146,9 +145,9 @@ class DiffTreeTable extends TreeTableView {
 
     public void setResults(List results) {
         this.results = results;
+        rootNode = new RevisionsRootNode();
         ExplorerManager em = ExplorerManager.find(this);
         if (em != null) {
-            rootNode = new RevisionsRootNode();
             em.setRootContext(rootNode);
         }
     }
