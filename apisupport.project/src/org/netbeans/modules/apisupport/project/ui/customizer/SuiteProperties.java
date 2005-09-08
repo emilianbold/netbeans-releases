@@ -35,6 +35,8 @@ public final class SuiteProperties extends ModuleProperties {
     
     public static final String DISABLED_MODULES_PROPERTY = "disabled.modules"; // NOI18N
     public static final String DISABLED_CLUSTERS_PROPERTY = "disabled.clusters"; // NOI18N
+
+    public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     
     private NbPlatform platform;
     
@@ -69,9 +71,6 @@ public final class SuiteProperties extends ModuleProperties {
         super(helper, evaluator);
         this.project = project;
         refresh(subModules);
-        // XXX similar to SuiteProject.getActivePlatform:
-        platform = NbPlatform.getPlatformByID(
-                evaluator.getProperty("nbplatform.active")); // NOI18N
         this.disabledModules = getArrayProperty(evaluator, DISABLED_MODULES_PROPERTY);
         this.disabledClusters = getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY);
         brandingModel = new BasicBrandingModel(this);
@@ -82,6 +81,9 @@ public final class SuiteProperties extends ModuleProperties {
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
         this.moduleListModel = null;
+        // XXX similar to SuiteProject.getActivePlatform:        
+        platform = NbPlatform.getPlatformByID(
+                getEvaluator().getProperty("nbplatform.active")); // NOI18N        
         firePropertiesRefreshed();
     }
     
@@ -98,7 +100,9 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
     void setActivePlatform(NbPlatform newPlaf) {
+        NbPlatform oldPlaf = this.platform;
         this.platform = newPlaf;
+        firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);        
     }
     
     String[] getDisabledModules() {

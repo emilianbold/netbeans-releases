@@ -47,7 +47,6 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     public SuiteCustomizerLibraries(final SuiteProperties suiteProps) {
         super(suiteProps, SuiteCustomizerLibraries.class);
         initComponents();
-        platformValue.setSelectedItem(suiteProps.getActivePlatform());
         refresh();
         moduleList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
         moduleList.addListSelectionListener(new ListSelectionListener() {
@@ -61,6 +60,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     }
     
     void refresh() {
+        platformValue.setSelectedItem(getProperties().getActivePlatform());        
         moduleList.setModel(getProperties().getModulesListModel());
     }
     
@@ -70,7 +70,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     }
     
     public void store() {
-        getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+        //getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
     }
     
     private ComponentFactory.SuiteSubModulesListModel getModuleListModel() {
@@ -100,6 +100,12 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
         setLayout(new java.awt.GridBagLayout());
 
         platformPanel.setLayout(new java.awt.GridBagLayout());
+
+        platformValue.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                platformValueItemStateChanged(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -189,6 +195,10 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
+        getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());                        
+    }//GEN-LAST:event_platformValueItemStateChanged
     
     private void removeModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModule
         getModuleListModel().removeModules(Arrays.asList(moduleList.getSelectedValues()));
