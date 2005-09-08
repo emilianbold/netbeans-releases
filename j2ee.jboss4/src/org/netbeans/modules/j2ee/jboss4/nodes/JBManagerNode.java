@@ -76,8 +76,8 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
             sheet.put(properties);
         }
         final InstanceProperties ip = InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl());
-        String serverDir = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) ;
-        String serverName = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER) ;
+        String serverDir = ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) ;
+        String serverName = ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER);
         
         Node.Property property=null;
         
@@ -168,8 +168,8 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     public String getShortDescription() {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl());
-        String host = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_HOST);
-        String port = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_PORT);
+        String host = ip.getProperty(JBInstantiatingIterator.PROPERTY_HOST);
+        String port = ip.getProperty(JBInstantiatingIterator.PROPERTY_PORT);
         return  HTTP_HEADER + host + ":" + port + "/"; // NOI18N
     }    
 }
