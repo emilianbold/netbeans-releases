@@ -202,7 +202,8 @@ Utility classes for implementation of j2ee projects.</api>
 <!-- Not complete - (madamek) -->
 
  <answer id="dep-nb">
- PENDING
+     <defaultanswer generate='none' />
+PENDING
  </answer>
 
 

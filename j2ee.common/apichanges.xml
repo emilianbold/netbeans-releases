@@ -86,7 +86,7 @@ is the proper place.
                     The <code>J2eeProjectsConstants</code> is a duplicate of EjbProjectConstants in EjbJarAPI.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.common" name="J2eeProjectsConstants"/>
+            <class package="org.netbeans.modules.j2ee.common" name="J2eeProjectsConstants" link="no"/>
         </change>
 
         <change id="DDEditorNavigator">
