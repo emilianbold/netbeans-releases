@@ -85,13 +85,18 @@ final class ResultTreeView extends BeanTreeView {
         final Node rootNode = ExplorerManager.find(this).getRootContext();
         assert rootNode.getClass() == ReportNode.class;
         
-        expandNode(rootNode);
-        
-        final Node[] childNodes = rootNode.getChildren().getNodes(true);
-        for (int i = 0; i < childNodes.length; i++) {
-            TestcaseNode testClassNode = (TestcaseNode) childNodes[i];
-            if (testClassNode.group.containsFailed()) {
-                expandNode(testClassNode);
+        Report report = ((ReportNode) rootNode).report;
+        if (report.failures + report.errors <= 5) {
+            expandAll();
+        } else {
+            expandNode(rootNode);
+
+            final Node[] childNodes = rootNode.getChildren().getNodes(true);
+            for (int i = 0; i < childNodes.length; i++) {
+                TestcaseNode testClassNode = (TestcaseNode) childNodes[i];
+                if (testClassNode.group.containsFailed()) {
+                    expandNode(testClassNode);
+                }
             }
         }
     }
