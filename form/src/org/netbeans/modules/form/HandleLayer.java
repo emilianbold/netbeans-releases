@@ -2405,17 +2405,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                             paletteItem.getComponentClassSource(),
                             targetContainer,
                             constraints);
-                    // ... but it still can be a visual container - e.g. JFrame
-                    if (addedComponent instanceof RADVisualContainer
-                        && ((RADVisualContainer)addedComponent).getLayoutSupport() == null)
-                    {
-                        createLayoutUndoableEdit();
-                        try {
-                            getLayoutModel().addRootComponent(new LayoutComponent(addedComponent.getId(), true));
-                        } finally {
-                            placeLayoutUndoableEdit();
-                        }
-                    }
                 }
 
                 if (addedComponent.getBeanInfo().getBeanDescriptor().getValue("customizeOnCreation") != null) { // NOI18N

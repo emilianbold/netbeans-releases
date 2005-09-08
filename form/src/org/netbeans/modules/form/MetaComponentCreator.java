@@ -80,7 +80,23 @@ public class MetaComponentCreator {
         if (compClass == null)
             return null; // class loading failed
 
-        return createAndAddComponent(compClass, targetComp, constraints);
+        RADComponent component = createAndAddComponent(compClass, targetComp, constraints);
+        if (component instanceof RADVisualContainer
+            && ((RADVisualContainer)component).getLayoutSupport() == null)
+        {
+            LayoutModel layoutModel = formModel.getLayoutModel();
+            Object layoutUndoMark = layoutModel.getChangeMark();
+            javax.swing.undo.UndoableEdit layoutUndoEdit = layoutModel.getUndoableEdit();
+            try {
+                layoutModel.addRootComponent(new LayoutComponent(component.getId(), true));
+            } finally {
+                if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                    formModel.addUndoableEdit(layoutUndoEdit);
+                }
+            }
+        }
+
+        return component;
     }
 
     /** Creates a copy of a metacomponent and adds it to FormModel. The new 
