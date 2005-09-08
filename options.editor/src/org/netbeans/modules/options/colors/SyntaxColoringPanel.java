@@ -255,6 +255,7 @@ PropertyChangeListener {
     }
     
     void applyChanges () {
+        if (colorModel == null) return;
 	Iterator it = toBeSaved.keySet ().iterator ();
 	while (it.hasNext ()) {
 	    String scheme = (String) it.next ();

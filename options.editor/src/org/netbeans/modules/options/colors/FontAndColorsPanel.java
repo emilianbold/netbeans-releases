@@ -158,6 +158,7 @@ ActionListener {
         editorPanel.applyChanges ();
         syntaxColoringPanel.applyChanges ();
         annotationsPanel.applyChanges ();
+        if (colorModel == null) return;
         colorModel.setCurrentScheme (currentScheme);
     }
     
