@@ -11,9 +11,10 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="xtest/external" default="unscramble" basedir=".">
-    <target name="unscramble">
-    </target>
+<project name="xtest/external" basedir=".">
+
+    <!-- XXX should download to a subdir; easier to clean that way -->
+
     <condition property="skip-download-emma" >
         <and>
             <available file="emma_ant.jar" />
@@ -35,4 +36,5 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="emma_ant.jar" />
         <delete file="emma-2.0.5312-lib.zip" />
     </target>
+
 </project>

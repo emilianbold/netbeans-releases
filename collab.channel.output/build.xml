@@ -17,7 +17,6 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="xmlbeangen">
-        <ant dir="../../libs/external" target="unscramble"/>
         <taskdef name="xmlbean" classname="org.apache.xmlbeans.impl.tool.XMLBean"
                 classpath="../../libs/external/xbean-1.0.4.jar" />
 	<xmlbean classpath="../../libs/external/xbean-1.0.4.jar"
