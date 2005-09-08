@@ -80,7 +80,6 @@ import org.openide.xml.XMLUtil;
 
 /**
  * Support for creating logical views.
- * @author Petr Hrebejk
  */
 public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     
@@ -116,6 +115,8 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         if (project == null)
             return null;
         
+        // XXX this is incorrect - must handle case that target instanceof DataObject
+        // (since that is likely to be what is in lookup)
         if (target instanceof FileObject) {
             FileObject fo = (FileObject) target;
             Project owner = FileOwnerQuery.getOwner(fo);
