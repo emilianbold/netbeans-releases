@@ -13,13 +13,17 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.net.URL;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
 /**
@@ -31,12 +35,15 @@ import org.openide.util.NbBundle;
 final class EditDependencyPanel extends JPanel {
     
     private final ModuleDependency origDep;
+    private final URL javadoc;
     
     /** Creates new form EditDependencyPanel */
-    EditDependencyPanel(final ModuleDependency dep) {
+    EditDependencyPanel(final ModuleDependency dep, final NbPlatform platform) {
         this.origDep = dep;
         initComponents();
         readFromEntry();
+        javadoc = Util.findJavadoc(origDep, platform);
+        showJavadocButton.setEnabled(javadoc != null);
     }
     
     private void readFromEntry() {
@@ -100,6 +107,7 @@ final class EditDependencyPanel extends JPanel {
         availablePkg = new javax.swing.JList();
         codeNameBaseValue = new javax.swing.JTextField();
         jarLocationValue = new javax.swing.JTextField();
+        showJavadocButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -214,8 +222,27 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jarLocationValue, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(showJavadocButton, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "CTL_ShowJavadoc"));
+        showJavadocButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showJavadoc(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
+        add(showJavadocButton, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
+    
+    private void showJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showJavadoc
+        HtmlBrowser.URLDisplayer.getDefault().showURL(javadoc);
+    }//GEN-LAST:event_showJavadoc
     
     private void versionChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionChanged
         specVerValue.setEnabled(specVer.isSelected());
@@ -233,6 +260,7 @@ final class EditDependencyPanel extends JPanel {
     private javax.swing.JTextField jarLocationValue;
     private javax.swing.JLabel releaseVersion;
     private javax.swing.JTextField releaseVersionValue;
+    private javax.swing.JButton showJavadocButton;
     private javax.swing.JRadioButton specVer;
     private javax.swing.JTextField specVerValue;
     private javax.swing.ButtonGroup versionGroup;

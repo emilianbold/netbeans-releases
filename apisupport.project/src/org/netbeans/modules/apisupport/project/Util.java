@@ -31,12 +31,15 @@ import java.util.zip.ZipEntry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -249,7 +252,7 @@ public class Util {
      * <em>valid</em> it's meant that a found localized bundle contains at
      * least a display name. If <em>valid</em> bundle is not found
      * <code>null</code> is returned.
-     * 
+     *
      * @param sourceDir source directory to be used for as a <em>searching
      *        path</em> for the bundle
      * @param manifest manifest the bundle's path should be extracted from
@@ -398,7 +401,7 @@ public class Util {
     /**
      * Convenience method for storing {@link EditableManifest} into a {@link
      * FileObject}.
-     * 
+     *
      * @param manifestFO file representing where manifest will be stored
      * @param em manifest to be stored
      * @exception IOException if manifest cannot be written to the file
@@ -415,6 +418,39 @@ public class Util {
         } finally {
             lock.releaseLock();
         }
+    }
+    
+    public static URL findJavadoc(final ModuleDependency dep, final NbPlatform platform) {
+        String cnbdashes = dep.getModuleEntry().getCodeNameBase().replace('.', '-');
+        URL[] roots = platform.getJavadocRoots();
+        URL indexURL = null;
+        for (int i = 0; i < roots.length; i++) {
+            URL root = roots[i];
+            try {
+                indexURL = Util.normalizeURL(new URL(root, cnbdashes + "/index.html")); // NOI18N
+                if (indexURL == null && (root.toExternalForm().indexOf(cnbdashes) != -1)) {
+                    indexURL = Util.normalizeURL(new URL(root, "index.html")); // NOI18N
+                }
+            } catch (MalformedURLException ex) {
+                // ignore - let the indexURL == null
+            }
+            if (indexURL != null) {
+                break;
+            }
+        }
+        return indexURL;
+    }
+    
+    private static URL normalizeURL(URL url) {
+        // not sure - in some private tests it seems that input
+        // jar:file:/home/..../NetBeansAPIs.zip!/..../index.html result in:
+        // http://localhost:8082/..../index.html
+//        URL resolvedURL = null;
+//        FileObject fo = URLMapper.findFileObject(url);
+//        if (fo != null) {
+//            resolvedURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+//        }
+        return URLMapper.findFileObject(url) == null ? null : url;
     }
     
     private static Iterator getPossibleResources(String locBundleResource) {

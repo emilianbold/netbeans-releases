@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
@@ -36,7 +37,9 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.ErrorManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -53,8 +56,10 @@ final class AddModulePanel extends JPanel {
     private ComponentFactory.DependencyListModel universeModules;
     private RequestProcessor.Task filterTask;
     private AddModuleFilter filterer;
+    private URL currectJavadoc;
     
-    AddModulePanel(ComponentFactory.DependencyListModel universeModules) {
+    AddModulePanel(final ComponentFactory.DependencyListModel universeModules,
+            final NbPlatform platform) {
         this.universeModules = universeModules;
         initComponents();
         moduleList.setModel(universeModules);
@@ -62,6 +67,11 @@ final class AddModulePanel extends JPanel {
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 showDescription();
+                ModuleDependency dep = getSelectedDependency();
+                if (dep != null) {
+                    currectJavadoc = Util.findJavadoc(dep, platform);
+                }
+                showJavadocButton.setEnabled(currectJavadoc != null);
             }
         });
         filterValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
@@ -222,6 +232,7 @@ final class AddModulePanel extends JPanel {
         filterValue = new javax.swing.JTextField();
         descValueSP = new javax.swing.JScrollPane();
         descValue = new javax.swing.JTextPane();
+        showJavadocButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -287,8 +298,28 @@ final class AddModulePanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(descValueSP, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(showJavadocButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_ShowJavadoc"));
+        showJavadocButton.setEnabled(false);
+        showJavadocButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showJavadoc(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
+        add(showJavadocButton, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
+    
+    private void showJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showJavadoc
+        HtmlBrowser.URLDisplayer.getDefault().showURL(currectJavadoc);
+    }//GEN-LAST:event_showJavadoc
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -300,6 +331,7 @@ final class AddModulePanel extends JPanel {
     private javax.swing.JLabel moduleLabel;
     private javax.swing.JList moduleList;
     private javax.swing.JScrollPane moduleSP;
+    private javax.swing.JButton showJavadocButton;
     // End of variables declaration//GEN-END:variables
     
 }

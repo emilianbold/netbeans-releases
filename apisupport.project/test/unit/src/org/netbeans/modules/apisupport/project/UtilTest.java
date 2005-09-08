@@ -20,9 +20,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.jar.JarFile;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -126,4 +129,32 @@ public class UtilTest extends TestBase {
     
     // XXX testLoadManifest()
     // XXX testStoreManifest()
+    
+    public void testFindJavadoc() throws Exception {
+        File oneModuleDoc = new File(getWorkDir(), "org-example-module1");
+        assertTrue(oneModuleDoc.mkdir());
+        File index = new File(oneModuleDoc, "index.html");
+        assertTrue(index.createNewFile());
+        
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbPlatform platform = project.getPlatform();
+        URL oneModuleDocURL = Util.urlForDir(oneModuleDoc);
+        platform.addJavadocRoot(oneModuleDocURL);
+        ModuleDependency md = new ModuleDependency(project.getModuleList().getEntry(project.getCodeNameBase()));
+        
+        URL url = Util.findJavadoc(md, platform);
+        assertNotNull("url was found", url);
+        
+        File nbDoc = new File(getWorkDir(), "nbDoc");
+        File moduleDoc = new File(nbDoc, "org-example-module1");
+        assertTrue(moduleDoc.mkdirs());
+        index = new File(moduleDoc, "index.html");
+        assertTrue(index.createNewFile());
+        
+        platform.addJavadocRoot(Util.urlForDir(nbDoc));
+        platform.removeJavadocRoots(new URL[] {oneModuleDocURL});
+        url = Util.findJavadoc(md, platform);
+        assertNotNull("url was found", url);
+    }
+    
 }

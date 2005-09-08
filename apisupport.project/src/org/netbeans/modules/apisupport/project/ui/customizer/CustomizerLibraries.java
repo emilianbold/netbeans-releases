@@ -341,7 +341,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 dependencyList.getSelectedIndex());
         ModuleDependency editedDep = getDepListModel().findEdited(origDep);
         EditDependencyPanel editPanel = new EditDependencyPanel(
-                editedDep == null ? origDep : editedDep);
+                editedDep == null ? origDep : editedDep, getProperties().getActivePlatform());
         DialogDescriptor descriptor = new DialogDescriptor(editPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_EditModuleDependencyTitle")); // NOI18N
@@ -365,7 +365,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
         DependencyListModel model = getProperties().getUniverseDependenciesListModel();
-        final AddModulePanel addPanel = new AddModulePanel(model);
+        final AddModulePanel addPanel = new AddModulePanel(model, getProperties().getActivePlatform());
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_AddModuleDependencyTitle"));// NOI18N
