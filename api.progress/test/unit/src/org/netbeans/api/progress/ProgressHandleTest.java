@@ -133,13 +133,18 @@ public class ProgressHandleTest extends NbTestCase {
     
     // tasks shorter than the InternalHandle.INITIAL_DELAY should be discarded.
     public void testIfShortOnesGetDiscarded() throws Exception {
-        Controller.defaultInstance = new Controller(new FailingUI());
-        // need to simulate the status bar controller by setting the initial delay.
-        Controller.defaultInstance.minimumDiff = Controller.INITIAL_DELAY;
+        OneThreadController control = new OneThreadController(new FailingUI());
+        Controller.defaultInstance = control;
         proghandle = ProgressHandleFactory.createHandle("a1");
         proghandle.start();
         proghandle.progress("");
         proghandle.finish();
+        
+        //simulate timer run
+        control.run();
+        //after running the timer sould be stopped
+        assertTrue(control.tobeRestartedDelay == -1);
+
         
         proghandle = ProgressHandleFactory.createHandle("a2");
         ProgressHandle h2 = ProgressHandleFactory.createHandle("a3");
@@ -150,17 +155,85 @@ public class ProgressHandleTest extends NbTestCase {
         } catch (InterruptedException exc) {
             System.out.println("interrupted");
         }
+        
+        //simulate timer run
+        control.run();
+        // timer should continue
+        assertFalse(control.tobeRestartedDelay == -1);
+        
         h2.start();
         h2.progress("");
         proghandle.finish();
+        
+        //simulate timer run
+        control.run();
+        // timer should be continuing
+        assertFalse(control.tobeRestartedDelay == -1);
+        
         try {
             Thread.sleep(300);
         } catch (InterruptedException exc) {
             System.out.println("interrupted");
         }
         h2.finish();
+        //simulate timer run
+        control.run();
+        // timer should be stopped
+        assertTrue(control.tobeRestartedDelay == -1);
+        
     }
     
+    // tasks shorter than the custom init delay should be discarded.
+    public void testIfCustomShortOnesGetDiscarded() throws Exception {
+        System.out.println("testIfCustomShortOnesGetDiscarded");
+        OneThreadController control = new OneThreadController(new FailingUI());
+        Controller.defaultInstance = control;
+        proghandle = ProgressHandleFactory.createHandle("c1");
+        proghandle.setInitialDelay(100);
+        proghandle.start();
+        proghandle.progress("");
+        proghandle.finish();
+        
+        //simulate timer run
+        control.run();
+        //after running the timer sould be stopped
+        assertTrue(control.tobeRestartedDelay == -1);
+        
+        proghandle = ProgressHandleFactory.createHandle("c2");
+        ProgressHandle h2 = ProgressHandleFactory.createHandle("c3");
+        proghandle.setInitialDelay(100);
+        proghandle.start();
+        proghandle.progress("");
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException exc) {
+            System.out.println("interrupted");
+        }
+        //simulate timer run
+        control.run();
+        // timer should continue
+        assertFalse(control.tobeRestartedDelay == -1);
+        
+        h2.setInitialDelay(1000);
+        h2.start();
+        h2.progress("");
+        proghandle.finish();
+        
+        //simulate timer run
+        control.run();
+        // timer should be continuing
+        assertFalse(control.tobeRestartedDelay == -1);
+        
+        try {
+            Thread.sleep(600);
+        } catch (InterruptedException exc) {
+            System.out.println("interrupted");
+        }
+        h2.finish();
+        control.run();
+        // timer should NOT continue
+        assertTrue(control.tobeRestartedDelay == -1);
+    }    
     
     private class FailingUI implements ProgressUIWorker {
             public void processProgressEvent(ProgressEvent event) {
@@ -170,20 +243,57 @@ public class ProgressHandleTest extends NbTestCase {
                 fail("How come we are processing a short one - " + event.getSource().getDisplayName());
             }
     }
+    
+    private class OneThreadController extends Controller {
+        
+        public int tobeRestartedDelay = -1;
+        
+        public OneThreadController(ProgressUIWorker comp) {
+            super(comp);
+        }
+        
+        protected void resetTimer(int initialDelay, boolean restart) {
+            timer.setInitialDelay(initialDelay);
+            if (restart) {
+                tobeRestartedDelay = initialDelay;
+            } else {
+                tobeRestartedDelay = -1;
+            }
+        }
+    }
+
   
     public void testIfLongOnesGetProcessed() throws Exception {
+        assert !SwingUtilities.isEventDispatchThread();
         PingingUI ui = new PingingUI();
         Controller.defaultInstance = new Controller(ui);
         proghandle = ProgressHandleFactory.createHandle("b1");
         proghandle.start();
         try {
-            Thread.sleep(1200);
+            Thread.sleep(800);
         } catch (InterruptedException exc) {
             System.out.println("interrupted");
         }
         proghandle.finish();
         assertTrue(ui.pinged);
-    }    
+    } 
+    
+    public void testIfCustomLongOnesGetProcessed() throws Exception {
+        assert !SwingUtilities.isEventDispatchThread();
+        PingingUI ui = new PingingUI();
+        Controller.defaultInstance = new Controller(ui);
+        proghandle = ProgressHandleFactory.createHandle("b1");
+        proghandle.setInitialDelay(100);
+        proghandle.start();
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException exc) {
+            System.out.println("interrupted");
+        }
+        proghandle.finish();
+
+        assertTrue(ui.pinged);
+    }        
     
     private class PingingUI implements ProgressUIWorker {
         public boolean pinged = false;

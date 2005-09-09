@@ -35,7 +35,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-public final class Controller implements Runnable, ActionListener {
+public /* final - because of tests */ class Controller implements Runnable, ActionListener {
     
     // non-private so that it can be accessed from the tests
     public static Controller defaultInstance;
@@ -44,11 +44,9 @@ public final class Controller implements Runnable, ActionListener {
     private TaskModel model;
     private List eventQueue;
     private boolean dispatchRunning;
-    private Timer timer;
+    protected Timer timer;
+    private long timerStart = 0;
     private static final int TIMER_QUANTUM = 400;
-    
-    // non-private so that it can be accessed from the tests
-    public int minimumDiff = 0;
     
     /**
      * initial delay for ading progress indication into the UI. if finishes earlier,
@@ -70,9 +68,6 @@ public final class Controller implements Runnable, ActionListener {
         if (defaultInstance == null) {
             StatusLineComponent component = new StatusLineComponent();
             defaultInstance = new Controller(component);
-            // just the default instance (status bar one) should have an initial delay
-            // for placing items into UI.
-            defaultInstance.minimumDiff = INITIAL_DELAY;
             component.setModel(defaultInstance.getModel());
         }
         return defaultInstance;
@@ -92,9 +87,9 @@ public final class Controller implements Runnable, ActionListener {
     
     void start(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_START, isWatched(handle));
-        if (minimumDiff == INITIAL_DELAY) {
+        if (this == getDefault() && handle.getInitialDelay() > 100) {
             // default controller
-            postEvent(event);
+            postEvent(event, true);
         } else {
             runImmediately(Collections.singleton(event));
         }
@@ -161,12 +156,35 @@ public final class Controller implements Runnable, ActionListener {
     }
     
     void postEvent(final ProgressEvent event) {
+        postEvent(event, false);
+    }
+    
+    void postEvent(final ProgressEvent event, boolean shortenPeriod) {
         synchronized (this) {
             eventQueue.add(event);
             if (!dispatchRunning) {
-                timer.start();
+                timerStart = System.currentTimeMillis();
+                int delay = timer.getInitialDelay();
+                // period of timer is longer than required by the handle -> shorten it.
+                if (shortenPeriod && timer.getInitialDelay() > event.getSource().getInitialDelay()) {
+                    delay = event.getSource().getInitialDelay();
+                } 
                 dispatchRunning = true;
+                resetTimer(delay, true);
+            } else if (shortenPeriod) {
+                // time remaining is longer than required by the handle's initial delay.
+                // restart with shorter time.
+                if (System.currentTimeMillis() - timerStart > event.getSource().getInitialDelay()) {
+                    resetTimer(event.getSource().getInitialDelay(), true);
+                }
             }
+        }
+    }
+    
+    protected void resetTimer(int initialDelay, boolean restart) {
+        timer.setInitialDelay(initialDelay);
+        if (restart) {
+            timer.restart();
         }
     }
      
@@ -175,12 +193,12 @@ public final class Controller implements Runnable, ActionListener {
      * can be run from awt only.
      */
     public void run() {
-        assert SwingUtilities.isEventDispatchThread();
         HashMap map = new HashMap();
         boolean hasShortOne = false;
         long minDiff = TIMER_QUANTUM;
         
         InternalHandle oldSelected = model.getSelectedHandle();
+        long stamp = System.currentTimeMillis();
         synchronized (this) {
             Iterator it = eventQueue.iterator();
             Collection justStarted = new ArrayList();
@@ -198,11 +216,13 @@ public final class Controller implements Runnable, ActionListener {
                 {
                     model.removeHandle(event.getSource());
                 }
-                
                 ProgressEvent lastEvent = (ProgressEvent)map.get(event.getSource());
                 if (lastEvent != null && event.getType() == ProgressEvent.TYPE_FINISH && 
-                        justStarted.contains(event.getSource())) {
+                        justStarted.contains(event.getSource()) &&
+                        (stamp - event.getSource().getTimeStampStarted()) < event.getSource().getInitialDelay())
+                {
                     // if task quits really fast, ignore..
+                    // defined 'really fast' as being shorter than initial delay
                     map.remove(event.getSource());
                     justStarted.remove(event.getSource());
                 } else {
@@ -219,13 +239,13 @@ public final class Controller implements Runnable, ActionListener {
                 it.remove();
             }
             // now re-add the just started events into queue
-            // if they don't last longer than the minimumDiff 
+            // if they don't last longer than the initial delay of the task.
+            // applies just for status bar items
             Iterator startIt = justStarted.iterator();
-            long stamp = System.currentTimeMillis();
             while (startIt.hasNext()) {
                 InternalHandle hndl = (InternalHandle)startIt.next();
                 long diff = stamp - hndl.getTimeStampStarted();
-                if (diff > minimumDiff) {
+                if (diff >= hndl.getInitialDelay()) {
                     model.addHandle(hndl);
                 } else {
                     eventQueue.add(new ProgressEvent(hndl, ProgressEvent.TYPE_START, isWatched(hndl)));
@@ -234,10 +254,9 @@ public final class Controller implements Runnable, ActionListener {
                         eventQueue.add(evnt);
                     }
                     hasShortOne = true;
-                    minDiff = Math.min(minDiff, diff);
+                    minDiff = Math.min(minDiff, hndl.getInitialDelay() - diff);
                 }
             }
- 
         }
         InternalHandle selected = model.getSelectedHandle();
         selected = selected == null ? oldSelected : selected;
@@ -249,13 +268,15 @@ public final class Controller implements Runnable, ActionListener {
             }
             component.processProgressEvent(event);
         }
-        timer.stop();
-        if (hasShortOne) {
-            timer.setDelay((int)Math.max(100, minDiff));
-            timer.start();
-        } else {
-            dispatchRunning = false;
-            timer.setDelay(TIMER_QUANTUM);
+        synchronized (this) {
+            timer.stop();
+            if (hasShortOne) {
+                timerStart = System.currentTimeMillis();
+                resetTimer((int)Math.max(100, minDiff), true);
+            } else {
+                dispatchRunning = false;
+                resetTimer(TIMER_QUANTUM, false);
+            }
         }
     }
 
