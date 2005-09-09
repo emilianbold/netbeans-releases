@@ -88,6 +88,7 @@ ActionListener {
         tfAntHome.setColumns (30);
         loc (bAntHome, "Ant_Home_Button");
         bAntHome.addActionListener (this);
+        bAntHome.setBackground (Color.white);
         loc (cbSaveFiles, "Save_Files");
         cbSaveFiles.setBackground (Color.white);
         cbReuseOutput.setBackground (Color.white);
@@ -100,8 +101,10 @@ ActionListener {
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_debug"));
         loc (bProperties, "Properties_Button");
         bProperties.addActionListener (this);
+        bProperties.setBackground (Color.white);
         loc (bClasspath, "Classpath_Button");
         bClasspath.addActionListener (this);
+        bClasspath.setBackground (Color.white);
         
         FormLayout layout = new FormLayout (
             "p:g", // cols
