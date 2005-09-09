@@ -86,7 +86,6 @@ public class SendEmailPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(null);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(SendEmailPanel.class).getString("LBL_jndiName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -95,6 +94,7 @@ public class SendEmailPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(jLabel1, gridBagConstraints);
 
+        jndiName.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
