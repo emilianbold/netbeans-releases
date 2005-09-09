@@ -20,7 +20,6 @@ import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.MultipartId;
 import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.jmi.javamodel.TypeReference;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -64,6 +63,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public final void createAndAdd(Method clientView, boolean local, boolean isComponent) {
         JavaClass home = null;
         JavaClass component = null;
+        Method methodToOpen = null;
         boolean rollback = true;
         beginWriteJmiTransaction();
         try {
@@ -92,6 +92,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                         TypeReference typeReference = JavaModelUtil.resolveImportsForType(bc, me.getType());
                         me.setTypeName(typeReference);
                         bc.getContents().add(me);
+                        methodToOpen = me;
                     }
                 }
             }
@@ -103,6 +104,9 @@ public abstract class AbstractMethodController extends EjbMethodController {
             rollback = false;
         } finally {
             endWriteJmiTransaction(rollback);
+        }
+        if (methodToOpen != null) {
+            JMIUtils.openInEditor(methodToOpen.getBody());
         }
     }
 
