@@ -19,7 +19,8 @@ import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
-/** Class implementing all necessary methods for handling "Module to Checkout" panel of
+/**
+ * Class implementing all necessary methods for handling "Module to Checkout" panel of
  * Checkout wizard.
  * <br>
  * Usage:<br>
@@ -35,11 +36,11 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  *      moduleOper.setLocalFolder("/tmp");
  *      moduleOper.finish();
  * </pre>
- * @see CheckoutWizardOperator
- * @see BrowseCVSModule
- * @see BrowseTagsOperator
  * 
  * @author Jiri.Skrivanek@sun.com
+ * @sBrowseCVSModuleOperatorrdOperator
+ * @see BrowseCVSModule
+ * @see BrowseTagsOperator
  */
 public class ModuleToCheckoutStepOperator extends CheckoutWizardOperator {
 
@@ -186,12 +187,14 @@ public class ModuleToCheckoutStepOperator extends CheckoutWizardOperator {
         txtModule().typeText(text);
     }
 
-    /** clicks on "Browse..." JButton and returns BrowseCVSModule
-     * @return instance of BrowseCVSModule
+    /**
+     * clicks on "Browse..." JButton and returns BrowseCVSModuleOperator
+     * 
+     * @return instance of BrowseCVSModuleOperator
      */
-    public BrowseCVSModule browseModule() {
+    public BrowseCVSModuleOperator browseModule() {
         btBrowseModule().pushNoBlock();
-        return new BrowseCVSModule();
+        return new BrowseCVSModuleOperator();
     }
 
     /** gets text for txtBranch

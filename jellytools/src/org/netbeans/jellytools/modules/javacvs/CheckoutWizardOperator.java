@@ -80,7 +80,7 @@ public class CheckoutWizardOperator extends WizardOperator {
         if(password != null) {
             cvsRootOper.setPassword(password);
         }
-        if(cvsRootOper == null) {
+        if(cvsRoot == null) {
             throw new JemmyException("CVS root must not be null."); // NOI18N
         }
         cvsRootOper.setCVSRoot(cvsRoot);
