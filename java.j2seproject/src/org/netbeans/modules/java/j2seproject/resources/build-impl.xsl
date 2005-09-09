@@ -279,6 +279,7 @@ is divided into following sections:
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{run.jvmargs}}"/>
                         </junit>
                     </sequential>
                 </macrodef>
