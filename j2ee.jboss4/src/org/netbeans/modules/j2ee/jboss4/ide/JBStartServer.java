@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.openide.ErrorManager;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -359,9 +360,9 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     return;
                 }
                 
-                // PENDING - why are we not using NbProcessDescriptor here? It handles SPACE_IN_PATH well
-                // this would fix issue 62472
-                Process serverProcess = Runtime.getRuntime().exec(serverStopFileName+" --shutdown");
+                NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--shutdown");
+                pd.exec();
+
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                         NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));
                 
