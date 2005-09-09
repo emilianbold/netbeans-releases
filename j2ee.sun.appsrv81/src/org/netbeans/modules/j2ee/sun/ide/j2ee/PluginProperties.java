@@ -66,7 +66,7 @@ public class PluginProperties  {
     public static String COBUNDLE_DEFAULT_INSTALL_PATH ="SunAppServer8.1";  //NOI18N
     
     /** holds value of com.sun.aas.installRoot */
-    private  File installRoot = null;
+    private  File platformRoot = null;
     
     static private PluginProperties thePluginProperties=null;
     
@@ -133,9 +133,9 @@ public class PluginProperties  {
         incrementalDeployPossible = b.equals("true");
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
         if (loc==null){// try to get the default value
-            installRoot = new File(getDefaultInstallRoot());
-            if (isGoodAppServerLocation(installRoot)){
-                System.setProperty(INSTALL_ROOT_PROP_NAME, installRoot.getAbsolutePath());
+            platformRoot = new File(getDefaultInstallRoot());
+            if (isGoodAppServerLocation(platformRoot)){
+                System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());
                 javax.swing.SwingUtilities.invokeLater(new Runnable(){
                     public void run(){
                         registerDefaultDomain();
@@ -143,13 +143,14 @@ public class PluginProperties  {
                     }
                     
                 });
+            } else {
+                platformRoot = null;
             }
-            
         }
 	else{
-            installRoot = new File(loc);
-            if (!isGoodAppServerLocation(installRoot)){
-                installRoot = new File("");
+            platformRoot = new File(loc);
+            if (!isGoodAppServerLocation(platformRoot)){
+                platformRoot = null;
                 System.out.println(NbBundle.getMessage(PluginProperties.class, "MSG_WrongInstallDir"));
                 //remove storage for old defined instances: they would cause errors furthers down, and should not be known.
                 File store = new File(System.getProperty("netbeans.user")+"/config/J2EE/InstalledServers/.nbattrs");
@@ -160,7 +161,7 @@ public class PluginProperties  {
                 
                 
             } else{
-                System.setProperty(INSTALL_ROOT_PROP_NAME, installRoot.getAbsolutePath());
+                System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());
                 
             }
             
@@ -366,8 +367,8 @@ public class PluginProperties  {
             outProp.setProperty(LOG_LEVEL_KEY, logLevel);
         if (!getCharsetDisplayPreferenceStatic().equals(CharsetDisplayPreferenceEditor.DEFAULT_PREF_VAL))
             outProp.setProperty(CHARSET_DISP_PREF_KEY, getCharsetDisplayPreferenceStatic().toString());
-        if (installRoot != null)
-            outProp.setProperty(INSTALL_ROOT_KEY, installRoot.getAbsolutePath());
+        if (platformRoot != null)
+            outProp.setProperty(INSTALL_ROOT_KEY, platformRoot.getAbsolutePath());
         FileLock l = null;
         java.io.OutputStream outStream = null;
         try {
@@ -397,8 +398,21 @@ public class PluginProperties  {
         
         
     }
+    
+    /** @deprecated use getPlatformRoot
+     */
     public File getInstallRoot() {
-        return installRoot;
+        return getPlatformRoot();
+    }
+    
+    /** @deprecated use setPlatformRoot
+     */
+    public void setInstallRoot(File fo) {
+        setPlatformRoot(fo);
+    }
+    
+    public File getPlatformRoot() {
+        return platformRoot;
     }
     
     
@@ -410,21 +424,15 @@ public class PluginProperties  {
      * Instead you need to throw an IllegalArgumentException decorated
      * with an ErrorManager annotation.
      */
-    public void setInstallRoot(File fo)  {
-        
+    public void setPlatformRoot(File fo)  {
+        File oldInstallRoot = platformRoot;
         if (this.isGoodAppServerLocation(fo)){
-            installRoot = fo;
+            platformRoot = fo;
             System.setProperty(INSTALL_ROOT_PROP_NAME, fo.getAbsolutePath());
             saveProperties();
             Installer.resetClassLoader();//TODO do  better for next release: separate options to this PluginProperties stuff.
-            /////// setDisplayName(factory.getDisplayName()); //NOI18N
-        } else{
-            //   String mess = pve.getMessage();
-            //   org.openide.awt.StatusDisplayer.getDefault().setStatusText(mess);
-            //   Util.showInformation(mess);
-        }
-        
-        
+            RunTimeDDCatalog.getRunTimeDDCatalog().fireCatalogListeners();
+        } 
     }
     
     private  String getDefaultInstallRoot() {
@@ -494,7 +502,7 @@ public class PluginProperties  {
     }
     public boolean isCurrentAppServerLocationValid(){
 
-        return isGoodAppServerLocation(installRoot);
+        return isGoodAppServerLocation(platformRoot);
     }
     
     public void registerDefaultDomain(){
@@ -525,7 +533,7 @@ public class PluginProperties  {
         }
         try {
             // Go to the conf dir
-            File confDir = new File(installRoot.getAbsolutePath()+"/domains/domain1/config");
+            File confDir = new File(platformRoot.getAbsolutePath()+"/domains/domain1/config");
             // if it is writable
             if (confDir.exists() && confDir.isDirectory() && confDir.canWrite()) {
                 // try to get the host/port data
@@ -539,7 +547,7 @@ public class PluginProperties  {
                 instanceProperties.setProperty("displayName", NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name"));
                 instanceProperties.setProperty("DOMAIN", "domain1");
                 //  The LOCATION is the domains directory, not the install root now...
-                instanceProperties.setProperty("LOCATION", installRoot.getAbsolutePath()+File.separator+"domains"+File.separator);
+                instanceProperties.setProperty("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains"+File.separator);
             } else {
                 // TODO: tell the user we did not register the "default instance"
                 // this is hard since most of the time doing UI stuff in this class

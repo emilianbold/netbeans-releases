@@ -31,7 +31,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     
     private static final String XML_XSD="http://www.w3.org/2001/xml.xsd"; // NOI18N
     private static final String XML_XSD_DEF="<?xml version='1.0'?><xs:schema targetNamespace=\"http://www.w3.org/XML/1998/namespace\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xml:lang=\"en\"><xs:attribute name=\"lang\" type=\"xs:language\"><xs:annotation><xs:documentation>In due course, we should install the relevant ISO 2- and 3-letter codes as the enumerated possible values . . .</xs:documentation></xs:annotation></xs:attribute></xs:schema>"; // NOI18N
-    public  static final String TypeToURLMap[] = {
+    private  static final String TypeToURLMap[] = {
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 J2EE Application 1.3//EN" 	, "sun-application_1_3-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 J2EE Application 1.4//EN" 	, "sun-application_1_4-0.dtd" , ///[THIS IS DEPRECATED]
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 J2EE Application 1.4//EN"                , "sun-application_1_4-0.dtd" ,
@@ -77,7 +77,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     };
     
     /*******NetBeans 3.6 is NOT ready yet to support schemas for code completion... What a pity!:        */
-    public  static final String SchemaToURLMap[] = {
+    private  static final String SchemaToURLMap[] = {
         
         "SCHEMA:http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"                    , "ejb-jar_2_1",
         
@@ -113,7 +113,15 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return null if cannot proceed, try later.
      */
     public java.util.Iterator getPublicIDs() {
-        String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
+        if (platformRootDir == null) {
+            return null;
+        }
+        if (!platformRootDir.exists()) {
+            return null;
+        }
+        
+        String  installRoot = platformRootDir.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot == null) {
             return null;
         }
@@ -134,7 +142,15 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
-        String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
+        if (platformRootDir == null) {
+            return null;
+        }
+        if (!platformRootDir.exists()) {
+            return null;
+        }
+        
+        String  installRoot = platformRootDir.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot == null) {
             return null;
         }
@@ -166,11 +182,18 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     public void refresh() {
     }
     
+    private java.util.List/*<CatalogListeners>*/ catalogListeners = new java.util.ArrayList(1);
+    
     /**
      * Optional operation allowing to listen at catalog for changes.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
     public void addCatalogListener(CatalogListener l) {
+        if (null == l)
+            return;
+        if (catalogListeners.contains(l))
+            return;
+        catalogListeners.add(l);
     }
     
     /**
@@ -178,6 +201,18 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
     public void removeCatalogListener(CatalogListener l) {
+        if (null == l)
+            return;
+        if (catalogListeners.contains(l))
+            catalogListeners.remove(l);
+    }
+    
+    void fireCatalogListeners() {
+        java.util.Iterator iter = catalogListeners.iterator();
+        while (iter.hasNext()) {
+            CatalogListener l = (CatalogListener) iter.next();
+            l.notifyInvalidate();
+        }
     }
     
     /** Registers new listener.  */
@@ -252,7 +287,15 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
         
         if (SCHEMASLOCATION == null) {
-            String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+            File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
+            if (platformRootDir == null) {
+                return null;
+            }
+            if (!platformRootDir.exists()) {
+                return null;
+            }
+        
+            String  installRoot = platformRootDir.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
             if (installRoot==null)
                 return null;
             File f = new File(installRoot);
@@ -390,21 +433,30 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return null if not registered
      */
     public String resolveURI(String name) {
-       // System.out.println("resolveURI(String name)="+name);
-        String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
-        String prefix ="";
-                    File file = new File(installRoot+"/lib/schemas/");
-             try{
-                prefix= file.toURI().toURL().toExternalForm();
-            }catch(Exception e){
-                
-            }
-
-        if (name.equals("http://java.sun.com/xml/ns/jax-rpc/ri/config")){
-            return prefix +"jax-rpc-ri-config.xsd";            
+        // System.out.println("resolveURI(String name)="+name);
+        File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
+        if (platformRootDir == null) {
+            return null;
         }
+        if (!platformRootDir.exists()) {
+            return null;
+        }
+        String  installRoot = platformRootDir.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        String prefix ="";
+        File file = new File(installRoot+"/lib/schemas/");
+        try{
+            prefix= file.toURI().toURL().toExternalForm();
+        }catch(Exception e){
+            
+        }
+        
+        if (name.equals("http://java.sun.com/xml/ns/jax-rpc/ri/config")){
+            return prefix +"jax-rpc-ri-config.xsd";
+        }
+        
+        // ludo: this is meant to be this way.
         if (name.equals("http://java.sun.com/xml/ns/j2eeppppppp")){
-            return prefix +"j2ee_web_services_1_1.xsd";            
+            return prefix +"j2ee_web_services_1_1.xsd";
         }
         
         return null;
