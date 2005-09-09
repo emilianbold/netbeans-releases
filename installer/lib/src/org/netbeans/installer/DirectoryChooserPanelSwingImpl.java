@@ -13,17 +13,16 @@
 
 package org.netbeans.installer;
 
-import com.installshield.util.Log;
+import com.installshield.product.i18n.ProductResourcesConst;
 import com.installshield.util.LocalizedStringResolver;
+import com.installshield.util.Log;
+import com.installshield.util.MnemonicString;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
-import com.installshield.wizard.swing.SwingWizardUI;
+import com.installshield.wizard.swing.JFlowLabel;
 import com.installshield.wizard.swing.SwingWizardPanelImpl;
-
+import com.installshield.wizard.swing.SwingWizardUI;
 import com.installshield.wizardx.i18n.WizardXResourcesConst;
-import com.installshield.product.i18n.ProductResourcesConst;
-
-import com.installshield.util.MnemonicString;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -38,7 +37,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -48,15 +46,14 @@ import javax.swing.plaf.FileChooserUI;
 import javax.swing.plaf.basic.BasicFileChooserUI;
 
 public class DirectoryChooserPanelSwingImpl
-extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
-{
+extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener {
     private JTextField inputTextField;
     private JButton browseButton;
     private JList listList;
  
-    private JTextArea infoTextArea;
-    private JPanel inputPanel;    
-
+    private JFlowLabel infoLabel;
+    private JPanel inputPanel;
+    
     public void build(WizardBuilderSupport support) {
         super.build(support);
         try {
@@ -72,17 +69,12 @@ extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
         
         setLayout(new BorderLayout(0, 20));
         
-        infoTextArea = new JTextArea();
-        infoTextArea.setWrapStyleWord(true);
-        infoTextArea.setLineWrap(true);
-        infoTextArea.setEditable(false);
-        infoTextArea.setBackground(getBackground());
-        infoTextArea.setDisabledTextColor(getBackground());
+        infoLabel = new JFlowLabel();
                 
         String description = getPanel().getDescription();
-        infoTextArea.setText(resolveString(description));
+        infoLabel.setText(resolveString(description));
         
-        add(infoTextArea, BorderLayout.NORTH);
+        add(infoLabel, BorderLayout.NORTH);
         
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout(0, 20));
@@ -129,8 +121,8 @@ extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
         inputLabel.setLabelFor(inputTextField);
         inputPanel.add(inputTextField, gbc);
         
-        inputTextField.getAccessibleContext().setAccessibleName(resolveString(getDirectoryChooserPanel().getDescription()));
-
+        inputTextField.getAccessibleContext().setAccessibleName
+            (resolveString(getDirectoryChooserPanel().getDescription()));
 
         browseButton = new JButton();
         MnemonicString browseMn = new MnemonicString(resolveString(getDirectoryChooserPanel().getBrowseCaption()));
@@ -148,7 +140,8 @@ extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
         gbc.anchor = GridBagConstraints.EAST;
         inputPanel.add(browseButton, gbc);
         browseButton.addActionListener(this);
-        browseButton.getAccessibleContext().setAccessibleName(LocalizedStringResolver.resolve(ProductResourcesConst.NAME, "DestinationPanelSwingImpl.browse"));
+        browseButton.getAccessibleContext().setAccessibleName
+            (LocalizedStringResolver.resolve(ProductResourcesConst.NAME, "DestinationPanelSwingImpl.browse"));
         
         if (getDirectoryChooserPanel().getDestinations().size() != 0) {
             listList = new JList(getDirectoryChooserPanel().getDestinationDescriptions());
@@ -165,7 +158,8 @@ extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
             JLabel listLabel = new JLabel();
             listLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
-            MnemonicString listLabelMn = new MnemonicString(resolveString(getDirectoryChooserPanel().getDestinationsCaption()));
+            MnemonicString listLabelMn = new MnemonicString
+                (resolveString(getDirectoryChooserPanel().getDestinationsCaption()));
             listLabel.setText(listLabelMn.toString());
             if (listLabelMn.isMnemonicSpecified()) {
                 listLabel.setDisplayedMnemonic(listLabelMn.getMnemonicChar());
@@ -177,60 +171,61 @@ extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
                         
             panel.add(listPanel, BorderLayout.CENTER);
 
-            inputTextField.setText(getDirectoryChooserPanel().getDestinationValue(Integer.parseInt(getDirectoryChooserPanel().getSelectedDestinationIndex())));
+            inputTextField.setText(getDirectoryChooserPanel().getDestinationValue
+                (Integer.parseInt(getDirectoryChooserPanel().getSelectedDestinationIndex())));
         }        
     }
-        
-    public void entered(WizardBeanEvent event){
+    
+    public void entered(WizardBeanEvent event) {
         inputTextField.requestFocusInWindow();
     }
-
+    
     public void exiting(WizardBeanEvent evt) {
         super.exiting(evt);
         getDirectoryChooserPanel().setDestination(inputTextField.getText());
     }
                     
     public void actionPerformed(ActionEvent event) {
-            SwingWizardUI wizardUI = (SwingWizardUI)getPanel().getWizard().getUI();
-            if (wizardUI != null) {
-                wizardUI.restoreDefaultColors();
+        SwingWizardUI wizardUI = (SwingWizardUI)getPanel().getWizard().getUI();
+        if (wizardUI != null) {
+            wizardUI.restoreDefaultColors();
+        }
+        JFileChooser fc = new JFileChooser() {
+            public boolean accept(java.io.File f) {
+                return f.isDirectory();
+
             }
-            JFileChooser fc = new JFileChooser() {
-                public boolean accept(java.io.File f) {
-                    return f.isDirectory();
-                    
+            public void setCurrentDirectory(java.io.File f) {
+
+                super.setCurrentDirectory(f);
+
+                FileChooserUI ui = getUI();
+
+                if (ui instanceof BasicFileChooserUI) {
+                    ((BasicFileChooserUI)ui).setFileName("");
                 }
-                public void setCurrentDirectory(java.io.File f) {
-                    
-                    super.setCurrentDirectory(f);
-                    
-                    FileChooserUI ui = getUI();
-                    
-                    if (ui instanceof BasicFileChooserUI) {
-                        ((BasicFileChooserUI)ui).setFileName("");
-                    }
-                }
-            };
-            
-            fc.setDialogTitle(LocalizedStringResolver.resolve(WizardXResourcesConst.NAME, "DirectoryInputComponent.selectDirectory"));
-            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            // remember pref size before displaying to restore after setting selected file (file name
-            // can cause dialog to stretch horizontally)
-            Dimension prefSize = fc.getPreferredSize();
-            fc.setSelectedFile(new java.io.File(inputTextField.getText()));
-            fc.setPreferredSize(prefSize);
-            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try {
-                    inputTextField.setText(fc.getSelectedFile().getCanonicalPath());
-                } catch (java.io.IOException e) {
-                    inputTextField.setText(fc.getSelectedFile().getPath());
-                }
-                inputTextField.requestFocus();
-                inputTextField.selectAll();
             }
-            if (wizardUI != null) {
-                wizardUI.setWizardColors();
+        };
+
+        fc.setDialogTitle(LocalizedStringResolver.resolve(WizardXResourcesConst.NAME, "DirectoryInputComponent.selectDirectory"));
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        // remember pref size before displaying to restore after setting selected file (file name
+        // can cause dialog to stretch horizontally)
+        Dimension prefSize = fc.getPreferredSize();
+        fc.setSelectedFile(new java.io.File(inputTextField.getText()));
+        fc.setPreferredSize(prefSize);
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                inputTextField.setText(fc.getSelectedFile().getCanonicalPath());
+            } catch (java.io.IOException e) {
+                inputTextField.setText(fc.getSelectedFile().getPath());
             }
+            inputTextField.requestFocus();
+            inputTextField.selectAll();
+        }
+        if (wizardUI != null) {
+            wizardUI.setWizardColors();
+        }
     }
     
     public void valueChanged(ListSelectionEvent listSelectionEvent) {
