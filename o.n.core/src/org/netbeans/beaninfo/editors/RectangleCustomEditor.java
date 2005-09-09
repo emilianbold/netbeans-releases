@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,9 +29,7 @@ import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /**
-*
 * @author   Ian Formanek
-* @version  1.00, 01 Sep 1998
 */
 public class RectangleCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor, KeyListener {
     static final long serialVersionUID =-9015667991684634296L;
@@ -45,39 +43,40 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
         this.editor = editor;
         Rectangle rectangle = (Rectangle)editor.getValue ();
         if (rectangle == null) rectangle = new Rectangle (0, 0, 0, 0);
-        xField.setText (""+rectangle.x); // NOI18N
-        yField.setText (""+rectangle.y); // NOI18N
-        widthField.setText (""+rectangle.width); // NOI18N
-        heightField.setText (""+rectangle.height); // NOI18N
+        xField.setText (Integer.toString(rectangle.x)); // NOI18N
+        yField.setText (Integer.toString(rectangle.y)); // NOI18N
+        widthField.setText (Integer.toString(rectangle.width)); // NOI18N
+        heightField.setText (Integer.toString(rectangle.height)); // NOI18N
 
+        ResourceBundle b = NbBundle.getBundle(RectangleCustomEditor.class);
         setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5)));
         jPanel2.setBorder (new javax.swing.border.CompoundBorder (
                                new javax.swing.border.TitledBorder (
                                    new javax.swing.border.EtchedBorder (),
-                                   " " + NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Rectangle") + " "),
+                                   " " + b.getString ("CTL_Rectangle") + " "),
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-        xLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_X"));
-        yLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Y"));
-        widthLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Width"));
-        heightLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Height"));
+        xLabel.setText (b.getString ("CTL_X"));
+        yLabel.setText (b.getString ("CTL_Y"));
+        widthLabel.setText (b.getString ("CTL_Width"));
+        heightLabel.setText (b.getString ("CTL_Height"));
 
         xLabel.setLabelFor(xField);
         yLabel.setLabelFor(yField);
         widthLabel.setLabelFor(widthField);
         heightLabel.setLabelFor(heightField);
 
-        xLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_X_Mnemonic").charAt(0));
-        yLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Y_Mnemonic").charAt(0));
-        widthLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Width_mnemonic").charAt(0));
-        heightLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Height_mnemonic").charAt(0));
+        xLabel.setDisplayedMnemonic(b.getString ("CTL_X_Mnemonic").charAt(0));
+        yLabel.setDisplayedMnemonic(b.getString ("CTL_Y_Mnemonic").charAt(0));
+        widthLabel.setDisplayedMnemonic(b.getString ("CTL_Width_mnemonic").charAt(0));
+        heightLabel.setDisplayedMnemonic(b.getString ("CTL_Height_mnemonic").charAt(0));
 
-        xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_X"));
-        yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_Y"));
-        widthField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_Width"));
-        heightField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_Height"));
+        xField.getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CTL_X"));
+        yField.getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CTL_Y"));
+        widthField.getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CTL_Width"));
+        heightField.getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CTL_Height"));
         
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CustomRectangleEditor"));
+        getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CustomRectangleEditor"));
 
         labelMap.put(widthField,widthLabel);
         labelMap.put(xField,xLabel);

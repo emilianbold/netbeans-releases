@@ -51,10 +51,10 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
         this.editor = editor;
         Insets insets = (Insets)editor.getValue ();
         if (insets == null) insets = new Insets (0, 0, 0, 0);
-        xField.setText (""+insets.top); // NOI18N
-        yField.setText (""+insets.left); // NOI18N
-        widthField.setText (""+insets.bottom); // NOI18N
-        heightField.setText (""+insets.right); // NOI18N
+        xField.setText (Integer.toString(insets.top)); // NOI18N
+        yField.setText (Integer.toString(insets.left)); // NOI18N
+        widthField.setText (Integer.toString(insets.bottom)); // NOI18N
+        heightField.setText (Integer.toString(insets.right)); // NOI18N
 
         setBorder (new javax.swing.border.EmptyBorder (new Insets(5, 5, 5, 5)));
         jPanel2.setBorder (new javax.swing.border.CompoundBorder (
