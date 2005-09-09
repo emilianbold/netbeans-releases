@@ -216,7 +216,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     * @see org.openide.cookies.EditCookie#edit
     */
     public void edit () {
-        openView(xmlMultiViewIndex);
+        openView(-1);
     }
 
     /** Opens the specific View
@@ -226,7 +226,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             public void run() {
                 CloneableTopComponent mvtc = openCloneableTopComponent();
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-                handler.requestVisible(handler.getPerspectives()[index]);
+                handler.requestVisible(handler.getPerspectives()[index < 0 ? xmlMultiViewIndex : index]);
                 mvtc.requestActive();
             }
         });
