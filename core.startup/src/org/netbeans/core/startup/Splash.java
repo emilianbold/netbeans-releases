@@ -78,25 +78,14 @@ public final class Splash  implements SwingConstants {
         final Window splashWindow = new SplashWindow();
         //splashOutput = (SplashOutput)splashWindow;
         // show splash
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                Splash.center(splashWindow);
-                splashWindow.setVisible(true);
-                splashWindow.toFront ();
-            }
-        });
+        SwingUtilities.invokeLater (new SplashRunner(splashWindow, true));
         return (SplashOutput) splashWindow;
     }
 
     public static void hideSplash (SplashOutput xsplashWindow) {
         final Window splashWindow = (Window) xsplashWindow;
         ((SplashOutputInternal) xsplashWindow).hideRequested();
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                splashWindow.setVisible (false);
-                splashWindow.dispose ();
-            }
-        });
+        SwingUtilities.invokeLater (new SplashRunner(splashWindow, false));
     }
 
     /** Test is the given hideSplash method was called
@@ -610,4 +599,28 @@ public final class Splash  implements SwingConstants {
         }
         
     }
+
+    private static class SplashRunner implements Runnable {
+
+        private Window splashWindow;
+        private boolean visible;
+
+        public SplashRunner(Window splashWindow, boolean visible) {
+            this.splashWindow = splashWindow;
+            this.visible = visible;
+        }
+
+        public void run() {
+            if (visible) {
+                Splash.center(splashWindow);
+                splashWindow.setVisible(true);
+                splashWindow.toFront ();
+            }
+            else {
+                splashWindow.setVisible (false);
+                splashWindow.dispose ();
+            }
+        }
+    }
+
 }
