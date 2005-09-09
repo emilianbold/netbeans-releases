@@ -16,6 +16,7 @@ package org.netbeans.modules.junit.output;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -188,6 +189,12 @@ public class ResultWindow extends TopComponent {
      */
     protected String preferredID() {
         return ID;
+    }
+    
+    /**
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
     }
     
     /**
