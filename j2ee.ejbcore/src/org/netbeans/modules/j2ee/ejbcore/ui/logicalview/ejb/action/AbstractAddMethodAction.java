@@ -12,26 +12,13 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -49,18 +36,16 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
     private String name;
     private AbstractAddMethodStrategy strategy;
 
-    public AbstractAddMethodAction(Lookup ctx, AbstractAddMethodStrategy strategy) {
+    public AbstractAddMethodAction(AbstractAddMethodStrategy strategy) {
         super(/*strategy.getTitle()*/);
-        context = ctx;
         this.strategy = strategy;
+        this.name = strategy.getTitle();
     }
-    
-    public abstract javax.swing.Action createContextAwareInstance(Lookup actionContext);
 
-    public boolean isEnabled() {
-        return enable((Node[])context.lookup (new org.openide.util.Lookup.Template (
-                Node.class
-            )).allInstances().toArray(new Node[0]));
+    public Action createContextAwareInstance(Lookup actionContext) {
+        this.context = actionContext;
+        boolean enable = enable((Node[])context.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? this : null;
     }
     
     public String getName(){

@@ -21,6 +21,9 @@ import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -43,11 +46,11 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             SystemAction.get(ExposeInLocalAction.class),
             SystemAction.get(ExposeInRemoteAction.class),
             null,
-            new AddBusinessMethodAction(null),
-            new AddCreateMethodAction(null),
-            new AddFinderMethodAction(null),
-            new AddHomeMethodAction(null),
-            new AddSelectMethodAction(null),
+            new AddBusinessMethodAction(),
+            new AddCreateMethodAction(),
+            new AddFinderMethodAction(),
+            new AddHomeMethodAction(),
+            new AddSelectMethodAction(),
             SystemAction.get(AddCmpFieldAction.class)
         };
     }
@@ -72,7 +75,22 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
-        return true;
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        JMIUtils.beginJmiTransaction();
+        try {
+            JavaClass jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
+            boolean result = false;
+            if (jc != null) {
+                EjbMethodController c = EjbMethodController.createFromClass(jc);
+                result = (c != null);
+            }
+            return result;
+        }
+        finally {
+            JMIUtils.endJmiTransaction();
+        }
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
@@ -100,7 +118,8 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     /** Implements <code>ContextAwareAction</code> interface method. */
     public Action createContextAwareInstance(Lookup actionContext) {
         this.actionContext = actionContext;
-        return super.createContextAwareInstance(actionContext);
+        boolean enable = enable((Node[])actionContext.lookup (new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? super.createContextAwareInstance(actionContext) : null;
     }
     
 
@@ -121,7 +140,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
                 Action[] grouped = grouped();
                 for (int i = 0; i < grouped.length; i++) {
                     Action action = grouped[i];
-                    if (action == null) {
+                    if (action == null && getItemCount() != 0) {
                         addSeparator();
                     } else {
                         if (action instanceof ContextAwareAction) {
@@ -129,8 +148,6 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
                         }
                         if (action instanceof Presenter.Popup) {
                             add(((Presenter.Popup)action).getPopupPresenter());
-                        } else {
-                            assert false : "Action had no popup presenter: " + action;
                         }
                     }
                 }

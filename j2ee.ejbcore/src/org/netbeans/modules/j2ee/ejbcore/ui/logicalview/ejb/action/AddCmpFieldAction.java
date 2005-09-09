@@ -32,6 +32,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -126,5 +127,10 @@ public class AddCmpFieldAction extends NodeAction {
 
     private boolean isCallable(Node node) {
         return JMIUtils.getJavaClassFromNode(node) != null;
+    }
+
+    public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup actionContext) {
+        boolean enable = enable((Node[])actionContext.lookup (new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? super.createContextAwareInstance(actionContext) : null;
     }
 }

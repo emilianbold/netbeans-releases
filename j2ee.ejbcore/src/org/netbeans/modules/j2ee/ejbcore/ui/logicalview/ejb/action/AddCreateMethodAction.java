@@ -20,7 +20,6 @@ import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.util.HelpCtx;
 
 
@@ -30,16 +29,12 @@ import org.openide.util.HelpCtx;
  */
 public class AddCreateMethodAction extends AbstractAddMethodAction {
     
-    public AddCreateMethodAction(org.openide.util.Lookup ctx) {
-        super(ctx, new AddCreateMethodStrategy());
+    public AddCreateMethodAction() {
+        super(new AddCreateMethodStrategy());
     }
     
-    public AddCreateMethodAction(org.openide.util.Lookup ctx, String name) {
-        super(ctx, new AddCreateMethodStrategy(name));
-    }
-    
-    public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup actionContext) {
-        return new AddCreateMethodAction(actionContext, getName());
+    public AddCreateMethodAction(String name) {
+        super(new AddCreateMethodStrategy(name));
     }
     
     public HelpCtx getHelpCtx() {

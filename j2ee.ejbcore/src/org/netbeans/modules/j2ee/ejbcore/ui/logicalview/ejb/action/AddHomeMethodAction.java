@@ -12,14 +12,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import javax.swing.Action;
 import org.openide.util.HelpCtx;
 
 
@@ -29,18 +22,14 @@ import org.openide.util.HelpCtx;
  */
 public class AddHomeMethodAction extends AbstractAddMethodAction {
     
-    public AddHomeMethodAction(org.openide.util.Lookup ctx) {
-        super(ctx, new AddHomeMethodStrategy());
+    public AddHomeMethodAction() {
+        super(new AddHomeMethodStrategy());
     }
     
-    public AddHomeMethodAction(org.openide.util.Lookup ctx, String name) {
-        super(ctx, new AddHomeMethodStrategy(name));
+    public AddHomeMethodAction(String name) {
+        super(new AddHomeMethodStrategy(name));
     }
     
-    public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup actionContext) {
-        return new AddHomeMethodAction(actionContext, getName());
-    }
-
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
         // If you will provide context help then use:

@@ -38,11 +38,11 @@ public class AddActionGroup extends EJBActionGroup {
     /** List of system actions to be displayed within this one's toolbar or submenu. */
     protected Action[] grouped() {
         return new Action[] {
-            new AddBusinessMethodAction(null, NbBundle.getMessage(AddBusinessMethodAction.class, "LBL_BusinessMethodAction")),
-            new AddCreateMethodAction(null, NbBundle.getMessage(AddCreateMethodAction.class, "LBL_CreateMethodAction")),
-            new AddFinderMethodAction(null, NbBundle.getMessage(AddCreateMethodAction.class, "LBL_FinderMethodAction")),
-            new AddHomeMethodAction(null, NbBundle.getMessage(AddHomeMethodAction.class, "LBL_HomeMethodAction")),
-            new AddSelectMethodAction(null, NbBundle.getMessage(AddSelectMethodAction.class, "LBL_SelectMethodAction")),
+            new AddBusinessMethodAction(NbBundle.getMessage(AddBusinessMethodAction.class, "LBL_BusinessMethodAction")),
+            new AddCreateMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_CreateMethodAction")),
+            new AddFinderMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_FinderMethodAction")),
+            new AddHomeMethodAction(NbBundle.getMessage(AddHomeMethodAction.class, "LBL_HomeMethodAction")),
+            new AddSelectMethodAction(NbBundle.getMessage(AddSelectMethodAction.class, "LBL_SelectMethodAction")),
             SystemAction.get(AddCmpFieldAction.class)
         };
     }
@@ -78,12 +78,7 @@ public class AddActionGroup extends EJBActionGroup {
                             action = ((ContextAwareAction)action).createContextAwareInstance(l);
                         }
                         if (action instanceof Presenter.Popup){
-                            //  Issue# 54781 - Contextual menu of individual bean nodes needs adjusting
-                            //  * only methods that can be added to a bean should show up in the contextual menu
-                             if(action.isEnabled()) 
-                                 add(((Presenter.Popup)action).getPopupPresenter());
-                        } else {
-                            assert false : "Action had no popup presenter: " + action;
+                             add(((Presenter.Popup)action).getPopupPresenter());
                         }
                     }
                 }
