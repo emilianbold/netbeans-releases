@@ -104,13 +104,16 @@ public class GetCleanAction extends AbstractSystemAction {
                 }
                 cache.refresh(file, revision == VersionsCache.REVISION_BASE ? FileStatusCache.REPOSITORY_STATUS_UPTODATE : FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } else {
-                // TODO can not find in repository
                 // locally delete? NOt yet there seems to be bug in checkout -p
-                System.err.println("CVSrepo: can not locate: " + file);
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Unable to checkout " + file.getName());
                 cleanFile.getName(); // raise compatability NPE
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
+            if (e.getCause() instanceof InterruptedException) {
+                // command aborted
+            } else {
+                ErrorManager.getDefault().notify(e);
+            }
         }
     }
 }

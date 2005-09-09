@@ -187,14 +187,13 @@ public class VersionsCache {
         options.setCVSRoot(getCvsRoot(baseFile.getParentFile()));
         VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd, options);
         executor.execute();
-        try {
-            executor.waitFinished();
-            return executor.getCheckedOutVersion();
-        } catch (Throwable t) {
+        ExecutorSupport.wait(new ExecutorSupport [] { executor });
+        if (executor.getFailure() != null) {
             IOException ioe = new IOException("Unable to checkout revision " + revision + " of " + baseFile.getName());
-            ioe.initCause(t);
+            ioe.initCause(executor.getFailure());
             throw ioe;
         }
+        return executor.getCheckedOutVersion();
     }
 
     private String getCvsRoot(File baseFile) throws IOException {
