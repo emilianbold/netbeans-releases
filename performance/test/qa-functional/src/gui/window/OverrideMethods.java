@@ -43,7 +43,7 @@ public class OverrideMethods extends org.netbeans.performance.test.utilities.Per
     }
     
     public void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Source") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LBL_OverridePanel2_Title");
         
         // open a java file in the editor
@@ -66,4 +66,11 @@ public class OverrideMethods extends org.netbeans.performance.test.utilities.Per
             editor.closeDiscard();
     }
 
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new OverrideMethods("measureTime"));
+    }
 }

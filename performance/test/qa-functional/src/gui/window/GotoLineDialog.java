@@ -65,5 +65,12 @@ public class GotoLineDialog extends org.netbeans.performance.test.utilities.Perf
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();
     }
-
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new GotoLineDialog("measureTime"));
+    }
+    
 }

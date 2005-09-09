@@ -41,7 +41,7 @@ public class GotoClassDialog extends org.netbeans.performance.test.utilities.Per
     }
     
     public void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/GoTo") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.ext.java.Bundle", "JFO_title");
     }
     
@@ -54,5 +54,11 @@ public class GotoClassDialog extends org.netbeans.performance.test.utilities.Per
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
         return new NbDialogOperator(TITLE);
     }
-    
+ 
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new GotoClassDialog("measureTime"));
+    }
 }
