@@ -13,13 +13,13 @@
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
 import java.lang.reflect.Modifier;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.PrimitiveType;
 import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
 import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -98,10 +98,12 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         implMethod.setName(newName);
         implMethod.setModifiers(Modifier.PUBLIC);
         Type collectionType = JMIUtils.resolveType(java.util.Collection.class.getName());
-        if (!collectionType.equals(implMethod.getType())) {
+        boolean isAssignable = org.netbeans.modules.editor.java.JMIUtils.get(new BaseDocument(JavaKit.class, false)).isAssignable(
+                implMethod.getType(), collectionType);
+        if (!isAssignable) {
             implMethod.setType(JMIUtils.resolveType(dd.getPrimKeyClass()));
         }
-        implMethod.setBodyText(TODO + implMethod.getName());
+        implMethod.setBodyText(TODO + implMethod.getName() + getReturnStatement(implMethod.getType()));
     }
     
     private String prependAndUpper(String fullName, String prefix) {
