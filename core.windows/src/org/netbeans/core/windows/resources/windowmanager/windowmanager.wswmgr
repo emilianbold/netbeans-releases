@@ -16,7 +16,7 @@
             <path orientation="vertical" number="20" weight="0.7" />
             <path orientation="horizontal" number="40" weight="0.55" />
         </constraints>
-        <relative-bounds x="30" y="18" width="45" height="50" />
+        <relative-bounds x="33" y="24" width="42" height="44"/>
     </editor-area>
     <screen width="1280" height="1024" />
     <active-mode name="explorer" />
