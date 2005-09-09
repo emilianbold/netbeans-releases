@@ -21,6 +21,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -35,15 +36,23 @@ public class TerminateAction extends NodeAction {
         for (int i = 0; i < nodes.length; i++) {
             TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
             if (cookie != null) {
-                TomcatManager tm = cookie.getTomcatManager();
+                final TomcatManager tm = cookie.getTomcatManager();
                 String name = tm.getTomcatProperties().getDisplayName();
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage(TerminateAction.class, "MSG_terminate", name),
                         NotifyDescriptor.YES_NO_OPTION);
                 Object retValue = DialogDisplayer.getDefault().notify(nd);
                 if (retValue == DialogDescriptor.YES_OPTION) {
-                    tm.terminate();
-                    tm.getInstanceProperties().refreshServerInstance();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            tm.terminate();
+                            // wait a sec before refreshing the state
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException ie) {}
+                            tm.getInstanceProperties().refreshServerInstance();
+                        }
+                    });
                 }
             }
         }
