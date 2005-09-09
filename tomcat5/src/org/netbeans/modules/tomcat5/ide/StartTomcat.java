@@ -426,20 +426,51 @@ public final class StartTomcat extends StartServer implements ProgressObject
          *         <code>false</code> if time-out ran out.
          */
         private boolean hasCommandSucceeded() {
-            boolean isRunning = isRunning();
-            long startTime = System.currentTimeMillis();
-            while ((command == CommandType.START && !isRunning) ||  //still no feedback when starting
-                   (command == CommandType.STOP && isRunning)) {    //still getting feedback when stopping
+            long timeout = System.currentTimeMillis() + TIMEOUT_DELAY;
+            while (true) {
+                if (command == CommandType.START) {
+                    if (isRunning()) {
+                        return true;
+                    }
+                }
+                if (command == CommandType.STOP) {
+                    if (isStopped()) {
+                        // give server a few secs to finish its shutdown, not responding
+                        // does not necessarily mean its is still not running
+                        try {
+                            Thread.sleep(2000);
+                        } catch(InterruptedException ie) {}
+                        return true;
+                    }
+                }
                 // if time-out ran out, suppose command failed
-                if (System.currentTimeMillis() > startTime + TIMEOUT_DELAY) {
+                if (System.currentTimeMillis() > timeout) {
                     return false;
                 }
                 try {
-                    Thread.sleep(500); // take a nap before next retry
+                    Thread.sleep(1000); // take a nap before next retry
                 } catch(InterruptedException ie) {}
-                isRunning = isRunning();
             }
-            return true;
+        }
+    }
+    
+    /** Return true if the server is stopped. If the server was started from within
+     * the IDE, determin the server state from the process exit code, otherwise try
+     * to ping it. */
+    private boolean isStopped() {
+        Process proc = tm.getTomcatProcess();
+        if (proc != null) {
+            try {
+                proc.exitValue();
+                // process is stopped
+                return true;
+            } catch (IllegalThreadStateException e) { 
+                // process is still running
+                return false;
+            }
+        } else {
+            int timeout = tm.getTomcatProperties().getRunningCheckTimeout();
+            return !URLWait.waitForStartup(tm, timeout);
         }
     }
     
