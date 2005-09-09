@@ -147,7 +147,8 @@ class SplashComponentPreview extends JLabel {
                         SplashComponentPreview.this.view, new Rectangle(), rect, 0);
                 dirty = dirty.union(rect);
                 // update screen (assume repaint manager optimizes unions;)
-                repaint(dirty);
+//                repaint(dirty);
+                repaint();
                 dirty = new Rectangle(rect);
             }
         });
@@ -189,6 +190,14 @@ class SplashComponentPreview extends JLabel {
             }
         }
     }
+    
+    public void resetSteps() {
+        progress = 0;
+        barStart = 0;
+        barLength = 0;
+        increment(maxSteps);
+    }
+    
     
     //Creates new text with the ellipsis at the end when text width is
     // bigger than allowed space
@@ -234,8 +243,8 @@ class SplashComponentPreview extends JLabel {
      */
     public void paint(Graphics g) {
         super.paint(g);
-        int width = BasicBrandingModel.SPLASH_WIDTH;
-        int height = BasicBrandingModel.SPLASH_HEIGHT;
+        int width = image.getWidth(null);//BasicBrandingModel.SPLASH_WIDTH;
+        int height = image.getHeight(null);//BasicBrandingModel.SPLASH_HEIGHT;
         int x = (getWidth()/2)-(width/2);
         int y = (getHeight()/2)-(height/2);
         

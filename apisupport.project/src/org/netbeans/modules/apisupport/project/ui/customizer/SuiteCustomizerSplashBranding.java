@@ -66,7 +66,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         textColor = SplashUISupport.getColorComboBox();
         barColor = SplashUISupport.getColorComboBox();
         edgeColor = SplashUISupport.getColorComboBox();
-        cornerColor = SplashUISupport.getColorComboBox();        
+        cornerColor = SplashUISupport.getColorComboBox();
         
         initComponents();
         refresh();
@@ -85,34 +85,48 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         cornerColor.addPropertyChangeListener(pL);
         
         fontSize.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                try {
-                    fontSize.commitEdit();
-                    resetSplashPreview();
-                } catch (ParseException ex) {
-                    //user's invalide input
+            
+            public void insertUpdate(DocumentEvent e) {                
+                if (e != null || fontSize.isFocusOwner()) {
+                    try {
+                        fontSize.commitEdit();
+                        int val = ((Number)fontSize.getValue()).intValue();
+                        setErrorMessage(null);
+                        resetSplashPreview();
+                    } catch (ParseException ex) {
+                        //user's invalide input
+                        setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidFontSize"));
+                    }
                 }
-            }
+            }            
         });
         
         runningTextBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                try {
-                    runningTextBounds.commitEdit();
-                    resetSplashPreview();
-                } catch (ParseException ex) {
-                    //user's invalide input
+                if (e != null || runningTextBounds.isFocusOwner()) {                
+                    try {
+                        runningTextBounds.commitEdit();
+                        setErrorMessage(null);
+                        resetSplashPreview();
+                    } catch (ParseException ex) {
+                        //user's invalide input
+                        setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidTextBounds"));
+                    }
                 }
-            }
+            }            
         });
         
-        progressBarBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+        progressBarBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {            
             public void insertUpdate(DocumentEvent e) {
-                try {
-                    progressBarBounds.commitEdit();
-                    resetSplashPreview();
-                } catch (ParseException ex) {
-                    //user's invalide input
+                if (e != null || progressBarBounds.isFocusOwner()) {                
+                    try {
+                        progressBarBounds.commitEdit();
+                        setErrorMessage(null);
+                        resetSplashPreview();
+                    } catch (ParseException ex) {
+                        //user's invalide input
+                        setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidProgressBarBounds"));
+                    }
                 }
             }
         });
@@ -125,27 +139,25 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         
         branding.getSplashRunningTextFontSize().setValue(SplashUISupport.integerToString(((Number)fontSize.getValue()).intValue()));
         branding.getSplashRunningTextBounds().setValue(SplashUISupport.boundsToString((Rectangle)runningTextBounds.getValue()));
-        branding.getSplashProgressBarBounds().setValue(SplashUISupport.boundsToString((Rectangle)progressBarBounds.getValue()));        
-        branding.getSplashRunningTextColor().setValue(SplashUISupport.colorToString(textColor.getColor()));        
-        branding.getSplashProgressBarColor().setValue(SplashUISupport.colorToString(barColor.getColor()));                        
-        //these colors below has a little effect on resulting branded splash 
-        //then user can't adjust it from UI 
+        branding.getSplashProgressBarBounds().setValue(SplashUISupport.boundsToString((Rectangle)progressBarBounds.getValue()));
+        branding.getSplashRunningTextColor().setValue(SplashUISupport.colorToString(textColor.getColor()));
+        branding.getSplashProgressBarColor().setValue(SplashUISupport.colorToString(barColor.getColor()));
+        //these colors below has a little effect on resulting branded splash
+        //then user can't adjust it from UI
         //edgeColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarEdgeColor().getValue()));
         //cornerColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarCornerColor().getValue()));
         
-        branding.getSplashShowProgressBar().setValue(Boolean.toString(progressBarEnabled.isSelected()));        
+        branding.getSplashShowProgressBar().setValue(Boolean.toString(progressBarEnabled.isSelected()));
         branding.getSplash().setBrandingSource(splashSource);
         
-        //hardcoded size of splash If current UI isn't sufficient then must be edited directly in generated
-        //branding files.
-        branding.getSplashWidth().setValue(Integer.toString(BasicBrandingModel.SPLASH_WIDTH,10));        
-        branding.getSplashHeight().setValue(Integer.toString(BasicBrandingModel.SPLASH_HEIGHT,10));
+        branding.getSplashWidth().setValue(Integer.toString(splashImage.image.getWidth(null),10));
+        branding.getSplashHeight().setValue(Integer.toString(splashImage.image.getHeight(null),10));        
     }
     
     
     void refresh() {
         BasicBrandingModel branding = getBrandingModel();
-   
+        
         fontSize.setValue(new Integer(SplashUISupport.stringToInteger(branding.getSplashRunningTextFontSize().getValue())));
         runningTextBounds.setValue(SplashUISupport.stringToBounds(branding.getSplashRunningTextBounds().getValue()));
         progressBarBounds.setValue(SplashUISupport.stringToBounds(branding.getSplashProgressBarBounds().getValue()));
@@ -160,7 +172,8 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         resetSplashPreview();
         
         splashImage.setMaxSteps(10);
-        splashImage.increment(10);
+        //splashImage.increment(10);
+        splashImage.resetSteps();
         splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));
         
         enableDisableComponents();
@@ -176,7 +189,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         barColor.setEnabled(branding.isBrandingEnabled());
         edgeColor.setEnabled(branding.isBrandingEnabled());
         cornerColor.setEnabled(branding.isBrandingEnabled());
-        progressBarEnabled.setEnabled(branding.isBrandingEnabled());        
+        progressBarEnabled.setEnabled(branding.isBrandingEnabled());
         splashLocation.setEnabled(branding.isBrandingEnabled());
         splashImage.setEnabled(branding.isBrandingEnabled());
         barBoundsLabel.setEnabled(branding.isBrandingEnabled());
@@ -187,10 +200,10 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         splashPreview.setEnabled(branding.isBrandingEnabled());
         textBoundsLabel.setEnabled(branding.isBrandingEnabled());
         textColorLabel.setEnabled(branding.isBrandingEnabled());
-        textFontSizeLabel.setEnabled(branding.isBrandingEnabled());                
+        textFontSizeLabel.setEnabled(branding.isBrandingEnabled());
     }
     
-    private void resetSplashPreview() throws NumberFormatException {        
+    private void resetSplashPreview() throws NumberFormatException {
         splashImage.setSplashImageIcon(splashSource);
         splashImage.setTextColor(textColor.getColor());
         splashImage.setColorBar(barColor.getColor());
@@ -198,8 +211,10 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         splashImage.setColorEdge(cornerColor.getColor());
         splashImage.setFontSize(((Number)fontSize.getValue()).intValue());
         splashImage.setRunningTextBounds((Rectangle)runningTextBounds.getValue());
-        splashImage.setProgressBarBounds((Rectangle)progressBarBounds.getValue());               
+        splashImage.setProgressBarBounds((Rectangle)progressBarBounds.getValue());
         splashImage.setProgressBarEnabled(progressBarEnabled.isSelected());
+        splashImage.resetSteps();        
+        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));        
     }
     
     /** This method is called from within the constructor to
@@ -403,7 +418,6 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
-            //splashImage.setSplashImageIcon(splashSource);
             resetSplashPreview();
         }
         

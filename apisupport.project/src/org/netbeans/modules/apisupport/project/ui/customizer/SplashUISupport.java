@@ -32,6 +32,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -100,9 +101,10 @@ class SplashUISupport {
     
     static JFormattedTextField getIntegerField() {
         JFormattedTextField retval = new JFormattedTextField(NumberFormat.getIntegerInstance());
+        retval = new JFormattedTextField(new FontFormatter(retval.getFormatter()));
         return retval;
     }
-    
+        
     static JFormattedTextField getBoundsField() {
         JFormattedTextField retval = new JFormattedTextField(new BoundsFormatter());
         return retval;
@@ -111,6 +113,26 @@ class SplashUISupport {
     static SplashUISupport.ColorComboBox getColorComboBox() {
         SplashUISupport.ColorComboBox retval = new SplashUISupport.ColorComboBox();
         return retval;
+    }
+    
+    private static class FontFormatter extends DefaultFormatter {
+        private AbstractFormatter deleg;
+        FontFormatter(AbstractFormatter deleg) {
+            setOverwriteMode(false);
+            this.deleg = deleg;
+        }
+        public Object stringToValue(String string) throws java.text.ParseException {
+            Object retval = deleg.stringToValue(string);
+            int i = ((Number)retval).intValue();
+            if (i < 0) {
+                throw new java.text.ParseException(string,0);
+            }
+            return retval;
+        }
+        
+        public String valueToString(Object value) throws java.text.ParseException {
+            return deleg.valueToString(value);
+        }
     }
     
     private static class BoundsFormatter extends DefaultFormatter {

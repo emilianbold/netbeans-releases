@@ -48,9 +48,6 @@ public class BasicBrandingModel {
     
     public static final String BRANDING_TOKEN_PROPERTY = "branding.token";//NOI18N
     
-    static final int SPLASH_WIDTH = 398;
-    static final int SPLASH_HEIGHT = 299;    
-
     static final int ICON_WIDTH = 48;
     static final int ICON_HEIGHT = 48;    
     
