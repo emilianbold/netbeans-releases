@@ -106,13 +106,13 @@ class DiskMapTurboProvider implements TurboProvider {
                 int pathLen = dis.readInt();
                 int mapLen = dis.readInt();
                 if (pathLen != dirPathLen) {
-                    dis.skip(pathLen * 2 + mapLen);
+                    skip(dis, pathLen * 2 + mapLen);
                 } else {
                     String path = readChars(dis, pathLen);
                     if (dirPath.equals(path)) {
                         return readValue(dis, path);
                     } else {
-                        dis.skip(mapLen);
+                        skip(dis, mapLen);
                     }
                 }
             }
@@ -166,7 +166,7 @@ class DiskMapTurboProvider implements TurboProvider {
                     if (pathLen == dirPathLen) {
                         String path = readChars(dis, pathLen);
                         if (dirPath.equals(path)) {
-                            dis.skip(mapLen);
+                            skip(dis, mapLen);
                         } else {
                             oos.writeInt(pathLen);
                             oos.writeInt(mapLen);
@@ -192,6 +192,14 @@ class DiskMapTurboProvider implements TurboProvider {
         store.delete();
         storeNew.renameTo(store);
         return true;
+    }
+
+    private void skip(InputStream is, long len) throws IOException {
+        while (len > 0) {
+            long n = is.skip(len);
+            if (n < 0) throw new EOFException("Missing " + len + " bytes.");  // NOI18N
+            len -= n;
+        }
     }
 
     private String readChars(DataInputStream dis, int len) throws IOException {
