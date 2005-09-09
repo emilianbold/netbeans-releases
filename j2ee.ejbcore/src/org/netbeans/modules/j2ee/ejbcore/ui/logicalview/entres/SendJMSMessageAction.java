@@ -19,7 +19,6 @@ import java.io.IOException;
 import javax.swing.JButton;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -53,8 +52,7 @@ public class SendJMSMessageAction extends NodeAction {
             JButton cancelButton = new JButton();
             cancelButton.setText(NbBundle.getMessage(SendJMSMessageAction.class, "LBL_Cancel"));
             cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SendJMSMessageAction.class, "ACSD_Cancel"));
-            Feature feature = (Feature) nodes[0].getLookup().lookup(Feature.class);
-            JavaClass beanClass = JMIUtils.getDeclaringClass(feature);
+            JavaClass beanClass = JMIUtils.getJavaClassFromNode(nodes[0]);
             FileObject srcFile = JavaModel.getFileObject(beanClass.getResource());
             Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
             EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
