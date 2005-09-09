@@ -375,9 +375,9 @@ public class Utils {
             if (!cutoff) rev--;
             StringBuffer sb = new StringBuffer(nums[0]);
             for (int i = 1; i<lastIndex; i++) {
-                sb.append(".").append(nums[i]); // NOI18N
+                sb.append('.').append(nums[i]); // NOI18N
             }
-            sb.append(".").append("" + rev);  // NOI18N
+            sb.append('.').append(rev);  // NOI18N
             return sb.toString();
         }
     }
@@ -470,6 +470,8 @@ public class Utils {
     }
     
     private static class ActivatedNodesListener implements PropertyChangeListener {
+        public ActivatedNodesListener () {}
+        
         public void propertyChange(PropertyChangeEvent evt) {
             if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
                 activatedNodesSerial++;
