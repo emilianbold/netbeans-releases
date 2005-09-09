@@ -176,8 +176,6 @@ OptionalDeploymentManagerFactory</a>.
 
 <li><b>Server Registry UI:</b>
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/RegistryNodeFactory.html">RegistryNodeFactory</a>
-<a href="org/netbeans/modules/j2ee/deployment/plugins/api/DConfigBeanUIFactory.html">DConfigBeanUIFactory</a>
-<a href="org/netbeans/modules/j2ee/deployment/plugins/api/DConfigBeanProperties.html">DConfigBeanProperties</a>
 </li>
 
 <li><b>Installation of Server Instances:</b>
@@ -284,6 +282,7 @@ the basic funtionality of server registry and deployment.
         </question>
 -->
 <answer id="dep-nb">
+<defaultanswer generate='none' />
 It uses these API's:
 <ul>
 <li>
@@ -292,7 +291,7 @@ It uses these API's:
         type="import"
         group="java" 
         category="official"
-        url="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/">
+        url="../index.html">
     NetBeans Open APIs
     </api>
 Using various parts of Open API.
@@ -303,7 +302,7 @@ Using various parts of Open API.
         type="import"
         group="java" 
         category="official"
-        url="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI/">
+        url="@org-openide-io@/index.html">
     NetBeans Open APIs
     </api>
 Used for displaying event log.
@@ -314,7 +313,7 @@ Used for displaying event log.
         type="import"
         group="java" 
         category="official"
-        url="http://www.netbeans.org/download/dev/javadoc/LoadersAPI/">
+        url="@org-openide-loaders@/index.html">
     NetBeans Loaders API
     </api>
 </li>
@@ -324,7 +323,7 @@ Used for displaying event log.
         type="import"
         group="java" 
         category="stable"
-        url="http://schema2beans.netbeans.org/">
+        url="@org-netbeans-modules-schema2beans@/index.html">
     Schema2beans infrastructure
     </api>
 Used for implementation of Deployment API, to work with DD and server specific DD. 
@@ -336,7 +335,7 @@ Also used for NetbeansDeployment (generate S2B beans from DTD).
         type="import"
         group="java" 
         category="official"
-        url="http://www.netbeans.org/download/dev/javadoc/SettingsAPI/">
+        url="@org-netbeans-modules-settings@/index.html">
     Setting API
     </api>
 For for storing settings (e.g. about deployed modules) in xml.
@@ -347,7 +346,7 @@ For for storing settings (e.g. about deployed modules) in xml.
         type="import"
         group="java" 
         category="stable"
-        url="http://xml.netbeans.org/api/">
+        url="@org-netbeans-api-xml@/index.html">
     XML API
     </api>
 XML editing and validation of server specific deployment descriptors.
@@ -358,7 +357,7 @@ XML editing and validation of server specific deployment descriptors.
         type="import"
         group="java" 
         category="devel"
-        url="http://www.netbeans.org/download/dev/javadoc/#def-api-projects/projectapi">
+        url="@org-netbeans-modules-projectapi@/index.html">
     Projects API
     </api>
 Used for communication between j2eeserver and devmodules (devmodules are 
@@ -370,7 +369,7 @@ expected to be implemented as projects).
         type="import"
         group="java" 
         category="devel"
-        url="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs/">
+        url="@org-netbeans-api-java@/index.html">
     Java Support APIs
     </api>
 Used for registration of server libraries' sources and javadocs.
@@ -381,7 +380,7 @@ Used for registration of server libraries' sources and javadocs.
         type="import"
         group="java" 
         category="devel"
-        url="http://www.netbeans.org/download/dev/javadoc/ProjectLibrariesAPI/">
+        url="@org-netbeans-modules-project-libraries@/index.html">
     Project Libraries API
     </api>
 Used for definition of server libraries.
@@ -692,7 +691,7 @@ Implementations of<br/>
 type="import"
 category="devel"
 name="org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation"
-url="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"
+url="@org-netbeans-api-java@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"
 >Information about where Java sources corresponding to binaries
 can be found.</api><br/>
 
@@ -700,7 +699,7 @@ can be found.</api><br/>
 type="import"
 category="devel"
 name="org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation"
-url="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs/org/netbeans/spi/java/queries/JavadocForBinaryQueryImplementation.html"
+url="@org-netbeans-api-java@/org/netbeans/spi/java/queries/JavadocForBinaryQueryImplementation.html"
 >Information about where Javadocs corresponding to binaries
 can be found.</api><br/>
 

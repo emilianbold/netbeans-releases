@@ -111,9 +111,9 @@ is the proper place.
                 an abstract class.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanProperties"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanUIFactory"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentPlanSplitter"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanProperties" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanUIFactory" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentPlanSplitter" link="no"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
             <issue number="56032"/>
         </change>
@@ -434,7 +434,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentPlanSplitter"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentPlanSplitter" link="no"/>
         </change>
         <change id="Batched-CMPMappingInfo">
             <api name="j2eeserver"/>
@@ -487,7 +487,7 @@ is the proper place.
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the <a href="http://j2eeserver.netbeans.org/">J2EE Server API</a>.</p>
+<p>This document lists changes made to the <a href="index.html">J2EE Server API</a>.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>
