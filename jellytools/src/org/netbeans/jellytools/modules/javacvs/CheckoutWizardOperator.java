@@ -18,7 +18,7 @@ import org.netbeans.jellytools.modules.javacvs.actions.CheckoutAction;
 import org.netbeans.jemmy.JemmyException;
 
 /** Class implementing all necessary methods for handling "Checkout" wizard.
- * It is opened from main menu Tools|CVS|Checkout....
+ * It is opened from main menu CVS|Checkout....
  * <br>
  * Usage:<br>
  * <pre>
