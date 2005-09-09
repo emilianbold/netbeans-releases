@@ -52,25 +52,16 @@ import org.openide.util.NbBundle;
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int ret = 0;
-        if (typedText != null && typedText.endsWith(".")) // NOI18N
-            ret |= COMPLETION_QUERY_TYPE;
-
-//        if (typedText != null && (typedText.endsWith("()")) || typedText.endsWith("();") // NOI18N
-//                || typedText.endsWith("().") || typedText.endsWith("(),") // NOI18N
-//        )
-//            ret |= TOOLTIP_QUERY_TYPE;
-
-        if (ret != 0) {
+        if (".".equals(typedText)) { // NOI18N
             try {
                 TokenID token = ((ExtSyntaxSupport)Utilities.getSyntaxSupport(component)).getTokenID(component.getCaret().getDot());
                 int id = token != null ? token.getNumericID() : 0;
                 if (id == JavaTokenContext.STRING_LITERAL_ID || id == JavaTokenContext.CHAR_LITERAL_ID || id == JavaTokenContext.LINE_COMMENT_ID || id == JavaTokenContext.BLOCK_COMMENT_ID)
                     return 0;
-            } catch (BadLocationException e) {
-            }
+            } catch (BadLocationException e) {}
+            return COMPLETION_QUERY_TYPE;
         }
-        return ret;
+        return 0;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
