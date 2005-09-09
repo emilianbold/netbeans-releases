@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.sun.share.config;
 
 import javax.swing.SwingUtilities;
+import javax.enterprise.deploy.model.DDBean;
 
 /**
  * Helper class.
@@ -26,7 +27,7 @@ public final class Utils {
     // outside this package.  I suppose this premise could change though.
     static final String SERVER_ID_AS81 = "J2EE"; // NOI18N
     static final String SERVER_ID_AS90 = "JavaEE5"; // NOI18N
-    
+
     /**
      * Check that current target server is Sun AppServer.
      */
@@ -34,6 +35,19 @@ public final class Utils {
         boolean result = false;
         if(SERVER_ID_AS81.equals(serverId) || SERVER_ID_AS90.equals(serverId)) {
             result = true;
+        }
+        return result;
+    }
+    
+    /**
+     *  Quick method to return the value of an expected singular child field of
+     *  a DDBean or null if not found.
+     */
+    public static String getField(DDBean bean, String fieldId) {
+        String result = null;
+        DDBean[] childFields = bean.getChildBean(fieldId);
+        if(childFields.length > 0) {
+           result = childFields[0].getText();
         }
         return result;
     }

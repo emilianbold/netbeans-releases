@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.beans.PropertyVetoException;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,10 +36,14 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
+import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 import org.xml.sax.SAXException;
 
@@ -54,6 +59,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
@@ -67,6 +73,8 @@ import org.netbeans.modules.j2ee.sun.share.plan.FileEntry;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
 import org.netbeans.modules.j2ee.sun.share.config.DDRoot;
 import org.netbeans.modules.j2ee.sun.share.config.DDFilesListener;
+import org.netbeans.modules.j2ee.sun.share.config.StandardDDImpl;
+import org.openide.util.RequestProcessor;
 
 
 
@@ -218,8 +226,158 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
     
     public void ensureResourceDefined(DDBean ddBean) {
-        // !PW Moved here from ConfigurationSupportImpl.
-        System.out.println("SunONEDeploymentConfiguration.ensureResourceDefined(" + ddBean + ")");
+        if(resourceDir == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Resource directory field owned by deployment configuration is null!!!"));
+            return;
+        }
+        
+        // Determine type of ddbean we have so we know what resource to create.
+        String xpath = ddBean.getXpath();
+        int finalSlashIndex = xpath.lastIndexOf('/') + 1;
+        String type = (finalSlashIndex < xpath.length()) ? xpath.substring(finalSlashIndex) : "";
+        
+        if("message-driven".equals(type)) {
+            // Find the DConfigBean for this ddBean.  This is actually quite complicated since
+            // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
+            // by the plugin.
+            BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
+
+            if(theEjbDCB == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
+                return;
+            }
+            
+            String jndiName = theEjbDCB.getJndiName();
+            ResourceConfiguratorInterface rci = getResourceConfigurator();
+            if(!rci.isJMSResourceDefined(jndiName, resourceDir)) {
+                String ejbName = getField(ddBean, "ejb-name");
+                String messageDestinationName = getField(ddBean, "message-destination-link");
+                String messageDestinationType = getField(ddBean, "message-destination-type");
+
+                rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
+            }
+        } else if("resource-ref".equals(type)) {
+            if(ddBean instanceof StandardDDImpl) {
+                Object o = getDCBCache().get(ddBean);
+                if(o instanceof ResourceRef) {
+                    ResourceRef theResRefDCB = (ResourceRef) o;
+                    final String refName = getField(ddBean, "res-ref-name");
+
+                    try {
+                        theResRefDCB.setJndiName(refName);
+                    } catch(PropertyVetoException ex) {
+                        // !PW Should never happen.
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+
+                    final ResourceConfiguratorInterface rci = getResourceConfigurator();
+                    final String description = getField(ddBean, "description");
+                    final File targetDir = resourceDir;
+                    
+                    /** !PW This mechanism is from the original incarnation of this code from 
+                     *  appsrv plugin module in NB 4.1.  There should be a more stable
+                     *  way to solve any such timing issue.  This method is likelky
+                     *  unstable.
+                     */
+                    /* Creating a RequestProcessor to create resources seperately to 
+                     * prevent NPE while initial loading of IDE because of call to 
+                     * access DatabaseRuntimeManager.getConnection(). This NPE
+                     * causes failure while loading WebServices Registry in Runtime Tab
+                     */
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            rci.createJDBCDataSourceFromRef(refName, description, targetDir);
+                        }
+                    }, 500);
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No ResourceRef DConfigBean found bound to resource-ref DDBean: " + ddBean);
+                }
+            } else {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DDBean from wrong tree in ensureResourceDefined: " + ddBean);
+            }
+        } else if("entity".equals(type)) {
+            // Find the DConfigBean for this ddBean.  This is actually quite complicated since
+            // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
+            // by the plugin.
+            BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
+
+            if(theEjbDCB == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
+                return;
+            }
+
+            if(theEjbDCB instanceof CmpEntityEjb) {
+                ResourceConfiguratorInterface rci = getResourceConfigurator();
+                CmpEntityEjb cmpEjbDCB = (CmpEntityEjb) theEjbDCB;
+                String description = getField(ddBean, "description");
+                rci.createJDBCDataSourceForCmp(cmpEjbDCB.getEjbName(), description, resourceDir);
+            }
+        }
+    }
+    
+    private BaseEjb getEjbDConfigBean(DDBean ejbDDBean) {
+        BaseEjb theEjbDCB = null;
+        
+        try {
+            DDBean realEjbDDBean = getStorage().normalizeEjbDDBean(ejbDDBean);
+            DDBeanRoot ddBeanRoot = realEjbDDBean.getRoot();
+            DConfigBeanRoot dcbRoot = getDConfigBeanRoot(ddBeanRoot);
+            DConfigBean dcb = dcbRoot.getDConfigBean(realEjbDDBean);
+            if(dcb instanceof BaseEjb) {
+                theEjbDCB = (BaseEjb) dcb;
+            }
+        } catch(ConfigurationException ex) {
+            // I don't expect this exception to be thrown, but it might be.  If it is,
+            // it's probably a programmer error somewhere.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(NullPointerException ex) {
+            // If one of above values ends up being null, we definitely want to
+            // log that it happened.  But for reporting purposes, we'll return
+            // null and let the caller's IllegalStateException take precedence.
+            // This would probably also be caused only by programmer error.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return theEjbDCB;
+    }
+    
+    /** Extract value of singular child field from a DDBean
+     */
+    private String getField(DDBean bean, String fieldId) {
+        String result = null;
+        DDBean[] childFields = bean.getChildBean(fieldId);
+        if(childFields.length > 0) {
+           result = childFields[0].getText();
+        }
+        return result;
+    }
+    
+    private ResourceConfiguratorInterface getResourceConfigurator() {
+        ResourceConfiguratorInterface rci = null;
+        DeploymentManager dm = getDeploymentManager();
+        if(dm instanceof SunDeploymentManagerInterface) {
+            SunDeploymentManagerInterface sdmi = (SunDeploymentManagerInterface) dm;
+            rci = sdmi.getResourceConfigurator();
+        } else {
+            System.out.println("FIXME DeploymentManager is wrong type: " + dm);
+        }
+        return rci;
+    }
+    
+    private DeploymentManager getDeploymentManager() {
+        DeploymentManager dm = null;
+        J2eeModuleProvider provider = getProvider(configFiles[0]);
+        if(provider != null) {
+            InstanceProperties ip = provider.getInstanceProperties();
+            if(ip != null) {
+                dm = ip.getDeploymentManager();
+            } else {
+                System.out.println("FIXME Can't get deployment manager!!!");
+            }
+        } else {
+            System.out.println("FIXME Can't get j2ee module provider!!!");
+        }
+        return dm;
     }
     
     private J2eeModuleProvider getProvider(File file) {
@@ -908,9 +1066,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return masterRoot;
     }
     
-        /* ------------------------------------------------------------------------
-         * XPath to factory mapping support
-         */
+    /* ------------------------------------------------------------------------
+     * XPath to factory mapping support
+     */
     private Map dcbFactoryMap = null;
     
     /** Retrieve the factory manager for this DConfigBean.  If one has not been

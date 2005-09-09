@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.sun.share.config;
-
-import java.io.File;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -23,10 +21,9 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.openide.*;
 import org.openide.nodes.*;
-
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.sun.share.config.ui.ConfigBeanNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.DConfigBeanProperties;
+import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
 
 /**
@@ -151,14 +148,11 @@ public class ConfigBeanStorage implements PropertyChangeListener {
             return;
         }
         if (RESOURCE_REF.equals(dd.proxy.dtdname)) {
-//            Server s = ServerRegistry.getInstance().getServer(dd.getModuleProvider().getServerID());
-//            ConfigurationSupport cs = s.geConfigurationSupport();
-//            if (cs != null) {
-//                DeploymentConfiguration dc = storage.getDeploymentConfiguration();
-//                File resDir = dd.getModuleProvider().getEnterpriseResourceDirectory();
-//                cs.ensureResourceDefined(dc, cb, resDir);
-//            }
-            System.out.println("!!! New resource added");
+            DeploymentConfiguration dc = storage.getDeploymentConfiguration();
+            if(dc instanceof SunONEDeploymentConfiguration) {
+                SunONEDeploymentConfiguration config = (SunONEDeploymentConfiguration) dc;
+                config.ensureResourceDefined(dd);
+            }
         }
         ConfigBeanStorage cbs = new ConfigBeanStorage(cb, parent, storage);
         Collection c = (Collection) childMap.get(dd.getXpath());

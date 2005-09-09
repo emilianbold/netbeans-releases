@@ -113,6 +113,35 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
         
         return ddNew;
     }
+    
+    public DDBean normalizeEjbDDBean(DDBean ejbDDBean) {
+        DDBean result = null;
+        String theEjbName = Utils.getField(ejbDDBean, "ejb-name"); // NOI18N
+        ModuleDDSupport mds = (ModuleDDSupport) moduleMap.get(ROOT);
+        DDRoot ddRoot = mds.getDDBeanRoot(J2eeModule.EJBJAR_XML);
+        StandardDDImpl[] ddBeans = (StandardDDImpl[]) ddRoot.getChildBean(ejbDDBean.getXpath());
+
+        for(int i = 0; i < ddBeans.length; i++) {
+            String ejbName = (String) ddBeans[i].proxy.bean.getValue("EjbName"); // NOI18N // NOI18N
+            if (theEjbName.equals(ejbName)) {
+                result = ddBeans[i];
+                break;
+            }
+        }
+        
+        if(result == null) {
+            if (ddBeans != null) {
+                for (int i = 0; i < ddBeans.length; i++) {
+                    String msg = ddBeans[i].proxy.bean.dumpBeanNode();
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                }
+            }
+            Exception ex = new Exception("Failed to lookup: " + theEjbName + ", type " + ejbDDBean.getXpath());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+
+        return result;
+    }
 
     private boolean ensureLoaded() {
         if(loaded) {
