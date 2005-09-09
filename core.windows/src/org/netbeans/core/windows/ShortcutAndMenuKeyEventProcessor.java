@@ -13,6 +13,8 @@
 
 package org.netbeans.core.windows;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
 import org.openide.actions.ActionManager;
 import org.openide.util.Lookup;
@@ -41,6 +43,11 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     private static ShortcutAndMenuKeyEventProcessor defaultInstance;
     
     private static boolean installed = false;
+
+    /* holds original set of focus forward traversal keys */
+    private static Set defaultForward;
+    /* holds original set of focus backward traversal keys */
+    private static Set defaultBackward;
     
     
     private  ShortcutAndMenuKeyEventProcessor() {
@@ -66,6 +73,20 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         KeyboardFocusManager keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         keyboardFocusManager.addKeyEventDispatcher(instance);
         keyboardFocusManager.addKeyEventPostProcessor(instance);
+        // #63252: Disable focus traversal functionality of Ctrl+Tab and Ctrl+Shift+Tab,
+        // to allow our own document switching (RecentViewListAction)
+        defaultForward = keyboardFocusManager.getDefaultFocusTraversalKeys(
+                            KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        defaultBackward = keyboardFocusManager.getDefaultFocusTraversalKeys(
+                            KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        keyboardFocusManager.setDefaultFocusTraversalKeys(
+            KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+            Collections.singleton(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0))
+        );                
+        keyboardFocusManager.setDefaultFocusTraversalKeys(
+            KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+            Collections.singleton(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK))
+        );                
     }
     
     public static synchronized void uninstall() {
@@ -78,9 +99,16 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         KeyboardFocusManager keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         keyboardFocusManager.removeKeyEventDispatcher(instance);
         keyboardFocusManager.removeKeyEventPostProcessor(instance);
+        // reset default focus traversal keys
+        keyboardFocusManager.setDefaultFocusTraversalKeys(
+                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, defaultForward
+        );                
+        keyboardFocusManager.setDefaultFocusTraversalKeys(
+                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, defaultBackward
+        );                
+        defaultBackward = null;
+        defaultForward = null;
     }
-    
-
 
     private boolean wasPopupDisplayed;
     private int lastModifiers;

@@ -154,7 +154,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="S-ESCAPE.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
 	</file>
-        <file name="C-TAB.shadow">
+        <file name="D-TAB.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
         </file>
         <!-- #41477: For KDE on unixes, D-TAB (which is Ctrl+Tab actually) is occupied by OS, so we also register D-BAKC_QUOTE as recent view list action shortcut.
