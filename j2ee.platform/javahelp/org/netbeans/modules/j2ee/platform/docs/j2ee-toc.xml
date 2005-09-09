@@ -14,6 +14,12 @@
 
 <!-- last updated 13Feb04 -->
 
+<tocitem text="Java Project Basics">
+    <tocitem text="Refactoring Java Source">
+        <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb"></tocitem>
+    </tocitem>
+</tocitem>
+
 
 <tocitem text="Servers and Databases">
 
@@ -215,6 +221,7 @@
             <tocitem text="Defining a CMP Field" target="define_cmp_field" />
             <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
             <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
+            <tocitem text="Sending a JMS Message" target="send_jms" />
             <tocitem text="Using a Service Locator" target="service_locator" />
             <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
         </tocitem>
