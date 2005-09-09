@@ -14,9 +14,6 @@
 package org.netbeans.modules.project.uiapi;
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,10 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -43,14 +39,18 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -151,7 +151,7 @@ public final class DefaultProjectOperationsImplementation {
         
         handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, new Executor() { // NOI18N
             public void execute() {
-                OpenProjects.getDefault().close(new Project[] {project});
+                close(project);
                 
                 if (deletePanel.isDeleteSources()) {
                     performDelete(project, allFiles, handle);
@@ -223,7 +223,7 @@ public final class DefaultProjectOperationsImplementation {
             
             ProjectManager.getDefault().saveProject(nue);
             
-            OpenProjects.getDefault().open(new Project[] {nue}, false);
+            open(nue);
             
             handle.finish();
         } catch (IOException e) {
@@ -274,7 +274,7 @@ public final class DefaultProjectOperationsImplementation {
             
             ProjectOperations.notifyMoving(project);
             
-            OpenProjects.getDefault().close(new Project[] {project});
+            close(project);
             
             FileObject target = newTarget.createFolder(nueName);
             FileObject projectDirectory = project.getProjectDirectory();
@@ -307,7 +307,7 @@ public final class DefaultProjectOperationsImplementation {
             
             ProjectManager.getDefault().saveProject(nue);
             
-            OpenProjects.getDefault().open(new Project[] {nue}, false);
+            open(nue);
             
             if (wasMain) {
                 OpenProjects.getDefault().setMainProject(nue);
@@ -462,7 +462,29 @@ public final class DefaultProjectOperationsImplementation {
         return null;
     }
     
-
+    private static void close(final Project prj) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                Action closeAction = CommonProjectActions.closeProjectAction();
+                closeAction = closeAction instanceof ContextAwareAction ? ((ContextAwareAction) closeAction).createContextAwareInstance(Lookups.fixed(new Object[] {prj})) : null;
+                
+                if (closeAction != null && closeAction.isEnabled()) {
+                    closeAction.actionPerformed(new ActionEvent(prj, -1, "")); // NOI18N
+                } else {
+                    //fallback:
+                    OpenProjects.getDefault().close(new Project[] {prj});
+                }
+            }
+        });
+    }
+    
+    private static void open(final Project prj) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                OpenProjects.getDefault().open(new Project[] {prj}, false);
+            }
+        });
+    }
     
     static interface Executor {
         public void execute();
