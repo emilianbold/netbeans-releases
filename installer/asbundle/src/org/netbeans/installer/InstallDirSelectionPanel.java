@@ -21,6 +21,7 @@ import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.WizardServicesUI;
+import com.installshield.wizard.swing.JFlowLabel;
 import com.installshield.wizard.swing.SwingWizardUI;
 import com.installshield.wizardx.panels.ExtendedWizardPanel;
 
@@ -38,7 +39,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -51,9 +51,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private JPanel mainPanel;
     private JPanel displayPanel;
     private JPanel inputPanel;
-    private JTextArea infoTextArea;
-    private JTextArea bottomTextArea;
-    private JLabel exPathLabel;
+    private JFlowLabel infoLabel;
     
     private String installedVersion = "";
     private String nbLabel          = null;
@@ -109,18 +107,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	displayPanel = new JPanel(new java.awt.BorderLayout(0,10));
 	displayPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
         
-        infoTextArea = new JTextArea();	
+        infoLabel = new JFlowLabel();	
         
         String desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
         + "$L(org.netbeans.installer.Bundle,Product.displayName),"
         + "$L(org.netbeans.installer.Bundle,AS.name))");
         
-        infoTextArea.setText(desc);
-        
-        infoTextArea.setWrapStyleWord(true);
-        infoTextArea.setLineWrap(true);
-        infoTextArea.setEditable(false);
-        mainPanel.add(infoTextArea, BorderLayout.NORTH);
+        infoLabel.setText(desc);        
+        mainPanel.add(infoLabel, BorderLayout.NORTH);
         
         inputPanel = new JPanel();
         inputPanel.setLayout(new GridBagLayout());
@@ -207,7 +201,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         //displayPanel.setBackground(getContentPane().getBackground());
         //mainPanel.setBackground(getContentPane().getBackground());
         //inputPanel.setBackground(getContentPane().getBackground());
-        infoTextArea.setBackground(mainPanel.getBackground());
+        //infoLabel.setBackground(mainPanel.getBackground());
         //nbBrowseButton.setBackground(getContentPane().getBackground());
         //nbInputLabel.setBackground(getContentPane().getBackground());
         //nbListLabel.setBackground(getContentPane().getBackground());
