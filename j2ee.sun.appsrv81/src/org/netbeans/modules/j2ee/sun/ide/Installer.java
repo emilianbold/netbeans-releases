@@ -41,9 +41,10 @@ public class Installer extends org.openide.modules.ModuleInstall {
     
     public static void updatePluginLoader(ExtendedClassLoader loader) throws Exception{
         try {
-            
-            String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); 
-            File f ;
+            java.io.File f = PluginProperties.getDefault().getPlatformRoot();
+            if (null == f || !f.exists())
+                return;
+            String installRoot = f.getAbsolutePath(); 
 	    InstalledFileLocator fff= InstalledFileLocator.getDefault();
 
             f = fff.locate("modules/ext/appsrvbridge.jar", null, true);
