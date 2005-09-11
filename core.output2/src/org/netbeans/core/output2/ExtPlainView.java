@@ -18,6 +18,8 @@
 
 package org.netbeans.core.output2;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
@@ -34,11 +36,35 @@ import java.awt.*;
  */
 class ExtPlainView extends PlainView {
     private final Segment SEGMENT = new Segment(); 
+
+    /** set antialiasing hints when it's requested. */
+    private static final boolean antialias = Boolean.getBoolean ("swing.aatext") || //NOI18N
+                                             "Aqua".equals (UIManager.getLookAndFeel().getID()); // NOI18N
+
+    private static Map hintsMap = null;
+    
+    static final Map getHints() {
+        if (hintsMap == null) {
+            hintsMap = new HashMap();
+            hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+        return hintsMap;
+    }
+    
     /** Creates a new instance of ExtPlainView */
     ExtPlainView(Element elem) {
         super (elem);
     }
 
+    public void paint(Graphics g, Shape allocation) {
+        
+        if (antialias) {
+            ((Graphics2D)g).addRenderingHints(getHints());
+        }
+        super.paint(g, allocation);
+    }
+    
     protected int drawSelectedText(Graphics g, int x,
                                    int y, int p0, int p1) throws BadLocationException {
                                        
