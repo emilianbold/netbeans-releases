@@ -192,6 +192,16 @@
 	<!-- The Server Manager dialog box (this help id will be moved to server section later): : -->
 	<mapID target="org.netbeans.modules.j2ee.deployment.impl.ui.ServerManagerDialog" url="server/server_register.html" />
 
+	<!--STRUTS AND JSF FRAMEWORK DIALOG BOXES:-->
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html" />
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="web/create/tag/framework/struts/AddForwardIncludePanel.html" />
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="web/create/tag/framework/struts/AddForward.html" />
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="web/create/tag/framework/struts/AddFormBean.html" />
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="web/create/tag/framework/struts/AddFormProperty.html" />
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/struts/AddNavigationRuleDialog.html" />
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/create/tag/framework/struts/AddNavigationCaseDialog.html" />
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/struts/AddManagedBeanDialog.html" />
+
 
 <!-- End of CSH for Web Applications -->
 
@@ -250,7 +260,7 @@
 	<!-- End of "Message" section -->
 
 	<!--Start of web service CSH -->
-	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/websvcdb.html" />
+	<mapID target="org.netbeans.modules.websvc.registry.ui.TestWebServiceMethodDlg" url="webservice/csh/websvcdb.html" />
 	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
 	<mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
 	<mapID target="org.netbeans.modules.websvc.dev.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
