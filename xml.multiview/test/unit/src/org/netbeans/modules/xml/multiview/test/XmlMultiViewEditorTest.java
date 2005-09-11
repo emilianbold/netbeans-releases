@@ -44,7 +44,6 @@ import javax.swing.text.BadLocationException;
  * @author Milan Kuchtiak
  */
 public class XmlMultiViewEditorTest extends NbTestCase {
-    private DataLoaderPool pool;
     private DataLoader loader;
     private BookDataObject bookDO;
 
@@ -53,12 +52,11 @@ public class XmlMultiViewEditorTest extends NbTestCase {
     }
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(XmlMultiViewEditorTest.class);
-        return suite;
+        return new NbTestSuite(XmlMultiViewEditorTest.class);
     }
 
     protected void setUp() throws Exception {
-        pool = DataLoaderPool.getDefault ();
+        DataLoaderPool pool = DataLoaderPool.getDefault();
         assertNotNull (pool);
         loader = DataLoader.getLoader(BookDataLoader.class);
     }
@@ -103,6 +101,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         try {
             JTextField titleTF = Helper.getChapterTitleTF(bookDO, bookDO.getBook().getChapter()[1]);
             titleTF.requestFocus();
+            Helper.waitForDispatchThread();
             titleTF.getDocument().remove(0, titleTF.getDocument().getLength());
             titleTF.getDocument().insertString(0, "The garden full of beans", null);
         } catch (Exception ex) {

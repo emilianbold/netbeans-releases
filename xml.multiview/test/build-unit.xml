@@ -17,7 +17,6 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/xtest-unit.xml"/> 
     
     <!-- open default project-->
-    <property name="xtest.ide.open.project" location="${xtest.data}/projects/webapp"/>
     <property name="test.classpath" value=""/>
     <!--<property name="test.classpath" value="${netbeans.dest.dir}/ide5/modules"/>-->
     <property name="xtest.ide.commandline.suffix" value="-J-Xint -J-Dnetbeans.javacore.noscan=true"/>

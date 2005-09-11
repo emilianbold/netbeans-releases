@@ -30,7 +30,7 @@ import javax.swing.text.Document;
 public class Helper {
 
     public static File getBookFile(File dataDir) {
-        String result = dataDir.getAbsolutePath() + "/projects/webapp/web/WEB-INF/sample.book";
+        String result = dataDir.getAbsolutePath() + "/projects/book/book.xml";
         return new File(result);
     }
 
@@ -73,7 +73,9 @@ public class Helper {
     public static void sleep(int ms) {
         try {
             Thread.sleep(ms);
-        } catch (InterruptedException ex){}
+        } catch (InterruptedException ex){
+            // ignore
+        }
     }
 
     public static void waitForDispatchThread() {

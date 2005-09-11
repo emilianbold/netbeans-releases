@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//BookCompany//Entity ID//EN" "file://sample.dtd">
+<!DOCTYPE book PUBLIC "-//BookCompany//Entity ID//EN" "file://book.dtd">
 <book instock="yes">
   <title lang="en">A bean on the beach</title>
   <chapter length="110">
