@@ -195,12 +195,13 @@
 	<!--STRUTS AND JSF FRAMEWORK DIALOG BOXES:-->
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html" />
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="web/create/tag/framework/struts/AddForwardIncludePanel.html" />
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" url="web/create/tag/framework/struts/AddException.html" />
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="web/create/tag/framework/struts/AddForward.html" />
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="web/create/tag/framework/struts/AddFormBean.html" />
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="web/create/tag/framework/struts/AddFormProperty.html" />
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/struts/AddNavigationRuleDialog.html" />
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/create/tag/framework/struts/AddNavigationCaseDialog.html" />
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/struts/AddManagedBeanDialog.html" />
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html" />
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/create/tag/framework/jsf/AddNavigationCaseDialog.html" />
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/jsf/AddManagedBeanDialog.html" />
 
 
 <!-- End of CSH for Web Applications -->
