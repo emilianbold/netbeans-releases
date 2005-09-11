@@ -62,23 +62,25 @@ public class DDEditorTest extends NbTestCase {
 
     public void testReplaceParamValueFromDDAPI() throws IOException {
         initDataObject();
-        openInXmlView(dObj);
         FileObject fo = FileUtil.toFileObject(getDDFile());
         WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
         webApp.getContextParam()[0].setParamValue(CAR_VOLVO);
         webApp.write(fo);
         compareGoldenFile("ReplaceParamValue.pass");
         openInDesignView(dObj);
+        Helper.waitForDispatchThread();
         assertEquals("Context Params Table wasn't changed: ", CAR_VOLVO, (String) getDDBeanModel().getValueAt(0, 1));
     }
 
     public void testAddParamValueInDesignView() throws IOException {
         initDataObject();
         openInDesignView(dObj);
+        Helper.waitForDispatchThread();
         final DDBeanTableModel model = getDDBeanModel();
         final int n = model.getRowCount() + 1;
         model.addRow(new Object[]{"color","Blue",""});
         dObj.modelUpdatedFromUI();
+        Helper.waitForDispatchThread();
         new StepIterator() {
             int sizeContextParam;
 
@@ -95,6 +97,7 @@ public class DDEditorTest extends NbTestCase {
         // test the model
 
         openInXmlView(dObj);
+        Helper.waitForDispatchThread();
 
         XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) dObj.getCookie(EditorCookie.class);
         final Document document = editor.getDocument();
@@ -136,9 +139,10 @@ public class DDEditorTest extends NbTestCase {
     public void testAddParamValueInXmlView() throws IOException {
         initDataObject();
         openInXmlView(dObj);
+        Helper.waitForDispatchThread();
         XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport)dObj.getCookie(EditorCookie.class);
         final Document document = editor.getDocument();
-
+        Helper.waitForDispatchThread();
 
         // check context params table in Design View
         final DDBeanTableModel model = getDDBeanModel();
@@ -157,6 +161,7 @@ public class DDEditorTest extends NbTestCase {
 
             public void finalCheck() {
                 assertEquals("Cannot find new context param element in XML view (editor document)", true, index > 0);
+                Helper.waitForDispatchThread();
                 try {
                     document.insertString(index + 16, CONTEXT_PARAM_CYLINDERS, null);
                 } catch (BadLocationException ex) {
@@ -165,8 +170,8 @@ public class DDEditorTest extends NbTestCase {
             }
         };
 
-
         openInDesignView(dObj);
+        Helper.waitForDispatchThread();
 
         new StepIterator() {
             private String paramValue;
@@ -210,6 +215,7 @@ public class DDEditorTest extends NbTestCase {
     public void testCheckParamValueInDesignView2() throws IOException {
         initDataObject();
         openInDesignView(dObj);
+        Helper.waitForDispatchThread();
         new StepIterator() {
             private String paramValue;
 
@@ -235,7 +241,6 @@ public class DDEditorTest extends NbTestCase {
     public DDBeanTableModel getDDBeanModel() {
         DDBeanTableModel ddBeanModel;
         try {
-            Helper.waitForDispatchThread();
             ddBeanModel = Helper.getContextParamsTableModel(dObj);
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to open Context Params section", ex);
@@ -263,7 +268,6 @@ public class DDEditorTest extends NbTestCase {
 
     private static void openInXmlView(DDDataObject dObj) {
         ((EditCookie) dObj.getCookie(EditCookie.class)).edit();
-        Helper.waitForDispatchThread();
     }
 
     private static void openInDesignView(DDDataObject dObj) {
@@ -272,7 +276,6 @@ public class DDEditorTest extends NbTestCase {
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to switch to Design View",ex);
         }
-        Helper.waitForDispatchThread();
     }
 
     /**
