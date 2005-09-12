@@ -263,6 +263,14 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     envp = new String[0];
                 }
                 
+                try {
+                    serverProcess = pd.exec(null, envp, true, null );
+                } catch (java.io.IOException ioe) {
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
+                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_PD", serverRunFileName)));//NOI18N
+                    return;
+                }
+                
                 serverProcess = pd.exec(null, envp, true, null );
                 
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
@@ -350,7 +358,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_MINIMAL")));//NOI18N
                 return;
             }
-            try {
+
                 String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
                 String serverStopFileName = serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
                 
@@ -361,7 +369,16 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 }
                 
                 NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--shutdown");
-                pd.exec();
+                try {
+                    pd.exec();
+                } catch (java.io.IOException ioe) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                    
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, 
+                            NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_PD", serverStopFileName)));//NOI18N
+                    
+                    return;
+                }
 
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                         NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));
@@ -395,9 +412,6 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 }
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                         NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED")));//NOI18N
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
         }
         private final static String SHUTDOWN_SH = "/bin/shutdown.sh";//NOI18N
         private final static String SHUTDOWN_BAT = "/bin/shutdown.bat";//NOI18N
