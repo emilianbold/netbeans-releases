@@ -211,6 +211,13 @@ public class EditCVSRootOperator extends NbDialogOperator {
         txtUser().typeText(text);
     }
     
+    /** gets text from Host text field.
+     * @return text from Host text field.
+     */
+    public String getHost() {
+        return txtHost().getText();
+    }
+    
     /** sets text for txtHost
      * @param text String text
      */
