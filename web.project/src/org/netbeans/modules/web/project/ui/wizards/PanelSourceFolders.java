@@ -15,10 +15,8 @@ package org.netbeans.modules.web.project.ui.wizards;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -32,11 +30,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 //XXX There should be a way how to add nonexistent test dir
@@ -121,6 +117,9 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             ((FolderList)this.testsPanel).setFiles (testRoot);
         }
         File projectLocation = (File) settings.getProperty(WizardProperties.SOURCE_ROOT);
+        ((FolderList)this.sourcePanel).setProjectFolder(projectLocation);
+        ((FolderList)this.testsPanel).setProjectFolder(projectLocation);
+        
         initValues(FileUtil.toFileObject(projectLocation));
     }
 
