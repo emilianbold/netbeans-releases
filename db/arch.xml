@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
    to create new and remove existing drivers.
   </p>
   <p>
-   The <api group="lookup" name="DatabaseExplorerAPILookup" type="export" category="devel" url="@TOP@index.html"/> 
+   The <api group="layer" name="DatabaseExplorerAPILayer" type="export" category="devel" url="@TOP@index.html"/> 
    allows for the declarative registration of database connections and JDBC
    drivers in the module layer. Database runtimes (which are representations of
    an instance of a database server) can also be registered in the layer.
@@ -124,17 +124,38 @@ Microsystems, Inc. All Rights Reserved.
     An external module can register JDBC drivers. A typical example is a module
     which provides integration with a database server. In this case the module
     contains the JDBC driver for that database server and uses the Database
-    Explorer API to add it do the Database Explorer.</p>
+    Explorer API to add it do the Database Explorer.
+   </p>
    <p>
     Another client of this API could be a module providing integration with a J2EE
     application server. Sometimes a J2EE application server bundles a database server
     for improving the out-of-the-box experience. When the server is registered
     in the IDE the JDBC drivers for the bundled database server are added to the Database
-    Explorer.</p>
+    Explorer.
+   </p>
    <p>
-    The drivers are registered either by adding their XML 
-    descriptions to the module layer or by making calls on
-    <a href="@TOP@org/netbeans/api/db/explorer/JDBCDriverManager.html">JDBCDriverManager</a>.</p>
+    The drivers are registered by making calls on
+    <a href="@TOP@org/netbeans/api/db/explorer/JDBCDriverManager.html">JDBCDriverManager</a> or 
+    by registering an XML file which describes the driver in the module layer.
+    The XML file is described by the <a href="">JDBC Driver DTD</a>. An example of a registration file 
+    describing the JDBC driver for PostgreSQL follows:
+   </p>
+   <pre>
+    &lt;?xml version='1.0'?&gt;
+    &lt;!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.0//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd'&gt;
+    &lt;driver&gt;
+      &lt;name value='PostgreSQL (v7.0 and later)'/&gt;
+      &lt;class value='org.postgresql.Driver'/&gt;
+      &lt;urls&gt;
+        &lt;url value='file:/folder1/folder2/drivers/pg74.1jdbc3.jar'/&gt;
+      &lt;/urls&gt;
+    &lt;/driver&gt;
+   </pre>
+   <p>
+    This file should be registered in the <code>Databases/JDBCDrivers</code> folder of the module layer.
+    To addres a bundled JAR inside the IDE the nbinst protocol can be used in the URLs: 
+    <code>nbinst:/modules/ext/bundled-driver.jar</code>.
+   </p>
   </usecase>
   <usecase id="retrieve-drivers" name="Retrieving the list of JDBC drivers">
    <p>
@@ -151,17 +172,37 @@ Microsystems, Inc. All Rights Reserved.
     server instance to be started and stopped when a connection to this
     instance is made in the IDE. Database runtimes are represented by the
     <a href="@TOP@org/netbeans/spi/db/explorer/DatabaseRuntime.html">DatabaseRuntime</a>
-    SPI interface and are registered in the module layer.
+    SPI interface and are registered in the <code>Databases/Runtimes</code> of the module layer.
    </p>
   </usecase>
   <usecase id="create-connections" name="Creating database connections">
    <p>
     A module can create new database connections (for example to a bundled database).
-    New connections are added by calling 
+    New connections can be added by calling 
     <a href="@TOP@org/netbeans/api/db/explorer/DatabaseConnection.html#create(org.netbeans.api.db.explorer.JDBCDriver,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">DatabaseConnection.create()</a>
     to create a new DatabaseConnection instance and then 
     <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#addConnection(org.netbeans.api.db.explorer.DatabaseConnection)">ConnectionManager.addConnection()</a> to
     add the connection to the Database Explorer.
+   </p>
+   <p>
+    New connections can also be added by registering them in the module layer. 
+    The format of the registration file is described by the 
+    <a href="">Database Connection DTD</a>. An example of a registration file describing a
+    connection to a PostgreSQL database follows:
+   </p>
+   <pre>
+    &lt;?xml version='1.0'?&gt;
+    &lt;!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.0//EN' 'http://www.netbeans.org/dtds/connection-1_0.dtd'&gt;
+    &lt;connection&gt;
+      &lt;driver-class value='org.postgresql.Driver'/&gt;
+      &lt;database-url value='jdbc:postgresql:test'/&gt;
+      &lt;schema value='public'/&gt;
+      &lt;user value='test'/&gt;
+      &lt;password value='test'/&gt;
+    &lt;/connection&gt;
+   </pre>
+   <p>
+    This file should be registered in the <code>Databases/Connections</code> folder of the module layer.
    </p>
   </usecase>
   <usecase id="retrieve-connections" name="Retrieving and displaying the list of database connections">
