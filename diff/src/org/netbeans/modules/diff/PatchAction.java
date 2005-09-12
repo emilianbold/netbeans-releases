@@ -79,13 +79,8 @@ public class PatchAction extends NodeAction {
             FileObject fo = DiffAction.getFileFromNode(nodes[0]);
             if (fo != null) {
                 try {
-                    FileSystem fs = fo.getFileSystem();
-                    if (fs.isDefault()) {
-                        String packageName = fo.getPath();
-                        return (packageName.startsWith("Templates") ||
-                                packageName.startsWith("vcs/config") ||
-                                packageName.startsWith("org/"));
-                    } else return true;
+                    // #63460
+                    return fo.getURL().getProtocol().equals("file");  // NOI18N
                 } catch (FileStateInvalidException fsiex) {
                     return false;
                 }
