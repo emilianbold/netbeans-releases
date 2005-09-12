@@ -137,8 +137,9 @@ Microsystems, Inc. All Rights Reserved.
     The drivers are registered by making calls on
     <a href="@TOP@org/netbeans/api/db/explorer/JDBCDriverManager.html">JDBCDriverManager</a> or 
     by registering an XML file which describes the driver in the module layer.
-    The XML file is described by the <a href="">JDBC Driver DTD</a>. An example of a registration file 
-    describing the JDBC driver for PostgreSQL follows:
+    The XML file is described by the 
+    <a href="http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd">JDBC Driver DTD</a>. 
+    An example of a registration file describing the JDBC driver for PostgreSQL follows:
    </p>
    <pre>
     &lt;?xml version='1.0'?&gt;
@@ -187,8 +188,8 @@ Microsystems, Inc. All Rights Reserved.
    <p>
     New connections can also be added by registering them in the module layer. 
     The format of the registration file is described by the 
-    <a href="">Database Connection DTD</a>. An example of a registration file describing a
-    connection to a PostgreSQL database follows:
+    <a href="http://www.netbeans.org/dtds/connection-1_0.dtd">Database Connection DTD</a>. 
+    An example of a registration file describing a connection to a PostgreSQL database follows:
    </p>
    <pre>
     &lt;?xml version='1.0'?&gt;
