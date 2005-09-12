@@ -223,6 +223,8 @@ public class CVSRootStepOperator extends WizardOperator {
     public void setCVSRoot(String text) {
         cboCVSRoot().clearText();
         cboCVSRoot().typeText(text);
+        // value typed in combo box editor is not taken into account otherwise
+        edit().ok();
     }
 
     /** clicks on "Edit..." JButton and returns instance of EditCVSRootOperator.
