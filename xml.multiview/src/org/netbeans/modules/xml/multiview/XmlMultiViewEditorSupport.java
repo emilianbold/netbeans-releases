@@ -65,7 +65,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         EditorCookie.Observable, PrintCookie {
 
     private XmlMultiViewDataObject dObj;
-    private XmlDocumentListener xmlDocListener = new XmlDocumentListener();
+    private final XmlDocumentListener xmlDocListener = new XmlDocumentListener();
     private int xmlMultiViewIndex;
     private TopComponent mvtc;
     private int lastOpenView=0;
@@ -407,20 +407,26 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     }
 
     public void multiviewComponentOpened() {
-        if (document == null) {
-            try {
-                document = openDocument();
-                document.addDocumentListener(xmlDocListener);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+        synchronized (xmlDocListener) {
+            if (document == null) {
+                try {
+                    document = openDocument();
+                    document.addDocumentListener(xmlDocListener);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
         }
     }
 
     public void multiviewComponentClosed() {
         if (getOpenedPanes() == null) {
-            document.removeDocumentListener(xmlDocListener);
-            document = null;
+            synchronized (xmlDocListener) {
+                if (document != null) {
+                    document.removeDocumentListener(xmlDocListener);
+                    document = null;
+                }
+            }
         }
     }
 
