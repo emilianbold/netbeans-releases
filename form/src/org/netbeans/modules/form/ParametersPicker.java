@@ -34,6 +34,9 @@ import org.openide.DialogDescriptor;
 public class ParametersPicker extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
     static final long serialVersionUID =1116033799965380000L;
+    
+    private boolean previousValue = false;
+        
     /** Initializes the Form */
     public ParametersPicker(FormModel formModel, Class requiredType) {
         initComponents();
@@ -112,6 +115,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         codeArea.setContentType("text/x-java");    // allow syntax coloring // NOI18N
 
         updateParameterTypes();
+            
         currentFilledState = isFilled();
 
         HelpCtx.setHelpIDString(this, "gui.source.modifying.property"); // NOI18N
@@ -150,10 +154,15 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         getAccessibleContext().setAccessibleDescription(
             FormUtils.getBundleString("ACSD_ParametersPicker")); // NOI18N
     }
-
-    public void setPropertyValue(RADConnectionPropertyEditor.RADConnectionDesignValue value) {
-        if (value == null) return; // can happen if starting without previously set value
-
+    
+    public void setPropertyValue(RADConnectionPropertyEditor.RADConnectionDesignValue value, Object realValue) {        
+        if (value == null) {
+            previousValue = realValue != null;
+            return; // can happen if starting without previously set value
+        } else {
+            previousValue = true;               
+        }
+        
         switch (value.type) {
             case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_VALUE:
                 valueButton.setSelected(true);
@@ -218,26 +227,27 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
      *(and thus it should not be set)
      */
     public Object getPropertyValue() throws IllegalStateException {
-        if (!isFilled()) {
-            IllegalStateException exc = new IllegalStateException();
-            ErrorManager.getDefault().annotate(
-                exc, ErrorManager.USER, null, 
-                FormUtils.getBundleString("ERR_NothingEntered"), // NOI18N
-                null, null);
-            throw exc;
-        }
-
-        if (valueButton.isSelected()) {
+        if (valueButton.isSelected() && !"".equals(valueField.getText())) {            
             return new RADConnectionPropertyEditor.RADConnectionDesignValue(requiredType, valueField.getText());
-        } else if (beanButton.isSelected()) {
+        } else if (beanButton.isSelected() && selectedComponent != null) {
             return new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedComponent);
-        } else if (codeButton.isSelected()) {
+        } else if (codeButton.isSelected() && !"".equals(codeArea.getText())) {            
             return new RADConnectionPropertyEditor.RADConnectionDesignValue(codeArea.getText());
-        } else if (propertyButton.isSelected()) {
+        } else if (propertyButton.isSelected() && selectedProperty != null) {            
             return new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedComponent, selectedProperty);
-        } else if (methodButton.isSelected()) {
+        } else if (methodButton.isSelected() && selectedMethod != null) {            
             return new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedComponent, selectedMethod);
-        } else return null;
+        } else if(!previousValue) {            
+            return BeanSupport.NO_VALUE;               
+        }
+        
+        IllegalStateException exc = new IllegalStateException();
+        ErrorManager.getDefault().annotate(
+            exc, ErrorManager.USER, null, 
+            FormUtils.getBundleString("ERR_NothingEntered"), // NOI18N
+            null, null);
+        throw exc;
+        
     }
 
     // ----------------------------------------------------------------------------------------

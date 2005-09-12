@@ -62,10 +62,13 @@ public class RADConnectionPropertyEditor
     // PropertyEditor implementation
 
     public Object getValue() {
+        
         return designValue != null ? designValue : realValue;
     }
 
     public void setValue(Object value) {
+        
+
         if (value instanceof RADConnectionDesignValue) {
             designValue =(RADConnectionDesignValue)value;
         } else {
@@ -102,7 +105,7 @@ public class RADConnectionPropertyEditor
 
     public java.awt.Component getCustomEditor() {
         ParametersPicker pp = new ParametersPicker(formModel, propertyType);
-        pp.setPropertyValue(designValue);
+        pp.setPropertyValue(designValue, realValue);
         return pp;
     }
 
