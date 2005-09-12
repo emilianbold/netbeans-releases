@@ -115,6 +115,7 @@ public class DefaultUserInterface extends UserInterface {
     public void login() {
         CollabExplorerPanel.getInstance().open();
         CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_LOGIN);
+        CollabExplorerPanel.getInstance().requestActive();
     }
 
     /**
