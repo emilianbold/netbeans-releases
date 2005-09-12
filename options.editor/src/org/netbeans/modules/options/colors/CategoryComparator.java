@@ -11,7 +11,8 @@
 package org.netbeans.modules.options.colors;
 
 import java.util.Comparator;
-import org.netbeans.modules.options.colors.ColorModel.Category;
+import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 
 
 /**
@@ -20,12 +21,15 @@ import org.netbeans.modules.options.colors.ColorModel.Category;
  */
 public class CategoryComparator implements Comparator {
     public int compare (Object o1, Object o2) {
-	if (((Category) o1).getDisplayName ().startsWith ("Default")) 
-	    return ((Category) o2).getDisplayName ().startsWith ("Default") ? 0 : -1;
-        if (((Category) o2).getDisplayName ().startsWith ("Default"))
+	if (name (o1).startsWith ("Default")) 
+	    return name (o2).startsWith ("Default") ? 0 : -1;
+        if (name (o2).startsWith ("Default"))
             return 1;
-	return ((Category) o1).getDisplayName ().compareTo (
-	    ((Category) o2).getDisplayName ()
-	);
+	return name (o1).compareTo (name (o2));
+    }
+    
+    private static String name (Object o) {
+        return (String) ((AttributeSet) o).getAttribute 
+            (EditorStyleConstants.DisplayName);
     }
 }

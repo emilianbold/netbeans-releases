@@ -95,7 +95,7 @@ public abstract class ColorModel {
         String      language,
         boolean     plain
     );
-       
+    
     
     // innerclasses ............................................................
     
@@ -107,84 +107,4 @@ public abstract class ColorModel {
             Collection /*<Category>*/ categories
         );
     } 
-    
-    public static class Category {
-	private String	name;
-	private String	displayName;
-	private Icon	icon;
-	private Font	font;
-	private Color	background;
-	private Color	foreground;
-	private Color	underline;
-	private Color	strikeThrough;
-	private Color	waveUnderline;
-	private String  defaultCategory;
-
-	
-	public Category (
-	    String	name,
-	    String	displayName,
-	    Icon	icon,
-	    Font	font,
-	    Color	background,
-	    Color	foreground,
-	    Color	underline,
-	    Color	strikeThrough,
-	    Color	waveUnderline,
-	    String      defaultCategory
-	) {
-	    this.name = name;
-            if (name == null) throw new NullPointerException ();
-	    this.displayName = displayName;
-            if (displayName == null) throw new NullPointerException ();
-	    this.icon = icon;
-	    this.font = font;
-	    this.background = background;
-	    this.foreground = foreground;
-	    this.underline = underline;
-	    this.strikeThrough = strikeThrough;
-	    this.waveUnderline = waveUnderline;
-	    this.defaultCategory = defaultCategory;
-	}
-
-	public String getName () {
-	    return name;
-	}
-
-	public String getDisplayName () {
-	    return displayName;
-	}
-
-	public Icon getIcon () {
-	    return icon;
-	}
-
-	public Font getFont () {
-	    return font;
-	}
-
-	public Color getForeground () {
-	    return foreground;
-	}
-
-	public Color getBackground () {
-	    return background;
-	}
-
-	public Color getUnderlineColor () {
-	    return underline;
-	}
-
-	public Color getStrikeThroughColor () {
-	    return strikeThrough;
-	}
-
-	public Color getWaveUnderlineColor () {
-	    return waveUnderline;
-	}
-	
-	public String getDefaultCategoryName () {
-	    return defaultCategory;
-	}
-    }
 }

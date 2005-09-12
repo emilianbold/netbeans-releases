@@ -66,8 +66,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.netbeans.modules.options.colors.ColorModel.Category;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -200,23 +202,29 @@ PropertyChangeListener {
 
     private void updateData () {
         Vector annotations = getAnnotations (currentScheme);
-	Category c = (Category) annotations.get 
+	SimpleAttributeSet c = (SimpleAttributeSet) annotations.get 
 	    (lCategories.getSelectedIndex ());
-	annotations.set (
-	    lCategories.getSelectedIndex (),
-	    new Category (
-		c.getName (),
-		c.getDisplayName (),
-		c.getIcon (),
-		null,
-		backgroundColorChooser.getColor (),  
-		foregroundColorChooser.getColor (), 
-		null,
-		null,
-	        waveUnderlinedColorChooser.getColor (),
-	        null
-	    )
-	);
+        if (backgroundColorChooser.getColor () != null)
+            c.addAttribute (
+                StyleConstants.Background,
+                backgroundColorChooser.getColor ()
+            );
+        else
+            c.removeAttribute (StyleConstants.Background);
+        if (foregroundColorChooser.getColor () != null)
+            c.addAttribute (
+                StyleConstants.Foreground,
+                foregroundColorChooser.getColor ()
+            );
+        else
+            c.removeAttribute (StyleConstants.Foreground);
+        if (waveUnderlinedColorChooser.getColor () != null)
+            c.addAttribute (
+                EditorStyleConstants.WaveUnderlineColor,
+                waveUnderlinedColorChooser.getColor ()
+            );
+        else
+            c.removeAttribute (EditorStyleConstants.WaveUnderlineColor);
         toBeSaved.add (currentScheme);
     }
     
@@ -234,10 +242,10 @@ PropertyChangeListener {
         waveUnderlinedColorChooser.setEnabled (true);
         
         Vector annotations = getAnnotations (currentScheme);
-        Category c = (Category) annotations.get (index);
-        foregroundColorChooser.setColor (c.getForeground ());
-        backgroundColorChooser.setColor (c.getBackground ());
-	waveUnderlinedColorChooser.setColor (c.getWaveUnderlineColor ());
+        AttributeSet c = (AttributeSet) annotations.get (index);
+        foregroundColorChooser.setColor ((Color) c.getAttribute (StyleConstants.Foreground));
+        backgroundColorChooser.setColor ((Color) c.getAttribute (StyleConstants.Background));
+	waveUnderlinedColorChooser.setColor ((Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor));
         listen = true;
     }
     

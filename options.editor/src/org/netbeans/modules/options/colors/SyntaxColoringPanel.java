@@ -58,20 +58,24 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.options.colors.ColorComboBox.Value;
-import org.netbeans.modules.options.colors.ColorModel.Category;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -185,39 +189,67 @@ PropertyChangeListener {
 	} else
         if (evt.getSource () == bFont) {
             PropertyEditor pe = PropertyEditorManager.findEditor (Font.class);
-            Category category = getCurrentCategory ();
-            Font f = category.getFont ();
-            Font defaultFont = getDefaultFont (category);
-            if (f == null && category.getDefaultCategoryName () != null)
-                f = defaultFont;
+            SimpleAttributeSet category = getCurrentCategory ();
+            Font f = getFont (category);
             pe.setValue (f);
             DialogDescriptor dd = new DialogDescriptor (
                 pe.getCustomEditor (),
-                "Font Chooser"
+                loc ("CTL_Font_Chooser")                          // NOI18N
             );
             DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
             if (dd.getValue () == DialogDescriptor.OK_OPTION) {
                 f = (Font) pe.getValue ();
-                if (category.getDefaultCategoryName () != null &&
-                    defaultFont != null &&
-		    f.equals (defaultFont)
-		)
-                    f = null;
-		getCategories (currentScheme, currentLanguage).set (
-		    lCategories.getSelectedIndex (),
-		    new Category (
-		        category.getName (),
-		        category.getDisplayName (),
-		        category.getIcon (), 
-                        f,
-			category.getBackground (), 
-                        category.getForeground (), 
-                        category.getUnderlineColor (), 
-			category.getStrikeThroughColor (),
-                        category.getWaveUnderlineColor (),
-		        category.getDefaultCategoryName ()
-                    )
-                );
+                String fontName = f.getName ();
+                Integer fontSize = new Integer (f.getSize ());
+                Boolean bold = Boolean.valueOf (f.isBold ());
+                Boolean italic = Boolean.valueOf (f.isItalic ());
+                AttributeSet defaultCategory = getDefault (category);
+                if (defaultCategory != null) {
+                    if (fontName.equals (
+                        getValue (defaultCategory, StyleConstants.FontFamily)
+                    ))
+                        fontName = null;
+                    if (fontSize.equals (
+                        getValue (defaultCategory, StyleConstants.FontSize)
+                    ))
+                        fontSize = null;
+                    if (bold.equals (
+                        getValue (defaultCategory, StyleConstants.Bold)
+                    ))
+                        bold = null;
+                    if (italic.equals (
+                        getValue (defaultCategory, StyleConstants.Italic)
+                    ))
+                        italic = null;
+                }
+                if (fontName != null)
+                    category.addAttribute (
+                        StyleConstants.FontFamily,
+                        fontName
+                    );
+                else
+                    category.removeAttribute (StyleConstants.FontFamily);
+                if (fontSize != null)
+                    category.addAttribute (
+                        StyleConstants.FontSize,
+                        fontSize
+                    );
+                else
+                    category.removeAttribute (StyleConstants.FontSize);
+                if (bold != null)
+                    category.addAttribute (
+                        StyleConstants.Bold,
+                        bold
+                    );
+                else
+                    category.removeAttribute (StyleConstants.Bold);
+                if (italic != null)
+                    category.addAttribute (
+                        StyleConstants.Italic,
+                        italic
+                    );
+                else
+                    category.removeAttribute (StyleConstants.Italic);
                 setToBeSaved (currentScheme, currentLanguage);
                 refreshUI (); // refresh font viewer
             }
@@ -333,7 +365,7 @@ PropertyChangeListener {
         int i = lCategories.getSelectedIndex ();
         if (i < 0) return;
         
-        Category category = getCurrentCategory ();
+        SimpleAttributeSet category = getCurrentCategory ();
         Color underline = null, 
               wave = null, 
               strikethrough = null;
@@ -343,21 +375,43 @@ PropertyChangeListener {
             wave = effectsColorChooser.getColor ();
         if (cbEffects.getSelectedIndex () == 3)
             strikethrough = effectsColorChooser.getColor ();
-        getCategories (currentScheme, currentLanguage).set (
-	    i,
-	    new Category (
-		category.getName (), 
-		category.getDisplayName (), 
-		category.getIcon (), 
-		category.getFont (),
-		backgroundColorChooser.getColor (),
-		foregroundColorChooser.getColor (), 
-		underline,
-		strikethrough,
-		wave,
-	        category.getDefaultCategoryName ()
-	    )
-        );
+        
+        if (backgroundColorChooser.getColor () != null)
+            category.addAttribute (
+                StyleConstants.Background,
+                backgroundColorChooser.getColor ()
+            );
+        else
+            category.removeAttribute (StyleConstants.Background);
+        if (foregroundColorChooser.getColor () != null)
+            category.addAttribute (
+                StyleConstants.Foreground,
+                foregroundColorChooser.getColor ()
+            );
+        else
+            category.removeAttribute (StyleConstants.Foreground);
+        if (underline != null)
+            category.addAttribute (
+                StyleConstants.Underline,
+                underline
+            );
+        else
+            category.removeAttribute (StyleConstants.Underline);
+        if (strikethrough != null)
+            category.addAttribute (
+                StyleConstants.StrikeThrough,
+                strikethrough
+            );
+        else
+            category.removeAttribute (StyleConstants.StrikeThrough);
+        if (wave != null)
+            category.addAttribute (
+                EditorStyleConstants.WaveUnderlineColor,
+                wave
+            );
+        else
+            category.removeAttribute (EditorStyleConstants.WaveUnderlineColor);
+        
         setToBeSaved (currentScheme, currentLanguage);
         updatePreview ();
     }
@@ -375,7 +429,7 @@ PropertyChangeListener {
      * Updates all ui components.
      */
     private void refreshUI () {
-        Category category = getCurrentCategory ();
+        AttributeSet category = getCurrentCategory ();
         if (category == null) {
             // no category selected > disable all elements
 	    tfFont.setText ("");
@@ -396,42 +450,42 @@ PropertyChangeListener {
         backgroundColorChooser.setEnabled (true);
         
         // set defaults
-        foregroundColorChooser.setDefaultColor (getDefaultForeground (category));
-        backgroundColorChooser.setDefaultColor (getDefaultBackground (category));
+        foregroundColorChooser.setDefaultColor (
+            (Color) getValue (category, StyleConstants.Foreground)
+        );
+        backgroundColorChooser.setDefaultColor (
+            (Color) getValue (category, StyleConstants.Background)
+        );
         
         listen = false;
-        Font f = category.getFont ();
-	if (f != null) {
-            StringBuffer sb = new StringBuffer ();
-            sb.append (f.getName ()).
-                append (' ').
-                append (f.getSize ());
-            if (f.isBold ())
-                sb.append (' ').append (loc ("Bold"));
-            if (f.isItalic ())
-                sb.append (' ').append (loc ("Italic"));
-	    tfFont.setText (sb.toString ());
-        } else
-	    tfFont.setText (loc ("Default"));
-        foregroundColorChooser.setColor (category.getForeground ());
-        backgroundColorChooser.setColor (category.getBackground ());
+        String font = fontToString (category);
+        tfFont.setText (font);
+        foregroundColorChooser.setColor (
+            (Color) category.getAttribute (StyleConstants.Foreground)
+        );
+        backgroundColorChooser.setColor (
+            (Color) category.getAttribute (StyleConstants.Background)
+        );
         
-        if (category.getUnderlineColor () != null) {
+        if (category.getAttribute (StyleConstants.Underline) != null) {
             cbEffects.setSelectedIndex (1);
             effectsColorChooser.setEnabled (true);
-            effectsColorChooser.setColor (category.getUnderlineColor ());
+            effectsColorChooser.setColor (
+                (Color) category.getAttribute (StyleConstants.Underline)
+            );
         } else
-        if (category.getWaveUnderlineColor () != null) {
+        if (category.getAttribute (EditorStyleConstants.WaveUnderlineColor) != null) {
             cbEffects.setSelectedIndex (2);
             effectsColorChooser.setEnabled (true);
-            effectsColorChooser.setColor 
-                (category.getWaveUnderlineColor ());
+            effectsColorChooser.setColor (
+                (Color) category.getAttribute (EditorStyleConstants.WaveUnderlineColor)
+            );
         } else
-        if (category.getStrikeThroughColor () != null) {
+        if (category.getAttribute (StyleConstants.StrikeThrough) != null) {
             cbEffects.setSelectedIndex (3);
             effectsColorChooser.setEnabled (true);
             effectsColorChooser.setColor 
-                (category.getStrikeThroughColor ());
+                ((Color) category.getAttribute (StyleConstants.StrikeThrough));
         } else {
             cbEffects.setSelectedIndex (0);
             effectsColorChooser.setEnabled (false);
@@ -469,68 +523,107 @@ PropertyChangeListener {
         return v;
     }
     
-    private Category getCurrentCategory () {
+    private SimpleAttributeSet getCurrentCategory () {
         int i = lCategories.getSelectedIndex ();
         if (i < 0) return null;
-        return (Category) getCategories (currentScheme, currentLanguage).get (i);
+        return (SimpleAttributeSet) getCategories (currentScheme, currentLanguage).get (i);
     }
     
-    private Font getDefaultFont (Category category) {
-	String name = category.getDefaultCategoryName ();
-	if (name == null) return null;
-	return (Font) getDefault1 (category, 0);
-    }
-    
-    private Color getDefaultForeground (Category category) {
-	String name = category.getDefaultCategoryName ();
-	if (name == null) return null;
-	return (Color) getDefault1 (category, 1);
-    }
-    
-    private Color getDefaultBackground (Category category) {
-	String name = category.getDefaultCategoryName ();
-	if (name == null) return null;
-	return (Color) getDefault1 (category, 2);
-    }
-    
-    private Object getDefault1 (Category category, int type) {
-	if (category == null) return null;
-        switch (type) {
-            case 0:
-                if (category.getFont () != null) return category.getFont ();
-                break;
-            case 1:
-                if (category.getForeground () != null) return category.getForeground ();
-                break;
-            case 2:
-                if (category.getBackground () != null) return category.getBackground ();
-                break;
+    private SimpleAttributeSet getCategory (
+        String scheme, 
+        String language, 
+        String name
+    ) {
+        Vector v = getCategories (scheme, language);
+        Iterator it = v.iterator ();
+        while (it.hasNext ()) {
+            SimpleAttributeSet c = (SimpleAttributeSet) it.next ();
+            if (c.getAttribute (StyleConstants.NameAttribute).equals (name)) 
+                return c;
         }
-	String name = category.getDefaultCategoryName ();
+        return null;
+    }
+    
+    private Object getValue (AttributeSet category, Object key) {
+	if (category == null) return null;
+        Object result = category.getAttribute (key);
+        if (result != null) return result;
+        
+        AttributeSet d = getDefault (category);
+        if (d != null) return getValue (d, key);
+        
+        AttributeSet defaultCategory = getCategory 
+            (currentScheme, currentLanguage, "default"); // NOI18N
+        return defaultCategory.getAttribute (key);
+    }
+    
+    private SimpleAttributeSet getDefault (AttributeSet category) {
+	String name = (String) category.getAttribute (EditorStyleConstants.Default);
 	if (name == null) return null;
 
 	// 1) search current language
-	if (!name.equals (category.getName ())) {
-	    Vector v = getCategories (currentScheme, currentLanguage);
-	    Iterator it = v.iterator ();
-	    while (it.hasNext ()) {
-		Category c = (Category) it.next ();
-		if (c.getName ().equals (name)) 
-		    return getDefault1 (c, type);
-	    }
+	if (!name.equals (category.getAttribute (StyleConstants.NameAttribute))) {
+	    SimpleAttributeSet result = getCategory 
+                (currentScheme, currentLanguage, name);
+            if (result != null) return result;
 	}
 	
 	// 2) search default language
-	Vector v = getCategories (currentScheme, ColorModel.ALL_LANGUAGES);
-	if (v != null) {
-	    Iterator it = v.iterator ();
-	    while (it.hasNext ()) {
-		Category c = (Category) it.next ();
-		if (c.getName ().equals (name)) 
-		    return getDefault1 (c, type);
-	    }
-	}
-        return null;
+        return getCategory (currentScheme, ColorModel.ALL_LANGUAGES, name);
+    }
+    
+    private Font getFont (AttributeSet category) {
+        String name = (String) getValue (category, StyleConstants.FontFamily);
+        if (name == null) name = "Monospaced";                        // NOI18N
+        Integer size = (Integer) getValue (category, StyleConstants.FontSize);
+        if (size == null)
+            size = getDefaultFontSize ();
+        Boolean bold = (Boolean) getValue (category, StyleConstants.Bold);
+        if (bold == null) bold = Boolean.FALSE;
+        Boolean italic = (Boolean) getValue (category, StyleConstants.Italic);
+        if (italic == null) italic = Boolean.FALSE;
+        int style = bold.booleanValue () ? Font.BOLD : Font.PLAIN;
+        if (italic.booleanValue ()) style += Font.ITALIC;
+        return new Font (name, style, size.intValue ());
+    }
+    
+    private String fontToString (AttributeSet category) {
+        boolean def = false;
+        StringBuffer sb = new StringBuffer ();
+        if (category.getAttribute (StyleConstants.FontFamily) != null)
+            sb.append ('+').append (category.getAttribute (StyleConstants.FontFamily));
+        else
+            def = true;
+        if (category.getAttribute (StyleConstants.FontSize) != null)
+            sb.append ('+').append (category.getAttribute (StyleConstants.FontSize));
+        else
+            def = true;
+        if (category.getAttribute (StyleConstants.Bold) != null)
+            sb.append ('+').append (loc ("Bold"));   // NOI18N
+        if (category.getAttribute (StyleConstants.Italic) != null)
+            sb.append ('+').append (loc ("Italic"));
+        
+        if (def) {
+            sb.insert (0, loc ("Default"));
+            return sb.toString ();
+        } else {
+            String result = sb.toString ();
+            return result.replace ('+', ' ');
+        }
+    }
+    
+    private static Integer defaultFontSize;
+    private static Integer getDefaultFontSize () {
+        if (defaultFontSize == null) {
+            defaultFontSize = (Integer) UIManager.get 
+                ("customFontSize");                                   // NOI18N
+            if (defaultFontSize == null) {
+                int s = UIManager.getFont ("TextField.font").getSize (); // NOI18N
+                if (s < 12) s = 12;
+                defaultFontSize = new Integer (s);
+            }
+        }
+        return defaultFontSize;
     }
     
     private static class LanguagesComparator implements Comparator {

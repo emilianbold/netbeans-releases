@@ -15,9 +15,11 @@ package org.netbeans.modules.options.colors;
 
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JList;
 import javax.swing.UIManager;
-import org.netbeans.modules.options.colors.ColorModel.Category;
+import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 
 
 class CategoryRenderer extends DefaultListCellRenderer {
@@ -36,8 +38,8 @@ class CategoryRenderer extends DefaultListCellRenderer {
 	    setBackground (list.getBackground ());
 	    setForeground (list.getForeground ());
 	}
-	setIcon (((Category) value).getIcon ());
-	setText (((Category) value).getDisplayName ());
+	setIcon ((Icon) ((AttributeSet) value).getAttribute ("icon"));
+	setText ((String) ((AttributeSet) value).getAttribute (EditorStyleConstants.DisplayName));
 
 	setEnabled (list.isEnabled ());
 	setFont (list.getFont ());
