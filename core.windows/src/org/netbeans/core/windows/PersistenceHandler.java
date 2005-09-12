@@ -249,8 +249,7 @@ final class PersistenceHandler implements PersistenceObserver {
         if(mode == null) {
             mode = createModeFromConfig(mc);
         }
-        
-        return initModeFromConfig(mode, mc);
+        return mode;
     }
     
     private ModeImpl createModeFromConfig(ModeConfig mc) {
@@ -657,7 +656,8 @@ final class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("WMI.modeConfigAdded mo:" + modeConfig.name); // NOI18N
         }
-        getModeFromConfig(modeConfig);
+        ModeImpl mode = getModeFromConfig(modeConfig);
+        initModeFromConfig(mode, modeConfig);
     }
     
     /** Handles removing mode from model.
