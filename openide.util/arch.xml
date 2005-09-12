@@ -465,7 +465,7 @@ org.my.netbeans.extramodule.ExtraTip
         <p/>
         If the property is unspecified, the default <code>MetaInfServicesLookup</code>
         is constructed for <code>Thread.currentThread().getContextclassLoader()</code>
-        that implements the <a href="#answer-compat-standards">JDK's standard</a>. If, by 
+        that implements the <a href="architecture-summary.html#answer-compat-standards">JDK's standard</a>. If, by 
         a chance an instance of 
         <a href="@TOP@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
         is found

@@ -77,7 +77,7 @@ public void run () {
       <class package="org.openide.util" name="RequestProcessor"/>
       <issue number="33467"/>
     </change>
-    <change>
+    <change id="textual-icons-for-actions" >
       <api name="actions"/>
       <summary>Can create textual icons for actions</summary>
       <date day="23" month="3" year="2000"/>
@@ -90,7 +90,7 @@ public void run () {
       </description>
       <class package="org.openide.util.actions" name="SystemAction"/>
     </change>
-    <change>
+    <change id="use-icon-instead-of-imageicon" >
       <api name="actions"/>
       <summary>
         <code>SystemAction</code> refers to <code>Icon</code> rather than <code>ImageIcon</code>
@@ -706,7 +706,7 @@ public void run () {
       <class package="org.openide.util.lookup" name="AbstractLookup"/>
       <class package="org.openide.util.lookup" name="InstanceContent"/>
     </change>
-<change>
+    <change id="clone-service-type" >
       <api name="lookup"/>
       <summary>
 <code>ServiceType.createClone</code> added</summary>
@@ -717,7 +717,7 @@ public void run () {
       </description>
       <class package="org.openide" name="ServiceType"/>
     </change>
-    <change>
+    <change id="logging-added-to-error-manager" >
       <api name="util"/>
       <summary>
 <code>ErrorManager.isLoggable</code> added</summary>
