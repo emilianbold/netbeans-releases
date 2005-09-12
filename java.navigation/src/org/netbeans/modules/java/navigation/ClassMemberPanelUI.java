@@ -19,17 +19,16 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.MenuSelectionManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.java.navigation.base.CellRenderer;
 import org.netbeans.modules.java.navigation.base.NavigatorJList;
-import org.netbeans.modules.java.navigation.base.NavigatorModel;
 import org.netbeans.modules.java.navigation.base.SearchPanel;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.netbeans.modules.java.navigation.base.TooltipHack;
@@ -63,9 +62,14 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
     private void init () {
         // main content
         pane = new JScrollPane();
+        
+        
+        pane.setBorder (BorderFactory.createEmptyBorder());
+        pane.setViewportBorder(BorderFactory.createEmptyBorder());
+        
         content = new NavigatorJList(pane);
+
         content.setCellRenderer(new CellRenderer());
-        content.setAutoscrolls(true);
         content.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         pane.getViewport().setView(content);
         // no scrollbar if abbreviations enabled
@@ -152,5 +156,4 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
         content.setFixedCellHeight(height);
         firstPaint = false;
     }
-    
 }
