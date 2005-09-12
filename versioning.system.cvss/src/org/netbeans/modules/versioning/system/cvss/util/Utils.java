@@ -434,7 +434,7 @@ public class Utils {
      * 
      * @return status constant suitable for 'by importance' comparators
      */ 
-    private static int getComparableStatus(int status) {
+    public static int getComparableStatus(int status) {
         switch (status) {
         case FileInformation.STATUS_VERSIONED_CONFLICT:
             return 0;

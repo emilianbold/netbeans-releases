@@ -174,6 +174,7 @@ public class SyncFileNode extends AbstractNode {
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, "Path", "Path");
             shortPath = Utils.getRelativePath(node.getFile());
+            setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName());
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -193,10 +194,15 @@ public class SyncFileNode extends AbstractNode {
         }
     }
 
+    private static final String [] zeros = new String [] { "", "00", "0", "" };
+    
     private class StatusProperty extends SyncFileProperty {
-
+        
         public StatusProperty() {
             super(COLUMN_NAME_STATUS, String.class, "Status", "Status");
+            String shortPath = Utils.getRelativePath(node.getFile());
+            String sortable = Integer.toString(Utils.getComparableStatus(node.getInformation().getStatus()));
+            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + SyncFileNode.this.getName());
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {

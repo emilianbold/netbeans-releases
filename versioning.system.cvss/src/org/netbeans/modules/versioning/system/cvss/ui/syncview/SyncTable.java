@@ -44,8 +44,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
@@ -197,7 +195,6 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             sorter.setColumnComparator(i, null);
             sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
             if (SyncFileNode.COLUMN_NAME_STATUS.equals(tableColumns[i])) {
-                sorter.setColumnComparator(i, new StatusPropertyComparator());
                 sorter.setSortingStatus(i, TableSorter.ASCENDING);
                 break;
             }
@@ -420,14 +417,6 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;
-        }
-    }
-
-    private class StatusPropertyComparator extends Utils.ByImportanceComparator {
-        public int compare(Object o1, Object o2) {
-            Integer row1 = (Integer) o1;
-            Integer row2 = (Integer) o2;
-            return super.compare(nodes[row1.intValue()].getFileInformation(), nodes[row2.intValue()].getFileInformation());
         }
     }
 }
