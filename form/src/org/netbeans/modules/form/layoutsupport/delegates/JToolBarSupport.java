@@ -33,6 +33,20 @@ public class JToolBarSupport extends AbstractLayoutSupport {
         return JToolBar.class;
     }
 
+    public void addComponentsToContainer(Container container,
+                                         Container containerDelegate,
+                                         Component[] components,
+                                         int index) {
+        // Issue 63955 and JDK bug 4294758
+        LayoutManager lm = containerDelegate.getLayout();
+        // Cannot use instanceof BoxLayout because JToolBar
+        // uses DefaultToolBarLayout wrapper around BoxLayout
+        if (lm instanceof LayoutManager2) {
+            ((LayoutManager2)lm).invalidateLayout(containerDelegate);
+        }
+        super.addComponentsToContainer(container, containerDelegate, components, index);
+    }
+
     /** This method calculates position (index) for a component dragged
      * over a container (or just for mouse cursor being moved over container,
      * without any component).

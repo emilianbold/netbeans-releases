@@ -179,6 +179,15 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                                                         containerDelegate));
     }
 
+    public void addComponentsToContainer(Container container,
+                                         Container containerDelegate,
+                                         Component[] components,
+                                         int index) {
+        // Issue 63955 and JDK bug 4294758
+        ((LayoutManager2)containerDelegate.getLayout()).invalidateLayout(containerDelegate);
+        super.addComponentsToContainer(container, containerDelegate, components, index);
+    }
+
     // ------------
 
     /** Creates a default instance of LayoutManager (for internal use).
