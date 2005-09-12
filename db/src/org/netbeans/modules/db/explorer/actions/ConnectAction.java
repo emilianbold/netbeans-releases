@@ -39,6 +39,7 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 
@@ -119,13 +120,19 @@ public class ConnectAction extends DatabaseAction {
 
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
-                    if (exc instanceof ClassNotFoundException) {
-                        String message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    if (exc instanceof DDLException) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc.getCause());
                     } else {
-                        String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                     }
+                    
+                    String message = null;
+                    if (exc instanceof ClassNotFoundException) {
+                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
+                    } else {
+                        message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); //NOI18N
+                    }
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
             };
 
