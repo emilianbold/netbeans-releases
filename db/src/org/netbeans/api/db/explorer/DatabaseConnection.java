@@ -80,7 +80,7 @@ public final class DatabaseConnection {
      * Creates a new DatabaseConnection instance. 
      * 
      * @param driver the JDBC driver the new connection uses; cannot be null.
-     * @param connectionURL the URL of this connection; cannot be null.
+     * @param databaseURL the URL of the database to connect to; cannot be null.
      * @param user the username.
      * @param password the password.
      * @param rememberPassword whether to remeber the password for the current session.
@@ -89,15 +89,15 @@ public final class DatabaseConnection {
      *
      * @throws NullPointerException if driver or database are null.
      */
-    public static DatabaseConnection create(JDBCDriver driver, String connectionURL, 
+    public static DatabaseConnection create(JDBCDriver driver, String databaseURL, 
             String user, String schema, String password, boolean rememberPassword) {
-        if (driver == null || connectionURL == null) {
+        if (driver == null || databaseURL == null) {
             throw new NullPointerException();
         }
         org.netbeans.modules.db.explorer.DatabaseConnection conn = new org.netbeans.modules.db.explorer.DatabaseConnection();
         conn.setDriverName(driver.getName());
         conn.setDriver(driver.getClassName());
-        conn.setDatabase(connectionURL);
+        conn.setDatabase(databaseURL);
         conn.setUser(user);
         conn.setSchema(schema);
         conn.setPassword(password);
