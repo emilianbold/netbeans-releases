@@ -46,6 +46,7 @@ public class UpdateHelper {
 
     private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate");
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
+    private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version";
 
     private final Project project;
     private final AntProjectHelper helper;
@@ -256,15 +257,15 @@ public class UpdateHelper {
                 root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                 root.setAttribute ("id","test.src.dir");   //NOI18N
                 testRoots.appendChild (root);
-                newRoot.appendChild (testRoots);
-                cachedElement = newRoot;
+                newRoot.appendChild (testRoots);                
+                cachedElement = updateMinAntVersion (newRoot, doc);
             } else {
                 oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true);    //NOI18N
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
                     Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
                     copyDocument (doc, oldRoot, newRoot);
-                    cachedElement = newRoot;
+                    cachedElement = updateMinAntVersion (newRoot, doc);
                 }
             }
         }
@@ -313,6 +314,20 @@ public class UpdateHelper {
                 to.appendChild (newNode);
             }
         }
+    }
+    
+    private static Element updateMinAntVersion (final Element root, final Document doc) {
+        NodeList list = root.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,MINIMUM_ANT_VERSION_ELEMENT);
+        if (list.getLength() == 1) {
+            Element me = (Element) list.item(0);
+            list = me.getChildNodes();
+            if (list.getLength() == 1) {
+                me.replaceChild (doc.createTextNode(J2SEProjectGenerator.MINIMUM_ANT_VERSION), list.item(0));
+                return root;
+            }
+        }
+        assert false : "Invalid project file"; //NOI18N
+        return root;
     }
 
     /**

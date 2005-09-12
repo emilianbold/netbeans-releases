@@ -43,6 +43,8 @@ import org.w3c.dom.NodeList;
  */
 public class J2SEProjectGenerator {
     
+    static final String MINIMUM_ANT_VERSION = "1.6.3";
+    
     private J2SEProjectGenerator() {}
     
     /**
@@ -142,7 +144,7 @@ public class J2SEProjectGenerator {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         Element minant = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-        minant.appendChild(doc.createTextNode("1.6")); // NOI18N
+        minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION)); // NOI18N
         data.appendChild(minant);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
