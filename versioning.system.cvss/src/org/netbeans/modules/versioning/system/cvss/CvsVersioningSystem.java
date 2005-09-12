@@ -491,7 +491,11 @@ public class CvsVersioningSystem {
         FileStatusProvider.getInstance().shutdown();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                CvsSynchronizeTopComponent.getInstance().close();
+                try {
+                    CvsSynchronizeTopComponent.getInstance().close();
+                } catch (Throwable e) {
+                    // ignore, this component is already invalid
+                }
             }
         });
     }
