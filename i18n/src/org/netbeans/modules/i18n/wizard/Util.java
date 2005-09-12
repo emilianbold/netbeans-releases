@@ -21,6 +21,7 @@ import org.netbeans.modules.properties.PropertiesDataObject;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -130,14 +131,48 @@ final class Util extends org.netbeans.modules.i18n.Util {
         }
 
         for (int i = 0; i<activatedNodes.length; i++) {
+            Object o;
+            DataObject dobj = null;
             Node node = activatedNodes[i];
+            
+            /*
+             * This block of code fixes IssueZilla bug #63461:
+             *
+             *     Apisupport modules visualizes the contents of layer.xml
+             *     in project view. The popup for folders in the layer.xml
+             *     contains Tools->Internationalize->* actions.
+             *
+             *     Generally should hide on nonlocal files, I suppose.
+             *
+             * Local files are recognized by protocol of the corresponding URL -
+             * local files are those that have protocol "file".
+             */
+            o = node.getCookie(DataObject.class);
+            if (o != null) {
+                dobj = (DataObject) o;
+                FileObject primaryFile = dobj.getPrimaryFile();
+                
+                boolean isLocal;
+                try {
+                    isLocal = !primaryFile.isVirtual()
+                              && primaryFile.isValid()
+                              && primaryFile.getURL().getProtocol()
+                                      .equals("file");                  //NOI18N
+                } catch (FileStateInvalidException ex) {
+                    isLocal = false;
+                }
+                
+                if (isLocal == false) {
+                    return false;
+                }
+            }
+            
             Object container = node.getCookie(DataObject.Container.class);
             if (container != null) continue;
 //            if (node.getCookie(EditorCookie.class) == null) {
 //                return false;
 //            }
 
-	    DataObject dobj = (DataObject)node.getCookie(DataObject.class);
 	    if (dobj == null) return false;
 	    
 	    // check that the node has project
