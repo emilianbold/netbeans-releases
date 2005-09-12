@@ -42,6 +42,7 @@ import java.awt.*;
  */
 class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
+    private final SearchHistoryPanel parent;
     private final List              results;
 
     private DiffTreeTable treeView;
@@ -55,7 +56,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private int                     currentIndex;
     private boolean                 dividerSet;
 
-    public DiffResultsView(List results) {
+    public DiffResultsView(SearchHistoryPanel parent, List results) {
+        this.parent = parent;
         this.results = results;
         treeView = new DiffTreeTable();
         treeView.setResults(results);
@@ -94,10 +96,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             currentDifferenceIndex = 0;
             if (nodes.length == 0) {
                 showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"));
+                parent.refreshComponents(false);
                 return;
             }
             else if (nodes.length > 2) {
                 showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_TooManyRevisions"));
+                parent.refreshComponents(false);
                 return;
             }
 
@@ -126,6 +130,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                         }
                     } catch (Exception e) {
                         showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));
+                        parent.refreshComponents(false);
                         return;
                     }
                 }
@@ -203,6 +208,18 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         }
     }
 
+    boolean isNextEnabled() {
+        if (currentDiff != null) {
+            return currentIndex < treeView.getRowCount() - 1 || currentDifferenceIndex < currentDiff.getDifferenceCount() - 1;
+        } else {
+            return false;
+        }
+    }
+
+    boolean isPrevEnabled() {
+        return currentIndex > 0 || currentDifferenceIndex > 0;
+    }
+    
     /**
      * Selects given revision in the view as if done by the user.
      *
@@ -249,6 +266,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                 currentDifferenceIndex = showLastDifference ? currentDiff.getDifferenceCount() - 1 : 0;
                                 currentDiff.setCurrentDifference(currentDifferenceIndex);
                             }
+                            parent.refreshComponents(false);
                         }
                     }
                 });

@@ -54,6 +54,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private List                    dispResults;
     private SummaryView             summaryView;    
     private DiffResultsView         diffView;
+    
+    private AbstractAction nextAction;
+    private AbstractAction prevAction;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -95,7 +98,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             tbDiff.setPreferredSize(d1);
         }
         
-        Action nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png"))) {
+        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png"))) {
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
                                                    getString("CTL_DiffPanel_Next_Tooltip"));                
@@ -104,7 +107,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 diffView.onNextButton();
             }
         };
-        Action prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png"))) {
+        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png"))) {
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
                                                    getString("CTL_DiffPanel_Prev_Tooltip"));                
@@ -151,9 +154,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return explorerManager;
     }
     
-    private void refreshComponents(boolean refreshResults) {
-        bNext.setEnabled(!tbSummary.isSelected());
-        bPrev.setEnabled(!tbSummary.isSelected());
+    void refreshComponents(boolean refreshResults) {
         if (refreshResults) {
             resultsPanel.removeAll();
             if (results == null) {
@@ -170,7 +171,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     resultsPanel.add(summaryView.getComponent());
                 } else {
                     if (diffView == null) {
-                        diffView = new DiffResultsView(dispResults);
+                        diffView = new DiffResultsView(this, dispResults);
                     }
                     resultsPanel.add(diffView.getComponent());
                 }
@@ -178,6 +179,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             resultsPanel.revalidate();
             resultsPanel.repaint();
         }
+        nextAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isNextEnabled());
+        prevAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isPrevEnabled());
 
         divider.setArrowDirection(criteriaVisible ? Divider.UP : Divider.DOWN);
         searchCriteriaPanel.setVisible(criteriaVisible);
