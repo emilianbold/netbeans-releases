@@ -433,6 +433,23 @@ the Options window:-->
 <!--csh page for projects|settings|Java Sources:-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 
+<!--CSH for Debugger windows-->
+<mapID target="NetbeansDebuggerSourcesNode" url="debug/CSH/sources_view.html" />
+<mapID target="NetbeansDebuggerClassNode" url="debug/CSH/classes_view.html" />
+<mapID target="NetbeansDebuggerWatchNode" url="debug/CSH/watches_view.html" />
+<mapID target="NetbeansDebuggerVariableNode" url="debug/CSH/variables_view.html" />
+<mapID target="NetbeansDebuggerCallStackNode" url="debug/CSH/callstack_view.html" />
+<mapID target="NetbeansDebuggerSessionNode" url="debug/CSH/sessions_view.html" />
+<mapID target="NetbeansDebuggerThreadNode" url="debug/CSH/threads_view.html" />
+<mapID target="NetbeansDebuggerBreakpointNode" url="debug/CSH/breakpoint_view.html" />
+
+
+<!--TODO - add mappings for debug dialog topics debug.add.breakpoint.java.class
+debug.add.breakpoint.java.exception
+debug.add.breakpoint.java.field
+debug.add.breakpoint.java.method
+debug.add.breakpoint.java.thread
+NetbeansDebuggerBreakpointExceptionJPDA-->
 
 <!-- Options | Editing | Java Sources | Override Methods :-->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
