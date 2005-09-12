@@ -342,6 +342,10 @@ public class FormModel
         LayoutSupportDelegate currentDel = currentLS.getLayoutDelegate();
         metacont.setOldLayoutSupport(false);
         fireContainerLayoutExchanged(metacont, currentDel, null);
+        if (!layoutModel.changeComponentToContainer(metacont.getId())) {
+            layoutModel.addRootComponent(
+                    new LayoutComponent(metacont.getId(), true));
+        }
     }
 
     public void setNaturalContainerLayout(RADVisualContainer metacont) {
@@ -350,11 +354,6 @@ public class FormModel
             return; // already set (no old layout support)
         
         setNaturalContainerLayoutImpl(metacont);
-
-        if (!layoutModel.changeComponentToContainer(metacont.getId())) {
-            layoutModel.addRootComponent(
-                    new LayoutComponent(metacont.getId(), true));
-        }
     }
 
     public void removeComponent(RADComponent metacomp, boolean fromModel) {
