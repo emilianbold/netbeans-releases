@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.sun.dd.api.common</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.serverresources</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.impl.verifier</package>
             </friend-packages>
         </data>
     </configuration>
