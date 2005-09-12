@@ -22,7 +22,7 @@ import java.awt.peer.TextAreaPeer;
  * @author Tran Duc Trung
  */
 
-class FakeTextAreaPeer extends FakeTextComponentPeer implements TextAreaPeer
+class FakeTextAreaPeer extends FakeTextComponentPeer
 {
     FakeTextAreaPeer(TextArea target) {
         super(target);

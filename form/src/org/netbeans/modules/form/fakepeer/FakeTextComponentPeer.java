@@ -24,7 +24,6 @@ import java.awt.peer.TextComponentPeer;
  */
 
 class FakeTextComponentPeer extends FakeComponentPeer
-    implements TextComponentPeer
 {
     private String _text;
     private int _caretPosition = 0;

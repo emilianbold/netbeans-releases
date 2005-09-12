@@ -22,7 +22,7 @@ import java.awt.peer.ListPeer;
  * @author Tran Duc Trung
  */
 
-class FakeListPeer extends FakeComponentPeer implements ListPeer
+class FakeListPeer extends FakeComponentPeer 
 {
     FakeListPeer(List target) {
         super(target);

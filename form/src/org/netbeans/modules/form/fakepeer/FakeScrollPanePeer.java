@@ -22,7 +22,7 @@ import java.awt.peer.ScrollPanePeer;
  * @author Tran Duc Trung
  */
 
-class FakeScrollPanePeer extends FakeContainerPeer implements ScrollPanePeer
+class FakeScrollPanePeer extends FakeContainerPeer 
 {
     FakeScrollPanePeer(ScrollPane target) {
         super(target);

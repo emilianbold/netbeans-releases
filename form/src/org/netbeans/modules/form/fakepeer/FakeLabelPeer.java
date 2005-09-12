@@ -22,7 +22,7 @@ import java.awt.peer.LabelPeer;
  * @author Tran Duc Trung
  */
 
-class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
+class FakeLabelPeer extends FakeComponentPeer 
 {
     FakeLabelPeer(Label target) {
         super(target);

@@ -22,7 +22,7 @@ import java.awt.peer.ContainerPeer;
  * @author Tran Duc Trung
  */
 
-abstract class FakeContainerPeer extends FakeComponentPeer implements ContainerPeer
+abstract class FakeContainerPeer extends FakeComponentPeer 
 {
     private Insets _insets;
 

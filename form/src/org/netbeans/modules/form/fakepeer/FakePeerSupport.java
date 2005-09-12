@@ -15,8 +15,22 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
+import java.awt.peer.ButtonPeer;
+import java.awt.peer.CanvasPeer;
+import java.awt.peer.CheckboxPeer;
+import java.awt.peer.ChoicePeer;
 import java.awt.peer.ComponentPeer;
+import java.awt.peer.ContainerPeer;
+import java.awt.peer.LabelPeer;
+import java.awt.peer.ListPeer;
+import java.awt.peer.PanelPeer;
+import java.awt.peer.ScrollPanePeer;
+import java.awt.peer.ScrollbarPeer;
+import java.awt.peer.TextAreaPeer;
+import java.awt.peer.TextComponentPeer;
+import java.awt.peer.TextFieldPeer;
 import java.lang.reflect.*;
+
 
 /**
  *
@@ -27,7 +41,7 @@ public class FakePeerSupport
 {
     private FakePeerSupport() {
     }
-
+    
     public static boolean attachFakePeer(Component comp) {
         if (comp == null || comp.isDisplayable()
               || comp instanceof javax.swing.JComponent
@@ -37,36 +51,59 @@ public class FakePeerSupport
         FakePeer peer = null;
 
         if (comp instanceof Label)
-            peer = new FakeLabelPeer((Label) comp);
+            peer = getFakePeer(LabelPeer.class, new FakeLabelPeer((Label) comp));
         else if (comp instanceof Button)
-            peer = new FakeButtonPeer((Button) comp);
+            peer = getFakePeer(ButtonPeer.class, new FakeButtonPeer((Button) comp));                   
         else if (comp instanceof Panel)
-            peer = new FakePanelPeer((Panel) comp);
+            peer = getFakePeer(new Class[] {ContainerPeer.class, PanelPeer.class}, new FakePanelPeer((Panel) comp));
         else if (comp instanceof TextField)
-            peer = new FakeTextFieldPeer((TextField) comp);
+            peer = getFakePeer(new Class[] {TextFieldPeer.class, TextComponentPeer.class}, new FakeTextFieldPeer((TextField) comp));
         else if (comp instanceof TextArea)
-            peer = new FakeTextAreaPeer((TextArea) comp);
+            peer = getFakePeer(new Class[] {TextAreaPeer.class, TextComponentPeer.class}, new FakeTextAreaPeer((TextArea) comp));
         else if (comp instanceof TextComponent)
-            peer = new FakeTextComponentPeer((TextComponent) comp);
+            peer = getFakePeer(TextComponentPeer.class, new FakeTextComponentPeer((TextComponent) comp));
         else if (comp instanceof Checkbox)
-            peer = new FakeCheckboxPeer((Checkbox) comp);
+            peer = getFakePeer(CheckboxPeer.class, new FakeCheckboxPeer((Checkbox) comp));
         else if (comp instanceof Choice)
-            peer = new FakeChoicePeer((Choice) comp);
+            peer = getFakePeer(ChoicePeer.class, new FakeChoicePeer((Choice) comp));
         else if (comp instanceof List)
-            peer = new FakeListPeer((List) comp);
+            peer = getFakePeer(ListPeer.class, new FakeListPeer((List) comp));
         else if (comp instanceof Scrollbar)
-            peer = new FakeScrollbarPeer((Scrollbar) comp);
+            peer = getFakePeer(ScrollbarPeer.class, new FakeScrollbarPeer((Scrollbar) comp));
         else if (comp instanceof ScrollPane)
-            peer = new FakeScrollPanePeer((ScrollPane) comp);
+            peer = getFakePeer(new Class[] {ContainerPeer.class, ScrollPanePeer.class}, new FakeScrollPanePeer((ScrollPane) comp));
         else if (comp instanceof Canvas)
-            peer = new FakeCanvasPeer((Canvas) comp);
+            peer = getFakePeer(CanvasPeer.class, new FakeCanvasPeer((Canvas) comp));
         else
             return false;
 
         attachFakePeer(comp, peer);
         return true;
     }
-
+    
+    private static FakePeer getFakePeer(Class fakePeerInterfaces, FakeComponentPeer compPeer) {                
+        return getFakePeer(new Class[] {fakePeerInterfaces}, compPeer);
+    }
+    
+    private static FakePeer getFakePeer(Class[] fakePeerInterfaces, FakeComponentPeer compPeer) {        
+        
+        // FakePeer.class and java.awt.peer.LightweightPeer.class interfaces
+        // should be implemented for each FakeComponentPeer
+        Class[] interfaces = new Class[fakePeerInterfaces.length + 2];
+        System.arraycopy(fakePeerInterfaces, 0, interfaces, 0,  fakePeerInterfaces.length);
+        interfaces[fakePeerInterfaces.length] = FakePeer.class;
+        interfaces[fakePeerInterfaces.length+1] = java.awt.peer.LightweightPeer.class;
+        
+        Class proxyClass = Proxy.getProxyClass(compPeer.getClass().getClassLoader(), interfaces);        
+        FakePeerInvocationHandler handler = new FakePeerInvocationHandler(compPeer); 
+        try {
+           return (FakePeer) proxyClass.getConstructor(new Class[] { InvocationHandler.class }).newInstance(new Object[] { handler });                   
+        } catch (Exception e) {
+            org.openide.ErrorManager.getDefault().notify(e);
+        }
+        return null;
+    }
+    
     public static void attachFakePeer(Component comp, ComponentPeer peer) {
         try {
             Field f = Component.class.getDeclaredField("peer"); // NOI18N

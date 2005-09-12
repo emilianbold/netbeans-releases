@@ -22,7 +22,7 @@ import java.awt.peer.ChoicePeer;
  * @author Tran Duc Trung
  */
 
-class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
+class FakeChoicePeer extends FakeComponentPeer 
 {
     FakeChoicePeer(Choice target) {
         super(target);

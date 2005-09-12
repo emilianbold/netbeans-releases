@@ -22,7 +22,7 @@ import java.awt.peer.CheckboxPeer;
  * @author Tran Duc Trung
  */
 
-class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
+class FakeCheckboxPeer extends FakeComponentPeer 
 {
     FakeCheckboxPeer(Checkbox target) {
         super(target);

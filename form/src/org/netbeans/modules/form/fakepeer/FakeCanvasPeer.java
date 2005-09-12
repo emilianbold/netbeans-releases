@@ -21,8 +21,7 @@ import java.awt.peer.CanvasPeer;
  *
  * @author Tran Duc Trung
  */
-
-class FakeCanvasPeer extends FakeComponentPeer implements CanvasPeer
+class FakeCanvasPeer extends FakeComponentPeer 
 {
     FakeCanvasPeer(Canvas target) {
         super(target);

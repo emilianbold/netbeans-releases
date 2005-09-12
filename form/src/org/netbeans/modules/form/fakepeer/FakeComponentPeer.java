@@ -17,14 +17,14 @@ package org.netbeans.modules.form.fakepeer;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-import javax.swing.*;
+
 
 /**
  *
  * @author Tran Duc Trung
  */
 
-abstract class FakeComponentPeer implements FakePeer, java.awt.peer.LightweightPeer
+abstract class FakeComponentPeer 
 {
     Component _delegate;
     Component _target;
@@ -212,7 +212,7 @@ abstract class FakeComponentPeer implements FakePeer, java.awt.peer.LightweightP
     {
         return false;
     }
-
+    
     // not in JDK 1.4
     public boolean isFocusTraversable() {
         return false;

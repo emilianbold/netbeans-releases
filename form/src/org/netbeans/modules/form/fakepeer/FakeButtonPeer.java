@@ -16,7 +16,7 @@ package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
 import java.awt.peer.ButtonPeer;
-import javax.swing.*;
+
 
 
 /**
@@ -24,7 +24,7 @@ import javax.swing.*;
  * @author Tran Duc Trung
  */
 
-class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
+class FakeButtonPeer extends FakeComponentPeer 
 {
     FakeButtonPeer(Button target) {
         super(target);

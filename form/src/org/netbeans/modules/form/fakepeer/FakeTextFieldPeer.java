@@ -22,7 +22,7 @@ import java.awt.peer.TextFieldPeer;
  * @author Tran Duc Trung
  */
 
-class FakeTextFieldPeer extends FakeTextComponentPeer implements TextFieldPeer
+class FakeTextFieldPeer extends FakeTextComponentPeer 
 {
     FakeTextFieldPeer(TextField target) {
         super(target);

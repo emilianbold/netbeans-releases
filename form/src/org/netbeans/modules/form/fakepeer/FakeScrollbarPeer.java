@@ -22,7 +22,7 @@ import java.awt.peer.ScrollbarPeer;
  * @author Tran Duc Trung
  */
 
-class FakeScrollbarPeer extends FakeComponentPeer implements ScrollbarPeer
+class FakeScrollbarPeer extends FakeComponentPeer 
 {
     FakeScrollbarPeer(Scrollbar target) {
         super(target);

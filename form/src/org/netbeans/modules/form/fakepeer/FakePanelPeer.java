@@ -22,7 +22,7 @@ import java.awt.peer.PanelPeer;
  * @author Tran Duc Trung
  */
 
-class FakePanelPeer extends FakeContainerPeer implements PanelPeer
+class FakePanelPeer extends FakeContainerPeer 
 {
     FakePanelPeer(Panel target) {
         super(target);
