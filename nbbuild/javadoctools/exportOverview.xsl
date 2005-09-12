@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:template>
     <xsl:template match="@*|node()" mode="description" >
        <xsl:copy  >
-          <xsl:apply-templates select="@*|node()"/>
+          <xsl:apply-templates select="@*|node()" mode="description" />
        </xsl:copy>
     </xsl:template>
      
@@ -245,7 +245,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:apply-templates select="summary/node()"/>
             </a>
             <p>
-                <xsl:apply-templates select="description/node()" />
+                <xsl:apply-templates select="description/node()" mode="description" />
             </p>
         </li>
     </xsl:template>
