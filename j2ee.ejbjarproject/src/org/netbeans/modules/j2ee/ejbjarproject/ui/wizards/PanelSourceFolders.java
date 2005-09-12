@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,11 +32,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 //XXX There should be a way how to add nonexistent test dir
@@ -119,6 +117,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         
         // #56706: only reinitialize the locations on the panel if the user changed the project location
         File projectLocation = (File) settings.getProperty(WizardProperties.SOURCE_ROOT);
+        ((FolderList)this.sourcePanel).setProjectFolder(projectLocation);
+        ((FolderList)this.testsPanel).setProjectFolder(projectLocation);
         if (!projectLocation.equals(oldProjectLocation)) {
             File[] srcRoot = (File[]) settings.getProperty (WizardProperties.JAVA_ROOT);      //NOI18N
             if (srcRoot!=null) {

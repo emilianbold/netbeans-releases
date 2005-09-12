@@ -14,8 +14,6 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 import java.awt.Component;
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultListModel;
@@ -202,23 +200,22 @@ public final class FolderList extends javax.swing.JPanel {
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
             Set invalidRoots = new HashSet ();
-            Set relatedFolders = this.relatedFolderList == null ?
-                Collections.EMPTY_SET : new HashSet(Arrays.asList (this.relatedFolderList.getFiles()));            
+            File[] relatedFolders = this.relatedFolderList == null ? 
+                new File[0] : this.relatedFolderList.getFiles();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
-                int pos = model.indexOf (normalizedFile);
-                if (FileOwnerQuery.getOwner(normalizedFile.toURI())!=null) {
+                if (!isValidRoot(normalizedFile, relatedFolders, this.projectFolder)) {
                     invalidRoots.add (normalizedFile);
-                }
-                else if (relatedFolders.contains(normalizedFile)) {
-                    invalidRoots.add (normalizedFile);
-                } 
-                else if (pos == -1) {                
-                    model.addElement (normalizedFile);
-                    indecesToSelect[i] = index;
                 }
                 else {
-                    indecesToSelect[i] = pos;
+                    int pos = model.indexOf (normalizedFile);                
+                    if (pos == -1) {
+                        model.addElement (normalizedFile);
+                        indecesToSelect[i] = index;
+                    }
+                    else {
+                        indecesToSelect[i] = pos;
+                    }
                 }
             }
             this.roots.setSelectedIndices(indecesToSelect);
@@ -229,10 +226,32 @@ public final class FolderList extends javax.swing.JPanel {
             }
             if (invalidRoots.size()>0) {
                 EjbJarSourceRootsUi.showIllegalRootsDialog(invalidRoots);
-            }            
+            }
         }
     }//GEN-LAST:event_addButtonActionPerformed
     
+    static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {        
+        if (FileOwnerQuery.getOwner(file.toURI())!=null 
+            && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
+            return false;
+        }                
+        else if (contains (file, relatedRoots)) {
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean contains (File folder, File[] roots) {
+        String path = folder.getAbsolutePath ();
+        for (int i=0; i<roots.length; i++) {
+            String rootPath = roots[i].getAbsolutePath();
+            if (rootPath.equals (path) || path.startsWith (rootPath + File.separatorChar)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static class Renderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             File f = (File) value;
