@@ -66,6 +66,9 @@ public final class AnnotationBarManager implements SideBarFactory {
     public static boolean annotationBarVisible(JTextComponent target) {
         if (target == null) return false;
         AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        if (ab == null) {
+            return false;
+        }
         return ab.getPreferredSize().width > 0;
     }
 }
