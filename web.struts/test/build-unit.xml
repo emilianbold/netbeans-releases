@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="org.netbeans.modules.web.struts/test-unit" basedir="." default="all">
+	<import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="default-compiler">
+        <!-- Build application before tests -->
+        <ant dir=".." target="jar"/>
+        <buildTests srcdir="unit/src" compileExcludes="**/data/**">
+            <classpath>
+                <!-- Add classpath elements needed to compile tests -->
+                <path refid="test.unit.compile.cp"/>
+            </classpath>
+        </buildTests>
+    </target>
+    
+</project>
+
