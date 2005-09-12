@@ -7,27 +7,30 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-
 
 /** Set which holds its members by using of WeakReferences.
 * MT level: unsafe.
+ * <p><strong>Note:</strong> as of JDK 6.0 (b51), you can instead use
+ * <pre>
+ * Set&lt;T&gt; s = Collections.newSetFromMap(new WeakHashMap&lt;T, Boolean&gt;());
+ * </pre>
 *
 * @author Ales Novak
 */
@@ -423,7 +426,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
 
         void checkModcount() {
             if (myModcount != modCount()) {
-                throw new java.util.ConcurrentModificationException();
+                throw new ConcurrentModificationException();
             }
         }
     }
