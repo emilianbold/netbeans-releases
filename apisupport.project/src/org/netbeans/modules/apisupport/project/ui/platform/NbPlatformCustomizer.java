@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -36,8 +35,6 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 public final class NbPlatformCustomizer extends JPanel {
-    
-    private static final Dimension PREFERRED_SIZE = new Dimension(720,400);
     
     static final String CHOOSER_STEP = getMessage("MSG_ChoosePlatfrom"); // NOI18N
     static final String INFO_STEP = getMessage("MSG_PlatformName"); // NOI18N
@@ -88,7 +85,6 @@ public final class NbPlatformCustomizer extends JPanel {
             }
         });
         refreshPlatform();
-        setPreferredSize(PREFERRED_SIZE);
     }
     
     private void refreshPlatform() {
@@ -295,7 +291,6 @@ public final class NbPlatformCustomizer extends JPanel {
         jc.putClientProperty("WizardPanel_contentData", new String[] { // NOI18N
             CHOOSER_STEP, INFO_STEP
         });
-        jc.setPreferredSize(new java.awt.Dimension(500, 380));
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
