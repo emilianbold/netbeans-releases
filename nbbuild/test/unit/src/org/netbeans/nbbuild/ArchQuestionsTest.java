@@ -12,23 +12,26 @@
  */
 
 package org.netbeans.nbbuild;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
+import java.io.StringReader;
+import java.util.ArrayList;
 import javax.xml.parsers.*;
-import junit.framework.*;
 
 import org.netbeans.junit.*;
 import org.w3c.dom.Document;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
 /** Check the behaviour Arch task.
  *
  * @author Jaroslav Tulach
  */
-public class ArchQuestionsTest extends NbTestCase {
+public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
+    /** debug messages to show if necessary */
+    private ArrayList/*<String>*/ msg = new ArrayList();
+    
     public ArchQuestionsTest (String name) {
         super (name);
     }
@@ -77,7 +80,14 @@ public class ArchQuestionsTest extends NbTestCase {
         String res = PublicPackagesInProjectizedXMLTest.readFile(answers);
         DocumentBuilderFactory fack = DocumentBuilderFactory.newInstance();
         fack.setValidating(false);
-        org.w3c.dom.Document dom = fack.newDocumentBuilder().parse(answers);
+        DocumentBuilder build = fack.newDocumentBuilder();
+        build.setEntityResolver(this);
+        org.w3c.dom.Document dom;
+        try {
+            dom = build.parse(answers);
+        } catch (IOException ex) {
+            throw (IOException)new IOException(ex.getMessage() + "\n" + msg.toString()).initCause(ex);
+        }
 
         org.w3c.dom.NodeList list = dom.getElementsByTagName("defaultanswer");
         assertTrue("There is at least one defaultanswer: " + res, list.getLength() > 0);
@@ -745,6 +755,12 @@ public class ArchQuestionsTest extends NbTestCase {
         if (txt[0].indexOf("http://www.netbeans.org/source/browse/") == -1) {
             fail ("reference to CVS location should be in output: " + txt[0]);
         }
+    }
+
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        msg.add("publicId: " + publicId + " systemId: " + systemId);
+        String x = "";
+        return new InputSource(new StringReader(x));
     }
     
     
