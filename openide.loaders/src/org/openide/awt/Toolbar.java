@@ -466,15 +466,16 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if( null == dobj )
             return false;
         //check if the dropped button (action) already exists in this toolbar
-        if( dobj instanceof InstanceDataObject ) {
+        InstanceCookie ic = (InstanceCookie)dobj.getCookie( InstanceCookie.class );
+        if( null != ic ) {
+            String instanceName = ic.instanceName();
             DataObject[] children = backingFolder.getChildren();
-            String instanceName = ((InstanceDataObject)dobj).instanceName();
             for( int i=0; i<children.length; i++ ) {
-                if( !(children[i] instanceof InstanceDataObject) )
+                if( null == children[i].getCookie( InstanceCookie.class ) )
                     continue;
+                ic = (InstanceCookie)children[i].getCookie( InstanceCookie.class );
                 //TODO is comparing instance names ok?
-                InstanceDataObject instChild = (InstanceDataObject)children[i];
-                if( instanceName.equals( instChild.instanceName() ) ) {
+                if( instanceName.equals( ic.instanceName() ) ) {
                     //user dropped to toolbat a new button that already exists in this toolbar
                     //just move the existing button to a new position
                     isDragSourceToolbar = true;
