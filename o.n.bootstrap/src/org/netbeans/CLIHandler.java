@@ -742,8 +742,7 @@ public abstract class CLIHandler extends Object {
             this.handlers = handlers;
             this.failOnUnknownOptions = failOnUnknownOptions;
             
-            socket = new ServerSocket(0);
-            
+            socket = new ServerSocket(0, 50, localHostAddress());
             start();
         }
         
