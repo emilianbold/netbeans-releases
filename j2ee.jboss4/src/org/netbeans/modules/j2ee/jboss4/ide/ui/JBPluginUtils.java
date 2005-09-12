@@ -31,6 +31,10 @@ import org.w3c.dom.NodeList;
  */
 public class JBPluginUtils {
     
+    public static final String SERVER_XML = File.separator + "deploy" + File.separator +
+                "jbossweb-tomcat55.sar" + File.separator + "server.xml";
+    
+    
     //------------  getting exists servers---------------------------
     /**
      * returns Hashmap
@@ -136,6 +140,47 @@ public class JBPluginUtils {
         result = domainDir + File.separator + "deploy"; //NOI18N
         return result;
         //todo: get real deploy path
+    }
+    
+    public static String getJBPort(String domainDir){
+        String defaultPort = "8080";
+        String serverXml = domainDir + SERVER_XML; //NOI18N
+        
+        File serverXmlFile = new File(serverXml);
+        if(!serverXmlFile.exists()){
+            return defaultPort;
+        }
+        
+        InputStream inputStream = null;
+        Document document = null;
+        try{
+            inputStream = new FileInputStream(serverXmlFile);
+            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            
+            // get the root element
+            Element root = document.getDocumentElement();
+            
+            NodeList children = root.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.item(i);
+                if (child.getNodeName().equals("Service")) {  // NOI18N
+                    NodeList nl = child.getChildNodes();
+                    for (int j = 0; j < nl.getLength(); j++){
+                        Node ch = nl.item(j);
+                        
+                        if (ch.getNodeName().equals("Connector")) {  // NOI18N
+                            return ch.getAttributes().getNamedItem("port").getNodeValue();
+                        }
+                    }
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            // it is ok
+            // it optional functionality so we don't need to look at any exception
+        }
+        
+        return defaultPort;
     }
 
 
