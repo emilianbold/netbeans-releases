@@ -213,13 +213,15 @@ PropertyChangeListener {
                         getValue (defaultCategory, StyleConstants.FontSize)
                     ))
                         fontSize = null;
-                    if (bold.equals (
-                        getValue (defaultCategory, StyleConstants.Bold)
-                    ))
+                    if (bold.equals 
+                        (getValue (defaultCategory, StyleConstants.Bold)) ||
+                        bold.equals (Boolean.FALSE)
+                    )
                         bold = null;
-                    if (italic.equals (
-                        getValue (defaultCategory, StyleConstants.Italic)
-                    ))
+                    if (italic.equals 
+                        (getValue (defaultCategory, StyleConstants.Italic)) ||
+                        italic.equals (Boolean.FALSE)
+                    )
                         italic = null;
                 }
                 if (fontName != null)
@@ -552,9 +554,12 @@ PropertyChangeListener {
         AttributeSet d = getDefault (category);
         if (d != null) return getValue (d, key);
         
+        if ("default".equals (
+            category.getAttribute (StyleConstants.NameAttribute)
+        )) return null;
         AttributeSet defaultCategory = getCategory 
             (currentScheme, currentLanguage, "default"); // NOI18N
-        return defaultCategory.getAttribute (key);
+        return getValue (defaultCategory, key);
     }
     
     private SimpleAttributeSet getDefault (AttributeSet category) {
@@ -598,9 +603,9 @@ PropertyChangeListener {
             sb.append ('+').append (category.getAttribute (StyleConstants.FontSize));
         else
             def = true;
-        if (category.getAttribute (StyleConstants.Bold) != null)
+        if (Boolean.TRUE.equals (category.getAttribute (StyleConstants.Bold)))
             sb.append ('+').append (loc ("Bold"));   // NOI18N
-        if (category.getAttribute (StyleConstants.Italic) != null)
+        if (Boolean.TRUE.equals (category.getAttribute (StyleConstants.Italic)))
             sb.append ('+').append (loc ("Italic"));
         
         if (def) {
