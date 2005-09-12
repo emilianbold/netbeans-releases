@@ -13,7 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!-- The root connection element. -->
-<!ELEMENT connection (driver-class|connection-url|schema|user)*>
+<!ELEMENT connection (driver-class|database-url|schema|user)*>
 
 <!-- The driver class. -->
 <!ELEMENT driver-class EMPTY>
@@ -21,16 +21,16 @@ Microsystems, Inc. All Rights Reserved.
     value CDATA #REQUIRED
 >
 
-<!-- The connection URL. -->
-<!ELEMENT connection-url EMPTY>
-<!ATTLIST connection-url 
+<!-- The database URL. -->
+<!ELEMENT database-url EMPTY>
+<!ATTLIST database-url 
     value CDATA #REQUIRED
 >
 
 <!-- The schema to which to connect by default. -->
 <!ELEMENT schema EMPTY>
 <!ATTLIST schema 
-    value CDATA #IMPLIED
+    value CDATA #REQUIRED
 >
 
 <!-- The database user to connect as. -->

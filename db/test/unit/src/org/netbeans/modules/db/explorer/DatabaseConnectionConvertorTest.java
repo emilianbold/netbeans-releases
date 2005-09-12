@@ -182,7 +182,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
                 writer.write("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.0//EN' 'http://www.netbeans.org/dtds/connection-1_0.dtd'>");
                 writer.write("<connection>");
                 writer.write("<driver-class value='org.foo.FooDriver'/>");
-                writer.write("<connection-url value='jdbc:foo:localhost'/>");
+                writer.write("<database-url value='jdbc:foo:localhost'/>");
                 writer.write("<schema value='schema'/>");
                 writer.write("<user value='user'/>");
                 writer.write("</connection>");
