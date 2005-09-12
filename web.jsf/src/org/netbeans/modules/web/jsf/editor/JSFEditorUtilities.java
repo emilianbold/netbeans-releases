@@ -133,8 +133,8 @@ public class JSFEditorUtilities {
         return new int []{-1,-1};
     }
     
-    public static void writeCaseIntoRule(JTextComponent target, String fromViewID, NavigationCase navigationCase) throws IOException{
-        BaseDocument doc = (BaseDocument)target.getDocument();
+    public static int writeCaseIntoRule(BaseDocument doc, String fromViewID, NavigationCase navigationCase) throws IOException{
+        int possition = -1;
         int [] definition = getNavigationRuleDefinition(doc, fromViewID);
         ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
         String sBean = addNewLines(navigationCase);
@@ -148,7 +148,7 @@ public class JSFEditorUtilities {
                             && token.getImage().equals(">")))
                         token = token.getPrevious();
                     if (token != null ){
-                        target.setCaretPosition(writeString(doc, sBean, token.getOffset()));
+                        possition = writeString(doc, sBean, token.getOffset());
                     }
                 }
             }
@@ -156,15 +156,15 @@ public class JSFEditorUtilities {
         catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         }
-        
+        return possition;
     }
 
 
     /** Writes new bean to the document directly under <faces-config> element
      */
-    public static void writeBean(JTextComponent target, BaseBean bean, String element) throws IOException{
+    public static int writeBean(BaseDocument doc, BaseBean bean, String element) throws IOException{
         String sBean = addNewLines(bean);
-        BaseDocument doc = (BaseDocument)target.getDocument();
+        int possition = -1;
         ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
         TokenItem token;
         try {
@@ -189,7 +189,7 @@ public class JSFEditorUtilities {
                         && token.getImage().equals(">")))               //NOI18N
                     token = token.getNext();
                 if (token != null)
-                    target.setCaretPosition(writeString(doc, sBean, token.getOffset()));    
+                    possition = writeString(doc, sBean, token.getOffset());    
             }
             else {
                 // write to end
@@ -200,12 +200,12 @@ public class JSFEditorUtilities {
                         && token.getImage().equals(">")))               //NOI18N
                     token = token.getPrevious();
                 if (token != null)
-                    target.setCaretPosition(writeString(doc, sBean, token.getOffset()));    
+                    possition = writeString(doc, sBean, token.getOffset());    
             }
         } catch (BadLocationException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-            
+        return possition;
     }
     
     private static String addNewLines(final BaseBean bean) throws IOException {

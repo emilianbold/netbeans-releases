@@ -42,7 +42,7 @@ import org.netbeans.spi.xml.cookies.*;
 public class JSFConfigDataObject extends MultiDataObject
                                     implements org.openide.nodes.CookieSet.Factory  {
     
-    private static JSFCatalog jsfCatalog;
+    private static JSFCatalog jsfCatalog =  new JSFCatalog();
     private boolean documentDirty = true;
     private boolean documentValid=true;
     protected boolean nodeDirty = false;
@@ -51,8 +51,6 @@ public class JSFConfigDataObject extends MultiDataObject
     private transient JSFConfigEditorSupport editorSupport;
     private SAXParseError error;
     private FacesConfig lastGoodFacesConfig = null;
-    
-    private JSFCatalog resolver;
     
     /** Property name for property documentValid */
     public static final String PROP_DOC_VALID = "documentValid"; // NOI18N
@@ -76,8 +74,6 @@ public class JSFConfigDataObject extends MultiDataObject
         getCookieSet().add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
-        
-        resolver = new JSFCatalog();
     }
     
     /**
@@ -105,7 +101,7 @@ public class JSFConfigDataObject extends MultiDataObject
     }
     
     /** Gets editor support for this data object. */
-    private JSFConfigEditorSupport getEditorSupport() {
+    public JSFConfigEditorSupport getEditorSupport() {
         if(editorSupport == null) {
             synchronized(this) {
                 if(editorSupport == null)
@@ -192,7 +188,7 @@ public class JSFConfigDataObject extends MultiDataObject
         }
     }
     
-    /** This method parses XML document and calls abstract updateNode method which
+    /** This method parses XML document and calls updateNode method which
     * updates corresponding Node.
     */
     public void parsingDocument(){
@@ -242,7 +238,7 @@ public class JSFConfigDataObject extends MultiDataObject
         try {
             // creating w3c document
             org.w3c.dom.Document doc = org.netbeans.modules.schema2beans.GraphManager.
-                createXmlDocument(new org.xml.sax.InputSource(inputSource), false, resolver,
+                createXmlDocument(new org.xml.sax.InputSource(inputSource), false, jsfCatalog,
                 new J2eeErrorHandler(this));
             return doc;
         } catch(Exception e) {

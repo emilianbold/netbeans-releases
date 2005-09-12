@@ -119,7 +119,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                         bean.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
                     config.addManagedBean(bean);    
                     
-                    JSFEditorUtilities.writeBean(target, bean, "managed-bean");             //NOI18N
+                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, bean, "managed-bean"));             //NOI18N
                 } 
                 catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -155,7 +155,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     rule.setFromViewId(dialogPanel.getFromView());
                     config.addNavigationRule(rule);
                     
-                    JSFEditorUtilities.writeBean(target, rule, "navigation-rule");    //NOI18N
+                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, rule, "navigation-rule"));    //NOI18N
                 } 
                 catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -170,7 +170,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            Document doc = target.getDocument();
+            BaseDocument doc = (BaseDocument)target.getDocument();
             JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(doc);
             AddNavigationCaseDialog dialogPanel = new AddNavigationCaseDialog(data, 
                     JSFEditorUtilities.getNavigationRule((BaseDocument)doc, target.getCaretPosition()));
@@ -205,9 +205,9 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                         nCase.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
                     rule.addNavigationCase(nCase);
                     if (newRule)
-                        JSFEditorUtilities.writeBean(target, rule, "navigation-rule");    //NOI18N
+                        target.setCaretPosition(JSFEditorUtilities.writeBean(doc, rule, "navigation-rule"));    //NOI18N
                     else
-                        JSFEditorUtilities.writeCaseIntoRule(target, rule.getFromViewId(), nCase );
+                        target.setCaretPosition(JSFEditorUtilities.writeCaseIntoRule(doc, rule.getFromViewId(), nCase ));
                 } 
                 catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ex);

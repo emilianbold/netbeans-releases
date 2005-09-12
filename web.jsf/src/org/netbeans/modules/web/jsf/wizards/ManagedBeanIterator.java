@@ -21,12 +21,15 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.config.model.FacesConfig;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
 
 import org.openide.WizardDescriptor;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
@@ -151,7 +154,13 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             bean.setDescription(new String[]{newLine + description + newLine});
         }
         config.addManagedBean(bean);
-        configDO.write(config);        
+        BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+        if (doc == null){
+            ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
+            doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+        }
+        JSFEditorUtilities.writeBean(doc, bean, "managed-bean"); //NOI18N
+        configDO.getEditorSupport().saveDocument();        
         return Collections.singleton(dobj);
     }
     
