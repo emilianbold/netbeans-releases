@@ -26,7 +26,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -118,12 +117,15 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     }
     
     private void checkForm() {
+        exportOnlyToFriend.setSelected(getFriendModel().getSize() > 0);
         // check major release version
         if (!checkMajorReleaseVersion()) {
             setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
-            return;
+        } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().length < 1) {
+            setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
+        } else {
+            setErrorMessage(null);
         }
-        setErrorMessage(null);
     }
     
     private void initPublicPackageTable() {
@@ -145,6 +147,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
                         getValueAt(row, 0);
                 publicPkgsTable.setValueAt(Boolean.valueOf(!b.booleanValue()),
                         row, 0);
+                checkForm();
             }
         };
         publicPkgsTable.addMouseListener(new MouseAdapter() {
@@ -195,6 +198,14 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         }
     }
     
+    private ComponentFactory.FriendListModel getFriendModel() {
+        return (ComponentFactory.FriendListModel) friendsList.getModel();
+    }
+    
+    private ComponentFactory.PublicPackagesTableModel getPublicPackagesModel() {
+        return (ComponentFactory.PublicPackagesTableModel) publicPkgsTable.getModel();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -220,7 +231,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         autoloadMod = new javax.swing.JRadioButton();
         eagerMod = new javax.swing.JRadioButton();
         publicPkgs = new javax.swing.JLabel();
-        friends = new javax.swing.JLabel();
+        publicPkgsSP = new javax.swing.JScrollPane();
+        publicPkgsTable = new javax.swing.JTable();
         bottomPanel = new javax.swing.JPanel();
         buttonPanel = new javax.swing.JPanel();
         addFriendButton = new javax.swing.JButton();
@@ -228,8 +240,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         filler1 = new javax.swing.JLabel();
         friendsSP = new javax.swing.JScrollPane();
         friendsList = new javax.swing.JList();
-        publicPkgsSP = new javax.swing.JScrollPane();
-        publicPkgsTable = new javax.swing.JTable();
+        exportOnlyToFriend = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -379,15 +390,16 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 12);
         add(publicPkgs, gridBagConstraints);
 
-        friends.setLabelFor(friendsList);
-        org.openide.awt.Mnemonics.setLocalizedText(friends, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_Friends"));
+        publicPkgsTable.setShowHorizontalLines(false);
+        publicPkgsSP.setViewportView(publicPkgsTable);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
-        add(friends, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 0.8;
+        add(publicPkgsSP, gridBagConstraints);
 
         bottomPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -449,27 +461,28 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(bottomPanel, gridBagConstraints);
 
-        publicPkgsTable.setShowHorizontalLines(false);
-        publicPkgsSP.setViewportView(publicPkgsTable);
-
+        org.openide.awt.Mnemonics.setLocalizedText(exportOnlyToFriend, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_ExportOnlyToFriends"));
+        exportOnlyToFriend.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        exportOnlyToFriend.setEnabled(false);
+        exportOnlyToFriend.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 0.8;
-        add(publicPkgsSP, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
+        add(exportOnlyToFriend, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
     
     private void removeFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFriend
-        ((FriendListModel) friendsList.getModel()).removeFriend(
-                (String) friendsList.getSelectedValue());
-        if (friendsList.getModel().getSize() > 0) {
+        getFriendModel().removeFriend((String) friendsList.getSelectedValue());
+        if (getFriendModel().getSize() > 0) {
             friendsList.setSelectedIndex(0);
         }
         friendsList.requestFocus();
+        checkForm();
     }//GEN-LAST:event_removeFriend
     
     private void addFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriend
@@ -479,12 +492,13 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         DialogDisplayer.getDefault().notify(desc);
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
             String pkgToAdd = desc.getInputText().trim();
-            if (!"".equals(pkgToAdd)) { // NOI18N
-                ((FriendListModel) friendsList.getModel()).addFriend(pkgToAdd);
+            if (!"".equals(pkgToAdd)) {
+                getFriendModel().addFriend(pkgToAdd);
                 friendsList.setSelectedValue(pkgToAdd, true);
             }
         }
         friendsList.requestFocus();
+        checkForm();
     }//GEN-LAST:event_addFriend
     
     private String getMessage(String key) {
@@ -514,8 +528,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     private javax.swing.JLabel cnb;
     private javax.swing.JTextField cnbValue;
     private javax.swing.JRadioButton eagerMod;
+    private javax.swing.JCheckBox exportOnlyToFriend;
     private javax.swing.JLabel filler1;
-    private javax.swing.JLabel friends;
     private javax.swing.JList friendsList;
     private javax.swing.JScrollPane friendsSP;
     private javax.swing.JLabel implVer;
