@@ -267,7 +267,14 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, "Connection authentification verification failed.");  // NOI18N
             err.notify(ErrorManager.INFORMATIONAL, e);
-            String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
+
+            // XXX it would be better to use e.getLocalizedMessage() but messages are too long
+            String msg;
+            if (root.isLocal()) {
+                msg = NbBundle.getMessage(CheckoutWizard.class, "BK1004");
+            } else {
+                msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
+            }
             invalid(msg);
         } finally {
             if (sock != null) {
