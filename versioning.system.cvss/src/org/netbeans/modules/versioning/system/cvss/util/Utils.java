@@ -129,6 +129,18 @@ public class Utils {
     public static boolean isVersionedProject(Node node) {
         Lookup lookup = node.getLookup();
         Project project = (Project) lookup.lookup(Project.class);
+        return isVersionedProject(project);
+    }
+
+    /**
+     * @return <code>true</code> if
+     * <ul>
+     *  <li> the project != null and
+     *  <li> the project contains at least one CVS versioned source group
+     * </ul>
+     * otherwise <code>false</code>.
+     */
+    public static boolean isVersionedProject(Project project) {
         if (project != null) {
             FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);

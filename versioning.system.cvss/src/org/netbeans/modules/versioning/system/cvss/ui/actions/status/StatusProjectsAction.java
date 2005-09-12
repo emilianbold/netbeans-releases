@@ -46,7 +46,14 @@ public class StatusProjectsAction extends SystemAction {
     }
 
     public boolean isEnabled() {
-        return OpenProjects.getDefault().getOpenProjects().length > 0;
+        Project projects[] = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            Project project = projects[i];
+            if (Utils.isVersionedProject(project)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void actionPerformed(ActionEvent e) {
