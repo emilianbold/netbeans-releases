@@ -76,6 +76,8 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     private Model model;
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
     
+    private FileLock settingsFileLock;
+    
     public DefaultSettings( Model model ) {
         this.model = model;
         model.addModelListener( this );
@@ -272,17 +274,21 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     }
     
     private synchronized void store() {
+        if( null != settingsFileLock )
+            return;
+        
         long startTime = System.currentTimeMillis();
         Node root = (Node)model.getRoot().lookup( Node.class );
         assert null != root;
+
         try {
             FileObject fo = findSettingsFile(); 
             if( null == fo )
                 fo = createSettingsFile();
             if( null == fo )
                 return;
-            FileLock lock = fo.lock();
-            PrintWriter writer = new PrintWriter( fo.getOutputStream( lock ) );
+            settingsFileLock = fo.lock();
+            PrintWriter writer = new PrintWriter( fo.getOutputStream( settingsFileLock ) );
             writer.print( "<root " );
             printAttributes( writer, root );
             writer.println( '>' );
@@ -294,9 +300,12 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
             
             writer.println( "</root>" );
             writer.close();
-            lock.releaseLock();
         } catch( IOException ioE ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+        } finally {
+            if( null != settingsFileLock )
+                settingsFileLock.releaseLock();
+            settingsFileLock = null;
         }
         //System.out.println( "Storing palette settings took: " + (System.currentTimeMillis()-startTime) );
     }
