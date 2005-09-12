@@ -426,7 +426,7 @@ Microsystems, Inc. All Rights Reserved.
         
     <target name="clean" depends="files-init">
         <available property="app.running" file="build/testuserdir/lock"/>
-        <delete failonerror="false">
+        <delete failonerror="false" includeemptydirs="true">
             <fileset dir="build">
                 <exclude name="testuserdir/" if="app.running"/>
             </fileset>
