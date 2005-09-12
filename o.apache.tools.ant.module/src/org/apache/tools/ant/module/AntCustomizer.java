@@ -105,6 +105,10 @@ ActionListener {
         loc (bClasspath, "Classpath_Button");
         bClasspath.addActionListener (this);
         bClasspath.setBackground (Color.white);
+        cbSaveFiles.addActionListener (this);
+        cbReuseOutput.addActionListener (this);
+        cbAlwaysShowOutput.addActionListener (this);
+        cbVerbosity.addActionListener (this);
         
         FormLayout layout = new FormLayout (
             "p:g", // cols
@@ -218,6 +222,18 @@ ActionListener {
     
     public void actionPerformed (ActionEvent e) {
         Object o = e.getSource ();
+        if (o == cbAlwaysShowOutput) {
+            changed = true;
+        } else
+        if (o == cbReuseOutput) {
+            changed = true;
+        } else
+        if (o == cbSaveFiles) {
+            changed = true;
+        } else
+        if (o == cbVerbosity) {
+            changed = true;
+        } else
         if (o == bAntHome) {
             JFileChooser chooser = new JFileChooser (tfAntHome.getText ());
             chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
