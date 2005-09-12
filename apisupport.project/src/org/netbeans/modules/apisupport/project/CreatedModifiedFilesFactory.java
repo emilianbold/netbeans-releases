@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,16 +215,38 @@ public final class CreatedModifiedFilesFactory {
     }
     
     private static void copyAndSubstituteTokens(URL content, FileLock lock, FileObject targetFO, Map/*<String,String>*/ tokens) throws IOException {
-        PrintWriter pw = new PrintWriter(targetFO.getOutputStream(lock));
-        BufferedReader br = new BufferedReader(new InputStreamReader(content.openStream()));
+        // #64023: at least XML files must always use UTF-8; but user probably expects *.java to use platform default?
+        boolean useUTF8 = targetFO.hasExt("xml"); // NOI18N
+        OutputStream os = targetFO.getOutputStream(lock);
         try {
-            String line;
-            while ((line = br.readLine()) != null) {
-                pw.println(tokens == null ? line : replaceTokens(tokens, line));
+            PrintWriter pw;
+            if (useUTF8) {
+                pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+            } else {
+                pw = new PrintWriter(os);
+            }
+            try {
+                InputStream is = content.openStream();
+                try {
+                    Reader r;
+                    if (useUTF8) {
+                        r = new InputStreamReader(is, "UTF-8"); // NOI18N
+                    } else {
+                        r = new InputStreamReader(is);
+                    }
+                    BufferedReader br = new BufferedReader(r);
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        pw.println(tokens == null ? line : replaceTokens(tokens, line));
+                    }
+                } finally {
+                    is.close();
+                }
+            } finally {
+                pw.close();
             }
         } finally {
-            br.close();
-            pw.close();
+            os.close();
         }
     }
     
@@ -359,7 +384,7 @@ public final class CreatedModifiedFilesFactory {
             String line = null;
             List lines = new ArrayList();
             InputStream serviceIS = service.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(serviceIS));
+            BufferedReader br = new BufferedReader(new InputStreamReader(serviceIS, "UTF-8")); // NOI18N
             try {
                 while ((line = br.readLine()) != null) {
                     lines.add(line);
@@ -370,7 +395,7 @@ public final class CreatedModifiedFilesFactory {
             
             FileLock lock = service.lock();
             try {
-                PrintWriter pw = new PrintWriter(service.getOutputStream(lock));
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(service.getOutputStream(lock), "UTF-8")); // NOI18N
                 try {
                     for (int i = 0; i < lines.size(); i++) {
                         line = (String) lines.get(i);
