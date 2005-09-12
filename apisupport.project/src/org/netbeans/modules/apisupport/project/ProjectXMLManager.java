@@ -379,10 +379,11 @@ public final class ProjectXMLManager {
     
     /**
      * Replaces all original friends with the given <code>friends</code> with
-     * <code>packages</code> as exposed packages to those friends. Also removes
-     * public packages if there are any since those two are mutually exclusive.
+     * <code>packagesToExpose</code> as exposed packages to those friends. Also
+     * removes public packages if there are any since those two are mutually
+     * exclusive.
      */
-    public void replaceFriendPackages(String[] friends, String[] packages) {
+    public void replaceFriends(String[] friends, String[] packagesToExpose) {
         removePublicAndFriends();
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
@@ -392,9 +393,9 @@ public final class ProjectXMLManager {
             friendPackages.appendChild(
                     createModuleElement(doc, ProjectXMLManager.FRIEND, friends[i]));
         }
-        for (int i = 0; i < packages.length; i++) {
+        for (int i = 0; i < packagesToExpose.length; i++) {
             friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.PACKAGE, packages[i]));
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, packagesToExpose[i]));
         }
         helper.putPrimaryConfigurationData(confData, true);
         publicPackages = null;

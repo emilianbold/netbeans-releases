@@ -480,7 +480,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         String[] publicPkgs = getPublicPackagesModel().getSelectedPackages();
         if (friends.length > 0) { // store friends packages
             if (getFriendListModel().isChanged()) {
-                getProjectXMLManager().replaceFriendPackages(friends, publicPkgs);
+                getProjectXMLManager().replaceFriends(friends, publicPkgs);
             }
         } else { // store public packages
             if (getPublicPackagesModel().isChanged()) {
