@@ -210,14 +210,16 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
         }
         if (drev != null) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", drev.getRevision().getNumber())) {
-                {
-                    setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
-                }
-                public void actionPerformed(ActionEvent e) {
-                    rollback(selection[0]);
-                }
-            }));
+            if (!"dead".equals(drev.getRevision().getState())) {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", drev.getRevision().getNumber())) {
+                    {
+                        setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
+                    }
+                    public void actionPerformed(ActionEvent e) {
+                        rollback(selection[0]);
+                    }
+                }));
+            }
 
             Project prj = Utils.getProject(drev.getRevision().getLogInfoHeader().getFile());
             if (prj != null) {
@@ -443,7 +445,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }
                 sd.insertString(sd.getLength(), revision.getNumber() + FIELDS_SEPARATOR, null);
                 sd.insertString(sd.getLength(), defaultFormat.format(revision.getDate()) + FIELDS_SEPARATOR, null);
-                sd.insertString(sd.getLength(), revision.getAuthor() + "\n", null);
+                sd.insertString(sd.getLength(), revision.getAuthor(), null);
+                if ("dead".equalsIgnoreCase(dispRevision.getRevision().getState())) {
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + NbBundle.getMessage(SummaryView.class, "MSG_SummaryView_DeadState"), null);
+                }
+                sd.insertString(sd.getLength(), "\n", null);
                 sd.insertString(sd.getLength(), commitMessage, null);
                 if (message != null && !isSelected) {
                     int idx = revision.getMessage().indexOf(message);
