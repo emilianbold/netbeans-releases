@@ -279,6 +279,12 @@ public class UpdateHelper {
             if (cachedProperties.get (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
                 cachedProperties.put (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
             }
+            if (cachedProperties.get ("build.generated.dir")==null) { //NOI18N
+                cachedProperties.put ("build.generated.dir","${build.dir}/generated"); //NOI18N
+            }
+             if (cachedProperties.get ("meta.inf.dir")==null) { //NOI18N
+                cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); //NOI18N
+            }
         }
         return this.cachedProperties;
     }
