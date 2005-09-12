@@ -13,11 +13,17 @@
 
 package org.netbeans.modules.apisupport.refactoring;
 
+import javax.swing.text.Position;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
 
 /**
  *
@@ -73,6 +79,24 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
     /** Returns position bounds of the text to be affected by this refactoring element.
      */
     public PositionBounds getPosition() {
+        try {
+            DataObject dobj = DataObject.find(getParentFile());
+            if (dobj != null) {
+                EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
+                if (obs != null && obs instanceof CloneableEditorSupport) {
+                    CloneableEditorSupport supp = (CloneableEditorSupport)obs;
+                
+                PositionBounds bounds = new PositionBounds(
+                        supp.createPositionRef(0, Position.Bias.Forward),
+                        supp.createPositionRef(0, Position.Bias.Forward)
+                        );
+                
+                return bounds;
+            }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace();
+        }
         return null;
     }
 
