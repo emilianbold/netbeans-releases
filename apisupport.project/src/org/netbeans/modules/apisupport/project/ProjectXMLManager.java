@@ -55,13 +55,14 @@ public final class ProjectXMLManager {
     // elements constants
     private static final String BINARY_ORIGIN = "binary-origin"; // NOI18N
     private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
+    private static final String CLASS_PATH_BINARY_ORIGIN = "binary-origin"; //NOI18N
     private static final String CLASS_PATH_EXTENSION = "class-path-extension"; // NOI18N
     private static final String CLASS_PATH_RUNTIME_PATH = "runtime-relative-path"; //NOI18N
-    private static final String CLASS_PATH_BINARY_ORIGIN = "binary-origin"; //NOI18N
     private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
     private static final String COMPILE_DEPENDENCY = "compile-dependency"; // NOI18N
     private static final String DATA = "data"; // NOI18N
     private static final String DEPENDENCY = "dependency"; // NOI18N
+    private static final String EXTRA_COMPILATION_UNIT = "extra-compilation-unit"; // NOI18N
     private static final String FRIEND = "friend"; // NOI18N
     private static final String FRIEND_PACKAGES = "friend-packages"; // NOI18N
     private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
@@ -96,15 +97,13 @@ public final class ProjectXMLManager {
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         
-        Element standaloneEl = Util.findElement(confData, ProjectXMLManager.STANDALONE,
-                NbModuleProjectType.NAMESPACE_SHARED);
+        Element standaloneEl = findElement(confData, ProjectXMLManager.STANDALONE);
         if (standaloneEl != null && moduleType == NbModuleTypeProvider.STANDALONE) {
             // nothing needs to be done - standalone is already set
             return;
         }
         
-        Element suiteCompEl = Util.findElement(confData, ProjectXMLManager.SUITE_COMPONENT,
-                NbModuleProjectType.NAMESPACE_SHARED);
+        Element suiteCompEl = findElement(confData, ProjectXMLManager.SUITE_COMPONENT);
         if (suiteCompEl != null && moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
             // nothing needs to be done - suiteCompEl is already set
             return;
@@ -143,9 +142,7 @@ public final class ProjectXMLManager {
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element depEl = (Element)it.next();
             
-            Element cnbEl = Util.findElement(depEl,
-                    ProjectXMLManager.CODE_NAME_BASE,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element cnbEl = findElement(depEl, ProjectXMLManager.CODE_NAME_BASE);
             String cnb = Util.findText(cnbEl);
             ModuleEntry me = ml.getEntry(cnb);
             if (me == null) {
@@ -157,9 +154,7 @@ public final class ProjectXMLManager {
                 continue;
             }
             
-            Element runDepEl = Util.findElement(depEl,
-                    ProjectXMLManager.RUN_DEPENDENCY,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element runDepEl = findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY);
             if (runDepEl == null) {
                 if (!directDeps.add(new ModuleDependency(me))) {
                     String errMessage = "Corrupted project metadata (project.xml). " + // NOI18N
@@ -170,29 +165,20 @@ public final class ProjectXMLManager {
                 continue;
             }
             
-            Element relVerEl = Util.findElement(runDepEl,
-                    ProjectXMLManager.RELEASE_VERSION,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element relVerEl = findElement(runDepEl, ProjectXMLManager.RELEASE_VERSION);
             String relVer = null;
             if (relVerEl != null) {
                 relVer = Util.findText(relVerEl);
             }
             
-            Element specVerEl = Util.findElement(runDepEl,
-                    ProjectXMLManager.SPECIFICATION_VERSION,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element specVerEl = findElement(runDepEl, ProjectXMLManager.SPECIFICATION_VERSION);
             String specVer = null;
             if (specVerEl != null) {
                 specVer = Util.findText(specVerEl);
             }
             
-            Element compDepEl = Util.findElement(depEl,
-                    ProjectXMLManager.COMPILE_DEPENDENCY,
-                    NbModuleProjectType.NAMESPACE_SHARED);
-            
-            Element impleVerEl = Util.findElement(runDepEl,
-                    ProjectXMLManager.IMPLEMENTATION_VERSION,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element compDepEl = findElement(depEl, ProjectXMLManager.COMPILE_DEPENDENCY);
+            Element impleVerEl = findElement(runDepEl, ProjectXMLManager.IMPLEMENTATION_VERSION);
             
             ModuleDependency depToAdd = new ModuleDependency(
                     me, relVer, specVer, compDepEl != null, impleVerEl != null);
@@ -213,8 +199,7 @@ public final class ProjectXMLManager {
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
-            Element cnbEl = Util.findElement(dep, ProjectXMLManager.CODE_NAME_BASE,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
             String cnb = Util.findText(cnbEl);
             if (cnbToRemove.equals(cnb)) {
                 moduleDependencies.removeChild(dep);
@@ -246,8 +231,7 @@ public final class ProjectXMLManager {
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
-            Element cnbEl = Util.findElement(dep, ProjectXMLManager.CODE_NAME_BASE,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
             String cnb = Util.findText(cnbEl);
             if (cnbsToDelete.remove(cnb)) {
                 moduleDependencies.removeChild(dep);
@@ -269,8 +253,7 @@ public final class ProjectXMLManager {
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element) it.next();
-            Element cnbEl = Util.findElement(dep, ProjectXMLManager.CODE_NAME_BASE,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
             String cnb = Util.findText(cnbEl);
             if (cnb.equals(origDep.getModuleEntry().getCodeNameBase())) {
                 moduleDependencies.removeChild(dep);
@@ -324,8 +307,8 @@ public final class ProjectXMLManager {
     
     public void removeClassPathExtensions() {
         Element confData = getConfData();
-        NodeList nl = confData.getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED, 
-                                                      ProjectXMLManager.CLASS_PATH_EXTENSION);
+        NodeList nl = confData.getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED,
+                ProjectXMLManager.CLASS_PATH_EXTENSION);
         for (int i = 0; i < nl.getLength(); i++) {
             confData.removeChild(nl.item(i));
         }
@@ -337,25 +320,25 @@ public final class ProjectXMLManager {
      * @param newValues <key=runtime-path(String), value=binary-path(String)>
      */
     public void replaceClassPathExtensions(HashMap newValues) {
-       removeClassPathExtensions(); 
-       if (newValues != null && newValues.size() > 0) {
+        removeClassPathExtensions();
+        if (newValues != null && newValues.size() > 0) {
             Element confData = getConfData();
             Document doc = confData.getOwnerDocument();
             Iterator it = newValues.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry)it.next();
                 Element cpel = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_EXTENSION);
-                Element runtime = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_RUNTIME_PATH, 
-                                                      (String)entry.getKey());
-                Element binary = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_BINARY_ORIGIN, 
-                                                      (String)entry.getValue());
+                Element runtime = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_RUNTIME_PATH,
+                        (String)entry.getKey());
+                Element binary = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_BINARY_ORIGIN,
+                        (String)entry.getValue());
                 cpel.appendChild(runtime);
                 cpel.appendChild(binary);
                 confData.appendChild(cpel);
                 
             }
             helper.putPrimaryConfigurationData(confData, true);
-       }
+        }
     }
     
     /**
@@ -368,13 +351,24 @@ public final class ProjectXMLManager {
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element publicPackagesEl = createModuleElement(doc, ProjectXMLManager.PUBLIC_PACKAGES);
-        confData.appendChild(publicPackagesEl);
+        
+        insertPublicOrFriend(publicPackagesEl);
+        
         for (int i = 0; i < newPackages.length; i++) {
             publicPackagesEl.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, newPackages[i]));
         }
         helper.putPrimaryConfigurationData(confData, true);
         publicPackages = null; // XXX cleaner would be to listen on changes in helper
+    }
+
+    /** Position public-packages or friend-packages according to XSD. */
+    private void insertPublicOrFriend(Element packagesEl) {
+        Element beforeEl = findElement(getConfData(), ProjectXMLManager.CLASS_PATH_EXTENSION);
+        if (beforeEl == null) {
+            beforeEl = findElement(getConfData(), ProjectXMLManager.EXTRA_COMPILATION_UNIT);
+        }
+        getConfData().insertBefore(packagesEl, beforeEl);
     }
     
     /**
@@ -388,7 +382,7 @@ public final class ProjectXMLManager {
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element friendPackages = createModuleElement(doc, ProjectXMLManager.FRIEND_PACKAGES);
-        confData.appendChild(friendPackages);
+        insertPublicOrFriend(friendPackages);
         for (int i = 0; i < friends.length; i++) {
             friendPackages.appendChild(
                     createModuleElement(doc, ProjectXMLManager.FRIEND, friends[i]));
@@ -440,7 +434,7 @@ public final class ProjectXMLManager {
         for (Iterator it = cpExtEls.iterator(); it.hasNext(); ) {
             Element cpExtEl = (Element) it.next();
             if (CLASS_PATH_EXTENSION.equals(cpExtEl.getTagName())) {
-                Element binOrigEl = Util.findElement(cpExtEl, BINARY_ORIGIN, NbModuleProjectType.NAMESPACE_SHARED);
+                Element binOrigEl = findElement(cpExtEl, BINARY_ORIGIN);
                 if (binOrigEl != null) {
                     binaryOrigs.add(Util.findText(binOrigEl));
                 }
@@ -453,9 +447,7 @@ public final class ProjectXMLManager {
     /** Returns code-name-base. */
     public String getCodeNameBase() {
         if (cnb == null) {
-            Element cnbEl = Util.findElement(getConfData(),
-                    ProjectXMLManager.CODE_NAME_BASE,
-                    NbModuleProjectType.NAMESPACE_SHARED);
+            Element cnbEl = findElement(getConfData(), ProjectXMLManager.CODE_NAME_BASE);
             cnb = Util.findText(cnbEl);
         }
         return cnb;
@@ -507,19 +499,20 @@ public final class ProjectXMLManager {
         }
     }
     
+    private static Element findElement(Element confData, String elementName) {
+        return Util.findElement(confData, elementName, NbModuleProjectType.NAMESPACE_SHARED);
+    }
+    
     private static Element findModuleDependencies(Element confData) {
-        return Util.findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES,
-                NbModuleProjectType.NAMESPACE_SHARED);
+        return findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES);
     }
     
     private static Element findPublicPackagesElement(Element confData) {
-        return Util.findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES,
-                NbModuleProjectType.NAMESPACE_SHARED);
+        return findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES);
     }
     
     private static Element findFriendsElement(Element confData) {
-        return Util.findElement(confData, ProjectXMLManager.FRIEND_PACKAGES,
-                NbModuleProjectType.NAMESPACE_SHARED);
+        return findElement(confData, ProjectXMLManager.FRIEND_PACKAGES);
     }
     
     private static Element createModuleElement(Document doc, String name) {
@@ -642,12 +635,12 @@ public final class ProjectXMLManager {
         // store document to disk
         ProjectXMLManager.safelyWrite(projectXml, prjDoc);
     }
-
+    
     /**
-     * create a library wrapper project.xml
-     * @param publicPackages set of Strings representing the packages
-     * @param extensions <key=runtime path(String), value=binary path (String)>
+     * Create a library wrapper project.xml.
      *
+     * @param publicPackages set of <code>String</code>s representing the packages
+     * @param extensions &lt;key=runtime path(String), value=binary path (String)&gt;
      */
     static void generateLibraryModuleTemplate(FileObject projectXml, String cnb,
             NbModuleType moduleType, Set publicPackages, Map extensions) throws IOException {

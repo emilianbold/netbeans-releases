@@ -404,6 +404,32 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("number of binary origins", 2, xercesPXM.getBinaryOrigins().length);
     }
     
+    public void testThatFriendPackagesAreGeneratedInTheRightOrder_61882() throws Exception {
+        FileObject fo = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "testing");
+        FileObject projectXMLFO = fo.getFileObject("nbproject/project.xml");
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
+                "<type>org.netbeans.modules.apisupport.project</type>\n" +
+                "<configuration>\n" +
+                "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">\n" +
+                "<code-name-base>org.netbeans.modules.j2eeapis</code-name-base>\n" +
+                "<standalone/>\n" +
+                "<module-dependencies/>\n" +
+                "<public-packages>\n" +
+                "<subpackages>javax.enterprise.deploy</subpackages>\n" +
+                "</public-packages>\n" +
+                "<class-path-extension>\n" +
+                "<runtime-relative-path>ext/jsr88javax.jar</runtime-relative-path>\n" +
+                "<binary-origin>../external/jsr88javax.jar</binary-origin>\n" +
+                "</class-path-extension>\n" +
+                "</data>\n" +
+                "</configuration>\n" +
+                "</project>\n";
+        TestBase.dump(projectXMLFO, xml);
+        NbModuleProject project = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+        validate(project);
+    }
+    
     private NbModuleProject generateTestingProject() throws Exception {
         FileObject fo = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "testing");
         FileObject projectXMLFO = fo.getFileObject("nbproject/project.xml");
@@ -437,6 +463,10 @@ public class ProjectXMLManagerTest extends TestBase {
                 "<friend>org.module.examplemodule</friend>\n" +
                 "<package>org.netbeans.examples.modules.misc</package>\n" +
                 "</friend-packages>\n" +
+                "<class-path-extension>\n" +
+                "<runtime-relative-path>ext/jsr88javax.jar</runtime-relative-path>\n" +
+                "<binary-origin>../external/jsr88javax.jar</binary-origin>\n" +
+                "</class-path-extension>\n" +
                 "</data>\n" +
                 "</configuration>\n" +
                 "</project>\n";
@@ -444,7 +474,7 @@ public class ProjectXMLManagerTest extends TestBase {
         return (NbModuleProject) ProjectManager.getDefault().findProject(fo);
     }
     
-    // below stolen from ant/freeform
+    // below is stolen from ant/freeform
     private static String[] getSchemas() throws Exception {
         String[] URIs = new String[2];
         URIs[0] = ProjectXMLManager.class.getResource("resources/nb-module-project2.xsd").toExternalForm();
@@ -469,7 +499,7 @@ public class ProjectXMLManagerTest extends TestBase {
         try {
             p.parse(xml.toURI().toString(), new Handler());
         } catch (SAXParseException e) {
-            assertTrue("Validation of XML document "+xml+" against schema failed. Details: "+
+            assertTrue("Validation of XML document " + xml + " against schema failed. Details: " +
                     e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage(), false);
         }
     }
