@@ -20,12 +20,9 @@ import org.openide.*;
 import org.openide.awt.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
-import org.openide.util.io.*;
 import org.openide.windows.*;
 
 import java.awt.*;
@@ -33,18 +30,9 @@ import java.awt.event.*;
 
 import java.beans.*;
 
-import java.io.*;
-
-import java.util.*;
-
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.core.Debug;
-import org.netbeans.modules.collab.ui.CollabSessionCookie;
 import org.netbeans.modules.collab.ui.actions.*;
 
 
@@ -61,7 +49,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
     private static CollabExplorerPanel DEFAULT_INSTANCE;
     public static final String COMPONENT_LOGIN = "login"; // NOI18N
     public static final String COMPONENT_EXPLORER = "explorer"; // NOI18N
-    public static final String COMPONENT_NO_MANAGER_NOTIFICATION = "noManager"; // NOI18N
     private static final Image NORMAL_IMAGE = Utilities.loadImage(
             "org/netbeans/modules/collab/ui/resources/collab_png16.gif"
         );
@@ -74,7 +61,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
     ////////////////////////////////////////////////////////////////////////////
     private RootNode rootNode;
     private LoginAccountPanel loginPanel;
-    private NoManagerNotificationPanel noManagerPanel;
     private GlassPanel sessionPanel;
     private PresenceNotificationPane presenceNotificationPane;
     private SessionsTreeView treeView;
@@ -152,10 +138,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
         // Add the session panel to the component
         add(sessionPanel, COMPONENT_EXPLORER);
 
-        // Add the no-manager notification panel
-        noManagerPanel = new NoManagerNotificationPanel();
-        add(noManagerPanel, COMPONENT_NO_MANAGER_NOTIFICATION);
-
         // Attach a listener to node selection changes so we can update the
         // change status button in response to the selected node's session's
         // current status
@@ -182,37 +164,32 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
         // Determine which component to show
         CollabManager manager = CollabManager.getDefault();
 
-        if (manager != null) {
-            showComponent(COMPONENT_LOGIN);
+        // Add an event listener to show login pane as needed
+        manager.addPropertyChangeListener(
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent event) {
+                    if (event.getPropertyName().equals(CollabManager.PROP_SESSIONS)) {
+                        CollabManager manager = CollabManager.getDefault();
 
-            // Add an event listener to show login pane as needed
-            manager.addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                        if (event.getPropertyName().equals(CollabManager.PROP_SESSIONS)) {
-                            CollabManager manager = CollabManager.getDefault();
-
-                            if ((manager != null) && (manager.getSessions().length == 0)) {
-                                // Show the collab explorer
-                                CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_LOGIN);
-                            } else {
-                                updateChangeStatusButton();
-                            }
+                        if (manager.getSessions().length == 0) {
+                            // Show the collab explorer
+                            CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_LOGIN);
+                        } else {
+                            updateChangeStatusButton();
                         }
                     }
                 }
-            );
-        } else {
-            // Show the no-manager notification
-            showComponent(COMPONENT_NO_MANAGER_NOTIFICATION);
-        }
-
+            }
+        );
+        
         // Attach ourselves as a notification listener (weakly)
         NotificationRegistry.getDefault().addNotificationListener(
             (NotificationListener) WeakListeners.create(
                 NotificationListener.class, NotificationListener.class, this, NotificationRegistry.getDefault()
             )
         );
+
+        showComponent(COMPONENT_LOGIN);
     }
 
     /**
@@ -337,8 +314,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
                     } else if (componentID.equals(COMPONENT_EXPLORER)) {
                         title = NbBundle.getMessage(CollabExplorerPanel.class, "TITLE_CollabExplorerPanel_ContactList"); // NOI18N
                         currentComponent = sessionPanel;
-                    } else if (componentID.equals(COMPONENT_NO_MANAGER_NOTIFICATION)) {
-                        currentComponent = noManagerPanel;
                     }
 
                     setName(title);
@@ -435,14 +410,10 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
      */
     protected void componentOpened() {
         // Determine which component to show
-        if (CollabManager.getDefault() != null) {
-            if (CollabManager.getDefault().getSessions().length > 0) {
-                showComponent(COMPONENT_EXPLORER);
-            } else {
-                showComponent(COMPONENT_LOGIN);
-            }
+        if (CollabManager.getDefault().getSessions().length > 0) {
+            showComponent(COMPONENT_EXPLORER);
         } else {
-            showComponent(COMPONENT_NO_MANAGER_NOTIFICATION);
+            showComponent(COMPONENT_LOGIN);
         }
     }
 
