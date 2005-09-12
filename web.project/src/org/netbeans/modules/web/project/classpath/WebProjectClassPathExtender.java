@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.project.libraries.LibraryManager;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -29,6 +28,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
@@ -41,7 +41,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.openide.util.WeakListeners;
+
 
 public class WebProjectClassPathExtender implements ProjectClassPathExtender, PropertyChangeListener {
     
@@ -241,30 +241,36 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender, Pr
         if (e.getSource().equals(eval) && (e.getPropertyName().equals(WebProjectProperties.JAVAC_CLASSPATH)
             || e.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL))) {
             registerLibraryListeners();
+            storeLibLocations();
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
-            ProjectManager.mutex().postWriteRequest(new Runnable () {
-                public void run() {
-                    EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                    //update lib references in private properties
-                    EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    List wmLibs = cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
-                    List additionalLibs = cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
-                    cs.encodeToStrings(wmLibs.iterator(), WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
-                    cs.encodeToStrings(additionalLibs.iterator(), WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
-                    HashSet set = new HashSet();
-                    set.addAll(wmLibs);
-                    set.addAll(additionalLibs);
-                    WebProjectProperties.storeLibrariesLocations(set.iterator(), privateProps);
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
-                    
-                    try {
-                        ProjectManager.getDefault().saveProject(project);
-                    }
-                    catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                }
-            });
+            storeLibLocations();
         }
     }
+    
+    private void storeLibLocations() {
+        ProjectManager.mutex().postWriteRequest(new Runnable () {
+            public void run() {
+                EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                //update lib references in private properties
+                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                List wmLibs = cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                List additionalLibs = cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                cs.encodeToStrings(wmLibs.iterator(), WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                cs.encodeToStrings(additionalLibs.iterator(), WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                HashSet set = new HashSet();
+                set.addAll(wmLibs);
+                set.addAll(additionalLibs);
+                WebProjectProperties.storeLibrariesLocations(set.iterator(), privateProps);
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                }
+                catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }
+        });
+    }
+
 }
