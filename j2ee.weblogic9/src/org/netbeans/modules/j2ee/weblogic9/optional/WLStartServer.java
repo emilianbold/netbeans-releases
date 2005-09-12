@@ -281,6 +281,11 @@ public class WLStartServer extends StartServer {
         // convert the list into an array and return
         return (String[]) list.toArray(new String[list.size()]);
     }
+
+    public boolean supportsStartDebugging(Target target) {
+        //if we can start it we can debug it
+        return supportsStartDeploymentManager();
+    }
     
     /**
      * Runnable that starts the server in normal mode. It is used to start the 
