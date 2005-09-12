@@ -12,6 +12,10 @@
  */
 package org.netbeans.core.startup;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import org.openide.util.Lookup;
 
 /** Interface to environment that the Module system needs around itself.
@@ -116,4 +120,8 @@ public abstract class CoreBridge {
     public abstract void setStatusText (String status);
     
     public abstract void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL);
+
+    public abstract void cliUsage(PrintWriter printWriter);
+
+    public abstract int cli(String[] string, InputStream inputStream, OutputStream outputStream, File file);
 }
