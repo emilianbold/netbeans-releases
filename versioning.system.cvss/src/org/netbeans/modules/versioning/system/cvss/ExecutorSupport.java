@@ -196,7 +196,9 @@ public abstract class ExecutorSupport implements CVSListener  {
             }
         } else {
             if (logCommandOutput()) {
-                clientRuntime.log(e.getMessage() + "\n");  // NOI18N
+                if (e.getMessage().length() > 0) {  // filter out bogus newlines
+                    clientRuntime.log(e.getMessage() + "\n");  // NOI18N
+                }
             }
         }
     }
