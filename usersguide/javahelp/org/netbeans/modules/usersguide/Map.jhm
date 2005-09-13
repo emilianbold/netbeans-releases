@@ -161,7 +161,6 @@
 <mapID target="editing.fastimport" url="editing/fastimport.html" />
 <mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
-<mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
 <mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
@@ -340,9 +339,9 @@ the Options window:-->
 
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
-<mapID target="shortcuts.menucuts-setting" url="shortcuts/menucuts-setting.html" />
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.window" url="shortcuts/window-navcuts.html" />
+<mapID target="shortcuts.menucuts-setting" url="shortcuts/menucuts-setting.html" />
 <mapID target="shortcuts.abbreviations-list" url="shortcuts/abbreviations-list.html" />
 
 <!--accessibility targets:-->
@@ -406,7 +405,8 @@ the Options window:-->
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
 
-
+<!--CSH - Keymaps Options window page:-->
+<mapID target="netbeans.optionsDialog.keymaps" url="shortcuts/shortcuts-csh.html" />
 
 <!--CSH - Insert Internationalized String dialog:-->
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />

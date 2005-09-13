@@ -85,8 +85,7 @@
       <tocitem text="Customizing the Contextual Menu for an Object" target="configure.menucontextual" />
       <tocitem text="Customizing Toolbars in the IDE" target="configure.tbcustomize" />
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
-      <tocitem text="Setting Menu Shortcuts" target="shortcuts.menucuts-setting" />
-      <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
+      <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
     </tocitem>
 
     <tocitem text="Managing Modules" >
@@ -98,17 +97,16 @@
   </tocitem>
 
   <tocitem text="Keyboard Shortcuts" >
-    <tocitem text="About" target="shortcuts.kybd" />
+    <tocitem text="About Keyboard Shortcuts" target="shortcuts.kybd" />
     <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
     <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
     <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
     <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
-    <tocitem text="Setting Menu Shortcuts" target="shortcuts.menucuts-setting" />
-    <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
+    <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
   </tocitem>
 
   <tocitem text="Accessibility" >
-    <tocitem text="About" target="accessibility.home"/>
+    <tocitem text="About Accessibility" target="accessibility.home"/>
       <tocitem text="Setting Font and Color for the Help Viewer" target="accessibility.stylesheet"/>
       <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
   </tocitem>
@@ -116,7 +114,7 @@
 
 <tocitem text="Java Project Basics" >
   <tocitem text="Editing Source Files" >
-    <tocitem text="About" target="editing.about"/>
+    <tocitem text="About Editing Source Files" target="editing.about"/>
     <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
     <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref"/>
     <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
@@ -218,7 +216,7 @@
     <tocitem text="Configuring the Source Editor" >
       <tocitem text="About" target="editing.configuring"/>    
       <tocitem text="Source Editor Properties" target="editing.editor-props"/>
-      <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
+      <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting"/>
       <tocitem text="Setting Source Synchronization Properties" target="java.sync.properties" />
       <tocitem text="Indentation Properties" target="editing.indentation"/>
       <tocitem text="Print Properties" target="editing.printing"/>
