@@ -38,8 +38,8 @@ public class TagAction extends ActionNoBlock {
         super(CVS_ITEM+"|"+TAG_ITEM, CVS_ITEM+"|"+TAG_POPUP_ITEM);
     }
     
-    /** Perform main menu with exact file name.
-     * @param file name
+    /** Performs main menu with exact file name.
+     * @param filename file name
      */
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;

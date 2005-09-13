@@ -43,8 +43,8 @@ public class BranchAction extends ActionNoBlock {
         super(CVS_ITEM+"|"+BRANCHES_ITEM+"|"+BRANCH_ITEM, CVS_ITEM+"|"+BRANCH_POPUP_ITEM);
     }
 
-    /** Perform main menu with exact name.
-     * @param file name
+    /** Performs main menu with exact name.
+     * @param filename name of file
      */
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;

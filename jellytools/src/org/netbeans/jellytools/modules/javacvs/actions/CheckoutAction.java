@@ -21,10 +21,10 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  */
 public class CheckoutAction extends ActionNoBlock {
 
-    // "CVS"
+    /** "CVS" menu item. */
     public static final String CVS_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
-    // "Checkout..."
+    /** "Checkout..." menu item. */
     public static final String CHECKOUT_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.Bundle", "CTL_MenuItem_Checkout_Label");
     

@@ -38,7 +38,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  * </pre>
  * 
  * @author Jiri.Skrivanek@sun.com
- * @sBrowseCVSModuleOperatorrdOperator
+ * @see CheckoutWizardOperator
  * @see BrowseCVSModule
  * @see BrowseTagsOperator
  */

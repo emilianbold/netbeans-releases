@@ -218,7 +218,8 @@ public class BranchOperator extends NbDialogOperator {
         txtBranchName().typeText(text);
     }
     
-    /** clicks on "Browse..." JButton
+    /** clicks on "Browse..." JButton and returns BrowseTagsOperator.
+     * @return BrowseTagsOperator instance
      */
     public BrowseTagsOperator browse() {
         btBrowse().pushNoBlock();
