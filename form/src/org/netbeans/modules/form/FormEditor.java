@@ -632,21 +632,7 @@ public class FormEditor {
 
         dataObjectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
-                if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
-                    java.awt.EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            // FormDataObject's name has changed
-                            String name = formDataObject.getName();
-                            formModel.setName(name);
-                            formRootNode.updateName(name);
-                            FormDataObject formDO = getFormDataObject();
-                            formDO.getFormEditorSupport().updateMVTCToolTipText();
-                                // display name is set via notifyModified/notifyUnmodified
-                            formModel.fireFormChanged(); // regenerate code
-                        }
-                    });
-                }
-                else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
+                if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
                     java.awt.EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             Node[] nodes = ComponentInspector.getInstance()

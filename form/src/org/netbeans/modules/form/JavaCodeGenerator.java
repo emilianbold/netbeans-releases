@@ -713,7 +713,7 @@ class JavaCodeGenerator extends CodeGenerator {
             + "_" + component.getName(); // NOI18N
     }
 
-    private void regenerateInitComponents() {
+    void regenerateInitComponents() {
         if (!initialized || !canGenerate)
             return;
 

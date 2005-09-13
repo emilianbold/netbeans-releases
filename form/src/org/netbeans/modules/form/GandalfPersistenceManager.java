@@ -374,8 +374,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.nonfatalErrors = nonfatalErrors;
         this.newLayout = false;
 
-        formModel.setName(formObject.getName());
-
         // load "Other Components" first
         loadNonVisuals(mainElement);
 
