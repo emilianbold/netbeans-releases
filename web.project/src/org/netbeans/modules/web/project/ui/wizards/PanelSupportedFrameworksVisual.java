@@ -344,6 +344,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             ((FrameworkConfigurationPanel) configPanels.get(framework)).enableComponents(item.isSelected().booleanValue());
             ((FrameworkConfigurationPanel) configPanels.get(framework)).readSettings(wizardDescriptor);
             jPanelConfig.revalidate();
+            jPanelConfig.repaint();
         } else {
             jLabelConfig.setText(""); //NOI18N
             jPanelConfig.removeAll();
