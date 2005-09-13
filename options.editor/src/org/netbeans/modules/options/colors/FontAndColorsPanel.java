@@ -56,6 +56,8 @@ import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.spi.options.OptionsCategory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.InputLine;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -111,7 +113,7 @@ ActionListener {
         PanelBuilder builder = new PanelBuilder (layout, this);
         CellConstraints cc = new CellConstraints ();
         CellConstraints lc = new CellConstraints ();
-        builder.addLabel (     loc ("CTL_Color_Scheme_Name"), lc.xy (1, 1), 
+        builder.addLabel (     loc ("CTL_Color_Profile_Name"), lc.xy (1, 1), 
                                cbSchemes,                     cc.xy (3, 1));
         builder.add (          pButtons,                      cc.xy (5, 1, "l,d"));
         builder.add (          tabbedPane,                    cc.xyw (1, 3, 5));
@@ -176,14 +178,25 @@ ActionListener {
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
         if (e.getSource () == bClone) {
-            NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine (
-                loc ("CTL_Create_New_Scheme_Message"),
-                loc ("CTL_Create_New_Scheme_Title")
+            InputLine il = new InputLine (
+                loc ("CTL_Create_New_Profile_Message"),                // NOI18N
+                loc ("CTL_Create_New_Profile_Title")                   // NOI18N
             );
             il.setInputText (currentScheme);
             DialogDisplayer.getDefault ().notify (il);
             if (il.getValue () == NotifyDescriptor.OK_OPTION) {
-                setCurrentScheme (il.getInputText ());
+                String newScheme = il.getInputText ();
+                Iterator it = colorModel.getSchemeNames ().iterator ();
+                while (it.hasNext ())
+                    if (newScheme.equals (it.next ())) {
+                        Message md = new Message (
+                            loc ("CTL_Duplicate_Profile_Name"),        // NOI18N
+                            Message.ERROR_MESSAGE
+                        );
+                        DialogDisplayer.getDefault ().notify (md);
+                        return;
+                    }
+                setCurrentScheme (newScheme);
                 listen = false;
                 cbSchemes.addItem (il.getInputText ());
                 cbSchemes.setSelectedItem (il.getInputText ());
