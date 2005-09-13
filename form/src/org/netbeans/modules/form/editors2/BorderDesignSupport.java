@@ -46,7 +46,7 @@ public class BorderDesignSupport implements FormDesignValue,
     {
         creationDesc = CreationFactory.getDescriptor(borderClass);
         if (creationDesc == null) {
-            creationDesc = new ConstructorsDescriptor(borderClass);
+            creationDesc = new CreationDescriptor(borderClass);
             CreationFactory.registerDescriptor(creationDesc);
         }
 
@@ -56,7 +56,7 @@ public class BorderDesignSupport implements FormDesignValue,
     public BorderDesignSupport(Border border) {
         creationDesc = CreationFactory.getDescriptor(border.getClass());
         if (creationDesc == null) {
-            creationDesc = new ConstructorsDescriptor(border.getClass());
+            creationDesc = new CreationDescriptor(border.getClass());
             CreationFactory.registerDescriptor(creationDesc);
         }
         setBorder(border);
