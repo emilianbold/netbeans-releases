@@ -59,7 +59,7 @@ public class GeneratorControler {
             List notifList = mbeanDO.getNotifs();
             MBeanNotification[] notifs = (MBeanNotification[])
                 notifList.toArray(new MBeanNotification[notifList.size()]);
-            notifGenerator.update(mbeanClass, mbeanClass.getResource(), notifs,
+            notifGenerator.update(createdFile, mbeanClass, mbeanClass.getResource(), notifs,
                     mbeanDO.isGenBroadcastDeleg(), mbeanDO.isGenSeqNumber());
         }
         
@@ -67,7 +67,7 @@ public class GeneratorControler {
         if (mbeanDO.implMBeanRegist()) {
             AddRegistIntfGenerator mbeanRegistGen = new AddRegistIntfGenerator();
             //TODO link to mbean wizard settings
-            mbeanRegistGen.update(mbeanClass, mbeanClass.getResource(),
+            mbeanRegistGen.update(null, mbeanClass, mbeanClass.getResource(),
                     mbeanDO.isKeepPreRegistRef());
         }
         
@@ -78,7 +78,7 @@ public class GeneratorControler {
         if (genInfo.isGenJUnit()) {
             MBeanTestGen junitTestGenerator = new MBeanTestGen();
             FileObject junitTestFile = 
-                    junitTestGenerator.generateTest(mbeanDO,genInfo);
+                    junitTestGenerator.generateTest(null, mbeanDO,genInfo);
             result.addCreated(junitTestFile);
         }
         WizardHelpers.refreshProjectTree(wiz);

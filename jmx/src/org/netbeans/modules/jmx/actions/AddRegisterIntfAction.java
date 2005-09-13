@@ -66,30 +66,48 @@ public class AddRegisterIntfAction extends CookieAction {
         dob = (DataObject)nodes[0].getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
-        rc = JavaModel.getResource(fo);
-        JavaClass foClass = WizardHelpers.getJavaClass(rc,fo.getName());
-        if (foClass == null)
-            return false;
-        boolean isMBean = Introspector.testCompliance(foClass);
-        boolean hasMBeanRegistIntf = Introspector.hasMBeanRegistIntf(foClass);
         
-        return isMBean && !hasMBeanRegistIntf;
+        JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
+        if (foClass == null) return false;
+        
+        //We need to do all MDR access in a transaction
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(fo);
+            rc = JavaModel.getResource(fo);
+           
+            boolean isMBean = Introspector.testCompliance(foClass);
+            boolean hasMBeanRegistIntf = Introspector.hasMBeanRegistIntf(foClass);
+            
+            return isMBean && !hasMBeanRegistIntf;
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
     }
     
     protected void performAction (Node[] nodes) {
-        // show configuration dialog
-        // when dialog is canceled, escape the action
-        AddRegistIntfPanel cfg = new AddRegistIntfPanel(nodes[0]);
-        if (!cfg.configure()) {
-            return;
-        }
-        AddRegistIntfGenerator generator = new AddRegistIntfGenerator();
+        FileObject fo = null;
+        if (dob != null) fo = dob.getPrimaryFile();
+        //We need to do all MDR access in a transaction
+        JavaModel.getJavaRepository().beginTrans(false);
         try {
-            generator.update(cfg.getMBeanClass(),rc,cfg.getKeepRefSelected());
-            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-            ec.open();
-        } catch (Exception e) {
-            e.printStackTrace();
+            JavaModel.setClassPath(fo);
+            // show configuration dialog
+            // when dialog is canceled, escape the action
+            AddRegistIntfPanel cfg = new AddRegistIntfPanel(nodes[0]);
+            if (!cfg.configure()) {
+                return;
+            }
+            AddRegistIntfGenerator generator = new AddRegistIntfGenerator();
+            try {
+                generator.update(fo, cfg.getMBeanClass(),rc,cfg.getKeepRefSelected());
+                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                ec.open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
         }
     }
     

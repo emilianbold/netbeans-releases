@@ -44,6 +44,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.ErrorManager;
 
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -192,7 +194,24 @@ public class WizardHelpers
                                     Map foldersToSourceGroupsMap,
                                     Project project,
                                     final boolean sourceGroupsOnly) {
-        
+        FileObject[] sourceRoots = getTestsFileObject(sourceGroup, project);
+        /* .) find SourceGroups corresponding to the FileObjects: */
+        final Object[] targets = new Object[sourceRoots.length];
+        int targetIndex = 0;
+        for (int i = 0; i < sourceRoots.length; i++) {
+            final FileObject sourceRoot = sourceRoots[i];
+            if (sourceRoot == null) {
+                continue;
+            }
+            Object srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
+            targets[targetIndex++] = (srcGroup != null)
+                                     ? srcGroup
+                                     : sourceGroupsOnly ? null : sourceRoot;
+        }
+        return skipNulls(targets);
+    }
+    
+    public static FileObject[] getTestsFileObject(SourceGroup sourceGroup, Project project) {
         /* .) get URLs of target SourceGroup's roots: */
         URL[] rootURLs = null;
         try {
@@ -210,7 +229,7 @@ public class WizardHelpers
         }
         
         if (rootURLs.length == 0) {
-            return new Object[0];
+            return new FileObject[0];
         }
         
         /* .) convert the URLs to FileObjects: */
@@ -244,20 +263,7 @@ public class WizardHelpers
             count++;
         }
         
-        /* .) find SourceGroups corresponding to the FileObjects: */
-        final Object[] targets = new Object[count];
-        int targetIndex = 0;
-        for (int i = 0; i < sourceRoots.length; i++) {
-            final FileObject sourceRoot = sourceRoots[i];
-            if (sourceRoot == null) {
-                continue;
-            }
-            Object srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
-            targets[targetIndex++] = (srcGroup != null)
-                                     ? srcGroup
-                                     : sourceGroupsOnly ? null : sourceRoot;
-        }
-        return skipNulls(targets);
+        return sourceRoots;
     }
     
     /**
@@ -1102,7 +1108,7 @@ public class WizardHelpers
      * @param res <code>Resource</code> examine
      */
     public static JavaClass getJavaClass(Resource res,
-                                              String name) {
+                                         String name) {
         List l = res.getClassifiers();
         Iterator it = l.iterator();
         String resName = fileToClassName(res.getName());
@@ -1114,6 +1120,86 @@ public class WizardHelpers
             }
         }
         return null;
+    }
+    
+    public static JavaClass getJavaClassInCurrentProjectFirst(Project project, String className) {
+        JavaClass clazz = findClassInProject(project, className);
+         if(clazz == null) {
+            clazz = getFirstFoundJavaClassInWholeMDR(className);
+        }
+        
+        return clazz;
+    }
+    
+    /*
+     * jfdenise, method is trustable. 
+     * A FileObject is needed when you want to resolve class. It is used as a context.
+     */
+    public static JavaClass getFirstFoundJavaClassInWholeMDR(String className) {
+         JavaModelPackage pkg = JavaModel.getDefaultExtent();
+         JavaClass clazz = (JavaClass) pkg.getJavaClass().resolve(className);
+         if(clazz != null && 
+            clazz.getClass().getName().startsWith("org.netbeans.jmi.javamodel.UnresolvedClass")) // NOI18N
+            clazz = null;
+         
+         return clazz;
+    }
+    
+    /**
+     * jfdenise, method is trustable. 
+     * A FileObject is needed when you want to resolve class. It is used as a context.
+     */
+    public static JavaClass getJavaClassInProject(FileObject foClass) {
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(foClass);
+            Resource rc = JavaModel.getResource(foClass);
+            return getJavaClass(rc, foClass.getName());
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
+    }
+    
+    /**
+     * jfdenise, method is trustable.
+     * A FileObject is needed when you want to resolve class. It is used as a context.
+     */
+    public static FileObject getFileObjectForJavaClass(JavaClass javaClass) {
+        return JavaModel.getFileObject(javaClass.getResource());
+    }
+    
+    /**
+     * jfdenise, method is trustable.
+     * If class not found, return null.
+     */
+    public static JavaClass findClassInProject(Project project, String fullClassName) {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] grps = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject fo = null;
+        JavaClass foundClass = null;
+        for(int i = 0; i < grps.length; i++) {
+            JavaModel.getJavaRepository().beginTrans(true);
+            try {
+                fo = grps[i].getRootFolder();
+                JavaModel.setClassPath(fo);
+                JavaModelPackage pkg = JavaModel.getJavaExtent(fo);
+                foundClass = (JavaClass) pkg.getJavaClass().resolve(fullClassName);
+                //Is it a class from the current project?
+                //It needs to be. We are going to generate the file in the current project test dir
+                //currentClass = (JavaClass) pkg.getJavaClass().resolve(fullClassName);
+                if ((foundClass == null) || (foundClass.getClass().getName().startsWith(
+                        "org.netbeans.jmi.javamodel.UnresolvedClass"))) {
+                    //Not a valid class in this Source Group. Continue...
+                    foundClass = null;
+                    continue;
+                }
+                //else break
+                break;
+            }finally {
+                JavaModel.getJavaRepository().endTrans();
+            }
+        }
+        return foundClass;
     }
     
     /**
@@ -1311,42 +1397,48 @@ public class WizardHelpers
      * there is no interface.
      */
     public static String[] getInterfaceNames(JavaClass clazz) {  
-        Set results = new HashSet();
-        JavaClass superClass = clazz.getSuperClass();
-        JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();
-        if (superClass != null) {
-            superClass = (JavaClass)
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(WizardHelpers.getFileObjectForJavaClass(clazz));
+            Set results = new HashSet();
+            JavaClass superClass = clazz.getSuperClass();
+            JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();
+            if (superClass != null) {
+                superClass = (JavaClass)
                 pkg.getJavaClass().resolve(superClass.getName());
-            List superCLassIntfs = superClass.getInterfaces();
-            for (Iterator<JavaClass> it = superCLassIntfs.iterator(); it.hasNext();) {
-                String intfName = it.next().getName();
-                if (!containsString(results,intfName))
-                    results.add(intfName);
-                JavaClass superIntf = (JavaClass)
+                List superCLassIntfs = superClass.getInterfaces();
+                for (Iterator<JavaClass> it = superCLassIntfs.iterator(); it.hasNext();) {
+                    String intfName = it.next().getName();
+                    if (!containsString(results,intfName))
+                        results.add(intfName);
+                    JavaClass superIntf = (JavaClass)
                     pkg.getJavaClass().resolve(intfName);
+                    String[] intfs = getInterfaceNames(superIntf);
+                    for (int i = 0; i < intfs.length; i++) {
+                        if (!containsString(results,intfs[i]))
+                            results.add(intfs[i]);
+                    }
+                }
+            }
+            List interfaces = clazz.getInterfaces();
+            for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
+                JavaClass superIntf = (JavaClass)
+                pkg.getJavaClass().resolve(it.next().getName());
                 String[] intfs = getInterfaceNames(superIntf);
                 for (int i = 0; i < intfs.length; i++) {
                     if (!containsString(results,intfs[i]))
                         results.add(intfs[i]);
                 }
             }
-        }
-        List interfaces = clazz.getInterfaces();
-        for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
-            JavaClass superIntf = (JavaClass)
-                pkg.getJavaClass().resolve(it.next().getName());
-            String[] intfs = getInterfaceNames(superIntf);
-            for (int i = 0; i < intfs.length; i++) {
-                if (!containsString(results,intfs[i]))
-                    results.add(intfs[i]);
+            for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
+                JavaClass intf = it.next();
+                if (!containsString(results,intf.getName()))
+                    results.add(intf.getName());
             }
+            return (String[]) results.toArray(new String[results.size()]);
+        }finally {
+            JavaModel.getJavaRepository().endTrans();
         }
-        for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
-            JavaClass intf = it.next();
-            if (!containsString(results,intf.getName()))
-                results.add(intf.getName());
-        }
-        return (String[]) results.toArray(new String[results.size()]);
     }
     
     /**
@@ -1426,35 +1518,47 @@ public class WizardHelpers
     }
     
     private static boolean checkDefaultConstruct(JavaClass clazz) {
-        boolean superClassCheck = true;
-        if (clazz.getSuperClass() != null) {
-            JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
-            JavaClass superClass = (JavaClass)
-                    pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
-            superClassCheck = checkDefaultConstruct(superClass);
-        }
-        Constructor[] constructors = getAllConstructors(clazz);
-        boolean defaultExists = false;
-        for (int i = 0 ; i < constructors.length ; i++) {
-            if ((constructors[i].getParameters().size() == 0) &&
-                    !Modifier.isPrivate(constructors[i].getModifiers())) {
-                defaultExists = true;
-                break;
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(getFileObjectForJavaClass(clazz));
+            boolean superClassCheck = true;
+            if (clazz.getSuperClass() != null) {
+                JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
+                JavaClass superClass = (JavaClass)
+                pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
+                superClassCheck = checkDefaultConstruct(superClass);
             }
+            Constructor[] constructors = getAllConstructors(clazz);
+            boolean defaultExists = false;
+            for (int i = 0 ; i < constructors.length ; i++) {
+                if ((constructors[i].getParameters().size() == 0) &&
+                        !Modifier.isPrivate(constructors[i].getModifiers())) {
+                    defaultExists = true;
+                    break;
+                }
+            }
+            return superClassCheck && (defaultExists || (constructors.length == 0));
+        }finally {
+            JavaModel.getJavaRepository().endTrans();
         }
-        return superClassCheck && (defaultExists || (constructors.length == 0));
     }
     
     public static boolean hasOnlyDefaultConstruct(JavaClass clazz) {
-        boolean superClassCheck = true;
-        if (clazz.getSuperClass() != null) {
-            JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
-            JavaClass superClass = (JavaClass)
-                    pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
-            superClassCheck = checkDefaultConstruct(superClass);
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(getFileObjectForJavaClass(clazz));
+            boolean superClassCheck = true;
+            if (clazz.getSuperClass() != null) {               
+                JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
+                JavaClass superClass = (JavaClass)
+                pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
+                superClassCheck = checkDefaultConstruct(superClass);
+            }
+            return (getAllConstructors(clazz).length == 0) &&
+                    superClassCheck;
+        }finally {
+            JavaModel.getJavaRepository().endTrans();
         }
-        return (getAllConstructors(clazz).length == 0) &&
-                superClassCheck;
     }
     
     /**

@@ -63,55 +63,73 @@ public class AddAttrAction extends CookieAction {
     protected boolean enable (Node[] nodes) {
         if (!super.enable(nodes)) return false;
         if (nodes.length == 0) return false;
-
+        
         dob = (DataObject)nodes[0].getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
-        rc = JavaModel.getResource(fo);
-        JavaClass foClass = WizardHelpers.getJavaClass(rc,fo.getName());
-        if (foClass == null)
-            return false;
-        boolean isMBean = Introspector.isStandard(foClass);
         
-        return isMBean;
+        JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
+        if (foClass == null) return false;
+        
+        //We need to do all MDR access in a transaction
+        //Introspection is resolving some interfaces.
+        //It has to be done in a transaction contextualized by fo.
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(fo);
+            rc = JavaModel.getResource(fo);
+            return Introspector.isStandard(foClass);
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
     }
     
     protected void performAction (Node[] nodes) {
         // show configuration dialog
         // when dialog is canceled, escape the action
-        AddAttributesPanel cfg = new AddAttributesPanel(nodes[0]);
-        if (!cfg.configure()) {
-            return;
-        }
-        //detect if implementation of attributes exists
-        JavaClass mbeanClass = cfg.getMBeanClass();
-        MBeanAttribute[] attributes = cfg.getAttributes();
-        boolean hasExistAttr = false;
-        for (int i = 0; i < attributes.length; i++) {
-            boolean methodExist = 
-                    Introspector.discoverAttrMethods(mbeanClass,rc,attributes[i]);
-            if (methodExist)
-                Introspector.updateAttrExceptions(mbeanClass,rc,attributes[i]);
-            if (methodExist)
-                hasExistAttr = true;
-        }
-        
-        if (hasExistAttr) {
-            AddAttributesInfoPanel infoPanel = 
-                    new AddAttributesInfoPanel(mbeanClass.getSimpleName(),
-                        attributes);
-            if (!infoPanel.configure()) {
+        DataObject dataObj = (DataObject)nodes[0].getCookie(DataObject.class);
+        FileObject fo = null;
+        if (dataObj != null) fo = dataObj.getPrimaryFile();
+        //We need to do all MDR access in a transaction
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(fo);
+            AddAttributesPanel cfg = new AddAttributesPanel(nodes[0]);
+            if (!cfg.configure()) {
                 return;
             }
-        }
-        
-        StdMBeanClassGen generator = new StdMBeanClassGen();
-        try {
-            generator.updateAttributes(mbeanClass,rc,attributes);
-            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-            ec.open();
-        } catch (Exception e) {
-            e.printStackTrace();
+            //detect if implementation of attributes exists
+            JavaClass mbeanClass = cfg.getMBeanClass();
+            MBeanAttribute[] attributes = cfg.getAttributes();
+            boolean hasExistAttr = false;
+            for (int i = 0; i < attributes.length; i++) {
+                boolean methodExist =
+                        Introspector.discoverAttrMethods(mbeanClass,rc,attributes[i]);
+                if (methodExist)
+                    Introspector.updateAttrExceptions(mbeanClass,rc,attributes[i]);
+                if (methodExist)
+                    hasExistAttr = true;
+            }
+            
+            if (hasExistAttr) {
+                AddAttributesInfoPanel infoPanel =
+                        new AddAttributesInfoPanel(mbeanClass.getSimpleName(),
+                        attributes);
+                if (!infoPanel.configure()) {
+                    return;
+                }
+            }
+            
+            StdMBeanClassGen generator = new StdMBeanClassGen();
+            try {
+                generator.updateAttributes(mbeanClass,rc,attributes);
+                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                ec.open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
         }
     }
     

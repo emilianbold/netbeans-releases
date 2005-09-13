@@ -163,7 +163,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
             classButton = new ClassButton(browseButton,classSelectionJTextField,
                 WizardHelpers.getSourceGroups(project));
     }
-    
+ 
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -483,7 +483,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         //private JTextField createdFileTextField = null;
         private JTextField projectTextField = null;
         private WizardDescriptor.Panel mbeanTargetWiz = null;
-        
+        private Project project;
         /**
          * Constructor
          */
@@ -569,64 +569,53 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
          * Tests if the mbean has to wrap an existing resource
          * If yes, the boolean returns whether the class to wrap exists and is
          * accessible from the project classpath
-         * As long as the resource is not valid (i.e does not exist or is not 
+         * As long as the resource is not valid (i.e does not exist or is not
          * accessible) an error message is displayed
          * @return boolean if the option to wrap a class as mbean is checked
          * and the class is accessible from the classpath
          */
-         public boolean isFromExistingClassValid() {
-             
-             if (getPanel().classSelectionJTextField.isEnabled() && 
-                     !getPanel().classSelectionJTextField.getText().equals(  "")) // NOI18N
-             {
-                 
-                 String fullClassName = getPanel().
-                         classSelectionJTextField.getText();
-                 
-                 String filePath = //WizardHelpers.getFolderPath(
-                         //createdFileTextField.getText());
-                         (String)templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
-                 
-                 //gives an abstract representation of the directory
-                 File file = new File(filePath);
-                 FileObject fo = FileUtil.toFileObject(file);
-                 
-                 //resolves all accessible classes for the default project 
-                 //classpath
-                 JavaModelPackage pkg = JavaModel.getDefaultExtent();
-                 
-                 //checks if the class to wrap (i.e the class specified by 
-                 //the user) is accessible from the project classpath
-                 JavaClass mbeanClass = (JavaClass) pkg.getJavaClass().resolve(
-                         fullClassName);
-                 
-                 // checks that the class is neither null nor an interface nor 
-                 // abstract
-                 if ((mbeanClass == null) ||
-                         (mbeanClass.getClass().getName().startsWith(
-                         "org.netbeans.jmi.javamodel.UnresolvedClass"))) {// NOI18N
-                     setErrorMsg(  "The specified class does not exist.");// NOI18N
-                     
-                     return false;
-                 } else if (mbeanClass.isInterface()) {
-                     setErrorMsg(  "The specified class is an Interface.");// NOI18N
-                     return false;
-                 } else if (Modifier.isAbstract(mbeanClass.getModifiers())) {
-                     setErrorMsg(  "The specified class is abstract.");// NOI18N
-                     return false;
-                 } 
-             } else {
-                 //condition on checked box but empty resource to load
-                 if (getPanel().classSelectionJTextField.isEnabled() && 
-                     getPanel().classSelectionJTextField.getText().equals(  "")) {// NOI18N
-                     setErrorMsg(  "Specify a class to wrap.");// NOI18N
-                     return false;
-                 }
-             }
-             setErrorMsg(WizardConstants.EMPTYSTRING);
-             return true;
-        }
-         
+        public boolean isFromExistingClassValid() {
+            boolean fromExistingClass = getPanel().classSelectionJTextField.isEnabled();
+            if(fromExistingClass) {
+                if(getPanel().classSelectionJTextField.getText().equals("")) { // NOI18N
+                    setErrorMsg("Specify a class to wrap.");// NOI18N
+                    return false;
+                }
+                
+                
+                String fullClassName = getPanel().
+                        classSelectionJTextField.getText();
+                
+                String filePath =
+                        (String)templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
+                
+                //gives an abstract representation of the directory
+                File file = new File(filePath);
+                FileObject fo = FileUtil.toFileObject(file);
+                
+                
+                //resolves all accessible classes for the current project
+                //classpath
+                JavaClass mbeanClass = WizardHelpers.findClassInProject(project, fullClassName);
+                
+                // checks that the class is neither null nor an interface nor
+                // abstract
+                if (mbeanClass == null) {
+                    setErrorMsg(  "The specified class does not exist.");// NOI18N
+                    return false;
+                }
+                if (mbeanClass.isInterface()) {
+                    setErrorMsg(  "The specified class is an Interface.");// NOI18N
+                    return false;
+                }
+                if (Modifier.isAbstract(mbeanClass.getModifiers())) {
+                    setErrorMsg(  "The specified class is abstract.");// NOI18N
+                    return false;
+                }
+            }
+            setErrorMsg(WizardConstants.EMPTYSTRING);
+            return true;
+        }        
         
         /**
          * Displays the given message in the wizard's message area.
@@ -722,7 +711,9 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
             //initTargetComponentDef(mbeanTargetWiz.getComponent());
             bundle = NbBundle.getBundle(JMXMBeanIterator.class);
             
-            getPanel().setProject(Templates.getProject(templateWiz));
+            project = Templates.getProject(templateWiz);
+            
+            getPanel().setProject(project);
             
             String clzz =  bundle.getString("LBL_mbean_other_created_class");// NOI18N
             String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
@@ -823,6 +814,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         {            
             TemplateWizard wiz = (TemplateWizard) settings;
             
+            project = Templates.getProject(templateWiz);
+            
             //String mbeanName = mbeanNameTextField.getText();
             //wiz.putProperty (WizardConstants.PROP_MBEAN_NAME, mbeanName);
             String mbeanName = (String)
@@ -889,23 +882,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
             String fullClassName = getPanel().
                     classSelectionJTextField.getText();
             
-            String filePath = //WizardHelpers.getFolderPath(
-                    //createdFileTextField.getText());
-            (String)templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
-            //gives an abstract representation of the directory
-            File file = new File(filePath);
-            FileObject fo = FileUtil.toFileObject(file);
-            
-            //resolves all accessible classes for the default project
-            //classpath
-            JavaModelPackage pkg = JavaModel.getDefaultExtent();
-            
-            //checks if the class to wrap (i.e the class specified by
-            //the user) is accessible from the project classpath
-            JavaClass mbeanClass = (JavaClass) pkg.getJavaClass().resolve(
-                    fullClassName);
-            return mbeanClass;
-            
+            return WizardHelpers.findClassInProject(project, fullClassName);
         }
         
         public HelpCtx getHelp() {

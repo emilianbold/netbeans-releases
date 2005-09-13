@@ -66,50 +66,67 @@ public class AddOpAction extends CookieAction {
         dob = (DataObject)nodes[0].getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
-        rc = JavaModel.getResource(fo);
-        JavaClass foClass = WizardHelpers.getJavaClass(rc,fo.getName());
-        if (foClass == null)
-            return false;
-        boolean isMBean = Introspector.isStandard(foClass);
         
-        return isMBean;
+        JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
+        if (foClass == null) return false;
+        
+         //We need to do all MDR access in a transaction
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(fo);
+            rc = JavaModel.getResource(fo);
+            
+            return Introspector.isStandard(foClass);
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
     }
     
     protected void performAction (Node[] nodes) {
-        // show configuration dialog
-        // when dialog is canceled, escape the action
-        AddOperationsPanel cfg = new AddOperationsPanel(nodes[0]);
-        if (!cfg.configure()) {
-            return;
-        }
-        //detect if implementation of operations exists
-        JavaClass mbeanClass = cfg.getMBeanClass();
-        MBeanOperation[] operations = cfg.getOperations();
-        boolean hasExistOp = false;
-        for (int i = 0; i < operations.length; i++) {
-            boolean opExists = 
-                    Introspector.hasOperation(mbeanClass,rc,operations[i]);
-            if (opExists)
-                Introspector.updateOperExceptions(mbeanClass,rc,operations[i]);
-            operations[i].setMethodExists(opExists);
-            hasExistOp = hasExistOp || opExists;
-        }
-        if (hasExistOp) {
-            AddOperationsInfoPanel infoPanel = 
-                    new AddOperationsInfoPanel(mbeanClass.getSimpleName(),
-                        operations);
-            if (!infoPanel.configure()) {
+        DataObject dataObj = (DataObject)nodes[0].getCookie(DataObject.class);
+        FileObject fo = null;
+        if (dataObj != null) fo = dataObj.getPrimaryFile();
+        //We need to do all MDR access in a transaction
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(fo);
+            // show configuration dialog
+            // when dialog is canceled, escape the action
+            AddOperationsPanel cfg = new AddOperationsPanel(nodes[0]);
+            if (!cfg.configure()) {
                 return;
             }
-        }
-        
-        StdMBeanClassGen generator = new StdMBeanClassGen();
-        try {
-            generator.updateOperations(mbeanClass,rc,operations);
-            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-            ec.open();
-        } catch (Exception e) {
-            e.printStackTrace();
+            //detect if implementation of operations exists
+            JavaClass mbeanClass = cfg.getMBeanClass();
+            MBeanOperation[] operations = cfg.getOperations();
+            boolean hasExistOp = false;
+            for (int i = 0; i < operations.length; i++) {
+                boolean opExists =
+                        Introspector.hasOperation(mbeanClass,rc,operations[i]);
+                if (opExists)
+                    Introspector.updateOperExceptions(mbeanClass,rc,operations[i]);
+                operations[i].setMethodExists(opExists);
+                hasExistOp = hasExistOp || opExists;
+            }
+            if (hasExistOp) {
+                AddOperationsInfoPanel infoPanel =
+                        new AddOperationsInfoPanel(mbeanClass.getSimpleName(),
+                        operations);
+                if (!infoPanel.configure()) {
+                    return;
+                }
+            }
+            
+            StdMBeanClassGen generator = new StdMBeanClassGen();
+            try {
+                generator.updateOperations(mbeanClass,rc,operations);
+                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                ec.open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
         }
     }
     

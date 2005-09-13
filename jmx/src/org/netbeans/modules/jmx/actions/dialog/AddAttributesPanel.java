@@ -76,8 +76,8 @@ public class AddAttributesPanel extends javax.swing.JPanel
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
-        Resource rc = JavaModel.getResource(fo);
-        currentClass = WizardHelpers.getJavaClass(rc,fo.getName());
+        
+        currentClass = WizardHelpers.getJavaClassInProject(fo);
         
         // init tags
         
@@ -90,7 +90,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         jScrollPane1.setViewportView(attributeTable);
         attributeTable.getSelectionModel().addListSelectionListener(this);
         attrTableLabel.setLabelFor(attributeTable);
-       
+        
         //discovery of existing Attributes
         MBeanAttribute[] existAttributes = Introspector.getAttributes(currentClass);
         for (int i = 0; i < existAttributes.length; i++)
@@ -106,11 +106,11 @@ public class AddAttributesPanel extends javax.swing.JPanel
         
         // init labels
         Mnemonics.setLocalizedText(attrTableLabel,
-                     bundle.getString("LBL_Attributes")); // NOI18N
+                bundle.getString("LBL_Attributes")); // NOI18N
         Mnemonics.setLocalizedText(addButton,
-                     bundle.getString("LBL_Button_AddAttribute")); // NOI18N
+                bundle.getString("LBL_Button_AddAttribute")); // NOI18N
         Mnemonics.setLocalizedText(removeButton,
-                     bundle.getString("LBL_Button_RemoveAttribute")); // NOI18N
+                bundle.getString("LBL_Button_RemoveAttribute")); // NOI18N
         
         // for accessibility
         attributeTable.getAccessibleContext().setAccessibleName(
@@ -172,7 +172,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
     }
     
     /**
-     * Displays a configuration dialog and updates the MBean options 
+     * Displays a configuration dialog and updates the MBean options
      * according to the user's settings.
      * @return <CODE>boolean</CODE> true only if specified attributes are correct.
      */
@@ -180,28 +180,28 @@ public class AddAttributesPanel extends javax.swing.JPanel
         
         // create and display the dialog:
         String title = bundle.getString("LBL_AddAttributesAction.Title"); // NOI18N
-
+        
         btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
         btnOK.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
         
         Object returned = DialogDisplayer.getDefault().notify(
-                new DialogDescriptor (
-                        this,
-                        title,
-                        true,                       //modal
-                        new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
-                        btnOK,                      //initial value
+                new DialogDescriptor(
+                this,
+                title,
+                true,                       //modal
+                new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
+                btnOK,                      //initial value
                         DialogDescriptor.DEFAULT_ALIGN,
                         new HelpCtx("jmx_mbean_update_attributes_operations"), // NOI18N
                         (ActionListener) null
-                ));
-        
-        if (returned == btnOK) {
-            return true;
-        }
-        return false;
+                        ));
+                
+                if (returned == btnOK) {
+                    return true;
+                }
+                return false;
     }
     
     /**

@@ -53,8 +53,8 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
-        Resource rc = JavaModel.getResource(fo);
-        currentClass = WizardHelpers.getJavaClass(rc,fo.getName());
+        
+        currentClass = WizardHelpers.getJavaClassInProject(fo);
         
         // init tags
         
@@ -62,7 +62,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         
         //init labels
         Mnemonics.setLocalizedText(keepRefCheckBox,
-                     bundle.getString("LBL_Keep_References")); // NOI18N
+                bundle.getString("LBL_Keep_References")); // NOI18N
         
         //for accessibility
         keepRefCheckBox.getAccessibleContext().setAccessibleName(
@@ -84,7 +84,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
     }
     
     /**
-     * Displays a configuration dialog and updates Register MBean options 
+     * Displays a configuration dialog and updates Register MBean options
      * according to the user's settings.
      * @return <CODE>boolean</CODE> true only if specified operations are correct.
      */
@@ -92,28 +92,28 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         
         // create and display the dialog:
         String title = bundle.getString("LBL_Action_AddMBeanRegistrationIntf.Title"); // NOI18N
-
+        
         btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
         btnOK.setEnabled(isAcceptable());
         btnOK.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
         
         Object returned = DialogDisplayer.getDefault().notify(
-                new DialogDescriptor (
-                        this,
-                        title,
-                        true,                       //modal
-                        new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
-                        btnOK,                      //initial value
+                new DialogDescriptor(
+                this,
+                title,
+                true,                       //modal
+                new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
+                btnOK,                      //initial value
                         DialogDescriptor.DEFAULT_ALIGN,
                         new HelpCtx("jmx_mbean_update_registration"), // NOI18N
                         (ActionListener) null
-                ));
-        
-        if (returned == btnOK) {
-            return true;
-        }
-        return false;
+                        ));
+                
+                if (returned == btnOK) {
+                    return true;
+                }
+                return false;
     }
     
     /**

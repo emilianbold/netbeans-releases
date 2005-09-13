@@ -31,6 +31,8 @@ import org.netbeans.modules.jmx.MBeanNotification;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 
+import org.openide.filesystems.FileObject;
+
 /**
  *
  *  MBeanRegistration interface implementation code generator class.
@@ -81,13 +83,17 @@ public class AddRegistIntfGenerator
      * @throws java.io.IOException <CODE>IOException</CODE>
      * @throws java.lang.Exception <CODE>Exception</CODE>
      */
-    public void update(JavaClass mbeanClass, Resource mbeanRes, 
+    public void update(FileObject fo, JavaClass mbeanClass, Resource mbeanRes, 
             boolean keepRefSelected)
            throws java.io.IOException, Exception
     {
         boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
+             // It can be null when this method is called from the MBeanWizard. The MBeanRegistration 
+             // interface is generated for a new MBean that doesn't already exist.
+            if(fo != null)
+                JavaModel.setClassPath(fo);
             if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 MBeanFileGenerator.addManagementImport(mbeanRes);
           
@@ -108,6 +114,7 @@ public class AddRegistIntfGenerator
         rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
+            JavaModel.setClassPath(fo);
             if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 MBeanFileGenerator.addManagementImport(mbeanRes);
         } catch (Exception e) {

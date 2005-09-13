@@ -65,14 +65,22 @@ public class AddNotifAction extends CookieAction {
         dob = (DataObject)nodes[0].getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
-        rc = JavaModel.getResource(fo);
-        JavaClass foClass = WizardHelpers.getJavaClass(rc,fo.getName());
-        if (foClass == null)
-            return false;
-        boolean isMBean = Introspector.testCompliance(foClass);
-        boolean isNotifBroadCaster = Introspector.isNotifBroadCaster(foClass);
         
-        return isMBean && !isNotifBroadCaster;
+        JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
+        if (foClass == null) return false;
+        
+        //We need to do all MDR access in a transaction
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(fo);
+            rc = JavaModel.getResource(fo);
+            boolean isMBean = Introspector.testCompliance(foClass);
+            boolean isNotifBroadCaster = Introspector.isNotifBroadCaster(foClass);
+            
+            return isMBean && !isNotifBroadCaster;
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
     }
     
     protected void performAction (Node[] nodes) {
@@ -83,8 +91,12 @@ public class AddNotifAction extends CookieAction {
             return;
         }
         AddNotifGenerator generator = new AddNotifGenerator();
+        
+        //We need the file object to determine the classpath
+        FileObject fo = null;
+        if (dob != null) fo = dob.getPrimaryFile();
         try {
-            generator.update(cfg.getMBeanClass(),rc,cfg.getNotifications(),
+            generator.update(fo, cfg.getMBeanClass(),rc,cfg.getNotifications(),
                     cfg.getGenBroadcastDeleg(),cfg.getGenSeqNumber());
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();

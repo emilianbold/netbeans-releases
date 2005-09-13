@@ -32,6 +32,8 @@ import org.netbeans.modules.jmx.MBeanNotification;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 
+import org.openide.filesystems.FileObject;
+
 /**
  *
  *  Add notifications to an MBean code generator class
@@ -59,13 +61,14 @@ public class AddNotifGenerator
      * @throws java.io.IOException <CODE>IOException</CODE>
      * @throws java.lang.Exception <CODE>Exception</CODE>
      */
-    public void update(JavaClass mbeanClass, Resource mbeanRes, MBeanNotification[] notifs,
+    public void update(FileObject fo, JavaClass mbeanClass, Resource mbeanRes, MBeanNotification[] notifs,
             boolean genBroadcastDeleg, boolean genSeqNumber)
            throws java.io.IOException, Exception
     {
         boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
+            JavaModel.setClassPath(fo);
             if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 MBeanFileGenerator.addManagementImport(mbeanRes);
             addNotificationEmitter(mbeanClass);
@@ -87,6 +90,7 @@ public class AddNotifGenerator
         rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
+            JavaModel.setClassPath(fo);
             if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 MBeanFileGenerator.addManagementImport(mbeanRes);
         } catch (Exception e) {
