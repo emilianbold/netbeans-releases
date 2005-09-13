@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,7 @@ package org.netbeans.core.xml;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
+import java.io.InputStream;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -367,12 +368,13 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         }
         
         public void parse() {
+            InputStream in = null;
             try {
                 org.xml.sax.XMLReader reader = org.openide.xml.XMLUtil.createXMLReader(false, false);
                 reader.setContentHandler(this);
                 reader.setEntityResolver(this);
-                InputSource is = new InputSource(src.getURL().toExternalForm());
-                is.setByteStream(new BufferedInputStream(src.getInputStream()));
+                in = src.getInputStream();
+                InputSource is = new InputSource(in);
                 try {
                     reader.setFeature("http://xml.org/sax/features/validation", false);  //NOI18N
                 } catch (SAXException sex) {
@@ -401,6 +403,14 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {
                     // ignore
+                }
+            } finally {
+                try {
+                    if (in != null) {
+                        in.close();
+                    }
+                } catch (IOException ex) {
+                    // ignore already closed
                 }
             }
         }
