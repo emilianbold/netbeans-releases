@@ -550,7 +550,10 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     public String getTooltipForButtons(Point point) {
         if (getController().inPinButtonRect(point)) {
-            return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.tooltip");
+            if (pinButton != null) {
+                return pinButton.getPinToolTipText();
+            }
+            return null;
         }
         if (getController().inCloseIconRect(point) != -1) {
             return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "CloseButton.tooltip");
@@ -847,7 +850,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             setContentAreaFilled(false);
             setRolloverEnabled(rolloverIcons != null);
             setOrientation(TabDisplayer.ORIENTATION_CENTER);
-            setToolTipText(NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.tooltip"));
         }
         
         public void updateUI() {
@@ -873,12 +875,21 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 if (rolloverIcons != null) {
                     setRolloverIcon(iconCache.obtainIcon((String)rolloverIcons.get(orientation)));
                 }
+                setToolTipText(getPinToolTipText());
             } else {
                 setIcon(null);
                 setPressedIcon(null);
                 setSize(0,0);
                 setRolloverIcon(null);
+                setToolTipText(null);
             }
+        }
+        
+        private String getPinToolTipText () {
+            if (orientation != TabDisplayer.ORIENTATION_CENTER) {
+                return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.tooltip"); //NOI18N
+            }
+            return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.restore.tooltip"); //NOI18N
         }
         
     } // end of PinButton
