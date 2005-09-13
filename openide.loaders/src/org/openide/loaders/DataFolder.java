@@ -857,14 +857,14 @@ implements Serializable, DataObject.Container {
         /* Returns count of the nodes.
         */
         public int getNodesCount () {
-            return node.getChildren().getNodes(true).length;
+            return node.getChildren().getNodes(FolderChildren.checkChildrenMutex()).length;
         }
 
         /* Returns array of subnodes
         * @return array of subnodes
         */
         public Node[] getNodes () {
-            return node.getChildren().getNodes(true);
+            return node.getChildren().getNodes(FolderChildren.checkChildrenMutex());
         }
 
         /* Reorders all children with given permutation.

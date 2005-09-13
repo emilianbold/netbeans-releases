@@ -14,6 +14,8 @@
 package org.openide.loaders;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
@@ -24,6 +26,7 @@ import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.util.Mutex;
 
 /**
  * Tests Index cookio of DataFolder (when uses DataFilter).
@@ -33,6 +36,10 @@ import org.openide.filesystems.LocalFileSystem;
 public class DataFolderIndexTest extends NbTestCase {
     DataFolder df;
     FileObject fo;
+    
+    static {
+        System.setProperty("org.openide.util.Lookup", "org.openide.loaders.DataFolderIndexTest$Lkp");
+    }
 
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
@@ -42,6 +49,10 @@ public class DataFolderIndexTest extends NbTestCase {
     }
     
     protected void setUp () {
+        if (!(org.openide.util.Lookup.getDefault() instanceof Lkp)) {
+            fail("We need our Lkp: " + org.openide.util.Lookup.getDefault());
+        }
+        
         try {
             fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder ("TestTemplates");
             df = DataFolder.findFolder (fo);
@@ -58,6 +69,8 @@ public class DataFolderIndexTest extends NbTestCase {
         } catch (Exception x) {
             fail (x.getMessage ());
         }
+        
+        ErrManager.resetMessages();
     }
     
     protected void tearDown() {
@@ -80,6 +93,26 @@ public class DataFolderIndexTest extends NbTestCase {
         assertEquals("The same number of nodes like folder children", df.getChildren().length, x);
     }
 
+    public void testIndexWithoutInitializationInReadAccess() throws Exception {
+        org.openide.nodes.Children.MUTEX.readAccess(new Mutex.ExceptionAction () {
+            public Object run () throws Exception {
+                Node n = df.getNodeDelegate();
+
+                Index fromNode = (Index) n.getLookup ().lookup (Index.class);
+                assertNotNull ("DataFolderNode has Index.", fromNode);
+
+                int x = fromNode.getNodesCount();
+                assertEquals("Folder has few children", 4, df.getChildren().length);
+                assertEquals("Cannot initialize the count in nodes as we are in read access", 0, x);
+                return null;
+            }
+        });
+        
+        if (ErrManager.messages.length() > 0) {
+            fail("No messages shall be reported: " + ErrManager.messages);
+        }
+    }
+    
     public void testIndexNodesWithoutInitialization() throws Exception {
         Node n = df.getNodeDelegate();
         
@@ -131,6 +164,74 @@ public class DataFolderIndexTest extends NbTestCase {
             assertEquals ("Node " + arr [0] + " has as same position in Node's Index [" + Arrays.asList (fromNode.getNodes ()) + "]" +
                     "as in folder's Index [" + Arrays.asList (fromFolder.getNodes ()) + "].",
                     fromFolder.indexOf (arr [i]), fromNode.indexOf (arr [i]));
+        }
+    }
+    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+        public Lkp() {
+            this(new org.openide.util.lookup.InstanceContent());
+        }
+        
+        private Lkp(org.openide.util.lookup.InstanceContent ic) {
+            super(ic);
+            ic.add(new ErrManager());
+            ic.add(new Pool ());
+        }
+    }
+    
+    private static final class Pool extends DataLoaderPool {
+        public static DataLoader extra;
+        
+        
+        protected java.util.Enumeration loaders () {
+            if (extra == null) {
+                return org.openide.util.Enumerations.empty ();
+            } else {
+                return org.openide.util.Enumerations.singleton (extra);
+            }
+        }
+    }
+
+    private static final class ErrManager extends org.openide.ErrorManager {
+        static final StringBuffer messages = new StringBuffer();
+        static int nOfMessages;
+        static final String DELIMITER = ": ";
+        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
+        
+        static void resetMessages() {
+            messages.delete(0, ErrManager.messages.length());
+            nOfMessages = 0;
+        }
+        
+        public void log(int severity, String s) {
+            /*
+            nOfMessages++;
+            messages.append(severity + DELIMITER + s);
+            messages.append('\n');
+             */
+        }
+        
+        public Throwable annotate(Throwable t, int severity,
+                String message, String localizedMessage,
+                Throwable stackTrace, java.util.Date date) {
+            return t;
+        }
+        
+        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
+            return t;
+        }
+        
+        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
+            return null;
+        }
+        
+        public org.openide.ErrorManager getInstance(String name) {
+            return this;
+        }
+        
+        public void notify(int severity, Throwable t) {
+            StringWriter w = new StringWriter();
+            t.printStackTrace(new PrintWriter(w));
+            messages.append(w.toString());
         }
     }
     

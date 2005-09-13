@@ -182,7 +182,7 @@ implements PropertyChangeListener, ChangeListener {
      * @return true if it is safe to wait (our thread is
      *         not in Children.MUTEX.readAccess
      */
-    private static boolean checkChildrenMutex() {
+    static boolean checkChildrenMutex() {
         return !Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess ();
     }
     
