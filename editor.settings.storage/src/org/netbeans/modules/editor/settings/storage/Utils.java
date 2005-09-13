@@ -98,7 +98,7 @@ public class Utils {
         int i, k = mimeTypes.length;
         for (i = 0; i < k; i++)
             sb.append ('/').append (mimeTypes [i]);
-        if (scheme != null && !scheme.equals ("NetBeans"))
+        if (scheme != null)
             sb.append ('/').append (scheme);
         return sb.append ('/').toString ();
     }
@@ -117,7 +117,7 @@ public class Utils {
             int i, k = mimeTypes.length;
             for (i = 0; i < k; i++)
                 fo = getFO (fo, mimeTypes [i]);
-            if (scheme != null && !scheme.equals ("NetBeans"))
+            if (scheme != null)
                 fo = getFO (fo, scheme);
             if (fileName == null)
                 return fo;

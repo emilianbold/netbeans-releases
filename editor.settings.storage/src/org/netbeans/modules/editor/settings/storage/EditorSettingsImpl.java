@@ -303,7 +303,6 @@ public class EditorSettingsImpl extends EditorSettings {
 
     private void init () {
 	schemes = new HashMap ();
-	schemes.put ("NetBeans", "NetBeans");
 	keyMaps = new HashMap ();
 	keyMaps.put ("NetBeans", "NetBeans");
 	mimeToLanguage = new HashMap ();
@@ -316,7 +315,7 @@ public class EditorSettingsImpl extends EditorSettings {
     
     private void init1 (FileObject fo, int depth) {
 	if (depth == 1) {
-	    Enumeration e = fo.getFolders (false);
+	    Enumeration e = fo.getChildren (false);
 	    while (e.hasMoreElements ())
 		init1 ((FileObject) e.nextElement (), 2);
 	    return;
