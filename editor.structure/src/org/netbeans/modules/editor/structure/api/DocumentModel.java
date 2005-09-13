@@ -597,7 +597,7 @@ public final class DocumentModel {
                 DocumentElement el = headarr[i];
                 //test whether the element is empty - if so, get next one etc...
                 //if(!isEmpty(el) && el.getStartOffset() < de.getStartOffset() && isDescendantOf(el,de)) return cacheParent(de, el);
-                if(el.isEmpty() && isDescendantOf(el,de) && el.getStartOffset() < de.getStartOffset()) return cacheParent(de, el);
+                if(!el.isEmpty() && isDescendantOf(el,de) && el.getStartOffset() < de.getStartOffset()) return cacheParent(de, el);
             }
             
             //if not found (e.g. has the same startoffsets in case of root)
