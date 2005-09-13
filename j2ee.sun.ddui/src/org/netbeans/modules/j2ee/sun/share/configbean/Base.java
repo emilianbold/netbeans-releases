@@ -33,7 +33,6 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 
 import javax.enterprise.deploy.spi.DConfigBean;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 import javax.enterprise.deploy.model.XpathListener;
@@ -45,6 +44,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.share.Constants;
 
 import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources;
+import org.openide.ErrorManager;
 
 /** This is the base class for all DConfigBean objects in the SunONE App Server
  * JSR88 implementation.
@@ -447,48 +447,72 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 //			", DCB xpath = " + getDDBean().getXpath());		
 //	}
 
-	/**
-	 * @param dConfigBean
+        /** JSR-88: Removes a child DConfigBean from this bean.
+         *  Spec interpretation note: If the dConfigBean parameter refers to a bean
+         *  that has it's own children, those children are also removed, ad infinitum.
+         *
+	 * @param dConfigBean The child DConfigBean to remove from this DConfigBean
 	 * @throws BeanNotFoundException
 	 */    
 	public void removeDConfigBean(DConfigBean dConfigBean) throws BeanNotFoundException {
 		if(dConfigBean != null) {
 			if(dConfigBean.getDDBean() != null) {
-				DDBean key = dConfigBean.getDDBean();
-				Base beanToRemove = removeDCBInstance(key);
-
-				if(beanToRemove != null) {
-					if(beanToRemove instanceof BaseRoot) {
-						// remove from root cache as well.
-						BaseRoot rootBean = (BaseRoot) getConfig().getDCBRootCache().remove(key);
-
-						if(rootBean != null) {
-							assert(rootBean == beanToRemove); // these should be the same, right?
+				if(((Base) dConfigBean).getParent() == this) {
+					// Handle children first.
+					Base beanToRemove = (Base) dConfigBean;
+					Iterator iter = beanToRemove.getChildren().iterator();
+					while(iter.hasNext()) {
+						try {
+							beanToRemove.removeDConfigBean((DConfigBean) iter.next());
+						} catch(BeanNotFoundException ex) {
+							// This would suggest a corrupt tree or bad code somewhere if it happens.
+							// Catch & log it and continue cleaning the tree.
+							ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 						}
-					} else if(beanToRemove instanceof BaseModuleRef) {
-						// Clean up patch list - the patch list should be empty, but you never know...
-						getConfig().getPatchList().remove(key);
 					}
-				}
+        
+					DDBean key = dConfigBean.getDDBean();
+					beanToRemove = removeDCBInstance(key);
 
-				if(beanToRemove != null) {
-					// !PW FIXME 1st half - workaround for IZ 41214 (see method comment)
-					Base parent = beanToRemove.getParent();
-					String beanXpath = beanToRemove.getDDBean().getXpath();
+					if(beanToRemove != null) {
+						if(beanToRemove instanceof BaseRoot) {
+							// remove from root cache as well.
+							BaseRoot rootBean = (BaseRoot) getConfig().getDCBRootCache().remove(key);
 
-					// cleanup bean before throwing away
-					beanToRemove.cleanup();
-					beanToRemove = null;
+							if(rootBean != null) {
+								assert(rootBean == beanToRemove); // these should be the same, right?
+							}
+						} else if(beanToRemove instanceof BaseModuleRef) {
+							// Clean up patch list - the patch list should be empty, but you never know...
+							getConfig().getPatchList().remove(key);
+						}
+					}
 
-					// !PW FIXME 2nd half - workaround for IZ 41214 (see method comment)
-					parent.beanRemoved(beanXpath);
+					if(beanToRemove != null) {
+						// !PW FIXME 1st half - workaround for IZ 41214 (see method comment)
+						Base parent = beanToRemove.getParent();
+						String beanXpath = beanToRemove.getDDBean().getXpath();
+
+						// cleanup bean before throwing away
+						beanToRemove.cleanup();
+						beanToRemove = null;
+
+						// !PW FIXME 2nd half - workaround for IZ 41214 (see method comment)
+						parent.beanRemoved(beanXpath);
+                                                
+                                                System.out.println("Removed DCB for " + beanXpath);
+					} else {
+						Object [] args = new Object [2];
+						args[0] = dConfigBean.getDDBean();
+						args[1] = key.getXpath();
+						throw new BeanNotFoundException(MessageFormat.format(
+							bundle.getString("ERR_DConfigBeanNotFoundOnRemove"), args));
+					}
 				} else {
-					Object [] args = new Object [2];
-					args[0] = dConfigBean.getDDBean();
-					args[1] = key.getXpath();
-					throw new BeanNotFoundException(MessageFormat.format(
-						bundle.getString("ERR_DConfigBeanNotFoundOnRemove"), args));
-				}
+					// The parent of the DConfigBean parameter is not this instance - spec violation.
+					throw new BeanNotFoundException(
+						bundle.getString("ERR_DConfigBeanWrongParentOnRemove"));
+                                }
 			} else {
 				// DDBean is null.  This could be that this DConfigBean has
 				// previously been removed.
@@ -1131,9 +1155,9 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		
 		public abstract CommonDDBean getDDSnippet();
 		
-        public org.netbeans.modules.schema2beans.BaseBean getCmpDDSnippet() {
-            return null;
-        }
+		public org.netbeans.modules.schema2beans.BaseBean getCmpDDSnippet() {
+			return null;
+		}
     
 		public boolean hasDDSnippet() {
 			return true;
@@ -1149,7 +1173,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		
 		public CommonDDBean mergeIntoRovingDD(CommonDDBean ddParent) {
 			CommonDDBean newBean = getDDSnippet();
-                        if(newBean != null){
+                        if(newBean != null) {
                             if(ddParent != null) {
                                     String propertyName = getPropertyName();
                                     if(propertyName != null) {
@@ -1160,7 +1184,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
                             } else {
                                     jsr88Logger.severe("mergeIntoRovingDD() called with null parent (called on root bean?)"); // NOI18N
                             }
-                        }else{
+                        } else {
                             jsr88Logger.severe("No snippet to merge for " + Base.this.getClass()); // NOI18N
                         }
 			return newBean;
