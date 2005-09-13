@@ -725,6 +725,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         for (Iterator it = selectedComps.iterator(); it.hasNext(); ) {
             RADComponent metacomp = (RADComponent) it.next();
+            if (!(metacomp instanceof RADVisualComponent)) continue;
             boolean subcontained = false;
             for (Iterator it2 = selectedComps.iterator(); it2.hasNext(); ) {
                 RADComponent metacomp2 = (RADComponent) it2.next();
