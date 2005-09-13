@@ -133,6 +133,7 @@ public class EditorSettingsImpl extends EditorSettings {
 //                    " : " + as.getAttribute (StyleConstants.Foreground)
 //                );
 //        }
+        if (defaultColors.get (s) == null) return null;
 	return Collections.unmodifiableCollection (
             (Collection) defaultColors.get (s)
         );
@@ -179,6 +180,7 @@ public class EditorSettingsImpl extends EditorSettings {
             } else
                 editorFontColors.put (s, null);
         }
+        if (editorFontColors.get (s) == null) return null;
 	return Collections.unmodifiableCollection (
             (Collection) editorFontColors.get (s)
         );
