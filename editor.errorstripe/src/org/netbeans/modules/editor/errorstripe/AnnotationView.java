@@ -663,6 +663,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
 
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
         fullRepaint();
+        synchronized (this) {
+            //fix for #63402: clear the modelToViewCache after folds changed:
+            modelToViewCache = null;
+        }
     }
 
     public void removeUpdate(DocumentEvent e) {
