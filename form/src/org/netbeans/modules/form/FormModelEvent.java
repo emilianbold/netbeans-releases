@@ -481,7 +481,7 @@ public class FormModelEvent extends EventObject
             try {
                 LayoutSupportDelegate layoutDelegate = getOldLayoutSupport();
                 if (layoutDelegate != null) {
-                    getFormModel().setContainerLayout(
+                    getFormModel().setContainerLayoutImpl(
                             (RADVisualContainer)getContainer(),
                             layoutDelegate,
                             null);
@@ -500,7 +500,7 @@ public class FormModelEvent extends EventObject
             try {
                 LayoutSupportDelegate layoutDelegate = getNewLayoutSupport();
                 if (layoutDelegate != null) {
-                    getFormModel().setContainerLayout(
+                    getFormModel().setContainerLayoutImpl(
                             (RADVisualContainer)getContainer(),
                             layoutDelegate,
                             null);

@@ -31,6 +31,7 @@ final class LayoutEvent extends EventObject {
     static final int INTERVAL_SIZE_CHANGED = 7;
     static final int INTERVAL_ATTRIBUTES_CHANGED = 8;
     static final int INTERVAL_LINKSIZE_CHANGED = 9;
+    static final int CONTAINER_ATTR_CHANGED = 10;
 
     private int changeType;
 
@@ -38,6 +39,7 @@ final class LayoutEvent extends EventObject {
     private LayoutComponent parentComp;
     private LayoutInterval interval;
     private LayoutInterval parentInt;
+    private LayoutInterval[] layoutRoots;
     private int index;
     private int oldAlignment;
     private int newAlignment;
@@ -63,6 +65,11 @@ final class LayoutEvent extends EventObject {
         this.component = comp;
         this.parentComp = parent;
         this.index = index;
+    }
+
+    void setContainer(LayoutComponent comp, LayoutInterval[] roots) {
+        this.component = comp;
+        this.layoutRoots = roots;
     }
 
     void setInterval(LayoutInterval interval, LayoutInterval parent, int index) {
@@ -168,6 +175,9 @@ final class LayoutEvent extends EventObject {
             case INTERVAL_LINKSIZE_CHANGED:
                 undoLinkSize(oldLinkSizeId);
                 break;
+            case CONTAINER_ATTR_CHANGED:
+                changeContainerAttr();
+                break;
         }
     }
 
@@ -203,6 +213,9 @@ final class LayoutEvent extends EventObject {
             case INTERVAL_LINKSIZE_CHANGED:
                 undoLinkSize(newLinkSizeId);
                 break;
+            case CONTAINER_ATTR_CHANGED:
+                changeContainerAttr();
+                break;
         }
     }
     
@@ -227,5 +240,9 @@ final class LayoutEvent extends EventObject {
 
     private void undoIntervalRemoval() {
         getModel().addInterval(interval, parentInt, index);
+    }
+    
+    private void changeContainerAttr() {
+        component.setLayoutContainer(!component.isLayoutContainer(), layoutRoots);
     }
 }

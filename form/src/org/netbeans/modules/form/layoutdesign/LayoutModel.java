@@ -75,7 +75,7 @@ public class LayoutModel implements LayoutConstants {
     public boolean changeComponentToContainer(String componentId) {
         LayoutComponent component = getLayoutComponent(componentId);
         if (component != null) {
-            component.setLayoutContainer(true);
+            setLayoutContainer(component, true);
             return true;
         }
         return false;
@@ -92,17 +92,14 @@ public class LayoutModel implements LayoutConstants {
         if (component == null) {
             return false;
         }
-        Iterator it = component.getSubcomponents();
-        while (it.hasNext()) {
-            LayoutComponent sub = (LayoutComponent) it.next();
-            if (!sub.isLayoutContainer()) { // non-container without a parent is useless
-                unregisterComponent(sub, false);
-            }
+        for (int i=component.getSubComponentCount()-1; i>=0; i--) {
+            LayoutComponent sub = component.getSubComponent(i);
+            removeComponent(sub, !sub.isLayoutContainer());
         }
-        component.setLayoutContainer(false); // this removes everything from the component
         if (component.getParent() == null) { // non-container without a parent
-            unregisterComponent(component, false);
+            removeComponent(component, true);
         }
+        setLayoutContainer(component, false); // this removes everything from the component
         return true;
     }
 
@@ -281,6 +278,19 @@ public class LayoutModel implements LayoutConstants {
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.GROUP_ALIGNMENT_CHANGED);
         ev.setAlignment(group, oldAlignment, alignment);
         addChange(ev);
+    }
+
+    void setLayoutContainer(LayoutComponent component, boolean container) {
+        boolean oldContainer = component.isLayoutContainer();
+        if (oldContainer != container) {
+            LayoutInterval[] roots = component.getLayoutRoots();
+            component.setLayoutContainer(container, null);
+
+            // record undo/redo (don't fire event)
+            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.CONTAINER_ATTR_CHANGED);
+            ev.setContainer(component, roots);
+            addChange(ev);            
+        }
     }
 
     public void setIntervalSize(LayoutInterval interval, int min, int pref, int max) {

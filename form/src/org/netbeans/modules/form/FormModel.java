@@ -319,7 +319,7 @@ public class FormModel
         }
     }
 
-    public void setContainerLayout(RADVisualContainer metacont,
+    public void setContainerLayoutImpl(RADVisualContainer metacont,
                                    LayoutSupportDelegate layoutDelegate,
                                    java.awt.LayoutManager initInstance)
         throws Exception
@@ -329,12 +329,27 @@ public class FormModel
             currentLS != null ? currentLS.getLayoutDelegate() : null;
 
         if (currentLS == null) { // switching to old layout support
-            layoutModel.changeContainerToComponent(metacont.getId());
             metacont.setOldLayoutSupport(true);
         }
         metacont.setLayoutSupportDelegate(layoutDelegate, initInstance);
 
         fireContainerLayoutExchanged(metacont, currentDel, layoutDelegate);
+    }
+
+    public void setContainerLayout(RADVisualContainer metacont,
+                                   LayoutSupportDelegate layoutDelegate,
+                                   java.awt.LayoutManager initInstance)
+        throws Exception {
+        LayoutSupportManager currentLS = metacont.getLayoutSupport();
+        setContainerLayoutImpl(metacont, layoutDelegate, initInstance);
+        if (currentLS == null) { // switching to old layout support
+            Object layoutStartMark = layoutModel.getChangeMark();
+            UndoableEdit ue = layoutModel.getUndoableEdit();
+            layoutModel.changeContainerToComponent(metacont.getId());
+            if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
+                addUndoableEdit(ue);
+            }
+        }
     }
     
     void setNaturalContainerLayoutImpl(RADVisualContainer metacont) {
@@ -342,10 +357,6 @@ public class FormModel
         LayoutSupportDelegate currentDel = currentLS.getLayoutDelegate();
         metacont.setOldLayoutSupport(false);
         fireContainerLayoutExchanged(metacont, currentDel, null);
-        if (!layoutModel.changeComponentToContainer(metacont.getId())) {
-            layoutModel.addRootComponent(
-                    new LayoutComponent(metacont.getId(), true));
-        }
     }
 
     public void setNaturalContainerLayout(RADVisualContainer metacont) {
@@ -354,6 +365,15 @@ public class FormModel
             return; // already set (no old layout support)
         
         setNaturalContainerLayoutImpl(metacont);
+        Object layoutStartMark = layoutModel.getChangeMark();
+        UndoableEdit ue = layoutModel.getUndoableEdit();
+        if (!layoutModel.changeComponentToContainer(metacont.getId())) {
+            layoutModel.addRootComponent(
+                    new LayoutComponent(metacont.getId(), true));
+        }
+        if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
+            addUndoableEdit(ue);
+        }
     }
 
     public void removeComponent(RADComponent metacomp, boolean fromModel) {

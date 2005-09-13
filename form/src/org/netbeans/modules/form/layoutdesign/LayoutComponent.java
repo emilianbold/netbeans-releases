@@ -138,12 +138,24 @@ public final class LayoutComponent implements LayoutConstants {
     public LayoutInterval getLayoutRoot(int dimension) {
         return layoutRoots[dimension];
     }
+    
+    LayoutInterval[] getLayoutRoots() {
+        return layoutRoots;
+    }
 
     // --------
 
     public Iterator getSubcomponents() {
         return subComponents != null && subComponents.size() > 0 ?
                subComponents.iterator() : Collections.EMPTY_LIST.iterator();
+    }
+    
+    int getSubComponentCount() {
+        return (subComponents == null) ? 0 : subComponents.size();
+    }
+    
+    LayoutComponent getSubComponent(int index) {
+        return (LayoutComponent)subComponents.get(index);
     }
 
 //    int add(LayoutComponent comp) {
@@ -178,12 +190,16 @@ public final class LayoutComponent implements LayoutConstants {
         return index;
     }
 
-    void setLayoutContainer(boolean isContainer) {
+    void setLayoutContainer(boolean isContainer, LayoutInterval[] roots) {
         if (isContainer != isLayoutContainer()) {
             if (isContainer) {
-                layoutRoots = new LayoutInterval[DIM_COUNT];
-                for (int i=0; i < DIM_COUNT; i++) {
-                    layoutRoots[i] = new LayoutInterval(PARALLEL);
+                if (roots == null) {
+                    layoutRoots = new LayoutInterval[DIM_COUNT];
+                    for (int i=0; i < DIM_COUNT; i++) {
+                        layoutRoots[i] = new LayoutInterval(PARALLEL);
+                    }
+                } else {
+                    layoutRoots = roots;
                 }
             }
             else {
