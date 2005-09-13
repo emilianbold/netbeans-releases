@@ -171,6 +171,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
      * Create a classpath from a &lt;classpath&gt; element.
      */
     private ClassPath createClasspath(Element classpathEl) {
+        System.out.println("creating classpath for " + classpathEl);
         String cp = Util.findText(classpathEl);
         if (cp == null) {
             cp = "";
@@ -258,12 +259,12 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             } else 
                 if (fileType == 1){
                     if (composedClassPath == null) {
-                        FileObject [] all = new FileObject [sourcesFOs.length+webClassPath.getRoots().length+1];
-                        all[0] = getDocumentBase();
-                        for (int i = 1; i<= sourcesFOs.length; i++)
-                            all[i] = sourcesFOs[i-1];
-                        for (int i = sourcesFOs.length+1; i < sourcesFOs.length+ webClassPath.getRoots().length +1; i++)
-                            all [i] = webClassPath.getRoots()[i-sourcesFOs.length-1];
+                        FileObject [] all = new FileObject [sourcesFOs.length+webClassPath.getRoots().length];
+                        for (int i = 0; i < sourcesFOs.length; i++)
+                            all[i] = sourcesFOs[i];
+                        
+                        for (int i = sourcesFOs.length; i < sourcesFOs.length+ webClassPath.getRoots().length; i++)
+                            all [i] = webClassPath.getRoots()[i-sourcesFOs.length];
                         composedClassPath = ClassPathSupport.createClassPath(all);
                     }
                     return composedClassPath;
