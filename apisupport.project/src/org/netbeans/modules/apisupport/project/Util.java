@@ -33,6 +33,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
@@ -420,9 +421,44 @@ public class Util {
         }
     }
     
+    /**
+     * Find javadoc URL for NetBeans.org modules. May return <code>null</code>.
+     */
+    public static URL findJavadocForNetBeansOrgModules(final ModuleDependency dep) {
+        ModuleEntry entry = dep.getModuleEntry();
+        File destDir = entry.getDestDir();
+        File nbOrg = null;
+        if (destDir.getParent() != null) {
+            nbOrg = destDir.getParentFile().getParentFile();
+        }
+        if (nbOrg == null) {
+            throw new IllegalArgumentException("ModuleDependency " + dep +  // NOI18N
+                    " doesn't represent nb.org module"); // NOI18N
+        }
+        File builtJavadoc = new File(nbOrg, "nbbuild/build/javadoc"); // NOI18N
+        URL[] javadocURLs = null;
+        if (builtJavadoc.exists()) {
+            File[] javadocs = builtJavadoc.listFiles();
+            javadocURLs = new URL[javadocs.length];
+            for (int i = 0; i < javadocs.length; i++) {
+                javadocURLs[i] = Util.urlForDirOrJar(javadocs[i]);
+            }
+        }
+        return javadocURLs == null ? null : findJavadocURL(
+                dep.getModuleEntry().getCodeNameBase().replace('.', '-'), javadocURLs);
+    }
+
+    /**
+     * Find javadoc URL for the given module dependency using javadoc roots of
+     * the given platform. May return <code>null</code>.
+     */
     public static URL findJavadoc(final ModuleDependency dep, final NbPlatform platform) {
         String cnbdashes = dep.getModuleEntry().getCodeNameBase().replace('.', '-');
         URL[] roots = platform.getJavadocRoots();
+        return roots == null ? null : findJavadocURL(cnbdashes, roots);
+    }
+    
+    private static URL findJavadocURL(final String cnbdashes, final URL[] roots) {
         URL indexURL = null;
         for (int i = 0; i < roots.length; i++) {
             URL root = roots[i];
