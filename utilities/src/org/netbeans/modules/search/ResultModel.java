@@ -33,8 +33,12 @@ public final class ResultModel {
 
     /** maximum number of found objects */
     private static final int COUNT_LIMIT = 500;
+    /** maximum total number of detail entries for found objects */
+    private static final int DETAILS_COUNT_LIMIT = 5000;
     /** */
     private int size = 0;
+    /** */
+    private int totalDetailsCount = 0;
     /**
      */
     private ResultTreeChildren observer;
@@ -113,10 +117,17 @@ public final class ResultModel {
         assert limitReached == false;
         assert observer != null;
         
-        if ((observer != null) && observer.objectFound(object)) {
-            limitReached = (++size >= COUNT_LIMIT);
+        int detailsCount;
+        
+        if ((detailsCount = observer.objectFound(object)) == -1) {
+            return false;
+        } else {
+            size++;
+            totalDetailsCount += detailsCount;
+            limitReached = (size >= COUNT_LIMIT)
+                           || (totalDetailsCount >= DETAILS_COUNT_LIMIT);
+            return !limitReached;
         }
-        return !limitReached;
     }
     
     /**
