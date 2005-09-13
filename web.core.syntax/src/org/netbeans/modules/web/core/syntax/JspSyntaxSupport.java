@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.io.File;
 import java.util.*;
-import java.io.IOException;
 import java.net.URL;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -34,10 +33,8 @@ import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
-import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import java.util.*;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
@@ -1903,6 +1900,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }    
     
     private static class TagNameComparator implements Comparator{
+        
+        public TagNameComparator () {}
+        
         public int compare(Object o1, Object o2) {
             if (o1 == o2 || o1 == null || o2 == null){
                 return 0;

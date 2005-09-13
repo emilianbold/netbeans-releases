@@ -15,25 +15,17 @@ package org.netbeans.modules.web.core.xmlsyntax;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.*;
-import javax.swing.KeyStroke;
-import javax.swing.Action;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.Coloring;
-import org.netbeans.editor.Syntax;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenCategory;
-import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 
 /** Initializer class for settings of JSP editor with XML content. */
@@ -64,19 +56,9 @@ public class JspXMLSettingsInitializer extends Settings.AbstractInitializer {
     static class JspXMLTokenColoringInitializer
     extends SettingsUtil.TokenColoringInitializer {
 
-        private Coloring emptyColoring = new Coloring(null, null, null);
-
         private Coloring errorColoring = new Coloring(null, Color.red, null);
 
-        private Coloring javaAddColoring = new Coloring(null, null, new Color(255, 249, 223));
-
-        private Font boldFont   = SettingsDefaults.defaultFont.deriveFont (Font.BOLD);
         private Font italicFont = SettingsDefaults.defaultFont.deriveFont (Font.ITALIC);
-        private Font italicBoldFont = italicFont.deriveFont (Font.BOLD);
-        private Settings.Evaluator lightGrayEvaluator
-            = new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
-        private Settings.Evaluator italicFontEvaluator
-            = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
 
         public JspXMLTokenColoringInitializer() {
             super(JspXMLTokenContext.context);

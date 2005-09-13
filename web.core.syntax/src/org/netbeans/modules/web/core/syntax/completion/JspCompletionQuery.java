@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,14 +16,12 @@ package org.netbeans.modules.web.core.syntax.completion;
 import java.util.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagAttributeInfo;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
-import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
 
@@ -529,13 +527,6 @@ public class JspCompletionQuery implements CompletionQuery {
         }
     }
 
-    /** Adds to the list of items <code>compItemList</code> new TagPrefix items with prefix 
-     * <code>prefix</code> for list of tag names <code>tagStringItems</code>. 
-     */
-    private void addTagPrefixItems(JspSyntaxSupport sup, List compItemList, String prefix, List tagStringItems) {
-        addTagPrefixItems(sup, compItemList, prefix, tagStringItems, (SyntaxElement.Tag)null);
-    }
-    
     /** Adds to the list of items <code>compItemList</code> new TagPrefix items for prefix list
      * <code>prefixStringItems</code>, followed by all possible tags for the given prefixes. 
      */

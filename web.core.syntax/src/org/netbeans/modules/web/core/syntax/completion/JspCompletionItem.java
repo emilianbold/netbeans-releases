@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,8 +16,6 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.awt.Graphics;
 import java.util.*;
-import javax.swing.JList;
-import javax.swing.JLabel;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.awt.Component;
@@ -29,9 +27,6 @@ import java.net.URL;
 import javax.servlet.jsp.tagext.*;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
 
@@ -114,15 +109,6 @@ public class JspCompletionItem {
         
         public void setHelp(String help){
             this.help = help;
-        }
-        
-        private boolean isUrl(String text){
-            try{
-                new URL(text);
-                return true;
-            } catch (java.io.IOException e){
-            }
-            return false;
         }
         
         protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {

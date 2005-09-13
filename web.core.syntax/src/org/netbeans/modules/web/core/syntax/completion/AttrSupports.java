@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,15 +19,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
 
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.java.JCFinder;
-import org.netbeans.editor.ext.java.JCClass;
-import org.netbeans.editor.ext.java.JCField;
-import org.netbeans.editor.ext.java.JCPackage;
-import org.netbeans.editor.ext.java.JavaCompletion;
 import org.netbeans.editor.ext.java.JavaCompletionQuery;
 import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.java.JCFinderFactory;
 import org.netbeans.modules.editor.java.JMIUtils;
 import org.netbeans.modules.editor.java.NbJMIResultItem;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;

@@ -13,19 +13,13 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
-import java.lang.reflect.Modifier;
 import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.text.AttributedString;
 import java.util.ArrayList;
 import javax.swing.*;
-
-import org.netbeans.editor.ext.java.JavaCompletion;
-import org.openide.util.Utilities;
 
 /**
  *

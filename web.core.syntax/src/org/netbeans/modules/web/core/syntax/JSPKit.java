@@ -20,7 +20,6 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.text.*;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
@@ -144,7 +143,7 @@ public class JSPKit extends NbEditorKit {
     
     private static class ColoringListener implements PropertyChangeListener {
         private Document doc;
-        private Object parsedDataRef; // hold a reference to the data we are listening on
+        private Object parsedDataRef; // NOPMD: hold a reference to the data we are listening on
         // so it does not get garbage collected
         private Jsp11Syntax syntax;
         //private JspDataObject jspdo;

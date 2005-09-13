@@ -28,7 +28,6 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.ErrorManager;

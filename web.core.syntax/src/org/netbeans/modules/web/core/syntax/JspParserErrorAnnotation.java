@@ -7,14 +7,8 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
- * JspParserErrorAnnotation.java
- *
- * Created on October 28, 2004, 4:35 PM
  */
 
 package org.netbeans.modules.web.core.syntax;
@@ -31,7 +25,6 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
-import org.openide.text.Annotation;
 import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.text.NbDocument;

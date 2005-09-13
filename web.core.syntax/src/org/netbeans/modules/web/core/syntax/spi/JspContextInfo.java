@@ -7,25 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.core.syntax.spi;
 
-import java.io.IOException;
-import java.io.InputStream;
 import javax.swing.text.Document;
 import java.net.URLClassLoader;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.StringTokenizer;
 
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 
-import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;

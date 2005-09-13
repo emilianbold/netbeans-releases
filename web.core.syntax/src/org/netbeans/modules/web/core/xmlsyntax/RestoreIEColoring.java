@@ -7,13 +7,12 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.core.xmlsyntax;
 
-import javax.swing.JEditorPane;
 import java.util.MissingResourceException;
 
 import org.openide.util.NbBundle;
