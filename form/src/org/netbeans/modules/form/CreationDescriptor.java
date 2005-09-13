@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.form;
 
+import java.util.*;
 import java.lang.reflect.*;
 import org.netbeans.modules.form.codestructure.*;
 
@@ -20,26 +21,12 @@ import org.netbeans.modules.form.codestructure.*;
  * @author Tomas Pavek
  */
 
-public interface CreationDescriptor {
+public class CreationDescriptor {
 
     // style flags - for finding best creator for a set or properties
     public static final int CHANGED_ONLY = 1;
     public static final int PLACE_ALL = 2;
-
-    public Class getDescribedClass();
-
-//    public boolean isCreationProperty(String propName);
-
-    public Creator[] getCreators();
-
-    public Creator findBestCreator(FormProperty[] properties, int style);
-
-    public Object createDefaultInstance()
-        throws InstantiationException, IllegalAccessException,
-               IllegalArgumentException, InvocationTargetException;
-
-    // ---------
-
+    
     public interface Creator {
 
         public int getParameterCount();
@@ -54,9 +41,436 @@ public interface CreationDescriptor {
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException;
 
+        public Object createInstance(Object[] paramValues)
+            throws InstantiationException, IllegalAccessException,
+                   IllegalArgumentException, InvocationTargetException;
+        
         // [this will become useless when we can rely on getCodeOrigin(...)]
         public String getJavaCreationCode(FormProperty[] props);
 
         public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params);
     }
+
+    private Class describedClass;
+    private ArrayList creators = new ArrayList(10);
+    private Object[] defaultParams;
+    private Creator defaultCreator;
+
+    private static final Class[] emptyTypes = { };
+    private static final String[] emptyNames = { };
+    private static final Object[] emptyParams = { };
+
+    public CreationDescriptor() {        
+    }
+
+    public CreationDescriptor(Class descClass,
+                              Class[][] constrParamTypes,
+                              String[][] constrPropNames,
+                              Object[] defParams)
+    throws NoSuchMethodException, // if some constructor is not found            
+           IllegalArgumentException 
+    {   
+        addConstructorCreators(descClass, constrParamTypes, constrPropNames, defParams);
+    }
+    
+    public CreationDescriptor(Class factoryClass, 
+                              Class descClass,
+                              String methodName,                                
+                              Class[][] constrParamTypes,
+                              String[][] constrPropNames,
+                              CreationFactory.PropertyParameters[] propertyParameters,   
+                              Object[] defParams)
+    throws NoSuchMethodException, // if some method is not found                                                           
+           IllegalArgumentException  
+    {           
+        addMethodCreators(factoryClass, descClass, methodName, constrParamTypes, 
+                          constrPropNames, propertyParameters, defParams);
+    }
+    
+    public void addConstructorCreators(Class descClass,
+                                       Class[][] constrParamTypes,
+                                       String[][] constrPropNames,
+                                       Object[] defParams)
+    throws NoSuchMethodException // if some constructor is not found
+    {   
+        setDescribedClass(descClass);        
+        if (constrParamTypes != null && constrParamTypes.length > 0) {
+            
+            for (int i=0; i < constrParamTypes.length; i++)
+                creators.add( new ConstructorCreator(describedClass,
+                                                         constrParamTypes[i],
+                                                         constrPropNames[i]) );;
+        }
+
+        defaultParams = defParams == null ? emptyParams : defParams;
+    }
+
+    public void addMethodCreators(Class factoryClass, 
+                                  Class descClass,
+                                  String methodName,                                
+                                  Class[][] constrParamTypes,
+                                  String[][] constrPropNames,
+                                  CreationFactory.PropertyParameters[] propertyParameters,   
+                                  Object[] defParams)
+    throws NoSuchMethodException // if some method is not found
+    {                               
+        setDescribedClass(descClass);
+        
+        if (constrParamTypes != null && constrParamTypes.length > 0) {
+            
+            CreationFactory.Property2ParametersMapper[] properties;
+            for (int i=0; i < constrParamTypes.length; i++) {
+                
+                properties = new CreationFactory.Property2ParametersMapper[constrParamTypes[i].length];
+                for (int j = 0; j < constrParamTypes[i].length; j++) {
+                    properties[j] = new CreationFactory.Property2ParametersMapper(constrParamTypes[i][j], constrPropNames[i][j]);
+                    if(propertyParameters != null && propertyParameters.length > 0) {
+                        for (int ppi = 0; ppi < propertyParameters.length; ppi++) {
+                            if( propertyParameters[ppi].getPropertyName().equals(constrPropNames[i][j]) ) {
+                                properties[j].setPropertyParameters(propertyParameters[ppi]);      
+                            }
+                        }                        
+                    }
+                }               
+                
+                creators.add( new MethodCreator(factoryClass, 
+                                               describedClass,                        
+                                               methodName,
+                                               properties));  
+                
+            }
+            
+        }      
+        
+        defaultParams = defParams == null ? emptyParams : defParams;
+    }
+
+    private void setDescribedClass(Class descClass) throws IllegalArgumentException {
+        if(describedClass==null){
+            describedClass = descClass;
+        } else if (describedClass!=descClass) {
+            throw new IllegalArgumentException();
+        }        
+    }
+    
+    public CreationDescriptor(Class descClass) {
+//        throws NoSuchMethodException // if public empty constructor doesn't exist
+        describedClass = descClass;
+
+        try {
+            ConstructorCreator creator = new ConstructorCreator(describedClass,
+                                                                emptyTypes,
+                                                                emptyNames);
+            creators.add( creator );
+        }
+        catch (NoSuchMethodException ex) { // ignore
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                System.out.println("[WARNING] No default constructor for "+descClass.getName()); // NOI18N
+                ex.printStackTrace();
+            }
+        }
+
+        defaultParams = emptyParams;
+    }
+
+    // ---------
+
+    public Class getDescribedClass() {
+        return describedClass;
+    }
+
+    public Creator[] getCreators() {
+        return (Creator[]) creators.toArray(new Creator[creators.size()]);
+    }
+
+    public Creator findBestCreator(FormProperty[] properties, int style) {
+        if (creators == null)
+            return null;
+
+        Creator[] allCreators = getCreators();
+        int[] evals = CreationFactory.evaluateCreators(
+                        allCreators , properties, (style & CHANGED_ONLY) != 0);
+        int best = CreationFactory.getBestCreator(
+                     allCreators , properties, evals, (style & PLACE_ALL) != 0);
+        return allCreators [best];
+    }
+
+    public Object createDefaultInstance() throws InstantiationException,
+                                                 IllegalAccessException,
+                                                 IllegalArgumentException,
+                                                 InvocationTargetException,
+                                                 NoSuchMethodException
+    {
+        return getDefaultCreator().createInstance(defaultParams);
+    }
+
+    private Creator getDefaultCreator() throws NoSuchMethodException {
+        if( defaultCreator == null ) {
+            defaultCreator = findDefaultCreator();
+        } 
+        return defaultCreator;
+    }
+    // ----------
+
+    // finds first constructor that matches defaultConstrParams
+    private Creator findDefaultCreator() throws NoSuchMethodException {        
+        for (Iterator it = creators.iterator(); it.hasNext();) {
+            
+            Creator creator = (Creator) it.next();
+            Class[] paramTypes = creator.getParameterTypes();
+            
+            if (paramTypes.length == defaultParams.length) {
+                int ii;
+                for (ii=0; ii < paramTypes.length; ii++) {
+                    Class cls = paramTypes[ii];
+                    Object param = defaultParams[ii];
+
+                    if (cls.isPrimitive()) {
+                        if (param == null
+                            || (param instanceof Integer && cls != Integer.TYPE)
+                            || (param instanceof Boolean && cls != Boolean.TYPE)
+                            || (param instanceof Double && cls != Double.TYPE)
+                            || (param instanceof Long && cls != Long.TYPE)
+                            || (param instanceof Float && cls != Float.TYPE)
+                            || (param instanceof Short && cls != Short.TYPE)
+                            || (param instanceof Byte && cls != Byte.TYPE)
+                            || (param instanceof Character && cls != Character.TYPE))
+                        break;
+                    }
+                    else if (param != null && !cls.isInstance(param))
+                        break;
+                }
+                if (ii == paramTypes.length) {
+                    return creator;                    
+                }
+            }
+        }
+        throw new NoSuchMethodException();
+    }
+
+    // ----------
+
+    static class ConstructorCreator implements Creator {
+        private Class theClass;
+        private Constructor constructor;
+//        private Class[] constructorParamTypes;
+        private String[] constructorPropNames;
+
+        ConstructorCreator(Class cls, Class[] paramTypes, String[] propNames)
+            throws NoSuchMethodException
+        {
+            if (paramTypes == null)
+                paramTypes = emptyTypes;
+            if (propNames == null)
+                propNames = emptyNames;
+            if (paramTypes.length != propNames.length)
+                throw new IllegalArgumentException();
+
+            constructor = cls.getConstructor(paramTypes);
+            theClass = cls;
+//            constructorParamTypes = paramTypes;
+            constructorPropNames = propNames;
+        }
+
+        public final int getParameterCount() {
+            return constructorPropNames.length; //constructorParamTypes.length;
+        }
+
+        public final Class[] getParameterTypes() {
+            return constructor.getParameterTypes(); //constructorParamTypes;
+        }
+
+        public final Class[] getExceptionTypes() {
+            return constructor.getExceptionTypes();
+        }
+
+        public final String[] getPropertyNames() {
+            return constructorPropNames;
+        }
+
+        public Object createInstance(FormProperty[] props)
+            throws InstantiationException, IllegalAccessException,
+                   IllegalArgumentException, InvocationTargetException
+        {
+            Object[] paramValues = new Object[constructorPropNames.length];
+
+            try {
+                for (int i=0; i < constructorPropNames.length; i++) {
+                    FormProperty prop = CreationFactory.findProperty(
+                                            constructorPropNames[i], props);
+                    if (prop == null)
+                        return null; // should not happen
+
+                    paramValues[i] = prop.getRealValue();
+                }
+            }
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+                throw new InstantiationException(ex.getMessage());
+            }
+
+            return constructor.newInstance(paramValues);
+        }
+
+        public Object createInstance(Object[] paramValues)
+            throws InstantiationException, IllegalAccessException,
+                   IllegalArgumentException, InvocationTargetException
+        {           
+            return constructor.newInstance(paramValues);
+        }        
+        
+        public String getJavaCreationCode(FormProperty[] props) {
+            StringBuffer buf = new StringBuffer();
+            buf.append("new "); // NOI18N
+            buf.append(theClass.getName().replace('$', '.'));
+            buf.append("("); // NOI18N
+
+            for (int i=0; i < constructorPropNames.length; i++) {
+                FormProperty prop = CreationFactory.findProperty(
+                                        constructorPropNames[i], props);
+                if (prop == null)
+                    return null; // should not happen
+
+                buf.append(prop.getJavaInitializationString());
+                if (i+1 < constructorPropNames.length)
+                    buf.append(", "); // NOI18N
+            }
+
+            buf.append(")"); // NOI18N
+            return buf.toString();
+        }
+
+        public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
+            return CodeStructure.createOrigin(constructor, params);
+        }
+    }
+    
+    static class MethodCreator implements Creator {
+        private Class factoryClass;
+        private Class describedClass;
+        private Method method;
+        private String methodName;
+        private CreationFactory.Property2ParametersMapper[] properties;
+        private String[] propertyNames;
+        
+        MethodCreator(Class factoryClass, Class describedClass, String methodName, CreationFactory.Property2ParametersMapper[] properties)
+            throws NoSuchMethodException
+        {            
+                        
+            ArrayList paramTypesList = new ArrayList();
+            propertyNames = new String[properties.length];    
+            
+            for (int i = 0; i < properties.length; i++) {                                
+                for (int j = 0; j < properties[i].getPropertyTypes().length; j++) {
+                    paramTypesList.add(properties[i].getPropertyTypes()[j]);                                        
+                }                                
+                propertyNames[i] = properties[i].getPropertyName();
+            }                       
+                                    
+            Class[] paramTypes = (Class[]) paramTypesList.toArray(new Class[paramTypesList.size()]);
+
+            method = factoryClass.getMethod(methodName, paramTypes);  
+                
+            this.methodName = methodName;
+            this.factoryClass = factoryClass;                   
+            this.describedClass = describedClass;
+            this.properties = properties; 
+            
+        }
+    
+            
+        public final int getParameterCount() {
+            return propertyNames.length; 
+        }
+
+        public final Class[] getParameterTypes() {
+            return method.getParameterTypes(); 
+        }
+
+        public final Class[] getExceptionTypes() {
+            return method.getExceptionTypes();
+        }
+
+        public final String[] getPropertyNames() {
+            return propertyNames;
+        }
+
+        public Object createInstance(FormProperty[] props)
+            throws InstantiationException, IllegalAccessException,
+                   IllegalArgumentException, InvocationTargetException
+        {
+                                
+            ArrayList paramValuesList = new ArrayList(); 
+            try {
+                for (int i=0; i < properties.length; i++) {
+                    FormProperty prop = CreationFactory.findProperty(properties[i].getPropertyName(), props);
+                    if (prop == null)
+                        return null; // should not happen
+
+                    Object[] propertyParameters = properties[i].getPropertyParametersValues(prop);
+                    for (int j = 0; j < propertyParameters.length; j++) {
+                        paramValuesList.add(propertyParameters[j]);
+                    }                                        
+                }
+            }
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+                throw new InstantiationException(ex.getMessage());
+            }
+            
+            Object[] paramValues = paramValuesList.toArray(new Object[paramValuesList.size()]);
+            
+            Object ret = method.invoke(null, paramValues);
+            if(ret.getClass() != describedClass) {                
+                throw new IllegalArgumentException();
+            }
+            return ret;
+        }
+
+        public Object createInstance(Object[] paramValues)
+            throws InstantiationException, IllegalAccessException,
+                   IllegalArgumentException, InvocationTargetException
+        {                                            
+            
+            Object ret = method.invoke(null, paramValues);
+            if(ret.getClass() != describedClass) {                
+                throw new IllegalArgumentException();
+            }
+            return ret;
+        }
+        
+        public String getJavaCreationCode(FormProperty[] props) {
+            StringBuffer buf = new StringBuffer();
+            buf.append(factoryClass.getName()); // NOI18N
+            buf.append("."); // NOI18N
+            buf.append(method.getName());
+            buf.append("("); // NOI18N
+
+
+            for (int i=0; i < properties.length; i++) {
+                
+                String name = properties[i].getPropertyName();                
+                FormProperty prop = CreationFactory.findProperty(name, props);
+                
+                if (prop == null)
+                    return null; // should not happen
+                        
+                    buf.append(properties[i].getJavaParametersString(prop));                     
+
+                if (i+1 < properties.length)
+                    buf.append(", "); // NOI18N
+            }
+
+            buf.append(")"); // NOI18N
+            return buf.toString();
+        }
+
+        public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
+            // nobody cares ...
+            return null; 
+        }
+    }    
+
 }

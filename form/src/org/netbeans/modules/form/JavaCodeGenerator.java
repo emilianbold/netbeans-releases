@@ -1135,7 +1135,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 CreationDescriptor desc = CreationFactory.getDescriptor(
                                                               comp.getBeanClass());
                 if (desc == null)
-                    desc = new ConstructorsDescriptor(comp.getBeanClass());
+                    desc = new CreationDescriptor(comp.getBeanClass());
 
                 CreationDescriptor.Creator creator =
                     desc.findBestCreator(comp.getKnownBeanProperties(),
@@ -1400,8 +1400,8 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(preCode);
             if (!preCode.endsWith("\n")) // NOI18N
                 initCodeWriter.write("\n"); // NOI18N
-        }
-
+        }        
+        
         // 2. property setter code
         if (prop.isChanged()) {
             String javaStr;
