@@ -399,6 +399,10 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     }
     
     public void cleanup() {
+        // This is called by the ModuleVersion listener to rebuild the tree if
+        // the DD version changes since that forces creation of a new DDBean graph.
+        // However, that means we should never clear 'config' here, since in that
+        // case, the configuration is still valid and necessary.
         for(Iterator i = moduleMap.values().iterator();i.hasNext();) {
             ModuleDDSupport mds = (ModuleDDSupport) i.next();
             removeVersionListener(mds.getProvider().getJ2eeModule());
@@ -411,23 +415,6 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
         }*/
     }
 
-// !PW Removed when moved from j2eeserver to sunddui
-//    public DeployableObject getDeployableObject(String moduleUri) {
-//        if (moduleUri == null)
-//            return config.getDeployableObject();
-//        ModuleDeploymentSupport mds = (ModuleDeploymentSupport) moduleMap.get(moduleUri);
-//        return mds.getDeployableObject();
-//    }
-    
-// !PW Removed when moved from j2eeserver to sunddui
-//    public DeploymentConfiguration getDeploymentConfiguration() {
-//        // we are now called during load while building config bean cache
-//        if (config == null) { 
-//            ensureLoaded();
-//        }
-//        return config;
-//    }
-    
     private String getKey(J2eeModule mod) {
         String key = mod.getUrl();
         if (key == null || key.trim().equals("")) { //NOI18N
@@ -487,14 +474,4 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
             }
         }
     }
-    
-    // !PW Was used by ConfigurationStorageImpl.ensureResourceDefined()
-    //
-//    public DDRoot getEjbJarRoot() {
-//        if (! J2eeModule.EJB.equals(module.getJ2eeModule().getModuleType())) {
-//            throw new IllegalArgumentException("Trying to get config bean for ejb on non ejb module!"); //NONI18N
-//        }
-//        ModuleDeploymentSupport mds = (ModuleDeploymentSupport) moduleMap.get(ROOT);
-//        return mds.getDDBeanRoot(J2eeModule.EJBJAR_XML);
-//    }
 }
