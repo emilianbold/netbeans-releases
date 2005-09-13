@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.editor.Settings;
 
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -135,53 +136,55 @@ public abstract class MIMEOptionFile{
     }
     
     /** Updates all properties from (external modified) XML file */
-    public synchronized void reloadSettings(){
+    public void reloadSettings(){
+        synchronized (Settings.class) {
+            if (wasSaved){
+                // the settings has been saved programatically. We don't need to reload them
+                wasSaved = false;
+                return;
+            }
 
-        if (wasSaved){
-            // the settings has been saved programatically. We don't need to reload them
-            wasSaved = false;
-            return;
-        }
-        
-        Document oldDoc = dom;
-        setLoaded(false);
-        try {
-            String loc = processor.getXMLDataObject().getPrimaryFile().getURL().toExternalForm();
-            // we need to reparse modified xml file, XMLDataObject caches old data ...
-            dom = XMLUtil.parse(new InputSource(loc), true, false, ERROR_CATCHER, org.openide.xml.EntityCatalog.getDefault());
-            loadSettings();
-        }catch(SAXException saxe){
-            dom = oldDoc;
-            saxe.printStackTrace();
-        }catch(IOException ioe){
-            dom = oldDoc;
-            ioe.printStackTrace();
+            Document oldDoc = dom;
+            setLoaded(false);
+            try {
+                String loc = processor.getXMLDataObject().getPrimaryFile().getURL().toExternalForm();
+                // we need to reparse modified xml file, XMLDataObject caches old data ...
+                dom = XMLUtil.parse(new InputSource(loc), true, false, ERROR_CATCHER, org.openide.xml.EntityCatalog.getDefault());
+                loadSettings();
+            }catch(SAXException saxe){
+                dom = oldDoc;
+                saxe.printStackTrace();
+            }catch(IOException ioe){
+                dom = oldDoc;
+                ioe.printStackTrace();
+            }
         }
     }
     
-    protected synchronized void saveSettings(Document doc){
-        
-        try{
-            FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
+    protected void saveSettings(Document doc){
+        synchronized (Settings.class) {
             try{
-                OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
-                try {
-                    wasSaved = true;
-                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-                    os.flush();
-                } catch (Exception e){
-                    wasSaved = false;
-                    e.printStackTrace();
-                } finally {
-                    os.close();
+                FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
+                try{
+                    OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
+                    try {
+                        wasSaved = true;
+                        XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                        os.flush();
+                    } catch (Exception e){
+                        wasSaved = false;
+                        e.printStackTrace();
+                    } finally {
+                        os.close();
+                    }
+                }catch (IOException ioe){
+                    ioe.printStackTrace();
+                }finally{
+                    lock.releaseLock();
                 }
-            }catch (IOException ioe){
-                ioe.printStackTrace();
-            }finally{
-                lock.releaseLock();
+            }catch (IOException ioexc){
+                ioexc.printStackTrace();
             }
-        }catch (IOException ioexc){
-            ioexc.printStackTrace();
         }
     }
     

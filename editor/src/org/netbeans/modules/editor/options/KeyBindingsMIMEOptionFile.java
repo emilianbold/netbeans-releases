@@ -87,153 +87,157 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
     
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
-    protected synchronized void loadSettings(boolean propagate){
-        if (base.usesNewOptionsDialog()){
-            return;
-        }
-        Document doc = dom;
-        Element rootElement = doc.getDocumentElement();
-        
-        if (!TAG_ROOT.equals(rootElement.getTagName())) {
-            // Wrong root element
-            return;
-        }
-        
-        // gets current keyBindings map
-        List keybs = getKBList();
-        Map mapa = OptionUtilities.makeKeyBindingsMap(keybs);
-        properties.clear();
-        
-        NodeList bind = rootElement.getElementsByTagName(TAG_BIND);
-        int len = bind.getLength();
-        for (int i=0; i<len; i++){
-            Node node = bind.item(i);
-            Element bindElement = (Element)node;
-            
-            if (bindElement == null){
-                continue;
+    protected void loadSettings(boolean propagate){
+        synchronized (Settings.class) {
+            if (base.usesNewOptionsDialog()){
+                return;
             }
-            
-            String key    = bindElement.getAttribute(ATTR_KEY);
-            String delete    = bindElement.getAttribute(ATTR_REMOVE);
-            String actionName = bindElement.getAttribute(ATTR_ACTION_NAME);
-            if (actionName==null) actionName="";
-            
+            Document doc = dom;
+            Element rootElement = doc.getDocumentElement();
 
-            if ((actionName.length() != 0) && (!Boolean.valueOf(delete).booleanValue())){
-                if(key.indexOf('$') > 0){
-                    MultiKeyBinding mkb = new MultiKeyBinding( OptionUtilities.stringToKeys(key) , actionName );
-                    properties.put(key,  mkb);
+            if (!TAG_ROOT.equals(rootElement.getTagName())) {
+                // Wrong root element
+                return;
+            }
+
+            // gets current keyBindings map
+            List keybs = getKBList();
+            Map mapa = OptionUtilities.makeKeyBindingsMap(keybs);
+            properties.clear();
+
+            NodeList bind = rootElement.getElementsByTagName(TAG_BIND);
+            int len = bind.getLength();
+            for (int i=0; i<len; i++){
+                Node node = bind.item(i);
+                Element bindElement = (Element)node;
+
+                if (bindElement == null){
+                    continue;
+                }
+
+                String key    = bindElement.getAttribute(ATTR_KEY);
+                String delete    = bindElement.getAttribute(ATTR_REMOVE);
+                String actionName = bindElement.getAttribute(ATTR_ACTION_NAME);
+                if (actionName==null) actionName="";
+
+
+                if ((actionName.length() != 0) && (!Boolean.valueOf(delete).booleanValue())){
+                    if(key.indexOf('$') > 0){
+                        MultiKeyBinding mkb = new MultiKeyBinding( OptionUtilities.stringToKeys(key) , actionName );
+                        properties.put(key,  mkb);
+                    }else{
+                        MultiKeyBinding mkb = new MultiKeyBinding( OptionUtilities.stringToKey(key) , actionName );
+                        properties.put(key, mkb );
+                    }
                 }else{
-                    MultiKeyBinding mkb = new MultiKeyBinding( OptionUtilities.stringToKey(key) , actionName );
-                    properties.put(key, mkb );
+                    properties.put(key, "" );
                 }
-            }else{
-                properties.put(key, "" );
-            }
-            
-        }
-        
-        if (properties.size()>0){
-            // create updated map
-            mapa.putAll(properties);
-            
-            // remove all deleted values
-            for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-                String key = (String)i.next();
-                if(properties.get(key) instanceof String){
-                    // remove all deleted props
-                    mapa.remove(key);
-                }
+
             }
 
-            // setKeybMap without saving to XML
-            if (propagate){
-                base.setKeyBindingList(new ArrayList(mapa.values()), false);
+            if (properties.size()>0){
+                // create updated map
+                mapa.putAll(properties);
+
+                // remove all deleted values
+                for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
+                    String key = (String)i.next();
+                    if(properties.get(key) instanceof String){
+                        // remove all deleted props
+                        mapa.remove(key);
+                    }
+                }
+
+                // setKeybMap without saving to XML
+                if (propagate){
+                    base.setKeyBindingList(new ArrayList(mapa.values()), false);
+                }
             }
+            if (propagate) setLoaded(true);        
         }
-        if (propagate) setLoaded(true);        
     }
     
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
-    protected synchronized void updateSettings(Map changedProp){
-        if (base.usesNewOptionsDialog()){
-            return;
-        }
-        // put changed properties to local map
-        properties.putAll(changedProp);
-        
-        // now we can save local map to XML file
-        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
-        Element rootElem = doc.getDocumentElement();
-        
-        ArrayList removed = new ArrayList();
-        
-        Map defaultKeybs = base.getDefaultKeyBindingsMap();
-
-        // if default keybindings don't exist for appropriate kit, set them empty
-        if (defaultKeybs == null) defaultKeybs = new HashMap();
-        
-        // save XML
-        for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-            String key = (String)i.next();
-            // Process deleted properties
-            
-            if (properties.get(key) instanceof String){
-                String realKey = tryRemoveKeyFromMap(doc, properties, key, defaultKeybs, rootElem);
-                if (realKey != null) {
-                    removed.add(realKey);
-                    key = realKey;
-                }
-            
-                // if property is not in default set, it will not be written and will be deleted
-                continue;
+    protected void updateSettings(Map changedProp){
+        synchronized (Settings.class) {
+            if (base.usesNewOptionsDialog()){
+                return;
             }
-            
-            if (properties.get(key) instanceof MultiKeyBinding){
-                MultiKeyBinding mkb = (MultiKeyBinding) properties.get(key);
-                String curActionName= mkb.actionName;
-                if (curActionName == null) curActionName=""; //NOI18N
-                
-                boolean save = true;
-                if (defaultKeybs.get(key) instanceof MultiKeyBinding){
-                    String defActionName = ((MultiKeyBinding)defaultKeybs.get(key)).actionName;
-                    
-                    boolean hasKey = defaultKeybs.containsKey(key);
-                    //Also look for permutations, i.e. CA-F5 may be DA-F5, AD-F5 or AC-F5
-                    if (!hasKey) {
-                        String[] s = getPermutations (key);
-                        for (int j=0; j < s.length && !hasKey; j++) {
-                            hasKey |= defaultKeybs.containsKey(s[j]);
-                            if (hasKey) {
-                                key = s[j];
-                                break;
+            // put changed properties to local map
+            properties.putAll(changedProp);
+
+            // now we can save local map to XML file
+            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+            Element rootElem = doc.getDocumentElement();
+
+            ArrayList removed = new ArrayList();
+
+            Map defaultKeybs = base.getDefaultKeyBindingsMap();
+
+            // if default keybindings don't exist for appropriate kit, set them empty
+            if (defaultKeybs == null) defaultKeybs = new HashMap();
+
+            // save XML
+            for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
+                String key = (String)i.next();
+                // Process deleted properties
+
+                if (properties.get(key) instanceof String){
+                    String realKey = tryRemoveKeyFromMap(doc, properties, key, defaultKeybs, rootElem);
+                    if (realKey != null) {
+                        removed.add(realKey);
+                        key = realKey;
+                    }
+
+                    // if property is not in default set, it will not be written and will be deleted
+                    continue;
+                }
+
+                if (properties.get(key) instanceof MultiKeyBinding){
+                    MultiKeyBinding mkb = (MultiKeyBinding) properties.get(key);
+                    String curActionName= mkb.actionName;
+                    if (curActionName == null) curActionName=""; //NOI18N
+
+                    boolean save = true;
+                    if (defaultKeybs.get(key) instanceof MultiKeyBinding){
+                        String defActionName = ((MultiKeyBinding)defaultKeybs.get(key)).actionName;
+
+                        boolean hasKey = defaultKeybs.containsKey(key);
+                        //Also look for permutations, i.e. CA-F5 may be DA-F5, AD-F5 or AC-F5
+                        if (!hasKey) {
+                            String[] s = getPermutations (key);
+                            for (int j=0; j < s.length && !hasKey; j++) {
+                                hasKey |= defaultKeybs.containsKey(s[j]);
+                                if (hasKey) {
+                                    key = s[j];
+                                    break;
+                                }
                             }
                         }
+
+                        // if property is in default set and the action names are the same we don't have to write it
+                        if (hasKey && curActionName.equals(defActionName)) save = false;
                     }
-                    
-                    // if property is in default set and the action names are the same we don't have to write it
-                    if (hasKey && curActionName.equals(defActionName)) save = false;
-                }
-                
-                if (save){
-                    Element keybElem = doc.createElement(TAG_BIND);
-                    keybElem.setAttribute(ATTR_KEY, key);
-                    keybElem.setAttribute(ATTR_ACTION_NAME, curActionName);
-                    rootElem.appendChild(keybElem);
+
+                    if (save){
+                        Element keybElem = doc.createElement(TAG_BIND);
+                        keybElem.setAttribute(ATTR_KEY, key);
+                        keybElem.setAttribute(ATTR_ACTION_NAME, curActionName);
+                        rootElem.appendChild(keybElem);
+                    }
                 }
             }
-        }
-        
-        // remove deleted properties from local Map
-        for (int i=0; i<removed.size(); i++){
-            properties.remove(removed.get(i));
-        }
-        
-        doc.getDocumentElement().normalize();
 
-        saveSettings(doc);
+            // remove deleted properties from local Map
+            for (int i=0; i<removed.size(); i++){
+                properties.remove(removed.get(i));
+            }
+
+            doc.getDocumentElement().normalize();
+
+            saveSettings(doc);
+        }
     }
     
     private static String tryRemoveKeyFromMap (Document doc, Map props, String key, Map defaultKeybs, Element root) {

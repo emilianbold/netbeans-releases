@@ -58,127 +58,131 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
     
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
-    protected synchronized void loadSettings(boolean propagate){
-        Document doc = dom;
-        Element rootElement = doc.getDocumentElement();
-        
-        if (!TAG_ROOT.equals(rootElement.getTagName())) {
-            // Wrong root element
-            return;
-        }
-        
-        // gets current macro map
-        Map mapa = new HashMap((Map) Settings.getValue(base.getKitClass(), SettingsNames.MACRO_MAP));
-        
-        properties.clear();
-        
-        NodeList mcr = rootElement.getElementsByTagName(TAG_MACRO);
-        int len = mcr.getLength();
-        for (int i=0;i<len;i++){
-            org.w3c.dom.Node node = mcr.item(i);
-            Element FCElement = (Element)node;
-            
-            if (FCElement == null){
-                continue;
+    protected void loadSettings(boolean propagate){
+        synchronized (Settings.class) {
+            Document doc = dom;
+            Element rootElement = doc.getDocumentElement();
+
+            if (!TAG_ROOT.equals(rootElement.getTagName())) {
+                // Wrong root element
+                return;
             }
-            
-            String key    = FCElement.getAttribute(ATTR_NAME);
-            String delete = FCElement.getAttribute(ATTR_REMOVE);
-            String action = "";
-            if (! Boolean.valueOf(delete).booleanValue()){
-                NodeList textList = FCElement.getChildNodes();
-                if (textList.getLength() > 0) {
-                    Node subNode = textList.item(0);
-                    if (subNode instanceof Text) {
-                        Text textNode = (Text) subNode;
-                        action = textNode.getData();
+
+            // gets current macro map
+            Map mapa = new HashMap((Map) Settings.getValue(base.getKitClass(), SettingsNames.MACRO_MAP));
+
+            properties.clear();
+
+            NodeList mcr = rootElement.getElementsByTagName(TAG_MACRO);
+            int len = mcr.getLength();
+            for (int i=0;i<len;i++){
+                org.w3c.dom.Node node = mcr.item(i);
+                Element FCElement = (Element)node;
+
+                if (FCElement == null){
+                    continue;
+                }
+
+                String key    = FCElement.getAttribute(ATTR_NAME);
+                String delete = FCElement.getAttribute(ATTR_REMOVE);
+                String action = "";
+                if (! Boolean.valueOf(delete).booleanValue()){
+                    NodeList textList = FCElement.getChildNodes();
+                    if (textList.getLength() > 0) {
+                        Node subNode = textList.item(0);
+                        if (subNode instanceof Text) {
+                            Text textNode = (Text) subNode;
+                            action = textNode.getData();
+                        }
                     }
                 }
+
+                properties.put(key, action);
             }
-            
-            properties.put(key, action);
-        }
-        
-        if (properties.size()>0){
-            // create updated map
-            mapa.putAll(properties);
-            
-            // remove all deleted values
-            for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-                String key = (String)i.next();
-                if(((String)properties.get(key)).length() == 0){
-                    mapa.remove(key);
+
+            if (properties.size()>0){
+                // create updated map
+                mapa.putAll(properties);
+
+                // remove all deleted values
+                for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
+                    String key = (String)i.next();
+                    if(((String)properties.get(key)).length() == 0){
+                        mapa.remove(key);
+                    }
+                }
+
+                // setMacroMap without saving to XML
+                if (propagate){
+                    base.setMacroMap(mapa, false);
                 }
             }
-            
-            // setMacroMap without saving to XML
-            if (propagate){
-                base.setMacroMap(mapa, false);
-            }
+            if (propagate) setLoaded(true);        
         }
-        if (propagate) setLoaded(true);        
     }
     
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
-    protected synchronized void updateSettings(Map changedProp){
-        // put changed properties to local map
-        properties.putAll(changedProp);
-        
-        // now we can save local map to XML file
-        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
-        org.w3c.dom.Element rootElem = doc.getDocumentElement();
-        
-        ArrayList removed = new ArrayList();
-        
-        Map defaultMacros = base.getDefaultMacrosMap();
-        // if default macros don't exist for appropriate kit, set them empty
-        if (defaultMacros == null) defaultMacros = new HashMap();
-        
-        
-        // save XML
-        for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-            String key = (String)i.next();
-            if (properties.get(key) instanceof String){
-                
-                String action = (String) properties.get(key);
-                if (action.length()==0){
-                    // null value => DETETE: if property is in default set, mark it as deleted else delete it completely
-                    if (!defaultMacros.containsKey(key)) {
-                        removed.add(key);
-                        continue;
-                    }
-                } else{
-                    // if key and value is already in settings default, no need to store
-                    // this in diff XML file
-                    if (defaultMacros.containsKey(key)){
-                        String defValue = (String) defaultMacros.get(key);
-                        if (defValue.equals(action)){
+    protected void updateSettings(Map changedProp){
+        synchronized (Settings.class) {
+            // put changed properties to local map
+            properties.putAll(changedProp);
+
+            // now we can save local map to XML file
+            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+            org.w3c.dom.Element rootElem = doc.getDocumentElement();
+
+            ArrayList removed = new ArrayList();
+
+            Map defaultMacros = base.getDefaultMacrosMap();
+            // if default macros don't exist for appropriate kit, set them empty
+            if (defaultMacros == null) defaultMacros = new HashMap();
+
+
+            // save XML
+            for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
+                String key = (String)i.next();
+                if (properties.get(key) instanceof String){
+
+                    String action = (String) properties.get(key);
+                    if (action.length()==0){
+                        // null value => DETETE: if property is in default set, mark it as deleted else delete it completely
+                        if (!defaultMacros.containsKey(key)) {
                             removed.add(key);
                             continue;
                         }
+                    } else{
+                        // if key and value is already in settings default, no need to store
+                        // this in diff XML file
+                        if (defaultMacros.containsKey(key)){
+                            String defValue = (String) defaultMacros.get(key);
+                            if (defValue.equals(action)){
+                                removed.add(key);
+                                continue;
+                            }
+                        }
                     }
+
+                    org.w3c.dom.Element macroElem = doc.createElement(TAG_MACRO);
+                    macroElem.setAttribute(ATTR_NAME, key);
+                    if (action.length()==0){
+                        macroElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
+                    }else{
+                        macroElem.setAttribute(ATTR_XML_SPACE, VALUE_XML_SPACE);
+                        macroElem.appendChild(doc.createTextNode(action));
+                    }
+                    rootElem.appendChild(macroElem);
                 }
-                
-                org.w3c.dom.Element macroElem = doc.createElement(TAG_MACRO);
-                macroElem.setAttribute(ATTR_NAME, key);
-                if (action.length()==0){
-                    macroElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
-                }else{
-                    macroElem.setAttribute(ATTR_XML_SPACE, VALUE_XML_SPACE);
-                    macroElem.appendChild(doc.createTextNode(action));
-                }
-                rootElem.appendChild(macroElem);
             }
+
+            for (int i=0; i<removed.size(); i++){
+                properties.remove(removed.get(i));
+            }
+
+            doc.getDocumentElement().normalize();
+
+            saveSettings(doc);
         }
-        
-        for (int i=0; i<removed.size(); i++){
-            properties.remove(removed.get(i));
-        }
-        
-        doc.getDocumentElement().normalize();
-        
-        saveSettings(doc);
     }
     
 }

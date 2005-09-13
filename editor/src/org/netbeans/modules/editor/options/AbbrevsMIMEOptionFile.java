@@ -57,127 +57,131 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
     
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
-    protected synchronized void loadSettings(boolean propagate){
-        Document doc = dom;
-        Element rootElement = doc.getDocumentElement();
-        
-        if (!TAG_ROOT.equals(rootElement.getTagName())) {
-            // Wrong root element
-            return;
-        }
-        
-        // gets current abbreviations map
-        Map abbrevsMap = (Map)Settings.getValue(base.getKitClass(), SettingsNames.ABBREV_MAP);
-        Map mapa = (abbrevsMap==null) ? new HashMap() : new HashMap(abbrevsMap);
-        properties.clear();
-        
-        NodeList abbr = rootElement.getElementsByTagName(TAG_ABBREV);
-        int len = abbr.getLength();
-        for (int i=0; i < len; i++){
-            Node node = abbr.item(i);
-            Element FCElement = (Element)node;
-            
-            if (FCElement == null){
-                continue;
+    protected void loadSettings(boolean propagate){
+        synchronized (Settings.class) {
+            Document doc = dom;
+            Element rootElement = doc.getDocumentElement();
+
+            if (!TAG_ROOT.equals(rootElement.getTagName())) {
+                // Wrong root element
+                return;
             }
-            
-            String key    = FCElement.getAttribute(ATTR_KEY);
-            String delete    = FCElement.getAttribute(ATTR_REMOVE);
-            String expanded  = "";
-            
-            if (! Boolean.valueOf(delete).booleanValue()){
-                NodeList textList = FCElement.getChildNodes();
-                if (textList.getLength() > 0) {
-                    Node subNode = textList.item(0);
-                    if (subNode instanceof Text) {
-                        Text textNode = (Text) subNode;
-                        expanded = textNode.getData();
+
+            // gets current abbreviations map
+            Map abbrevsMap = (Map)Settings.getValue(base.getKitClass(), SettingsNames.ABBREV_MAP);
+            Map mapa = (abbrevsMap==null) ? new HashMap() : new HashMap(abbrevsMap);
+            properties.clear();
+
+            NodeList abbr = rootElement.getElementsByTagName(TAG_ABBREV);
+            int len = abbr.getLength();
+            for (int i=0; i < len; i++){
+                Node node = abbr.item(i);
+                Element FCElement = (Element)node;
+
+                if (FCElement == null){
+                    continue;
+                }
+
+                String key    = FCElement.getAttribute(ATTR_KEY);
+                String delete    = FCElement.getAttribute(ATTR_REMOVE);
+                String expanded  = "";
+
+                if (! Boolean.valueOf(delete).booleanValue()){
+                    NodeList textList = FCElement.getChildNodes();
+                    if (textList.getLength() > 0) {
+                        Node subNode = textList.item(0);
+                        if (subNode instanceof Text) {
+                            Text textNode = (Text) subNode;
+                            expanded = textNode.getData();
+                        }
                     }
                 }
+
+                properties.put(key, expanded);
             }
-            
-            properties.put(key, expanded);
-        }
-        
-        if (properties.size()>0){
-            // create updated map
-            mapa.putAll(properties);
-            
-            // remove all deleted values
-            for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-                String key = (String)i.next();
-                if(((String)properties.get(key)).length() == 0){
-                    mapa.remove(key);
+
+            if (properties.size()>0){
+                // create updated map
+                mapa.putAll(properties);
+
+                // remove all deleted values
+                for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
+                    String key = (String)i.next();
+                    if(((String)properties.get(key)).length() == 0){
+                        mapa.remove(key);
+                    }
+                }
+                // setAbbrevMap without saving to XML
+                if (propagate){
+                    base.setAbbrevMap(mapa, false);
                 }
             }
-            // setAbbrevMap without saving to XML
-            if (propagate){
-                base.setAbbrevMap(mapa, false);
-            }
+            if (propagate) setLoaded(true);
         }
-        if (propagate) setLoaded(true);
     }
     
     /** Save settings to XML file
      *  @param changedProp the Map of settings to save */
-    protected synchronized void updateSettings(Map changedProp){
-        // put changed properties to local map
-        properties.putAll(changedProp);
-        
-        // now we can save local map to XML file
-        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
-        Element rootElem = doc.getDocumentElement();
-        
-        ArrayList removed = new ArrayList();
-        
-        Map defaultAbbrevs = base.getDefaultAbbrevMap();
-        // if default abbreviations don't exist for appropriate kit, set them empty
-        if (defaultAbbrevs == null) defaultAbbrevs = new HashMap();
-        
-        // save XML
-        for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-            String key = (String)i.next();
-            if (properties.get(key) instanceof String){
-                
-                String action = (String) properties.get(key);
-                if (action.length()==0){
-                    // null value => DETETE: if property is in default set, mark it as deleted else delete it completely
-                    if (!defaultAbbrevs.containsKey(key)) {
-                        removed.add(key);
-                        continue;
-                    }
-                } else{
-                    // if key and value is already in settings default, no need to store
-                    // this in diff XML file
-                    if (defaultAbbrevs.containsKey(key)){
-                        String defValue = (String) defaultAbbrevs.get(key);
-                        if (defValue.equals(action)){
+    protected void updateSettings(Map changedProp){
+        synchronized (Settings.class) {
+            // put changed properties to local map
+            properties.putAll(changedProp);
+
+            // now we can save local map to XML file
+            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+            Element rootElem = doc.getDocumentElement();
+
+            ArrayList removed = new ArrayList();
+
+            Map defaultAbbrevs = base.getDefaultAbbrevMap();
+            // if default abbreviations don't exist for appropriate kit, set them empty
+            if (defaultAbbrevs == null) defaultAbbrevs = new HashMap();
+
+            // save XML
+            for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
+                String key = (String)i.next();
+                if (properties.get(key) instanceof String){
+
+                    String action = (String) properties.get(key);
+                    if (action.length()==0){
+                        // null value => DETETE: if property is in default set, mark it as deleted else delete it completely
+                        if (!defaultAbbrevs.containsKey(key)) {
                             removed.add(key);
                             continue;
                         }
+                    } else{
+                        // if key and value is already in settings default, no need to store
+                        // this in diff XML file
+                        if (defaultAbbrevs.containsKey(key)){
+                            String defValue = (String) defaultAbbrevs.get(key);
+                            if (defValue.equals(action)){
+                                removed.add(key);
+                                continue;
+                            }
+                        }
                     }
-                }
-                
-                Element abbrevElem = doc.createElement(TAG_ABBREV);
-                abbrevElem.setAttribute(ATTR_KEY, key);
-                if (action.length()==0){
-                    abbrevElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
-                }else{
-                    abbrevElem.setAttribute(ATTR_XML_SPACE, VALUE_XML_SPACE);                    
-                    abbrevElem.appendChild(doc.createTextNode(action));
-                }
-                
-                rootElem.appendChild(abbrevElem);
-            }
-        }
-        
-        for (int i=0; i<removed.size(); i++){
-            properties.remove(removed.get(i));
-        }
-        
-        doc.getDocumentElement().normalize();
 
-        saveSettings(doc);
+                    Element abbrevElem = doc.createElement(TAG_ABBREV);
+                    abbrevElem.setAttribute(ATTR_KEY, key);
+                    if (action.length()==0){
+                        abbrevElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
+                    }else{
+                        abbrevElem.setAttribute(ATTR_XML_SPACE, VALUE_XML_SPACE);                    
+                        abbrevElem.appendChild(doc.createTextNode(action));
+                    }
+
+                    rootElem.appendChild(abbrevElem);
+                }
+            }
+
+            for (int i=0; i<removed.size(); i++){
+                properties.remove(removed.get(i));
+            }
+
+            doc.getDocumentElement().normalize();
+
+            saveSettings(doc);
+        }
     }
     
 }
