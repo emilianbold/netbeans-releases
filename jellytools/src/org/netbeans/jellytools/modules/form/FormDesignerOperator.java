@@ -20,7 +20,6 @@ import javax.swing.JComponent;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
@@ -71,7 +70,6 @@ public class FormDesignerOperator extends TopComponentOperator {
     private JToggleButtonOperator _tbSelectionMode;
     private JToggleButtonOperator _tbConnectionMode;
     private JButtonOperator _btPreviewForm;
-    private JButtonOperator _btPaletteCustomizer;
 
     /** Waits for the form Designer appearence and creates operator for it.
      * It is activated by defalt.
@@ -136,18 +134,6 @@ public class FormDesignerOperator extends TopComponentOperator {
                                                      "CTL_ConnectionMode")));
         }
         return(_tbConnectionMode);
-    }
-
-   /** Getter for the "Palette Customizer" button.
-     * @return JButtonOperator instance
-     */
-    public JButtonOperator btPaletteCustomizer() {
-        if(_btPaletteCustomizer == null) {
-            _btPaletteCustomizer = new JButtonOperator(this, new ToolTipChooser(
-                                   Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle", 
-                                                           "ACT_InstallBean")));
-        }
-        return _btPaletteCustomizer;
     }
 
     /** Getter for the "Preview Form" button.
@@ -228,15 +214,6 @@ public class FormDesignerOperator extends TopComponentOperator {
         btPreviewForm().push();
         return(new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle",
                                                           "FMT_TestingForm")));
-    }
-    
-    /** Pushes "Palette Customizer" button and waits for the Palette Customizer dialog opened.
-     * @return NbDialogOperator instance of "Palette Customizer" window
-     */
-    public NbDialogOperator paletteCustomizer() {
-        btPaletteCustomizer().push();
-        return new NbDialogOperator(Bundle.getString("org.netbeans.modules.palette.Bundle",
-                                                     "CTL_Customizer_Title"));
     }
     
     /** Returns component which actually handles all events happening
