@@ -39,6 +39,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EtchedBorder;
@@ -151,17 +152,21 @@ ChangeListener, ActionListener {
         );
         
         // start formatter
-        epPreview.setText (originalText);
-        BaseDocument doc = (BaseDocument) epPreview.getDocument ();
-        try {
-            doc.getFormatter ().reformat (
-                doc, 
-                0, 
-                doc.getEndPosition ().getOffset ()
-            );
-        } catch (BadLocationException ex) {
-            ex.printStackTrace ();
-        }
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                epPreview.setText (originalText);
+                BaseDocument doc = (BaseDocument) epPreview.getDocument ();
+                try {
+                    doc.getFormatter ().reformat (
+                        doc, 
+                        0, 
+                        doc.getEndPosition ().getOffset ()
+                    );
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace ();
+                }
+            }
+        });
     }
     
     
@@ -210,14 +215,18 @@ ChangeListener, ActionListener {
         
         // init components
         listen = false;
-        epPreview.setContentType ("text/x-java");
-	cbExpandTabs.setSelected (originalExpandedTabs);
-        cbAddStar.setSelected (originalAddStar);
-        cbNewLine.setSelected (originalNewLine);
-        cbSpace.setSelected (originalSpace);
-        tfIndent.setValue (new Integer (originalIndent));
-        tfStatementIndent.setValue (new Integer (originalStatementIndent));
-        listen = true;
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                epPreview.setContentType ("text/x-java");
+                cbExpandTabs.setSelected (originalExpandedTabs);
+                cbAddStar.setSelected (originalAddStar);
+                cbNewLine.setSelected (originalNewLine);
+                cbSpace.setSelected (originalSpace);
+                tfIndent.setValue (new Integer (originalIndent));
+                tfStatementIndent.setValue (new Integer (originalStatementIndent));
+                listen = true;
+            }
+        });
         
         // update preview
         updatePreview ();

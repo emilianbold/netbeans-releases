@@ -20,9 +20,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -41,11 +44,15 @@ public class EditorSettingsImpl extends EditorSettings {
     
     {pcs = new PropertyChangeSupport (this);}
     
-    
+//    {
+//        T hread.dumpStack();
+//        S ystem.out.println(this);
+//        S ystem.out.println("");
+//    }
     
     public Set /*<String>*/ getMimeTypes () {
 	if (mimeToLanguage == null) init ();
-	return mimeToLanguage.keySet ();
+	return Collections.unmodifiableSet (mimeToLanguage.keySet ());
     }
     
     public String getLanguageName (String mimeType) {
@@ -59,7 +66,7 @@ public class EditorSettingsImpl extends EditorSettings {
     public Set /*<String>*/ getFontColorSchemes () {
 	if (schemes == null)
 	    init ();
-	return schemes.keySet ();
+	return Collections.unmodifiableSet (schemes.keySet ());
     }
     
     private String currentScheme;
@@ -117,7 +124,18 @@ public class EditorSettingsImpl extends EditorSettings {
             } else
                 defaultColors.put (s, null);
         }
-	return (Collection) defaultColors.get (s);
+        
+//        Iterator it = ((Collection) defaultColors.get (s)).iterator ();
+//        while (it.hasNext ()) {
+//            AttributeSet as = (AttributeSet) it.next ();
+//            if ("comment".equals (as.getAttribute (StyleConstants.NameAttribute)))
+//                System.out.println ("getEditorColoringImpl " + s + 
+//                    " : " + as.getAttribute (StyleConstants.Foreground)
+//                );
+//        }
+	return Collections.unmodifiableCollection (
+            (Collection) defaultColors.get (s)
+        );
     }
     
     public void setDefaultFontColors (
@@ -134,11 +152,12 @@ public class EditorSettingsImpl extends EditorSettings {
         defaultColors.put (s, fontColors);
         
         // 3) save new values to disk
-        ColoringStorage.saveColorings 
-            (new String [0], s, "defaultColoring.xml", fontColors);
+        if (!scheme.startsWith ("test"))
+            ColoringStorage.saveColorings 
+                (new String [0], s, "defaultColoring.xml", fontColors);
         
         // 4) update schemes
-	pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, oldColors, fontColors);
+	pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
     }
     
     private Map editorFontColors = new HashMap ();
@@ -160,7 +179,9 @@ public class EditorSettingsImpl extends EditorSettings {
             } else
                 editorFontColors.put (s, null);
         }
-	return (Collection) editorFontColors.get (s);
+	return Collections.unmodifiableCollection (
+            (Collection) editorFontColors.get (s)
+        );
     }
     
     public void setEditorFontColors (
@@ -180,7 +201,7 @@ public class EditorSettingsImpl extends EditorSettings {
         ColoringStorage.saveColorings 
             (new String [0], s, "editorColoring.xml", fontColors);
         
-	pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, oldColors, fontColors);
+	pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
     }  
     
     
@@ -189,7 +210,7 @@ public class EditorSettingsImpl extends EditorSettings {
     public Set /*<String>*/ getKeyMapNames () {
 	if (keyMaps == null)
 	    init ();
-	return keyMaps.keySet ();
+	return Collections.unmodifiableSet (keyMaps.keySet ());
     }
     
     private String currentKeyMapName;

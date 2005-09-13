@@ -90,10 +90,13 @@ public abstract class ColorModel {
         Collection /*<Category>*/ categories
     );
     
-    public abstract Component getPreviewComponent (
+    public abstract Component getEditorPreviewComponent (
+        String      scheme
+    );
+	
+    public abstract Component getSyntaxColoringPreviewComponent (
         String      scheme,
-        String      language,
-        boolean     plain
+        String      language
     );
     
     

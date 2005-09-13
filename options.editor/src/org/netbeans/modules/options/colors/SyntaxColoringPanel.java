@@ -16,6 +16,7 @@ package org.netbeans.modules.options.colors;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -68,8 +69,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
@@ -189,7 +192,7 @@ PropertyChangeListener {
 	} else
         if (evt.getSource () == bFont) {
             PropertyEditor pe = PropertyEditorManager.findEditor (Font.class);
-            SimpleAttributeSet category = getCurrentCategory ();
+            AttributeSet category = getCurrentCategory ();
             Font f = getFont (category);
             pe.setValue (f);
             DialogDescriptor dd = new DialogDescriptor (
@@ -224,34 +227,36 @@ PropertyChangeListener {
                     )
                         italic = null;
                 }
+                SimpleAttributeSet c = new SimpleAttributeSet (category);
                 if (fontName != null)
-                    category.addAttribute (
+                    c.addAttribute (
                         StyleConstants.FontFamily,
                         fontName
                     );
                 else
-                    category.removeAttribute (StyleConstants.FontFamily);
+                    c.removeAttribute (StyleConstants.FontFamily);
                 if (fontSize != null)
-                    category.addAttribute (
+                    c.addAttribute (
                         StyleConstants.FontSize,
                         fontSize
                     );
                 else
-                    category.removeAttribute (StyleConstants.FontSize);
+                    c.removeAttribute (StyleConstants.FontSize);
                 if (bold != null)
-                    category.addAttribute (
+                    c.addAttribute (
                         StyleConstants.Bold,
                         bold
                     );
                 else
-                    category.removeAttribute (StyleConstants.Bold);
+                    c.removeAttribute (StyleConstants.Bold);
                 if (italic != null)
-                    category.addAttribute (
+                    c.addAttribute (
                         StyleConstants.Italic,
                         italic
                     );
                 else
-                    category.removeAttribute (StyleConstants.Italic);
+                    c.removeAttribute (StyleConstants.Italic);
+                replaceCurrrentCategory (c);
                 setToBeSaved (currentScheme, currentLanguage);
                 refreshUI (); // refresh font viewer
             }
@@ -271,8 +276,8 @@ PropertyChangeListener {
             currentScheme = colorModel.getCurrentScheme ();
             currentLanguage = (String) colorModel.getLanguages ().
                 iterator ().next ();
-            Component component = colorModel.getPreviewComponent 
-                    (currentScheme, currentLanguage, true);
+            Component component = colorModel.getSyntaxColoringPreviewComponent 
+                    (currentScheme, currentLanguage);
             preview = (Preview) component;
             previewPanel.add ("Center", component);
             listen = false;
@@ -367,7 +372,7 @@ PropertyChangeListener {
         int i = lCategories.getSelectedIndex ();
         if (i < 0) return;
         
-        SimpleAttributeSet category = getCurrentCategory ();
+        AttributeSet category = getCurrentCategory ();
         Color underline = null, 
               wave = null, 
               strikethrough = null;
@@ -378,41 +383,43 @@ PropertyChangeListener {
         if (cbEffects.getSelectedIndex () == 3)
             strikethrough = effectsColorChooser.getColor ();
         
+        SimpleAttributeSet c = new SimpleAttributeSet (category);
         if (backgroundColorChooser.getColor () != null)
-            category.addAttribute (
+            c.addAttribute (
                 StyleConstants.Background,
                 backgroundColorChooser.getColor ()
             );
         else
-            category.removeAttribute (StyleConstants.Background);
+            c.removeAttribute (StyleConstants.Background);
         if (foregroundColorChooser.getColor () != null)
-            category.addAttribute (
+            c.addAttribute (
                 StyleConstants.Foreground,
                 foregroundColorChooser.getColor ()
             );
         else
-            category.removeAttribute (StyleConstants.Foreground);
+            c.removeAttribute (StyleConstants.Foreground);
         if (underline != null)
-            category.addAttribute (
+            c.addAttribute (
                 StyleConstants.Underline,
                 underline
             );
         else
-            category.removeAttribute (StyleConstants.Underline);
+            c.removeAttribute (StyleConstants.Underline);
         if (strikethrough != null)
-            category.addAttribute (
+            c.addAttribute (
                 StyleConstants.StrikeThrough,
                 strikethrough
             );
         else
-            category.removeAttribute (StyleConstants.StrikeThrough);
+            c.removeAttribute (StyleConstants.StrikeThrough);
         if (wave != null)
-            category.addAttribute (
+            c.addAttribute (
                 EditorStyleConstants.WaveUnderlineColor,
                 wave
             );
         else
-            category.removeAttribute (EditorStyleConstants.WaveUnderlineColor);
+            c.removeAttribute (EditorStyleConstants.WaveUnderlineColor);
+        replaceCurrrentCategory (c);
         
         setToBeSaved (currentScheme, currentLanguage);
         updatePreview ();
@@ -525,13 +532,18 @@ PropertyChangeListener {
         return v;
     }
     
-    private SimpleAttributeSet getCurrentCategory () {
+    private AttributeSet getCurrentCategory () {
         int i = lCategories.getSelectedIndex ();
         if (i < 0) return null;
-        return (SimpleAttributeSet) getCategories (currentScheme, currentLanguage).get (i);
+        return (AttributeSet) getCategories (currentScheme, currentLanguage).get (i);
     }
     
-    private SimpleAttributeSet getCategory (
+    private void replaceCurrrentCategory (AttributeSet newValues) {
+        int i = lCategories.getSelectedIndex ();
+        getCategories (currentScheme, currentLanguage).set (i, newValues);
+    }
+    
+    private AttributeSet getCategory (
         String scheme, 
         String language, 
         String name
@@ -539,7 +551,7 @@ PropertyChangeListener {
         Vector v = getCategories (scheme, language);
         Iterator it = v.iterator ();
         while (it.hasNext ()) {
-            SimpleAttributeSet c = (SimpleAttributeSet) it.next ();
+            AttributeSet c = (AttributeSet) it.next ();
             if (c.getAttribute (StyleConstants.NameAttribute).equals (name)) 
                 return c;
         }
@@ -562,13 +574,13 @@ PropertyChangeListener {
         return getValue (defaultCategory, key);
     }
     
-    private SimpleAttributeSet getDefault (AttributeSet category) {
+    private AttributeSet getDefault (AttributeSet category) {
 	String name = (String) category.getAttribute (EditorStyleConstants.Default);
 	if (name == null) return null;
 
 	// 1) search current language
 	if (!name.equals (category.getAttribute (StyleConstants.NameAttribute))) {
-	    SimpleAttributeSet result = getCategory 
+	    AttributeSet result = getCategory 
                 (currentScheme, currentLanguage, name);
             if (result != null) return result;
 	}
