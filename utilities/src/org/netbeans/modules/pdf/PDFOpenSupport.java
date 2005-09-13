@@ -33,6 +33,8 @@ class PDFOpenSupport implements OpenCookie {
             "/usr/bin", "/usr/local/bin" };                             //NOI18N
     private static final String[] VIEWER_NAMES = new String[] {
             "xpdf", "kghostview", "ggv", "acroread" };                  //NOI18N
+    private static final String[] NO_PATH_VIEWERS = new String[] {
+            "acroread", "open" };                                       //NOI18N
     static final String FALLBACK_VIEWER_NAME = "acroread";              //NOI18N
 
     private File f;
@@ -48,24 +50,36 @@ class PDFOpenSupport implements OpenCookie {
     public void open() {
         Settings sett = Settings.getDefault();
         
-        boolean tryAgain = true;
-        while (tryAgain) {
-            File viewer = sett.getPDFViewer();
-            final boolean viewerUnset = (viewer == null);
-            if (viewerUnset) {
-                viewer = findViewer();
+        File viewer = sett.getPDFViewer();
+        boolean viewerUnset = (viewer == null);
+        
+        if (viewerUnset) {
+            viewer = tryPredefinedViewers(f);
+            if (viewer != null) {
+                sett.setPDFViewer(viewer);
+                return;
             }
+        }
+        
+        if (viewerUnset) {
+            viewer = new File(FALLBACK_VIEWER_NAME);
+        }
+        
+        boolean viewerFailed = false;
+        do {
             try {
                 Process p = Runtime.getRuntime().exec(
                         new String[] {viewer.getPath(),
                                       f.getAbsolutePath()
                 });
-                if (viewerUnset) {
+                if (viewerUnset || viewerFailed) {
                     sett.setPDFViewer(viewer);
                 }
-                tryAgain = false;
+                break;
                 // [PENDING] redirect p's output
             } catch (IOException ioe) {
+                viewerFailed = true;
+                
                 // Try to reconfigure.
                 String excmessage = ioe.getLocalizedMessage();
                 /* [PENDING] does not work (no properties show in sheet, though node has them):
@@ -88,31 +102,55 @@ class PDFOpenSupport implements OpenCookie {
                 DialogDescriptor d = new DialogDescriptor(configPanel, title);
                 if (DialogDisplayer.getDefault().notify(d)
                         == DialogDescriptor.OK_OPTION) {
-                    sett.setPDFViewer(configPanel.getSelectedFile());
-                    tryAgain = true;
+                    sett.setPDFViewer(viewer = configPanel.getSelectedFile());
                 } else {
-                    tryAgain = false;
+                    break;
                 }
             }
-        }
+        } while (true);
     }
 
     /**
      */
-    private static File findViewer() {
-        File viewer;
+    private static File tryPredefinedViewers(File fileToOpen) {
         for (int i = 0; i < APP_DIRS.length; i++) {
-            //PENDING/PERFORMANCE: should continue if APP_DIRS[i] does not exist
+
+            File dir = new File(APP_DIRS[i]);
+            if (!dir.exists() || !dir.isDirectory()) {
+                continue;
+            }
+            
             for (int j = 0; j < VIEWER_NAMES.length; j++) {
-                String viewerPath;
-                viewerPath = APP_DIRS[i] + File.separatorChar + VIEWER_NAMES[j];
-                viewer = new File(viewerPath);
-                if (viewer.exists()) {
+                String viewerPath = APP_DIRS[i] + File.separatorChar
+                                    + VIEWER_NAMES[j];
+                File viewer = new File(viewerPath);
+                if (!viewer.exists()) {
+                    continue;
+                }
+                
+                try {
+                    Process p = Runtime.getRuntime().exec(
+                            new String[] {viewerPath,
+                                          fileToOpen.getAbsolutePath()});
                     return viewer;
+                } catch (IOException ex) {
+                    //never mind, try the next predefined viewer
                 }
             }
         }
-        return new File(FALLBACK_VIEWER_NAME);
+        
+        for (int i = 0; i < NO_PATH_VIEWERS.length; i++) {
+            try {
+                Process p = Runtime.getRuntime().exec(
+                        new String[] {NO_PATH_VIEWERS[i],
+                                      fileToOpen.getAbsolutePath()});
+                return new File(NO_PATH_VIEWERS[i]);
+            } catch (IOException ex) {
+                //never mind, try the next predefined viewer
+            }
+        }
+        
+        return null;
     }
 
     
