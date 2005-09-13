@@ -190,15 +190,10 @@ class CommitTable implements AncestorListener {
                 CommitTableModel model = (CommitTableModel) sorter.getTableModel();
                 CvsFileNode node = model.getNodeAt(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = Annotator.annotateNameHtml(node.getFile(), node.getInformation().getStatus());
+                    value = "<html>" + Annotator.annotateNameHtml(node.getFile(), node.getInformation().getStatus());
                 }
                 if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
-                    if (isSelected) {
-                        value = "<html><s>" + value + "</s></html>";
-                    } else {
-                        String name = (String) value;
-                        value = "<html><s>" + name.substring(6, name.length() - 7) + "</s></html>";
-                    }
+                    value = "<html><s>" + value + "</s></html>";
                 }
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (col == 3) {

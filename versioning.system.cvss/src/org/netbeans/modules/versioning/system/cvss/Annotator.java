@@ -53,17 +53,17 @@ import java.lang.reflect.Field;
  */
 public class Annotator {
 
-    private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#008000\">{0}</font></html>");
-    private static MessageFormat addedLocallyFormat = new MessageFormat("<html><font color=\"#008000\">{0}</font></html>");
-    private static MessageFormat modifiedLocallyFormat = new MessageFormat("<html><font color=\"#0000FF\">{0}</font></html>");
-    private static MessageFormat removedLocallyFormat = new MessageFormat("<html><font color=\"#999999\">{0}</font></html>");
-    private static MessageFormat deletedLocallyFormat = new MessageFormat("<html><font color=\"#999999\">{0}</font></html>");
-    private static MessageFormat newInRepositoryFormat = new MessageFormat("<html><font color=\"#000000\">{0}</font></html>");
-    private static MessageFormat modifiedInRepositoryFormat = new MessageFormat("<html><font color=\"#000000\">{0}</font></html>");
-    private static MessageFormat removedInRepositoryFormat = new MessageFormat("<html><font color=\"#000000\">{0}</font></html>");
-    private static MessageFormat conflictFormat = new MessageFormat("<html><font color=\"#FF0000\">{0}</font></html>");
-    private static MessageFormat mergeableFormat = new MessageFormat("<html><font color=\"#0000FF\">{0}</font></html>");
-    private static MessageFormat excludedFormat = new MessageFormat("<html><font color=\"#999999\">{0}</font></html>");
+    private static MessageFormat newLocallyFormat = getFormat("newLocallyFormat");  // NOI18N
+    private static MessageFormat addedLocallyFormat = getFormat("addedLocallyFormat"); // NOI18N
+    private static MessageFormat modifiedLocallyFormat = getFormat("modifiedLocallyFormat"); // NOI18N
+    private static MessageFormat removedLocallyFormat = getFormat("removedLocallyFormat"); // NOI18N
+    private static MessageFormat deletedLocallyFormat = getFormat("deletedLocallyFormat"); // NOI18N
+    private static MessageFormat newInRepositoryFormat = getFormat("newInRepositoryFormat"); // NOI18N
+    private static MessageFormat modifiedInRepositoryFormat = getFormat("modifiedInRepositoryFormat"); // NOI18N
+    private static MessageFormat removedInRepositoryFormat = getFormat("removedInRepositoryFormat"); // NOI18N
+    private static MessageFormat conflictFormat = getFormat("conflictFormat"); // NOI18N
+    private static MessageFormat mergeableFormat = getFormat("mergeableFormat"); // NOI18N
+    private static MessageFormat excludedFormat = getFormat("excludedFormat"); // NOI18N
 
     private final FileStatusCache cache;
 
@@ -99,7 +99,7 @@ public class Annotator {
     private void setAnnotationColor(String name, String colorString) {
         try {
             Field field = Annotator.class.getDeclaredField(name + "Format");
-            MessageFormat format = new MessageFormat("<html><font color=\"" + colorString + "\">{0}</font></html>");
+            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font>");
             field.set(null, format);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid color name");
@@ -181,7 +181,7 @@ public class Annotator {
      * @param name original name of the file
      * @param files set of files comprising the name
      * @param includeStatus only files having one of statuses specified will be annotated
-     * @return String HTML-annotated name of the file
+     * @return String HTML-annotated name of the file (without HTML prolog)
      */ 
     public String annotateNameHtml(String name, Set files, int includeStatus) {
         if (files.size() == 0) return name;
@@ -367,4 +367,10 @@ public class Annotator {
         }
         return false;
     }
+
+    private static MessageFormat getFormat(String key) {
+        String format = NbBundle.getMessage(Annotator.class, key);
+        return new MessageFormat(format);
+    }
+
 }

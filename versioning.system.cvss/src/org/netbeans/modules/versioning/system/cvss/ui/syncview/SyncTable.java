@@ -403,14 +403,14 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             if (modelColumnIndex == 0) {
                 SyncFileNode node = nodes[sorter.modelIndex(row)];
                 if (!isSelected) {
-                    value = node.getHtmlDisplayName();
+                    value = "<html>" + node.getHtmlDisplayName();
                 }
                 if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
                     String nodeName = node.getDisplayName();
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>";
                     } else {
-                        value = Annotator.annotateNameHtml("<s>" + nodeName + "</s>", node.getFileInformation().getStatus());
+                        value = "<html>" + Annotator.annotateNameHtml("<s>" + nodeName + "</s>", node.getFileInformation().getStatus());
                     }
                 }
             }
