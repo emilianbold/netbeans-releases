@@ -125,7 +125,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             // XXX add a NodePathResolver impl to lookup
             super(new RootChildren(project), Lookups.fixed(new Object[] {project}));
             this.project = project;
-            setIconBaseWithExtension("org/netbeans/modules/apisupport/project/resources/module.gif"); // NOI18N
+            setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             ProjectInformation pi = ProjectUtils.getInformation(project);
             setName(pi.getName());
             setDisplayName(pi.getDisplayName());

@@ -89,8 +89,11 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  */
 public final class NbModuleProject implements Project {
     
+    public static final String NB_PROJECT_ICON_PATH =
+            "org/netbeans/modules/apisupport/project/resources/module.gif"; // NOI18N
+    
     private static final Icon NB_PROJECT_ICON = new ImageIcon(
-        Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif")); // NOI18N
+            Utilities.loadImage(NB_PROJECT_ICON_PATH));
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
