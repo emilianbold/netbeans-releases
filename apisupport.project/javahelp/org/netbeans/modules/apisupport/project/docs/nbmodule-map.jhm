@@ -10,20 +10,28 @@
 	<mapID target="about_system_filesystem" url="about/nbmodule-about-system-filesystem.html"/>
 	<mapID target="about_xml_layers" url="about/about-xml-layers.html"/>
 	<mapID target="about_open_apis" url="about/about-open-apis.html"/>
-	<mapID target="about_a_first_plugin" url="about/about-a-first-plugin.html"/>
-	<mapID target="about_ide_extensions" url="tbd.html"/>
-	<mapID target="about_creating_ide_extensions" url="tbd.html"/>
-	<mapID target="about_file_types" url="tbd.html"/>
-	<mapID target="creating_file_types" url="tbd.html"/>
-	<mapID target="about_actions" url="tbd.html"/>
-	<mapID target="creating_actions" url="tbd.html"/>
-	<mapID target="about_projtemps" url="tbd.html"/>
-	<mapID target="creating_projtemps" url="tbd.html"/>
-	<mapID target="testing_ide_extensions" url="tbd.html"/>
-	<mapID target="sharing_ide_extensions" url="tbd.html"/>
-	<mapID target="about_netbeans_platform" url="tbd.html"/>
+	<mapID target="about-netbeans-platform" url="about/about-netbeans-platform.html"/>
 
-		
+	<mapID target="about_create" url="create_plugin/about_create.html"/>
+	
+	<mapID target="about_project_wizards" url="create_plugin/projectlevel_create/about_project_wizards.html"/>	
+	<mapID target="create_module_suite" url="create_plugin/projectlevel_create/create_module_suite.html"/>
+	<mapID target="create_module" url="create_plugin/projectlevel_create/create_module.html"/>
+	<mapID target="create_library_wrapper" url="create_pluginprojectlevel_createprojectlevel/create_library_wrapper.html"/>
+
+	<mapID target="about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>	
+	<mapID target="create_j2se_library_descriptor" url="create_plugin/filelevel_create/create_j2se_library_descriptor.html"/>
+	<mapID target="create_action" url="create_plugin/filelevel_create/create_action.html"/>
+	<mapID target="create_file_type" url="create_plugin/filelevel_create/create_file_type.html"/>
+	<mapID target="create_project_template" url="create_plugin/filelevel_create/create_project_template.html"/>
+	<mapID target="create_window_component" url="create_plugin/filelevel_create/create_window_component.html"/>
+	<mapID target="create_wizard" url="create_plugin/filelevel_create/create_wizard.html"/>
+	
+
+	<mapID target="building_plugins" url="build_plugin/building_plugins.html"/>
+	<mapID target="debugging_plugins" url="debug_plugin/debugging_plugins.html"/>	
+	<mapID target="branding_plugins" url="brand_plugin/branding_plugins.html"/>
+	<mapID target="distributing_plugins" url="distribute_plugin/distributing_plugins.html"/>	
 
 	<mapID target="org.netbeans.modules.apisupport.project.ui.SuiteCustomizer" url="tbd.html" />
 	<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="tbd.html" />
