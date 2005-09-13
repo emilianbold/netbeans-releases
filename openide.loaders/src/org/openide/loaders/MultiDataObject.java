@@ -614,6 +614,11 @@ public class MultiDataObject extends DataObject {
         }
         
         try {
+            // #61600: not very object oriented, but covered by DefaultVersusXMLDataObjectTest
+            if (this instanceof DefaultDataObject) {
+                return DataObject.find(fo);
+            }
+            
             return createMultiObject (fo);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
