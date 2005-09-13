@@ -147,7 +147,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 			}
 		};
 
-	/** Creates a new instance of SunONEAppDConfigBean */
+	/** Creates a new instance of EjbJarRoot */
 	public EjbJarRoot() {
 		setDescriptorElement(bundle.getString("BDN_EjbJarRoot"));	// NOI18N
 	}
@@ -265,9 +265,9 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	Snippet getCmpMappingSnippet() {
 		return new Snippet() {
 			public CommonDDBean getDDSnippet() {
-                return null;
+				return null;
 			}
-            public org.netbeans.modules.schema2beans.BaseBean getCmpDDSnippet() {
+			public org.netbeans.modules.schema2beans.BaseBean getCmpDDSnippet() {
 				SunCmpMappings sunCmpMappings = 
 					SunOneUtilsCMP.getSunCmpMappings(mappingContext, ejbInfoHelper);
 				
@@ -276,14 +276,14 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					mappingContext.getModel().getMappingCache().values().iterator();
 				while (iterator.hasNext()) {
 					((MappingClassElement)iterator.next()).setModified(false);
-				// TODO - need to do PCEs too?
+					// TODO - need to do PCEs too?
 				}
 
-// TODO: decide if it's empty or skeleton and possibly return null in that case?
+				// TODO: decide if it's empty or skeleton and possibly return null in that case?
 				return sunCmpMappings;
-            }
+			}
 			public boolean hasDDSnippet() {
-// TODO: optimize here - no cmps, empty, or skeleton: return false
+				// TODO: optimize here - no cmps, empty, or skeleton: return false
 				return mappingContext != null && ejbInfoHelper != null;
 			}
 			public String getFileName() {
@@ -500,10 +500,8 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		return conversionHelper;
 	}
 
-	public void mapCmpBeans(DeploymentConfiguration config, 
-			OriginalCMPMapping[] mapping) {
-		SunCmpMappings beanGraph = (SunCmpMappings)
-			((SunONEDeploymentConfiguration)config).getBeans(
+	public void mapCmpBeans(OriginalCMPMapping[] mapping) {
+		SunCmpMappings beanGraph = (SunCmpMappings) getConfig().getBeans(
 			getUriText(), CMP_MAPPING_FILE, new SunCmpMappingsParser(), 
 			new SunCmpMappingsRootFinder());
 		EJBInfoHelper infoHelper = getEJBInfoHelper();
