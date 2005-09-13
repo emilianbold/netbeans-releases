@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  * <br>
  * Usage:<br>
  * <pre>
- *      CheckoutWizardOperator.invoke();
+ *      ImportWizardOperator.invoke();
  *      CVSRootStepOperator cvsRootOper = new CVSRootStepOperator();
  *      cvsRootOper.setPassword("password");
  *      cvsRootOper.setCVSRoot(":pserver:user@host:repository");
@@ -47,9 +47,9 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
     /** Waits for Folder to Import panel. */
     public FolderToImportStepOperator() {
         super();
-        stepsWaitSelectedValue(Bundle.getStringTrimmed(
-                "org.netbeans.modules.versioning.system.cvss.ui.actions.project.Bundle", 
-                "BK0007"));
+        stepsWaitSelectedValue(Bundle.getString(
+                "org.netbeans.modules.versioning.system.cvss.ui.actions.project.Bundle",
+                "BK0014"));
     }
 
     private JLabelOperator _lblFolderToImport;
