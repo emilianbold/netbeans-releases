@@ -79,7 +79,21 @@ public class ResultSetTableModelSupport {
         
         TYPE_TO_DEF.put(new Integer(Types.DATE), dateTypeDef);
         TYPE_TO_DEF.put(new Integer(Types.TIME), dateTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.TIMESTAMP), dateTypeDef);        
+        
+        // TIMESTAMP type -- ensure that it is displayed as a date
+        // issue 64165
+        
+        TYPE_TO_DEF.put(new Integer(Types.TIMESTAMP), new ColumnTypeDef() {
+            public boolean isWritable() {
+                return true;
+            }
+            public Class getColumnClass() {
+                return Date.class;
+            }
+            public Object getColumnValue(ResultSet rs, int column) throws SQLException, IOException {
+                return rs.getDate(column);
+            }
+        });
         
         // binary types -- we can't edit them, and 
         // we display them like "0xdeadbeef..."
