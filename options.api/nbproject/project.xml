@@ -106,7 +106,6 @@ Microsystems, Inc. All Rights Reserved.
                 </module-dependencies>
             <public-packages>
                 <package>org.netbeans.spi.options</package>
-                <package>org.netbeans.modules.options.ui</package>
             </public-packages>
         </data>
     </configuration>
