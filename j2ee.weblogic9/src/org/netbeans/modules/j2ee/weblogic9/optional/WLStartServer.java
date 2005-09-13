@@ -572,6 +572,14 @@ public class WLStartServer extends StartServer {
                         serverProgress.notifyStop(StateType.RUNNING, 
                                 "");                                   // NOI18N
                     } else {
+                        try {
+                            serverProcess.waitFor();
+                        } catch (InterruptedException ex) {
+                        }
+                        long pbLagTime  = (System.currentTimeMillis() - start) / 4;
+                        try {
+                            Thread.sleep(pbLagTime);
+                        } catch (InterruptedException e) {}
                         serverProgress.notifyStop(StateType.COMPLETED, 
                                 "");                                   // NOI18N
                         return;
