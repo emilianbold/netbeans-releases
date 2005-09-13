@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -123,6 +124,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     
     private DDFilesListener ddFilesListener;
     
+    private static final RequestProcessor resourceProcessor = new RequestProcessor("sun-resource-ref"); // NOI18N
+
+    
     /** Creates a new instance of SunONEDeploymentConfiguration
      * @param dObj The deployable object this object configures
      * @param dm The DeploymentManager that created the DeploymentConfiguration
@@ -163,7 +167,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             addConfiguration(configFiles[0], this);
         }
         
-        J2eeModuleProvider provider = null;
+        J2eeModuleProvider provider = getProvider(configFiles[0].getParentFile());
+        if(provider == null) {
+            throw new IllegalStateException("No Project and/or J2eeModuleProvider located for " + configFiles[0].getPath());
+        }
 
         // Sync configuration instance with DataObjects if any of the configuration
         // files exist.  Otherwise, create the default configuration.
@@ -172,22 +179,17 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 // Find primary configuration file (e.g. sun-web.xml)
                 FileObject fo = FileUtil.toFileObject(configFiles[0]);
                 if(fo == null) {
-                    provider = getProvider(configFiles[0].getParentFile());
-                    if(provider != null) {
-                        ConfigurationStorage storage = null;
-                        try {
-                            storage = new ConfigurationStorage(provider, this);
-                            storage.save();
-                        } finally {
-                            if(storage != null) {
-                                // !PW Might be nice to pass this to the data object so
-                                // it doesn't have to create a new one.
-                                storage.cleanup();
-                                storage = null;
-                            }
+                    ConfigurationStorage storage = null;
+                    try {
+                        storage = new ConfigurationStorage(provider, this);
+                        storage.save();
+                    } finally {
+                        if(storage != null) {
+                            // !PW Might be nice to pass this to the data object so
+                            // it doesn't have to create a new one.
+                            storage.cleanup();
+                            storage = null;
                         }
-                    } else {
-                        throw new IllegalStateException("No Project and/or J2eeModuleProvider located for " + configFiles[0].getPath());
                     }
                 }
             } catch(IOException ex) {
@@ -199,13 +201,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch(ConfigurationException ex) {
             ErrorManager.getDefault().notify(ex);
-        }
-
-        if(provider == null) {
-            provider = getProvider(configFiles[0].getParentFile());
-            if(provider == null) {
-                throw new IllegalStateException("No Project and/or J2eeModuleProvider located for " + configFiles[0].getPath());
-            }
         }
 
         if(keepUpdated) {
@@ -284,7 +279,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                      * access DatabaseRuntimeManager.getConnection(). This NPE
                      * causes failure while loading WebServices Registry in Runtime Tab
                      */
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    resourceProcessor.post(new Runnable() {
                         public void run() {
                             rci.createJDBCDataSourceFromRef(refName, description, targetDir);
                         }
@@ -460,8 +455,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return dObj;
     }
     
-    /**
-     * @param dConfigBeanRoot
+    /** JSR88: Removes the DConfigBeanRoot and all its children.
+     *
+     * @param dConfigBeanRoot The DConfigBeanRoot to remove.
      * @throws BeanNotFoundException
      */
     public void removeDConfigBean(DConfigBeanRoot dConfigBeanRoot) throws BeanNotFoundException {
@@ -469,15 +465,32 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         
         if(null != dConfigBeanRoot) {
             DDBeanRoot key = (DDBeanRoot) dConfigBeanRoot.getDDBean();
-            BaseRoot deadBean = (BaseRoot) getDCBCache().remove(key);
             
+            // Find DConfigBean directly in cache.
+            BaseRoot deadBean = (BaseRoot) getDCBCache().get(key);
             if(deadBean != null) {
+                // Remove the children first.  Each child also removes it's own
+                // children so this will remove the entire tree when it's done.
+                Iterator iter = deadBean.getChildren().iterator();
+                while(iter.hasNext()) {
+                    deadBean.removeDConfigBean((Base) iter.next());
+                }
+
+                // Remove this bean from both general and root caches.
+                getDCBCache().remove(key);
                 getDCBRootCache().remove(key);
+                
+                // cleanup bean before throwing away
+                deadBean.cleanup();
+                deadBean = null;
+                
+                System.out.println("Removed DCB for " + key.getXpath());
             } else {
-				Object [] args = new Object [1];
-				args[0] = dConfigBeanRoot.toString();
-				throw new BeanNotFoundException(MessageFormat.format(
-					beanBundle.getString("ERR_DConfigBeanRootNotFoundOnRemove"), args));
+                // If not found, throw appropriate exception per spec.
+                Object [] args = new Object [1];
+                args[0] = dConfigBeanRoot.toString();
+                throw new BeanNotFoundException(MessageFormat.format(
+                    beanBundle.getString("ERR_DConfigBeanRootNotFoundOnRemove"), args));
             }
         }
         
