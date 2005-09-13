@@ -14,6 +14,7 @@
 package org.netbeans.modules.masterfs.providers;
 
 import java.io.IOException;
+import org.netbeans.modules.masterfs.MasterFileSystem;
 
 /** Can provide status and actions for FileObjects. Register it 
  * in META-INF/services/org.netbeans.modules.masterfs.providers.AnnotationProvider
@@ -113,7 +114,12 @@ public abstract class AnnotationProvider extends Object {
             l = this.listener;
         }
         if (l != null) {
-            l.annotationChanged (event);
+            /* FileUtil.toFileObject(file) may return instance of FileObject from 
+             * SystemFileSystem (e.g. for locking files)
+             */
+            if (event.getSource() instanceof MasterFileSystem) {
+                l.annotationChanged (event);
+            } 
         }
     }    
     
