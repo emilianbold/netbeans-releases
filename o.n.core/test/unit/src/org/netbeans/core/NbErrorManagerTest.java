@@ -16,6 +16,7 @@ package org.netbeans.core;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.MissingResourceException;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.openide.ErrorManager;
@@ -42,6 +43,8 @@ public class NbErrorManagerTest extends NbTestCase {
     protected void setUp() throws Exception {
         w = new ByteArrayOutputStream();
         err = new NbErrorManager(new PrintStream(w));
+        
+        System.setProperty("netbeans.user", getWorkDirPath());
     }
     
     public void testEMFound() throws Exception {
@@ -258,6 +261,35 @@ public class NbErrorManagerTest extends NbTestCase {
         // are equals: there is a localized annotation.
         assertTrue(x.isLocalized());
         
+    }
+    
+    public void testPerPetrKuzelsRequestInIssue62836() throws Exception {
+        class My extends Exception {
+            public My() {
+                super("Ahoj");
+            }
+        }
+        
+        My my = new My();
+        
+        err.notify(err.INFORMATIONAL, my);
+        err.notify(err.USER, my);
+        
+        String output = w.toString();
+        // wait for a dialog to be shown
+        waitEQ();
+        
+        int report = output.indexOf("Exception occurred");
+        assertTrue("There is one exception reported: " + output, report > 0);
+        int next = output.indexOf("Exception occurred", report + 1);
+        assertEquals("No next exceptions there", -1, next);
+    }
+    
+    private void waitEQ() throws InterruptedException, InvocationTargetException {
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+            }
+        });
     }
     
     // Noticed as part of analysis of #59807 stack trace: Throwable.initCause tricky!
