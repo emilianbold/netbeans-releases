@@ -224,6 +224,7 @@
 	<mapID target="about_implement_ws" url="webservice/create/about_implement_ws.html" />
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
 	<mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
+	<mapID target="create_wsdl_file" url="webservice/create/create_wsdl_file.html" />
 	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
 	<!-- End of "Create" section -->
 	<!-- Start of "Configure" section -->
@@ -254,6 +255,7 @@
 	<mapID target="wsc_test" url="webservice/consume/wsc_test.html" />
 	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
 	<mapID target="wsc_change" url="webservice/consume/wsc_change.html" />
+	<mapID target="wsc_expose" url="webservice/consume/wsc_expose.html" />
 	<mapID target="wsc_call_ws" url="webservice/consume/wsc_call_ws.html" />
 	<mapID target="wsc_secure" url="webservice/consume/wsc_secure.html" />
 	<mapID target="wsc_deploy" url="webservice/consume/wsc_deploy.html" />
@@ -272,7 +274,7 @@
 	<mapID target="org.netbeans.modules.websvc.registry.ui.AddWebServiceDlg" url="webservice/csh/websvcdb.html" />
 	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
 	<mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
-	<mapID target="org.netbeans.modules.websvc.dev.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
+	<mapID target="org.netbeans.modules.websvc.wsdl.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
 	<mapID target="org.netbeans.modules.websvc.dev.wizard.MessageHandlerWizard" url="webservice/csh/wizards/MessageHandlerWizard.html" />
 	
 <!-- End of "Developing Web Services" help -->
