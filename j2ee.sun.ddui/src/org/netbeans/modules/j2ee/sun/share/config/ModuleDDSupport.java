@@ -281,6 +281,15 @@ public class ModuleDDSupport implements PropertyChangeListener {
         for (Iterator i = rootMap.values().iterator(); i.hasNext();) {
             DDRoot root = (DDRoot)i.next();
             root.proxy.bean.removePropertyChangeListener(weakListener);
+            
+            // !PW Is this a good idea to add this here?  What are the repercussions?
+            ConfigBeanStorage cbs = (ConfigBeanStorage) configMap.get(root);
+            try {
+                config.removeDConfigBean((DConfigBeanRoot)cbs.bean);
+            } catch (BeanNotFoundException bnfe) {
+                // IGNORE
+                System.out.println("BeanNotFoundException caught by ModuleDDSupport: " + bnfe.getMessage());
+            }
         }
         rootMap = null; 
         configMap = null; 
@@ -291,19 +300,21 @@ public class ModuleDDSupport implements PropertyChangeListener {
     }
 
     /* Called when the module is removed from the app. */
-    public void dispose(DeploymentConfiguration config) {
-        for(Iterator it = configMap.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            DDRoot root = (DDRoot) entry.getKey();
-            ConfigBeanStorage cbs = (ConfigBeanStorage) entry.getValue();
-            root.proxy.bean.removePropertyChangeListener(weakListener);
-            try {
-                config.removeDConfigBean((DConfigBeanRoot)cbs.bean);
-            } catch (BeanNotFoundException bnfe) {
-                // IGNORE
-            }
-        }
-    }
+    // Not called from anywhere anymore, probably because multi-module support is
+    // disabled at the moment.
+//    public void dispose(DeploymentConfiguration config) {
+//        for(Iterator it = configMap.entrySet().iterator(); it.hasNext(); ) {
+//            Map.Entry entry = (Map.Entry) it.next();
+//            DDRoot root = (DDRoot) entry.getKey();
+//            ConfigBeanStorage cbs = (ConfigBeanStorage) entry.getValue();
+//            root.proxy.bean.removePropertyChangeListener(weakListener);
+//            try {
+//                config.removeDConfigBean((DConfigBeanRoot)cbs.bean);
+//            } catch (BeanNotFoundException bnfe) {
+//                // IGNORE
+//            }
+//        }
+//    }
 
     StandardDDImpl getBean(BaseBean bean) {
         //     System.out.println("Getting bean for " + bean);
