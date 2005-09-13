@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -186,12 +186,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         setPropertyEditor(BaseOptions.MACRO_MAP_PROP, MacrosEditor.class, false);
         
         setExpert(EXPERT_PROP_NAMES);
-
-        boolean usesNewOptions = false;
-        BaseOptions base = (BaseOptions) SharedClassObject.findObject(getBeanClass());
-        if (base!=null){
-            usesNewOptions = base.usesNewOptionsDialog();
-        }
+        boolean usesNewOptions = usesNewOptions();
         
         String hidden[] = (usesNewOptions) ?
                 new String[] {
@@ -214,6 +209,16 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         
         setHidden(hidden);
 
+    }
+
+    protected boolean usesNewOptions() {
+
+        boolean usesNewOptions = false;
+        BaseOptions base = (BaseOptions) SharedClassObject.findObject(getBeanClass());
+        if (base != null){
+            usesNewOptions = base.usesNewOptionsDialog();
+        }
+        return usesNewOptions;
     }
 
     protected Class getBeanClass() {

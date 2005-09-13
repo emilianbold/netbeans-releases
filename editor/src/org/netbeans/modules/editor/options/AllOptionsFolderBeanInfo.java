@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,6 +51,10 @@ public class AllOptionsFolderBeanInfo extends BaseOptionsBeanInfo {
             EDITOR_STATE_PROP,
             BaseOptions.OPTIONS_VERSION_PROP
         });
+    }
+
+    protected boolean usesNewOptions() {
+        return true;
     }
     
 }
