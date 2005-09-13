@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
@@ -954,10 +956,26 @@ public final class NbModuleProject implements Project {
         
     }
     
-    private static final class PrivilegedTemplatesImpl implements /*PrivilegedTemplates,*/ RecommendedTemplates {
+    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/Classes/Class.java", // NOI18N
+            "Templates/Classes/Package", // NOI18N
+            "Templates/Classes/Interface.java", // NOI18N
+            //"Templates/GUIForms/JPanel.java", // NOI18N
+            "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
+            "Templates/NetBeansModuleDevelopment/newAction", // NOI18N
+            "Templates/NetBeansModuleDevelopment/emptyLibraryDescriptor", // NOI18N
+            "Templates/NetBeansModuleDevelopment/newLoader", // NOI18N
+            "Templates/NetBeansModuleDevelopment/newProject", // NOI18N
+            "Templates/NetBeansModuleDevelopment/newWindow", // NOI18N
+            "Templates/NetBeansModuleDevelopment/newWizard", // NOI18N
+            //"Templates/Other/properties.properties", // NOI18N
         };
+        static {
+            assert PRIVILEGED_NAMES.length <= 10 : "Too many privileged templates to fit! extras will be ignored: " +
+                    Arrays.asList(PRIVILEGED_NAMES).subList(10, PRIVILEGED_NAMES.length);
+        }
         
         private static final String[] RECOMMENDED_TYPES = new String[] {         
             "java-classes",         // NOI18N

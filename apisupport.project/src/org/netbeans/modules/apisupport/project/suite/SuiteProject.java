@@ -38,6 +38,7 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
@@ -244,9 +245,11 @@ public final class SuiteProject implements Project {
         
     }
 
-    private static final class PrivilegedTemplatesImpl implements /*PrivilegedTemplates,*/ RecommendedTemplates {
+    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/Ant/Project.xml", // NOI18N
+            "Templates/Other/properties.properties", // NOI18N
         };
         
         private static final String[] RECOMMENDED_TYPES = new String[] {         
