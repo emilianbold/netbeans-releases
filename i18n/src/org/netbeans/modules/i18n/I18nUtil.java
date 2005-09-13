@@ -23,6 +23,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
+import org.netbeans.api.queries.VisibilityQuery;
 
 /**
  * Utilities class for I18N module.
@@ -220,9 +221,14 @@ public final class I18nUtil {
     public static List getAcceptedDataObjects(DataObject.Container folder) {
         List accepted = new ArrayList();
         
+        final VisibilityQuery visQuery = VisibilityQuery.getDefault();
+
         DataObject[] children = folder.getChildren();
 
         for(int i = 0; i < children.length; i++) {
+            if (!visQuery.isVisible(children[i].getPrimaryFile())) {
+                continue;
+            }
             if(children[i] instanceof DataObject.Container) {
                 accepted.addAll(getAcceptedDataObjects((DataObject.Container)children[i]));
             } else {

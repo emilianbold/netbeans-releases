@@ -14,7 +14,7 @@
 package org.netbeans.modules.i18n.wizard;
 
 import java.util.*;
-
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.properties.PropertiesDataObject;
@@ -70,7 +70,13 @@ final class Util extends org.netbeans.modules.i18n.Util {
         Map sourceMap = createWizardSourceMap();
         
         if (activatedNodes != null && activatedNodes.length > 0) {
+            final VisibilityQuery visQuery = VisibilityQuery.getDefault();
             for (int i = 0; i < activatedNodes.length; i++) {
+                DataObject dobj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
+                if (dobj != null && !visQuery.isVisible(dobj.getPrimaryFile())) {
+                    continue;
+                }
+
                 DataObject.Container container = (DataObject.Container) activatedNodes[i].getCookie(DataObject.Container.class);
                 
                 if (container != null) {
@@ -81,7 +87,6 @@ final class Util extends org.netbeans.modules.i18n.Util {
                     }
                 }
 
-                DataObject dobj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
                 if (dobj == null) continue;
 
                 if (FactoryRegistry.hasFactory(dobj.getClass())) {
