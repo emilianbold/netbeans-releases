@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.project;
 
 import java.util.Vector;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -74,6 +75,12 @@ public class Utils {
         return fo;
     }
 
+    /** Create a valid default for context path from project name.
+     */
+    public static String createDefaultContext(String projectName) {
+        return "/" + PropertyUtils.getUsablePropertyName(projectName);
+    }
+    
     /**
      * Updates property file at given location of ant based project
      * @param h helper of the project

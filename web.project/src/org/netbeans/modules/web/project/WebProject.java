@@ -732,8 +732,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             //check the config context path
             String ctxRoot = webModule.getContextPath ();
             if (ctxRoot == null) {
-                String sysName = "/" + getProjectDirectory ().getName (); //NOI18N
-                sysName = sysName.replace (' ', '_'); //NOI18N
+                String sysName = getProjectDirectory ().getName (); //NOI18N
+                sysName = Utils.createDefaultContext(sysName); //NOI18N
                 webModule.setContextPath (sysName);
             }
             // register project's classpaths to GlobalPathRegistry

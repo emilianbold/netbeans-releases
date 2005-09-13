@@ -16,6 +16,7 @@ package org.netbeans.modules.web.project.ui.wizards;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.project.Utils;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -56,7 +57,7 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
 
             private void setContextPath(DocumentEvent e) {
                 if (!optionsPanel.isContextModified())
-                    optionsPanel.jTextFieldContextPath.setText("/" + projectLocationPanel.projectNameTextField.getText().trim().replace(' ', '_'));
+                    optionsPanel.jTextFieldContextPath.setText(Utils.createDefaultContext(projectLocationPanel.projectNameTextField.getText()));
             }
         };
         projectLocationPanel.projectNameTextField.getDocument().addDocumentListener(dl);

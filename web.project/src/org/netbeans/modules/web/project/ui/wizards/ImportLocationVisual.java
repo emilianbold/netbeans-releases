@@ -27,6 +27,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.project.Utils;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -650,7 +651,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                         computeLocation();
             } else if (e.getDocument() == nameDocument) {
                 if (!contextModified)
-                    jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
+                    jTextFieldContextPath.setText(Utils.createDefaultContext(projectNameTextField.getText()));
                 if (locationComputed)
                     computeLocation();
             }
