@@ -55,7 +55,7 @@ import org.openide.util.*;
 import org.openide.windows.*;
 import org.openide.util.Utilities;
 import org.openide.nodes.*;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -244,8 +244,8 @@ public abstract class PanelView extends TopComponent implements PanelFocusCookie
             
             manager = newManager;
             
-            manager.addVetoableChangeListener(wlvc = WeakListener.vetoableChange(nodeListener, manager));
-            manager.addPropertyChangeListener(wlpc = WeakListener.propertyChange(nodeListener, manager));
+            manager.addVetoableChangeListener(wlvc = WeakListeners.vetoableChange(nodeListener, manager));
+            manager.addPropertyChangeListener(wlpc = WeakListeners.propertyChange(nodeListener, manager));
             
         }
         

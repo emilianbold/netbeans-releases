@@ -45,7 +45,7 @@ import org.openide.util.Utilities;
  *
  **/
 
-public abstract class AbstractDesignEditor extends ExplorerPanel implements PanelFocusCookie {
+public abstract class AbstractDesignEditor extends TopComponent implements PanelFocusCookie, ExplorerManager.Provider {
     
     
     /** The default width of the AbstractComponentEditor */
@@ -60,6 +60,7 @@ public abstract class AbstractDesignEditor extends ExplorerPanel implements Pane
     "/org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
     
     
+    private ExplorerManager manager = null;
     
     protected JComponent structureView;
     protected JComponent propertiesView;
@@ -222,6 +223,13 @@ public abstract class AbstractDesignEditor extends ExplorerPanel implements Pane
     
     public Dimension getPreferredSize() {
         return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
+    public ExplorerManager getExplorerManager() {
+        if (manager == null) {
+            manager = new ExplorerManager();
+        }
+        return manager;
     }
     
     class NodeSelectedListener implements PropertyChangeListener {

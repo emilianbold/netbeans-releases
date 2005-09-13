@@ -201,14 +201,6 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.compat</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <class-path-extension>
                 <runtime-relative-path>ext/persistence-tool-support.jar</runtime-relative-path>
