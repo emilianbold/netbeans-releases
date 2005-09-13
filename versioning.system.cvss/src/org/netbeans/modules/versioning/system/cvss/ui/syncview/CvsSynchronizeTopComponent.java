@@ -136,16 +136,24 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     private String computeAge(long l) {
         if (lastUpdateTimestamp == 0) {
             return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeUnknown");
-        } else if (l < 1000) {
+        } else if (l < 1000) { // 1000 equals 1 second
             return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeCurrent");
-        } else if (l < 1000 * 60) {
+        } else if (l < 2000) { // age between 1 and 2 seconds
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeOneSecond");
+        } else if (l < 60000) { // 60000 equals 1 minute
             return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeSeconds", Long.toString(l / 1000));
-        } else if (l < 1000 * 60 * 60) {
-            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeMinutes", Long.toString(l / 1000 / 60));
-        } else if (l < 1000 * 60 * 60 * 24) {
-            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeHours", Long.toString(l / 1000 / 60 / 60));
+        } else if (l < 120000) { // age between 1 and 2 minutes
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeOneMinute");
+        } else if (l < 3600000) { // 3600000 equals 1 hour
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeMinutes", Long.toString(l / 60000));
+        } else if (l < 7200000) { // age between 1 and 2 hours
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeOneHour");
+        } else if (l < 86400000) { // 86400000 equals 1 day
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeHours", Long.toString(l / 3600000));
+        } else if (l < 172800000) { // age between 1 and 2 days
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeOneDay");
         } else {
-            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeDays", Long.toString(l / 1000 / 60 / 60 / 24));
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeDays", Long.toString(l / 86400000));
         }
     }
 
