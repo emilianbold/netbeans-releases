@@ -21,6 +21,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.db.sql.execute.NullValue;
 import org.openide.util.Lookup;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.openide.util.datatransfer.ExClipboard;
@@ -79,7 +81,7 @@ public class SQLResultPanel extends javax.swing.JPanel {
         copyCellValueMenuItem = new javax.swing.JMenuItem();
         copyRowValuesMenuItem = new javax.swing.JMenuItem();
         resultScrollPane = new javax.swing.JScrollPane();
-        resultTable = new javax.swing.JTable();
+        resultTable = new SQLResultTable();
 
         copyCellValueMenuItem.setText(org.openide.util.NbBundle.getMessage(SQLResultPanel.class, "LBL_CopyCellValue"));
         copyCellValueMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -176,4 +178,21 @@ public class SQLResultPanel extends javax.swing.JPanel {
     private javax.swing.JTable resultTable;
     private javax.swing.JPopupMenu tablePopupMenu;
     // End of variables declaration//GEN-END:variables
+
+    private static final class SQLResultTable extends JTable {
+        
+        /**
+         * Overrinding in order to provide a valid renderer for NullValue.
+         * NullValue can appear in any column and causes formatting exceptions.
+         * See issue 62622.
+         */
+        public TableCellRenderer getCellRenderer(int row, int column) {
+            Object value = getValueAt(row, column);
+            if (value instanceof NullValue) {
+                return getDefaultRenderer(Object.class);
+            } else {
+                return super.getCellRenderer(row, column);
+            }
+        }
+    }
 }

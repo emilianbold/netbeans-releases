@@ -379,14 +379,13 @@ public class ResultSetTableModelSupport {
 
             List row = new ArrayList();
             for (int i = 1; i <= columnCount; i++) {
-                if (rs.getObject(i) == null) {
-                    row.add(NullValue.getDefault());
-                } else {
+                Object value = rs.getObject(i);
+                if (value != null) {
                     int type = rsmd.getColumnType(i);
                     ColumnTypeDef ctd = getColumnTypeDef(type);
-                    Object columnValue = ctd.getColumnValue(rs, i);
-                    row.add(columnValue);
+                    value = ctd.getColumnValue(rs, i);
                 }
+                row.add(value != null ? value : NullValue.getDefault());
             }
             rows.add(row);
         }
