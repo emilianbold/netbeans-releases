@@ -506,8 +506,20 @@ class LayoutOperations implements LayoutConstants {
                 gap = true;
             }
             else {
-                if (!atBorder && gap && sub.isParallel()) {
-                    LayoutInterval extend = prepareGroupExtension(sub, dimension, alignment^1);
+                if (!atBorder && gap && sub.isParallel()
+                    && !LayoutInterval.isClosedGroup(sub, alignment^1))
+                {   // this open parallel sub-group might be a candidate to move inside to
+                    int startIndex, endIndex;
+                    if (alignment == LEADING) {
+                        startIndex = idx + 1;
+                        endIndex = parent.getSubIntervalCount() - 1;
+                    }
+                    else {
+                        startIndex = 0;
+                        endIndex = idx - 1;
+                    }
+                    LayoutInterval extend = prepareGroupExtension(
+                            sub, parent, startIndex, endIndex, dimension, alignment^1);
                     if (extend != null)
                         return extend;
                 }
@@ -519,22 +531,10 @@ class LayoutOperations implements LayoutConstants {
         return null;
     }
 
-    private LayoutInterval prepareGroupExtension(LayoutInterval group, int dimension, int alignment) {
-        if (LayoutInterval.isClosedGroup(group, alignment)) {
-            return null; // can't expand the group - it is not open
-        }
-
-        LayoutInterval parent = group.getParent(); // parent sequence
-        int startIndex, endIndex;
-        if (alignment == LEADING) {
-            startIndex = 0;
-            endIndex = parent.indexOf(group) - 1;
-        }
-        else  {
-            startIndex = parent.indexOf(group) + 1;
-            endIndex = parent.getSubIntervalCount() - 1;
-        }
-
+    private LayoutInterval prepareGroupExtension(LayoutInterval group,
+                    LayoutInterval parent, int startIndex, int endIndex,
+                    int dimension, int alignment)
+    {
         boolean allOverlapping = true;
         LayoutInterval singleOverlap = null;
         List overlapList = null;
@@ -561,8 +561,8 @@ class LayoutOperations implements LayoutConstants {
             }
         }
 
-        if (allOverlapping) // spans whole group
-            return null;
+        if (allOverlapping || singleOverlap == null)
+            return null; // spans whole group or nothing
 
         if (overlapList != null) { // overlaps multiple intervals
             LayoutInterval subGroup = new LayoutInterval(PARALLEL);
@@ -596,10 +596,12 @@ class LayoutOperations implements LayoutConstants {
             }
             else subParallel = null;
 
-            LayoutInterval subOverlap = subParallel != null ?
-                prepareGroupExtension(subParallel, dimension, alignment) : null;
-            if (subOverlap != null)
-                singleOverlap = subOverlap;
+            if (subParallel != null && !LayoutInterval.isClosedGroup(subParallel, alignment)) {
+                LayoutInterval subOverlap = prepareGroupExtension(
+                        subParallel, parent, startIndex, endIndex, dimension, alignment);
+                if (subOverlap != null)
+                    singleOverlap = subOverlap;
+            }
         }
 
         return singleOverlap;
