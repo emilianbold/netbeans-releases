@@ -479,10 +479,12 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         if(wsdlSource == WSDL_FROM_SERVICE) {
             d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, getDownloadUrl());
             d.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());
+            d.putProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS, getDownloadedSchemas());
             d.putProperty(WizardProperties.WSDL_FILE_PATH, jTxtLocalFilename.getText().trim());
         } else if(wsdlSource == WSDL_FROM_FILE) {
             d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, null);
             d.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, null);
+            d.putProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS, null);
             d.putProperty(WizardProperties.WSDL_FILE_PATH, jTxtWsdlFile.getText().trim());
         }
         d.putProperty(WizardProperties.WSDL_PACKAGE_NAME, getPackageName());
@@ -618,6 +620,14 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         byte [] result = null;
         if(retriever != null && retriever.getState() == WsdlRetriever.STATUS_COMPLETE) {
             result = retriever.getWsdl();
+        }
+        return result;
+    }
+    
+    private List /*WsdlRetriever.SchemaInfo */ getDownloadedSchemas() {
+        List result = null;
+        if(retriever != null && retriever.getState() == WsdlRetriever.STATUS_COMPLETE) {
+            result = retriever.getSchemas();
         }
         return result;
     }

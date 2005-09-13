@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -122,6 +123,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
     public void uninitialize(WizardDescriptor wizard) {
         wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, null);
         wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, null);
+        wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS, null);
         wiz.putProperty(WizardProperties.WSDL_FILE_PATH,null);
         wiz.putProperty(WizardProperties.WSDL_PACKAGE_NAME,null);
         wiz.putProperty(WizardProperties.CLIENT_STUB_TYPE, null);
@@ -240,12 +242,14 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
 
         
         final byte [] sourceWsdlDownload = (byte []) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
+        final List /*WsdlRetriever.SchemaInfo */ downloadedSchemas = (List) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS);
         String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
         ClientStubDescriptor stubDescriptor = (ClientStubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
 
         String sourceUrl;
         FileObject sourceWsdlFile = null;
+        List /*FileObject*/ schemas = null;
         
         if(sourceWsdlDownload == null) {
             // Verify the existence of the source WSDL file and that we can get a file object for it.
@@ -259,7 +263,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 return result;
             }
         } else {
-            // 
+            // create a temporary WSDL file
             File wsdlFile = new File(System.getProperty("java.io.tmpdir"), wsdlFilePath);
             if(!wsdlFile.exists()) {
                 try {
@@ -297,8 +301,50 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 DialogDisplayer.getDefault().notify(desc);
                 return result;
             }
-        }
+            
+            // create temporary Schema Files            
+            if (downloadedSchemas!=null) {
+                Iterator it = downloadedSchemas.iterator();
+                schemas = new ArrayList();
+                while (it.hasNext()) {
+                    WsdlRetriever.SchemaInfo schemaInfo = (WsdlRetriever.SchemaInfo)it.next();
+                    File schemalFile = new File(System.getProperty("java.io.tmpdir"), schemaInfo.getSchemaName());
+                    try {
+                        schemalFile.createNewFile();
+                    } catch(IOException ex) {
+                        String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", schemalFile.getPath()); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                        return result;
+                    }
+                    FileObject schemaFo = FileUtil.toFileObject(FileUtil.normalizeFile(schemalFile));
+                    if(schemaFo != null) {
+                        FileLock lock = schemaFo.lock();
 
+                        try {
+                            OutputStream out = schemaFo.getOutputStream(lock);
+                            try {
+                                out.write(schemaInfo.getSchemaContent());
+                                out.flush();
+                            } finally {
+                                if(out != null) {
+                                    out.close();
+                                }
+                            }
+                        } finally {
+                            lock.releaseLock();
+                        }
+                    } else {
+                        String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", schemalFile.getPath()); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                        return result;
+                    }
+                    schemas.add(schemaFo);
+                } //end while
+            } // end if
+        } //end else
+        
         // 2. add jax-rpc library if wscompile isnt present
         SourceGroup[] sgs = getJavaSourceGroups(project);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
@@ -343,7 +389,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         final ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizCreateClient"));
         handle.start(100);
-        final ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, sourceUrl, stubDescriptor);
+        final ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, schemas,  packageName, sourceUrl, stubDescriptor);
         final FileObject sourceWsdlFileTmp = sourceWsdlFile;
         
         org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
