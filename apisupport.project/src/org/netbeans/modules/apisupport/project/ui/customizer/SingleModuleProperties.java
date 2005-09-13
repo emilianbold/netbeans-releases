@@ -118,7 +118,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private String implementationVersion;
     private String provTokensString;
     private SortedSet requiredTokens;
-    private NbPlatform platform;
+    private NbPlatform activePlatform;
     private NbPlatform originalPlatform;
     
     /** package name / selected */
@@ -164,7 +164,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         specificationVersion = manifestManager.getSpecificationVersion();
         implementationVersion = manifestManager.getImplementationVersion();
         provTokensString = manifestManager.getProvidedTokensString();
-        originalPlatform = this.platform = NbPlatform.getPlatformByID(
+        originalPlatform = activePlatform = NbPlatform.getPlatformByID(
                 getEvaluator().getProperty("nbplatform.active")); // NOI18N
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(
@@ -209,27 +209,30 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     // ---- READ ONLY end
     
+    /** Check whether the active platform is valid. */
     boolean isActivePlatformValid() {
-        // check the platform for standalone and component modules since it is
-        // needed for proper finding module dependencies. For NetBeans.org
-        // module case plaf == null, which is OK
         NbPlatform plaf = getActivePlatform();
         return plaf == null || plaf.isValid();
     }
     
+    /**
+     * Returns currently set platform. i.e. platform set in the
+     * <em>Libraries</em> panel. Note that it could be <code>null</code> for
+     * NetBeans.org modules.
+     */
     NbPlatform getActivePlatform() {
         if (moduleType != NbModuleTypeProvider.NETBEANS_ORG
-                && (platform == null || !NbPlatform.getPlatforms().contains(platform))) {
-            Util.err.log("Platform " + platform + " was presuambly removed. Switching to default."); // NOI18N
-            platform = NbPlatform.getDefaultPlatform();
+                && (activePlatform == null || !NbPlatform.getPlatforms().contains(activePlatform))) {
+            Util.err.log("Platform " + activePlatform + " was presuambly removed. Switching to default."); // NOI18N
+            activePlatform = NbPlatform.getDefaultPlatform();
         }
-        return platform;
+        return activePlatform;
     }
     
     void setActivePlatform(NbPlatform newPlaf) {
-        if (this.platform != newPlaf) {
-            NbPlatform oldPlaf = this.platform;
-            this.platform = newPlaf;
+        if (this.activePlatform != newPlaf) {
+            NbPlatform oldPlaf = this.activePlatform;
+            this.activePlatform = newPlaf;
             this.dependencyListModel = null;
             this.universeDependencies = null;
             this.modCategories = null;
@@ -489,7 +492,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         
         if (isStandalone()) {
-            ModuleProperties.storePlatform(getHelper(), platform);
+            ModuleProperties.storePlatform(getHelper(), activePlatform);
         }
     }
     
