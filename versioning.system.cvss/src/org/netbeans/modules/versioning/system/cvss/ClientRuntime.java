@@ -263,8 +263,7 @@ public class ClientRuntime {
                 return sshConnection;
             } else {
                 String command = extSettings.extCommand;
-                String cvs_server = System.getProperty("Env-CVS_SERVER", "cvs") + " server";  // NOI18N
-                command += " " + host + " -l" + userName + " " + cvs_server; // NOI18N
+                command += " cvs server"; // NOI18N
                 ExtConnection connection = new ExtConnection(command);
                 connection.setRepository(cvsRoot.getRepository());
                 return connection;

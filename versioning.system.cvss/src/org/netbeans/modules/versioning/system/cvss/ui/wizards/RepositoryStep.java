@@ -380,15 +380,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             errorMessage = NbBundle.getMessage(CheckoutWizard.class, "BK1000");
         } else {
             try {
-                CVSRoot root = CVSRoot.parse(cvsRoot);
-                // XXX typical windows cvs program does not support fork
-                // cvslibrary needs fork to emulate local
-                // here we bet on fact that on Windows all paths starct with drive letter
-                if (root.isLocal() && root.getRepository().length() > 0) {
-                    if (root.getRepository().startsWith("/") == false) {  // NOI18N
-                        errorMessage = NbBundle.getMessage(CheckoutWizard.class, "BK1003");
-                    }
-                }
+                CVSRoot.parse(cvsRoot);
             } catch (IllegalArgumentException ex) {
                 errorMessage = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2021") + ex.getLocalizedMessage();
             }

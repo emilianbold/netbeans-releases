@@ -21,9 +21,7 @@ import org.netbeans.lib.cvsclient.util.LoggedDataInputStream;
 import org.netbeans.lib.cvsclient.util.LoggedDataOutputStream;
 
 import javax.net.SocketFactory;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -44,7 +42,6 @@ public class SSHConnection extends AbstractConnection {
     private final int port;
     private final String username;
     private final String password;
-    private String cvsServerCommand = CVS_SERVER_COMMAND;
     
     private Session session;
     private ChannelExec channel;
@@ -84,8 +81,8 @@ public class SSHConnection extends AbstractConnection {
         
         try {
             channel = (ChannelExec) session.openChannel("exec");
-            channel.setCommand(cvsServerCommand);
-            setInputStream(new LoggedDataInputStream(channel.getInputStream()));
+            channel.setCommand(CVS_SERVER_COMMAND);
+            setInputStream(new LoggedDataInputStream(new SshChannelInputStream(channel)));
             setOutputStream(new LoggedDataOutputStream(channel.getOutputStream()));
             channel.connect();
         } catch (JSchException e) {
@@ -105,6 +102,14 @@ public class SSHConnection extends AbstractConnection {
     public void verify() throws AuthenticationException {
         try {
             open();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+            if (channel.getExitStatus() != -1) {
+                throw new AuthenticationException("", "Error executing '" + CVS_SERVER_COMMAND + "' on server.\nSet CVS_SERVER environment variable properly.");
+            }
             close();
         } catch (CommandAbortedException e) {
             throw new AuthenticationException(e, "SSH: open connection failed.");
@@ -187,6 +192,27 @@ public class SSHConnection extends AbstractConnection {
 
         public OutputStream getOutputStream(Socket socket) throws IOException {
             return socket.getOutputStream();
+        }
+    }
+    
+    private static class SshChannelInputStream extends FilterInputStream {
+        
+        private final Channel channel;
+
+        public SshChannelInputStream(Channel channel) throws IOException {
+            super(channel.getInputStream());
+            this.channel = channel;
+        }
+
+        public int available() throws IOException {
+            checkChannelState();
+            return super.available();
+        }
+
+        private void checkChannelState() throws IOException {
+            int exitStatus = channel.getExitStatus();
+            if (exitStatus > 0 || exitStatus < -1) throw new IOException("Error executing '" + CVS_SERVER_COMMAND + "' on server.\nSet CVS_SERVER environment variable properly.");
+            if (exitStatus == 0 || channel.isEOF()) throw new EOFException("SSH tunnel closed.");
         }
     }
 }
