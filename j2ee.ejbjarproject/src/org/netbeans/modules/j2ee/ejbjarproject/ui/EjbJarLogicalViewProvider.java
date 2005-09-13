@@ -309,44 +309,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
         }
         
-        public String getDisplayName () {
-            String s = super.getDisplayName ();
-
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = (FileObject) files.iterator().next();
-                    s = fo.getFileSystem ().getStatus ().annotateName (s, files);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-
-            return s;
-        }
-
-         public String getHtmlDisplayName() {
-             if (files != null && files.iterator().hasNext()) {
-                 try {
-                     FileObject fo = (FileObject) files.iterator().next();
-                     FileSystem.Status stat = fo.getFileSystem().getStatus();
-                     if (stat instanceof FileSystem.HtmlStatus) {
-                         FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-
-                         String result = hstat.annotateNameHtml (
-                             getMyHtmlDisplayName(), files);
-
-                         //Make sure the super string was really modified
-                         if (result != null && !result.equals(getMyHtmlDisplayName())) {
-                             return result;
-                         }
-                     }
-                 } catch (FileStateInvalidException e) {
-                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                 }
-             }
-             return getMyHtmlDisplayName();
-         }
-
         public java.awt.Image getIcon (int type) {
             java.awt.Image img = getMyIcon (type);
 
@@ -440,7 +402,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     : original;
         }            
 
-        public String getMyHtmlDisplayName() {
+        public String getHtmlDisplayName() {
             String dispName = super.getDisplayName();
             try {
                 dispName = XMLUtil.toElementContent(dispName);
