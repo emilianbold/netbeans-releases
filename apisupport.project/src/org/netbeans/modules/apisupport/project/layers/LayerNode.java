@@ -38,6 +38,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -68,12 +69,14 @@ public final class LayerNode extends FilterNode {
     
     private static final class LayerChildren extends Children.Keys {
         
+        private static final String KEY_WAIT = "wait"; // NOI18N
         private static final Object KEY_RAW = "raw"; // NOI18N
         private static final Object KEY_CONTEXTUALIZED = "contextualized"; // NOI18N
         
         private final LayerUtils.LayerHandle handle;
         private ClassPath cp;
         private NbModuleProject p;
+        private FileSystem layerfs;
         private FileSystem sfs;
         
         public LayerChildren(LayerUtils.LayerHandle handle) {
@@ -83,19 +86,20 @@ public final class LayerNode extends FilterNode {
         protected void addNotify() {
             super.addNotify();
             handle.setAutosave(true);
-            setKeys(new Object[] {KEY_RAW});
-            FileObject layer = handle.getLayerFile();
-            p = (NbModuleProject) FileOwnerQuery.getOwner(layer);
-            assert p != null : layer;
-            try {
-                cp = createClasspath(p);
-            } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
-            }
+            setKeys(new Object[] {KEY_WAIT});
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        // XXX progress API here?
+                        FileObject layer = handle.getLayerFile();
+                        p = (NbModuleProject) FileOwnerQuery.getOwner(layer);
+                        assert p != null : layer;
+                        try {
+                            cp = createClasspath(p);
+                        } catch (IOException e) {
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                        layerfs = handle.layer(false);
+                        setKeys(new Object[] {KEY_RAW, KEY_WAIT});
                         FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
                         if (cp != null) { // has not been removeNotify()d yet
                             sfs = _sfs;
@@ -112,6 +116,7 @@ public final class LayerNode extends FilterNode {
             setKeys(Collections.EMPTY_SET);
             cp = null;
             p = null;
+            layerfs = null;
             sfs = null;
             super.removeNotify();
         }
@@ -119,11 +124,20 @@ public final class LayerNode extends FilterNode {
         protected Node[] createNodes(Object key) {
             try {
                 if (key == KEY_RAW) {
-                    FileSystem fs = badge(handle.layer(false), cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer"), null);
+                    FileSystem fs = badge(layerfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer"), null);
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 } else if (key == KEY_CONTEXTUALIZED) {
                     FileSystem fs = badge(sfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer_in_context"), handle.layer(false));
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
+                } else if (key == KEY_WAIT) {
+                    return new Node[] {new AbstractNode(Children.LEAF) {
+                        public String getName() {
+                            return KEY_WAIT;
+                        }
+                        public String getDisplayName() {
+                            return NbBundle.getMessage(LayerNode.class, "LayerNode_please_wait");
+                        }
+                    }};
                 } else {
                     throw new AssertionError(key);
                 }
