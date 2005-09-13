@@ -232,12 +232,19 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     private void showPopup(MouseEvent e) {
-        int [] selectedrows = table.getSelectedRows();
-        if (selectedrows.length == 0) {
-            int row = table.rowAtPoint(e.getPoint());
-            if (row == -1) return;
-            table.getSelectionModel().setSelectionInterval(row, row);
-            selectedrows = new int [] { row };
+        int row = table.rowAtPoint(e.getPoint());
+        if (row != -1) {
+            boolean makeRowSelected = true;
+            int [] selectedrows = table.getSelectedRows();
+            for (int i = 0; i < selectedrows.length; i++) {
+                if (row == selectedrows[i]) {
+                    makeRowSelected = false;
+                    break;
+                }
+            }
+            if (makeRowSelected) {
+                table.getSelectionModel().setSelectionInterval(row, row);
+            }
         }
         JPopupMenu menu = getPopup();
         menu.show(table, e.getX(), e.getY());
