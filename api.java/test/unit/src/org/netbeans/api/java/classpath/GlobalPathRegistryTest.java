@@ -15,6 +15,7 @@ package org.netbeans.api.java.classpath;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.InterruptedIOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         super(name);
         TestUtil.setLookup(
             new ProxyLookup (new Lookup[] {
-                Lookups.fixed (new Object[] {new SFBQImpl()}),
+                Lookups.fixed (new Object[] {new SFBQImpl(),new DeadLockSFBQImpl()}),
                 Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()),
             }));
     }
@@ -166,6 +167,27 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertTrue ("Missing roots from cp4",result.containsAll (Arrays.asList(cp4.getRoots())));
     }
     
+    /**
+     * Tests issue: #60976:Deadlock between JavaFastOpen$Evaluator and AntProjectHelper$something
+     */
+    public void testGetSourceRootsDeadLock () throws Exception {        
+        DeadLockSFBQImpl query = (DeadLockSFBQImpl) Lookup.getDefault().lookup(DeadLockSFBQImpl.class);
+        assertNotNull ("SourceForBinaryQueryImplementation not found in lookup",query);        
+        r.register (ClassPath.COMPILE, new ClassPath[] {cp1});
+        try {            
+            query.setSynchronizedJob (
+                new Runnable () {
+                    public void run () {
+                        r.register(ClassPath.COMPILE, new ClassPath[] {cp2});
+                    }
+                }
+            );
+            r.getSourceRoots();
+        } finally {
+            query.setSynchronizedJob (null);
+        }
+    }
+    
     private static final class L implements GlobalPathRegistryListener {
         
         private GlobalPathRegistryEvent e;
@@ -258,6 +280,35 @@ public class GlobalPathRegistryTest extends NbTestCase {
                 }
             }
             
+        }
+        
+    }
+    
+    private static class DeadLockSFBQImpl extends Thread implements SourceForBinaryQueryImplementation {
+        
+        private Runnable r;
+        
+        public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+            if (this.r != null) {                
+                synchronized (this) {
+                    this.start();
+                    try {
+                        this.wait ();
+                    } catch (InterruptedException ie) {
+                        ie.printStackTrace();
+                    }
+                }
+            }
+            return null;
+        }
+        
+        public synchronized void run () {
+            r.run();
+            this.notify();
+        }
+        
+        public void setSynchronizedJob (Runnable r) {
+            this.r = r;
         }
         
     }

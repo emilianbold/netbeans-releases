@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,18 +90,15 @@ public final class GlobalPathRegistry {
         return DEFAULT;
     }
     
+    private int resetCount;
     private final Map/*<String,List<ClassPath>>*/ paths = new HashMap();
     private final List/*<PathRegistryListener>*/ listeners = new ArrayList();
     private Set/*<FileObject>*/ sourceRoots = null;
     private Set/*ChangeListener*/ results = new HashSet ();
-    private ChangeListener resultListener = new ChangeListener () {
-        public void stateChanged (ChangeEvent event) {
-            synchronized (GlobalPathRegistry.this) {
-                //Reset cache
-                GlobalPathRegistry.this.resetSourceRootsCache ();
-            }
-        }
-    };
+    
+    
+    private final ChangeListener resultListener = new SFBQListener ();
+    
     private PropertyChangeListener classpathListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (GlobalPathRegistry.this) {
@@ -269,32 +267,65 @@ public final class GlobalPathRegistry {
      * </p>
      * @return an immutable set of <code>FileObject</code> source roots
      */
-    public synchronized Set/*<FileObject>*/ getSourceRoots() {
-        if (this.sourceRoots == null) {
-            Set newSourceRoots = new LinkedHashSet();
-            Iterator it = getPaths(ClassPath.SOURCE).iterator();
-            while (it.hasNext()) {
-                ClassPath sp = (ClassPath)it.next();
-                newSourceRoots.addAll(Arrays.asList(sp.getRoots()));
-            }
-            Set/*<ClassPath>*/ compileAndBootPaths = new LinkedHashSet(getPaths(ClassPath.COMPILE));
+    public Set/*<FileObject>*/ getSourceRoots() {        
+        int currentResetCount;
+        Set/*<ClassPath>*/ sourcePaths, compileAndBootPaths;
+        synchronized (this) {
+            if (this.sourceRoots != null) {
+                return this.sourceRoots;
+            }            
+            currentResetCount = this.resetCount;
+            sourcePaths = getPaths(ClassPath.SOURCE);
+            compileAndBootPaths = new LinkedHashSet(getPaths(ClassPath.COMPILE));
             compileAndBootPaths.addAll(getPaths(ClassPath.BOOT));
-            it = compileAndBootPaths.iterator();
-            while (it.hasNext()) {
-                ClassPath cp = (ClassPath)it.next();
-                Iterator it2 = cp.entries().iterator();
-                while (it2.hasNext()) {
-                    ClassPath.Entry entry = (ClassPath.Entry)it2.next();
-                    SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
-                    result.addChangeListener(this.resultListener);
-                    this.results.add (result);
-                    FileObject[] someRoots = result.getRoots();
-                    newSourceRoots.addAll(Arrays.asList(someRoots));
-                }
-            }
-            this.sourceRoots = Collections.unmodifiableSet(newSourceRoots);
         }
-        return sourceRoots;
+        
+        Set newSourceRoots = new LinkedHashSet();                    
+        Iterator it = sourcePaths.iterator();
+        while (it.hasNext()) {
+            ClassPath sp = (ClassPath)it.next();
+            newSourceRoots.addAll(Arrays.asList(sp.getRoots()));
+        }
+        
+        final List newResults = new LinkedList ();
+        final ChangeListener tmpResultListener = new SFBQListener ();
+        it = compileAndBootPaths.iterator();
+        while (it.hasNext()) {
+            ClassPath cp = (ClassPath)it.next();
+            Iterator it2 = cp.entries().iterator();
+            while (it2.hasNext()) {
+                ClassPath.Entry entry = (ClassPath.Entry)it2.next();
+                SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
+                result.addChangeListener(tmpResultListener);
+                newResults.add (result);
+                FileObject[] someRoots = result.getRoots();
+                newSourceRoots.addAll(Arrays.asList(someRoots));
+            }
+        }
+        
+        newSourceRoots = Collections.unmodifiableSet(newSourceRoots);        
+        synchronized (this) {
+            if (this.resetCount == currentResetCount) {
+                this.sourceRoots = newSourceRoots;
+                removeTmpSFBQListeners (newResults, tmpResultListener, true);
+                this.results.addAll (newResults);
+            }
+            else {
+                removeTmpSFBQListeners (newResults, tmpResultListener, false);
+            }
+            return newSourceRoots;
+        }        
+    }
+    
+    
+    private void removeTmpSFBQListeners (List/*<SourceForBinaryQuery.Result>*/ results, ChangeListener listener, boolean addListener) {
+        for (Iterator/*<SourceForBinaryQuery.Result>*/ it = results.iterator(); it.hasNext(); ) {
+            SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) it.next();
+            if (addListener) {
+                res.addChangeListener (this.resultListener);
+            }
+            res.removeChangeListener(listener);
+        }
     }
     
     /**
@@ -326,6 +357,17 @@ public final class GlobalPathRegistry {
             SourceForBinaryQuery.Result result = (SourceForBinaryQuery.Result) it.next ();
             result.removeChangeListener(this.resultListener);
         }
+        this.resetCount++;
     }
+    
+    private class SFBQListener implements ChangeListener {
+        
+        public void stateChanged (ChangeEvent event) {
+            synchronized (GlobalPathRegistry.this) {
+                //Reset cache
+                GlobalPathRegistry.this.resetSourceRootsCache ();
+            }
+        }
+    };
 
 }
