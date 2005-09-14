@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -22,11 +22,24 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="jLblPassByReference">
           <Properties>
+            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="MNC_Pass_By_Reference" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="jCbxPassByReference"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Pass by Reference :"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="LBL_PassByReference_1" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="PassByReference_Acsbl_Name" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="PassByReference_Acsbl_Desc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="4" insetsBottom="4" insetsRight="4" anchor="10" weightX="0.0" weightY="0.0"/>
@@ -39,6 +52,14 @@
               <Connection code="&quot;&quot;" type="code"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="PassByReference_Acsbl_Name" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="PassByReference_Acsbl_Desc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCbxPassByReferenceActionPerformed"/>
           </Events>
@@ -50,12 +71,25 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLblRealm">
           <Properties>
+            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="MNC_Realm" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="horizontalAlignment" type="int" value="11"/>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="jTxtRealm"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Realm :"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="LBL_Realm_1" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="Realm_Acsbl_Name" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="Realm_Acsbl_Desc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="4" insetsBottom="4" insetsRight="4" anchor="10" weightX="0.0" weightY="0.0"/>
@@ -63,6 +97,14 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JTextField" name="jTxtRealm">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="Realm_Acsbl_Name" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle.properties" key="Realm_Acsbl_Desc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="jTxtRealmKeyReleased"/>
           </Events>

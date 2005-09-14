@@ -36,14 +36,13 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCus
  */
 public class ModuleRefCustomizer extends BaseCustomizer {
 	
+	/** Resource bundle */
+	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.Bundle"); // NOI18N
+
 	private BaseModuleRef theBean;
 
-        static final ResourceBundle bundle = 
-            ResourceBundle.getBundle(
-                "org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.Bundle"); // NOI18N
-
-	
-	/** Creates new form WebAppRootCustomizer */
+	/** Creates new form ModuleRefCustomizer */
 	public ModuleRefCustomizer() {
 		initComponents();
 		initUserComponents();
@@ -71,16 +70,16 @@ public class ModuleRefCustomizer extends BaseCustomizer {
 
         jPnlGeneral.setLayout(new java.awt.GridBagLayout());
 
-	  jLblModuleUri.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle").getString("MNC_ModuleUri").charAt(0));
-        jLblModuleUri.setLabelFor(jTxtModuleUri);
-        jLblModuleUri.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle").getString("ModuleURI_Acsbl_Name"));  //NOI18N
-        jLblModuleUri.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle").getString("ModuleURI_Acsbl_Desc")); //NOI18N
+        jLblModuleUri.setDisplayedMnemonic(bundle.getString("MNC_ModuleUri").charAt(0));
         jLblModuleUri.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        jLblModuleUri.setText("Module URI :");
+        jLblModuleUri.setLabelFor(jTxtModuleUri);
+        jLblModuleUri.setText(bundle.getString("LBL_ModuleURI_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPnlGeneral.add(jLblModuleUri, gridBagConstraints);
+        jLblModuleUri.getAccessibleContext().setAccessibleName(bundle.getString("ModuleURI_Acsbl_Name"));
+        jLblModuleUri.getAccessibleContext().setAccessibleDescription(bundle.getString("ModuleURI_Acsbl_Desc"));
 
         jTxtModuleUri.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -90,8 +89,8 @@ public class ModuleRefCustomizer extends BaseCustomizer {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPnlGeneral.add(jTxtModuleUri, gridBagConstraints);
-        jTxtModuleUri.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle").getString("ModuleURI_Acsbl_Name"));  //NOI18N
-        jTxtModuleUri.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/other/Bundle").getString("ModuleURI_Acsbl_Desc")); //NOI18N
+        jTxtModuleUri.getAccessibleContext().setAccessibleName(bundle.getString("ModuleURI_Acsbl_Name"));
+        jTxtModuleUri.getAccessibleContext().setAccessibleDescription(bundle.getString("ModuleURI_Acsbl_Desc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
