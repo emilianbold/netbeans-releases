@@ -72,36 +72,32 @@ public class CustomizeEmptySpaceAction extends CookieAction {
      * @param activatedNodes gives array of actually activated nodes.
      */
     protected void performAction(Node[] activatedNodes) {
-        RADComponentCookie radCookie = (RADComponentCookie)
-            activatedNodes[0].getCookie(RADComponentCookie.class);
-        if (radCookie != null) {
-            RADComponent metacomp = radCookie.getRADComponent();
-            if (metacomp instanceof RADVisualComponent) {
-                FormModel formModel = metacomp.getFormModel();
-                LayoutModel model = formModel.getLayoutModel();
-                EmptySpaceCustomizer customizer = new EmptySpaceCustomizer(model, metacomp.getId());
-                DialogDescriptor dd = new DialogDescriptor(
-                    customizer,
-                    NbBundle.getMessage(CustomizeEmptySpaceAction.class, "TITLE_CustomizeEmptySpace"), // NOI18N
-                    true,
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.OK_OPTION,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    new HelpCtx(getClass().getName()),
-                    null); 
-                Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-                dialog.show();
-                if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                    Object layoutUndoMark = model.getChangeMark();
-                    javax.swing.undo.UndoableEdit ue = model.getUndoableEdit();
-                    try {
-                        customizer.applyValues();
-                    } finally {
-                        formModel.fireContainerLayoutChanged(((RADVisualComponent)metacomp).getParentContainer(), null, null, null);
-                        if (!layoutUndoMark.equals(model.getChangeMark())) {
-                            formModel.addUndoableEdit(ue);
-                        }
-                    }
+        java.util.List comps = FormUtils.getSelectedLayoutComponents(activatedNodes);
+        if ((comps == null) || (comps.size() != 1)) return;
+        RADComponent metacomp = (RADComponent)comps.get(0);
+        FormModel formModel = metacomp.getFormModel();
+        LayoutModel model = formModel.getLayoutModel();
+        EmptySpaceCustomizer customizer = new EmptySpaceCustomizer(model, metacomp.getId());
+        DialogDescriptor dd = new DialogDescriptor(
+            customizer,
+            NbBundle.getMessage(CustomizeEmptySpaceAction.class, "TITLE_CustomizeEmptySpace"), // NOI18N
+            true,
+            NotifyDescriptor.OK_CANCEL_OPTION,
+            NotifyDescriptor.OK_OPTION,
+            DialogDescriptor.DEFAULT_ALIGN,
+            new HelpCtx(getClass().getName()),
+            null); 
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.show();
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            Object layoutUndoMark = model.getChangeMark();
+            javax.swing.undo.UndoableEdit ue = model.getUndoableEdit();
+            try {
+                customizer.applyValues();
+            } finally {
+                formModel.fireContainerLayoutChanged(((RADVisualComponent)metacomp).getParentContainer(), null, null, null);
+                if (!layoutUndoMark.equals(model.getChangeMark())) {
+                    formModel.addUndoableEdit(ue);
                 }
             }
         }
@@ -109,15 +105,8 @@ public class CustomizeEmptySpaceAction extends CookieAction {
 
     protected boolean enable(Node[] activatedNodes) {
         if (super.enable(activatedNodes)) {
-            RADComponentCookie radCookie = (RADComponentCookie)
-                activatedNodes[0].getCookie(RADComponentCookie.class);
-            if (radCookie != null) {
-                RADComponent metacomp = radCookie.getRADComponent();
-                if (metacomp instanceof RADVisualComponent) {
-                    RADVisualContainer metacont = ((RADVisualComponent)metacomp).getParentContainer();
-                    return (metacont != null) && (metacont.getLayoutSupport() == null);
-                }
-            }
+            java.util.List comps = FormUtils.getSelectedLayoutComponents(activatedNodes);
+            return ((comps != null) && (comps.size() == 1));
         }
         return false;
     }

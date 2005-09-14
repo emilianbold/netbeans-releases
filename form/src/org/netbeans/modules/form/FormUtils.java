@@ -1174,16 +1174,21 @@ public class FormUtils
         if ((nodes == null) || (nodes.length < 1))
             return null;
 
-        ArrayList components = new ArrayList();
+        List components = new ArrayList();
         for (int i=0; i<nodes.length; i++) {
             RADComponentCookie radCookie =
                 (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
             if (radCookie != null) {
                 RADComponent metacomp = radCookie.getRADComponent();
                 if ((metacomp instanceof RADVisualComponent)) {
-                    RADVisualContainer visCont = ((RADVisualComponent)metacomp).getParentContainer();
+                    RADVisualComponent visComp = (RADVisualComponent)metacomp;
+                    RADVisualContainer visCont = visComp.getParentContainer();
+                    if ((visCont != null) && javax.swing.JScrollPane.class.isAssignableFrom(visCont.getBeanInstance().getClass())) {
+                        visComp = visCont;
+                        visCont = visCont.getParentContainer();
+                    }
                     if ((visCont!= null) && (visCont.getLayoutSupport() == null)) {
-                        components.add(metacomp);
+                        components.add(visComp);
                     } else {
                         return null;
                     }

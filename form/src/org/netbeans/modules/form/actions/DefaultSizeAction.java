@@ -97,6 +97,10 @@ public class DefaultSizeAction extends NodeAction {
             if (metacomp instanceof RADVisualComponent) {
                 RADVisualComponent visualMetaComp = (RADVisualComponent)metacomp;
                 RADVisualContainer parent = visualMetaComp.getParentContainer();
+                if ((parent != null) && javax.swing.JScrollPane.class.isAssignableFrom(parent.getBeanInstance().getClass())) {
+                    visualMetaComp = parent;
+                    parent = parent.getParentContainer();
+                }
                 if ((parent != null && parent.getLayoutSupport() == null)
                     || (visualMetaComp instanceof RADVisualContainer
                         && ((RADVisualContainer)visualMetaComp).getLayoutSupport() == null

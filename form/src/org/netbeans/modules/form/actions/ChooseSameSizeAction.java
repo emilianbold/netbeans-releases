@@ -43,7 +43,7 @@ import org.netbeans.modules.form.*;
 public class ChooseSameSizeAction extends NodeAction {
 
     protected boolean enable(Node[] nodes) {
-        List comps = getRADComponents(nodes);
+        List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 0));
     }
     
@@ -85,31 +85,6 @@ public class ChooseSameSizeAction extends NodeAction {
         return popupMenu;
     }
 
-    private List/*RADComponent*/ getRADComponents(Node[] nodes) {
-        if ((nodes == null) || (nodes.length < 1))
-            return null;
-
-        ArrayList components = new ArrayList();
-        for (int i=0; i<nodes.length; i++) {
-            RADComponentCookie radCookie =
-                (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
-            if (radCookie != null) {
-                RADComponent metacomp = radCookie.getRADComponent();
-                if ((metacomp instanceof RADVisualComponent)) {
-                    RADVisualContainer visCont = ((RADVisualComponent)metacomp).getParentContainer();
-                    if ((visCont!= null) && (visCont.getLayoutSupport() == null)) {
-                        components.add(metacomp);
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            }
-        }
-        return components;
-    }
-        
     private void createSameSizeSubmenu(JMenu menu) {
         if (menu.getMenuComponentCount() > 0) {
             menu.removeAll();
@@ -117,7 +92,7 @@ public class ChooseSameSizeAction extends NodeAction {
         
         Node[] nodes = getActivatedNodes();
         
-        List components = getRADComponents(nodes);
+        List components = FormUtils.getSelectedLayoutComponents(nodes);
         if ((components == null) || (components.size() < 1)) { //FFF
             return;
         }
