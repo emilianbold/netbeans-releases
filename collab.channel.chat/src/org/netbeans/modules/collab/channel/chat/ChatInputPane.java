@@ -337,7 +337,7 @@ public class ChatInputPane extends JEditorPane implements UndoableEditListener {
          *
          */
         public View create(Element element) {
-            View result = new WrappedPlainView(element);
+            View result = new WrappedPlainView(element, true);
 
             return result;
         }
