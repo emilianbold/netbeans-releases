@@ -78,20 +78,22 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 }
             }
             
-            WeakReference/*<FileObject>*/ externalOwnersReference =
-                    (WeakReference/*<FileObject>*/) externalOwners.get(fileObject2URI(f));
-            
-            if (externalOwnersReference != null) {
-                FileObject externalOwner = (FileObject) externalOwnersReference.get();
-                
-                if (externalOwner != null) {
-                    try {
-                        // Note: will be null if there is no such project.
-                        return ProjectManager.getDefault().findProject(externalOwner);
-                    } catch (IOException e) {
-                        // There is a project there, but we cannot load it...
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                        return null;
+            if (!externalOwners.isEmpty()) {
+                WeakReference/*<FileObject>*/ externalOwnersReference =
+                        (WeakReference/*<FileObject>*/) externalOwners.get(fileObject2URI(f));
+
+                if (externalOwnersReference != null) {
+                    FileObject externalOwner = (FileObject) externalOwnersReference.get();
+
+                    if (externalOwner != null) {
+                        try {
+                            // Note: will be null if there is no such project.
+                            return ProjectManager.getDefault().findProject(externalOwner);
+                        } catch (IOException e) {
+                            // There is a project there, but we cannot load it...
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                            return null;
+                        }
                     }
                 }
             }
