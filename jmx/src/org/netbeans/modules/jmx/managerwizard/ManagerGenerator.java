@@ -162,7 +162,6 @@ public class ManagerGenerator
                 String userPassword = (String)wiz.getProperty(
                         WizardConstants.PROP_MANAGER_USER_PASSWORD);
                 connectionTemplate[0] = 
-                    " */\n" +// NOI18N
                     "Map env = new HashMap(); \n" +// NOI18N
                     "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
                                 userName + "\", \"" +// NOI18N
