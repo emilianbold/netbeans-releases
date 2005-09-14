@@ -21,8 +21,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.openide.nodes.AbstractNode;
+import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
@@ -37,23 +38,23 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Libor Kotouc
  */
-public final class PaletteItemNode extends AbstractNode {
+public final class PaletteItemNode extends FilterNode {
     
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
     
-    String name;
-    String displayName;
-    String description;
-    Image icon16;
-    Image icon32;
+    private String name;
+    private String displayName;
+    private String description;
+    private Image icon16;
+    private Image icon32;
     private Lookup localLookup;
     
-    PaletteItemNode(String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup) {
-        this(name, displayName, description, icon16, icon32, lookup, new InstanceContent() );
+    PaletteItemNode(DataNode original, String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup) {
+        this(original, name, displayName, description, icon16, icon32, lookup, new InstanceContent() );
     }
     
-    private PaletteItemNode(String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup, InstanceContent content ) {
-        super(Children.LEAF, new ProxyLookup( new Lookup[] { lookup, new AbstractLookup(content) } ) );
+    private PaletteItemNode(DataNode original, String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup, InstanceContent content ) {
+        super(original, Children.LEAF, new ProxyLookup( new Lookup[] { lookup, new AbstractLookup(content) } ) );
         
         content.add( this );
         this.name = name;
@@ -109,6 +110,11 @@ public final class PaletteItemNode extends AbstractNode {
         ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(drop);
         t.put(s);
 
+        return t;
+    }
+
+    public Transferable drag() throws IOException {
+        Transferable t = clipboardCopy();
         return t;
     }
 

@@ -20,9 +20,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.loaders.XMLDataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
@@ -169,7 +171,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                 objectsToLookup.add(handler.getBody());
             Lookup lookup = Lookups.fixed(objectsToLookup.toArray());
 
-            PaletteItemNode node = new PaletteItemNode(name, displayName, tooltip, icon16, icon32, lookup);
+            PaletteItemNode node = new PaletteItemNode(new DataNode(xmlDataObject, Children.LEAF), name, displayName, tooltip, icon16, icon32, lookup);
 
             return node;
         }
