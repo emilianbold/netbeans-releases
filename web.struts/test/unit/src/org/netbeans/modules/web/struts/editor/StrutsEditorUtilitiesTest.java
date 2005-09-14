@@ -8,29 +8,14 @@
 package org.netbeans.modules.web.struts.editor;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import junit.framework.*;
 import java.io.IOException;
-import java.io.StringWriter;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.junit.Manager;
-import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.web.struts.StrutsConfigDataObject;
-import org.netbeans.modules.web.struts.config.model.FormProperty;
-import org.netbeans.modules.web.struts.config.model.Forward;
-import org.netbeans.modules.web.struts.config.model.StrutsException;
-import org.netbeans.modules.xml.text.syntax.StrutsXMLKit;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.junit.*;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
