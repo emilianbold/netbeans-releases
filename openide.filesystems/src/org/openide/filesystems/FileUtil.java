@@ -50,7 +50,6 @@ import javax.swing.filechooser.FileSystemView;
  * This is a dummy class; all methods are static.
  */
 public final class FileUtil extends Object {
-    private static final FileSystemView fsv = FileSystemView.getFileSystemView();
     
     /** Normal header for ZIP files. */
     private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
@@ -1179,7 +1178,7 @@ public final class FileUtil extends Object {
         boolean canBeCanonizalized = true;
 
         if (file.getParent() == null) { //for File.listRoots should be true
-            canBeCanonizalized = !fsv.isFloppyDrive(file) && file.exists();
+            canBeCanonizalized = !FileSystemView.getFileSystemView().isFloppyDrive(file) && file.exists();
         }
 
         return canBeCanonizalized;
