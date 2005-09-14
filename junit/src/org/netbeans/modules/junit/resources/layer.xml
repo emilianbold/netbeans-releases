@@ -91,11 +91,6 @@
         <folder name="JUnitTests">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
             <file name="org-netbeans-modules-junit-GoToOppositeAction.instance" />
-            <attr name="org-netbeans-modules-junit-GoToOppositeAction.instance/Separator.instance" boolvalue="true"/>
-            <file name="Separator.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-            </file>
-            <attr name="Separator.instance/org-netbeans-modules-junit-CreateTestAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-junit-CreateTestAction.instance" />
         </folder>
        
