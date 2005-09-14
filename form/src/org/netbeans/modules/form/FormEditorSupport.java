@@ -496,7 +496,13 @@ public class FormEditorSupport extends JavaEditor
 
         Node node = formDataObject.getNodeDelegate();
         String title = node.getHtmlDisplayName();
-        title = (title == null) ? node.getDisplayName() : title;
+        if (title == null) {
+            title = node.getDisplayName();
+        } else {
+            if (!title.trim().startsWith("<html>")) { // NOI18N
+                title = "<html>" + title; // NOI18N
+            }
+        }
         return FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", // NOI18N
             new Object[] {new Integer(version), title});
     }
