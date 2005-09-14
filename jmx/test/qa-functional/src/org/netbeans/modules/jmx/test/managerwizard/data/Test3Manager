@@ -29,10 +29,12 @@ public class Test3Manager {
      */
     public void connect() throws Exception  {
 
-        /* *** SAMPLE CREDENTIALS *** */ 
-        /* Replace userName and userPassword with your parameters.  
-         * Provide env parameter when calling JMXConnectorFactory.connect(url, env) 
-        //RMI Authentication 
+        /* *** SAMPLE CREDENTIALS *** */
+        /* Replace userName and userPassword with your parameters. 
+         * Provide env parameter when calling JMXConnectorFactory.connect(url, env)
+         */
+        
+        /*
         Map env = new HashMap(); 
         env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"});
         */ 

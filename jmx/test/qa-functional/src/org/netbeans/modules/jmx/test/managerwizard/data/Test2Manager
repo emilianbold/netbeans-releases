@@ -43,7 +43,6 @@ public class Test2Manager {
      */
     public void connect() throws Exception  {
 
-        //RMI Authentication 
         Map env = new HashMap(); 
         env.put(JMXConnector.CREDENTIALS, new String[]{"name", "password"});
         
