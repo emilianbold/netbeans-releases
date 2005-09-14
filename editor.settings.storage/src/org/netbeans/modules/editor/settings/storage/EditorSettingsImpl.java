@@ -16,11 +16,14 @@ package org.netbeans.modules.editor.settings.storage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
@@ -43,12 +46,7 @@ public class EditorSettingsImpl extends EditorSettings {
     private PropertyChangeSupport   pcs;
     
     {pcs = new PropertyChangeSupport (this);}
-    
-//    {
-//        T hread.dumpStack();
-//        S ystem.out.println(this);
-//        S ystem.out.println("");
-//    }
+
     
     public Set /*<String>*/ getMimeTypes () {
 	if (mimeToLanguage == null) init ();
@@ -66,7 +64,14 @@ public class EditorSettingsImpl extends EditorSettings {
     public Set /*<String>*/ getFontColorSchemes () {
 	if (schemes == null)
 	    init ();
-	return Collections.unmodifiableSet (schemes.keySet ());
+        Set result = new HashSet ();
+        Iterator it = schemes.keySet ().iterator ();
+        while (it.hasNext ()) {
+            String scheme = (String) it.next ();
+            if (!scheme.startsWith ("test"))
+                result.add (scheme);
+        }
+	return result;
     }
     
     private String currentScheme;
@@ -112,10 +117,19 @@ public class EditorSettingsImpl extends EditorSettings {
             s = scheme; // create a new scheme!
             schemes.put (s, s);
         }
-        
+
+        // 2) init scheme for test mime types
+        if (s.startsWith ("test")) {
+            int i = s.indexOf ('_');
+            defaultColors.put (
+                s,
+                getDefaultFontColors (s.substring (i + 1))
+            );
+        }
+
         if (!defaultColors.containsKey (s)) {
             
-            // 2) load colorings
+            // 3) load colorings
             Map m = ColoringStorage.loadColorings 
                 (new String [0], s, "defaultColoring.xml");
             if (m != null) {
@@ -125,14 +139,6 @@ public class EditorSettingsImpl extends EditorSettings {
                 defaultColors.put (s, null);
         }
         
-//        Iterator it = ((Collection) defaultColors.get (s)).iterator ();
-//        while (it.hasNext ()) {
-//            AttributeSet as = (AttributeSet) it.next ();
-//            if ("comment".equals (as.getAttribute (StyleConstants.NameAttribute)))
-//                System.out.println ("getEditorColoringImpl " + s + 
-//                    " : " + as.getAttribute (StyleConstants.Foreground)
-//                );
-//        }
         if (defaultColors.get (s) == null) return null;
 	return Collections.unmodifiableCollection (
             (Collection) defaultColors.get (s)
@@ -169,6 +175,15 @@ public class EditorSettingsImpl extends EditorSettings {
         // 1) translate scheme name
 	String s = getOriginalScheme (scheme);
         if (s == null) s = scheme; // no such scheme
+
+        // 2) init scheme for test mime types
+        if (s.startsWith ("test")) {
+            int i = s.indexOf ('_');
+            editorFontColors.put (
+                s,
+                getEditorFontColors (s.substring (i + 1))
+            );
+        }
         
         if (!editorFontColors.containsKey (s)) {
             
@@ -200,8 +215,9 @@ public class EditorSettingsImpl extends EditorSettings {
         editorFontColors.put (s, fontColors);
         
         // 3) save new values to disk
-        ColoringStorage.saveColorings 
-            (new String [0], s, "editorColoring.xml", fontColors);
+        if (!scheme.startsWith ("test"))
+            ColoringStorage.saveColorings 
+                (new String [0], s, "editorColoring.xml", fontColors);
         
 	pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
     }  
