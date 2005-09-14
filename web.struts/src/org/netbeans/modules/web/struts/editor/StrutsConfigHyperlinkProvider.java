@@ -149,7 +149,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             TokenItem token = sup.getTokenChain(offset, offset+1);
             //if (debug) debug ("token: "  +token.getTokenID().getNumericID() + ":" + token.getTokenID().getName());
             // when it's not a value -> do nothing.
-            if (token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE_VALUE)
+            if (token == null || token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE_VALUE)
                 return null;
             value = token.getImage();
             if (value != null){
