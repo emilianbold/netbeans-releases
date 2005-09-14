@@ -12,6 +12,7 @@
  */
 package org.openide.explorer;
 
+import org.netbeans.core.IDESettings;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -50,9 +51,6 @@ import javax.swing.Timer;
 public class ExplorerPanel extends TopComponent implements ExplorerManager.Provider {
     /** serial version UID */
     static final long serialVersionUID = 5522528786650751459L;
-
-    /** is the delete allowed globally or not */
-    private static boolean confirmDelete;
 
     /** The message formatter for Explorer title */
     private static MessageFormat formatExplorerTitle;
@@ -248,14 +246,16 @@ public class ExplorerPanel extends TopComponent implements ExplorerManager.Provi
     * @param confirmDelete <code>true</code> to confirm, <code>false</code> to delete at once
     */
     public static void setConfirmDelete(boolean confirmDelete) {
-        ExplorerPanel.confirmDelete = confirmDelete;
+        IDESettings ide = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+        ide.setConfirmDelete(confirmDelete);
     }
 
     /** Are deletions confirmed on all Explorer panels?
     * @return <code>true</code> if they must be confirmed
     */
     public static boolean isConfirmDelete() {
-        return ExplorerPanel.confirmDelete;
+        IDESettings ide = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+        return ide.getConfirmDelete();
     }
 
     /** Stores the manager */
