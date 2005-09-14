@@ -149,13 +149,11 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         if ( projectNameTextField.getText().length() == 0 ) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
                     "Project Name is not a valid folder name.");  
-//            NbBundle.getMessage(@@TEMPLATENAME@@PanelVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
             String message = "Project Folder is not a valid path.";
-//NbBundle.getMessage (@@TEMPLATENAME@@PanelVisual.class,"MSG_IllegalProjectLocation");
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
@@ -168,13 +166,11 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         if (projLoc == null || !projLoc.canWrite()) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
                                     "Project Folder cannot be created.");
-//            NbBundle.getMessage(@@TEMPLATENAME@@PanelVisual.class,"MSG_ProjectFolderReadOnly"));
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = "Project Folder is not a valid path.";
-//NbBundle.getMessage (@@TEMPLATENAME@@PanelVisual.class,"MSG_IllegalProjectLocation");
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
@@ -184,7 +180,6 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
             // Folder exists and is not empty
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
                                      "Project Folder already exists and is not empty.");
-//            NbBundle.getMessage(@@TEMPLATENAME@@PanelVisual.class,"MSG_ProjectFolderExists"));
             return false;
         }
         wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");                
@@ -197,8 +192,8 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
-        d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "name", name ); // NOI18N
+        d.putProperty(  "projdir", new File( folder )); // NOI18N
+        d.putProperty(  "name", name ); // NOI18N
     }
     
     void read (WizardDescriptor settings) {

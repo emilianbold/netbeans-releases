@@ -49,7 +49,6 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     private String[] createSteps() {
         return new String[] {
                   "Create a new @@DISPLAYNAME@@ project", 
-//                NbBundle.getMessage(@@TEMPLATENAME@@WizardIterator.class,"LAB_Panel1_Name"), 
             };
     }
     
@@ -120,7 +119,6 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     
     public String name() {
         return MessageFormat.format ("{0} of {1}",
- //                NbBundle.getMessage(@@TEMPLATENAME@@WizardIterator.class,"LAB_IteratorName"),
             new Object[] {new Integer (index + 1), new Integer (panels.length) });                                
     }
     
