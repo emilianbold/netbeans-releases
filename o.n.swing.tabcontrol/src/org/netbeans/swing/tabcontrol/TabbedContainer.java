@@ -179,6 +179,8 @@ public class TabbedContainer extends JComponent {
 
     public static final String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"; //NOI18N
     
+    private static final boolean JDK14_BUG4924516_HACK_ENABLED =System.getProperty("java.version").indexOf("1.4") >= 0;
+    
     //XXX support supressing close buttons
     
     /**
@@ -384,7 +386,7 @@ public class TabbedContainer extends JComponent {
     }
     
     private void jdk14bug4924516HackShowingEvent() {
-        if (System.getProperty("java.version").indexOf("1.4") >= 0) {
+        if (JDK14_BUG4924516_HACK_ENABLED) {
             HierarchyEvent evt = new HierarchyEvent (this, 
                 HierarchyEvent.SHOWING_CHANGED, this, getParent());
             getUI().jdk14bug4924516Hack(evt);
