@@ -33,6 +33,7 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -192,6 +193,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     /** Represent one module (a suite component) node. */
     private static final class SuiteComponentNode extends AbstractNode {
         
+        private Action defaultAction;
         private NbModuleProject suiteComponent;
         
         public SuiteComponentNode(final NbModuleProject suiteComponent) {
@@ -201,13 +203,18 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             setName(info.getName());
             setDisplayName(info.getDisplayName());
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
+            defaultAction = new OpenProjectAction(suiteComponent);
         }
         
         public Action[] getActions(boolean context) {
             return new Action[] {
-                new OpenProjectAction(suiteComponent),
+                defaultAction,
                 new RemoveSuiteComponentAction(suiteComponent)
             };
+        }
+        
+        public Action getPreferredAction() {
+            return defaultAction;
         }
         
     }
@@ -251,7 +258,16 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public void actionPerformed(ActionEvent evt) {
-            OpenProjects.getDefault().open(new Project[] {suiteComponent}, false);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    String previousText = StatusDisplayer.getDefault().getStatusText();
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(SuiteLogicalView.class, "MSG_OpeningProject", // NOI18N
+                            ProjectUtils.getInformation(suiteComponent).getDisplayName()));
+                    OpenProjects.getDefault().open(new Project[] {suiteComponent}, false);
+                    StatusDisplayer.getDefault().setStatusText(previousText);
+                }
+            });
         }
     }
     
