@@ -29,6 +29,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -44,12 +45,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.sound.sampled.Line;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -57,6 +60,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -69,6 +73,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.options.ui.LoweredBorder;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarButton;
 import org.openide.awt.ToolbarToggleButton;
@@ -191,13 +197,33 @@ public class OptionsPanel extends JPanel {
         pCategories.setBackground (Color.white);
         pCategories2.setBackground (Color.white);
         pCategories2.setBorder (null);
+        
+        // add buttons
         k = optionCategories.size ();
         buttons = new Button [k];
+        InputMap inputMap = getInputMap 
+            (JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put (
+            KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0), 
+            "UP"
+        );
+        getActionMap ().put ("UP", new UpAction ());
+        inputMap.put (
+            KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0), 
+            "DOWN"
+        );
+        getActionMap ().put ("DOWN", new DownAction ());
         for (i = 0; i < k; i++) {
             final OptionsCategory ocp = (OptionsCategory) 
                 optionCategories.get (i);
             Button b = new Button (ocp, i);
             buttons [i] = b;
+            int mnemonic = b.getDisplayedMnemonic ();
+            KeyStroke keyStroke = KeyStroke.getKeyStroke 
+                (mnemonic, KeyEvent.ALT_MASK);
+            System.out.println("mnemonic " + ocp + " : " + (char) mnemonic);
+            inputMap.put (keyStroke, b);
+            getActionMap ().put (b, new SelectAction (i));
             pCategories2.add (b);
         }
         
@@ -216,15 +242,23 @@ public class OptionsPanel extends JPanel {
         OptionsCategory category = (OptionsCategory) optionCategories.get (0);
         PanelController controller = (PanelController) 
             categoryToController.get (category);
-        controller.update ();
+        try {
+            controller.update ();
+        } catch (Throwable t) {
+            ErrorManager.getDefault ().notify (t);
+        }
         setCurrentIndex (0);
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 Iterator it = optionCategories.iterator ();
                 it.next ();
                 while (it.hasNext ())
-                    ((PanelController) categoryToController.get (it.next ())).
-                        update ();
+                    try {
+                        ((PanelController) categoryToController.get (it.next ())).
+                            update ();
+                    } catch (Throwable t) {
+                        ErrorManager.getDefault ().notify (t);
+                    }
                 progressHandle.finish ();
             }
         });
@@ -297,6 +331,39 @@ public class OptionsPanel extends JPanel {
     
     
     // innerclasses ............................................................
+    
+    private class SelectAction extends AbstractAction {
+        private int index;
+        
+        SelectAction (int index) {
+            this.index = index;
+        }
+        public void actionPerformed (ActionEvent e) {
+            setCurrentIndex (index);
+        }
+    }
+    
+    private class UpAction extends AbstractAction {
+
+        public void actionPerformed (ActionEvent e) {
+            int i = getCurrentIndex ();
+            if (i > 0)
+                setCurrentIndex (i - 1);
+            else
+                setCurrentIndex (optionCategories.size () - 1);
+        }
+    }
+    
+    private class DownAction extends AbstractAction {
+
+        public void actionPerformed (ActionEvent e) {
+            int i = getCurrentIndex ();
+            if (i < (optionCategories.size () - 1))
+                setCurrentIndex (i + 1);
+            else
+                setCurrentIndex (0);
+        }
+    }
     
     class HelpCtxListener implements PropertyChangeListener {
         public void propertyChange (PropertyChangeEvent evt) {
