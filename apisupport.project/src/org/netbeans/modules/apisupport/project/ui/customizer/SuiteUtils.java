@@ -36,6 +36,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  * Utility methods for miscellaneous suite module operations like moving its
@@ -45,7 +47,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Krauskopf
  */
-final class SuiteUtils {
+public final class SuiteUtils {
     
     // XXX also match "${dir}/somedir/${anotherdir}"
     private static final String ANT_PURE_PROPERTY_REFERENCE_REGEXP = "\\$\\{\\p{Graph}+\\}"; // NOI18N
@@ -78,15 +80,49 @@ final class SuiteUtils {
             if (origSubModules.contains(currentModule)) {
                 continue;
             }
-            SuiteProject suite = SuiteUtils.findSuite(currentModule);
-            if (suite != null) {
-                // detach module from its current suite
-                SuiteUtils.removeModule(suite, currentModule);
+            utils.addModule(currentModule);
+        }
+    }
+    
+    public static void addModule(final SuiteProject suite, final NbModuleProject project) throws IOException {
+        SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+        Set/*<Project>*/ subModules = spp.getSubprojects();
+        final SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
+                suite.getEvaluator(), subModules);
+        if (subModules.contains(project)) {
+            return;
+        }
+        SuiteUtils utils = new SuiteUtils(suiteProps);
+        utils.addModule(project);
+        
+        try {
+            // Store properties
+            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    suiteProps.storeProperties();
+                    return Boolean.TRUE;
+                }
+            });
+            // and save the project
+            if (result == Boolean.TRUE) {
                 ProjectManager.getDefault().saveProject(suite);
             }
-            // attach it to the new suite
-            utils.attachSubModuleToSuite(currentModule);
+        } catch (MutexException e) {
+            ErrorManager.getDefault().notify((IOException)e.getException());
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
+    }
+    
+    private void addModule(final NbModuleProject project) throws IOException, IllegalArgumentException {
+        SuiteProject currentProjectSuite = SuiteUtils.findSuite(project);
+        if (currentProjectSuite != null) {
+            // detach module from its current suite
+            SuiteUtils.removeModule(currentProjectSuite, project);
+            ProjectManager.getDefault().saveProject(currentProjectSuite);
+        }
+        // attach it to the new suite
+        attachSubModuleToSuite(project);
     }
     
     private static void removeModule(final SuiteProject suite, final NbModuleProject subModule) throws IOException {
