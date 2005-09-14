@@ -191,14 +191,14 @@ public final class ModuleList {
         if (kids == null) {
             return;
         }
-        KIDS: for (int i = 0; i < kids.length; i++) {
+        for (int i = 0; i < kids.length; i++) {
             if (!kids[i].isDirectory()) {
                 continue;
             }
             String name = kids[i].getName();
             if (EXCLUDED_DIR_NAMES.contains(name)) {
                 // #61579: known to not be project dirs, so skip to save time.
-                continue KIDS;
+                continue;
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name; // NOI18N
             try {
