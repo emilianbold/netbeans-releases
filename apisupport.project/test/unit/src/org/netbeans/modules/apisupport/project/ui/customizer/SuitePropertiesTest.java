@@ -53,7 +53,7 @@ public class SuitePropertiesTest extends TestBase {
         super.setUp();
     }
     
-    private static SuiteProperties getSuiteProperties(SuiteProject suite) throws IOException {
+    static SuiteProperties getSuiteProperties(SuiteProject suite) throws IOException {
         SubprojectProvider spp = getSubProjectProvider(suite);
         Set/*<Project>*/ subModules = spp.getSubprojects();
         SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
@@ -61,7 +61,7 @@ public class SuitePropertiesTest extends TestBase {
         return suiteProps;
     }
     
-    private static SubprojectProvider getSubProjectProvider(Project project) throws IOException {
+    static SubprojectProvider getSubProjectProvider(Project project) throws IOException {
         return (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
     }
     
@@ -126,12 +126,17 @@ public class SuitePropertiesTest extends TestBase {
         assert module2ToAdd != null;
         NbModuleProject module3ToAdd = TestBase.generateStandaloneModule(getWorkDir(), "module3");
         assert module3ToAdd != null;
+        SuiteProvider suiteProvider = (SuiteProvider) module2ToAdd.getLookup().lookup(SuiteProvider.class);
+        assertNull("module2ToAdd is standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
         model.addModule(module2ToAdd);
         model.addModule(module3ToAdd);
         
         saveProperties(suiteProps);
         
+        assertNotNull("module2ToAdd is standalone module - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
+        
         suiteProps.refresh(spp.getSubprojects());
+        assertNotNull("module2ToAdd is standalone module - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
         assertEquals("three module suite components", 3, suiteProps.getModulesListModel().getSize());
     }
     
