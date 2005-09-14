@@ -196,13 +196,6 @@ public final class Actions extends Object {
             return new HelpCtx(Remove.class);
         }
 
-        /** Icon resource.
-        * @return name of resource for icon
-        */
-        protected String iconResource () {
-            return "org/openide/resources/actions/empty.gif"; // NOI18N
-        }
-
         /**
         * Removes the links.
         *
@@ -319,13 +312,6 @@ public final class Actions extends Object {
         */
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Add.class);
-        }
-
-        /** Icon resource.
-        * @return name of resource for icon
-        */
-        protected String iconResource () {
-            return "org/openide/resources/actions/empty.gif"; // NOI18N
         }
 
         /**

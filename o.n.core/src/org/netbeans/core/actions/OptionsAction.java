@@ -145,10 +145,6 @@ public class OptionsAction extends CallableSystemAction {
         return false;
     }
 
-    public String iconResource () {
-        return "org/netbeans/core/resources/session.gif"; // NOI18N
-    }
-
     public HelpCtx getHelpCtx() {
         return new HelpCtx (HELP_ID);
     }

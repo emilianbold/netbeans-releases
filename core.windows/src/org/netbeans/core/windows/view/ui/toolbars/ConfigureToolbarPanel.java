@@ -22,11 +22,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.services.ToolbarFolderNode;
 import org.openide.DialogDescriptor;
@@ -34,15 +36,19 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.awt.ToolbarPool;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.NewType;
 
@@ -67,21 +73,12 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject paletteFolder = fs.findResource( "Actions" ); // NOI18N
         DataFolder df = DataFolder.findFolder( paletteFolder );
-        root = new FolderActionNode( df.getNodeDelegate() );
+        root = new FolderActionNode( new AbstractNode( df.createNodeChildren( new ActionIconDataFilter() ) ) );
 
         final JLabel lblWait = new JLabel( getBundleString("LBL_PleaseWait") );
         lblWait.setHorizontalAlignment( JLabel.CENTER );
         palettePanel.setPreferredSize( new Dimension( 440, 350 ) );
         palettePanel.add( lblWait );
-        RequestProcessor.getDefault().post( new Runnable() {
-            public void run() {
-                Node[] categories = root.getChildren().getNodes( true );
-                for( int i=0; i<categories.length; i++ ) {
-                    categories[i].getChildren().getNodes( true );
-                }
-                SwingUtilities.invokeLater( ConfigureToolbarPanel.this );
-            }
-        });
     }
     
     public void run() {
@@ -135,6 +132,28 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     /** @return returns string from bundle for given string pattern */
     static final String getBundleString (String bundleStr) {
         return NbBundle.getMessage(ConfigureToolbarPanel.class, bundleStr);
+    }
+
+    private boolean firstTimeInit = true;
+    public void paint(java.awt.Graphics g) {
+        super.paint(g);
+        if( firstTimeInit ) {
+            //this is not very nice but some Actions insist on being accessed
+            //from the event queue only so let's wait till the dialog window is 
+            //painted before filtering out Actions without an icon
+            firstTimeInit = false;
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    //warm up action nodes so that 'expand all' in actions tree is fast
+                    Node[] categories = root.getChildren().getNodes( true );
+                    for( int i=0; i<categories.length; i++ ) {
+                        categories[i].getChildren().getNodes( true );
+                    }
+                    //replace 'please wait' message with actions tree
+                    SwingUtilities.invokeLater( ConfigureToolbarPanel.this );
+                }
+            });
+        }
     }
     
     /** This method is called from within the constructor to
@@ -298,6 +317,56 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
 
         public String getDisplayName() {
             return Actions.cutAmpersand( super.getDisplayName() );
+        }
+    }
+    
+    /**
+     * A filter that does not allow Action instances without an icon.
+     */
+    private static class ActionIconDataFilter implements DataFilter {
+        private InstanceCookie instanceCookie;
+        private boolean hasIcon;
+        
+        public boolean acceptDataObject( DataObject obj ) {
+            instanceCookie = (InstanceCookie)obj.getCookie( InstanceCookie.class );
+            if( null != instanceCookie ) {
+                try {
+                    Object instance = instanceCookie.instanceCreate();
+                    if( null != instance ) {
+                        if( instance instanceof Action ) {
+                            Action action = (Action)instance;
+                            if( null == action.getValue( "iconBase" ) ) {
+                                return false;
+                            }
+                        } else if( instance instanceof JSeparator ) {
+                            return false;
+                        }
+                    }
+                } catch( Throwable e ) {
+                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                }
+                return true;
+            } else {
+                FileObject fo = obj.getPrimaryFile();
+                if( fo.isFolder() ) {
+                    boolean hasChildWithIcon = false;
+                    FileObject[] children = fo.getChildren();
+                    for( int i=0; i<children.length; i++ ) {
+                        DataObject child = null;
+                        try {
+                            child = DataObject.find( children[i] );
+                        } catch (DataObjectNotFoundException e) {
+                            continue;
+                        }
+                        if( null != child && acceptDataObject( child ) ) {
+                            hasChildWithIcon = true;
+                            break;
+                        }
+                    }
+                    return hasChildWithIcon;
+                }
+            }
+            return true;
         }
     }
 }

@@ -66,10 +66,6 @@ public class OptionsWindowAction extends AbstractAction {
             Action.NAME, 
             loc ("CTL_Options_Window_Action")
         );
-        putValue (
-            "iconBase", // NOI18N
-            "org/netbeans/modules/debugger/options/test/stop.png" // NOI18N
-        );
     }
 
     public void actionPerformed (ActionEvent evt) {     

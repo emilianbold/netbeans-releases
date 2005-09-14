@@ -37,7 +37,6 @@ implements HelpCtx.Provider {
     public ViewRuntimeTabAction() {
         putValue(NAME, NbBundle.getMessage(ViewRuntimeTabAction.class,
                 "CTL_ViewRuntimeTabAction"));
-        putValue ("iconBase", "org/netbeans/core/resources/environment.gif"); // NOI18N
     }
     
     
