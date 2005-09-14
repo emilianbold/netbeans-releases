@@ -17,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
@@ -39,7 +38,6 @@ import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -153,14 +151,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                         || (camelCase && (itm instanceof NbJMIResultItem.ClassResultItem) && JMIUtils.matchesCamelCase(itm.getItemText(), prefix)))
                     ret.add(itm);
             }
-            return ret;
-        }
-        
-        private String getFilteredTitle(String title, String prefix) {
-            int lastIdx = title.lastIndexOf('.');
-            String ret = lastIdx == -1 ? prefix : title.substring(0, lastIdx + 1) + prefix;
-            if (title.endsWith("*")) // NOI18N
-                ret += "*"; // NOI18N
             return ret;
         }
     }

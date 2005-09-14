@@ -16,8 +16,6 @@ package org.netbeans.modules.editor.java;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.editor.CodeFoldingSideBar;
 
 /**
@@ -27,10 +25,6 @@ import org.netbeans.editor.CodeFoldingSideBar;
  *  @author  Martin Roskanin
  */
 public class NbJavaCodeFoldingSideBar extends CodeFoldingSideBar{
-    
-    private int startPos;
-    private int endPos;
-    private List elems = new ArrayList();
     
     public NbJavaCodeFoldingSideBar(){
     }

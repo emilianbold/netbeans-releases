@@ -19,7 +19,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.JumpList;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.Utilities;
@@ -47,14 +46,6 @@ public final class JavaHyperlinkProvider implements HyperlinkProvider {
     private static final int TOKEN_LIMIT = 100;
     
     private static MessageFormat mf = null;
-    
-    private static synchronized MessageFormat getCannotOpenElementMF() {
-        if (mf == null) {
-            mf = new MessageFormat(NbBundle.getBundle(JavaHyperlinkProvider.class).getString("cannot-open-element"));
-        }
-        
-        return mf;
-    }
     
     /** Creates a new instance of JavaHyperlinkProvider */
     public JavaHyperlinkProvider() {

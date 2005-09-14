@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,11 +22,9 @@ import org.netbeans.editor.TokenProcessor;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 
 

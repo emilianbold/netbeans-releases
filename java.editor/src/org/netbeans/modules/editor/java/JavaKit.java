@@ -43,9 +43,7 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
@@ -117,28 +115,10 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     
     static final long serialVersionUID =-5445829962533684922L;
     
-    private final boolean compatibleCompletion;
-    
-
-    public JavaKit(){
-        this(resolveCompatibleCompletion());
-    }
-    
-    private static boolean resolveCompatibleCompletion() {
-        // By default return false here to use new JMI-based completion.
-        // If desired we can make e.g. a property for it e.g for a standalone editor
-        return false; // temorarily use the old JCClass-based completion bridged to JMI
-    }
-    
     /**
      * Construct the java kit instance.
-     *
-     * @param compatibleCompletion true if the original code complation
-     *  (using JCClass-es) should be used or false if a new JMI-based completion
-     *  should be used.
      */
-    public JavaKit(boolean compatibleCompletion) {
-        this.compatibleCompletion = compatibleCompletion;
+    public JavaKit() {
         org.netbeans.modules.java.editor.JavaEditorModule.init();        
     }
     
@@ -167,27 +147,18 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     /** Create syntax support */
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        return compatibleCompletion
-            ? new NbJavaSyntaxSupport(doc)
-            : createJMISyntaxSupport(doc); // extracte into method to prevent class loading
-    }
-    
-    // extra method to prevent class loading of org/netbeans/jmi/* etc.
-    private SyntaxSupport createJMISyntaxSupport(BaseDocument doc) {
         return new NbJavaJMISyntaxSupport(doc);
     }
 
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return null;
+//    public Completion createCompletion(ExtEditorUI extEditorUI) {
+//        return null;
 //        return compatibleCompletion
 //            ? new NbJavaCompletion(extEditorUI)
 //            : new NbJavaJMICompletion(extEditorUI, getSourceLevel(extEditorUI.getDocument()));
-    }
+//    }
 
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return compatibleCompletion
-            ? new NbCompletionJavaDoc(extEditorUI)
-            : new NbJMICompletionJavaDoc(extEditorUI);
+        return new NbJMICompletionJavaDoc(extEditorUI);
     }
 
     public String getSourceLevel(BaseDocument doc) {
@@ -269,17 +240,18 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                                    new TryCatchAction(),
                                 };
         
+                                // PENDING merge these classes
+                                /*
         Action[] jcAction = new Action[] {
                                    new JavaGotoHelpAction(),
                                    new JavaGotoSourceAction(),
                                    new JavaGotoDeclarationAction(),
                                    new JavaDocShowAction()                                   
                                 };
+                                 */
         
         
-        Action[] mergedActions = resolveCompatibleCompletion() ? 
-                                    TextAction.augmentList(javaActions, jcAction) :
-                                    TextAction.augmentList(javaActions, jmiAction);
+        Action[] mergedActions = TextAction.augmentList(javaActions, jmiAction);
         return TextAction.augmentList(super.createActions(), mergedActions);
     }
 

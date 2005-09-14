@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.java.editor.options;
 
-import java.util.Enumeration;
-import java.util.List;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.editor.java.JavaKit;

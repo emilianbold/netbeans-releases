@@ -17,7 +17,7 @@ public class JavaBaseDocumentUnitTestCase extends BaseDocumentUnitTestCase {
     }
     
     protected EditorKit createEditorKit() {
-        return new JavaKit(true); // Create compatible
+        return new JavaKit(); // XXX not compatible now
     }
 
 }
