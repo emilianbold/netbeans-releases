@@ -30,13 +30,6 @@ Microsystems, Inc. All Rights Reserved.
 					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabFormFileHandlerFactory.instance"/>                                         
 					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabDefaultFileHandlerFactory.instance"/>                                                                                                    
 				</folder>
-				<!-- TAF: I don't believe this should actually be registered as a channel, since it just supporting library code
-				<file name="org-netbeans-modules-collab-channel-filesharing-mdc-MDCollabletFactory.instance"/>
-				<folder name="MDCollablet">
-				    <file name="org-netbeans-modules-collab-channel-filesharing-mdc-EventNotifierFactory.instance"/>
-				    <file name="org-netbeans-modules-collab-channel-filesharing-mdc-EventProcessorFactory.instance"/>
-				</folder>
-				-->
 			</folder>
 		</folder>
 		<folder name="JavaHelp">
@@ -86,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- actions -->
         <folder name="Actions">
             <folder name="Collaboration">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.actions.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.resources.Bundle"/>
                 <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareFilesAction.instance" />
             </folder>
         </folder>        
