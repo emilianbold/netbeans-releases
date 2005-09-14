@@ -100,6 +100,9 @@ public class SwitchBranchAction extends AbstractSystemAction {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < roots.length; i++) {
             File root = roots[i];
+            // FIXME this check fails on workdir root, it's incorectly recognides as locally new
+            // console: cvs [add aborted]: there is no version here; do 'cvs checkout' first
+            // see #64103
             if (root.isDirectory() && cache.getStatus(root).getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 newFolders.add(root);
             } else {
@@ -159,6 +162,9 @@ public class SwitchBranchAction extends AbstractSystemAction {
     private void setSticky(File file, String sticky) throws IOException {
         File tag = new File(file, "CVS/Tag");
         tag.delete();
+        if ("HEAD".equals(sticky)) {  // NOI18N
+            return;
+        }
         if (sticky != null) {
             FileWriter w = new FileWriter(tag);
             w.write("T");
