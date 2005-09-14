@@ -537,7 +537,7 @@ public final class NbModuleProject implements Project {
             try {
                 eval = createEvaluator(getModuleList());
             } catch (IOException ex) {
-                throw new IllegalStateException(ex);
+                throw new IllegalStateException(ex.getMessage());
             }
         }
         return eval;
