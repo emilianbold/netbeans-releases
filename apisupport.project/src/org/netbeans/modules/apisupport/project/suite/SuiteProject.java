@@ -17,7 +17,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.Icon;
@@ -55,6 +54,9 @@ import org.w3c.dom.Element;
  * @author Jesse Glick
  */
 public final class SuiteProject implements Project {
+    
+    public static final String SUITE_ICON_PATH =
+            "org/netbeans/modules/apisupport/project/suite/resources/suite.gif"; // NOI18N
     
     private final AntProjectHelper helper;
     private final Lookup lookup;
@@ -160,7 +162,7 @@ public final class SuiteProject implements Project {
 
         public Icon getIcon() {
             // XXX have to make this icon be distinct...
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/suite.gif")); // NOI18N
+            return new ImageIcon(Utilities.loadImage(SUITE_ICON_PATH));
         }
         
         public Project getProject() {

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
@@ -34,14 +35,23 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * UI related utility methods for the module.
@@ -186,7 +196,7 @@ public final class UIUtil {
         private FileObject root;
         private boolean contentType;
         
-        public LayerItemPresenter(final FileObject item, 
+        public LayerItemPresenter(final FileObject item,
                 final FileObject root,
                 final boolean contentType) {
             this.item = item;
@@ -252,6 +262,75 @@ public final class UIUtil {
             return sb.toString();
         }
         
+    }
+    
+    public static Project chooseSuiteComponent(Component parent, String suiteDisplayName) {
+        Project suiteComponent = null;
+        Project project = chooseProject(parent);
+        if (project != null) {
+            NbModuleTypeProvider nmtp = (NbModuleTypeProvider) project.
+                    getLookup().lookup(NbModuleTypeProvider.class);
+            if (nmtp == null) { // not netbeans module
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModule",
+                        ProjectUtils.getInformation(project).getDisplayName())));
+            } else if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
+                Object[] params = new Object[] {
+                    ProjectUtils.getInformation(project).getDisplayName(),
+                            getSuiteProjectName(project),
+                            getSuiteProjectDirectory(project),
+                            suiteDisplayName,
+                };
+                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(UIUtil.class, "MSG_MoveFromSuiteToSuite", params),
+                        NotifyDescriptor.OK_CANCEL_OPTION);
+                DialogDisplayer.getDefault().notify(confirmation);
+                if (confirmation.getValue() == NotifyDescriptor.OK_OPTION) {
+                    suiteComponent = project;
+                }
+            } else if (nmtp.getModuleType() == NbModuleTypeProvider.STANDALONE) {
+                suiteComponent = project;
+            } else if (nmtp.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNBORGModule",
+                        ProjectUtils.getInformation(project).getDisplayName())));
+            }
+        }
+        return suiteComponent;
+    }
+    
+    private static Project chooseProject(Component parent) {
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        int option = chooser.showOpenDialog(parent);
+        Project project = null;
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File projectDir = chooser.getSelectedFile();
+            UIUtil.setProjectChooserDirParent(projectDir);
+            try {
+                project = ProjectManager.getDefault().findProject(
+                        FileUtil.toFileObject(projectDir));
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        }
+        return project;
+    }
+    
+    private static File getSuiteDirectory(Project suiteComp) {
+        SuiteProvider sp = (SuiteProvider) suiteComp.
+                getLookup().lookup(SuiteProvider.class);
+        assert sp != null;
+        assert sp.getSuiteDirectory() != null : "Invalid suite provider for: " // NOI18N
+                + suiteComp.getProjectDirectory();
+        return sp.getSuiteDirectory();
+    }
+    
+    private static String getSuiteProjectDirectory(Project suiteComp) {
+        return getSuiteDirectory(suiteComp).getAbsolutePath();
+    }
+    
+    private static String getSuiteProjectName(Project suiteComp) {
+        return Util.getDisplayName(FileUtil.toFileObject(getSuiteDirectory(suiteComp)));
     }
     
     private static final class IconFilter extends FileFilter {

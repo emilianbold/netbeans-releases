@@ -13,26 +13,12 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
-import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
-import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Libraries</em> panel in Suite customizer.
@@ -60,17 +46,13 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     }
     
     void refresh() {
-        platformValue.setSelectedItem(getProperties().getActivePlatform());        
+        platformValue.setSelectedItem(getProperties().getActivePlatform());
         moduleList.setModel(getProperties().getModulesListModel());
     }
     
     private void updateEnabled() {
         boolean enabled = moduleList.getSelectedIndex() != -1;
         removeModuleButton.setEnabled(enabled);
-    }
-    
-    public void store() {
-        //getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
     }
     
     private ComponentFactory.SuiteSubModulesListModel getModuleListModel() {
@@ -195,9 +177,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
-        getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());                        
+        getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
     }//GEN-LAST:event_platformValueItemStateChanged
     
     private void removeModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModule
@@ -209,74 +191,15 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     }//GEN-LAST:event_removeModule
     
     private void addModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModule
-        JFileChooser chooser = ProjectChooser.projectChooser();
-        int option = chooser.showOpenDialog(this);
-        if (option == JFileChooser.APPROVE_OPTION) {
-            File projectDir = chooser.getSelectedFile();
-            UIUtil.setProjectChooserDirParent(projectDir);
-            Project project;
-            try {
-                project = ProjectManager.getDefault().findProject(
-                        FileUtil.toFileObject(projectDir));
-                if (project == null) {
-                    return;
-                }
-                if (getModuleListModel().contains(project)) {
-                    moduleList.setSelectedValue(project, true);
-                    return;
-                }
-                NbModuleTypeProvider nmtp = (NbModuleTypeProvider) project.
-                        getLookup().lookup(NbModuleTypeProvider.class);
-                if (nmtp == null) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(SuiteCustomizerLibraries.class,
-                            "MSG_TryingToAddNonNBModule", // NOI18N
-                            ProjectUtils.getInformation(project).getDisplayName())));
-                } else if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
-                    Object[] params = new Object[] {
-                        ProjectUtils.getInformation(project).getDisplayName(),
-                        getSuiteProjectName(project),
-                        getSuiteProjectDirectory(project),
-                        getProperties().getProjectDisplayName(),
-                    };
-                    NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(SuiteCustomizerLibraries.class,
-                            "MSG_MoveFromSuiteToSuite", params), // NOI18N
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                    DialogDisplayer.getDefault().notify(confirmation);
-                    if (confirmation.getValue() == NotifyDescriptor.OK_OPTION) {
-                        getModuleListModel().addModule(project);
-                    }
-                } else if (nmtp.getModuleType() == NbModuleTypeProvider.STANDALONE) {
-                    getModuleListModel().addModule(project);
-                } else if (nmtp.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(SuiteCustomizerLibraries.class,
-                            "MSG_TryingToAddNBORGModule", // NOI18N
-                            ProjectUtils.getInformation(project).getDisplayName())));
-                }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        Project project = UIUtil.chooseSuiteComponent(this, getProperties().getProjectDisplayName());
+        if (project != null) {
+            if (getModuleListModel().contains(project)) {
+                moduleList.setSelectedValue(project, true);
+            } else {
+                getModuleListModel().addModule(project);
             }
         }
     }//GEN-LAST:event_addModule
-    
-    private File getSuiteDirectory(Project suiteComp) {
-        SuiteProvider sp = (SuiteProvider) suiteComp.
-                getLookup().lookup(SuiteProvider.class);
-        assert sp != null;
-        assert sp.getSuiteDirectory() != null : "Invalid suite provider for: " // NOI18N
-                + suiteComp.getProjectDirectory();
-        return sp.getSuiteDirectory();
-    }
-    
-    private String getSuiteProjectDirectory(Project suiteComp) {
-        return getSuiteDirectory(suiteComp).getAbsolutePath();
-    }
-    
-    private String getSuiteProjectName(Project suiteComp) {
-        return Util.getDisplayName(FileUtil.toFileObject(getSuiteDirectory(suiteComp)));
-    }
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
