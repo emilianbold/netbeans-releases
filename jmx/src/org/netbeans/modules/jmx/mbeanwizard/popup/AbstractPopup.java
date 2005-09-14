@@ -86,7 +86,7 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         return button;
     }
     
-    protected void definePanels(JButton[] popupButtons, JTable table) {
+    protected void definePanels(JButton[] popupButtons, JTable table, String tableName) {
         java.awt.GridBagLayout mainGridBag = new java.awt.GridBagLayout();
         
         getContentPane().setLayout(mainGridBag);
@@ -97,7 +97,7 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         c1.weighty = 1.0;
         c1.gridx = 1;
         c1.gridy = 1;
-        c1.insets = new Insets(12,12,12,12);
+        c1.insets = new Insets(0,12,12,12);
         
         // panel definition
         JScrollPane tablePanel = new JScrollPane(table);
@@ -151,6 +151,22 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         //allButtons.add(extStandardButtonPanel);
         
         add(tablePanel);
+        
+        java.awt.GridBagConstraints c2 = new java.awt.GridBagConstraints();
+        c2.fill = java.awt.GridBagConstraints.NONE;
+        c2.anchor = java.awt.GridBagConstraints.WEST;
+        c2.gridwidth = 0;
+        c2.weightx = 0;
+        c2.weighty = 0;
+        c2.gridx = 0;
+        c2.gridy = 0;
+        c2.insets = new Insets(12,12,5,12);
+        
+        javax.swing.JLabel tableLabel = new javax.swing.JLabel();
+        Mnemonics.setLocalizedText(tableLabel, tableName);
+        tableLabel.setLabelFor(table);
+        mainGridBag.setConstraints(tableLabel, c2);
+        add(tableLabel);
         
         c1.gridwidth = 1;
         c1.fill = java.awt.GridBagConstraints.BOTH;

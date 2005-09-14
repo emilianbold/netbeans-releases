@@ -141,7 +141,8 @@ public class OperationParameterPopup extends AbstractPopup{
         });
         
         definePanels(getUsedButtons(),
-                popupTable);
+                popupTable, 
+                bundle.getString("LBL_OP_PARAMETERS_POPUP_TABLE")); // NOI18N
     }
     
     protected JButton[] getUsedButtons() {

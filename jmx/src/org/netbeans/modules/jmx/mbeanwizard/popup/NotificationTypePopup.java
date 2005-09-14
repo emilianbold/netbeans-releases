@@ -124,7 +124,8 @@ public class NotificationTypePopup extends AbstractPopup{
                 removeJButton,
                 closeJButton
         },
-                popupTable);
+                popupTable, 
+                bundle.getString("LBL_NOTIF_TYPE_POPUP_TABLE")); // NOI18N
     }
     
     protected void readSettings() {

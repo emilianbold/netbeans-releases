@@ -141,7 +141,8 @@ public class OperationExceptionPopup extends AbstractPopup{
         });
         
         definePanels(getUsedButtons(),
-                popupTable);
+                popupTable, 
+                bundle.getString("LBL_OP_EXCEPTIONS_POPUP_TABLE")); // NOI18N
     }
     
     protected JButton[] getUsedButtons() {
