@@ -60,6 +60,10 @@ public final class SuiteUtils {
         this.suiteProps = suiteProps;
     }
     
+    /**
+     * Reads needed information from the given {@link SuiteProperties} and
+     * appropriately replace its all modules with new ones.
+     */
     public static void replaceSubModules(final SuiteProperties suiteProps) throws IOException {
         SuiteUtils utils = new SuiteUtils(suiteProps);
         Set/*<Project>*/ currentModules = suiteProps.getSubModules();
@@ -84,6 +88,12 @@ public final class SuiteUtils {
         }
     }
     
+    /**
+     * Adds the given module to the given suite if it is not already contained
+     * there. If the module is already suite component of another suite it will
+     * be appropriatelly removed from it (i.e moved from module's current suite
+     * to the given suite).
+     */
     public static void addModule(final SuiteProject suite, final NbModuleProject project) throws IOException {
         SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
         Set/*<Project>*/ subModules = spp.getSubprojects();
@@ -114,25 +124,29 @@ public final class SuiteUtils {
         }
     }
     
-    private void addModule(final NbModuleProject project) throws IOException, IllegalArgumentException {
-        SuiteProject currentProjectSuite = SuiteUtils.findSuite(project);
-        if (currentProjectSuite != null) {
+    /**
+     * Removes module from its current suite if the given module is a suite
+     * component. Does nothing otherwise.
+     */
+    public static void removeModuleFromSuite(final NbModuleProject suiteComponent) throws IOException {
+        SuiteProject suite = SuiteUtils.findSuite(suiteComponent);
+        if (suite != null) {
             // detach module from its current suite
-            SuiteUtils.removeModule(currentProjectSuite, project);
-            ProjectManager.getDefault().saveProject(currentProjectSuite);
+            SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+            Set/*<Project>*/ subModules = spp.getSubprojects();
+            SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
+                    suite.getEvaluator(), subModules);
+            SuiteUtils utils = new SuiteUtils(suiteProps);
+            utils.removeModule(suiteComponent);
+            suiteProps.storeProperties();
+            ProjectManager.getDefault().saveProject(suite);
         }
-        // attach it to the new suite
-        attachSubModuleToSuite(project);
     }
     
-    private static void removeModule(final SuiteProject suite, final NbModuleProject subModule) throws IOException {
-        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
-        SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
-                suite.getEvaluator(), subModules);
-        SuiteUtils utils = new SuiteUtils(suiteProps);
-        utils.removeModule(subModule);
-        suiteProps.storeProperties();
+    private void addModule(final NbModuleProject project) throws IOException, IllegalArgumentException {
+        SuiteUtils.removeModuleFromSuite(project);
+        // attach it to the new suite
+        attachSubModuleToSuite(project);
     }
     
     /**

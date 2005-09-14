@@ -55,5 +55,21 @@ public class SuiteUtilsTest extends TestBase {
         assertEquals("three module suite components", 3, spp.getSubprojects().size());
     }
     
+    public void testRemoveModuleFromSuite() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        SubprojectProvider spp = SuitePropertiesTest.getSubProjectProvider(suite1);
+        assertEquals("one module suite component", 1, spp.getSubprojects().size());
+        
+        SuiteProvider suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);
+        assertNotNull("module1 is suite component - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
+        
+        SuiteUtils.removeModuleFromSuite(module1);
+        spp = SuitePropertiesTest.getSubProjectProvider(suite1);
+        assertEquals("doesn't have suite component", 0, spp.getSubprojects().size());
+        suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);
+        assertNull("module1 became standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
+    }
+    
 }
 
