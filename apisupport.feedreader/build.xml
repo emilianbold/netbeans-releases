@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="apisupport/samples/feedreader-sample-ui" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.apisupport.feedreader</description>
+    <import file="../../../nbbuild/templates/projectized.xml"/>
+</project>
