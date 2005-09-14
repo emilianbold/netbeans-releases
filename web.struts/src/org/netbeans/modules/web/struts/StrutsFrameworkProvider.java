@@ -225,8 +225,12 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             name = name + ".properties";   //NOI18N
             FileObject targetFolder = sourceGroups[0].getRootFolder();
             String folders[] = path.split("\\.");
-            for (int i = 0; i < folders.length; i++)
-                targetFolder = targetFolder.createFolder(folders[i]);
+            for (int i = 0; i < folders.length; i++){
+                if (targetFolder.getFileObject(folders[i])== null)
+                    targetFolder = targetFolder.createFolder(folders[i]);
+                else
+                    targetFolder = targetFolder.getFileObject(folders[i]);
+            }
             target = FileUtil.createData(targetFolder, name);//NOI18N
             createFile(target, content);
             
