@@ -98,7 +98,7 @@ public final class NbModuleProject implements Project {
             Utilities.loadImage(NB_PROJECT_ICON_PATH));
     
     private final AntProjectHelper helper;
-    private final PropertyEvaluator eval;
+    private PropertyEvaluator eval;
     private final Lookup lookup;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
@@ -256,7 +256,7 @@ public final class NbModuleProject implements Project {
     }
     
     public FileObject getManifestFile() {
-        return helper.resolveFileObject(eval.getProperty("manifest.mf")); // NOI18N
+        return helper.resolveFileObject(evaluator().getProperty("manifest.mf")); // NOI18N
     }
     
     public Manifest getManifest() {
@@ -471,6 +471,7 @@ public final class NbModuleProject implements Project {
             public void configurationXmlChanged(AntProjectEvent ev) {
                 // type could be changed
                 typeProvider.reset();
+                eval = null;
                 // Module dependencies may have changed.
                 maybeFireChange();
             }
@@ -532,6 +533,13 @@ public final class NbModuleProject implements Project {
     }
     
     public PropertyEvaluator evaluator() {
+        if (eval == null) {
+            try {
+                eval = createEvaluator(getModuleList());
+            } catch (IOException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
         return eval;
     }
     
@@ -567,12 +575,12 @@ public final class NbModuleProject implements Project {
     }
     
     public File getClassesDirectory() {
-        String classesDir = eval.getProperty("build.classes.dir"); // NOI18N
+        String classesDir = evaluator().getProperty("build.classes.dir"); // NOI18N
         return helper.resolveFile(classesDir);
     }
     
     public File getTestClassesDirectory() {
-        String testClassesDir = eval.getProperty("build.test.unit.classes.dir"); // NOI18N
+        String testClassesDir = evaluator().getProperty("build.test.unit.classes.dir"); // NOI18N
         return helper.resolveFile(testClassesDir);
     }
     
@@ -586,7 +594,7 @@ public final class NbModuleProject implements Project {
     
     public File getModuleJarLocation() {
         // XXX could use ModuleList here instead
-        return helper.resolveFile(eval.evaluate("${cluster}/${module.jar}")); // NOI18N
+        return helper.resolveFile(evaluator().evaluate("${cluster}/${module.jar}")); // NOI18N
     }
     
     public String getCodeNameBase() {
@@ -715,6 +723,7 @@ public final class NbModuleProject implements Project {
     public NbPlatform getPlatform() {
         return getPlatform(null);
     }
+    
     private NbPlatform getPlatform(PropertyEvaluator eval) {
         if (eval == null) {
             eval = evaluator();
@@ -771,12 +780,12 @@ public final class NbModuleProject implements Project {
         }
         return extraCompilationUnits;
     }
-
+    
     /** Get the Java source level used for this module. Default is 1.4. */
     public String getJavacSource() {
         String javacSource = evaluator().getProperty("javac.source");
-	assert javacSource != null;
-	return javacSource;
+        assert javacSource != null;
+        return javacSource;
     }
     
     /**
@@ -933,7 +942,7 @@ public final class NbModuleProject implements Project {
     private final class SuiteProviderImpl implements SuiteProvider {
 
         public File getSuiteDirectory() {
-            String suiteDir = eval.getProperty("suite.dir"); // NOI18N
+            String suiteDir = evaluator().getProperty("suite.dir"); // NOI18N
             return suiteDir == null ? null : helper.resolveFile(suiteDir);
         }
         
