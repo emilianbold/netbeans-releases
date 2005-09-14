@@ -126,7 +126,8 @@ class ActionsUtil {
             return ActionsUtil.formatName( namePattern, 0, null );
         }
         else {
-            // Some project selected                
+            // Some project selected 
+            // XXX what about passing an object that computes the name lazily
             return ActionsUtil.formatName( namePattern, projects.length, ProjectUtils.getInformation( projects[0] ).getDisplayName() );
         }
     }
@@ -331,3 +332,4 @@ class ActionsUtil {
     
 
 }
+
