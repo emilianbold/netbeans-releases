@@ -79,7 +79,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     protected void setRequests () {
         lineNumber = breakpoint.getLineNumber ();
         String className = EditorContextBridge.getClassName (
-            breakpoint.getURL (),
+            breakpoint.getURL (), 
             lineNumber
         );
         if (className == null) {
@@ -95,16 +95,15 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             );
             checkLoadedClasses (className, true);
         } else {
-            
             //HACK
             // annonymous innerclasses are generated to outerclass
             // class.inner.annonym -> class$1
             // thats why we should not add class filter for class.inner,
             // but for class!
-            int i = className.indexOf ('$');
-            if (i > 0) 
-                className = className.substring (0, i);
             
+            int i = className.indexOf ('$');
+            if (i > 0 && Character.isDigit(className.charAt(i + 1))) 
+                className = className.substring (0, i);
             setClassRequests (
                 new String[] {
                     className,
@@ -121,7 +120,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     protected void classLoaded (ReferenceType referenceType) {
         if (verbose)
             System.out.println ("B class loaded: " + referenceType);
-      
+        
         List locations = getLocations (
             referenceType,
             breakpoint.getStratum (),
@@ -132,7 +131,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         if (locations.isEmpty()) return; 
         for (Iterator it = locations.iterator(); it.hasNext();) {
             Location location = (Location)it.next();
-            try {
+            try {           
                 BreakpointRequest br = getEventRequestManager ().
                     createBreakpointRequest (location);
                 addEventRequest (br);
