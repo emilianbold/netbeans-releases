@@ -98,7 +98,7 @@ public interface ActiveEditorDrop {
      * of JTextComponent.
      */
     static final DataFlavor FLAVOR = 
-            new DataFlavor("text/active_editor_flavor", "Active Editor Flavor"); //NOI18N
+            new DataFlavor("text/active_editor_flavor;class=org.openide.text.ActiveEditorDrop", "Active Editor Flavor"); //NOI18N
 
     /**
      * A method called from the drop target that supports the artificial DataFlavor.
