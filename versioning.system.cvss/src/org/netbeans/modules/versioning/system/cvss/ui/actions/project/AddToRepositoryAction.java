@@ -37,6 +37,9 @@ import org.netbeans.modules.versioning.system.cvss.ui.wizards.AbstractStep;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.Kit;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
+import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.CVSRoot;
@@ -490,9 +493,14 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
 
     protected boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
+            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             File dir = lookupImportDirectory(nodes[0]);
             if (dir != null && dir.isDirectory()) {
-                return new File(dir, "CVS").exists() == false;  // NOI18N
+                FileInformation status = cache.getStatus(dir);
+                // mutually exclusive enablement logic with commit
+                if ((status.getStatus() & FileInformation.STATUS_MANAGED) == 0) {
+                    return true;
+                }
             }
         }
         return false;
