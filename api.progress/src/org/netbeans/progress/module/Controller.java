@@ -204,8 +204,9 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
             Collection justStarted = new ArrayList();
             while (it.hasNext()) {
                 ProgressEvent event = (ProgressEvent)it.next();
+                boolean isShort = (stamp - event.getSource().getTimeStampStarted()) < event.getSource().getInitialDelay();
                 if (event.getType() == ProgressEvent.TYPE_START) {
-                    if (event.getSource().isCustomPlaced()) {
+                    if (event.getSource().isCustomPlaced() || !isShort) {
                         model.addHandle(event.getSource());
                     } else {
                         justStarted.add(event.getSource());
@@ -218,8 +219,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
                 }
                 ProgressEvent lastEvent = (ProgressEvent)map.get(event.getSource());
                 if (lastEvent != null && event.getType() == ProgressEvent.TYPE_FINISH && 
-                        justStarted.contains(event.getSource()) &&
-                        (stamp - event.getSource().getTimeStampStarted()) < event.getSource().getInitialDelay())
+                        justStarted.contains(event.getSource()) && isShort)
                 {
                     // if task quits really fast, ignore..
                     // defined 'really fast' as being shorter than initial delay
