@@ -44,7 +44,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /**
- * Provides a logical view of a NetBeans module project.
+ * Provides a logical view of a NetBeans suite project.
  *
  * @author Jesse Glick, Martin Krauskopf
  */
@@ -181,7 +181,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         Children children = new Children.Array();
         int i = 0;
         for (Iterator it = subModules.iterator(); it.hasNext();) {
-            Project suiteComponent = (Project) it.next();
+            NbModuleProject suiteComponent = (NbModuleProject) it.next();
             nodes[i++] = new SuiteComponentNode(suiteComponent);
         }
         children.add(nodes);
@@ -191,13 +191,52 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     /** Represent one module (a suite component) node. */
     private static final class SuiteComponentNode extends AbstractNode {
         
-        public SuiteComponentNode(final Project suiteComponent) {
+        private NbModuleProject suiteComponent;
+        
+        public SuiteComponentNode(final NbModuleProject suiteComponent) {
             super(Children.LEAF);
+            this.suiteComponent = suiteComponent;
             ProjectInformation info = ProjectUtils.getInformation(suiteComponent);
             setName(info.getName());
             setDisplayName(info.getDisplayName());
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
         }
         
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new RemoveSuiteComponentAction(suiteComponent)
+            };
+        }
+        
     }
+    
+    private static final class RemoveSuiteComponentAction extends AbstractAction {
+        
+        private final NbModuleProject suiteComponent;
+        
+        public RemoveSuiteComponentAction(final NbModuleProject suiteComponent) {
+            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemoveModule"));
+            this.suiteComponent = suiteComponent;
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            try {
+                Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                    public Object run() throws IOException {
+                        SuiteUtils.removeModuleFromSuite(suiteComponent);
+                        return Boolean.TRUE;
+                    }
+                });
+                // and save the project
+                if (result == Boolean.TRUE) {
+                    ProjectManager.getDefault().saveProject(suiteComponent);
+                }
+            } catch (MutexException e) {
+                ErrorManager.getDefault().notify((IOException)e.getException());
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+    }
+    
 }
