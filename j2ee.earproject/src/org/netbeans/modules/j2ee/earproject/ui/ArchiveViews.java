@@ -116,19 +116,7 @@ class ArchiveViews {
         
         protected Node[] createNodes(Object key) {
             Node n = null;
-            if (key == KEY_SOURCE_DIR) {
-                FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty (EarProjectProperties.SRC_DIR));
-                Project p = FileOwnerQuery.getOwner (srcRoot);
-                if (null != p) {
-                    SourceGroup sgs [] = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    for (int i = 0; i < sgs.length; i++) {
-                        if (sgs [i].contains(srcRoot)) {
-                            n = PackageView.createPackageView(sgs [i]);
-                            break;
-                        }
-                    }
-                }
-            } else if (key == KEY_DOC_BASE) {
+            if (key == KEY_DOC_BASE) {
                 n = new DocBaseNode (getFolder(EarProjectProperties.META_INF));
             } else if (key == KEY_SETUP_DIR) {
                 n = J2eeProjectView.createServerResourcesNode(project);
