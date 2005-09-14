@@ -24,6 +24,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -204,6 +205,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public Action[] getActions(boolean context) {
             return new Action[] {
+                new OpenProjectAction(suiteComponent),
                 new RemoveSuiteComponentAction(suiteComponent)
             };
         }
@@ -236,6 +238,20 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
+        }
+    }
+    
+    private static final class OpenProjectAction extends AbstractAction {
+        
+        private final NbModuleProject suiteComponent;
+        
+        public OpenProjectAction(final NbModuleProject suiteComponent) {
+            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_OpenProject"));
+            this.suiteComponent = suiteComponent;
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            OpenProjects.getDefault().open(new Project[] {suiteComponent}, false);
         }
     }
     
