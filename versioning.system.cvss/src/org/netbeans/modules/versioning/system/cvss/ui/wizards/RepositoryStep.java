@@ -161,6 +161,9 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
 
+        String extCommand = HistorySettings.getDefault().getExtCommand();
+        repositoryPanel.extCommandTextField.setText(extCommand);
+
         // proxy config button
         // it must not be accesible if Java environment defines socksProxyHost
         // property because it influences ALL new Socket() that crashes
@@ -195,8 +198,10 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
      */
     protected void validateBeforeNext() {
 
+        if (validateCvsRoot() == false) {
+            return;
+        }
         CVSRoot root = getCVSRoot();
-        if (root == null) return;
         String host = root.getHostName();
         String userName = root.getUserName();
         int port = root.getPort();
@@ -354,6 +359,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                 extSettings.extRememberPassword = repositoryPanel.extREmemberPasswordCheckBox.isSelected();
             } else {
                 extSettings.extCommand = repositoryPanel.extCommandTextField.getText();
+                HistorySettings.getDefault().setExtCommand(extSettings.extCommand);
             }
             CvsRootSettings.setExtSettingsFor(cvsRoot, extSettings);
         }
@@ -552,8 +558,10 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             editRoot();
         } else if (repositoryPanel.extSshRadioButton == e.getSource()) {
             setValid();
+            validateCvsRoot();
         } else if (repositoryPanel.internalSshRadioButton == e.getSource()) {
             setValid();
+            validateCvsRoot();
         } else {
             assert false : "Unexpected event source: " + e.getSource();  // NOI18N
         }
@@ -583,8 +591,10 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                     onCvsRootChange();
                 } else if (e.getDocument() == repositoryPanel.extPasswordField.getDocument()) {
                     setValid();
+                    validateCvsRoot();
                 } else if (e.getDocument() == repositoryPanel.extCommandTextField.getDocument()) {
                     setValid();
+                    validateCvsRoot();
                 }
             }
         };
