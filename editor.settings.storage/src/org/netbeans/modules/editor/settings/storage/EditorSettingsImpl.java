@@ -336,21 +336,22 @@ public class EditorSettingsImpl extends EditorSettings {
         else
         if (fo.getNameExt ().equals ("keybindings.xml"))
             addKeyMap (fo);
-        else {
-            FileObject fo1 = fo.getFileObject ("Defaults/coloring.xml");
-            FileObject fo2 = fo.getFileObject ("coloring.xml");
-            if (fo1 == null && fo2 == null) return;
-            String mimeType = fo.getPath ();
-            mimeType = mimeType.substring (8);
-            String bundleName = (String) fo.getAttribute 
-                ("SystemFileSystem.localizingBundle");
-            String languageName = mimeType;
-            if (bundleName != null)
-                try {
-                    languageName = NbBundle.getBundle (bundleName).getString (mimeType);
-                } catch (MissingResourceException ex) {}
-            mimeToLanguage.put (mimeType, languageName);
-        }
+        else
+        if (fo.getFileObject ("NetBeans/Defaults/coloring.xml") != null)
+            addMimeType (fo);
+    }
+
+    private void addMimeType (FileObject fo) {
+        String mimeType = fo.getPath ();
+        mimeType = mimeType.substring (8);
+        String bundleName = (String) fo.getAttribute 
+            ("SystemFileSystem.localizingBundle");
+        String languageName = mimeType;
+        if (bundleName != null)
+            try {
+                languageName = NbBundle.getBundle (bundleName).getString (mimeType);
+            } catch (MissingResourceException ex) {}
+        mimeToLanguage.put (mimeType, languageName);
     }
     
     private void addScheme (FileObject fo) {
