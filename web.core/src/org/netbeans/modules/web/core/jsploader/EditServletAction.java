@@ -78,14 +78,6 @@ public class EditServletAction extends CookieAction {
         return true;
     }
 
-
-    /* The resource string to our icon.
-    * @return the icon resource string
-    */
-    protected String iconResource () {
-        return "org/netbeans/modules/web/core/resources/htmlObject.gif"; // NOI18N
-    }
-
     /* @return the mode of action. */
     protected int mode() {
         return MODE_ANY;

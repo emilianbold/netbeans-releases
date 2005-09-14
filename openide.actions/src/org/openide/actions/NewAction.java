@@ -121,10 +121,6 @@ public final class NewAction extends NodeAction {
         return new HelpCtx(NewAction.class);
     }
 
-    protected String iconResource() {
-        return "org/openide/resources/actions/new.gif"; // NOI18N
-    }
-
     public javax.swing.JMenuItem getMenuPresenter() {
         return new Actions.SubMenu(this, model, false);
     }

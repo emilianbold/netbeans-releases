@@ -47,8 +47,4 @@ public class CustomizeAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizeAction.class);
     }
-
-    protected String iconResource() {
-        return "org/openide/resources/propertysheet/customize.gif"; // NOI18N
-    }
 }

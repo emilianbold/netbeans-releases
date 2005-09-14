@@ -63,13 +63,6 @@ public class CustomizeLayoutAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    /** Icon resource.
-     * @return name of resource for icon
-     */
-    protected String iconResource() {
-        return "org/openide/resources/actions/empty.gif"; // NOI18N
-    }
-
     /**
      * Standard perform action extended by actually activated nodes.
      *

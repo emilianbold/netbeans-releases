@@ -38,10 +38,6 @@ public class EditAction extends CookieAction {
         return new HelpCtx(EditAction.class);
     }
 
-    protected String iconResource() {
-        return "org/openide/resources/editorMode.gif"; // NOI18N
-    }
-
     protected int mode() {
         return MODE_ALL;
     }

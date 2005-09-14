@@ -170,10 +170,6 @@ public class NewTemplateAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx (NewTemplateAction.class);
     }
-
-    protected String iconResource () {
-        return "org/openide/actions/new.gif"; // NOI18N
-    }
     
     public JMenuItem getMenuPresenter () {
         return new Actions.MenuItem (this, true) {

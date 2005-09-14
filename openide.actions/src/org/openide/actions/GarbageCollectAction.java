@@ -68,10 +68,6 @@ public class GarbageCollectAction extends CallableSystemAction {
         return false;
     }
 
-    protected String iconResource() {
-        return "org/openide/resources/actions/garbageCollect.gif"; // NOI18N
-    }
-
     public Component getToolbarPresenter() {
         return new MemButton();
     }

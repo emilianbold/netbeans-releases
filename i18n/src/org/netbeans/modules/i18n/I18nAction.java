@@ -104,11 +104,4 @@ public class I18nAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(I18nUtil.HELP_ID_AUTOINSERT);
     }
-
-    /** Gets the action's icon location.
-     * @return the action's icon location
-     */
-     protected String iconResource () {
-         return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
-     }
 }

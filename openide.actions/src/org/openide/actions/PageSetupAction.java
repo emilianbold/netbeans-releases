@@ -44,8 +44,4 @@ public final class PageSetupAction extends CallableSystemAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PageSetupAction.class);
     }
-
-    protected String iconResource() {
-        return "org/openide/resources/actions/pageSetup.gif"; // NOI18N
-    }
 }

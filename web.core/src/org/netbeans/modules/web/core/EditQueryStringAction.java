@@ -110,12 +110,5 @@ public class EditQueryStringAction extends CookieAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx (EditQueryStringAction.class);
     }
-
-    /** The action's icon location.
-    * @return the action's icon location
-    */
-    protected String iconResource () {
-        return "org/netbeans/modules/web/core/resources/EditQueryString.gif"; // NOI18N
-    }
 }
 
