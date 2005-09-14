@@ -942,13 +942,14 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             Component rightSlide = viewAccessor.getSlidingModeComponent(Constants.RIGHT);
             Component bottomSlide = viewAccessor.getSlidingModeComponent(Constants.BOTTOM);
                     
-            if(p.x <  leftSlide.getBounds().width + 10) {
+            if(null != leftSlide && p.x <  leftSlide.getBounds().width + 10) {
                 return javax.swing.JSplitPane.LEFT;
             } else if(p.y < 0) {
                 return javax.swing.JSplitPane.TOP;
-            } else if(p.x > bounds.width - 10 - rightSlide.getBounds().width - leftSlide.getBounds().width) {
+            } else if(null !=rightSlide && null != leftSlide 
+                      && p.x > bounds.width - 10 - rightSlide.getBounds().width - leftSlide.getBounds().width) {
                 return javax.swing.JSplitPane.RIGHT;
-            } else if(p.y > bounds.height - 10 - bottomSlide.getBounds().height) {
+            } else if(null != bottomSlide && p.y > bounds.height - 10 - bottomSlide.getBounds().height) {
                 return javax.swing.JSplitPane.BOTTOM;
             }
 
