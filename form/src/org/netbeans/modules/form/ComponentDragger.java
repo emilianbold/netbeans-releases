@@ -410,6 +410,7 @@ class ComponentDragger
         if (undoRedoOn) // turn on undo/redo monitoring again
             formModel.setUndoRedoRecording(true);
 
+        formDesigner.clearSelection(); // Issue 64342
         // select dropped components in designer (after everything updates)
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
