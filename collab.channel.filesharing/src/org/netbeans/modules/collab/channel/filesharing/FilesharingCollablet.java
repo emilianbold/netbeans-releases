@@ -13,6 +13,8 @@
 package org.netbeans.modules.collab.channel.filesharing;
 
 import com.sun.collablet.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -66,7 +68,7 @@ import org.netbeans.modules.collab.core.Debug;
  */
 public class FilesharingCollablet extends Object implements InteractiveCollablet, FilesharingConstants,
     PropertyChangeListener {
-    private static FilesharingContext activatedComponentContext = null;
+    private static Reference/*<FilesharingContext>*/activatedComponentContext = null;
 
     /* staticContexts only for HotKey operation */
     private static HashMap staticContexts = new HashMap();
@@ -393,7 +395,8 @@ public class FilesharingCollablet extends Object implements InteractiveCollablet
      * @return context
      */
     public static FilesharingContext getActivatedComponentContext() {
-        return activatedComponentContext;
+        if (activatedComponentContext == null) return null;
+        return (FilesharingContext)activatedComponentContext.get();
     }
 
     /**
@@ -749,7 +752,7 @@ public class FilesharingCollablet extends Object implements InteractiveCollablet
 
             if ((newValue != null) && newValue instanceof Boolean) {
                 if (((Boolean) newValue).booleanValue()) {
-                    activatedComponentContext = getContext();
+                    activatedComponentContext = new WeakReference(getContext());
                 }
             }
         }

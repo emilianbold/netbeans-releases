@@ -95,34 +95,32 @@ public class ViewSwitcherItemList extends JList {
     }
 
     static class ItemRenderer implements ListCellRenderer {
-        private static JToggleButton button;
-        private static Border defaultBorder;
-        private static Border emptyBorder;
+        private JToggleButton button;
+        private Border defaultBorder;
+        private Border emptyBorder;
 
         ItemRenderer() {
-            if (button == null) {
-                button = new JToggleButton();
+            button = new JToggleButton();
 
-                String laf = UIManager.getLookAndFeel().getClass().getName();
+            String laf = UIManager.getLookAndFeel().getClass().getName();
 
-                if (
-                    laf.equals("javax.swing.plaf.metal.MetalLookAndFeel") // NOI18N
-                         ||laf.equals("com.sun.java.swing.plaf.windows.WindowsLookAndFeel")
-                ) // NOI18N
-                 { // for Metal and Windows Look&Feel use toolbar button rendering
-                    button.setMargin(new Insets(1, 0, 1, 0));
+            if (
+                laf.equals("javax.swing.plaf.metal.MetalLookAndFeel") // NOI18N
+                     ||laf.equals("com.sun.java.swing.plaf.windows.WindowsLookAndFeel")
+            ) // NOI18N
+             { // for Metal and Windows Look&Feel use toolbar button rendering
+                button.setMargin(new Insets(1, 0, 1, 0));
 
-                    JToolBar toolbar = new JToolBar();
-                    toolbar.setRollover(true);
-                    toolbar.setFloatable(false);
-                    toolbar.setLayout(new BorderLayout(0, 0));
-                    toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
-                    toolbar.add(button);
-                } else { // otherwise use normal button with default or empty border
-                    button.setMargin(new Insets(1, 1, 1, 1));
-                    defaultBorder = button.getBorder();
-                    emptyBorder = new EmptyBorder(defaultBorder.getBorderInsets(button));
-                }
+                JToolBar toolbar = new JToolBar();
+                toolbar.setRollover(true);
+                toolbar.setFloatable(false);
+                toolbar.setLayout(new BorderLayout(0, 0));
+                toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
+                toolbar.add(button);
+            } else { // otherwise use normal button with default or empty border
+                button.setMargin(new Insets(1, 1, 1, 1));
+                defaultBorder = button.getBorder();
+                emptyBorder = new EmptyBorder(defaultBorder.getBorderInsets(button));
             }
         }
 

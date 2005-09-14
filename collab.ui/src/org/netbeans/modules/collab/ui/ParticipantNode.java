@@ -104,8 +104,8 @@ public class ParticipantNode extends AbstractNode implements ContactCookie, Prop
         // Add self as cookie
         getCookieSet().add(this);
 
-        contact.addPropertyChangeListener(this);
-        conversation.addPropertyChangeListener(this);
+        contact.addPropertyChangeListener(WeakListeners.propertyChange(this, contact));
+        conversation.addPropertyChangeListener(WeakListeners.propertyChange(this, conversation));
     }
 
     /**
