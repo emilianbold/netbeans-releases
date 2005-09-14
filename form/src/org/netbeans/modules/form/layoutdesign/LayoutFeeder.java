@@ -137,18 +137,6 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
 
-//            if (dragger.isResizing(dim)) {
-//                checkResizing();
-//            }
-//            else {
-//                for (int i=0; i<components.length; i++) {
-//                    LayoutInterval compInt = components[i].getLayoutInterval(dim);
-//                    if (compInt.getPreferredSize() != NOT_EXPLICITLY_DEFINED) {
-//                        resizeInterval(compInt, movingBounds[i].size(dim));
-//                    }
-//                }
-//            }
-
             LayoutDragger.PositionDef newPos = newPositions[dim];
             if (newPos != null && (newPos.alignment == CENTER || newPos.alignment == BASELINE)) {
                 // hack: simplified adding to a closed group
@@ -168,90 +156,86 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc inclusion1 = null;
             IncludeDesc inclusion2 = null;
 
-            if (newPos == null && dragger.isResizing(dim) && !dragger.isResizing(dim^1)) {
-                // resizing in one dimension only without snapping
+            List inclusions = new LinkedList();
+            boolean preserveOriginal = false;
+
+            // if resizing in the other dimension then renew the original position
+            if (dragger.isResizing(dim^1)) {
+                aEdge = originalPos1.alignment;
+                aSnappedParallel = originalPos1.snappedParallel;
+                aSnappedNextTo = originalPos1.snappedNextTo;
+            }
+            // if snapped in dragger then always find the position
+            else if (newPos != null) {
+                aEdge = newPos.alignment;
+                aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
+                aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
+                // if resizing in this dimension only then preserve the original position
+                preserveOriginal = dragger.isResizing(dim);
+            }
+            // if resizing in this dimension only without snap then check for
+            // possible growing in parallel with an orthogonally parallel neighbor
+            else if (dragger.isResizing(dim)) {
+                aEdge = originalPos1.alignment;
+                aSnappedParallel = originalPos1.snappedParallel;
+                aSnappedNextTo = originalPos1.snappedNextTo;
+                preserveOriginal = true;
+            }
+            // otherwise plain moving without snap
+            else {
+                aEdge = DEFAULT;
+                aSnappedParallel = aSnappedNextTo = null;
+            }
+
+            LayoutInterval root = dragger.getTargetContainer().getLayoutRoot(dim);
+            analyzeParallel(root, inclusions);
+
+            if (inclusions.size() > 1) {
+                mergeParallelInclusions(inclusions, originalPos1, preserveOriginal);
+                assert inclusions.size() == 1;
+            }
+            IncludeDesc found = (IncludeDesc) inclusions.get(0);
+            inclusions.clear();
+            if (preserveOriginal) { // resized in this dimension only
+                if (found.parent == originalPos1.parent && found.newSubGroup)
+                    originalPos1.newSubGroup = true;
                 inclusion1 = originalPos1;
+                if (newPos != null)
+                    inclusion2 = found;
             }
             else {
-                List inclusions = new LinkedList();
-                boolean preserveOriginal = false;
-
-                if (dragger.isResizing(dim^1)) { // need to renew the original position
-                    aEdge = originalPos1.alignment;
-                    aSnappedParallel = originalPos1.snappedParallel;
-                    aSnappedNextTo = originalPos1.snappedNextTo;
-                }
-                else if (newPos != null) { // snapped position from dragger
-                    aEdge = newPos.alignment;
-                    aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
-                    aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
-                    // if resizing in this dimension only, preserve the original position
-                    preserveOriginal = dragger.isResizing(dim);
-                }
-                else { // plain moving without snap
-                    aEdge = DEFAULT;
-                    aSnappedParallel = aSnappedNextTo = null;
-                }
-
-                LayoutInterval root = dragger.getTargetContainer().getLayoutRoot(dim);
-                analyzeParallel(root, inclusions);
-
-                if (inclusions.size() > 1) {
-                    mergeParallelInclusions(inclusions, originalPos1, preserveOriginal);
-                    assert inclusions.size() == 1;
-                }
-                IncludeDesc found = (IncludeDesc) inclusions.get(0);
-                inclusions.clear();
-                if (preserveOriginal) { // resized in this dimension only
-                    inclusion1 = originalPos1;
-                    inclusion2 = found;
-                }
-                else {
-                    inclusion1 = found;
-                    // second search needed if resizing in the other dimension
-                    // and the second edge snapped in current dimension
-                    if (dragger.isResizing(dim^1) && (newPos != null || originalPos2 != null)) {
-                        if (newPos != null) { // find inclusion based on position from dragger
-                            assert dragger.isResizing(dim);
-                            aEdge = newPos.alignment;
-                            aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
-                            aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
-                        }
-                        else { // need to renew the original position
-                            assert !dragger.isResizing(dim);
-                            aEdge = originalPos2.alignment;
-                            aSnappedParallel = originalPos2.snappedParallel;
-                            aSnappedNextTo = originalPos2.snappedNextTo;
-                        }
-                        // second round searching
-                        analyzeParallel(root, inclusions);
-
-                        if (inclusions.size() > 1) {
-                            mergeParallelInclusions(inclusions, originalPos2 != null ? originalPos2 : originalPos1, false);
-                            assert inclusions.size() == 1;
-                        }
-                        inclusion2 = (IncludeDesc) inclusions.get(0);
-                        inclusions.clear();
+                inclusion1 = found;
+                // second search needed if resizing in the other dimension
+                // and the second edge snapped in current dimension
+                if (dragger.isResizing(dim^1) && (newPos != null || originalPos2 != null)) {
+                    if (newPos != null) { // find inclusion based on position from dragger
+                        assert dragger.isResizing(dim);
+                        aEdge = newPos.alignment;
+                        aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
+                        aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
                     }
-                }
+                    else { // need to renew the original position
+                        assert !dragger.isResizing(dim);
+                        aEdge = originalPos2.alignment;
+                        aSnappedParallel = originalPos2.snappedParallel;
+                        aSnappedNextTo = originalPos2.snappedNextTo;
+                    }
+                    // second round searching
+                    analyzeParallel(root, inclusions);
 
-                if (!mergeSequentialInclusions(inclusion1, inclusion2))
-                    inclusion2 = null;
+                    if (inclusions.size() > 1) {
+                        mergeParallelInclusions(inclusions, originalPos2 != null ? originalPos2 : originalPos1, false);
+                        assert inclusions.size() == 1;
+                    }
+                    inclusion2 = (IncludeDesc) inclusions.get(0);
+                    inclusions.clear();
+                }
             }
 
-            addInterval(inclusion1, inclusion2);
+            if (!mergeSequentialInclusions(inclusion1, inclusion2))
+                inclusion2 = null;
 
-//            if (pos2 == null && dragger.isResizing() && !dragger.isResizing(dim)) {
-//                LayoutDragger.PositionDef pos = getCurrentPosition(adding, false, dim, DEFAULT);
-//                if (pos != null) {
-//                    pos1 = pos;
-//                    // [maybe dragger should rather provide positions for both dimensions]
-//                }
-//            }
-//
-//            if (components.length == 1) { // PENDING
-//                checkResizing(adding, pos1, pos2, dim);
-//            }
+            addInterval(inclusion1, inclusion2);
         }
     }
 
@@ -1299,9 +1283,13 @@ class LayoutFeeder implements LayoutConstants {
             assert LayoutInterval.isAlignedAtBorder(interval, toAlignWith, alignment);
             return; // already aligned to parent
         }
-        else assert !interval.isParentOf(toAlignWith)
-                    && (!interval.getParent().isSequential() || !interval.getParent().isParentOf(toAlignWith));
-        // can't align with own subinterval or interval in the same sequence
+        else { 
+            assert !interval.isParentOf(toAlignWith); // can't align with own subinterval
+            if (!toAlignWith.isParentOf(interval)) {
+                // can't align with interval in the same sequence
+                assert LayoutInterval.getCommonParent(interval, toAlignWith).isParallel();
+            }
+        }
 
         // if not in same parallel group try to substitute interval with parent
         boolean resizing = LayoutInterval.wantResize(interval);

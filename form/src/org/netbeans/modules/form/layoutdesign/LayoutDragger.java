@@ -588,6 +588,10 @@ class LayoutDragger implements LayoutConstants {
      */
     private void checkRootForNextTo(LayoutInterval layoutRoot, int alignment) {
         assert alignment == LayoutRegion.ALL_POINTS || alignment == LEADING || alignment == TRAILING;
+
+        if (operation == RESIZING && !isValidNextToResizing(layoutRoot, alignment))
+            return;
+
         LayoutRegion rootSpace = layoutRoot.getCurrentSpace();
 
         for (int i = LEADING; i <= TRAILING; i++) {
@@ -828,6 +832,10 @@ class LayoutDragger implements LayoutConstants {
      */
     private void checkRootForAligned(LayoutInterval layoutRoot, int alignment) {
         assert alignment == LayoutRegion.ALL_POINTS || alignment == LEADING || alignment == TRAILING;
+
+        if (operation == RESIZING && !isValidAlignedResizing(layoutRoot, alignment))
+            return;
+
         LayoutRegion rootSpace = layoutRoot.getCurrentSpace();
 
         for (int i = LEADING; i <= TRAILING; i++) {
@@ -1208,49 +1216,92 @@ class LayoutDragger implements LayoutConstants {
     private boolean isValidNextToResizing(LayoutInterval interval, int alignment) {
         assert alignment == LEADING || alignment == TRAILING;
         LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
-        LayoutInterval resizingParent = resizing.getParent();
-        if (resizingParent.isSequential() && resizingParent.isParentOf(interval)) {
-            boolean gapRequired;
-            if (resizingParent == interval.getParent()) {
-                gapRequired = true;
-            }
-            else {
-                do {
-                    if (!LayoutInterval.isBorderInterval(interval, alignment^1, false)) {
-                        return false;
-                    }
-                    interval = interval.getParent();
-                }
-                while (interval.getParent() != resizingParent);
-                gapRequired = false;
-            }
+        if (interval.isParentOf(resizing))
+            return interval.getParent() == null && clearWayToParent(resizing, interval, dimension, alignment);
 
-            int index = resizingParent.indexOf(resizing) + (alignment == LEADING ? -1 : 1);
-            while (index >= 0 && index < resizingParent.getSubIntervalCount()) {
-                LayoutInterval li = resizingParent.getSubInterval(index);
-                if (li == interval) {
-                    return !gapRequired;
-                }
-                if (!li.isEmptySpace() || !gapRequired) {
-                    return false;
-                }
-                gapRequired = false;
-                index += alignment == LEADING ? -1 : 1;
-            }
-            return false;
+        LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, resizing);
+        if (commonParent.isSequential()) {
+            resizing = getClearWayToParent(resizing, commonParent, dimension, alignment);
+            if (resizing == null)
+                return false;
+            interval = getClearWayToParent(interval, commonParent, dimension, alignment^1);
+            if (interval == null)
+                return false;
+
+            int startIndex = commonParent.indexOf(alignment == LEADING ? interval : resizing) + 1;
+            int endIndex = commonParent.indexOf(alignment == LEADING ? resizing : interval) - 1;
+            return startIndex <= endIndex
+                   && !LayoutUtils.contentOverlap(movingSpace, commonParent, startIndex, endIndex, dimension^1);
         }
-        return true; // [should not this be false??]
+        return false;
     }
 
     private boolean isValidAlignedResizing(LayoutInterval interval, int alignment) {
+        // the examined interval position must be reachable with positive size
+        // of the resizing interval
         int dst = LayoutRegion.distance(movingSpace, interval.getCurrentSpace(),
                                         dimension, alignment^1, alignment);
         if ((alignment == LEADING && dst <= 0) || (alignment == TRAILING && dst >= 0)) {
-            // the examined interval position is reachable with positive size of the resizing interval
+            // now exclude resizing across an interval in the same sequence
             LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
-            return resizing.getParent().isParallel() || !resizing.getParent().isParentOf(interval);
+            if (interval.isParentOf(resizing)) {
+                return clearWayToParent(resizing, interval, dimension, alignment);
+            }
+            else {
+                LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, resizing);
+                if (commonParent.isParallel())
+                    return true;
+
+                // if in a sequence, aligning is possible if the intervals don't overlap orthogonally
+                resizing = getClearWayToParent(resizing, commonParent, dimension, alignment);
+                if (resizing == null)
+                    return false;
+                interval = getClearWayToParent(interval, commonParent, dimension, alignment^1);
+                if (interval == null)
+                    return false;
+
+                int startIndex, endIndex;
+                if (alignment == LEADING) {
+                    startIndex = commonParent.indexOf(interval);
+                    endIndex = commonParent.indexOf(resizing) - 1;
+                }
+                else { // TRAILING
+                    startIndex = commonParent.indexOf(resizing) + 1;
+                    endIndex = commonParent.indexOf(interval);
+                }
+                return startIndex <= endIndex
+                       && !LayoutUtils.contentOverlap(movingSpace, commonParent, startIndex, endIndex, dimension^1);
+            }
         }
-        else return false;
+        return false;
+    }
+
+    private static boolean clearWayToParent(LayoutInterval interval, LayoutInterval parent, int dimension, int alignment) {
+        return getClearWayToParent(interval, parent, dimension, alignment) != null;
+    }
+
+    private static LayoutInterval getClearWayToParent(LayoutInterval interval, LayoutInterval parent, int dimension, int alignment) {
+        LayoutRegion space = interval.getCurrentSpace();
+        while (interval.getParent() != parent) {
+            if (interval.getParent().isSequential()) {
+                int startIndex, endIndex;
+                if (alignment == LEADING) {
+                    startIndex = 0;
+                    endIndex = parent.indexOf(interval) - 1;
+                }
+                else {
+                    startIndex = parent.indexOf(interval) + 1;
+                    endIndex = parent.getSubIntervalCount() - 1;
+                }
+                if (startIndex <= endIndex
+                    && LayoutUtils.contentOverlap(space, parent, startIndex, endIndex, dimension^1))
+                {   // there is a sub-interval in the way
+                    return null;
+                }
+            }
+            interval = interval.getParent();
+        }
+        return interval;
     }
 
     /**
