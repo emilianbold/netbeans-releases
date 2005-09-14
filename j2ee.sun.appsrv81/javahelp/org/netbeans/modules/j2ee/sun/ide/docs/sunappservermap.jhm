@@ -25,8 +25,9 @@
     <!-- sun-web.xml DD editor CSH: -->
     <mapID target="AS_CFG_ConfigurationEditor"			url="configeditors/ConfigurationEditor.html"  />
     <mapID target="AS_CFG_WebAppGeneral"			url="configeditors/WebAppGeneral.html"  />
-    <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppJspConfigProperty.html"  />
-    <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppProperty.html"  />
+    <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppGeneral.html"  />
+    <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppGeneral.html"  />
+    <mapID target="AS_CFG_WebAppIdempotentUrlPatternProperty" 	url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppServices" 			url="configeditors/WebAppServices.html"  />
     <mapID target="AS_CFG_WebAppMessageDestination" 		url="configeditors/WebAppMessages.html"  />
     <mapID target="AS_CFG_WebAppWebserviceDescription" 		url="configeditors/WebAppServices.html"  />
