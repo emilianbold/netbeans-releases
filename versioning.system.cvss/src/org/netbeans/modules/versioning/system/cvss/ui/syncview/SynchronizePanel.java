@@ -194,51 +194,60 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             return;
         }
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(SynchronizePanel.class, "MSG_Refreshing_Versioning_View"));
-        ph.start();
-        final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context.getFiles(), displayStatuses));  // takes long
-        if (nodes == null || Thread.interrupted()) {
-            ph.finish();
-            return;
-        }
-        
-        final String [] tableColumns;
-        final String branchTitle;
-        if (nodes.length > 0) {
-            boolean stickyCommon = true;
-            String currentSticky = nodes[0].getSticky();
-            for (int i = 1; i < nodes.length; i++) {
-                String sticky = nodes[i].getSticky();
-                if (sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
-                    stickyCommon = false;
-                    break;
+        try {
+            ph.start();
+            final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context.getFiles(), displayStatuses));  // takes long
+            if (nodes == null || Thread.interrupted()) {
+                return;
+                // finally section
+            }
+
+            final String [] tableColumns;
+            final String branchTitle;
+            if (nodes.length > 0) {
+                boolean stickyCommon = true;
+                String currentSticky = nodes[0].getSticky();
+                for (int i = 1; i < nodes.length; i++) {
+                    String sticky = nodes[i].getSticky();
+                    if (sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
+                        stickyCommon = false;
+                        break;
+                    }
                 }
-            }
-            if (stickyCommon) {
-                tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                branchTitle = currentSticky.length() == 0 ? null : NbBundle.getMessage(SynchronizePanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky);
-            } else {
-                tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STICKY, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                branchTitle = NbBundle.getMessage(SynchronizePanel.class, "CTL_VersioningView_BranchTitle_Multi");
-            }
-        } else {
-            tableColumns = null;
-            branchTitle = null;
-        }
-        
-        flatModelTimestamp = System.currentTimeMillis();
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (nodes.length > 0) {
-                    syncTable.setColumns(tableColumns);
-                    parentTopComponent.setBranchTitle(branchTitle);
-                    setVersioningComponent(syncTable.getComponent());
+                if (stickyCommon) {
+                    tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                    branchTitle = currentSticky.length() == 0 ? null : NbBundle.getMessage(SynchronizePanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky);
                 } else {
-                    setVersioningComponent(noContentComponent);
+                    tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STICKY, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                    branchTitle = NbBundle.getMessage(SynchronizePanel.class, "CTL_VersioningView_BranchTitle_Multi");
                 }
-                syncTable.setTableModel(nodes);
-                ph.finish();
+            } else {
+                tableColumns = null;
+                branchTitle = null;
             }
-        });
+
+            flatModelTimestamp = System.currentTimeMillis();
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (nodes.length > 0) {
+                        syncTable.setColumns(tableColumns);
+                        parentTopComponent.setBranchTitle(branchTitle);
+                        setVersioningComponent(syncTable.getComponent());
+                    } else {
+                        setVersioningComponent(noContentComponent);
+                    }
+                    syncTable.setTableModel(nodes);
+                    // finally section, it's enqueued after this request
+                }
+            });
+        } finally {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ph.finish();
+                }
+            });
+        }
     }
     
     private SyncFileNode [] getNodes(CvsFileTableModel model) {
