@@ -24,7 +24,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 /**
- * Test functionality of {@link LogicalView}.
+ * Test functionality of {@link ModuleLogicalView}.
  * @author Jesse Glick
  */
 public class ModuleLogicalViewTest extends TestBase {
