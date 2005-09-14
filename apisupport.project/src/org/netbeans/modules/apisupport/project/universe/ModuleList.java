@@ -175,20 +175,18 @@ public final class ModuleList {
         return new ModuleList(entries);
     }
     
-    private static final String[] EXCLUDED_DIR_NAMES = {
-        "CVS", // NOI18N
-        "nbproject", // NOI18N
-        "www", // NOI18N
-        "test", // NOI18N
-        "build", // NOI18N
-        "src", // NOI18N
-        "org", // NOI18N
+    private static final Set/*<String>*/ EXCLUDED_DIR_NAMES = new HashSet();
+    static {
+        EXCLUDED_DIR_NAMES.add("CVS"); // NOI18N
+        EXCLUDED_DIR_NAMES.add("nbproject"); // NOI18N
+        EXCLUDED_DIR_NAMES.add("www"); // NOI18N
+        EXCLUDED_DIR_NAMES.add("test"); // NOI18N
+        EXCLUDED_DIR_NAMES.add("build"); // NOI18N
+        EXCLUDED_DIR_NAMES.add("src"); // NOI18N
+        EXCLUDED_DIR_NAMES.add("org"); // NOI18N
     };
     private static void doScanNetBeansOrgSources(Map/*<String,Entry>*/ entries, File dir, int depth,
             File root, File nbdestdir, String pathPrefix) throws IOException {
-        if (depth == 0) {
-            return;
-        }
         File[] kids = dir.listFiles();
         if (kids == null) {
             return;
@@ -198,11 +196,9 @@ public final class ModuleList {
                 continue;
             }
             String name = kids[i].getName();
-            for (int j = 0; j < EXCLUDED_DIR_NAMES.length; j++) {
-                if (name.equals(EXCLUDED_DIR_NAMES[j])) {
-                    // #61579: known to not be project dirs, so skip to save time.
-                    continue KIDS;
-                }
+            if (EXCLUDED_DIR_NAMES.contains(name)) {
+                // #61579: known to not be project dirs, so skip to save time.
+                continue KIDS;
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name; // NOI18N
             try {
@@ -212,7 +208,9 @@ public final class ModuleList {
                 Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + kids[i] + ", skipping...", null, null, null); // NOI18N
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
-            doScanNetBeansOrgSources(entries, kids[i], depth - 1, root, nbdestdir, newPathPrefix);
+            if (depth > 1) {
+                doScanNetBeansOrgSources(entries, kids[i], depth - 1, root, nbdestdir, newPathPrefix);
+            }
         }
     }
     
