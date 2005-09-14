@@ -305,7 +305,7 @@ public final class Utilities {
         }
 
         if (id.equals("")) {
-            return false; // NOI18N
+            return false;
         }
 
         if (!(java.lang.Character.isJavaIdentifierStart(id.charAt(0)))) {
