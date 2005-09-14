@@ -164,6 +164,8 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         
         javax.swing.JLabel tableLabel = new javax.swing.JLabel();
         Mnemonics.setLocalizedText(tableLabel, tableName);
+        tableLabel.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_POPUP_TABLE_NAME"));// NOI18N
+        tableLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_POPUP_TABLE_NAME_DESCRIPTION"));// NOI18N
         tableLabel.setLabelFor(table);
         mainGridBag.setConstraints(tableLabel, c2);
         add(tableLabel);
