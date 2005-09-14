@@ -13,22 +13,15 @@
 
 package org.netbeans.modules.websvc.core.client.wizard;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -64,6 +57,10 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.core.Utilities;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** Wizard for adding web service clients to an application
  */
@@ -256,11 +253,22 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
             sourceUrl = normalizedWsdlFilePath.toString();
             sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
+
             if(sourceWsdlFile == null) {
                 String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_WsdlFileNotFound", normalizedWsdlFilePath); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
                 return result;
+            } else {
+                List schemaFiles = getSchemaNames(sourceWsdlFile);
+                if (schemaFiles!=null && schemaFiles.size()>0) {
+                    schemas=new ArrayList();
+                    FileObject wsdlFolder = sourceWsdlFile.getParent();
+                    for (int i=0;i<schemaFiles.size();i++) {
+                        FileObject schemaFo = wsdlFolder.getFileObject((String)schemaFiles.get(i));
+                        if (schemaFo!=null) schemas.add(schemaFo);
+                    }
+                }
             }
         } else {
             // create a temporary WSDL file
@@ -461,5 +469,67 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
 
     public void removeChangeListener(ChangeListener l) {
         // nothing to do yet
+    }
+    
+    /** Private method to identify schema files to import
+    */
+    private List /*String*/ getSchemaNames(FileObject fo) {
+            List result = null;
+            try {
+                    SAXParserFactory factory = SAXParserFactory.newInstance();
+                    factory.setNamespaceAware(true);
+                    SAXParser saxParser = factory.newSAXParser();
+                    ImportsHandler handler= new ImportsHandler();
+                    saxParser.parse(new InputSource(fo.getInputStream()), handler);
+                    result = handler.getSchemaNames();
+            } catch(ParserConfigurationException ex) {
+                    // Bogus WSDL, return null.
+            } catch(SAXException ex) {
+                    // Bogus WSDL, return null.
+            } catch(IOException ex) {
+                    // Bogus WSDL, return null.
+            }
+
+            return result;
+    }
+    
+    private class ImportsHandler extends DefaultHandler {
+        
+        private static final String W3C_WSDL_SCHEMA = "http://schemas.xmlsoap.org/wsdl"; // NOI18N
+        private static final String W3C_WSDL_SCHEMA_SLASH = "http://schemas.xmlsoap.org/wsdl/"; // NOI18N
+        
+        private List schemaNames;
+        
+        private boolean insideSchema;
+        
+        ImportsHandler() {
+            schemaNames = new ArrayList();
+        }
+        
+        public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
+            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
+                if("types".equals(localname)) { // NOI18N
+                    insideSchema=true;
+                }
+            }
+            if("import".equals(localname) && insideSchema) { // NOI18N
+                String schemaLocation = attributes.getValue("schemaLocation"); //NOI18N
+                if (schemaLocation!=null && schemaLocation.indexOf("/")<0 && schemaLocation.endsWith(".xsd")) { //NOI18N
+                    schemaNames.add(schemaLocation);
+                }
+            }
+        }
+        
+        public void endElement(String uri, String localname, String qname) throws SAXException {
+            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
+                if("types".equals(localname)) { // NOI18N
+                    insideSchema=false;
+                }
+            }
+        }
+        
+        public List/*String*/ getSchemaNames() {
+            return schemaNames;
+        }
     }
 }
