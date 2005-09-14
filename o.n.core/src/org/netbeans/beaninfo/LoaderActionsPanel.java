@@ -95,7 +95,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
         java.awt.GridBagConstraints gridBagConstraints;
 
         splitPane = new javax.swing.JSplitPane();
-        explorerPanel = new org.openide.explorer.ExplorerPanel();
+        explorerPanel = new ExplorerPanel();
         beanTreeView2 = new org.openide.explorer.view.BeanTreeView();
         jScrollPane1 = new javax.swing.JScrollPane();
         list = new javax.swing.JList();
@@ -290,7 +290,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
     private javax.swing.JButton addButton;
     private org.openide.explorer.view.BeanTreeView beanTreeView2;
     private javax.swing.JButton downButton;
-    private org.openide.explorer.ExplorerPanel explorerPanel;
+    private org.netbeans.beaninfo.ExplorerPanel explorerPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;

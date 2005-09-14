@@ -31,7 +31,7 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
+import org.netbeans.beaninfo.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
@@ -172,7 +172,7 @@ public final class NbSheet extends TopComponent {
     
     public HelpCtx getHelpCtx () {
         // #40372 fix - for non-global properties display (assumed to be in a dialog), don't show the help button
-        return (global ? ExplorerPanel.getHelpCtx (nodes, new HelpCtx (NbSheet.class)) : null);
+        return (global ? org.openide.explorer.ExplorerUtils.getHelpCtx (nodes, new HelpCtx (NbSheet.class)) : null);
     }
 
     /** Transfer the focus to the property sheet.

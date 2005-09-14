@@ -138,7 +138,7 @@ class DataFolderPanel extends TopComponent implements
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        packagesPanel = new org.openide.explorer.ExplorerPanel();
+        packagesPanel = new org.netbeans.beaninfo.ExplorerPanel();
         beanTreeView = new org.openide.explorer.view.BeanTreeView();
         descriptionLabel = new javax.swing.JLabel();
         packageLabel = new javax.swing.JLabel();
@@ -249,7 +249,7 @@ class DataFolderPanel extends TopComponent implements
     private javax.swing.JTextField directoryName;
     private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField packageName;
-    private org.openide.explorer.ExplorerPanel packagesPanel;
+    private org.netbeans.beaninfo.ExplorerPanel packagesPanel;
     // End of variables declaration//GEN-END:variables
 
     //

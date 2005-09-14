@@ -187,8 +187,6 @@ public class IDESettings extends SystemOption {
         Boolean oldValue = confirmDelete ? Boolean.TRUE : Boolean.FALSE;
         confirmDelete = value;
 
-        org.openide.explorer.ExplorerPanel.setConfirmDelete (value);
-
         // fire the PropertyChange
         firePropertyChange (PROP_CONFIRM_DELETE, oldValue, confirmDelete ? Boolean.TRUE : Boolean.FALSE);
     }

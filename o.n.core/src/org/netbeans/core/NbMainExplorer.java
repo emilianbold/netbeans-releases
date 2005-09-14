@@ -85,7 +85,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
     }
 
     public HelpCtx getHelpCtx () {
-        return ExplorerPanel.getHelpCtx (getActivatedNodes (),
+        return ExplorerUtils.getHelpCtx (getActivatedNodes (),
                                          new HelpCtx (NbMainExplorer.class));
     }
     
@@ -436,7 +436,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     /** Common explorer top component which composites bean tree view
     * to view given context. */
-    public static class ExplorerTab extends ExplorerPanel
+    public static class ExplorerTab extends org.netbeans.beaninfo.ExplorerPanel
         implements /*DeferredPerformer.DeferredCommand,*/ TopComponent.Cloneable {
         static final long serialVersionUID =-8202452314155464024L;
         /** composited view */
@@ -459,11 +459,12 @@ public final class NbMainExplorer extends CloneableTopComponent {
             super();
             // complete initialization of composited explorer actions
             ideSettings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
-            setConfirmDelete(ideSettings.getConfirmDelete ());
             
+            getActionMap().put("delete", ExplorerUtils.actionDelete(getExplorerManager(), ideSettings.getConfirmDelete ())); 
             
             // attach listener to the changes of IDE settings
             weakIdeL = WeakListeners.propertyChange(rcListener(), ideSettings);
+            ideSettings.addPropertyChangeListener(weakIdeL);
         }
         
         /** Overriden to explicitely set persistence type of ExplorerTab
@@ -701,7 +702,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                 Object source = evt.getSource();
                 if (source instanceof IDESettings) {
                     // possible change in confirm delete settings
-                    setConfirmDelete(((IDESettings)source).getConfirmDelete());
+                    getActionMap().put("delete", ExplorerUtils.actionDelete(getExplorerManager(), ((IDESettings)source).getConfirmDelete())); 
                     return;
                 }
                 // root context node change
@@ -798,7 +799,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
         
         public HelpCtx getHelpCtx () {
-            return getHelpCtx (getExplorerManager ().getSelectedNodes (),
+            return ExplorerUtils.getHelpCtx (getExplorerManager ().getSelectedNodes (),
                     new HelpCtx (EnvironmentNode.class));
 	}
 

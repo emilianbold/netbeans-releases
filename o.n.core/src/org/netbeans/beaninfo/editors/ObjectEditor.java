@@ -33,7 +33,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
+import org.netbeans.beaninfo.ExplorerPanel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;

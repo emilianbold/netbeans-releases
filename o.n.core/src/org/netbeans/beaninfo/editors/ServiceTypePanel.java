@@ -28,7 +28,7 @@ import org.openide.util.Lookup;
 *
 * @author Jaroslav Tulach
 */
-public class ServiceTypePanel extends ExplorerPanel {
+public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
 
     private int width_components=0,width_leftcomponent=0;
 

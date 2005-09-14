@@ -51,7 +51,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
+import org.netbeans.beaninfo.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.explorer.view.TreeTableView;
@@ -209,7 +209,7 @@ public class OptionsAction extends CallableSystemAction {
         
         public HelpCtx getHelpCtx () {
             HelpCtx defaultHelp = new HelpCtx (HELP_ID);
-            HelpCtx help = ExplorerPanel.getHelpCtx (
+            HelpCtx help = org.openide.explorer.ExplorerUtils.getHelpCtx (
                 getExplorerManager ().getSelectedNodes (),
                 defaultHelp
             );

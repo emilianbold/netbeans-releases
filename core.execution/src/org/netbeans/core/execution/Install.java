@@ -33,15 +33,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.TopSecurityManager;
+import org.netbeans.beaninfo.ExplorerPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.ListView;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
@@ -51,6 +55,7 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -192,7 +197,7 @@ public class Install extends ModuleInstall {
             return true;
         }
   
-        ExplorerPanel panel = createExplorerPanel();
+        EM panel = new EM();
         
         Dialog[] dialog = new Dialog[1];
         Node root = new AbstractNode(new PendingChildren());
@@ -247,44 +252,72 @@ public class Install extends ModuleInstall {
         return true;
     }
  
-    /** Creates dialod for showing pending tasks. */
-    private static ExplorerPanel createExplorerPanel() {
-        ExplorerPanel panel = new ExplorerPanel();
-        
-        panel.setLayout(new GridBagLayout());
-        
-        GridBagConstraints cons = new GridBagConstraints();
-        cons.gridx = 0;
-        cons.gridy = 0;
-        cons.weightx = 1.0D;
-        cons.fill = GridBagConstraints.HORIZONTAL;
-        cons.insets = new Insets(11, 11, 0, 12);
+    private static class EM extends JPanel implements ExplorerManager.Provider {
+        private ExplorerManager manager = new ExplorerManager();
+        private org.openide.util.Lookup lookup;
 
-        JLabel label = new JLabel(NbBundle.getMessage(Install.class, "LAB_PendingTasks"));
-        label.setDisplayedMnemonic(NbBundle.getMessage(Install.class, "LAB_PendingTasksMnem").charAt(0));
-        
-        panel.add(label, cons);
-        
-        cons.gridy = 1;
-        cons.weighty = 1.0D;
-        cons.fill = GridBagConstraints.BOTH;
-        cons.insets = new Insets(2, 11, 0, 12);
+        public EM() {
+            manager = new ExplorerManager();
+            ActionMap map = getActionMap();
+            map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+            map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+            map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+            map.put("delete", ExplorerUtils.actionDelete(manager, true)); // or false
 
-        ListView view = new ListView();
-        label.setLabelFor(view);
-        
-        panel.add(view, cons);
-        
-        view.getAccessibleContext().setAccessibleDescription(
+            lookup = ExplorerUtils.createLookup (manager, map);
+
+            initComponent();
+        }
+       
+        private void initComponent() {
+            setLayout(new GridBagLayout());
+
+            GridBagConstraints cons = new GridBagConstraints();
+            cons.gridx = 0;
+            cons.gridy = 0;
+            cons.weightx = 1.0D;
+            cons.fill = GridBagConstraints.HORIZONTAL;
+            cons.insets = new Insets(11, 11, 0, 12);
+
+            JLabel label = new JLabel(NbBundle.getMessage(Install.class, "LAB_PendingTasks"));
+            label.setDisplayedMnemonic(NbBundle.getMessage(Install.class, "LAB_PendingTasksMnem").charAt(0));
+
+            add(label, cons);
+
+            cons.gridy = 1;
+            cons.weighty = 1.0D;
+            cons.fill = GridBagConstraints.BOTH;
+            cons.insets = new Insets(2, 11, 0, 12);
+
+            ListView view = new ListView();
+            label.setLabelFor(view);
+
+            add(view, cons);
+
+            view.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(Install.class, "ACSD_PendingTasks"));
-        panel.getAccessibleContext().setAccessibleDescription(
+            getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(Install.class, "ACSD_PendingTitle"));
-        
-        // set size requested by HIE guys
-        Dimension origSize = panel.getPreferredSize();
-        panel.setPreferredSize(new Dimension(origSize.width * 5 / 4, origSize.height));
 
-        return panel;
+            // set size requested by HIE guys
+            Dimension origSize = getPreferredSize();
+            setPreferredSize(new Dimension(origSize.width * 5 / 4, origSize.height));
+        }
+
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+        public Lookup getLookup() {
+            return lookup;
+        }
+        public void addNotify() {
+            super.addNotify();
+            ExplorerUtils.activateActions(manager, true);
+        }
+        public void removeNotify() {
+            ExplorerUtils.activateActions(manager, false);
+            super.removeNotify();
+        }
     }
     
     /** Gets pending (running) tasks. Used as keys 

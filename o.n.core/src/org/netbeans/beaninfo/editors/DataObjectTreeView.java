@@ -29,6 +29,7 @@ import org.openide.explorer.view.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
+import org.netbeans.beaninfo.ExplorerPanel;
 
 /**
  * Component that displays an explorer that displays only certain
