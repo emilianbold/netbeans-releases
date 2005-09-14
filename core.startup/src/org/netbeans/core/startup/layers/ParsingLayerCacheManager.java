@@ -36,19 +36,19 @@ import org.openide.xml.XMLUtil;
 public abstract class ParsingLayerCacheManager extends LayerCacheManager implements ContentHandler, ErrorHandler, EntityResolver {
     
     private final static String[] ATTR_TYPES = {
+        "boolvalue",
         "bytevalue",
-        "shortvalue",
+        "charvalue",
+        "doublevalue",
+        "floatvalue",
         "intvalue",
         "longvalue",
-        "floatvalue",
-        "doublevalue",
-        "boolvalue",
-        "charvalue",
-        "stringvalue",
-        "urlvalue",
         "methodvalue",
         "newvalue",
         "serialvalue",
+        "shortvalue",
+        "stringvalue",
+        "urlvalue"
     };
     
     private final static String DTD_1_0 = "-//NetBeans//DTD Filesystem 1.0//EN";
@@ -196,6 +196,24 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         } else if (qname == "attr") {
             attrCount++;
             MemAttr attr = new MemAttr();
+            for (int i = 0; i < attrs.getLength(); i++) {
+                String attrName = attrs.getQName(i);
+                if ("name".equals(attrName)) {
+                    attr.name = attrs.getValue(i);
+                }
+                else {
+                    int idx = Arrays.binarySearch(ATTR_TYPES, attrName);
+                    if (idx >= 0) {
+                        attr.type = ATTR_TYPES[idx];
+                        attr.data = attrs.getValue(i);
+                    }
+                }
+                if (attr.name != null && attr.data != null) {
+                    break;
+                }
+            }
+//            System.out.println("found attr "+attr);
+            /*
             attr.name = attrs.getValue("name");
             for (int i = 0; i < ATTR_TYPES.length; i++) {
                 String v = attrs.getValue(ATTR_TYPES[i]);
@@ -205,6 +223,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                     break;
                 }
             }
+             */
             if (attr.type == null) throw new SAXParseException("unknown <attr> value type for " + attr.name, locator);
             MemFileOrFolder parent = (MemFileOrFolder)curr.peek();
             if (parent.attrs == null) parent.attrs = new LinkedList();
@@ -229,14 +248,18 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         if (name == null) throw new NullPointerException("No name"); // NOI18N
         if (!(curr.peek() instanceof MemFolder)) throw new ClassCastException("Stack: " + curr); // NOI18N
         MemFolder parent = (MemFolder)curr.peek();
-        if (parent.children == null) parent.children = new LinkedList();
         MemFileOrFolder f = null;
-        Iterator it = parent.children.iterator();
-        while (it.hasNext()) {
-            MemFileOrFolder f2 = (MemFileOrFolder)it.next();
-            if (f2.name.equals(name)) {
-                f = f2;
-                break;
+        if (parent.children == null) {
+            parent.children = new LinkedList();
+        }
+        else {
+            Iterator it = parent.children.iterator();
+            while (it.hasNext()) {
+                MemFileOrFolder f2 = (MemFileOrFolder)it.next();
+                if (f2.name.equals(name)) {
+                    f = f2;
+                    break;
+                }
             }
         }
         if (f == null) {
