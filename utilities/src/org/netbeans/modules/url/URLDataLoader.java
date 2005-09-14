@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,6 +31,8 @@ public class URLDataLoader extends UniFileLoader {
 
     /** Generated serial version UID. */
     static final long serialVersionUID =-7407252842873642582L;
+    /** MIME-type of URL files */
+    private static final String URL_MIME_TYPE = "text/url";             //NOI18N
     
     
     /** Creates a new URLDataLoader without the extension. */
@@ -47,7 +49,8 @@ public class URLDataLoader extends UniFileLoader {
         super.initialize();
 
         ExtensionList ext = new ExtensionList();
-        ext.addExtension("url");                                        //NOI18N
+        ext.addMimeType(URL_MIME_TYPE);
+        ext.addMimeType("text/x-url");                                  //NOI18N
         setExtensions(ext);
     }
 
@@ -57,26 +60,24 @@ public class URLDataLoader extends UniFileLoader {
                                    "PROP_URLLoader_Name");              //NOI18N
     }
     
-    /** */
+    /**
+     * This methods uses the layer action context so it returns
+     * a non-<code>null</code> value.
+     *
+     * @return  name of the context on layer files to read/write actions to
+     */
+    protected String actionsContext () {
+        return "Loaders/text/url/Actions/";                             //NOI18N
+    }
+    
+    /**
+     * This method returns <code>null</code> because it uses method
+     * {@link #actionsContext}.
+     *
+     * @return  <code>null</code>
+     */
     protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(EditAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get(SaveAsTemplateAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+        return null;
     }
     
     /**

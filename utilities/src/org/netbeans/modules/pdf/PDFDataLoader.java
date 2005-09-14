@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,6 +32,8 @@ public class PDFDataLoader extends UniFileLoader {
 
     /** Generated serial version UID. */
     private static final long serialVersionUID = -4354042385752587850L;
+    /** MIME-type of PDF files */
+    private static final String PDF_MIME_TYPE = "application/pdf";      //NOI18N
 
     
     /** Creates loader. */
@@ -51,7 +53,12 @@ public class PDFDataLoader extends UniFileLoader {
         super.initialize();
 
         ExtensionList extensions = new ExtensionList ();
-        extensions.addExtension ("pdf"); // NOI18N
+        extensions.addMimeType(PDF_MIME_TYPE);
+        extensions.addMimeType("application/x-pdf");                    //NOI18N
+        extensions.addMimeType("application/vnd.pdf");                  //NOI18N
+        extensions.addMimeType("application/acrobat");                  //NOI18N
+        extensions.addMimeType("text/pdf");                             //NOI18N
+        extensions.addMimeType("text/x-pdf");                           //NOI18N
         setExtensions (extensions);
     }
     
@@ -60,24 +67,24 @@ public class PDFDataLoader extends UniFileLoader {
         return NbBundle.getMessage (PDFDataLoader.class, "LBL_loaderName");
     }
     
-    /** Gets default system actions. Overrides superclass method. */
+    /**
+     * This methods uses the layer action context so it returns
+     * a non-<code>null</code> value.
+     *
+     * @return  name of the context on layer files to read/write actions to
+     */
+    protected String actionsContext () {
+        return "Loaders/application/pdf/Actions/";                      //NOI18N
+    }
+    
+    /**
+     * This method returns <code>null</code> because it uses method
+     * {@link #actionsContext}.
+     *
+     * @return  <code>null</code>
+     */
     protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get (OpenAction.class),
-            SystemAction.get (FileSystemAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            SystemAction.get (RenameAction.class),
-            null,
-            SystemAction.get (SaveAsTemplateAction.class),
-            null,
-            SystemAction.get (ToolsAction.class),
-            SystemAction.get (PropertiesAction.class),
-        };
+        return null;
     }
 
     /** Creates multi data objcte for specified primary file.
