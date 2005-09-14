@@ -322,7 +322,7 @@
             <property name="size">12</property>
             <property name="style">0</property>
         </property>
-        <property name="backgroundColor"/>
+        <property name="backgroundColor">Color.white</property>
         <property name="foregroundColor">Color.black</property>
         <property name="splashImage"/>
         <property name="frameResizable">True</property>
@@ -557,7 +557,7 @@
             <property name="size">12</property>
             <property name="style">0</property>
         </property>
-        <property name="backgroundColor"/>
+        <property name="backgroundColor">Color.white</property>
         <property name="foregroundColor">Color.black</property>
         <property name="splashImage"/>
         <property name="frameResizable">True</property>
