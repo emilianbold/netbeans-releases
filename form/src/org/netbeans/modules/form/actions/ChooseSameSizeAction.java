@@ -234,7 +234,7 @@ public class ChooseSameSizeAction extends NodeAction {
                 List compIds = getComponentIds(mi.getRADComponents());
                 int dimension = mi.getDimension();
                 if (mi.isSelected()) {
-                    layoutModel.unsetSameSize(compIds, dimension);
+                    layoutModel.setSameSize(compIds, dimension);
                 } else {
                     layoutModel.unsetSameSize(compIds, dimension);
                 }
