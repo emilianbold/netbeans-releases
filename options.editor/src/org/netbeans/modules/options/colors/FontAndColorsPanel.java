@@ -120,6 +120,9 @@ ActionListener {
 	tabbedPane.addTab (loc ("Syntax_coloring_tab"), syntaxColoringPanel);
 	tabbedPane.addTab (loc ("Editor_tab"), editorPanel);
 	tabbedPane.addTab (loc ("Annotations_tab"), annotationsPanel);
+        tabbedPane.setMnemonicAt (0, loc ("Syntax_coloring_tab_mnemonic").charAt (0));
+        tabbedPane.setMnemonicAt (1, loc ("Editor_tab_mnemonic").charAt (0));
+        tabbedPane.setMnemonicAt (2, loc ("Annotations_tab_mnemonic").charAt (0));
     }
 
     private void cbSchemesItemStateChanged (ItemEvent evt) {
