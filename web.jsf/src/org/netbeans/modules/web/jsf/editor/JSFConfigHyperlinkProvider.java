@@ -119,7 +119,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                 return null;
             ExtSyntaxSupport sup = (ExtSyntaxSupport)bdoc.getSyntaxSupport();
             TokenItem token = sup.getTokenChain(offset, offset+1);
-            if (token.getTokenID().getNumericID() != JSFEditorUtilities.XML_TEXT)
+            if (token == null || token.getTokenID().getNumericID() != JSFEditorUtilities.XML_TEXT)
                 return null;
             value = token.getImage();
             if (value != null){
