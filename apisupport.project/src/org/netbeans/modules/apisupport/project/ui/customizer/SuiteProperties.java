@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -41,7 +42,7 @@ public final class SuiteProperties extends ModuleProperties {
     private NbPlatform platform;
     
     /** Project the current properties represents. */
-    private Project project;
+    private SuiteProject project;
     
     /** Represent original set of sub-modules. */
     private Set/*<Project>*/ origSubModules;
@@ -66,7 +67,7 @@ public final class SuiteProperties extends ModuleProperties {
     /**
      * Creates a new instance of SuiteProperties
      */
-    SuiteProperties(Project project, AntProjectHelper helper,
+    public SuiteProperties(SuiteProject project, AntProjectHelper helper,
             PropertyEvaluator evaluator, Set/*<Project>*/ subModules) {
         super(helper, evaluator);
         this.project = project;
@@ -87,7 +88,7 @@ public final class SuiteProperties extends ModuleProperties {
         firePropertiesRefreshed();
     }
     
-    Project getProject() {
+    SuiteProject getProject() {
         return project;
     }
     

@@ -37,6 +37,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Provide set of helper methods for branding purposes
@@ -222,15 +223,17 @@ public final class BrandingSupport {
     }
     
     private ModuleEntry getModuleEntry(final String moduleCodeNameBase) {
-        ModuleEntry foundEntry = null;
-        for (Iterator it = Arrays.asList(suiteProject.getActivePlatform().getModules()).iterator(); it.hasNext();) {
+        NbPlatform platform = suiteProject.getActivePlatform();
+        if (platform == null) {
+            return null;
+        }
+        for (Iterator it = Arrays.asList(platform.getModules()).iterator(); it.hasNext();) {
             ModuleEntry entry = (ModuleEntry)it.next();
             if (entry.getCodeNameBase().equals(moduleCodeNameBase)) {
-                foundEntry = entry;
-                break;
+                return entry;
             }
         }
-        return foundEntry;
+        return null;
     }
     
     public void brandFile(final BrandedFile bFile) throws IOException {
@@ -273,6 +276,9 @@ public final class BrandingSupport {
     }
     
     public void brandBundleKey(final BundleKey bundleKey) throws IOException {
+        if (bundleKey == null) {
+            return;
+        }
         Set keys = new HashSet();
         keys.add(bundleKey);
         brandBundleKeys(keys);
@@ -572,7 +578,7 @@ public final class BrandingSupport {
         }
         
         public void setBrandingSource(URL brandingSource) {
-            if (!brandingSource.equals(this.brandingSource)) {
+            if (!Utilities.compareObjects(brandingSource, this.brandingSource)) {
                 modified = true;
             }
             this.brandingSource = brandingSource;

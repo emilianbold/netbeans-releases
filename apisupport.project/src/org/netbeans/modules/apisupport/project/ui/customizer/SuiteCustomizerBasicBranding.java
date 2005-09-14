@@ -82,7 +82,9 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
         nameValue.setText(getBrandingModel().getName());
         titleValue.setText(getBrandingModel().getTitle());
         iconSource = getBrandingModel().getIconSource();
-        ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
+        if (iconSource != null) {
+            ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
+        }
         iconLocation.setText(getBrandingModel().getIconLocation());
         
         enableOrDisableComponents();

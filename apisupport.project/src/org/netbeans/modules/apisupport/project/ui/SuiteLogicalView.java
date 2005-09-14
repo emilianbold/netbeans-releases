@@ -15,6 +15,8 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
@@ -42,6 +44,7 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
@@ -70,16 +73,24 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         return null;
     }
     
-    private static final class SuiteRootNode extends AbstractNode {
+    private static final class SuiteRootNode extends AbstractNode implements PropertyChangeListener {
         
         private final SuiteProject suite;
+        private final ProjectInformation info;
         
         public SuiteRootNode(final SuiteProject suite) {
             super(createRootChildren(suite), Lookups.fixed(new Object[] {suite}));
-            ProjectInformation info = ProjectUtils.getInformation(suite);
-            setName(info.getName());
-            setDisplayName(info.getDisplayName());
             this.suite = suite;
+            info = ProjectUtils.getInformation(suite);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+        }
+        
+        public String getName() {
+            return info.getName();
+        }
+        
+        public String getDisplayName() {
+            return info.getDisplayName();
         }
         
         public Action[] getActions(boolean context) {
@@ -92,6 +103,14 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(ProjectInformation.PROP_NAME)) {
+                fireNameChange(null, getName());
+            } else if (evt.getPropertyName().equals(ProjectInformation.PROP_DISPLAY_NAME)) {
+                fireDisplayNameChange(null, getDisplayName());
+            }
         }
         
     }

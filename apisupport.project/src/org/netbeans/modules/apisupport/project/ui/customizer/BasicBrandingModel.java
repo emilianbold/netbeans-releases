@@ -21,17 +21,21 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -140,16 +144,24 @@ public class BasicBrandingModel {
     public void setTitle(String title) {
         if (isBrandingEnabled()) {
             this.title = title;
-            productInformation.setValue(title);
-            mainWindowTitle.setValue(title+ " {0}");//NOI18N
-            mainWindowTitleNoProject.setValue(title+ " {0}");//NOI18N
-            currentVersion.setValue(title+ " {0}");//NOI18N
+            if (productInformation != null) {
+                productInformation.setValue(title);
+            }
+            if (mainWindowTitle != null) {
+                mainWindowTitle.setValue(title + " {0}"); //NOI18N
+            }
+            if (mainWindowTitleNoProject != null) {
+                mainWindowTitleNoProject.setValue(title + " {0}"); //NOI18N
+            }
+            if (currentVersion != null) {
+                currentVersion.setValue(title + " {0}"); //NOI18N
+            }
             suiteProps.setProperty(TITLE_PROPERTY, getTitle());
         }
     }
     
     public URL getIconSource() {
-        return icon.getBrandingSource();
+        return icon != null ? icon.getBrandingSource() : null;
     }
     
     public void setIconSource(final URL url) {
@@ -235,13 +247,23 @@ public class BasicBrandingModel {
         brandingEnabled = (suiteProps.getProperty(BRANDING_TOKEN_PROPERTY) != null);
     }
     
+    private String getSimpleName() {
+        Element nameEl = Util.findElement(suiteProps.getProject().getHelper().getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
+        String text = (nameEl != null) ? Util.findText(nameEl) : null;
+        return (text != null) ? text : "???"; // NOI18N
+    }
+
     private void initName()  {
         if (name == null) {
             name = suiteProps.getProperty(NAME_PROPERTY);
         }
         
         if (name == null) {
-            name = NbBundle.getBundle(getClass()).getString("APP_DefaultName");//NOI18N
+            name = getSimpleName().toLowerCase(Locale.ENGLISH).replaceAll("[^a-z0-9]", "_"); // NOI18N
+            if (!name.matches("[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*")) { // NOI18N
+                // Too far from a decent name, forget it.
+                name = "app"; // NOI18N
+            }
         }
         
         assert name != null;
@@ -252,7 +274,11 @@ public class BasicBrandingModel {
             String initTitle = suiteProps.getProperty(TITLE_PROPERTY);
             
             if (initTitle == null) {
-                initTitle = NbBundle.getBundle(getClass()).getString("APP_Title");//NOI18N
+                initTitle = getSimpleName();
+                // Just make a rough attempt to uppercase it, to hint that it can be a display name.
+                if (Character.isLowerCase(initTitle.charAt(0))) {
+                    initTitle = String.valueOf(Character.toLowerCase(initTitle.charAt(0))) + initTitle.substring(1);
+                }
             }
             assert initTitle != null;
             title = initTitle;
@@ -264,35 +290,29 @@ public class BasicBrandingModel {
                 "org.netbeans.core",//NOI18N
                 "org/netbeans/core/ui/Bundle.properties" ,//NOI18N
                 "LBL_ProductInformation");//NOI18N
-        assert productInformation != null;
         
         mainWindowTitle = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties", // NOI18N
                 "CTL_MainWindow_Title");//NOI18N
-        assert mainWindowTitle != null;
         
         mainWindowTitleNoProject = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties",//NOI18N
                 "CTL_MainWindow_Title_No_Project");//NOI18N
-        assert mainWindowTitleNoProject != null;
         
         currentVersion = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "currentVersion");//NOI18N
-        assert currentVersion != null;
         
         icon = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/frame48.gif");//NOI18N
-        assert icon != null;
         
         splash = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/splash.gif");//NOI18N
-        assert splash != null;
         
         // init of splash keys
         
@@ -390,16 +410,6 @@ public class BasicBrandingModel {
             }
         }
          */
-        assert splashWidth != null;
-        assert splashHeight != null;
-        assert splashShowProgressBar != null;
-        assert splashRunningTextBounds != null;
-        assert splashProgressBarBounds != null;
-        assert splashRunningTextFontSize != null;
-        assert splashRunningTextColor != null;
-        assert splashProgressBarColor != null;
-        assert splashProgressBarEdgeColor != null;
-        assert splashProgressBarCornerColor != null;
         
         splashKeys.add(splashWidth);
         splashKeys.add(splashHeight);
@@ -411,6 +421,7 @@ public class BasicBrandingModel {
         splashKeys.add(splashProgressBarColor);
         splashKeys.add(splashProgressBarEdgeColor);
         splashKeys.add(splashProgressBarCornerColor);
+        splashKeys.remove(null);
     }
     
     public BrandingSupport.BundleKey getSplashWidth() {

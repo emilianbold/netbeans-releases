@@ -12,8 +12,8 @@
  */
 
 package org.netbeans.modules.apisupport.project.suite;
-
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +30,9 @@ import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -48,7 +50,6 @@ import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
-
 /**
  * Represents one module suite project.
  * @author Jesse Glick
@@ -145,23 +146,34 @@ public final class SuiteProject implements Project {
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
     }
     
-    private final class Info implements ProjectInformation {
+    private final class Info implements ProjectInformation, AntProjectListener {
         
-        Info() {}
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
-        public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName());
+        Info() {
+            helper.addAntProjectListener(this);
         }
-
-        public String getDisplayName() {
+        
+        private String getSimpleName() {
             Element nameEl = Util.findElement(helper.getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
             String text = (nameEl != null) ? Util.findText(nameEl) : null;
             return (text != null) ? text : "???"; // NOI18N
-            // XXX consider using <name> for getName() always, but try to use ${app.title} if set for getDisplayName()
+        }
+        
+        public String getName() {
+            return PropertyUtils.getUsablePropertyName(getSimpleName());
+        }
+
+        public String getDisplayName() {
+            String appTitle = getEvaluator().getProperty("app.title"); // NOI18N
+            if (appTitle != null) {
+                return appTitle;
+            } else {
+                return getSimpleName();
+            }
         }
 
         public Icon getIcon() {
-            // XXX have to make this icon be distinct...
             return new ImageIcon(Utilities.loadImage(SUITE_ICON_PATH));
         }
         
@@ -169,9 +181,26 @@ public final class SuiteProject implements Project {
             return SuiteProject.this;
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener listener) {}
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
         
-        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            fireNameChange();
+        }
+
+        public void propertiesChanged(AntProjectEvent ev) {
+            fireNameChange();
+        }
+
+        private void fireNameChange() {
+            pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, getName());
+            pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, getDisplayName());
+        }
         
     }
     

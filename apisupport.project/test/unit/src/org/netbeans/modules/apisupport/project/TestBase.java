@@ -215,11 +215,11 @@ public abstract class TestBase extends NbTestCase {
     }
     
     // XXX copied from TestBase in ant/freeform
-    protected static final class TestPCL implements PropertyChangeListener {
+    public static final class TestPCL implements PropertyChangeListener {
         
         public final Set/*<String>*/ changed = new HashSet();
-        public final Map/*<String,String*/ newvals = new HashMap();
-        public final Map/*<String,String*/ oldvals = new HashMap();
+        public final Map/*<String,String>*/ newvals = new HashMap();
+        public final Map/*<String,String>*/ oldvals = new HashMap();
         
         public TestPCL() {}
         
@@ -287,7 +287,6 @@ public abstract class TestBase extends NbTestCase {
     
     /** Generates an empty suite. */
     public static SuiteProject generateSuite(File workDir, String prjDir) throws IOException {
-        String prjDirDotted = prjDir.replace('/', '.');
         File prjDirF = file(workDir, prjDir);
         SuiteProjectGenerator.createSuiteProject(prjDirF, NbPlatform.PLATFORM_ID_DEFAULT);
         return (SuiteProject) ProjectManager.getDefault().findProject(
