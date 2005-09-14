@@ -148,7 +148,8 @@ public class ManagerGenerator
                         "/* *** SAMPLE CREDENTIALS *** */ \n" +// NOI18N
                         "/* Replace userName and userPassword with your parameters.  \n" +// NOI18N
                         " * Provide env parameter when calling JMXConnectorFactory.connect(url, env) \n" +// NOI18N
-                        "//RMI Authentication \n" +// NOI18N
+                        " */\n" +// NOI18N
+                        "/*\n" +// NOI18N
                         "Map env = new HashMap(); \n" +// NOI18N
                         "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
                         "userName\", \"" +// NOI18N
@@ -161,7 +162,7 @@ public class ManagerGenerator
                 String userPassword = (String)wiz.getProperty(
                         WizardConstants.PROP_MANAGER_USER_PASSWORD);
                 connectionTemplate[0] = 
-                    "//RMI Authentication \n" +// NOI18N
+                    " */\n" +// NOI18N
                     "Map env = new HashMap(); \n" +// NOI18N
                     "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
                                 userName + "\", \"" +// NOI18N
