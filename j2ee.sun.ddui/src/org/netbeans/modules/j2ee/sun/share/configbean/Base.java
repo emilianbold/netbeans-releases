@@ -459,11 +459,14 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 			if(dConfigBean.getDDBean() != null) {
 				if(((Base) dConfigBean).getParent() == this) {
 					// Handle children first.
+                                    
+					// Can't use iterator here or we will possibly get a ConcurrentModificationException
+					// as the children clean themselves up.
 					Base beanToRemove = (Base) dConfigBean;
-					Iterator iter = beanToRemove.getChildren().iterator();
-					while(iter.hasNext()) {
+					Object children[] = beanToRemove.getChildren().toArray();
+					for(int i = 0; i < children.length; i++) {
 						try {
-							beanToRemove.removeDConfigBean((DConfigBean) iter.next());
+							beanToRemove.removeDConfigBean((Base) children[i]);
 						} catch(BeanNotFoundException ex) {
 							// This would suggest a corrupt tree or bad code somewhere if it happens.
 							// Catch & log it and continue cleaning the tree.

@@ -471,9 +471,18 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             if(deadBean != null) {
                 // Remove the children first.  Each child also removes it's own
                 // children so this will remove the entire tree when it's done.
-                Iterator iter = deadBean.getChildren().iterator();
-                while(iter.hasNext()) {
-                    deadBean.removeDConfigBean((Base) iter.next());
+                
+                // Can't use iterator here or we will possibly get a ConcurrentModificationException
+                // as the children clean themselves up.
+                Object children[] = deadBean.getChildren().toArray();
+                for(int i = 0; i < children.length; i++) {
+                    try {
+                        deadBean.removeDConfigBean((Base) children[i]);
+                    } catch(BeanNotFoundException ex) {
+                        // This would suggest a corrupt tree or bad code somewhere if it happens.
+                        // Catch & log it and continue cleaning the tree.
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
                 }
 
                 // Remove this bean from both general and root caches.
