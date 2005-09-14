@@ -235,17 +235,47 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             }
         }
     }
-   public String getDebugAddressValue() throws java.rmi.RemoteException{
-       JvmOptions jvmInfo = new JvmOptions(getMBeanServerConnection());
-        return jvmInfo.getAddressValue();
-       
-   }
+    String lastAddress = null;
+    public String getDebugAddressValue() throws java.rmi.RemoteException{
+        String retVal = lastAddress;
+        JvmOptions jvmInfo = null;
+        try {
+            jvmInfo = new JvmOptions(getMBeanServerConnection());
+            retVal = jvmInfo.getAddressValue();
+            lastAddress = retVal;
+        } catch (java.rmi.RemoteException re) {
+            if (null == lastAddress)
+                throw re;
+        }
+        return retVal;       
+    }
+    
+    boolean lastIsSharedMem = false;
    public boolean isDebugSharedMemory() throws java.rmi.RemoteException{
-        JvmOptions jvmInfo = new JvmOptions(getMBeanServerConnection());
-        return  jvmInfo.isSharedMemory();
+       boolean retVal = lastIsSharedMem;
+        JvmOptions jvmInfo = null;
+        try {
+            jvmInfo = new JvmOptions(getMBeanServerConnection());
+            retVal = jvmInfo.isSharedMemory();
+            lastIsSharedMem = retVal;
+        } catch (java.rmi.RemoteException re) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,re);
+        }
+        return  retVal;
       
        
    }    
+//   public String getDebugAddressValue() throws java.rmi.RemoteException{
+//       JvmOptions jvmInfo = new JvmOptions(getMBeanServerConnection());
+//        return jvmInfo.getAddressValue();
+//       
+//   }
+//   public boolean isDebugSharedMemory() throws java.rmi.RemoteException{
+//        JvmOptions jvmInfo = new JvmOptions(getMBeanServerConnection());
+//        return  jvmInfo.isSharedMemory();
+//      
+//       
+//   }    
     public DeploymentConfiguration createConfiguration(DeployableObject dObj)
     throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException {
         return new SunONEDeploymentConfiguration(dObj/*, this*/);
@@ -675,9 +705,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
       * This boosts IDE reactivity
       */
     public boolean isRunning() {
-        long current=System.currentTimeMillis();
+         if (isSuspended())
+         return true;
+         long current=System.currentTimeMillis();
         if (current-timeStampCheckingRunning<7000){
-            timeStampCheckingRunning = current;
+            //timeStampCheckingRunning = current;
             return runningState;
         }
         timeStampCheckingRunning = current;
@@ -729,9 +761,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      * need to keep the mapping between a DM and a StartServer object
      */
     
-    public SunServerStateInterface getStartServerInterface() {
-        return startServerInterface;
-    }
+//    public SunServerStateInterface getStartServerInterface() {
+//        return startServerInterface;
+//    }
     
     public void ThrowExceptionIfSuspended(){
         
@@ -759,21 +791,29 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 //e.printStackTrace();
             }
         }
-        SunServerStateInterface ssrv = getStartServerInterface();
-        if(ssrv!=null){
-            if (ssrv.isSuspended()){
+//        SunServerStateInterface ssrv = getStartServerInterface();
+//        if(ssrv!=null){
+            if (isSuspended()){
                 //System.out.println("CANNOT DO A remote operation  WHILE STOPPED IN A BREAK POINT IN DEBUG MODE...");
                 throw new RuntimeException(bundle.getString("MSG_ServerInDebug")) ;
             }
             
-        }
+//        }
     }
     
-     /* used by a netbeans extension to associatate a StartServer with this DM
+/**
+      * Returns true if this server is started in debug mode AND debugger is attached to it 
+      * AND threads are suspended (e.g. debugger stopped on breakpoint)
       */
-    public void setStartServerInterface(SunServerStateInterface o) {
-        startServerInterface = o;
-    }
+     public boolean isSuspended() {
+         return org.netbeans.modules.j2ee.sun.ide.j2ee.StartSunServer.isSuspended(this);//ludo FIXME
+     }      
+
+/* used by a netbeans extension to associatate a StartServer with this DM
+      */
+//    public void setStartServerInterface(SunServerStateInterface o) {
+//        startServerInterface = o;
+//    }
     private ServerInterface mmm=null;
     
     public ServerInterface getManagement() {

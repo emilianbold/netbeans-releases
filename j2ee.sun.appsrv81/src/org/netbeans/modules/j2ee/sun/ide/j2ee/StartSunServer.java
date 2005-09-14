@@ -84,7 +84,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         pes = new ProgressEventSupport(this);
         //map this startserver object to our dpeloyment manager.
         //used to get one from the other one...
-        ((SunDeploymentManagerInterface)dm).setStartServerInterface(this);
+//        ((SunDeploymentManagerInterface)dm).setStartServerInterface(this);
         java.util.logging.Logger.getLogger("javax.enterprise.system.tools.admin.client").setLevel(java.util.logging.Level.OFF);
 
     }
@@ -95,7 +95,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         this.dm = deploymentManager;
          //map this startserver object to our dpeloyment manager.
         //used to get one from the other one...
-       ((SunDeploymentManagerInterface)dm).setStartServerInterface(this);
+//       ((SunDeploymentManagerInterface)dm).setStartServerInterface(this);
     }
 
     public DeploymentManager getDeploymentManager() {
@@ -546,11 +546,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
      * Returns true if this server is started in debug mode AND debugger is attached to it 
      * AND threads are suspended (e.g. debugger stopped on breakpoint)
      */
-    public boolean isSuspended() {
+    public static boolean isSuspended(SunDeploymentManagerInterface sunDm) {
         ServerDebugInfo sdi = null;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
 
-        SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
+        //SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
         try {
             sdi = (ServerDebugInfo)debugInfoMap.get(sunDm.getHost()+sunDm.getPort());
         } catch (Exception e) {
