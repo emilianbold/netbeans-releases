@@ -222,6 +222,13 @@ public class NewTCIterator extends BasicWizardIterator {
         // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         URL template = NewTCIterator.class.getResource("templateTopComponent.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcName, template, replaceTokens));
+        // x. generate java classes
+        final String tcFormName = getRelativePath(project, packageName,
+                name, "TopComponent.form"); //NOI18N
+        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+        template = NewTCIterator.class.getResource("templateTopComponent.frmx");//NOI18N
+        fileChanges.add(fileChanges.createFileWithSubstitutions(tcFormName, template, replaceTokens));
+        
         final String actionName = getRelativePath(project, packageName,
                 name, "Action.java"); //NOI18N
         // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):

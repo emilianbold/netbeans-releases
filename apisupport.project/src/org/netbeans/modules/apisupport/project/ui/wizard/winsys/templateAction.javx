@@ -16,11 +16,11 @@ public class @@TEMPLATENAME@@Action extends AbstractAction {
 
     public @@TEMPLATENAME@@Action() {
         putValue(NAME, NbBundle.getMessage(@@TEMPLATENAME@@Action.class, "CTL_@@TEMPLATENAME@@Action"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("@@ICONPATH@@", true)));
+        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("@@ICONPATH@@", true))); //NOI18N
     }
 
     public void actionPerformed(ActionEvent evt) {
-        TopComponent win = WindowManager.getDefault().findTopComponent("@@TEMPLATENAME@@TopComponent");
+        TopComponent win = WindowManager.getDefault().findTopComponent("@@TEMPLATENAME@@TopComponent"); //NOI18N
         if (win == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find @@TEMPLATENAME@@ component.");
             return;
