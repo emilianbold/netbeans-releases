@@ -55,17 +55,6 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     /* return true is this  deploymment manager is secure, i.e is using https instead of http protocol*/
     boolean isSecure();
     
-    /* may return null
-     * or returns a netbeans specific class that implements the StartServer interface from j2eeserver
-     * need to keep the mapping between a DM and a StartServer object
-     */
-    SunServerStateInterface getStartServerInterface();
-    
-    /* used by a netbeans extension to associatate a StartServer with this DM
-     */
-    void setStartServerInterface (SunServerStateInterface o);
-    
-    
    ServerInterface/* ServerMEJB*/ getManagement();
     
 ///    MBeanServerConnection getMBeanServerConnection() throws RemoteException, ServerException;
@@ -77,4 +66,6 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
    boolean isDebugSharedMemory() throws java.rmi.RemoteException;
    
    ResourceConfiguratorInterface getResourceConfigurator();
+   
+   boolean isSuspended();
 }

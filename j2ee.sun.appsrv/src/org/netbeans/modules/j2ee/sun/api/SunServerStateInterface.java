@@ -26,12 +26,6 @@ public interface SunServerStateInterface {
      */
     public boolean isDebugged() ;
     
-    /**
-     * Returns true if this server is started in debug mode AND debugger is attached to it 
-     * AND threads are suspended (e.g. debugger stopped on breakpoint)
-     */
-    public boolean isSuspended() ;    
-
         /* return true is this  deploymment manager is running*/
     public boolean isRunning();
     
