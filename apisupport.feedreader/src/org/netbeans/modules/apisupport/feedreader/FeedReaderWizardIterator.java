@@ -62,7 +62,10 @@ public class FeedReaderWizardIterator implements WizardDescriptor.InstantiatingI
         
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir);
+        InputStream is = template.getInputStream();
+        FileUtil.extractJar(dir, is);
+        is.close();
+        //unZipFile(template.getInputStream(), dir);
         
         Project p = ProjectManager.getDefault().findProject(dir);
 
@@ -145,62 +148,5 @@ public class FeedReaderWizardIterator implements WizardDescriptor.InstantiatingI
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    
-    // unzipping utilities..
-
-    private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
-        ZipInputStream str = null;
-        try {
-            str = new ZipInputStream(source);
-            ZipEntry entry = str.getNextEntry();
-            while (entry != null) {
-                String relPath = entry.getName();
-                FileObject fo = createFileObject(projectRoot, relPath);
-                
-                OutputStream out = null;
-                FileLock lock = null;
-                try {
-                    lock = fo.lock();
-                    out = fo.getOutputStream(lock);
-                    FileUtil.copy(str, out);
-                } finally {
-                    if (out != null) {
-                        out.close();
-                    }
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
-                }
-                entry = str.getNextEntry();
-            }
-        } finally {
-            if (str != null) {
-                str.close();
-            }
-        }
-    } 
-    
-    private static FileObject createFileObject(FileObject root, String relPath) throws IOException {
-        FileObject currParent = root;
-        StringTokenizer tokens = new StringTokenizer(relPath, "/");
-        int fileIndex = tokens.countTokens() - 1;
-        int currIndex = 0;
-        while (tokens.hasMoreTokens()) {
-            String elem = tokens.nextToken();
-            FileObject curr = currParent.getFileObject(elem);
-            if (curr != null) {
-                currParent = curr;
-                currIndex = currIndex + 1;
-                continue;
-            }
-            if (currIndex == fileIndex) {
-                currParent = currParent.createData(elem);
-            } else {
-                currParent = currParent.createFolder(elem);
-            }
-            currIndex = currIndex + 1;
-        }
-        return currParent;
-    }
     
 }
