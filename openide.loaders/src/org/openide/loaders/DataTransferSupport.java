@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -18,6 +18,7 @@
 
 package org.openide.loaders;
 
+import java.util.Arrays;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -78,6 +79,9 @@ abstract class DataTransferSupport {
 
         handleCreatePasteTypes (t, s);
     }
+    
+    private static final ErrorManager err = ErrorManager.getDefault ().getInstance ("org.openide.loaders.DataTransferSupport"); //NOI18N
+    
     /** Supports paste of multiple DataObject at once.
      */
     static abstract class PasteTypeExt extends PasteType {
@@ -118,6 +122,9 @@ abstract class DataTransferSupport {
         }
         
         private void doPaste () throws IOException {
+	    if (err.isLoggable (ErrorManager.INFORMATIONAL)) {
+		err.notify (ErrorManager.INFORMATIONAL, new Throwable ("Issue #58666: Called " + this + " doPaste() on objects " + Arrays.asList (objs)));
+	    }
             for (int i = 0; i < objs.length; i++)
                 handlePaste (objs[i]);
         }
