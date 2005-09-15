@@ -283,7 +283,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         
         if (dir.length() == 0) {
             //Directory must be specified
-            System.out.println("## dir: '" + dir + "'");
             dialogMsg = msgPrefix + " "
             + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNotSpecifiedMessage)");
             showErrorMsg(dialogTitle,dialogMsg);
