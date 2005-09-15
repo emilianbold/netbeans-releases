@@ -406,7 +406,7 @@ the Options window:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
 
 <!--CSH - Keymaps Options window page:-->
-<mapID target="netbeans.optionsDialog.keymaps" url="shortcuts/shortcuts-csh.html" />
+<mapID target="netbeans.optionsDialog.keymaps" url="configure/options-shortcuts.html" />
 
 <!--CSH - Insert Internationalized String dialog:-->
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
