@@ -141,8 +141,15 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         if (tokens.hasMoreTokens()) {
             fileAlreadyMarked = false;
             File fil = new File(tokens.nextToken());
+            if (!fil.exists()) {
+                // #63438 hmm. happens when cancelling the panel? why?
+                return wrongOnes;
+            }
             String name = fil.getName();
-            name = name.substring(0, name.lastIndexOf('.'));
+            int inddd = name.lastIndexOf('.');
+            if (inddd > -1) {
+                name = name.substring(0, inddd);
+            }
             name = name.replaceAll("[0-9._-]+$", ""); // NOI18N
             if (assignValues) {
                 data.setProjectName(name);
