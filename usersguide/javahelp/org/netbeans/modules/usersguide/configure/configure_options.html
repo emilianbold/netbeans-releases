@@ -6,143 +6,143 @@
  * 
 -->
 <html>
-<head>
-<title>Using the Options Window</title>
-<link rel="stylesheet" href="../ide.css" type="text/css">
-</head>
-<body>
-<h2>Using the Options Window</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
+    <head>
+        <title>Using the Options Window</title>
+        <link rel="stylesheet" href="../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Using the Options Window</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Options window enables you to change any of the IDE's configurable settings.
-   The Options window offers two views for editing IDE settings. </p>
- <ul>
-        <li><b>Modern view.</b> In Modern view, you select a category in the left pane to display its settings in the right pane. 
-        Depending on the category, click on the nodes or tabs in the right pane to access additional settings.
-        When you change settings in Modern view, the changes are not applied until you click OK.
-        </li>
-        <li><b>Classic view.</b> In Classic view, select a node in the tree view in the left pane to display the property sheet in the right pane.
-        The property sheet contains the names and values of the settings for the item selected in the left pane.
-        When you change settings in the property sheet, the changes are applied immediately.
-        Classic view enables you to access some settings not available in Modern view.
-        In Classic view you can apply specific settings globally or at the user level.</li>
+        <p>The Options window enables you to change any of the IDE's configurable settings.
+        The Options window offers two views for editing IDE settings. </p>
+        <ul>
+            <li><b>Modern view.</b> In Modern view, you select a category in the left pane to display its settings in the right pane. 
+                Depending on the category, click on the nodes or tabs in the right pane to access additional settings.
+                When you change settings in Modern view, the changes are not applied until you click OK.
+            </li>
+            <li><b>Classic view.</b> In Classic view, select a node in the tree view in the left pane to display the property sheet in the right pane.
+            The property sheet contains the names and values of the settings for the item selected in the left pane.
+            When you change settings in the property sheet, the changes are applied immediately.
+            Classic view enables you to access some settings not available in Modern view.
+            In Classic view you can apply specific settings globally or at the user level.</li>
      
- </ul>
-<p>When you open the Options window, the default view is Modern view. To switch between views, click the Classic View or Modern View buttons in the Options window.</p>
-    <!--XYZtodo task here -->
+        </ul>
+        <p>When you open the Options window, the default view is Modern view. To switch between views, click the Classic View or Modern View buttons in the Options window.</p>
+        <!--XYZtodo task here -->
 
-<p><b>To edit IDE settings in the Options window:</b></p>
-<ol>
-  <li>Open the Options window by choosing Tools &gt; Options.</li>
-  <li>If you want to edit settings in Classic view, click Classic View in the Options window.</li>
-  <li>Depending on which view you are in, select the category or node in the left pane for the settings you want to configure.</li>
-  <li>Modify the settings in the right pane.</li>
-  <li>Close the Options window.</p>
-</ol>
+        <p><b>To edit IDE settings in the Options window:</b></p>
+        <ol>
+            <li>Open the Options window by choosing Tools &gt; Options.</li>
+            <li>If you want to edit settings in Classic view, click Classic View in the Options window.</li>
+            <li>Depending on which view you are in, select the category or node in the left pane for the settings you want to configure.</li>
+            <li>Modify the settings in the right pane.</li>
+            <li>Close the Options window.</p>
+        </ol>
     
-<h3>Editing Settings in Classic view</h3>
-<p><b>Editing property sheets</b><br>
-When you are editing settings in Classic view, you can edit the property sheet in the following ways:</p>
-    <ul>
-      <li>If the setting is a string, you edit the value inline and press
-        Enter to save the change.</li>
-      <li>If a combo box  appears when you select the option's node, click
-        the arrow to select the value.</li>
-      <li>If an ellipsis (...) button appears when you select the option node,
-        click it to open the property's editor.</li>
-    </ul>
-<p>In Classic view, changes are applied immediately.</p>
-<!--<h3>Levels of Settings in Classic view</h3>-->
-<p><b>Levels of settings</b><br>When you are in Classic view, you can store settings at two levels:</p>
-<ul>
-  <li><b>Default.</b> Initial settings  provided with the IDE installation.
-    The IDE's default settings cannot be altered, however, they can be overriden
-    by   defining them at the  User level. </li>
-  <li><b>User.</b> Settings defined at the User level
-    that override settings at the Default level.    </li>
-  <!--<li><b>Project.</b>&nbsp;  Settings configured at the Project level apply only to the project in which they are configured. 
-Any settings configured at the Project level override user settings and default settings.</li>-->
-</ul>
-<p>The following table defines the icons used in Classic view to indicate the levels at which
-  settings are applied.</p>
-<table border="1" cellpadding="5" cellspacing="0">
-  <tr>
-    <th scope="col"><b>Icon</b></th>
-    <th scope="col"><b>Description</b></th>
-  </tr>
-  <tr>
-    <td><img src="images/setting-defined.gif" alt=" "></td>
-    <td>The settings for the corresponding options are defined at the level indicated
-      in the column's title. Any changes made to those settings apply at that
-      level.</td>
-  </tr>
-  <tr>
-    <td><img src="images/setting-inherited.gif" alt=" "></td>
-    <td>The settings for the corresponding options are inherited from a higher
-      level.</td>
-  </tr>
-  <tr>
-    <td><img src="images/setting-ignored.gif" alt=" "></td>
-    <td>The settings for the corresponding options are ignored at the indicated
-      level.</td>
-  </tr>
-</table>
-<!--<p><b>To configure a setting only for the current project:</b></p>
-<ol>
-<li>Choose Tools  &gt; Options.</li>
-<li>In the top row of cells, click the Show Levels (&lt;&lt;) cell to display the 
-levels for the settings.</li>
-<li>Navigate to and select the node for the settings you want to configure.</li>
-<li>Click the cell in the Projects column for the settings node you have selected. Choose 
-Define Here.
-<p>The <img src="images/project.gif" alt="Project Setting">&nbsp;icon appears in the
-Show Levels (&lt;&lt;) column.</p></li>
-<li>In the property sheet, configure the desired settings.</li>
-</ol>-->
-<p><b>To define an option's value at the User level:</b></p>
-<ol>
-  <li>Select the node for the option you want to configure.</li>
-  <li>Click the cell in the User column for the options node you  selected.
-  <li>Choose Define Here.
-    <p>The <img src="images/setting-defined.gif" alt=" ">&nbsp;icon appears in
-      the User column.</p>
-  </li>
-  <li>In the property sheet, configure the desired settings.
-    <p>The new values for the selected options override the default values.</p>
-  </li>
-</ol>
-<b><p>To revert to the default settings for an option:</b></p>
-<ol>
-  <li>Select the node for the option you want to configure.</li>
-  <li>Click the cell in the Default column for the options node you selected.
-  <li>Choose Revert Definition.
-    <p>A dialogue appears prompting you to check your work.
-  <li>If you are sure you want to remove the selected option's User-level configuration,
-    click Yes.
-    <p>The default values for the selected options are restored. The <img src="images/setting-defined.gif" alt=" ">&nbsp;icon
-      appears in the Default column and the <img src="images/setting-inherited.gif" alt=" ">&nbsp;icon
-      appears in the User column.</p>
-  </li>
-</ol>
+        <h3>Editing Settings in Classic view</h3>
+        <p><b>Editing property sheets</b><br>
+        When you are editing settings in Classic view, you can edit the property sheet in the following ways:</p>
+        <ul>
+            <li>If the setting is a string, you edit the value inline and press
+            Enter to save the change.</li>
+            <li>If a combo box  appears when you select the option's node, click
+            the arrow to select the value.</li>
+            <li>If an ellipsis (...) button appears when you select the option node,
+            click it to open the property's editor.</li>
+        </ul>
+        <p>In Classic view, changes are applied immediately.</p>
+        <!--<h3>Levels of Settings in Classic view</h3>-->
+        <p><b>Levels of settings</b><br>When you are in Classic view, you can store settings at two levels:</p>
+        <ul>
+            <li><b>Default.</b> Initial settings  provided with the IDE installation.
+            The IDE's default settings cannot be altered, however, they can be overriden
+            by   defining them at the  User level. </li>
+            <li><b>User.</b> Settings defined at the User level
+            that override settings at the Default level.    </li>
+            <!--<li><b>Project.</b>&nbsp;  Settings configured at the Project level apply only to the project in which they are configured. 
+            Any settings configured at the Project level override user settings and default settings.</li>-->
+        </ul>
+        <p>The following table defines the icons used in Classic view to indicate the levels at which
+        settings are applied.</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+                <th scope="col"><b>Icon</b></th>
+                <th scope="col"><b>Description</b></th>
+            </tr>
+            <tr>
+                <td><img src="images/setting-defined.gif" alt=" "></td>
+                <td>The settings for the corresponding options are defined at the level indicated
+                in the column's title. Any changes made to those settings apply at that
+                level.</td>
+            </tr>
+            <tr>
+                <td><img src="images/setting-inherited.gif" alt=" "></td>
+                <td>The settings for the corresponding options are inherited from a higher
+                level.</td>
+            </tr>
+            <tr>
+                <td><img src="images/setting-ignored.gif" alt=" "></td>
+                <td>The settings for the corresponding options are ignored at the indicated
+                level.</td>
+            </tr>
+        </table>
+        <!--<p><b>To configure a setting only for the current project:</b></p>
+        <ol>
+        <li>Choose Tools  &gt; Options.</li>
+        <li>In the top row of cells, click the Show Levels (&lt;&lt;) cell to display the 
+        levels for the settings.</li>
+        <li>Navigate to and select the node for the settings you want to configure.</li>
+        <li>Click the cell in the Projects column for the settings node you have selected. Choose 
+        Define Here.
+        <p>The <img src="images/project.gif" alt="Project Setting">&nbsp;icon appears in the
+        Show Levels (&lt;&lt;) column.</p></li>
+        <li>In the property sheet, configure the desired settings.</li>
+        </ol>-->
+        <p><b>To define an option's value at the User level:</b></p>
+        <ol>
+            <li>Select the node for the option you want to configure.</li>
+            <li>Click the cell in the User column for the options node you  selected.
+            <li>Choose Define Here.
+                <p>The <img src="images/setting-defined.gif" alt=" ">&nbsp;icon appears in
+                the User column.</p>
+            </li>
+            <li>In the property sheet, configure the desired settings.
+                <p>The new values for the selected options override the default values.</p>
+            </li>
+        </ol>
+        <b><p>To revert to the default settings for an option:</b></p>
+        <ol>
+            <li>Select the node for the option you want to configure.</li>
+            <li>Click the cell in the Default column for the options node you selected.
+            <li>Choose Revert Definition.
+            <p>A dialogue appears prompting you to check your work.
+            <li>If you are sure you want to remove the selected option's User-level configuration,
+                click Yes.
+                <p>The default values for the selected options are restored. The <img src="images/setting-defined.gif" alt=" ">&nbsp;icon
+                appears in the Default column and the <img src="images/setting-inherited.gif" alt=" ">&nbsp;icon
+                appears in the User column.</p>
+            </li>
+        </ol>
 
-  <ul class="note">
-    <li>When reverting to default settings, the IDE removes
-      any values stored at the User level for the selected option.</li>
-  </ul>
+        <ul class="note">
+            <li>When reverting to default settings, the IDE removes
+            any values stored at the User level for the selected option.</li>
+        </ul>
 
-<dl>
-<dt>
-<a name="seealso">See Also</a></dt>
-<dd>	  <a href="configure_about.html">About Configuring the IDE</a></dd>
-<dd>      <a href="configure_startup-switches.html">IDE Startup Parameters</a></dd>
-<dd>      <a href="../java/java_sources.html">Configuring General Java Settings</a></dd>
-</dl>
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="50">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
+        <dl>
+            <dt>
+            <a name="seealso">See Also</a></dt>
+            <dd>      <a href="configure_about.html">About Configuring the IDE</a></dd>
+            <dd>      <a href="configure_startup-switches.html">IDE Startup Parameters</a></dd>
+            <dd>      <a href="../java/java_sources.html">Configuring General Java Settings</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
 </html>
