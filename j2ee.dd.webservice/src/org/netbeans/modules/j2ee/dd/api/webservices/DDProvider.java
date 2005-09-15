@@ -173,11 +173,15 @@ public final class DDProvider {
         }
     }
     
-    private static Webservices createWebSvcJar(DDParse parse) {        
+    private static Webservices createWebSvcJar(DDParse parse) throws SAXException{        
           Webservices jar = null;
           String version = parse.getVersion();
           if (Webservices.VERSION_1_1.equals(version)) {
-              return new org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
+              try {
+                return new org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
+              } catch (RuntimeException ex) {
+                  throw new SAXException(ex.getMessage());
+              }
           } 
           
           return jar;
