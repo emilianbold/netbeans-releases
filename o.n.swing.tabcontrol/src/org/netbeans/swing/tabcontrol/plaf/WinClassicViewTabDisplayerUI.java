@@ -170,7 +170,9 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
                     pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
                 }
             } else {
-                pinButton.setVisible(false);
+                if (pinButton != null) {
+                    pinButton.setVisible(false);
+                }
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -373,7 +375,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         }
         
         protected boolean inPinButtonRect(Point p) {
-            if (!pinButton.isVisible()) {
+            if (pinButton == null || !pinButton.isVisible()) {
                 return false;
             }
             Point p2 = SwingUtilities.convertPoint(displayer, p, pinButton);
