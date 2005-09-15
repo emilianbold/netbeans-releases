@@ -147,7 +147,8 @@ class Setup {
             return revision;
         }
     }
-    
+
+    /** Loads data over network */
     void initSources() throws IOException {
         if (firstSource != null) firstSource.init();
         if (secondSource != null) secondSource.init();

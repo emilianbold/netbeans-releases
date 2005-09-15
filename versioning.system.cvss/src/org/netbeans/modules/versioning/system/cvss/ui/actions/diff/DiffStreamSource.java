@@ -91,6 +91,9 @@ public class DiffStreamSource extends StreamSource {
         throw new IOException("Operation not supported");
     }
 
+    /**
+     * Loads data over network.
+     */
     synchronized void init() throws IOException {
         if (remoteFile != null || revision == null) return;
         try {
