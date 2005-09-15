@@ -1175,7 +1175,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
     }
 
-    private Object getConstraintsAtPoint(RADComponent metacomp, Point point) {
+    private Object getConstraintsAtPoint(RADComponent metacomp, Point point, Point hotSpot) {
         if (!(metacomp instanceof RADVisualComponent))
             return null;
 
@@ -1188,9 +1188,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             Container cont = (Container) formDesigner.getComponent(metacont);
             Container contDel = metacont.getContainerDelegate(cont);
             Point p = convertPointToComponent(point.x, point.y, contDel);
-            Object constraints = laysup.getNewConstraints(cont, contDel, null, -1, p, null);
+            Object constraints = laysup.getNewConstraints(cont, contDel, null, -1, p, hotSpot);
             if ((constraints == null) && metacomp.getBeanInstance() instanceof Component) {
-                int index = laysup.getNewIndex(cont, contDel, (Component)metacomp.getBeanInstance(), -1, p, null);
+                int index = laysup.getNewIndex(cont, contDel, (Component)metacomp.getBeanInstance(), -1, p, hotSpot);
                 if (index != -1) {
                     constraints = new Integer(index);
                 }
@@ -2378,7 +2378,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 Object constraints;
                 if (oldLayout) {
                     constraints = !paletteItem.isMenu() && paletteItem.isVisual() ?
-                        getConstraintsAtPoint(targetContainer, p) : null;
+                        getConstraintsAtPoint(targetContainer, p, hotSpot) : null;
                 }
                 else constraints = null;
 
