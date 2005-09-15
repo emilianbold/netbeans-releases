@@ -86,17 +86,31 @@ abstract class NbPropertyPanel extends JPanel implements
     
     /**
      * Sets an error message which will be shown in the customizer. Pass
-     * <code>null</code> for blank message. Also set this panel to be invalid
-     * for nonnull, nonempty message. Invalid otherwise.
+     * <code>null</code> to clear current message (or warning). Also set this
+     * panel to be invalid for non-<code>null</code>, nonempty message. Invalid
+     * otherwise.
+     *
+     * @see #setWarning(String)
      */
     protected void setErrorMessage(String message) {
+        setWarning(message);
+        setValid("".equals(message));
+    }
+
+    
+    /**
+     * Sets a warning which will be shown in the customizer. Pass
+     * <code>null</code> to clear current warning (or message).
+     *
+     * @see #setErrorMessage(String)
+     */
+    protected void setWarning(String message) {
         String newMessage = message == null ? "" : message;
         if (!newMessage.equals(this.errMessage)) {
             String oldMessage = this.errMessage;
             this.errMessage = newMessage;
             firePropertyChange(NbPropertyPanel.ERROR_MESSAGE_PROPERTY, oldMessage, newMessage);
         }
-        setValid("".equals(newMessage));
     }
     
     public void store() { /* empty implementation */ }
