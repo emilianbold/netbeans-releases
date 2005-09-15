@@ -16,7 +16,7 @@ import org.openide.util.NbBundle;
 
 public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListener {
     
-    public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
+    public static final String PROP_PROJECT_NAME = "projectName";     
     
     private @@TEMPLATENAME@@WizardPanel panel;
     private int type;
@@ -117,7 +117,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {
         String command = evt.getActionCommand();        
-        if ( "BROWSE".equals( command ) ) { // NOI18N                
+        if ( "BROWSE".equals( command ) ) {               
             JFileChooser chooser = new JFileChooser ();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogTitle("Select Project Location");
@@ -129,7 +129,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
                     chooser.setSelectedFile(f);
                 }
             }
-            if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+            if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { 
                 File projectDir = chooser.getSelectedFile();
                 projectLocationTextField.setText( FileUtil.normalizeFile(projectDir).getAbsolutePath() );
             }            
@@ -147,7 +147,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
         if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", 
                     "Project Name is not a valid folder name.");  
             return false; // Display name not specified
         }
@@ -164,7 +164,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", 
                                     "Project Folder cannot be created.");
             return false;
         }
@@ -178,7 +178,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", 
                                      "Project Folder already exists and is not empty.");
             return false;
         }
@@ -197,7 +197,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
     }
     
     void read (WizardDescriptor settings) {
-        File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
+        File projectLocation = (File) settings.getProperty ("projdir"); 
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory ()) {
             projectLocation = ProjectChooser.getProjectsFolder();
         }
@@ -206,7 +206,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         }
         this.projectLocationTextField.setText (projectLocation.getAbsolutePath());
         
-        String projectName = (String) settings.getProperty ("name"); //NOI18N
+        String projectName = (String) settings.getProperty ("name"); 
         if (projectName == null) {
             projectName = "@@TEMPLATENAME@@";
         }
