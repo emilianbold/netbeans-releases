@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.net.Authenticator;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 
 import javax.enterprise.deploy.shared.ActionType;
@@ -74,9 +76,19 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private static final int CMD_START = 1;
     private static final int CMD_STOP = 2;
     private static final int CMD_RESTART = 3;
+    
+     /** For how long should we keep trying to get response from the server. */
+     private static final long TIMEOUT_DELAY = 580000;   
     private static Map debugInfoMap = Collections.synchronizedMap((Map)new HashMap(2,1));
     private String httpPort =null; //null for not known yet...
-
+    /** Normal mode */
+    private  int current_mode     = MODE_RUN;
+    /** Normal mode */
+    private static final int MODE_RUN     = 0;
+    /** Debug mode */
+    private static final int MODE_DEBUG   = 1;
+    /** Profile mode */
+    private static final int MODE_PROFILE = 2;
 
     public StartSunServer(DeploymentManager deploymentManager) {
         this.dm = deploymentManager;
@@ -122,7 +134,39 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public boolean supportsStartDebugging(Target target) {
         return supportsStartDeploymentManager();
     }
+    /**
+     * Can be the specified target server started in profile mode? If the 
+     * target is also an admin server can be the admin server started in
+     * profile mode?
+     *
+     * @param  target the target server in question, null implies the case where 
+     *         target is also an admin server.
+     *
+     * @return true if the target server can be started in profile mode, false
+     *         otherwise. The default return value is false.
+     *
+     */
+    public boolean supportsStartProfiling(Target target) {
+        return supportsStartDeploymentManager();
+    }
+    
+    public boolean isProfiling(Target target) {
         
+        return isRunning();
+    }
+    public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
+
+        pes.fireHandleProgressEvent(null, new Status(
+                                                ActionType.EXECUTE, 
+                                                CommandType.START, 
+                                                "",  // NOI18N
+                                                StateType.RUNNING));
+       current_mode=MODE_PROFILE;
+       return startTarget(target, MODE_PROFILE, settings);// profile settings
+
+    }
+    
+    
     /** Optional method. 
      *
      * Stops the admin server. The DeploymentManager object will be disconnected.
@@ -171,6 +215,12 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         ct = CommandType.STOP;
         pes.clearProgressListener();
         cmd = CMD_STOP;
+        if(current_mode==MODE_PROFILE){
+            current_mode =MODE_RUN;
+            System.out.println("resetting profiler mode");
+            ConfigureProfiler.removeProfilerInDOmain(new DeploymentManagerProperties(dm));
+        }
+
         
         pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
                                                      ct, "",
@@ -302,6 +352,14 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         }
         
         if (state != StateType.FAILED) {
+            if(current_mode==MODE_PROFILE){
+                pes.fireHandleProgressEvent(null,  new Status(ActionType.EXECUTE, ct, "", state));                                
+                cmd = CMD_NONE;
+                pes.clearProgressListener();
+
+                return;
+            }
+            
             if (cmd != CMD_STOP && !isRunning()) {
                 viewLogFile();
                  Util.showInformation(
@@ -329,9 +387,17 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             }
         }  
         
+        if (state != StateType.FAILED) {
         pes.fireHandleProgressEvent (null,
                                      new Status(ActionType.EXECUTE,
                                      ct, "", state));
+        }
+        else{
+        pes.fireHandleProgressEvent (null,
+                                     new Status(ActionType.EXECUTE,
+                                     ct, "Failure to start. See the server.log file.", state));
+            
+        }
         cmd = CMD_NONE;
         pes.clearProgressListener();
         return;
@@ -354,6 +420,19 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 shouldStopDeploymentManagerSilently =false;
                 return 0;
             }
+            if(current_mode==MODE_PROFILE){
+                try {
+                        Thread.sleep(3000);
+                        pes.fireHandleProgressEvent(null,
+                    new Status(ActionType.EXECUTE,
+                    ct, "running in profiler mode" ,StateType.RUNNING));
+                } catch (Exception e) {
+                } 
+                if (hasCommandSucceeded())
+                return 0;
+                else return -1;
+            }
+            else
             // wait for max 150 seconds
             for (int i = 0; i < 150; i++) {                
                 try {
@@ -396,9 +475,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             
 
 
-    public boolean isAlsoTargetServer() {
-        return true;
-    }
+//////    public boolean isAlsoTargetServer() {
+//////        return true;
+//////    }
     
   
     /* return the status of an instance.
@@ -417,9 +496,50 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 dmProps.setHttpPortNumber(httpPort);
             }
         }
+        System.out.println(">>>>>>>>in  isrunning="+runningState);
         return runningState;
     }
-    
+        /**
+         * Try to get response from the server, whether the START/STOP command has 
+         * succeeded.
+         *
+         * @return <code>true</code> if START/STOP command completion was verified,
+         *         <code>false</code> if time-out ran out.
+         */
+        private boolean hasCommandSucceeded() {
+            long timeout = System.currentTimeMillis() + TIMEOUT_DELAY;
+            while (true) {
+                boolean isRunning = isRunning();
+                if (ct == CommandType.START) {
+                    if (isRunning) {
+                        return true;
+                    }
+                    if (current_mode == MODE_PROFILE) {
+                        int state = ProfilerSupport.getState();
+                        if (state == ProfilerSupport.STATE_BLOCKING ||
+                        state == ProfilerSupport.STATE_RUNNING  ||
+                        state == ProfilerSupport.STATE_PROFILING) {
+                            
+                            return true;
+                        } else if (state == ProfilerSupport.STATE_INACTIVE) {
+                            System.out.println("---ProfilerSupport.STATE_INACTIVE");
+                          // return false;
+                        }
+                    }
+                }
+                if (ct == CommandType.STOP && !isRunning) {
+                    return true;
+                }
+                // if time-out ran out, suppose command failed
+                if (System.currentTimeMillis() > timeout) {
+                    return false;
+                }
+                try {
+                    Thread.sleep(1000); // take a nap before next retry
+                } catch(InterruptedException ie) {}
+            }
+        }
+       
     /**
      * Returns true if target server needs a restart for last configuration changes to 
      * take effect.  Implementation should override when communication about this 
@@ -447,12 +567,16 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
         return  (null!=debugInfoMap.get(sunDm.getHost()+sunDm.getPort()));//we need a debuginfo there if in debug
     }
-
-    public ProgressObject startTarget(Target Target, boolean debug) {
+/*
+ *
+ * mode can be run, debug or profile
+ **/
+    
+    public ProgressObject startTarget(Target Target, int mode, ProfilerServerSettings settings) {
         //in theory, target should not be null, but it is always null there!!!
        // System.out.println("in startTarget, debug="+debug);
        // System.out.println("\n\n\nin startTarget, Target="+Target);
-        this.debug = debug;
+        this.debug = mode==MODE_DEBUG;
         pes.clearProgressListener();
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
         if (debug==true){
@@ -462,15 +586,20 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             debugInfoMap.remove(sunDm.getHost()+sunDm.getPort());
             
         }
-        
+
+      if (settings!=null){
+          ConfigureProfiler.instrumentProfilerInDOmain(new  DeploymentManagerProperties(dm) , null,settings.getJvmArgs())  ;
+}     
         cmd = CMD_START;
         
         if (isRunning()) {
             cmd = CMD_RESTART;
         }
+        if (settings!=null){
+            //Need to verify all the settings are applied....
+        }
         
-        
-        return startDeploymentManager();
+        return startDeploymentManager( );
     }
     
 
@@ -643,12 +772,12 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 
 
     
-    public ProgressObject startServer(Target target) {
- //       System.out.println("in ProgressObject startServer");
-        
-        return startTarget(target, false);
-        
-    }      
+//////    public ProgressObject startServer(Target target) {
+////// //       System.out.println("in ProgressObject startServer");
+//////        
+//////        return startTarget(target, MODE_RUN , null);//no profile settings
+//////        
+//////    }      
     
     public boolean isAlsoTargetServer(Target target) {
  //       System.out.println("in isAlsoTargetServer");
@@ -662,7 +791,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     
     public ProgressObject startDebugging(Target target) {
         //System.out.println("in ProgressObject startDebugging");
-       return startTarget(target, true);
+       current_mode = MODE_DEBUG;
+       return startTarget(target, MODE_DEBUG, null);//debug and no profile settings
 
 
     }

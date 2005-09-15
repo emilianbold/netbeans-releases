@@ -19,13 +19,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
-import org.netbeans.modules.tomcat5.util.Utils;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -137,6 +138,20 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     
     public Set/*<String>*/ getSupportedSpecVersions() {
         return SPEC_VERSIONS;
+    }
+    
+    public Set/*<String>*/ getSupportedJavaPlatformVersions() {
+        Set versions = new HashSet();
+        versions.add("1.4"); // NOI18N
+        versions.add("1.5"); // NOI18N
+        return versions;
+    }
+    
+    public JavaPlatform getJavaPlatform() {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
+                                                tp.getJavaPlatform(), 
+                                                new Specification("J2SE", null)); // NOI18N
+        return platforms[0];
     }
     
     // private helper methods -------------------------------------------------

@@ -23,6 +23,7 @@ import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.*;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.project.libraries.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
@@ -94,6 +95,17 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         
         public java.util.Set getSupportedModuleTypes() {
             return MODULE_TYPES;
+        }
+        
+        public Set/*<String>*/ getSupportedJavaPlatformVersions() {
+            Set versions = new HashSet();
+            versions.add("1.4"); // NOI18N
+            versions.add("1.5"); // NOI18N
+            return versions;
+        }
+        
+        public JavaPlatform getJavaPlatform() {
+            return null;
         }
         
         public java.io.File[] getPlatformRoots() {

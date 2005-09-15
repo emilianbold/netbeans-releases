@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.filesystems.FileUtil;
@@ -332,6 +333,18 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
      */
     public Set/*<Object>*/ getSupportedModuleTypes() {
         return MODULE_TYPES;
+    }
+    
+    public Set/*<String>*/ getSupportedJavaPlatformVersions() {
+        Set versions = new HashSet();
+        versions.add("1.4"); // NOI18N
+        versions.add("1.5"); // NOI18N
+        return versions;
+    }
+        
+    public JavaPlatform getJavaPlatform() {
+        // TODO
+        return null;
     }
     
     private URL fileToUrl(File file) throws MalformedURLException {

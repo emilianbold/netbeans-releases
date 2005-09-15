@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory;
@@ -82,6 +83,17 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
 
         public Set getSupportedModuleTypes() {
             return MODULE_TYPES;
+        }
+        
+        public Set/*<String>*/ getSupportedJavaPlatformVersions() {
+            Set versions = new HashSet();
+            versions.add("1.4"); // NOI18N
+            versions.add("1.5"); // NOI18N
+            return versions;
+        }
+        
+        public JavaPlatform getJavaPlatform() {
+            return null;
         }
 
         public File[] getPlatformRoots() {
