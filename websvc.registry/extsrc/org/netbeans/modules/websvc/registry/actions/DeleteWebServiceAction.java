@@ -113,8 +113,7 @@ public class DeleteWebServiceAction extends NodeAction {
 						nodes[0].destroy();
 					} catch(IOException ioe) {
 						ErrorManager.getDefault().notify(ioe);
-//						  StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServicesCookie.class, "ERROR_DELETING"),2);
-						StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicesCookie.class, "ERROR_DELETING"));
+						StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DeleteWebServiceAction.class, "ERROR_DELETING"));
 					}
 				}
 			}

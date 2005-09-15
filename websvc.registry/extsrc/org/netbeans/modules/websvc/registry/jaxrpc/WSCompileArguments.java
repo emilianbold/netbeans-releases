@@ -46,9 +46,6 @@ public class WSCompileArguments {
     /** Holds value of property importGen. */
     private boolean importGen;
     
-    /** Holds value of property configFile. */
-    private String configFile;
-    
     /** Holds value of property verbose. */
     private boolean verbose;
 
@@ -213,11 +210,7 @@ public class WSCompileArguments {
             args.add(featureArg);
         }
         
-        if (configFile != null)
-            args.add(configFile);
         if (configuration != null) {
-            if (configFile != null)
-                throw new IllegalStateException(NbBundle.getMessage(WSCompileArguments.class, "MSG_MutuallyExclusiveConfig"));
             try {
                 File cf = File.createTempFile("jaxrpcconfigfile", ".xml");
                 cf.deleteOnExit();
@@ -375,22 +368,6 @@ public class WSCompileArguments {
      */
     public void setImportGen(boolean importGen) {
         this.importGen = importGen;
-    }
-    
-    /** Getter for property configFile.
-     * @return Value of property configFile.
-     *
-     */
-    public String getConfigFile() {
-        return this.configFile;
-    }
-    
-    /** Setter for property configFile.
-     * @param configFile New value of property configFile.
-     *
-     */
-    public void setConfigFile(String configFile) {
-        this.configFile = configFile;
     }
     
     /** Getter for property verbose.

@@ -114,8 +114,7 @@ public class DeleteWebServiceGroupAction extends NodeAction {
 						nodes[0].destroy();
 					} catch(IOException ioe) {
 						ErrorManager.getDefault().notify(ioe);
-//                        StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServiceGroupCookie.class, "ERROR_DELETING"),2);
-						StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServiceGroupCookie.class, "ERROR_DELETING"));
+						StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DeleteWebServiceGroupAction.class, "ERROR_DELETING"));
 					}
 				}
 			}

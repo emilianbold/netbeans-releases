@@ -119,7 +119,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
             } catch(ParserConfigurationException pe) {
                 ErrorManager.getDefault().notify(pe);
                 ErrorManager.getDefault().log("ParserConfigurationException=" + pe);
-//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"),2);
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"));
                 return null;
             }
