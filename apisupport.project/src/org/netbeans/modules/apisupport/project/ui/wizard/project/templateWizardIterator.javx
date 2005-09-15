@@ -103,16 +103,16 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty("WizardPanel_contentData", steps);
             }
         }
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir",null);           //NOI18N
-        this.wiz.putProperty("name",null);          //NOI18N
+        this.wiz.putProperty("projdir",null);
+        this.wiz.putProperty("name",null);
         this.wiz = null;
         panels = null;
     }

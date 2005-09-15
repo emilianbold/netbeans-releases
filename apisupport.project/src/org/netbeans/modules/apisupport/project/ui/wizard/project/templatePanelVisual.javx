@@ -192,8 +192,8 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
-        d.putProperty(  "projdir", new File( folder )); // NOI18N
-        d.putProperty(  "name", name ); // NOI18N
+        d.putProperty(  "projdir", new File( folder ));
+        d.putProperty(  "name", name );
     }
     
     void read (WizardDescriptor settings) {

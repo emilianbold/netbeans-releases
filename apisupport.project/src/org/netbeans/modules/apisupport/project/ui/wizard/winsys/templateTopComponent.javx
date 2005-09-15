@@ -23,7 +23,7 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "CTL_@@TEMPLATENAME@@TopComponent"));
         setToolTipText(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "HINT_@@TEMPLATENAME@@TopComponent"));
-        setIcon(Utilities.loadImage("@@ICONPATH@@", true)); //NOI18N
+        setIcon(Utilities.loadImage("@@ICONPATH@@", true)); 
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -73,7 +73,7 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     }
     
     protected String preferredID() {
-        return "@@TEMPLATENAME@@TopComponent"; //NOI18N
+        return "@@TEMPLATENAME@@TopComponent"; 
     }
     
     final static class ResolvableHelper implements Serializable {
