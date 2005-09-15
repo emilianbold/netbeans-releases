@@ -194,9 +194,12 @@ public class VisualReplicator { //implements VisualMapper
 
             RADComponent[] metacomps = ((RADMenuComponent)metacont).getSubBeans();
             for (int i = 0; i < metacomps.length; i++) {
-                Component comp = (Component) getClonedComponent(metacomps[i]);
-                if (comp != null)
-                    addToMenu(cont, comp);
+                RADMenuItemComponent menuItemComp = (RADMenuItemComponent) metacomps[i];
+                int type = menuItemComp.getMenuItemType();
+                Object menuItem = type != RADMenuItemComponent.T_JSEPARATOR 
+                                  && type != RADMenuItemComponent.T_SEPARATOR ?
+                    getClonedComponent(menuItemComp) : null;
+                addToMenu(cont, menuItem);
             }
         }
     }
