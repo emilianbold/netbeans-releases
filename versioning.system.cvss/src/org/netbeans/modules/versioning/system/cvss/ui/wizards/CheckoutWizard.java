@@ -368,13 +368,6 @@ public final class CheckoutWizard implements ChangeListener{
             }
 
             if (defaultDir == null) {
-                File projectFolder = ProjectChooser.getProjectsFolder();
-                if (projectFolder.exists() && projectFolder.isDirectory()) {
-                    defaultDir = projectFolder;
-                }
-            }
-
-            if (defaultDir == null) {
                 List recent = HistorySettings.getRecent(HistorySettings.PROP_CHECKOUT_DIRECTORY);
                 Iterator it = recent.iterator();
 
@@ -389,6 +382,13 @@ public final class CheckoutWizard implements ChangeListener{
                 }
             }
 
+            if (defaultDir == null) {
+                File projectFolder = ProjectChooser.getProjectsFolder();
+                if (projectFolder.exists() && projectFolder.isDirectory()) {
+                    defaultDir = projectFolder;
+                }
+            }
+            
             if (defaultDir == null) {
                 defaultDir = new File(System.getProperty("user.home"));  // NOI18N
             }
