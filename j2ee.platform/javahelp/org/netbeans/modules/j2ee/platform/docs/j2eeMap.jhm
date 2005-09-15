@@ -189,8 +189,7 @@
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
-	<!-- The Module Manager dialog box: -->
-	<mapID target="org.netbeans.modules.autoupdate.catalog.ModuleSelectionPanel" url="web/deploy/ModuleSelectionPanel.html" />
+
 	<!-- The Server Manager dialog box (this help id will be moved to server section later): : -->
 	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/server_register.html" />
 
