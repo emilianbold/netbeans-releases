@@ -172,8 +172,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (!SwingUtilities.isEventDispatchThread()) {
             return;
         }
+        // Check whether the insertion came from typing
+        if (!DocumentUtilities.isTypingModification(e)) {
+            return;
+        }
 
-        assert (SwingUtilities.isEventDispatchThread());
         if (activeProviders != null) {
             try {
                 if (activeComponent.getCaretPosition() != e.getOffset() + e.getLength())
