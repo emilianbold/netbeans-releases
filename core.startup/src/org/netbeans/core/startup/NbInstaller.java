@@ -227,6 +227,7 @@ final class NbInstaller extends ModuleInstaller {
         while (it.hasNext()) {
             Module m = (Module)it.next();
             checkForDeprecations(m);
+            openideModuleEnabled(m);
         }
         
         loadLayers(modules, true);
@@ -842,6 +843,41 @@ final class NbInstaller extends ModuleInstaller {
         }
         return s;
     }
+
+    /** true if optimizations of openide classloading shall be disabled.
+     */
+    private static boolean withoutOptimizations;
+    /** Whenever an openide module is enabled, it is checked to be 
+     * on for whose we provide optimizations.
+     */
+    static void openideModuleEnabled(Module module) {
+        String m = module.getCodeNameBase();
+        if (!m.startsWith("org.openide.")) {
+            return;
+        }
+        
+        if ("org.openide.util".equals(m)) return; // NOI18N
+        if ("org.openide.actions".equals(m)) return; // NOI18N
+        if ("org.openide.awt".equals(m)) return; // NOI18N
+        if ("org.openide.modules".equals(m)) return; // NOI18N
+        if ("org.openide.nodes".equals(m)) return; // NOI18N
+        if ("org.openide.windows".equals(m)) return; // NOI18N
+        if ("org.openide.explorer".equals(m)) return; // NOI18N
+        if ("org.openide.util.enumerations".equals(m)) return; // NOI18N
+        if ("org.openide.execution".equals(m)) return; // NOI18N
+        if ("org.openide.options".equals(m)) return; // NOI18N
+        if ("org.openide.execution".equals(m)) return; // NOI18N
+        if ("org.openide.loaders".equals(m)) return; // NOI18N
+        if ("org.openide.dialogs".equals(m)) return; // NOI18N
+        if ("org.openide.filesystems".equals(m)) return; // NOI18N
+        if ("org.openide.io".equals(m)) return; // NOI18N
+        if ("org.openide.text".equals(m)) return; // NOI18N
+        if ("org.openide.src".equals(m)) return; // NOI18N
+        
+        Util.err.log(ErrorManager.WARNING, "Disabling openide load optimizations due to use of " + m); // NOI18N
+        
+        withoutOptimizations = true;
+    }
     
     /** Information about contents of some JARs on the startup classpath (both lib/ and lib/ext/).
      * The first item in each is a prefix for JAR filenames.
@@ -878,10 +914,6 @@ final class NbInstaller extends ModuleInstaller {
         // the old good way:
         if (pkg.startsWith("org/openide/")) {
             
-            // if (withoutOptimizations) {
-            //   return true; // NOI18N
-            // }
-
             // util & dialogs
             if ("org/openide/".equals (pkg)) return true; // NOI18N
             // loaders, actions, and who know what else
@@ -907,9 +939,11 @@ final class NbInstaller extends ModuleInstaller {
             // util & nodes
             if ("org/openide/util/actions/".equals (pkg)) return true; // NOI18N
 
-            // these should be removed as soon as we get rid of org-openide-compat
-            if ("org/openide/explorer/".equals (pkg)) return true; // NOI18N
-            if ("org/openide/util/".equals (pkg)) return true; // NOI18N
+            if (withoutOptimizations) {
+                // these should be removed as soon as we get rid of org-openide-compat
+                if ("org/openide/explorer/".equals (pkg)) return true; // NOI18N
+                if ("org/openide/util/".equals (pkg)) return true; // NOI18N
+            }
         }
 
         // IBM's stuff goes here for now:
