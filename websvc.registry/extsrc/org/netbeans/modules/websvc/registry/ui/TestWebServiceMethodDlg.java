@@ -132,13 +132,11 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
             } catch(SAXException se) {
                 ErrorManager.getDefault().notify(se);
                 ErrorManager.getDefault().log("SAXException=" + se);
-//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"),2);
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"));
                 return null;
             } catch(IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
                 ErrorManager.getDefault().log("IOException=" + ioe);
-//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"),2);
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"));
                 return null;
             }
