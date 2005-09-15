@@ -188,6 +188,7 @@ class TCGroupParser {
                 throw new FileNotFoundException("[WinSys] Missing TCGroup configuration file:" // NOI18N
                 + TCGroupParser.this.getName());
             }
+            InputStream is = null;
             try {
                 synchronized (RW_LOCK) {
                     //DUMP BEGIN
@@ -198,8 +199,8 @@ class TCGroupParser {
                     String s = new String(arr);
                     log(s);*/
                     //DUMP END
-                    
-                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(cfgFOInput.getInputStream()));
+                    is = cfgFOInput.getInputStream();
+                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(is));
                 }
             } catch (SAXException exc) {
                 //Turn into annotated IOException
@@ -208,6 +209,14 @@ class TCGroupParser {
                 IOException ioe = new IOException(msg);
                 ErrorManager.getDefault().annotate(ioe, exc);
                 throw ioe;
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException exc) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                }
             }
                         
             tcGroupCfg = tcGroupConfig;
@@ -377,19 +386,34 @@ class TCGroupParser {
             final StringBuffer buff = fillBuffer(tcGroupCfg, ic);
             synchronized (RW_LOCK) {
                 FileObject cfgFOOutput = getConfigFOOutput();
-                FileLock lock = cfgFOOutput.lock();
+                FileLock lock = null;
+                OutputStream os = null;
                 OutputStreamWriter osw = null;
                 try {
-                    OutputStream os = cfgFOOutput.getOutputStream(lock);
+                    lock = cfgFOOutput.lock();
+                    os = cfgFOOutput.getOutputStream(lock);
                     osw = new OutputStreamWriter(os, "UTF-8"); // NOI18N
                     osw.write(buff.toString());
                     //log("DUMP TCGroup: " + TCGroupParser.this.getName());
                     //log(buff.toString());
                 } finally {
-                    if (osw != null) {
-                        osw.close();
+                    try {
+                        if (osw != null) {
+                            osw.close();
+                        }
+                    } catch (IOException exc) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
                     }
-                    lock.releaseLock();
+                    try {
+                        if (os != null) {
+                            os.close();
+                        }
+                    } catch (IOException exc) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                    }
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
                 }
             }
         }

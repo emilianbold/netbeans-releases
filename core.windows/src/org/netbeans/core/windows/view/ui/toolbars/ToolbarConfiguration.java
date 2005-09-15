@@ -34,13 +34,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.*;
-import java.util.List;
 import org.netbeans.core.IDESettings;
-
 /** Toolbar configuration.
  * It can load configuration from DOM Document, store configuration int XML file. 
  * Toolbar configuration contains list of all correct toolbars (toolbars which are
@@ -157,13 +156,23 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         ToolbarParser handler = new ToolbarParser();
         parser.setEntityResolver(handler);
         parser.setDocumentHandler(handler);
-            
+     
+        InputStream is = null;
         try {
-            parser.parse(new InputSource(xml.getPrimaryFile().getInputStream()));
+            is = xml.getPrimaryFile().getInputStream();
+            parser.parse(new InputSource(is));
         } catch (Exception saxe) {
             IOException ex = new IOException (saxe.toString());
             ErrorManager.getDefault().annotate(ex, saxe);
             throw ex;
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException exc) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+            }
         }
         checkToolbarRows();
     }

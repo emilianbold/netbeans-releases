@@ -806,6 +806,7 @@ public class WindowManagerParser {
             if (cfgFOInput == null) {
                 throw new FileNotFoundException("[WinSys] Missing Window Manager configuration file");
             }
+            InputStream is = null;
             try {
                 synchronized (RW_LOCK) {
                     //DUMP BEGIN
@@ -817,7 +818,8 @@ public class WindowManagerParser {
                     if (DEBUG) Debug.log(WindowManagerParser.class, s);*/
                     //DUMP END
 //                    long time = System.currentTimeMillis();
-                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(cfgFOInput.getInputStream()));
+                    is = cfgFOInput.getInputStream();
+                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(is));
 //                    System.out.println("WindowManagerParser.readData "+(System.currentTimeMillis()-time));
                 }
             } catch (SAXException exc) {
@@ -827,6 +829,14 @@ public class WindowManagerParser {
                 IOException ioe = new IOException(msg);
                 ErrorManager.getDefault().annotate(ioe, exc);
                 throw ioe;
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException exc) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                }
             }
             
             winMgrConfig.editorAreaConstraints =
@@ -1703,19 +1713,34 @@ public class WindowManagerParser {
             final StringBuffer buff = fillBuffer(wmc);
             synchronized (RW_LOCK) {
                 FileObject cfgFOOutput = getConfigFOOutput();
-                FileLock lock = cfgFOOutput.lock();
+                FileLock lock = null;
+                OutputStream os = null;
                 OutputStreamWriter osw = null;
                 try {
-                    OutputStream os = cfgFOOutput.getOutputStream(lock);
+                    lock = cfgFOOutput.lock();
+                    os = cfgFOOutput.getOutputStream(lock);
                     osw = new OutputStreamWriter(os, "UTF-8"); // NOI18N
                     osw.write(buff.toString());
                     //if (DEBUG) Debug.log(WindowManagerParser.class, "-- DUMP WindowManager:");
                     //if (DEBUG) Debug.log(WindowManagerParser.class, buff.toString());
                 } finally {
-                    if (osw != null) {
-                        osw.close();
+                    try {
+                        if (osw != null) {
+                            osw.close();
+                        }
+                    } catch (IOException exc) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
                     }
-                    lock.releaseLock();
+                    try {
+                        if (os != null) {
+                            os.close();
+                        }
+                    } catch (IOException exc) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                    }
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
                 }
             }
         }
