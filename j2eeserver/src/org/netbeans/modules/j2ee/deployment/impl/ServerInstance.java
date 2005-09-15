@@ -27,6 +27,9 @@ import org.openide.filesystems.*;
 import java.util.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -48,6 +51,12 @@ public class ServerInstance implements Node.Cookie {
     public static final int STATE_DEBUGGING = 4;
     /** Server is suspended on a break point (in debug mode and not responding) */
     public static final int STATE_SUSPENDED = 5;
+    /** Server is running in profile mode */
+    public static final int STATE_PROFILING = 6;
+    /** Server is ready for the profiler to connect, server JVM is blocked. */
+    public static final int STATE_PROFILER_BLOCKING = 7;
+    /** Server is starting in profile mode. */
+    public static final int STATE_PROFILER_STARTING = 8;
     
     /** For how long should plugins be allowed to block in the isRunning method */
     private static final int RUNNING_CHECK_TIMEOUT = 10000; // in millis
@@ -83,6 +92,10 @@ public class ServerInstance implements Node.Cookie {
     // running check helpers
     private long lastCheck = 0;
     private boolean isRunning = false;
+    
+    
+    private static ServerInstance           profiledServerInstance;
+    private static ProfilerServerSettings   profilerSettings;
     
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
@@ -185,6 +198,24 @@ public class ServerInstance implements Node.Cookie {
             public void run() {
                 try {
                     setServerState(STATE_WAITING);
+                    if (ServerInstance.this == profiledServerInstance) {
+                        int profState = ProfilerSupport.getState();
+                        if (profState == ProfilerSupport.STATE_STARTING) {
+                            setServerState(ServerInstance.STATE_PROFILER_STARTING);
+                            return;
+                        } else if (profState == ProfilerSupport.STATE_BLOCKING) {
+                            setServerState(ServerInstance.STATE_PROFILER_BLOCKING);
+                            return;
+                        } else if (profState == ProfilerSupport.STATE_PROFILING
+                                   || profState == ProfilerSupport.STATE_RUNNING) {
+                            initCoTarget();
+                            setServerState(ServerInstance.STATE_PROFILING);
+                            return;
+                        } else {
+                            //  profiler is inactive - has been shutdown
+                            profiledServerInstance = null;
+                        }
+                    }
                     if (isSuspended()) {
                         setServerState(ServerInstance.STATE_SUSPENDED);
                     } else if (isDebuggable(null)) {
@@ -519,6 +550,20 @@ public class ServerInstance implements Node.Cookie {
         return ss.supportsStartDebugging(null);
     }
     
+    /** 
+     * Can be this server started in profile mode? Currently the only case when
+     * the server cannot be started in the debugged is when the admin server is
+     * not also the target server.
+     */
+    public boolean isProfileSupported() {
+        Profiler profiler = ServerRegistry.getProfiler();
+        if (profiler == null) {
+            return false;
+        }
+        StartServer ss = getStartServer();
+        return ss.supportsStartProfiling(null);
+    }
+    
     /**
      * Return set of ServerTarget's that have been started from inside IDE.
      * @return set of ServerTarget objects.
@@ -563,20 +608,49 @@ public class ServerInstance implements Node.Cookie {
         }
     }
     
+    /** Start the admin server in the profile mode. Show UI feedback. 
+     * @param settings settings that will be used to start the server
+     */
+    public boolean startProfile(ProfilerServerSettings settings, boolean forceRestart, ProgressUI ui) {
+        // check whether another server not already running in profile mode
+        // and ask whether it is ok to stop it
+        if (profiledServerInstance != null && profiledServerInstance != this) {
+            String msg = NbBundle.getMessage(
+                                    ServerInstance.class,
+                                    "MSG_AnotherServerProfiling",
+                                    profiledServerInstance.getDisplayName());
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION);
+            if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
+                // start in profile mode has been cancelled
+                return false;
+            }
+        }
+        try {
+            setServerState(STATE_WAITING);
+            // target == null - admin server
+            return startProfileImpl(null, settings, forceRestart, ui);
+        } finally {
+            refresh();
+        }
+    }
+    
     /** Restart the admin server in the mode the server was running in before. 
         Show UI feedback. */
     public boolean restart(ProgressUI ui) {
         try {
             setServerState(STATE_WAITING);
             boolean inDebug = isDebuggable(null);
+            boolean inProfile = profiledServerInstance == this;
             boolean stopped = true;
-            if (isReallyRunning()) {
+            
+            if (inProfile || isReallyRunning()) {
                 stopped = _stop(ui);
-                // TODO if false, finish with error
             }
             if (stopped) {
                 // restart in the mode the server was running in before
-                if (inDebug) {
+                if (inProfile) {
+                    return startProfileImpl(null, profilerSettings, true, ui);
+                } else if (inDebug) {
                     return startDebugTarget(null, ui);
                 } else {
                     return startTarget(null, ui);
@@ -593,7 +667,7 @@ public class ServerInstance implements Node.Cookie {
         try {
             setServerState(STATE_WAITING);
             boolean stopped = false;
-            if (isReallyRunning()) {
+            if (profiledServerInstance == this || isReallyRunning()) {
                 stopped = _stop(ui);
             }
             if (stopped) {
@@ -671,6 +745,21 @@ public class ServerInstance implements Node.Cookie {
             } finally {
                 ui.finish();
             }
+        }
+    }
+    
+    /**
+     * Start admin server for profiling, mainly for registry actions with no existing progress UI
+     * @param settings settings that will be used to start the server
+     */
+    public boolean startProfile(final ProfilerServerSettings settings, boolean forceRestart) {
+        String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerInProfileMode", getDisplayName());
+        ProgressUI ui = new ProgressUI(title, false);
+        try {
+            ui.start();
+            return startProfile(settings, forceRestart, ui);
+        } finally {
+            ui.finish();
         }
     }
     
@@ -932,19 +1021,135 @@ public class ServerInstance implements Node.Cookie {
             }
         }
     }
+    
+    /** start server in the profile mode */
+    private synchronized boolean startProfileImpl(
+                                    Target target, 
+                                    ProfilerServerSettings settings,
+                                    boolean forceRestart,
+                                    ProgressUI ui) {
+        if (profiledServerInstance != null) {
+            if (profiledServerInstance != this) {
+                // another server currently running in profiler mode
+                boolean stopped = false;
+                stopped = profiledServerInstance.stop(ui);
+                profiledServerInstance = null;
+            } else if (forceRestart || !settings.equals(profilerSettings)) {
+                boolean stopped = false;
+                stopped = _stop(ui);
+                if (stopped) {
+                    debugInfo.clear();
+                }
+                profiledServerInstance = null;
+            } else {
+                return true; // server is already runnning in profile mode, no need to restart the server
+            }
+        }
+        
+        String displayName = getDisplayName();
+        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingProfileServer", displayName));
+        
+        ProgressObject po = null;
+        StartProgressHandler handler = new StartProgressHandler();
+        
+        try {
+            setCommandSucceeded(false);
+            Profiler profiler = ServerRegistry.getProfiler();
+            if (profiler == null) {
+                // this should not occur, but it is safer this way
+                ui.failed(NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerNotRegistered"));
+                return false;
+            }
+            profiler.notifyStarting();
+            po = getStartServer().startProfiling(target, settings);
+            ui.setProgressObject(po);
+            po.addProgressListener(handler);
+            
+            String error = null;
+            if (isProgressing(po)) {
+                // wait until done or cancelled
+                boolean done = sleep();
+                if (! done) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartProfileTimeout", displayName);
+                } else if (! hasCommandSucceeded()) {
+                    return false;
+                }
+            } else if (hasFailed(po)) {
+                return false;
+            }
+            
+            if (error != null) {
+                ui.failed(error);
+                return false;
+            }
+            
+            profiledServerInstance = this;
+            profilerSettings = settings;
+            managerStartedByIde = true;
+            refresh();
+            return true;
+            
+        } finally {
+            if (ui != null) {
+                ui.setProgressObject(null);
+            }
+            if (po != null) {
+                po.removeProgressListener(handler);
+            }
+        }
+    }
+    
+    /** Tell the profiler to shutdown */
+    private synchronized boolean shutdownProfiler(ProgressUI ui) {
+        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingProfiler"));
+        StartProgressHandler handler = new StartProgressHandler();
+        ProgressObject po = null;
+        try {
+            Profiler profiler = ServerRegistry.getProfiler();
+            if (profiler != null) {
+                po = profiler.shutdown();
+                ui.setProgressObject(po);
+                po.addProgressListener(handler);
+                if (isProgressing(po)) {
+                    // wait until done or cancelled
+                    boolean done = sleep();
+                    if (!done) {
+                        ui.failed(NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerShutdownTimeout"));
+                        return false;
+                    } else if (! hasCommandSucceeded()) {
+                        return false;
+                    }
+                } else if (hasFailed(po)) {
+                    return false;
+                }
+            }
+        } finally {
+            if (ui != null) {
+                ui.setProgressObject(null);
+            }
+            if (po != null) {
+                po.removeProgressListener(handler);
+            }
+        }
+        return true;
+    }
+    
     // stopDeploymentManager
     private synchronized boolean _stop(ProgressUI ui) {
+        // if the server is started in profile mode, deattach profiler first
+        if (profiledServerInstance == this) {
+            shutdownProfiler(ui);
+            profiledServerInstance = null;
+        }
+        
         String displayName = getDisplayName();
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", displayName));
         
         StartProgressHandler handler = new StartProgressHandler();
         ProgressObject po = null;
         try {
-            setCommandSucceeded(false);
             po = getStartServer().stopDeploymentManager();
-            if (ui != null) {
-                ui.setProgressObject(po);
-            }
+            ui.setProgressObject(po);
             po.addProgressListener(handler);
             
             String error = null;

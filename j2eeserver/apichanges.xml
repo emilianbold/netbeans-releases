@@ -80,7 +80,56 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="serverConfigurationRedesign">
+        <change id="profilerSupport">
+            <api name="j2eeserver"/>
+            <summary>
+            Profiler support added.
+            </summary>
+            <version major="1" minor="9"/>
+            <date day="15" month="9" year="2005"/>
+            <author login="sherold"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
+            <description>
+                <p>
+                Profiler support extension of the j2eeserver API allows Profiler to profile Web and other 
+                J2EE project types in a comfortable and reliable way.
+                </p>
+                <p>
+                Profiler SPI, the Profiler is required to implement and register into the default 
+                Lookup, allows to obtain information about current profiling session status, settings 
+                required for starting a server in profiling mode and to stop profiled server.
+                </p>
+                <p>
+                Profiler API, which defines class encapsulating settings required for 
+                starting a server in profiling mode and provides support for reading current 
+                state of Profiler registered in the default Lookup.
+                </p>
+                <p>
+                Extension of StartServer that allows the j2eeserver to check whether the given
+                server supports profiling and allows to start it if it does.
+                </p>
+                <p>
+                Extension of J2eePlatform that allows the Profiler to check if the Java 
+                platform specified for the server is acceptable for profiling. If not, the 
+                Profiler is able to check if other platform which can be used for profiling is 
+                acceptable for running the server.
+                </p>
+                <p>
+                Ant task 'nbstartprofiledserver' that may stop other server being profiled 
+                and prepare the target server for profiling - this means (re)starting the 
+                server using provided settings or no action if the server is already running 
+                with correct configuration.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.profiler.api" name="ProfilerServerSettings" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.profiler.api" name="ProfilerSupport" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.profiler.spi" name="Profiler" link="no"/>
+            <issue number="56032"/>
+       </change>
+       <change id="serverConfigurationRedesign">
             <api name="j2eeserver"/>
             <summary>
             The common server specific deployment descriptor data loader has been

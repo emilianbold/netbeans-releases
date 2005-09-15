@@ -25,6 +25,7 @@ import org.openide.util.NbBundle;
 import java.util.*;
 import java.io.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.modules.InstalledFileLocator;
 
 //import java.util.logging.*;
@@ -580,5 +581,9 @@ public final class ServerRegistry implements java.io.Serializable {
             return instance;
         throw new RuntimeException(NbBundle.getMessage(ServerRegistry.class, "MSG_NoServerInstances", uri));
     }
-
+    
+    /** Return profiler if any is registered in the IDE, null otherwise. */
+    public static Profiler getProfiler() {
+        return (Profiler)Lookup.getDefault().lookup(Profiler.class);
+    }
 }

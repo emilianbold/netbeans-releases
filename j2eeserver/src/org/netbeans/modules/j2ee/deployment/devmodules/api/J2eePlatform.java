@@ -19,11 +19,13 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -229,6 +231,42 @@ public final class J2eePlatform {
      */
     public Set/*<Object>*/ getSupportedModuleTypes() {
         return impl.getSupportedModuleTypes();
+    }
+    
+    /**
+     * Return a set of J2SE platform versions this J2EE platform can run with.
+     * Versions should be specified as strings i.g. ("1.3", "1.4", etc.)
+     * 
+     * @return set of J2SE platform versions this J2EE platform can run with.
+     *
+     * @since 1.9
+     */
+    public Set getSupportedJavaPlatformVersions() {
+        return impl.getSupportedJavaPlatformVersions();
+    }
+    
+    /**
+     * Is profiling supported by this J2EE platform?
+     *
+     * @return true, if profiling is supported, false otherwise.
+     *
+     * @since 1.9
+     */
+    public boolean supportsProfiling() {
+        return true;
+    }
+    
+    /**
+     * Return server J2SE platform or null if the platform is unknown, not 
+     * registered in the IDE.
+     *
+     * @return server J2SE platform or null if the platform is unknown, not 
+     *         registered in the IDE.
+     *
+     * @since 1.9
+     */
+    public JavaPlatform getJavaPlatform() {
+        return impl.getJavaPlatform();
     }
     
     /**

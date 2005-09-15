@@ -189,12 +189,22 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.j2ee.deployment.devmodules.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.devmodules.spi</package>
                 <package>org.netbeans.modules.j2ee.deployment.plugins.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.common.api</package>
+                <package>org.netbeans.modules.j2ee.deployment.profiler.api</package>
+                <package>org.netbeans.modules.j2ee.deployment.profiler.spi</package>
             </public-packages>
         </data>
     </configuration>

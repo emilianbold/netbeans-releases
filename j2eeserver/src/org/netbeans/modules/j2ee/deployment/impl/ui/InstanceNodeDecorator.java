@@ -18,11 +18,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.deployment.config.Utils;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.DebugAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
+import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ProfileAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RefreshAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RestartAction;
@@ -54,6 +55,10 @@ public class InstanceNodeDecorator extends FilterNode
             = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/debugging.png"; // NOI18N
     private static final String SUSPENDED_ICON
             = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/suspended.png"; // NOI18N
+    private static final String PROFILING_ICON
+            = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/profiling.png"; // NOI18N
+    private static final String PROFILER_BLOCKING_ICON
+            = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/profilerblocking.png"; // NOI18N
     
     private ServerInstance si;
     
@@ -76,7 +81,14 @@ public class InstanceNodeDecorator extends FilterNode
         List actions = new ArrayList();
         actions.addAll(Arrays.asList(new Action[] {
                                         SystemAction.get(StartAction.class),
-                                        SystemAction.get(DebugAction.class),
+                                        SystemAction.get(DebugAction.class)
+        }));
+        if (si.isProfileSupported()) {
+            actions.add(
+                                        SystemAction.get(ProfileAction.class)
+            );
+        }
+        actions.addAll(Arrays.asList(new Action[] {
                                         SystemAction.get(RestartAction.class),
                                         SystemAction.get(StopAction.class),
                                         SystemAction.get(RefreshAction.class),
@@ -113,6 +125,15 @@ public class InstanceNodeDecorator extends FilterNode
                 break;
             case ServerInstance.STATE_SUSPENDED : 
                 badge = Utilities.loadImage(SUSPENDED_ICON);
+                break;
+            case ServerInstance.STATE_PROFILING : 
+                badge = Utilities.loadImage(PROFILING_ICON);
+                break;
+            case ServerInstance.STATE_PROFILER_BLOCKING : 
+                badge = Utilities.loadImage(PROFILER_BLOCKING_ICON);
+                break;
+            case ServerInstance.STATE_PROFILER_STARTING : 
+                badge = Utilities.loadImage(WAITING_ICON);
                 break;
         }
         return badge != null ? Utilities.mergeImages(origImg, badge, 15, 8) : origImg;

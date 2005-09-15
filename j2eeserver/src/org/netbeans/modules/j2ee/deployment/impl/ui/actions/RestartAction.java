@@ -84,7 +84,10 @@ public class RestartAction extends NodeAction {
                 return false;
             }
             int state = si.getServerState();
-            if (state != ServerInstance.STATE_RUNNING && state != ServerInstance.STATE_DEBUGGING) {
+            if (state != ServerInstance.STATE_RUNNING 
+                && state != ServerInstance.STATE_DEBUGGING
+                && state != ServerInstance.STATE_PROFILING
+                && state != ServerInstance.STATE_PROFILER_BLOCKING) {
                 return false;
             }
         }

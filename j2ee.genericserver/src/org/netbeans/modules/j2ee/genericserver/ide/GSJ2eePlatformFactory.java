@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
@@ -59,6 +60,18 @@ public class GSJ2eePlatformFactory extends J2eePlatformFactory {
             return result;
         }
         
+        public Set/*<String>*/ getSupportedJavaPlatformVersions() {
+            Set versions = new HashSet();
+            versions.add("1.4"); // NOI18N
+            versions.add("1.5"); // NOI18N
+            versions.add("1.6"); // NOI18N
+            return versions;
+        }
+        
+        public JavaPlatform getJavaPlatform() {
+            return null;
+        }
+        
         public java.io.File[] getPlatformRoots() {
             return new File[0];
         }
@@ -68,7 +81,7 @@ public class GSJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public java.awt.Image getIcon() {
-            return Utilities.loadImage("org/netbeans/modules/j2ee/genericserver/resources/GSInstanceIcon.gif");
+            return Utilities.loadImage("org/netbeans/modules/j2ee/genericserver/resources/GSInstanceIcon.gif"); // NOI18N
         }
         
         public String getDisplayName() {
