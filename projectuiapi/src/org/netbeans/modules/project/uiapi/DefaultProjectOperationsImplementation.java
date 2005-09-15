@@ -225,7 +225,7 @@ public final class DefaultProjectOperationsImplementation {
             
             ProjectManager.getDefault().saveProject(nue);
             
-            open(nue);
+            open(nue, false);
             
             handle.finish();
         } catch (IOException e) {
@@ -311,11 +311,7 @@ public final class DefaultProjectOperationsImplementation {
             
             ProjectManager.getDefault().saveProject(nue);
             
-            open(nue);
-            
-            if (wasMain) {
-                OpenProjects.getDefault().setMainProject(nue);
-            }
+            open(nue, wasMain);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -482,10 +478,13 @@ public final class DefaultProjectOperationsImplementation {
         });
     }
     
-    private static void open(final Project prj) {
+    private static void open(final Project prj, final boolean setAsMain) {
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 OpenProjects.getDefault().open(new Project[] {prj}, false);
+                if (setAsMain) {
+                    OpenProjects.getDefault().setMainProject(prj);
+                }
             }
         });
     }
