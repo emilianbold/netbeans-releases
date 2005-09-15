@@ -27,7 +27,18 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="build-jellytools" if="need.to.build.jellytools">
-        <ant dir="${nb_all}/jellytools" target="jar-library" inheritAll="false"/>
+        <!-- <ant dir="${nb_all}/jellytools" target="jar-library" inheritAll="false"/> -->
+        <!-- The following is used instead of above because inheritAll="false"
+        doesn't work for all properties. Properties xtest.home and xtest.testtype
+        has to be null to not scan module binaries because modules jemmy.module and
+        nbjunit are not within IDE binaries (see
+        nbbuild/antsrc/org/netbeans/nbbuild/ModuleListParser.java).
+        -->
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
+            <arg value="-f"/>
+            <arg value="${nb_all}/jellytools/build.xml"/>
+            <arg value="jar-library"/>
+        </java>
     </target>
     
     <target name="init-cp">
