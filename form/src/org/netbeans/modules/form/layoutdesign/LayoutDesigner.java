@@ -431,6 +431,14 @@ public class LayoutDesigner implements LayoutConstants {
                         addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
                     } else {
                         addingInts[dim] = components[0].getLayoutInterval(dim);
+                        if (newComponent) { // Ensure correct size when the component comes from old layout
+                            Dimension preferred = visualMapper.getComponentPreferredSize(components[0].getId());
+                            int size = dragger.getMovingBounds()[0].size(dim);
+                            if (size != ((dim == HORIZONTAL) ? preferred.width : preferred.height)) {
+                                LayoutInterval intr = addingInts[dim];
+                                layoutModel.setIntervalSize(intr, intr.getMinimumSize(), size, intr.getMaximumSize());
+                            }
+                        }
                     }
                 }
 
