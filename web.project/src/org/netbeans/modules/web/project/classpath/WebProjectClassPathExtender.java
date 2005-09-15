@@ -240,8 +240,12 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender, Pr
     public void propertyChange (PropertyChangeEvent e) {
         if (e.getSource().equals(eval) && (e.getPropertyName().equals(WebProjectProperties.JAVAC_CLASSPATH)
             || e.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL))) {
-            registerLibraryListeners();
-            storeLibLocations();
+                EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
+                String javacCp = props.getProperty(WebProjectProperties.JAVAC_CLASSPATH);
+                if (javacCp != null) {
+                    registerLibraryListeners();
+                    storeLibLocations();
+                }
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
             storeLibLocations();
         }
