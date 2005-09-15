@@ -194,12 +194,7 @@ public class VisualReplicator { //implements VisualMapper
 
             RADComponent[] metacomps = ((RADMenuComponent)metacont).getSubBeans();
             for (int i = 0; i < metacomps.length; i++) {
-                RADMenuItemComponent menuItemComp = (RADMenuItemComponent) metacomps[i];
-                int type = menuItemComp.getMenuItemType();
-                Object menuItem = type != RADMenuItemComponent.T_JSEPARATOR 
-                                  && type != RADMenuItemComponent.T_SEPARATOR ?
-                    getClonedComponent(menuItemComp) : null;
-                addToMenu(cont, menuItem);
+                addToMenu(cont, getClonedComponent(metacomps[i]));
             }
         }
     }
@@ -578,6 +573,9 @@ public class VisualReplicator { //implements VisualMapper
             clone = metacomp.cloneBeanInstance(relativeProperties);
         }
 
+        if (clone != null)
+            return null;
+
         if (compClone == null)
             compClone = clone;
 
@@ -635,13 +633,8 @@ public class VisualReplicator { //implements VisualMapper
         else if (metacomp instanceof RADMenuComponent) {
             RADComponent[] metacomps = ((RADMenuComponent)metacomp).getSubBeans();
             for (int i = 0; i < metacomps.length; i++) {
-                RADMenuItemComponent menuItemComp = (RADMenuItemComponent)
-                                                    metacomps[i];
-                int type = menuItemComp.getMenuItemType();
-                Object menuItem = type != RADMenuItemComponent.T_JSEPARATOR 
-                                  && type != RADMenuItemComponent.T_SEPARATOR ?
-                    cloneComponent(menuItemComp, relativeProperties) : null;
-
+                Object menuItem = cloneComponent(
+                        (RADMenuItemComponent)metacomps[i], relativeProperties);
                 addToMenu(compClone, menuItem);
             }
         }

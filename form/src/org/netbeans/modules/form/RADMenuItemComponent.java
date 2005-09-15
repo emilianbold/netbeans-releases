@@ -110,6 +110,12 @@ public class RADMenuItemComponent extends RADComponent {
         throw new IllegalArgumentException("Cannot create RADMenuItemComponent for class: "+cl.getName()); // NOI18N
     }
 
+    public Object cloneBeanInstance(java.util.Collection relativeProperties) {
+        if (type == T_SEPARATOR)
+            return null; // don't clone artificial org.netbeans.modules.form.Separator
+        return super.cloneBeanInstance(relativeProperties);
+    }
+
     // ----------
     // accessibility properties
 
