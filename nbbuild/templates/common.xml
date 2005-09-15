@@ -417,7 +417,9 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="build"/>
         <property name="arch.output.html" location="build/arch.html"/>
         <property name="arch.generate" value="true"/>
-        <arch answers="${javadoc.arch}" output="${arch.output.html}"/>
+        <arch answers="${javadoc.arch}" output="${arch.output.html}"
+            project="nbproject/project.xml" 
+        />
     </target>
     
     <target name="arch-nb" depends="init,arch" if="netbeans.home" description="Process an arch.xml, creating it if it does not yet exist, and display the result.">
