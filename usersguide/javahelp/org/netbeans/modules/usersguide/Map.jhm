@@ -542,6 +542,9 @@ NetbeansDebuggerBreakpointExceptionJPDA-->
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
 
+<!-- The Module Manager dialog box: -->
+<mapID target="org.netbeans.modules.autoupdate.catalog.ModuleSelectionPanel" url="configure/modules/ModuleSelectionPanel.html" />
+    
 <!--ID for Java Platform Manager dialog box:-->
     <mapID target="org.netbeans.api.java.platform.PlatformsCustomizer" url="project/csh/proj_platform_manager.html" />
     <mapID target="org.netbeans.modules.java.platform.wizard.LocationChooser" url="project/csh/proj_platform_manager.html" />
