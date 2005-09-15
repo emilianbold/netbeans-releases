@@ -233,8 +233,12 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender,
     
     public void propertyChange (PropertyChangeEvent e) {
         if (e.getSource().equals(eval) && (e.getPropertyName().equals(EjbJarProjectProperties.JAVAC_CLASSPATH))) {
-            registerLibraryListeners();
-            storeLibLocations();
+            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
+            String javacCp = props.getProperty(EjbJarProjectProperties.JAVAC_CLASSPATH);
+            if (javacCp != null) {
+                registerLibraryListeners();
+                storeLibLocations();
+            }
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
             storeLibLocations();
         }
