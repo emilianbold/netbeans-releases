@@ -492,8 +492,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 // cleanup bean before throwing away
                 deadBean.cleanup();
                 deadBean = null;
-                
-                System.out.println("Removed DCB for " + key.getXpath());
             } else {
                 // If not found, throw appropriate exception per spec.
                 Object [] args = new Object [1];
@@ -1215,6 +1213,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             // remove the old content
             contentMap.remove(key);
         }
+        
+        // Remove this entry from the beanMap, forcing it to be reparsed.
+        // Flush bean cache.  This forces reparsing of the new tree we load here.
+        beanMap.remove(key);
 
         // refresh the configuration...
         //((BaseRoot) getDConfigBeanRoot(mod.getDDBeanRoot())).refresh();

@@ -157,6 +157,8 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		this.dDBean = dDBean;
 		this.parent = parent;
 		this.baseXpath = dDBean.getXpath();
+                
+                System.out.println("Initializing bean #" + getIdentity() + ", xpath: " + baseXpath);
 		
 		// Build validation field list for this bean
 		// !PW We need a better way to do this.  See comment by validationFieldList
@@ -496,6 +498,9 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 						Base parent = beanToRemove.getParent();
 						String beanXpath = beanToRemove.getDDBean().getXpath();
 
+						// debug
+						String beanIdentity = beanToRemove.getIdentity();
+                                                
 						// cleanup bean before throwing away
 						beanToRemove.cleanup();
 						beanToRemove = null;
@@ -503,7 +508,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 						// !PW FIXME 2nd half - workaround for IZ 41214 (see method comment)
 						parent.beanRemoved(beanXpath);
                                                 
-                                                System.out.println("Removed DCB for " + beanXpath);
+                                                System.out.println("Removed DCB #" + beanIdentity + " for " + beanXpath);
 					} else {
 						Object [] args = new Object [2];
 						args[0] = dConfigBean.getDDBean();
