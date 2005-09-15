@@ -216,6 +216,9 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         interfaceComboBox.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE_DESCRIPTION")); // NOI18N
         
+        
+        
+        
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
@@ -562,6 +565,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 34, 0, 11);
         northPanel.add(classNameLabel, gridBagConstraints);
 
+        mbeanClassLabel.setLabelFor(mbeanClassTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
