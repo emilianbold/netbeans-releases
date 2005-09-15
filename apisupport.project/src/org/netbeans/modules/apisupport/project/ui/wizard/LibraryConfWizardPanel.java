@@ -47,8 +47,6 @@ final class LibraryConfWizardPanel extends BasicWizardPanel {
                 NewModuleProjectData.DATA_PROPERTY_NAME);
                 
         if (data.getCodeNameBase() == null) {
-            //TODO get codebase name according to the content of jar.
-            
             String dotName = BasicConfVisualPanel.EXAMPLE_BASE_NAME + data.getProjectName();
             data.setCodeNameBase(Util.normalizeCNB(dotName));
         }

@@ -159,7 +159,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                         int index = nm.lastIndexOf('/');
                         if (index > -1) {
                             String path = nm.substring(0, index);
-                            if (shortestPath != null && path.length() == shortestPath.length()) {
+                            if (shortestPath != null && path.length() == shortestPath.length() && !path.equals(shortestPath)) {
                                 cutShortestPath = true;
                             }
                             if (shortestPath == null || path.length() < shortestPath.length()) {
