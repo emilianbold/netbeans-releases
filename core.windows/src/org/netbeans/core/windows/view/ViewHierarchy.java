@@ -669,7 +669,8 @@ final class ViewHierarchy {
             // was 'shifted' in AWT hierarchy. I.e. when removed/added it loses focus,
             // but we need to keep it, e.g. for case when its parent split is removing.
             if(focusOwner != null
-            && !focusOwnerAWTHierarchyChain.equals(getComponentAWTHierarchyChain(focusOwner))) {
+                && !focusOwnerAWTHierarchyChain.equals(getComponentAWTHierarchyChain(focusOwner))
+                /** #64189 */ && SwingUtilities.getAncestorOfClass(Window.class, focusOwner) != null) {
                 focusOwner.requestFocus();
             }
         }
@@ -713,7 +714,8 @@ final class ViewHierarchy {
             // was 'shifted' in AWT hierarchy. I.e. when removed/added it loses focus,
             // but we need to keep it, e.g. for case when its parent split is removing.
             if(focusOwner != null
-                && !focusOwnerAWTHierarchyChain.equals(getComponentAWTHierarchyChain(focusOwner))) {
+                && !focusOwnerAWTHierarchyChain.equals(getComponentAWTHierarchyChain(focusOwner))
+                /** #64189 */ && SwingUtilities.getAncestorOfClass(Window.class, focusOwner) != null) {
                 focusOwner.requestFocus();
             }
         }
