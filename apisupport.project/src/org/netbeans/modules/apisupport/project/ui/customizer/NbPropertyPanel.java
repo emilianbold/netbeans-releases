@@ -94,7 +94,7 @@ abstract class NbPropertyPanel extends JPanel implements
      */
     protected void setErrorMessage(String message) {
         setWarning(message);
-        setValid("".equals(message));
+        setValid(null == message || "".equals(message));
     }
 
     
