@@ -73,61 +73,70 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
         int lastX = Integer.MAX_VALUE;
         int rowHeight = - vgap;
         int r = 0;
-        
-        for (int i = 0; i < components.length; i++) {
-            Component comp = components[i];
-            int posX = comp.getBounds().x;
-            if (posX < lastX) {
-                rowStarts[r] = i;
-                rowTops[r] = rowHeight + vgap;
-                rowTops[r] += r > 0 ? rowTops[r-1] :
-                                      containerDelegate.getInsets().top;
-                r++;
-                rowHeight = 0;
-            }
-            rowHeight = Math.max(rowHeight, comp.getSize().height);
-            lastX = posX;
-        }
-        if (r > 0) {
-            rowTops[r] = rowTops[r-1] + rowHeight + vgap;
-        }
-
-        // find which row the pointer falls in
-        
-        r = 0;
         int i = 0;
-        while (rowStarts[i] >= 0) {
-            if (posInCont.y < rowTops[i]) {
-                r = i - 1;
-                break;
-            }
-            i++;
-        }
         
-        if (rowStarts[i] < 0) {
-            if (posInCont.y >= rowTops[i]) {
-                return components.length;
+        if ((components.length > 1) || (component.getParent() != containerDelegate)) {
+            for (int j = 0; j < components.length; j++) {
+                Component comp = components[j];
+                if (comp == component) {
+                    comp = components[(j == 0) ? 1 : j-1];
+                }
+                int posX = comp.getBounds().x;
+                if (posX < lastX) {
+                    rowStarts[r] = j;
+                    rowTops[r] = rowHeight + vgap;
+                    rowTops[r] += r > 0 ? rowTops[r-1] :
+                                          containerDelegate.getInsets().top;
+                    r++;
+                    rowHeight = 0;
+                }
+                rowHeight = Math.max(rowHeight, comp.getSize().height);
+                lastX = posX;
             }
-            else {
-                r = i - 1;
+            if (r > 0) {
+                rowTops[r] = rowTops[r-1] + rowHeight + vgap;
             }
+
+            // find which row the pointer falls in
+
+            r = 0;
+            while (rowStarts[i] >= 0) {
+                if (posInCont.y < rowTops[i]) {
+                    r = i - 1;
+                    break;
+                }
+                i++;
+            }
+
+            if (rowStarts[i] < 0) {
+                if (posInCont.y >= rowTops[i]) {
+                    return components.length;
+                }
+                else {
+                    r = i - 1;
+                }
+            }
+
+            int m = (r <= 0) ? 0 : rowStarts[r];
+            int n = rowStarts[r + 1];
+
+            if (n > components.length || n < 0)
+                n = components.length;
+
+            for (i = m; i < n; i++) {
+                Component comp = components[i];
+                if (comp == component) {
+                    comp = components[(i == 0) ? 1 : i-1];
+                }
+                Rectangle bounds = comp.getBounds();
+                int centerX = bounds.x + bounds.width / 2;
+                if (posInCont.x < centerX)
+                    break;
+            }
+
+            i = i < n ? i : n;
         }
-
-        int m = (r <= 0) ? 0 : rowStarts[r];
-        int n = rowStarts[r + 1];
-
-        if (n > components.length || n < 0)
-            n = components.length;
-
-        for (i = m; i < n; i++) {
-            Component comp = components[i];
-            Rectangle bounds = comp.getBounds();
-            int centerX = bounds.x + bounds.width / 2;
-            if (posInCont.x < centerX)
-                break;
-        }
-
-        return i < n ? i : n;
+        return i;
     }
 
     /** This method paints a dragging feedback for a component dragged over
@@ -158,11 +167,19 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
         Component[] components = containerDelegate.getComponents();
         int alignment = ((FlowLayout) containerDelegate.getLayout()).getAlignment();
         int hgap = ((FlowLayout) containerDelegate.getLayout()).getHgap();
+        int draggedIndex = -1;
+        if (component.getParent() == containerDelegate) {
+            for (int i=0; i<components.length; i++) {
+                if (component == components[i]) {
+                    draggedIndex = i;
+                }
+            }
+        }
 
         int x = 0, y1 = 0, y2 = 0;
         
-        if (newIndex <= 0) {
-            if (components.length == 0) {
+        if ((newIndex <= 0) || ((components.length == 1) && (draggedIndex != -1))) {
+            if ((components.length == 0) || ((components.length == 1) && (draggedIndex != -1))) {
                 if (alignment == FlowLayout.RIGHT) {
                     x = containerDelegate.getSize().width;
                 }
@@ -176,20 +193,22 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
                 y2 = (component != null ? component.getHeight() : 20);
             }
             else {
-                Rectangle b = components[0].getBounds();
+                Rectangle b = components[(draggedIndex == 0) ? 1 : 0].getBounds();
                 x = b.x;
                 y1 = b.y;
                 y2 = b.y + (component != null ? component.getHeight() : b.height);
             }
         }
-        else if (newIndex >= components.length) {
-            Rectangle b = components[components.length - 1].getBounds();
+        else if ((newIndex >= components.length) ||
+            ((newIndex == components.length - 1) && (newIndex == draggedIndex))) {
+            int last = components.length - 1;
+            Rectangle b = components[(last == draggedIndex) ? last-1 : last].getBounds();
             x = b.x + b.width;
             y1 = b.y;
             y2 = b.y + (component != null ? component.getHeight() : b.height);
         }
         else {
-            Rectangle b = components[newIndex].getBounds();
+            Rectangle b = components[(newIndex == draggedIndex) ? newIndex+1 : newIndex].getBounds();
             x = b.x;
             y1 = b.y;
             y2 = b.y + (component != null ? component.getHeight() : b.height);

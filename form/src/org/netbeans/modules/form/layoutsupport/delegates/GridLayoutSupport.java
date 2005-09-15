@@ -123,9 +123,13 @@ public class GridLayoutSupport extends AbstractLayoutSupport
         int dx = 12 + layout.getHgap() / 2;
         int x = 0, w = 24, y = 0, h = 0;
         
-        if (newIndex <= 0) {
-            if (components.length > 0) {
-                Rectangle b = components[0].getBounds();
+        if ((newIndex <= 0) || ((components.length == 1) && (components[0] == component))) {
+            if ((components.length > 1) || ((components.length == 1) && (components[0] != component))) {
+                Component comp = components[0];
+                if (comp == component) {
+                    comp = components[1];
+                }
+                Rectangle b = comp.getBounds();
                 x = b.x - dx ;
                 y = b.y;
                 h = b.height;
@@ -138,14 +142,23 @@ public class GridLayoutSupport extends AbstractLayoutSupport
                 h = containerDelegate.getHeight() - ins.bottom - ins.top - 2;
             }
         }
-        else if (newIndex >= components.length) {
-            Rectangle b = components[components.length-1].getBounds();
+        else if ((newIndex >= components.length) ||
+            ((newIndex == components.length - 1) && (components[newIndex] == component))) {
+            Component comp = components[components.length-1];
+            if (comp == component) {
+                comp = components[components.length-2];
+            }
+            Rectangle b = comp.getBounds();
             x = b.x + b.width - dx;
             y = b.y;
             h = b.height;
         }
         else {
-            Rectangle b = components[newIndex].getBounds();
+            Component comp = components[newIndex];
+            if (comp == component) {
+                comp = components[newIndex+1];
+            }
+            Rectangle b = comp.getBounds();
             x = b.x - dx;
             y = b.y;
             h = b.height;

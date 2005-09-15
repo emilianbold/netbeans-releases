@@ -294,19 +294,22 @@ public class FormModel
      * layout support. */
     public void addVisualComponent(RADVisualComponent metacomp,
                                    RADVisualContainer parentContainer,
-                                   LayoutConstraints constraints)
+                                   Object constraints)
     {
         LayoutSupportManager layoutSupport = parentContainer.getLayoutSupport();
         if (layoutSupport != null) {
             RADVisualComponent[] compArray = new RADVisualComponent[] { metacomp };
-            LayoutConstraints[] constrArray = new LayoutConstraints[] { constraints };
+            LayoutConstraints c = constraints instanceof LayoutConstraints ?
+                                  (LayoutConstraints) constraints : null;
+            LayoutConstraints[] constrArray = new LayoutConstraints[] { c };
+            int index = constraints instanceof Integer ? ((Integer)constraints).intValue() : -1;
 
             // this may throw a RuntimeException if the components are not accepted
-            layoutSupport.acceptNewComponents(compArray, constrArray, -1);
+            layoutSupport.acceptNewComponents(compArray, constrArray, index);
 
-            parentContainer.add(metacomp);
+            parentContainer.add(metacomp, index);
 
-            layoutSupport.addComponents(compArray, constrArray, -1);
+            layoutSupport.addComponents(compArray, constrArray, index);
 
             boolean newlyAdded = !metacomp.isInModel();
             if (newlyAdded)

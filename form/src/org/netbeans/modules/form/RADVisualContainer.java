@@ -268,8 +268,16 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public void add(RADComponent comp) {
+        add(comp, -1);
+    }
+
+    public void add(RADComponent comp, int index) {
         if (comp instanceof RADVisualComponent)
-            subComponents.add(comp);
+            if (index == -1) {
+                subComponents.add(comp);
+            } else {
+                subComponents.add(index, comp);
+            }
         else if (comp instanceof RADMenuComponent)
             containerMenu = (RADMenuComponent) comp;  // [what with the current menu?]
         else

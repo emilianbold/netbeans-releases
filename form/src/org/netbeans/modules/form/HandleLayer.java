@@ -1185,15 +1185,17 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         LayoutSupportManager laysup = metacont != null ?
                                       metacont.getLayoutSupport() : null;
 
-//        if (laysup != null) { // old layout support
             Container cont = (Container) formDesigner.getComponent(metacont);
             Container contDel = metacont.getContainerDelegate(cont);
             Point p = convertPointToComponent(point.x, point.y, contDel);
-            return laysup.getNewConstraints(cont, contDel, null, -1, p, null);
-//        }
-//        else { // new layout support
-//            return formDesigner.getLayoutDesigner().getSuggestedGuidingLines();
-//        }
+            Object constraints = laysup.getNewConstraints(cont, contDel, null, -1, p, null);
+            if ((constraints == null) && metacomp.getBeanInstance() instanceof Component) {
+                int index = laysup.getNewIndex(cont, contDel, (Component)metacomp.getBeanInstance(), -1, p, null);
+                if (index != -1) {
+                    constraints = new Integer(index);
+                }
+            }
+            return constraints;
     }
 
     private static boolean substituteForContainer(RADVisualContainer metacont) {
@@ -1703,11 +1705,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             return (movingComponents == null) ? null : movingComponents[0].getParentContainer();
         }
 
-        final boolean isOldLayoutSource() {
-            RADVisualContainer metacont = getSourceContainer();
-            return metacont != null && metacont.getLayoutSupport() != null;
-        }
-
         final boolean isTopComponent() {
             return movingComponents != null && formDesigner.getTopDesignComponent() == movingComponents[0];
         }
@@ -1716,9 +1713,15 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             if (fixedTarget != null) {
                 return fixedTarget;
             }
-            RADVisualContainer metacont = HandleLayer.this.getMetaContainerAt(
-                    getMoveDirectionSensitivePoint(p, modifiers),
-                    ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST);
+            int mode = ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST;
+            RADVisualContainer metacont = HandleLayer.this.getMetaContainerAt(p, mode);
+            if ((metacont != null) && (metacont.getLayoutSupport() == null)) {
+                RADVisualContainer dirMetacont = HandleLayer.this.getMetaContainerAt(
+                        getMoveDirectionSensitivePoint(p, modifiers), mode);
+                if ((dirMetacont != null) && (dirMetacont.getLayoutSupport() == null)) {
+                    metacont = dirMetacont;
+                }
+            }
             if (movingComponents != null) {
                 java.util.List comps = Arrays.asList(movingComponents);
                 while (comps.contains(metacont)) {
@@ -1860,11 +1863,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
                 else if (showingComponents != null) { // non-visual area
                     Component comp = showingComponents[i];
-                    if (!isOldLayoutSource()) { // don't paint if component dragged from old layout
-                        comp.setBounds(movingBounds[i]);
-                        doLayout(comp);
-                        paintDraggedComponent(comp, gg);
-                    }
+                    comp.setBounds(movingBounds[i]);
+                    doLayout(comp);
+                    paintDraggedComponent(comp, gg);
                 }
             }
         }
@@ -1898,18 +1899,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 // showing components need to be in a container to paint correctly,
                 // components in new layout need to be hidden on their original location
                 dragPanel.removeAll();
-                boolean needPainting = !isTopComponent()
-                        && (getSourceContainer() == null // being newly added
-                            || getSourceContainer().getLayoutSupport() == null); // or in new layout
                 for (int i=0; i < showingComponents.length; i++) {
                     Component comp = showingComponents[i];
-                    if (needPainting) {
-                        if (comp.getParent() == null) {
-                            dragPanel.add(comp);
-                        }
-                        else {
-                            comp.setVisible(false);
-                        }
+                    if (comp.getParent() == null) {
+                        dragPanel.add(comp);
+                    }
+                    else {
+                        comp.setVisible(false);
                     }
                     avoidDoubleBuffering(comp);
                 }
@@ -2087,9 +2083,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
             // don't paint if component dragged from old layout (may have strange size)
             Component comp = showingComponents[0];
-            if (!isOldLayoutSource()) {
-                paintDraggedComponent(comp, gg);
-            }
+            paintDraggedComponent(comp, gg);
         }
     }
 

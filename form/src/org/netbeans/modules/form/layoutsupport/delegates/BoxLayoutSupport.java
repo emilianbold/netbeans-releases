@@ -91,6 +91,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         
         Component[] components = containerDelegate.getComponents();
         for (int i = 0; i < components.length; i++) {
+            if (components[i] == component) continue;
             Rectangle b = components[i].getBounds();
             if (axis == BoxLayout.X_AXIS) {
                 if (posInCont.x < b.x + b.width / 2)
@@ -133,7 +134,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         Component[] components = containerDelegate.getComponents();
         Rectangle rect;
 
-        if (components.length == 0) {
+        if ((components.length == 0) || ((components.length == 1) && (components[0] == component))) {
             Insets ins = containerDelegate.getInsets();
             rect = axis == BoxLayout.X_AXIS ?
                    new Rectangle(ins.left,
@@ -146,7 +147,11 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                                  30, 20);
         }
         else if (newIndex < 0 || newIndex >= components.length) {
-            Rectangle b = components[components.length - 1].getBounds();
+            Component comp = components[components.length - 1];
+            if (comp == component) {
+                comp = components[components.length - 2];
+            }
+            Rectangle b = comp.getBounds();
             rect = axis == BoxLayout.X_AXIS ?
                    new Rectangle(b.x + b.width - 10, b.y, 20, b.height) :
                    new Rectangle(b.x, b.y + b.height - 10, b.width, 20);

@@ -798,10 +798,8 @@ public class MetaComponentCreator {
 
         // add the new metacomponent to the model
         if (parentCont != null) {
-            LayoutConstraints c = constraints instanceof LayoutConstraints ?
-                                  (LayoutConstraints) constraints : null;
             try {
-                formModel.addVisualComponent(newMetaComp, parentCont, c);
+                formModel.addVisualComponent(newMetaComp, parentCont, constraints);
             }
             catch (RuntimeException ex) {
                 // LayoutSupportDelegate may not accept the component
