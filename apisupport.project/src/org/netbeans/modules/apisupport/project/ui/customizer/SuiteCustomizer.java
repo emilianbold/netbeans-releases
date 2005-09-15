@@ -34,8 +34,8 @@ public final class SuiteCustomizer extends BasicCustomizer {
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
     private static final String MODULE_LIST = "ModuleList"; // NOI18N
-    private static final String BUILD = "Build"; // NOI18N
-    private static final String BASIC_BRANDING = "BasicBranding"; // NOI18N
+    public static final String BUILD = "Build"; // NOI18N
+    public static final String BASIC_BRANDING = "BasicBranding"; // NOI18N
     private static final String SPLASH_BRANDING = "SplashBranding"; // NOI18N
     
     private final AntProjectHelper helper;

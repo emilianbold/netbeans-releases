@@ -38,6 +38,7 @@ $${jnlp.resources}
     </target>
     
     <target name="jnlp-init" depends="jnlp-init-generate-master">
+        <fail unless="app.name">Must have set at least an application name ('app.name')</fail>
         
         <property name="jnlp.dest.dir" location="build/jnlp"/>
         <property name="jnlp.master.dir" location="build/tmp/master-jnlp"/>
@@ -45,7 +46,6 @@ $${jnlp.resources}
         
         <property name="disabled.modules" value=""/>
         <property name="disabled.clusters" value=""/>
-        <property name="app.name" value="nbbasedapp"/>
         
         <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}">
             <and>

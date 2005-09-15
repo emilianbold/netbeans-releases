@@ -19,16 +19,23 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -154,6 +161,13 @@ public final class SuiteActions implements ActionProvider {
         } else {
             throw new IllegalArgumentException(command);
         }
+        
+        if (command.indexOf("jnlp") >= 0) {
+            if (promptForAppName()) {
+                return;
+            }
+        }
+        
         try {
             ActionUtils.runTarget(findBuildXml(project), targetNames, null);
         } catch (IOException e) {
@@ -163,6 +177,33 @@ public final class SuiteActions implements ActionProvider {
     
     private static FileObject findBuildXml(SuiteProject project) {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+    }
+    
+    /** @return true if the dialog is shown */
+    private boolean promptForAppName() {
+        String name = project.getEvaluator().getProperty("app.name"); // NOI18N
+        if (name != null) {
+            return false;
+        }
+        
+        // #61372: warn the user, rather than disabling the action.
+        String msg = NbBundle.getMessage(ModuleActions.class, "ERR_app_name");
+        DialogDescriptor d = new DialogDescriptor(msg, NbBundle.getMessage(ModuleActions.class, "TITLE_app_name"));
+        d.setModal(true);
+        JButton configure = new JButton();
+        Mnemonics.setLocalizedText(configure, NbBundle.getMessage(ModuleActions.class, "LBL_configure_app_name"));
+        configure.setDefaultCapable(true);
+        d.setOptions(new Object[] {
+            configure,
+            NotifyDescriptor.CANCEL_OPTION,
+        });
+        d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+        if (DialogDisplayer.getDefault().notify(d).equals(configure)) {
+            SuiteCustomizer cpi = ((SuiteCustomizer) project.getLookup().lookup(SuiteCustomizer.class));
+            cpi.showCustomizer(SuiteCustomizer.BUILD, SuiteCustomizer.BASIC_BRANDING);
+            return true;
+        }
+        return false;
     }
     
 }
