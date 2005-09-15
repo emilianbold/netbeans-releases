@@ -180,9 +180,12 @@ public class NewLoaderIterator extends BasicWizardIterator {
             String relativeIconPath = model.addCreateIconOperation(fileChanges, origIconPath);
             replaceTokens.put("@@IMAGESNIPPET@@", formatImageSnippet(relativeIconPath));//NOI18N
             replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
+            replaceTokens.put("@@COMMENTICON@@", "");//NOI18N
+            
         } else {
             replaceTokens.put("@@IMAGESNIPPET@@", formatImageSnippet(null)); //NOI18N
             replaceTokens.put("@@ICONPATH@@", "SET/PATH/TO/ICON/HERE"); //NOI18N
+            replaceTokens.put("@@COMMENTICON@@", "//");//NOI18N
         }
         
         // 1. create dataloader file

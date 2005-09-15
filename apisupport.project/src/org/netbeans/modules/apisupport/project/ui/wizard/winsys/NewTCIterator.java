@@ -180,8 +180,11 @@ public class NewTCIterator extends BasicWizardIterator {
                 relativeIconPath = FileUtil.getRelativePath(model.getProject().getSourceDirectory(), fo);
             }
             replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
+            replaceTokens.put("@@COMMENTICON@@", "");//NOI18N
+            
         } else {
             replaceTokens.put("@@ICONPATH@@", "SET/PATH/TO/ICON/HERE"); //NOI18N
+            replaceTokens.put("@@COMMENTICON@@", "//");//NOI18N
         }
         
         

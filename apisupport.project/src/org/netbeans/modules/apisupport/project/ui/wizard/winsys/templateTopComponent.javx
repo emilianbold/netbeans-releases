@@ -23,7 +23,7 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "CTL_@@TEMPLATENAME@@TopComponent"));
         setToolTipText(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "HINT_@@TEMPLATENAME@@TopComponent"));
-        setIcon(Utilities.loadImage("@@ICONPATH@@", true)); 
+@@COMMENTICON@@        setIcon(Utilities.loadImage("@@ICONPATH@@", true)); 
     }
     /** This method is called from within the constructor to
      * initialize the form.

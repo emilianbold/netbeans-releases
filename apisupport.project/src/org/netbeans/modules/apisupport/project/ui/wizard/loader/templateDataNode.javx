@@ -9,7 +9,7 @@ public class @@PREFIX@@DataNode extends DataNode {
 
     public @@PREFIX@@DataNode(@@PREFIX@@DataObject obj) {
         super(obj, Children.LEAF);
-        setIconBaseWithExtension(IMAGE_ICON_BASE);
+@@COMMENTICON@@        setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
 
 //    /** Creates a property sheet. */
