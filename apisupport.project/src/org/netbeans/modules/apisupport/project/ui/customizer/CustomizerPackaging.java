@@ -15,8 +15,10 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Packaging</em> panel in Netbeans Module customizer.
@@ -30,6 +32,16 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         super(props, CustomizerPackaging.class);
         initComponents();
         refresh();
+        licenseValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                File currentLicenceF = getCurrentLicenceFile();
+                if (currentLicenceF != null && !currentLicenceF.isFile()) {
+                    setWarning(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
+                } else {
+                    setWarning(null);
+                }
+            }
+        });
     }
     
     void refresh() {
@@ -47,6 +59,22 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         setProperty(SingleModuleProperties.LICENSE_FILE, licenseValue.getText());
         setProperty(SingleModuleProperties.NBM_HOMEPAGE, homePageValue.getText());
         setProperty(SingleModuleProperties.NBM_MODULE_AUTHOR, authorValue.getText());
+    }
+    
+    private String getCurrentLicence() {
+        return licenseValue.getText().trim();
+    }
+    
+    private File getCurrentLicenceFile() {
+        File file = null;
+        String currentLicence = getCurrentLicence();
+        if (!currentLicence.equals("")) {
+            file = new File(currentLicence);
+            if (!file.isAbsolute()) {
+                file = new File(getProperties().getProjectDirectory(), currentLicence);
+            }
+        }
+        return file;
     }
     
     /** This method is called from within the constructor to
@@ -203,16 +231,12 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     // </editor-fold>//GEN-END:initComponents
     
     private void browseLicense(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLicense
-        String startDir = getProperties().getProjectDirectory();
-        String currentLicence = licenseValue.getText().trim();
-        if (!currentLicence.equals("")) {
-            File currentLicenceF = new File(currentLicence);
-            if (!currentLicenceF.isAbsolute()) {
-                currentLicenceF = new File(startDir, currentLicence);
-            }
-            if (currentLicenceF.exists() && currentLicenceF.getParent() != null) {
-                startDir = currentLicenceF.getParent();
-            }
+        String startDir;
+        File currentLicenceF = getCurrentLicenceFile();
+        if (currentLicenceF != null && currentLicenceF.exists() && currentLicenceF.getParent() != null) {
+            startDir = currentLicenceF.getParent();
+        } else {
+            startDir = getProperties().getProjectDirectory();
         }
         JFileChooser chooser = new JFileChooser(startDir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -223,7 +247,6 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
             licenseValue.setText(relPath);
         }
     }//GEN-LAST:event_browseLicense
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel author;
