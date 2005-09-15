@@ -52,7 +52,7 @@ public class TopLogging
     TopLogging (String logDir) throws IOException  {
         topLogging = this;
 
-        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
         java.util.Date date = new java.util.Date();
         if (logDir == null) {
             // no demultiplexing -- everything goes just to stderr.
