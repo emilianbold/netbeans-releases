@@ -10,21 +10,16 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * DConfigBeanBeanInfoTest.java
- *
- * Created on January 11, 2004, 1:04 PM
- */
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
-import java.beans.*;
-
-import org.netbeans.modules.j2ee.sun.share.configbean.*;
-
-import junit.framework.*;
-import junit.textui.*;
-
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.FeatureDescriptor;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
+import junit.framework.TestCase;
 
 /**
  *
@@ -39,23 +34,6 @@ public class DConfigBeanBeanInfoTest extends TestCase {
 	 */
 	public DConfigBeanBeanInfoTest(String testName) {
 		super(testName);
-	}
-	
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-	
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DConfigBeanBeanInfoTest.class);
-        return suite;
-    }
-	
-	protected void setUp() throws java.lang.Exception {
-		// setup for beaninfo integrity tests
-	}
-	
-	protected void tearDown() {
-		// teardown for beaninfo integrity tests.
 	}
 	
 	/** -----------------------------------------------------------------------

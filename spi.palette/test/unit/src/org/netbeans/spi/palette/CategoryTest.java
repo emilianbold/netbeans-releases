@@ -13,16 +13,11 @@
 
 package org.netbeans.spi.palette;
 
-import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetContext;
-import java.awt.dnd.DropTargetDragEvent;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import javax.swing.Action;
-import junit.framework.*;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
@@ -37,12 +32,6 @@ public class CategoryTest extends AbstractPaletteTestHid {
     
     public CategoryTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(CategoryTest.class);
-        
-        return suite;
     }
 
     /**

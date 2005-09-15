@@ -7,15 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.dtd.grammar;
 
-import junit.framework.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
+import junit.framework.TestCase;
 
 /**
  * Tests DTD code completion for exact content models.
@@ -25,18 +30,8 @@ import java.util.StringTokenizer;
  */
 public class ContentModelTest extends TestCase {
     
-    public ContentModelTest(java.lang.String testName) {
+    public ContentModelTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ContentModelTest.class);
-        
-        return suite;
     }
     
     /** Test of parseContentModel method, of class org.netbeans.modules.xml.text.completion.dtd.ContentModel. */

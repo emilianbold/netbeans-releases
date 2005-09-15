@@ -7,20 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * IntListTest.java
- * JUnit based test
- *
- * Created on March 22, 2004, 12:24 AM
  */
 
 package org.netbeans.core.output2;
 
-import java.util.Arrays;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -28,13 +21,8 @@ import junit.framework.*;
  */
 public class IntListTest extends TestCase {
     
-    public IntListTest(java.lang.String testName) {
+    public IntListTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(IntListTest.class);
-        return suite;
     }
     
     /**

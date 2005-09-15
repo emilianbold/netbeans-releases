@@ -34,11 +34,6 @@ public class TemplateWizardTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(TemplateWizardTest.class));
-    }
-    
-
     protected void setUp() throws java.lang.Exception {
          FileObject fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
          FileUtil.createFolder (fo, "Templates");

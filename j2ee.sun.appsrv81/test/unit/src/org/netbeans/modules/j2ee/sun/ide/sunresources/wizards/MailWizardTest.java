@@ -10,17 +10,11 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * MailWizardTest.java
- * JUnit based test
- *
- * Created on May 5, 2004, 1:02 PM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
-import org.openide.WizardDescriptor;
 
-import junit.framework.*;
+import junit.framework.TestCase;
+import org.openide.WizardDescriptor;
 
 /**
  *
@@ -40,7 +34,7 @@ public class MailWizardTest extends TestCase {
         //MailWizard.MailWizardIterator s1 = (MailWizard.MailWizardIterator) MailWizard.singleton();
         //wiz.getPanel(0);
         //wiz.getResourceConfigHelper();
-        //s1.stateChange(new javax.swing.event.ChangeEvent() {
+        //s1.stateChange(new ChangeEvent() {
             
         //});
         //}
@@ -56,18 +50,8 @@ public class MailWizardTest extends TestCase {
         s1.instantiate();
     }
     
-    public MailWizardTest(java.lang.String testName) {
+    public MailWizardTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(MailWizardTest.class);
-        return suite;
-    }
-    
-    // TODO add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-    
     
 }

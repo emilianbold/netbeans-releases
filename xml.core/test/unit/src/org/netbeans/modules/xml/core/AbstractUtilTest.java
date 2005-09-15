@@ -19,16 +19,6 @@ public class AbstractUtilTest extends TestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AbstractUtilTest.class);
-        
-        return suite;
-    }
-    
     public void testGetCallerPackage() {
         System.out.println("testGetCallerPackage");
 

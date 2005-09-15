@@ -40,10 +40,6 @@ public class InstanceDataObjecIssue47707Test extends NbTestCase {
         super (name);
     }
     
-    public static void main (String[] args) throws Exception {
-        junit.textui.TestRunner.run(new NbTestSuite (InstanceDataObjecIssue47707Test.class));
-    }
-    
     /** Setups variables.
      */
     protected void setUp () throws Exception {

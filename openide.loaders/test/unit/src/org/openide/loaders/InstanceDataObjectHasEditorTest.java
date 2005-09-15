@@ -50,9 +50,6 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
         
     }
 
-    protected void tearDown () throws java.lang.Exception {
-    }
-
     public void testSettingsFileOnSFSShouldHaveEditor () throws Exception {
         FileObject set = createSettings (Repository.getDefault ().getDefaultFileSystem ().getRoot (), "x.settings");
         DataObject obj = DataObject.find (set);

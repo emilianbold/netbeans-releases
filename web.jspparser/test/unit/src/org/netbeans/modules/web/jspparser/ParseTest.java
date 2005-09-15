@@ -50,13 +50,6 @@ public class ParseTest extends NbTestCase {
         super(testName);
     }
     
-    /** method used for explicit testsuite definition
-     */
-    public static junit.framework.Test suite() {
-        TestSuite suite = new NbTestSuite(ParseTest.class);
-        return suite;
-    }
-    
     public void testAnalysisMain() throws Exception {
         parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/main.jsp");
     }
@@ -168,21 +161,4 @@ public class ParseTest extends NbTestCase {
         return goldenFile.substring(0, i) + "." + ext;
     }
     
-    /** method called before each testcase
-     */
-    protected void setUp() throws IOException {
-    }
-    
-    /** method called after each testcase<br>
-     * resets Jemmy WaitComponentTimeout
-     */
-    protected void tearDown() {
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 }

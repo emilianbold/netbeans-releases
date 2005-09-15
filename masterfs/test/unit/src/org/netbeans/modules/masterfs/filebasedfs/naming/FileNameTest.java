@@ -7,17 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
 import org.netbeans.junit.NbTestCase;
 import java.io.File;
-
-
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -35,7 +35,7 @@ public class FileNameTest extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         clearWorkDir();
         
         f1 = getTestFile();
@@ -46,16 +46,6 @@ public class FileNameTest extends NbTestCase {
         n3 = NamingFactory.fromFile(f3);        
     }
 
-    public static void main(String args[]) { 
-        junit.textui.TestRunner.run(suite ());
-    }    
-    
-    public static junit.framework.Test suite() {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(FileNameTest.class);
-        
-        return suite;
-    }
-    
     protected File getTestFile() throws Exception {
         File retVal = new File (getWorkDir(), "namingTest");
         if (!retVal.exists()) {
@@ -104,7 +94,7 @@ public class FileNameTest extends NbTestCase {
         n3 = null;
         
         for (int i = 0; i < l.size(); i++) {
-            java.lang.ref.WeakReference weakReference = (java.lang.ref.WeakReference) l.get(i);
+            WeakReference weakReference = (WeakReference) l.get(i);
             assertGC("Shoul be GCed: "+((FileNaming)weakReference.get()),  weakReference);
         }        
     }

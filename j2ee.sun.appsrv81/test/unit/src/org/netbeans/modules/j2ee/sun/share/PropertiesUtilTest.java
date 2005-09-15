@@ -32,15 +32,6 @@ public class PropertiesUtilTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(PropertiesUtilTest.class);
-        return suite;
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public void  testSetArrayPropertyValue() {
         Properties p = new Properties();
         PropertiesUtil.setArrayPropertyValue(p, "a.", null);

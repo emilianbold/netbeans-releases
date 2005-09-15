@@ -31,17 +31,6 @@ public class DataLoaderOrigTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(DataLoaderOrigTest.class));
-    }
-    
-    protected void setUp() throws Exception {
-    }
-    /*
-    protected void tearDown() throws Exception {
-    }
-     */
-    
     public void testSimpleLoader() throws Exception {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         DataLoaderPool pool;

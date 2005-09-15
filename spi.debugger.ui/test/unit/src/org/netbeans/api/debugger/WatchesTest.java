@@ -7,16 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
-
 import java.beans.PropertyChangeEvent;
-import java.util.*;
+import java.util.List;
 
 /**
  * Tests DebuggerManager's Watches management.
@@ -99,11 +98,4 @@ public class WatchesTest extends DebuggerApiTestBase {
         return newWatch;
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
 }

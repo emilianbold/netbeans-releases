@@ -14,21 +14,13 @@
 package org.netbeans.spi.palette;
 
 import java.io.IOException;
-import junit.framework.*;
 import javax.swing.Action;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
-import org.netbeans.modules.palette.Settings;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
 import org.openide.util.Lookup;
-
 
 /**
  *
@@ -38,12 +30,6 @@ public class ModelTest extends AbstractPaletteTestHid {
     
     public ModelTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ModelTest.class);
-        
-        return suite;
     }
 
     /**

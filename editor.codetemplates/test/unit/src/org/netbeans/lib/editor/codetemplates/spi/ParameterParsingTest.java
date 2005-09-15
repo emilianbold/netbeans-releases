@@ -29,14 +29,6 @@ public class ParameterParsingTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-        super.tearDown();
-    }
-
     public void testEmpty() {
         CTManagerOperationBridge.test("", new CTProcessor() {
             public void updateDefaultValues() {

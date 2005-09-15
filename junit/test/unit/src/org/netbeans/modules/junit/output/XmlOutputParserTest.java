@@ -16,24 +16,7 @@ package org.netbeans.modules.junit.output;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import junit.framework.*;
-import java.io.IOException;
-import java.io.PipedReader;
-import java.io.PipedWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.util.regex.Pattern;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.xml.XMLUtil;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-
+import junit.framework.TestCase;
 
 /**
  *
@@ -41,20 +24,15 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XmlOutputParserTest extends TestCase {
     
-    /** */
     private final Constructor constructor;
-    /** */
     private final Method methodGetStackTrace;
-    /** */
     private XmlOutputParser instance;
     
-    /**
-     */
     public XmlOutputParserTest(String testName) throws NoSuchMethodException,
                                                        NoSuchFieldException,
                                                        IllegalAccessException {
         super(testName);
-        
+        // XXX the following belongs in setUp:
         constructor = XmlOutputParser.class.getDeclaredConstructor(new Class[0]);
         constructor.setAccessible(true);
         
@@ -64,24 +42,10 @@ public class XmlOutputParserTest extends TestCase {
         methodGetStackTrace.setAccessible(true);
     }
     
-    /**
-     */
-    public static Test suite() {
-        TestSuite suite = new TestSuite(XmlOutputParserTest.class);
-        
-        return suite;
-    }
-    
-    /**
-     */
-    public void setUp() throws InstantiationException,
-                               IllegalAccessException,
-                               InvocationTargetException {
+    protected void setUp() throws Exception {
         instance = (XmlOutputParser) constructor.newInstance(null);
     }
 
-    /**
-     */
     public void testGetStackTrace() throws IllegalAccessException,
                                            InvocationTargetException {
         String stringToParse;
@@ -132,8 +96,6 @@ public class XmlOutputParserTest extends TestCase {
         assertArrayEquals(expected, actual);
     }
     
-    /**
-     */
     private void assertArrayEquals(final Object[] expected,
                                    final Object[] actual) {
         if ((expected == null) != (actual == null)) {
@@ -165,8 +127,6 @@ public class XmlOutputParserTest extends TestCase {
         }
     }
     
-    /**
-     */
     private String getNullStatus(Object o) {
         return (o == null) ? "<null>" : "<non-null>";
     }

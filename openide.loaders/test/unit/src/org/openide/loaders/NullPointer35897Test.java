@@ -33,10 +33,6 @@ public class NullPointer35897Test extends NbTestCase {
         super (name);
     }
     
-    public static void main (String[] args) throws Exception {
-        TestRunner.run (new NbTestSuite (NullPointer35897Test.class));
-    }
-    
     protected void setUp () throws Exception {
         TestUtilHid.destroyLocalFileSystem (getName ());
         String fsstruct [] = new String [] {

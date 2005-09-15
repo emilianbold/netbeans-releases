@@ -7,24 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.schema.cookies;
 
-import java.io.*;
-import java.net.*;
 import java.net.URL;
-import junit.framework.*;
+import junit.framework.TestCase;
 import org.netbeans.api.xml.cookies.CookieMessage;
 import org.netbeans.api.xml.cookies.CookieObserver;
-import org.xml.sax.*;
-import org.netbeans.spi.xml.cookies.*;
-
-import org.netbeans.junit.*;
-import org.openide.loaders.DataObject;
-import org.netbeans.api.xml.parsers.SAXEntityParser;
+import org.xml.sax.InputSource;
 
 /**
  * Tries to parse severel schemas with imports, includes and errors.
@@ -33,18 +26,8 @@ import org.netbeans.api.xml.parsers.SAXEntityParser;
  */
 public class ValidateSchemaSupportTest extends TestCase {
     
-    public ValidateSchemaSupportTest(java.lang.String testName) {
+    public ValidateSchemaSupportTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ValidateSchemaSupportTest.class);
-        
-        return suite;
     }
     
     /** Test of createParser method, of class org.netbeans.modules.xml.schema.cookies.ValidateSchemaSupport. */

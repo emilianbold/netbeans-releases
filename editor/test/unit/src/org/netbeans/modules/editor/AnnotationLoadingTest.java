@@ -14,15 +14,10 @@
 package org.netbeans.modules.editor;
 
 import java.net.URL;
-import junit.framework.*;
 import java.awt.Color;
+import junit.framework.TestCase;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
-import org.netbeans.modules.editor.options.AnnotationTypeProcessor;
-import org.openide.filesystems.FileSystem.Status;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.Environment;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -49,15 +44,6 @@ public class AnnotationLoadingTest extends TestCase {
                 );
                 
                 AnnotationTypes.getTypes().registerLoader(new AnnotationsTest.AnnotationsLoader());
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AnnotationLoadingTest.class);
-        
-        return suite;
     }
 
     public void testAnnotationStatusAndColorRead() {

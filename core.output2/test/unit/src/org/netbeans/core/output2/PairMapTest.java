@@ -7,20 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * PairMapTest.java
- * JUnit based test
- *
- * Created on May 12, 2004, 11:44 PM
  */
 
 package org.netbeans.core.output2;
 
 import java.lang.ref.WeakReference;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -28,21 +22,14 @@ import junit.framework.*;
  */
 public class PairMapTest extends TestCase {
     
-    public PairMapTest(java.lang.String testName) {
+    public PairMapTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(PairMapTest.class);
-        return suite;
     }
     
     private PairMap map;
     protected void setUp() throws Exception {
         map = new PairMap();
     }
-    
-    protected void tearDown() throws Exception {}
     
     /**
      * Test of size method, of class org.netbeans.core.output2.PairMap.

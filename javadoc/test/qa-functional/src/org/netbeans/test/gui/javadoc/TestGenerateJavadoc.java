@@ -62,22 +62,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         super(testName);
     }
     
-    /** method used for explicit testsuite definition
-     */
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TestGenerateJavadoc.class);
-        return suite;
-    }
-    
-    /** method called before each testcase
-     */
     protected void setUp() {
         new PropertiesAction().perform();
-    }
-    
-    /** method called after each testcase
-     */
-    protected void tearDown() {
     }
     
     // -------------------------------------------------------------------------
@@ -285,13 +271,6 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         }
         
         optionsOper.close();
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
     }
     
     private static final String toolsPopupMenuItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools");

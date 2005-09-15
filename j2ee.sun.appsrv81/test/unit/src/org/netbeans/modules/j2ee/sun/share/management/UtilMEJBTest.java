@@ -72,10 +72,6 @@ public class UtilMEJBTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(UtilMEJBTest.class);
-        return suite;
-    }
 }
     
     /**

@@ -10,17 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * CharsetDisplayPreferenceEditorTest.java
- * JUnit based test
- *
- * Created on March 19, 2004, 1:54 PM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
-import junit.framework.*;
-import org.openide.util.NbBundle;
+import junit.framework.TestCase;
 
 /**
  *
@@ -77,16 +70,8 @@ public class CharsetDisplayPreferenceEditorTest extends TestCase {
             new CharsetDisplayPreferenceEditor();
     }
     
-    public CharsetDisplayPreferenceEditorTest(java.lang.String testName) {
+    public CharsetDisplayPreferenceEditorTest(String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(CharsetDisplayPreferenceEditorTest.class);
-        return suite;
-    }
-        
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 }

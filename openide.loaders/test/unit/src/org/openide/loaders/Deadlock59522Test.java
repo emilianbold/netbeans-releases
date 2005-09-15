@@ -13,25 +13,29 @@
 
 package org.openide.loaders;
 
-import java.io.*;
-import junit.framework.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.RequestProcessor;
 
 /** MDR listens on FileChanges and wants to acquire its lock then. 
  * Also it does rename under holding its lock in other thread.
  *
  * @author Jaroslav Tulach
  */
-public class Deadlock59522Test extends org.netbeans.junit.NbTestCase 
-implements org.openide.filesystems.FileChangeListener {
-    org.openide.filesystems.FileObject toolbars;
-    org.openide.filesystems.FileSystem fs;
-    org.openide.loaders.DataFolder toolbarsFolder;
-    org.openide.loaders.DataFolder anotherFolder;
-    org.openide.loaders.DataObject obj;
-    org.openide.loaders.DataObject anotherObj;
+public class Deadlock59522Test extends NbTestCase implements FileChangeListener {
+    FileObject toolbars;
+    FileSystem fs;
+    DataFolder toolbarsFolder;
+    DataFolder anotherFolder;
+    DataObject obj;
+    DataObject anotherObj;
     
     
     Exception assigned;
@@ -40,40 +44,35 @@ implements org.openide.filesystems.FileChangeListener {
     
     private Object BIG_MDR_LOCK = new Object();
     
-    public Deadlock59522Test (java.lang.String testName) {
+    public Deadlock59522Test(String testName) {
         super (testName);
     }
     
-    public static Test suite () {
-        TestSuite suite = new TestSuite (Deadlock59522Test.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
-        fs = org.openide.filesystems.Repository.getDefault ().getDefaultFileSystem ();
-        org.openide.filesystems.FileObject root = fs.getRoot ();
-        toolbars = org.openide.filesystems.FileUtil.createFolder (root, "Toolbars");
-        toolbarsFolder = org.openide.loaders.DataFolder.findFolder (toolbars);
-        org.openide.filesystems.FileObject[] arr = toolbars.getChildren ();
+    protected void setUp() throws Exception {
+        fs = Repository.getDefault ().getDefaultFileSystem ();
+        FileObject root = fs.getRoot ();
+        toolbars = FileUtil.createFolder (root, "Toolbars");
+        toolbarsFolder = DataFolder.findFolder (toolbars);
+        FileObject[] arr = toolbars.getChildren ();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete ();
         }
-        org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil.createData (root, "Ahoj.txt");
-        obj = org.openide.loaders.DataObject.find (fo);
-        fo = org.openide.filesystems.FileUtil.createFolder (root, "Another");
-        anotherFolder = org.openide.loaders.DataFolder.findFolder (fo);
-        fo = org.openide.filesystems.FileUtil.createData (root, "Another.txt");
-        anotherObj = org.openide.loaders.DataObject.find (fo);
+        FileObject fo = FileUtil.createData (root, "Ahoj.txt");
+        obj = DataObject.find (fo);
+        fo = FileUtil.createFolder (root, "Another");
+        anotherFolder = DataFolder.findFolder (fo);
+        fo = FileUtil.createData (root, "Another.txt");
+        anotherObj = DataObject.find (fo);
         
         fs.addFileChangeListener (this);
     }
 
-    protected void tearDown() throws java.lang.Exception {
+    protected void tearDown() throws Exception {
         fs.removeFileChangeListener (this);
         
         assertTrue ("The doRenameAObjectWhileHoldingMDRLock must be called", called);
         
-        org.openide.filesystems.FileObject[] arr = toolbars.getChildren ();
+        FileObject[] arr = toolbars.getChildren ();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete ();
         }
@@ -85,7 +84,7 @@ implements org.openide.filesystems.FileChangeListener {
     private static int cnt = 0;
     private void startRename() throws Exception {
         synchronized (BIG_MDR_LOCK) {
-            org.openide.util.RequestProcessor.getDefault ().post (new Runnable () {
+            RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
                     synchronized (BIG_MDR_LOCK) {
                         try {

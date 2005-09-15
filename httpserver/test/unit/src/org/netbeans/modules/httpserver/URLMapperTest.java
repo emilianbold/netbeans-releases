@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,13 +15,14 @@ package org.netbeans.modules.httpserver;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.*;
-import java.util.*;
-
-import junit.framework.*;
-import org.netbeans.junit.*;
-import org.openide.filesystems.*;
+import java.net.URL;
+import java.util.HashSet;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 
 /** Test for HttpServerURLMapper.
  *
@@ -46,26 +47,11 @@ public class URLMapperTest extends NbTestCase {
     }
     
     
-    /** method called before each testcase
-     */
     protected void setUp() throws IOException {
         extProtocols = new HashSet ();
         extProtocols.add ("http");
         extProtocols.add ("file");
         extProtocols.add ("ftp");
-    }
-    
-    /** method called after each testcase<br>
-     * resets Jemmy WaitComponentTimeout
-     */
-    protected void tearDown() {
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
     }
     
     /** simple test case

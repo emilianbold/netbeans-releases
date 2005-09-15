@@ -60,16 +60,6 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         assertNotNull(gfh);
     }
     
-    protected void tearDown() throws Exception {
-        scratch = null;
-        projdir = null;
-        pm = null;
-        p = null;
-        h = null;
-        gfh = null;
-        super.tearDown();
-    }
-    
     /**
      * Test that creating build-impl.xml from project.xml + build-impl.xsl works.
      * @throws Exception if anything unexpected happens

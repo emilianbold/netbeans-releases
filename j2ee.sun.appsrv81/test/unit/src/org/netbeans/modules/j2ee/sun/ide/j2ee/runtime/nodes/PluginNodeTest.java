@@ -10,12 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * PluginNodeTest.java
- * JUnit based test
- *
- * Created on March 17, 2004, 10:26 AM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes;
 
@@ -156,12 +150,4 @@ public class PluginNodeTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(PluginNodeTest.class);
-        return suite;
-    }
-        
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 }

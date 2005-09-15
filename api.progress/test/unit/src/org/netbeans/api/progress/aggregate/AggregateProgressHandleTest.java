@@ -13,16 +13,10 @@
 
 package org.netbeans.api.progress.aggregate;
 
-import junit.framework.*;
-import javax.swing.Action;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import junit.framework.TestCase;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.module.ProgressUIWorker;
 import org.netbeans.progress.module.ProgressEvent;
-
-import org.openide.util.Cancellable;
-
 
 /**
  *
@@ -40,16 +34,6 @@ public class AggregateProgressHandleTest extends TestCase {
             public void processSelectedProgressEvent(ProgressEvent event) { }
         });
     }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AggregateProgressHandleTest.class);
-        
-        return suite;
-    }
-
 
     public void testContributorShare() throws Exception {
         ProgressContributor contrib1 = AggregateProgressFactory.createProgressContributor("1");

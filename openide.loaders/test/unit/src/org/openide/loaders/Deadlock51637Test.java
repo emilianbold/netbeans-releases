@@ -13,61 +13,62 @@
 
 package org.openide.loaders;
 
-import java.io.*;
-import junit.framework.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-
+import junit.framework.AssertionFailedError;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /** Simulates the deadlock between copy/move operation and the creation
  * of node.
  *
  * @author Jaroslav Tulach
  */
-public class Deadlock51637Test extends org.netbeans.junit.NbTestCase 
-implements org.openide.filesystems.FileChangeListener {
-    org.openide.filesystems.FileObject toolbars;
-    org.openide.filesystems.FileSystem fs;
-    org.openide.loaders.DataFolder toolbarsFolder;
-    org.openide.loaders.DataFolder anotherFolder;
-    org.openide.loaders.DataObject obj;
+public class Deadlock51637Test extends NbTestCase implements FileChangeListener {
+    FileObject toolbars;
+    FileSystem fs;
+    DataFolder toolbarsFolder;
+    DataFolder anotherFolder;
+    DataObject obj;
     
-    org.openide.nodes.Node node;
+    Node node;
     Exception assigned;
     boolean called;
     
-    public Deadlock51637Test (java.lang.String testName) {
+    public Deadlock51637Test(String testName) {
         super (testName);
     }
     
-    public static Test suite () {
-        TestSuite suite = new TestSuite (Deadlock51637Test.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
-        fs = org.openide.filesystems.Repository.getDefault ().getDefaultFileSystem ();
-        org.openide.filesystems.FileObject root = fs.getRoot ();
-        toolbars = org.openide.filesystems.FileUtil.createFolder (root, "Toolbars");
-        toolbarsFolder = org.openide.loaders.DataFolder.findFolder (toolbars);
-        org.openide.filesystems.FileObject[] arr = toolbars.getChildren ();
+    protected void setUp() throws Exception {
+        fs = Repository.getDefault ().getDefaultFileSystem ();
+        FileObject root = fs.getRoot ();
+        toolbars = FileUtil.createFolder (root, "Toolbars");
+        toolbarsFolder = DataFolder.findFolder (toolbars);
+        FileObject[] arr = toolbars.getChildren ();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete ();
         }
-        org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil.createData (root, "Ahoj.txt");
-        obj = org.openide.loaders.DataObject.find (fo);
-        fo = org.openide.filesystems.FileUtil.createFolder (root, "Another");
-        anotherFolder = org.openide.loaders.DataFolder.findFolder (fo);
+        FileObject fo = FileUtil.createData (root, "Ahoj.txt");
+        obj = DataObject.find (fo);
+        fo = FileUtil.createFolder (root, "Another");
+        anotherFolder = DataFolder.findFolder (fo);
         
         fs.addFileChangeListener (this);
     }
 
-    protected void tearDown() throws java.lang.Exception {
+    protected void tearDown() throws Exception {
         fs.removeFileChangeListener (this);
         
         assertTrue ("The doCreateNode must be called", called);
         
-        org.openide.filesystems.FileObject[] arr = toolbars.getChildren ();
+        FileObject[] arr = toolbars.getChildren ();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete ();
         }
@@ -90,7 +91,7 @@ implements org.openide.filesystems.FileChangeListener {
         boolean ok;
         try {
             final Exception now = new Exception ("Calling to rp");
-            ok = org.openide.util.RequestProcessor.getDefault ().post (new Runnable () {
+            ok = RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
                     node = obj.getNodeDelegate ();
                     

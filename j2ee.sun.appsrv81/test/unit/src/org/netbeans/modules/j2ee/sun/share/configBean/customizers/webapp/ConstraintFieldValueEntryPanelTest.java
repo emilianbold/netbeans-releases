@@ -10,28 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ConstraintFieldValueEntryPanelTest.java
- * JUnit based test
- *
- * Created on March 18, 2004, 5:36 PM
- */
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.ResourceBundle;
-import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-import javax.swing.JPanel;
-import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BeanInputDialog;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableDialogPanelAccessor;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -44,13 +26,8 @@ public class ConstraintFieldValueEntryPanelTest extends TestCase {
             new ConstraintFieldValueEntryPanel();
     }
     
-    public ConstraintFieldValueEntryPanelTest(java.lang.String testName) {
+    public ConstraintFieldValueEntryPanelTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ConstraintFieldValueEntryPanelTest.class);
-        return suite;
     }
     
 }

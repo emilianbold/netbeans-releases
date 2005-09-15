@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,13 +15,9 @@ package org.netbeans.modules.ant.grammar;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.xml.api.model.HintContext;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 // XXX testSpecials (what does this mean actually?)
 // XXX testAddTarget
@@ -33,10 +29,6 @@ import org.w3c.dom.Node;
  */
 public class AntGrammarTest extends NbTestCase {
     
-    static {
-        AntGrammarTest.class.getClassLoader().setDefaultAssertionStatus(true);
-    }
-    
     public AntGrammarTest(String name) {
         super(name);
     }
@@ -46,10 +38,6 @@ public class AntGrammarTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         g = new AntGrammar();
-    }
-    protected void tearDown() throws Exception {
-        g = null;
-        super.tearDown();
     }
     
     public void testTypeOf() throws Exception {

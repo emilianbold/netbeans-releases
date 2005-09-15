@@ -62,9 +62,4 @@ public class CacheHelperEntryPanelTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(CacheHelperEntryPanelTest.class);
-        return suite;
-    }
-    
 }

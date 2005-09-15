@@ -31,10 +31,6 @@ public class MultiDataObjectFilesTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(MultiDataObjectFilesTest.class));
-    }
-
     public void testFilesSet () throws Exception {
         DataLoader loader = DataLoader.getLoader(SimpleLoader.class);
         AddLoaderManuallyHid.addRemoveLoader(loader, true);

@@ -14,14 +14,14 @@
 package org.openide.awt;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import junit.framework.*;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.openide.awt.DynamicMenuContent;
+import junit.framework.TestCase;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -32,18 +32,6 @@ public class DynaMenuModelTest extends TestCase {
     
     public DynaMenuModelTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DynaMenuModelTest.class);
-        
-        return suite;
     }
 
     /**
@@ -87,7 +75,7 @@ public class DynaMenuModelTest extends TestCase {
     }
     
     private class Act1 extends AbstractAction implements Presenter.Menu {
-        public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+        public void actionPerformed(ActionEvent actionEvent) {
         }
         
         public JMenuItem getMenuPresenter() {
@@ -96,7 +84,7 @@ public class DynaMenuModelTest extends TestCase {
     }
     
     private class Act2 extends AbstractAction implements Presenter.Menu {
-        public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+        public void actionPerformed(ActionEvent actionEvent) {
         }
         
         public JMenuItem getMenuPresenter() {

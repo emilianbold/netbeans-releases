@@ -53,10 +53,6 @@ public class ProviderRegistryTest extends NbTestCase {
         return suite;
     }
     
-    protected void setUp () throws Exception {
-    }
-    
-    
     public void testGetProviders () throws Exception {
         UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/navigator/resources/testGetProvidersLayer.xml" });
         

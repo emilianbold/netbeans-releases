@@ -96,10 +96,4 @@ public class WebAppRootCustomizerTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(WebAppRootCustomizerTest.class);
-        return suite;
-    }
-    
-    
 }

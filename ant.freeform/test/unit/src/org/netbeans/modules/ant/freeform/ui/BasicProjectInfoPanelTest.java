@@ -15,13 +15,13 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import junit.framework.*;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.TestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,12 +70,6 @@ public class BasicProjectInfoPanelTest extends TestBase {
         assertTrue("simple3 ant script (" + simple3AntScript + ") exists", simple3AntScript.exists());
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(BasicProjectInfoPanelTest.class);
-        
-        return suite;
-    }
-
     private boolean deepDelete(File f) throws IOException {
         if (f.isDirectory()) {
             File[] children = f.listFiles();
@@ -106,7 +100,7 @@ public class BasicProjectInfoPanelTest extends TestBase {
         
         panel = new BasicProjectInfoPanel(outterProjectDir.getAbsolutePath(), innerAntScript.getAbsolutePath(), "NAME", outterProjectDir.getAbsolutePath(), null);
         
-        error = MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
+        error = MessageFormat.format(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
                 new Object[] {"Simple Freeform Project"});
                 
         assertEquals("do not allow creation (#55533)", error, panel.getError());
@@ -125,7 +119,7 @@ public class BasicProjectInfoPanelTest extends TestBase {
         
         panel = new BasicProjectInfoPanel(simple3Dir.getAbsolutePath(), simple3AntScript.getAbsolutePath(), "NAME", outterProjectDir.getAbsolutePath(), null);
         
-        error = MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
+        error = MessageFormat.format(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
                 new Object[] {"Simple Freeform Project"});
                 
         assertEquals("do not allow creation (#55533)", error, panel.getError());
@@ -144,7 +138,7 @@ public class BasicProjectInfoPanelTest extends TestBase {
         
         panel = new BasicProjectInfoPanel(outterProjectDir.getAbsolutePath(), innerAntScript.getAbsolutePath(), "NAME", simple3Dir.getAbsolutePath(), null);
         
-        error = MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_10"),
+        error = MessageFormat.format(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_10"),
                 new Object[] {"Simple Freeform Project"});
                 
         assertEquals("do not allow creation (#55533)", error, panel.getError());

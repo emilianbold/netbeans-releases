@@ -34,12 +34,8 @@ public abstract class DiffViewAbstract extends NbTestCase {
     
     protected abstract DiffView createDiffView(StreamSource ss1, StreamSource ss2) throws IOException;
     
-    /**/
     protected void setUp() throws Exception {
         dv = createDiffView(new Impl("name1", "title1", "text/plain", "content1\nsame\ndifferent1"), new Impl("name2", "title2", "text/plain", "content2\nsame\ndifferent2"));
-    }
-    
-    protected void tearDown() throws Exception {
     }
     
     public void testCanDiffConsistent() throws Exception {

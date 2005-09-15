@@ -29,10 +29,6 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         super (name);
     }
     
-    public static void main (String[] args) throws Exception {
-         junit.textui.TestRunner.run(new org.netbeans.junit.NbTestSuite(XMLDataObjectTest.class));
-    }    
-    
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.XMLDataObjectTest$Lkp");

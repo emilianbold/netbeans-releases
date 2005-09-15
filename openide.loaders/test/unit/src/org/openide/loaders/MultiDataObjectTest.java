@@ -32,10 +32,6 @@ public class MultiDataObjectTest extends NbTestCase {
         super (name);
     }
 
-    public static void main(String[] args) {
-        TestRunner.run(suite());
-    }
-    
     public static Test suite() {
         return new SetUpTearDownOnlyOnce ();
     }

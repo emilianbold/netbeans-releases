@@ -13,9 +13,9 @@
 
 package org.openide.util.datatransfer;
 
-import junit.framework.*;
-import java.awt.datatransfer.*;
-import javax.swing.event.EventListenerList;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import junit.framework.TestCase;
 
 /** 
  *
@@ -38,21 +38,12 @@ public class ExClipboardTest extends TestCase {
         };
     }
 
-    protected void tearDown () throws Exception {
-    }
-
-    public static Test suite () {
-        TestSuite suite = new TestSuite(ExClipboardTest.class);
-        
-        return suite;
-    }
-
     public void testAddRemoveClipboardListener () {
         
-        class L implements org.openide.util.datatransfer.ClipboardListener {
+        class L implements ClipboardListener {
             public int cnt;
-            public org.openide.util.datatransfer.ClipboardEvent ev;
-            public void clipboardChanged (org.openide.util.datatransfer.ClipboardEvent ev) {
+            public ClipboardEvent ev;
+            public void clipboardChanged (ClipboardEvent ev) {
                 cnt++;
                 this.ev = ev;
             }

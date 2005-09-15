@@ -31,10 +31,6 @@ public class NbInstallerTest3 extends SetupHid {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbInstallerTest3.class));
-    }
-    
     /** Test #21173/#23595: overriding layers by branding. */
     public void testBrandingLayerOverrides() throws Exception {
         Main.getModuleSystem ();

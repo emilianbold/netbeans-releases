@@ -111,9 +111,4 @@ public class DirectoryDeploymentTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DirectoryDeploymentTest.class);
-        return suite;
-    }
-    
 }

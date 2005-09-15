@@ -62,9 +62,6 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         clearWorkDir();
     }
     
-    protected void tearDown() throws Exception {
-    }
-    
     public AntProjectHelper createEmptyProject(String projectFolder, String projectName) throws Exception {
         File base = new File(getWorkDir(), projectFolder);
         base.mkdir();

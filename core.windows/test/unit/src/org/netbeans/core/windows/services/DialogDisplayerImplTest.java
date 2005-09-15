@@ -11,20 +11,17 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.windows.services;
 
-import java.awt.*;
+import java.awt.Dialog;
+import java.awt.EventQueue;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.RequestProcessor;
-
 
 /**
  *
@@ -40,16 +37,11 @@ public class DialogDisplayerImplTest extends NbTestCase {
     private JButton closeChild;
     private Dialog child;
     
-    public DialogDisplayerImplTest (java.lang.String testName) {
+    public DialogDisplayerImplTest (String testName) {
         super (testName);
     }
     
-    public static Test suite () {
-        TestSuite suite = new TestSuite (DialogDisplayerImplTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         dd = new DialogDisplayerImpl (RESULT);
         closeOwner = new JButton ("Close this dialog");
         childDD = new DialogDescriptor ("Child", "Child", false, null);
@@ -58,9 +50,6 @@ public class DialogDisplayerImplTest extends NbTestCase {
         pane = new JOptionPane ("", JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[] {openChild, closeChild});
     }
 
-    protected void tearDown() throws java.lang.Exception {
-    }
-    
     protected boolean runInEQ () {
         return false;
     }
@@ -80,7 +69,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
             }
         }
         
-        javax.swing.SwingUtilities.invokeAndWait (new FromAWT ());
+        SwingUtilities.invokeAndWait (new FromAWT ());
     }
     
     public void testDeadlock41544IfItIsNotPossibleToAccessAWTReturnAfterTimeout () throws Exception {
@@ -110,7 +99,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         BlockAWT b = new BlockAWT ();
         synchronized (b) {
-            javax.swing.SwingUtilities.invokeLater (b);
+            SwingUtilities.invokeLater (b);
             b.wait ();
             assertEquals ("In state one", 1, b.state);
         }

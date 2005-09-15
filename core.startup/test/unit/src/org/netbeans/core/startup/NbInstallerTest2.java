@@ -31,10 +31,6 @@ public class NbInstallerTest2 extends SetupHid {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbInstallerTest2.class));
-    }
-    
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");

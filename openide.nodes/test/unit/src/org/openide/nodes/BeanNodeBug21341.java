@@ -7,19 +7,16 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.openide.nodes;
 
-import java.beans.*;
-
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 
 /**
@@ -107,10 +104,4 @@ public class BeanNodeBug21341 extends NbTestCase {
         }
     }
     
-    protected void setUp() {
-    }
-    
-    protected void tearDown() {
-    }
-
 }

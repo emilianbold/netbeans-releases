@@ -14,10 +14,9 @@
 package org.netbeans.modules.java.freeform;
 
 import java.io.FileOutputStream;
-import java.util.LinkedList;
-import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,12 +81,6 @@ public class JavaFreeformFileBuiltQueryTest extends TestBase {
         simpleProject = ProjectManager.getDefault().findProject(simpleFO);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(JavaFreeformFileBuiltQueryTest.class);
-        
-        return suite;
-    }
-
     private void createEmptyFile(File f) throws IOException {
         f.getParentFile().mkdirs();
         new FileOutputStream(f).close();

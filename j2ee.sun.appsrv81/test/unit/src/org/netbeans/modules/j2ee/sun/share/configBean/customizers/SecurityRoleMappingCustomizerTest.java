@@ -10,30 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * SecurityRoleMappingCustomizerTest.java
- * JUnit based test
- *
- * Created on March 18, 2004, 4:01 PM
- */
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.beans.Customizer;
-import java.beans.PropertyVetoException;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JPanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.SecurityRoleMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.ErrorMessageDB;
-import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerErrorPanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerTitlePanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -46,14 +26,8 @@ public class SecurityRoleMappingCustomizerTest extends TestCase {
             new SecurityRoleMappingCustomizer();
     }
     
-    public SecurityRoleMappingCustomizerTest(java.lang.String testName) {
+    public SecurityRoleMappingCustomizerTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SecurityRoleMappingCustomizerTest.class);
-        return suite;
-    }
-    
     
 }

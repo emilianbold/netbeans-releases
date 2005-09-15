@@ -7,29 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.xml.cookies;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.security.ProtectionDomain;
-import java.security.CodeSource;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.swing.text.Document;
-import junit.framework.*;
-import org.openide.cookies.*;
-import org.openide.util.*;
-import org.openide.filesystems.FileStateInvalidException;
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
-import org.netbeans.api.xml.cookies.*;
-import org.netbeans.api.xml.services.*;
-import org.netbeans.api.xml.parsers.*;
+import java.net.URL;
+import junit.framework.TestCase;
+import org.netbeans.api.xml.cookies.CookieMessage;
+import org.netbeans.api.xml.cookies.CookieObserver;
+import org.xml.sax.InputSource;
 
 /**
  * Trivial golden type support tests.
@@ -41,18 +29,8 @@ import org.netbeans.api.xml.parsers.*;
  */
 public class SharedXMLSupportTest extends TestCase {
     
-    public SharedXMLSupportTest(java.lang.String testName) {
+    public SharedXMLSupportTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SharedXMLSupportTest.class);
-        
-        return suite;
     }
     
     /** Test of checkXML method, of class org.netbeans.spi.xml.cookies.SharedXMLSupport. */

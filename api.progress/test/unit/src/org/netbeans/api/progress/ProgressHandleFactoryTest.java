@@ -11,16 +11,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.api.progress;
 
 import javax.swing.JComponent;
-import javax.swing.JProgressBar;
-import junit.framework.*;
+import junit.framework.TestCase;
 import org.netbeans.progress.module.InternalHandle;
 import org.netbeans.progress.module.ui.NbProgressBar;
 import org.openide.util.Cancellable;
-
 
 /**
  *
@@ -32,21 +29,6 @@ public class ProgressHandleFactoryTest extends TestCase {
         super(testName);
     }
     
-    // TODO add test methods here. The name must begin with 'test'. For example:
-    // public void testHello() {}
-
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-
-    public static junit.framework.Test suite() {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(ProgressHandleFactoryTest.class);
-        
-        return suite;
-    }
-
     /**
      * Test of createHandle method, of class org.netbeans.progress.api.ProgressHandleFactory.
      */

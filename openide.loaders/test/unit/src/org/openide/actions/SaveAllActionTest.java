@@ -50,9 +50,6 @@ public class SaveAllActionTest extends NbTestCase {
         Life.executed = 0;
     }
 
-    protected void tearDown () throws Exception {
-    }
-
     public void testThatTheActionIsInvokeOutsideOfAWTThreadAndOnlyOnceAtATime () throws Exception {
         SaveAllAction a = (SaveAllAction)SaveAllAction.get (SaveAllAction.class);
         a.setEnabled (true);

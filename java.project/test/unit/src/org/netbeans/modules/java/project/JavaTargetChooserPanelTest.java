@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,12 +32,6 @@ public class JavaTargetChooserPanelTest extends NbTestCase {
     protected void setUp () throws Exception {
         super.setUp ();
         clearWorkDir ();
-    }
-    
-    public static junit.framework.Test suite () {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite (JavaTargetChooserPanelTest.class);
-        
-        return suite;
     }
     
     // tests #51135: checked existence of multiple dotted package name

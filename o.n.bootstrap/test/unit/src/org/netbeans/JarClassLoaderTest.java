@@ -12,18 +12,11 @@
  */
 package org.netbeans;
 
-import junit.framework.*;
+import java.io.IOException;
 import java.net.URL;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.jar.Attributes;
-import java.util.jar.Attributes.Name;
-import java.util.zip.ZipEntry;
-import java.io.*;
-import java.net.MalformedURLException;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Set;
+import junit.framework.TestCase;
 
 /** 
  *
@@ -33,18 +26,6 @@ public class JarClassLoaderTest extends TestCase {
     
     public JarClassLoaderTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(JarClassLoaderTest.class);
-        
-        return suite;
     }
 
     public void testTwoClassloadersLoadTheSameSealedPackage() throws Exception {

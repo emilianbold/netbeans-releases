@@ -125,10 +125,6 @@ public class SeparationOfThreadsTest extends NbTestCase {
         }
     }
 
-    public static void main (String[] args) throws Exception {
-         TestRunner.run(new NbTestSuite(SeparationOfThreadsTest.class));
-    }    
-    
     public void testCopy () throws Exception {
         res = a.copy (to);
     }

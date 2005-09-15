@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * The Original Code is NetBeans. 
  * The Initial Developer of the Original Code is Sun Microsystems, Inc. 
- * Portions created by Sun Microsystems, Inc. are Copyright (C) 2003
+ * Portions created by Sun Microsystems, Inc. are Copyright (C) 2005
  * All Rights Reserved.
  *
  * Contributor(s): Sun Microsystems, Inc.
@@ -16,9 +16,13 @@
 package gui.debuggercore;
 
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.JavaNode;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 
@@ -48,23 +52,14 @@ public class Actions extends JellyTestCase {
         return suite;
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     /** setUp method  */
     public void setUp() {
         Utilities.sleep(1000);
         System.out.println("########  " + getName() + "  #######");
     }
     
-    /** tearDown method */
-    public void tearDown() {
-    }
-    
     public void setupActionsTests() {
-        org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
+        Node projectNode = new Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
         

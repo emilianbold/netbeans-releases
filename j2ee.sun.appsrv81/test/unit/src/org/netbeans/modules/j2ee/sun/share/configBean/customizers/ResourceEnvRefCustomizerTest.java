@@ -10,25 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ResourceEnvRefCustomizerTest.java
- * JUnit based test
- *
- * Created on March 18, 2004, 5:03 PM
- */
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
-import java.util.ResourceBundle;
-import java.beans.Customizer;
-import java.beans.PropertyVetoException;
-import javax.swing.JPanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.ResourceEnvRef;
-import org.netbeans.modules.j2ee.sun.share.configbean.ErrorMessageDB;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerErrorPanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerTitlePanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -41,13 +26,8 @@ public class ResourceEnvRefCustomizerTest extends TestCase {
             new ResourceEnvRefCustomizer();
     }
     
-    public ResourceEnvRefCustomizerTest(java.lang.String testName) {
+    public ResourceEnvRefCustomizerTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ResourceEnvRefCustomizerTest.class);
-        return suite;
     }
     
 }

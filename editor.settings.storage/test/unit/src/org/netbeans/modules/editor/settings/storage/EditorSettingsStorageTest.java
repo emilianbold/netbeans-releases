@@ -14,24 +14,19 @@
 package org.netbeans.modules.editor.settings.storage;
 
 import java.awt.Color;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import javax.swing.KeyStroke;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.junit.NbTestCase;
-import junit.framework.*;
-import org.netbeans.api.editor.settings.*;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-
 
 /** Testing basic functionality of Editor Settings Storage friend API
  * 
@@ -42,16 +37,11 @@ public class EditorSettingsStorageTest extends NbTestCase {
     private final int resultChangedCount[] = new int[1];
     private static final int WAIT_TIME_FIRING = 1500;    
     
-    public EditorSettingsStorageTest(java.lang.String testName) {
+    public EditorSettingsStorageTest(String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(EditorSettingsStorageTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         super.setUp();
     
         EditorTestLookup.setLookup(
@@ -65,9 +55,6 @@ public class EditorSettingsStorageTest extends NbTestCase {
         );
     }
 
-    protected void tearDown() throws java.lang.Exception {
-    }
-    
     public void testSettingLookup() throws IOException{
         AttributeSet set = getSetting("text/x-java", "java-keywords");
         assertTrue(set != null);
@@ -80,8 +67,8 @@ public class EditorSettingsStorageTest extends NbTestCase {
         AttributeSet set = fcs.getTokenFontColors("java-keywords");
         assertTrue(set != null);
         
-        org.netbeans.modules.editor.settings.storage.api.FontColorSettings fcsStorage = 
-                (org.netbeans.modules.editor.settings.storage.api.FontColorSettings) mimelookup.lookup(org.netbeans.modules.editor.settings.storage.api.FontColorSettings.class);
+        FontColorSettings fcsStorage = 
+                (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
         set = fcsStorage.getTokenFontColors("java-keywords");
         assertTrue(set != null);
 
@@ -159,8 +146,8 @@ public class EditorSettingsStorageTest extends NbTestCase {
         MimeLookup mimelookup = MimeLookup.getMimeLookup(mime);
         FontColorSettings fcs = (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
        
-        org.netbeans.modules.editor.settings.storage.api.FontColorSettings fcsStorage = 
-                (org.netbeans.modules.editor.settings.storage.api.FontColorSettings) mimelookup.lookup(org.netbeans.modules.editor.settings.storage.api.FontColorSettings.class);
+        FontColorSettings fcsStorage = 
+                (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
 
         List colors = new ArrayList();
         colors.add(set);

@@ -64,18 +64,12 @@ import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.WindowManager;
 
 
-/**
- */
 public class AnnotationProviderTest extends NbTestCase {
     
     public AnnotationProviderTest(String s) {
         super(s);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(AnnotationProviderTest.class));
-    }
-
     private FileSystem fs;
     
     protected void setUp() throws Exception {
@@ -87,9 +81,6 @@ public class AnnotationProviderTest extends NbTestCase {
         fs = lfs;
     }
     
-    protected void tearDown() throws Exception {
-    }
-
     public void testAnnotationProviderIsCalledCorrectly() throws Exception {              
         Object o = Lookup.getDefault().lookup(AnnotationProvider.class);
         if(o == null) {

@@ -37,10 +37,6 @@ public class FolderChildrenTest extends NbTestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(FolderChildrenTest.class));
-    }
-    
     private static void setSystemProp(String key, String value) {
         java.util.Properties prop = System.getProperties();
         if (prop.get(key) != null) return;

@@ -10,17 +10,11 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ConnPoolWizardTest.java
- * JUnit based test
- *
- * Created on May 5, 2004, 1:02 PM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
-import org.openide.WizardDescriptor;
 
-import junit.framework.*;
+import junit.framework.TestCase;
+import org.openide.WizardDescriptor;
 
 /**
  *
@@ -39,7 +33,7 @@ public class ConnPoolWizardTest extends TestCase {
         
         //wiz.getPanel(0);
         //wiz.getResourceConfigHelper();
-        //s1.stateChange(new javax.swing.event.ChangeEvent() {
+        //s1.stateChange(new ChangeEvent() {
             
         //});
         //}
@@ -55,18 +49,8 @@ public class ConnPoolWizardTest extends TestCase {
         s1.instantiate();
     }
     
-    public ConnPoolWizardTest(java.lang.String testName) {
+    public ConnPoolWizardTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ConnPoolWizardTest.class);
-        return suite;
-    }
-    
-    // TODO add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-    
     
 }

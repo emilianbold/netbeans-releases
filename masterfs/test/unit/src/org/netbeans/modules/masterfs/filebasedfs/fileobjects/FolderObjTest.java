@@ -11,31 +11,33 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import java.util.*;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
-
+import org.openide.filesystems.FileRenameEvent;
 
 /**
  * FolderObjTest.java
- * JUnit based XXXtest
- *
- * Created on 19 November 2004, 15:53
  * @author Radek Matous
  */
 public class FolderObjTest extends NbTestCase {
@@ -46,30 +48,19 @@ public class FolderObjTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         clearWorkDir();
         testFile = getWorkDir();        
     }
     
-    protected void tearDown() throws java.lang.Exception {
-    }
-    
-    public static junit.framework.Test suite() {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(FolderObjTest.class);
-        
-        return suite;
-    }
-
-
-        
-     public void testRename() throws Exception {    
+    public void testRename() throws Exception {
         File f = testFile;
         FileSystem fs = FileBasedFileSystem.getInstance(f);
         assertNotNull(fs);
 
         final List l = new ArrayList ();
         FileChangeListener fcl = new FileChangeAdapter () {
-             public void fileRenamed(org.openide.filesystems.FileRenameEvent fe) {
+             public void fileRenamed(FileRenameEvent fe) {
                  FileObject fold = (FileObject)fe.getFile();
                  assertTrue(fold.getChildren().length > 0);
                  l.add(fe);
@@ -258,7 +249,7 @@ public class FolderObjTest extends NbTestCase {
                 parent = parent.getParent();
             }
 
-            assertNotNull(fs.getRoot().getFileObject(org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils.getFileObjectPath(((BaseFileObj)fo).getFileName().getFile ())));           
+            assertNotNull(fs.getRoot().getFileObject(TestUtils.getFileObjectPath(((BaseFileObj)fo).getFileName().getFile ())));           
             f = f.getParentFile();            
         }        
     }
@@ -272,14 +263,14 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance(f);
         assertNotNull(fs);
 
-        FileObject fo = fs.findResource(org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils.getFileObjectPath(testFile));
+        FileObject fo = fs.findResource(TestUtils.getFileObjectPath(testFile));
         
         File f2 = new File (testFile, "newfoldercreated");
         FileObject nfo = fo.createFolder (f2.getName());
         assertNotNull(nfo);
         assertTrue(nfo.isFolder());
         File nfile = ((BaseFileObj)nfo).getFileName().getFile ();
-        assertSame(nfo, fs.findResource(org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils.getFileObjectPath(nfile)));
+        assertSame(nfo, fs.findResource(TestUtils.getFileObjectPath(nfile)));
         assertSame(fo, nfo.getParent());
         
         try {
@@ -299,15 +290,15 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance(f);
         assertNotNull(fs);
 
-        final FileObject fo = fs.findResource(org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils.getFileObjectPath(testFile));
+        final FileObject fo = fs.findResource(TestUtils.getFileObjectPath(testFile));
         
         File f2 = new File (testFile, "newdatacreated.txt");
         final FileObject nfo = fo.createData (f2.getName());
         assertNotNull(nfo);
         assertTrue(nfo.isData());
         File nfile = ((BaseFileObj)nfo).getFileName().getFile ();
-        assertEquals(nfo.getClass(), fs.findResource(org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils.getFileObjectPath(nfile)).getClass());
-        assertSame(nfo, fs.findResource(org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils.getFileObjectPath(nfile)));
+        assertEquals(nfo.getClass(), fs.findResource(TestUtils.getFileObjectPath(nfile)).getClass());
+        assertSame(nfo, fs.findResource(TestUtils.getFileObjectPath(nfile)));
         /*if (nfo.getParent() != fo) {
             nfo.getParent();
         }*/

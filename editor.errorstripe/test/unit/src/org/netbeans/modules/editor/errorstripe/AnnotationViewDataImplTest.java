@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.awt.BorderLayout;
 import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
-import junit.framework.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +43,6 @@ import org.netbeans.modules.editor.plain.PlainKit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 
-
 /**
  *
  * @author Jan Lahoda
@@ -65,15 +63,6 @@ public class AnnotationViewDataImplTest extends NbTestCase {
                 
         AnnotationTypes.getTypes().registerLoader(new AnnotationsLoader());
         CaretMarkProviderCreator.switchOff = true;
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AnnotationViewDataImplTest.class);
-        
-        return suite;
     }
 
     public void testGetMainMarkForBlock() throws /*BadLocation*/Exception {

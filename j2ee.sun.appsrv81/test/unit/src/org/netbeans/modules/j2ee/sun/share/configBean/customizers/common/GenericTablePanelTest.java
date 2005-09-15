@@ -94,9 +94,4 @@ public class GenericTablePanelTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(GenericTablePanelTest.class);
-        return suite;
-    }
-    
 }

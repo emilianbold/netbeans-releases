@@ -49,11 +49,6 @@ public class DOMConvertorTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new org.netbeans.junit.NbTestSuite(DOMConvertorTest.class));
-        System.exit(0);
-    }
-    
     protected void setUp() throws Exception {
         super.setUp();
         

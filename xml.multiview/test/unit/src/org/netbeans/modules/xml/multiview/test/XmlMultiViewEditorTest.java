@@ -51,10 +51,6 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         super(testName);
     }
 
-    public static NbTestSuite suite() {
-        return new NbTestSuite(XmlMultiViewEditorTest.class);
-    }
-
     protected void setUp() throws Exception {
         DataLoaderPool pool = DataLoaderPool.getDefault();
         assertNotNull (pool);

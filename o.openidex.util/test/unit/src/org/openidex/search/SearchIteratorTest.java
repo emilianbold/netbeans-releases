@@ -193,10 +193,4 @@ public final class SearchIteratorTest extends NbTestCase {
         }
     }
 
-    /**
-     */
-    protected void tearDown() throws Exception {
-        
-    }
-
 }

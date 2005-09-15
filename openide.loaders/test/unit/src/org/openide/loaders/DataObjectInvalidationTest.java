@@ -45,17 +45,6 @@ public class DataObjectInvalidationTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(DataObjectInvalidationTest.class));
-    }
-    
-    /*
-    protected void setUp() throws Exception {
-    }
-    protected void tearDown() throws Exception {
-    }
-     */
-
     public void testNobodyCanAccessDataObjectWithUnfinishedConstructor () throws Throwable {
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
             "folder/file.slow",

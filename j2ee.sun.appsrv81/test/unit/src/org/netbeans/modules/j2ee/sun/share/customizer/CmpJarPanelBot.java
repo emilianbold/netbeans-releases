@@ -29,15 +29,6 @@ public class CmpJarPanelBot extends ComponentTestFixture { // TestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(CmpJarPanelBot.class);
-        return suite;
-    }
-    
     // Add test methods here, they have to start with 'test' name.
     // for example:
     // public void testHello() {}

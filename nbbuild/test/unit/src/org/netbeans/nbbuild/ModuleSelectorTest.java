@@ -45,9 +45,6 @@ public class ModuleSelectorTest extends NbTestCase {
         selector = new ModuleSelector();
     }
 
-    protected void tearDown() throws Exception {
-    }
-
     public void testIsSelectedForNotAModule() throws IOException {
         File noModule = generateJar(new String[0], ModuleDependenciesTest.createManifest ());
         assertFalse("Not acceptable", selector.isSelected(getWorkDir(), noModule.toString(), noModule));

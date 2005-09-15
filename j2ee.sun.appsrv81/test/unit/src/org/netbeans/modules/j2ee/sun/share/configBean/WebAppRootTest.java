@@ -141,9 +141,5 @@ public class WebAppRootTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(WebAppRootTest.class);
-        return suite;
-    }
 }
     

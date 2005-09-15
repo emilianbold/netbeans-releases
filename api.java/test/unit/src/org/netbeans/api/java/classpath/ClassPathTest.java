@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,13 +18,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.FileOutputStream;
-import java.util.*;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -32,10 +34,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 
 /**
@@ -45,13 +44,8 @@ import org.openide.util.Utilities;
  */
 public class ClassPathTest extends NbTestCase {
     
-    public ClassPathTest(java.lang.String testName) {
+    public ClassPathTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ClassPathTest.class);
-        return suite;
     }
     
     private File getBaseDir() throws Exception {
@@ -61,18 +55,6 @@ public class ClassPathTest extends NbTestCase {
         }
         return dir;
     }
-    
-   
-    
-    protected void setUp() throws java.lang.Exception {
-        super.setUp();
-        File f = getBaseDir();
-    }
-    
-    protected void tearDown() throws java.lang.Exception {
-        super.tearDown();
-        File f = getBaseDir();
-    }        
     
     /**
      * Tests ClassPath.getResourceName ();

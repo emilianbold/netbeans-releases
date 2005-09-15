@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,14 +45,8 @@ public class WebProjectGeneratorTest extends NbTestCase {
     private File doc;
     private File buildClasses;
     
-    public WebProjectGeneratorTest(java.lang.String testName) {
+    public WebProjectGeneratorTest(String testName) {
         super(testName);
-    }
-    
-    protected void setUp() throws Exception {
-    }
-    
-    protected void tearDown() throws Exception {
     }
     
     private AntProjectHelper createEmptyProject(String projectFolder, String projectName) throws Exception {

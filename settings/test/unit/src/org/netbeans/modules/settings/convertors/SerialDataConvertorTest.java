@@ -42,10 +42,6 @@ public class SerialDataConvertorTest extends NbTestCase {
         super (name);
     }
     
-    public static void main (String[] args) throws Exception {
-        junit.textui.TestRunner.run(new NbTestSuite (SerialDataConvertorTest.class));
-    }
-    
     /** Setups variables.
      */
     protected void setUp () throws Exception {

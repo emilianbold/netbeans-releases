@@ -14,8 +14,10 @@
 package org.netbeans.spi.palette;
 
 import java.beans.BeanInfo;
-import junit.framework.*;
-import org.netbeans.modules.palette.*;
+import org.netbeans.modules.palette.Category;
+import org.netbeans.modules.palette.Item;
+import org.netbeans.modules.palette.Model;
+import org.netbeans.modules.palette.Settings;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
@@ -27,12 +29,6 @@ public class SettingsTest extends AbstractPaletteTestHid {
     
     public SettingsTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SettingsTest.class);
-        
-        return suite;
     }
 
     public void testItemVisible() throws Exception {

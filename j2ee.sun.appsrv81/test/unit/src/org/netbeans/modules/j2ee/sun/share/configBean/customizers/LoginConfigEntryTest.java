@@ -10,22 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * LoginConfigEntryTest.java
- * JUnit based test
- *
- * Created on March 18, 2004, 5:04 PM
- */
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
-import java.util.ResourceBundle;
-import junit.framework.*;
-import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.j2ee.sun.common.dd.WebserviceEndpoint;
-import org.netbeans.modules.j2ee.sun.common.dd.LoginConfig;
-import org.netbeans.modules.j2ee.sun.share.configbean.ServletRef;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
+import junit.framework.TestCase;
 
 /**
  *
@@ -37,13 +25,8 @@ public class LoginConfigEntryTest extends TestCase {
             new LoginConfigEntry();
     }
     
-    public LoginConfigEntryTest(java.lang.String testName) {
+    public LoginConfigEntryTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(LoginConfigEntryTest.class);
-        return suite;
     }
     
 }

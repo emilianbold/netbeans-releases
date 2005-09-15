@@ -51,9 +51,6 @@ public class InstanceDataObjectCopyTest extends org.netbeans.junit.NbTestCase {
         
     }
 
-    protected void tearDown () throws java.lang.Exception {
-    }
-    
     public void testSettingsFileOnNonSFSAfterCopyShouldHaveEditor () throws Exception {
         doSettingsFileOnNonSFSAfterCopyShouldHaveEditor (true);
     }

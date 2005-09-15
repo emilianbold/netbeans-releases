@@ -10,22 +10,11 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * MultiLineFieldTest.java
- * JUnit based test
- *
- * Created on May 27, 2004, 4:09 PM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.editors.ui;
 
-import java.awt.*;
-import java.awt.font.*;
-import java.text.*;
-import java.util.*;
-import javax.accessibility.*;
-import javax.swing.*;
-import junit.framework.*;
+import java.awt.Font;
+import junit.framework.TestCase;
 
 /**
  *
@@ -50,13 +39,8 @@ public class MultiLineFieldTest extends TestCase {
     
     }
     
-    public MultiLineFieldTest(java.lang.String testName) {
+    public MultiLineFieldTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(MultiLineFieldTest.class);
-        return suite;
     }
     
     /**

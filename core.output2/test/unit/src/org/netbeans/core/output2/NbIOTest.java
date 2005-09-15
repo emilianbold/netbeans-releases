@@ -7,22 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.output2;
 
-import junit.framework.*;
-import org.openide.ErrorManager;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
 import java.io.Reader;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import junit.framework.TestCase;
 
 /**
  *
@@ -34,21 +26,6 @@ public class NbIOTest extends TestCase {
         super(testName);
     }
     
-    // TODO add test methods here. The name must begin with 'test'. For example:
-    // public void testHello() {}
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(NbIOTest.class);
-        
-        return suite;
-    }
-
     public void test54117() throws Exception {
         NbIO io = new NbIO("test");
         assertFalse(io.isClosed());

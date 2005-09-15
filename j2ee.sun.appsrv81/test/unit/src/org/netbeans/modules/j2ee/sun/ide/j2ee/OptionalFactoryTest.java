@@ -43,11 +43,6 @@ public class OptionalFactoryTest extends TestCase {
         dm =new SunDeploymentManager(null,null,"localhost",4848);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(OptionalFactoryTest.class);
-        return suite;
-    }
-    
     /**
      * Test of getFindJSPServlet method, of class org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory.
      */

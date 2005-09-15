@@ -14,13 +14,11 @@
 package org.netbeans.spi.palette;
 
 import java.io.FileNotFoundException;
-import junit.framework.*;
+import junit.framework.TestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
-
-
 
 /**
  *
@@ -48,12 +46,6 @@ public class PaletteFactoryTest extends TestCase {
         paletteRootFolder = fs.findResource( PALETTE_ROOT_FOLDER_NAME );
         if( null != paletteRootFolder )
             paletteRootFolder.delete();
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(PaletteFactoryTest.class);
-        
-        return suite;
     }
 
     /**

@@ -7,21 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * TabStateTest.java
- * JUnit based test
- *
- * Created on March 30, 2004, 12:05 AM
  */
 
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.util.HashSet;
 import java.util.Set;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -29,13 +23,8 @@ import junit.framework.*;
  */
 public class TabStateTest extends TestCase {
     
-    public TabStateTest(java.lang.String testName) {
+    public TabStateTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(TabStateTest.class);
-        return suite;
     }
     
     private TS ts = null;

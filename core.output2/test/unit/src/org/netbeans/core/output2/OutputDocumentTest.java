@@ -24,9 +24,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
-import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  * @author Tim Boudreau
@@ -36,12 +34,6 @@ public class OutputDocumentTest extends TestCase {
     public OutputDocumentTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(OutputDocumentTest.class);
-        return suite;
-    }
-
     
     public void testAddDocumentListener() throws Exception {
         System.out.println("testAddDocumentListener");

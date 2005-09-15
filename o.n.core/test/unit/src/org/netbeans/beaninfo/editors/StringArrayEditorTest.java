@@ -7,21 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.beaninfo.editors;
 
-import junit.framework.*;
-import java.awt.*;
-import java.beans.*;
-import java.util.*;
-import javax.swing.JList;
-import javax.swing.JScrollPane;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import junit.framework.TestCase;
 import org.openide.nodes.Node;
 
 /**
@@ -37,19 +33,6 @@ public class StringArrayEditorTest extends TestCase {
         super (testName);
     }
     
-    protected void setUp () throws Exception {
-    }
-
-    protected void tearDown () throws Exception {
-    }
-
-    public static Test suite () {
-        TestSuite suite = new TestSuite(StringArrayEditorTest.class);
-        
-        return suite;
-    }
-
- 
     public void testTheEditorHonoursSeparatorAttribute () throws Exception {
         NP np = new NP ();
         np.setValue ("item.separator", "-");
@@ -82,11 +65,11 @@ public class StringArrayEditorTest extends TestCase {
             super (String[].class);
         }
 
-        public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+        public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             value = (String[])val;
         }
 
-        public Object getValue () throws IllegalAccessException, java.lang.reflect.InvocationTargetException {
+        public Object getValue () throws IllegalAccessException, InvocationTargetException {
             return value;
         }
 

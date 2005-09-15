@@ -13,20 +13,7 @@
 
 package org.netbeans.spi.project.support.ant.ui;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.net.URI;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.beans.PropertyChangeListener;
 import java.util.Map;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -34,8 +21,6 @@ import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 public class StoreGroupTest extends NbTestCase {
 
@@ -43,14 +28,6 @@ public class StoreGroupTest extends NbTestCase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-    
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testString() throws Exception {
 
         // Test values
@@ -223,11 +200,11 @@ public class StoreGroupTest extends NbTestCase {
             return text;
         }
 
-        public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
             // NOP
         }
 
-        public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
             // NOP
         }
 

@@ -35,11 +35,6 @@ public final class ScheduledRequestTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(ScheduledRequestTest.class));
-        System.exit(0);
-    }
-    
     protected void setUp() throws Exception {
         super.setUp();
         

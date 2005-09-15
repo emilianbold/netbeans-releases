@@ -32,11 +32,6 @@ public class EnvTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new org.netbeans.junit.NbTestSuite(EnvTest.class));
-        System.exit(0);
-    }
-    
     protected void setUp() throws Exception {
         super.setUp();
         

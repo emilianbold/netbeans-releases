@@ -192,10 +192,6 @@ public class BasicDataObjectTest extends NbTestCase {
     }
     
     
-    public static void main (String[] args) throws Exception {
-         TestRunner.run(new NbTestSuite(BasicDataObjectTest.class));
-    }    
-    
     private String fsstruct [] = new String [] {"Dir/SubDir/"};
     private FileSystem lfs;
     private FileObject subDir;

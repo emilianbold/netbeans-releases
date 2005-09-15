@@ -41,16 +41,6 @@ public class GrammarQueryManagerTest extends TestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(GrammarQueryManagerTest.class);
-        
-        return suite;
-    }
-    
     /** Test of getDefault method, of class org.netbeans.modules.xml.text.completion.api.GrammarQueryManager. */
     public void testGetDefault() throws Exception {
         System.out.println("testGetDefault");

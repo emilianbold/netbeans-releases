@@ -40,13 +40,6 @@ public class FastScanTest extends NbTestCase {
         super(testName);
     }
     
-    /** method used for explicit testsuite definition
-     */
-    public static junit.framework.Test suite() {
-        TestSuite suite = new NbTestSuite(FastScanTest.class);
-        return suite;
-    }
-
     public void testPage1() throws Exception {
         doFastScanTest("jspparser-data/wmroot", "subdir/Page1.jsp", new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"));
         
@@ -85,21 +78,4 @@ public class FastScanTest extends NbTestCase {
         assertEquals(correctInfo, info);
     }
     
-    /** method called before each testcase
-     */
-    protected void setUp() throws IOException {
-    }
-    
-    /** method called after each testcase<br>
-     * resets Jemmy WaitComponentTimeout
-     */
-    protected void tearDown() {
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 }

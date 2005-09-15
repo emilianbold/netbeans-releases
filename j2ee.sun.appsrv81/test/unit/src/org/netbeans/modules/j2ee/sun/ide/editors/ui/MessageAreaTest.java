@@ -10,19 +10,14 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * MessageAreaTest.java
- * JUnit based test
- *
- * Created on May 21, 2004, 9:47 AM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.editors.ui;
 
-import java.awt.*;
-import java.util.*;
-import javax.swing.*;
-import junit.framework.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
+import junit.framework.TestCase;
 
 /**
  *
@@ -38,7 +33,7 @@ public class MessageAreaTest extends TestCase {
         //ma = new MessageArea(null);
         ma.addNotify();
         //ma.setWidth(100);
-        java.util.List l = new java.util.ArrayList();
+        List l = new ArrayList();
         l.add("a");
         l.add("b");
         ma.setBulletItems("");
@@ -66,18 +61,10 @@ public class MessageAreaTest extends TestCase {
         ma.addNotify();
      }
     
-    public MessageAreaTest(java.lang.String testName) {
+    public MessageAreaTest(String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(MessageAreaTest.class);
-        return suite;
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
     /**
      * Test of addNotify method, of class org.netbeans.modules.j2ee.sun.ide.editors.ui.MessageArea.
      *
@@ -178,9 +165,6 @@ public class MessageAreaTest extends TestCase {
         fail("The test case is empty.");
     }
     
-    // TODO add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
     */
     
 }

@@ -42,10 +42,6 @@ public class BasicTest extends NbTestCase {
     }
     
     
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(BasicTest.class));
-    }
-    
     public void setUp() {
         // redirect error and trace messages from Jemmy
         JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));

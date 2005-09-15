@@ -41,14 +41,6 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        if (args.length == 1) {
-            TestRunner.run (new DataLoaderGetActionsCompatibilityTest (args[0]));
-        } else {
-            TestRunner.run(new NbTestSuite(DataLoaderGetActionsCompatibilityTest.class));
-        }
-    }
-
     /**
      * Sets up the testing environment by creating testing folders
      * on the system file system.

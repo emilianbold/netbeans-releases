@@ -7,38 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * OutputDocumentTest.java
- * JUnit based test
- *
- * Created on March 23, 2004, 5:34 PM
  */
 
 package org.netbeans.core.output2;
 
-import java.awt.BorderLayout;
-import java.io.File;
-import java.io.IOException;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TooManyListenersException;
-import javax.swing.*;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.text.*;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -46,18 +23,13 @@ import junit.framework.*;
  */
 public class StorageTest extends TestCase {
     
-    public StorageTest(java.lang.String testName) {
+    public StorageTest(String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(StorageTest.class);
-        return suite;
-    }
-
     Storage filemap = null;
     Storage heap = null;
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         filemap = new FileMapStorage();
         heap = new HeapStorage();
     }

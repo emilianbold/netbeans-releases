@@ -10,17 +10,11 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * DataSourceWizardTest.java
- * JUnit based test
- *
- * Created on May 5, 2004, 1:02 PM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
-import org.openide.WizardDescriptor;
 
-import junit.framework.*;
+import junit.framework.TestCase;
+import org.openide.WizardDescriptor;
 
 /**
  *
@@ -50,18 +44,8 @@ public class DataSourceWizardTest extends TestCase {
         s1.instantiate();
     }
     
-    public DataSourceWizardTest(java.lang.String testName) {
+    public DataSourceWizardTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DataSourceWizardTest.class);
-        return suite;
-    }
-    
-    // TODO add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-    
     
 }

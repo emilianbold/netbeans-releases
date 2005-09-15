@@ -54,9 +54,6 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         }
     }
     
-    protected void tearDown() throws Exception {
-    }
-    
     public void testReadXml() throws Exception {
         FileObject fo = createConnectionFile(CONNECTION_FILE, getConnectionsFolder());
         DataObject dobj = DataObject.find(fo);

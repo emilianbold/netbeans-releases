@@ -40,10 +40,6 @@ public class LibraryTest extends NbTestCase {
         TestUtil.setLookup (Lookups.fixed(new Object[] {lp}));
     }
     
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
     public void testGetLibraries () throws Exception {        
         LibraryManager lm = LibraryManager.getDefault();
         Library[] libs = lm.getLibraries();

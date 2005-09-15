@@ -33,12 +33,6 @@ public class ReplaceUserDirTest extends TestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
     public void testGetUserDir() {
         System.setProperty("netbeans.user", "${user.home}/mine");
         

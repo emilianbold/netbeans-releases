@@ -92,9 +92,6 @@ implements java.net.URLStreamHandlerFactory {
         }
     }
     
-    protected void tearDown() throws Exception {
-    }
-
     public java.net.URLStreamHandler createURLStreamHandler(String protocol) {
         if (protocol.equals ("nbfs")) {
             return FileUtil.nbfsURLStreamHandler ();

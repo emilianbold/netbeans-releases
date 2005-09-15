@@ -14,8 +14,6 @@
 package org.netbeans.modules.project.ant;
 
 import java.lang.reflect.Method;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
@@ -26,7 +24,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelperTest;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
-
 
 /**
  *
@@ -52,15 +49,6 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
         });
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AntBasedProjectFactorySingletonTest.class);
-        
-        return suite;
     }
 
     /**Test for second part of #42738.

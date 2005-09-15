@@ -10,26 +10,11 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * UtilsTest.java
- * JUnit based test
- *
- * Created on March 1, 2004, 12:33 PM
- */
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
-import java.io.File;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.net.URL;
-import java.net.URLClassLoader;
-import junit.framework.*;
-import org.netbeans.modules.schema2beans.BaseBean;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import junit.framework.TestCase;
 
 /**
  *
@@ -58,13 +43,8 @@ public class UtilsTest extends TestCase {
         assertEquals(ce.getMessage(),"ConfigurationException references unknown message key 'unknownMessageKeyValue' has params 'Foobar' '{2}' '{3}' '{4}' '{5}'");
     }
 
-    public UtilsTest(java.lang.String testName) {
+    public UtilsTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(UtilsTest.class);
-        return suite;
     }
     
     /** Test of getFQNKey method, of class org.netbeans.modules.j2ee.sun.share.configbean.Utils. 

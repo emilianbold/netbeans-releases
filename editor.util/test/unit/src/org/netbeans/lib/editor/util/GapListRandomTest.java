@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,8 +15,7 @@ package org.netbeans.lib.editor.util;
 
 import java.util.ArrayList;
 import java.util.Random;
-import junit.framework.*;
-
+import junit.framework.TestCase;
 
 /**
  * Random test of GapList correctness.
@@ -49,21 +48,10 @@ public class GapListRandomTest extends TestCase {
     
     private GapList gl;
     
-    public GapListRandomTest(java.lang.String testName) {
+    public GapListRandomTest(String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(GapListRandomTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-
     public void test() {
         testFresh(0);
     }

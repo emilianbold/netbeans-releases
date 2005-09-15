@@ -13,13 +13,23 @@
 
 package org.openide.loaders;
 
-import junit.framework.*;
-import java.io.*;
-import java.util.*;
-import org.openide.ErrorManager;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import junit.framework.TestCase;
 import org.openide.cookies.ConnectionCookie;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Enumerations;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** Some tests for the ConnectionSupport
  *
@@ -34,21 +44,6 @@ public class ConnectionSupportTest extends TestCase {
         super (testName);
     }
     
-    // TODO add test methods here. The name must begin with 'test'. For example:
-    // public void testHello() {}
-
-    protected void setUp () throws java.lang.Exception {
-    }
-
-    protected void tearDown () throws java.lang.Exception {
-    }
-
-    public static junit.framework.Test suite () {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(ConnectionSupportTest.class);
-        
-        return suite;
-    }
-
     public void testFireEvent () throws Exception {
         FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
         FileObject fo = FileUtil.createData (root, "SomeData.txt");
@@ -60,7 +55,7 @@ public class ConnectionSupportTest extends TestCase {
         
         final T t = new T ();
         final MultiDataObject.Entry e = ((MultiDataObject)obj).getPrimaryEntry ();
-        final org.openide.loaders.ConnectionSupport sup = new org.openide.loaders.ConnectionSupport (
+        final ConnectionSupport sup = new ConnectionSupport (
             e, new T[] { t }
         );
         
@@ -72,7 +67,7 @@ public class ConnectionSupportTest extends TestCase {
             
             public void notify (ConnectionCookie.Event ev) {
                 called = true;
-                org.openide.util.RequestProcessor.getDefault ().post (this).waitFinished ();
+                RequestProcessor.getDefault ().post (this).waitFinished ();
                 finished = true;
             }
             
@@ -95,12 +90,12 @@ public class ConnectionSupportTest extends TestCase {
                 "other thread from reentering the ConnectionSupport", b.finished);
     }
     
-    private static final class MN extends org.openide.nodes.AbstractNode {
+    private static final class MN extends AbstractNode {
         public static MN myNode = new MN ();
         
         public ConnectionCookie.Listener b;
         private MN () {
-            super (org.openide.nodes.Children.LEAF);
+            super (Children.LEAF);
         }
         
         public Node.Cookie getCookie (Class c) {
@@ -110,7 +105,7 @@ public class ConnectionSupportTest extends TestCase {
             return null;
         }
         
-        public Handle getHandle () {
+        public Node.Handle getHandle () {
             return new H ();
         }
         
@@ -131,18 +126,18 @@ public class ConnectionSupportTest extends TestCase {
             return true;
         }
 
-        public boolean overlaps(org.openide.cookies.ConnectionCookie.Type type) {
+        public boolean overlaps(ConnectionCookie.Type type) {
             return getClass () == type.getClass ();
         }
         
     }
     
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+    public static final class Lkp extends AbstractLookup {
         public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
+            this (new InstanceContent ());
         }
         
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
+        private Lkp (InstanceContent ic) {
             super (ic);
             ic.add (new Pool ());
         }
@@ -154,9 +149,9 @@ public class ConnectionSupportTest extends TestCase {
         public Pool () {
         }
 
-        public java.util.Enumeration loaders () {
+        public Enumeration loaders () {
             if (loaders == null) {
-                return org.openide.util.Enumerations.empty ();
+                return Enumerations.empty ();
             }
             return Collections.enumeration (loaders);
         }

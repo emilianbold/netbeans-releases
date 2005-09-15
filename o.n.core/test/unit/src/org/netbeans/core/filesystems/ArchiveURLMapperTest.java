@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,11 +17,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-import junit.framework.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.netbeans.junit.NbTestCase;
@@ -30,7 +28,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
-
 /**
  *
  * @author  tomas zezula
@@ -42,11 +39,6 @@ public class ArchiveURLMapperTest extends NbTestCase {
     
     public ArchiveURLMapperTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ArchiveURLMapperTest.class);
-        return suite;
     }
     
     private URL createJarFile () throws IOException {

@@ -56,10 +56,6 @@ public class ReloadDeadlockTest extends NbTestCase {
         super(s);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(ReloadDeadlockTest.class));
-    }
-
     /** Tests the deadlock described in #12557. */
     public void testDeadlock() throws Exception {
         System.out.println("START of deadlock test: see issue #12557.");
@@ -163,10 +159,4 @@ public class ReloadDeadlockTest extends NbTestCase {
         rootDir.delete();
     }
     
-    protected void setUp() {
-    }
-    
-    protected void tearDown() {
-    }
-
 }

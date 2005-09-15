@@ -33,10 +33,6 @@ public class DataLoaderPoolOnlyEventsTest extends DataLoaderPoolTest {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(DataLoaderPoolOnlyEventsTest.class));
-    }
-
     /** Changes directly the filesystem attribute.
      */
     protected void doSetPreferredLoader(FileObject fo, DataLoader loader) throws IOException {

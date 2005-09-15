@@ -45,19 +45,10 @@ public class Views extends JellyTestCase {
         return suite;
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     /** setUp method  */
     public void setUp() {
         Utilities.sleep(1000);
         System.out.println("########  " + getName() + "  #######");
-    }
-    
-    /** tearDown method */
-    public void tearDown() {
     }
     
     public void setupViewsTests() {

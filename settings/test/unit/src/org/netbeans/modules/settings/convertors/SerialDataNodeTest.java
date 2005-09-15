@@ -35,11 +35,6 @@ public class SerialDataNodeTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new org.netbeans.junit.NbTestSuite(SerialDataNodeTest.class));
-        System.exit(0);
-    }
-    
     protected void setUp() throws Exception {
         super.setUp();
         Lookup.getDefault().lookup(ModuleInfo.class);

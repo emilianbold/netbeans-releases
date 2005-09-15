@@ -7,19 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.openide.nodes;
 
-import java.beans.*;
-
+import java.beans.BeanInfo;
+import java.beans.IndexedPropertyDescriptor;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.nodes.*;
 
 /**
  * Regression test for bug #21285<br>
@@ -56,7 +57,6 @@ public class BeanNodeBug21285 extends NbTestCase {
             
             
         }
-        //junit.textui.TestRunner.run(new NbTestSuite(BeanNodeBug21285.class));
     }
 
 
@@ -68,8 +68,8 @@ public class BeanNodeBug21285 extends NbTestCase {
         
         try {
             for (int i = 0; i < ps.length; i++) {
-                 java.util.Set props = new java.util.HashSet( 
-                    java.util.Arrays.asList(ps[i].getProperties()));
+                 Set props = new HashSet( 
+                    Arrays.asList(ps[i].getProperties()));
             }
         }
         catch ( NullPointerException e ) {
@@ -79,10 +79,4 @@ public class BeanNodeBug21285 extends NbTestCase {
         assertTrue( true );
     }
     
-    protected void setUp() {
-    }
-    
-    protected void tearDown() {
-    }
-
 }

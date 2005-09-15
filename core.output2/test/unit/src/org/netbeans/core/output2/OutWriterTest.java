@@ -7,38 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * OutWriterTest.java
- * JUnit based test
- *
- * Created on March 21, 2004, 9:50 PM
  */
 
 package org.netbeans.core.output2;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TooManyListenersException;
-import java.util.Vector;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import junit.framework.*;
-import org.openide.util.Mutex;
-import org.openide.windows.OutputWriter;
+import junit.framework.TestCase;
 
 /** Tests the OutWriter class
  *
@@ -47,16 +26,10 @@ import org.openide.windows.OutputWriter;
 public class OutWriterTest extends TestCase {
     private static final byte[] lineSepBytes = OutWriter.lineSepBytes;
     
-    public OutWriterTest(java.lang.String testName) {
+    public OutWriterTest(String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(OutWriterTest.class);
-        return suite;
-    }
-    
-   
     public void testPositionOfLine() {
         System.out.println("testPositionOfLine");
 

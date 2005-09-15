@@ -11,10 +11,8 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.api.progress;
 
-import junit.framework.*;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -53,15 +51,6 @@ public class ProgressHandleTest extends NbTestCase {
             }
         });
         handle = proghandle.getInternalHandle();
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ProgressHandleTest.class);
-        
-        return suite;
     }
 
     /**

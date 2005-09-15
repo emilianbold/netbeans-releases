@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * The Original Code is NetBeans.
  * The Initial Developer of the Original Code is Sun Microsystems, Inc.
- * Portions created by Sun Microsystems, Inc. are Copyright (C) 2003
+ * Portions created by Sun Microsystems, Inc. are Copyright (C) 2005
  * All Rights Reserved.
  *
  * Contributor(s): Sun Microsystems, Inc.
@@ -15,16 +15,18 @@
 
 package gui.debuggercore;
 
-import java.awt.event.KeyEvent;
-
+import java.io.File;
+import java.io.IOException;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -79,11 +81,6 @@ public class Breakpoints extends JellyTestCase {
         return suite;
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     /** setUp method  */
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
@@ -92,8 +89,8 @@ public class Breakpoints extends JellyTestCase {
     /** tearDown method */
     public void tearDown() {
         try {
-            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screenBeforeTearDown.png");
-        } catch (java.io.IOException ex) {}
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeTearDown.png");
+        } catch (IOException ex) {}
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         new Action(null, null, Utilities.killSessionShortcut).performShortcut();
         Utilities.deleteAllBreakpoints();

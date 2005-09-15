@@ -20,8 +20,9 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPanel;
-import junit.framework.*;
-import org.netbeans.modules.palette.*;
+import org.netbeans.modules.palette.Category;
+import org.netbeans.modules.palette.Item;
+import org.netbeans.modules.palette.Model;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -33,12 +34,6 @@ public class ItemTest extends AbstractPaletteTestHid {
     
     public ItemTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ItemTest.class);
-        
-        return suite;
     }
 
     /**

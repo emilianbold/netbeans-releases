@@ -99,9 +99,4 @@ public class EjbJarRootCustomizerTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(EjbJarRootCustomizerTest.class);
-        return suite;
-    }
-        
 }

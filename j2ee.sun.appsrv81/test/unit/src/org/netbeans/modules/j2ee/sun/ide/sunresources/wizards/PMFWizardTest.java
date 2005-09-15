@@ -10,17 +10,11 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * PMFWizardTest.java
- * JUnit based test
- *
- * Created on May 5, 2004, 1:02 PM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
-import org.openide.WizardDescriptor;
 
-import junit.framework.*;
+import junit.framework.TestCase;
+import org.openide.WizardDescriptor;
 
 /**
  *
@@ -39,7 +33,7 @@ public class PMFWizardTest extends TestCase {
         //PMFWizard.PMFWizardIterator s1 = (PMFWizard.PMFWizardIterator) PMFWizard.singleton();
         //wiz.getPanel(0);
         //wiz.getResourceConfigHelper();
-        //s1.stateChange(new javax.swing.event.ChangeEvent() {
+        //s1.stateChange(new ChangeEvent() {
             
         //});
         //}
@@ -57,18 +51,8 @@ public class PMFWizardTest extends TestCase {
          
     }
     
-    public PMFWizardTest(java.lang.String testName) {
+    public PMFWizardTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(PMFWizardTest.class);
-        return suite;
-    }
-    
-    // TODO add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-    
     
 }

@@ -57,9 +57,6 @@ public class JDBCDriverConvertorTest extends TestBase {
         }
     }
     
-    protected void tearDown() throws Exception {
-    }
-    
     public void testReadXml() throws Exception {
         FileObject fo = createDriverFile(DRIVER_FILE, getDriversFolder());
         DataObject dobj = DataObject.find(fo);

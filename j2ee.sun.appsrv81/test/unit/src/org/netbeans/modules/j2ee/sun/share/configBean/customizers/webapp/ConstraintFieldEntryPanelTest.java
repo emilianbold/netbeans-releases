@@ -61,11 +61,4 @@ public class ConstraintFieldEntryPanelTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ConstraintFieldEntryPanelTest.class);
-        return suite;
-    }
-    
-    
-    
 }

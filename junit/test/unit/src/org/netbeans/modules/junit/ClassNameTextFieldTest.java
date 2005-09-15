@@ -7,18 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
-import junit.framework.*;
-import javax.swing.JTextField;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.modules.junit.ClassNameTextField;
+import junit.framework.TestCase;
 
 /**
  *
@@ -30,14 +25,6 @@ public class ClassNameTextFieldTest extends TestCase {
         super(testName);
     }
 
-    public static junit.framework.Test suite() {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(ClassNameTextFieldTest.class);
-        
-        return suite;
-    }
-
-    /**
-     */
     private class StringIntPair {
         private final String str;
         private final int value;

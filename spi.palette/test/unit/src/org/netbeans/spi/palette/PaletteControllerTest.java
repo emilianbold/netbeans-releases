@@ -16,16 +16,13 @@ package org.netbeans.spi.palette;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.Settings;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-
 
 /**
  *
@@ -49,15 +46,6 @@ public class PaletteControllerTest extends TestCase {
         controller = PaletteFactory.createPalette( rootNode, actions );
         model = controller.getModel();
         settings = controller.getSettings();
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(PaletteControllerTest.class);
-        
-        return suite;
     }
 
     /**

@@ -7,21 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- *//*
- * DataModelTest.java
- *
- * Created on May 27, 2003, 12:43 AM
  */
 
 package org.netbeans.swing.tabcontrol;
-import org.netbeans.swing.tabcontrol.event.*;
-import java.awt.*;
-import javax.swing.*;
-import java.util.*;
-import junit.framework.*;
 
+import java.awt.Component;
+import java.awt.Graphics;
+import java.util.Arrays;
+import java.util.EventObject;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.event.ListDataEvent;
+import junit.framework.TestCase;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 
 /** Some basic tests for DefaultTabDataModel, etc.  Can be fleshed out into proper
  *  unit tests later.
@@ -35,11 +36,6 @@ public class DataModelTest extends TestCase implements ComplexListDataListener {
 
     public DataModelTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DataModelTest.class);
-        return suite;
     }
     
     TabDataModel mdl=null;
@@ -440,7 +436,7 @@ public class DataModelTest extends TestCase implements ComplexListDataListener {
         new DataModelTest("foo").run();
     }
     
-    public void contentsChanged(javax.swing.event.ListDataEvent e) {
+    public void contentsChanged(ListDataEvent e) {
         lastListenerCall="contentsChanged";
         lastEvent = (ComplexListDataEvent)e;
         if (noEvent) {
@@ -472,7 +468,7 @@ public class DataModelTest extends TestCase implements ComplexListDataListener {
         }
     }
     
-    public void intervalAdded(javax.swing.event.ListDataEvent e) {
+    public void intervalAdded(ListDataEvent e) {
         lastListenerCall="intervalAdded";
         assertPravda (e.getIndex0() <= e.getIndex1(), "Event start index > end index");
 
@@ -482,7 +478,7 @@ public class DataModelTest extends TestCase implements ComplexListDataListener {
         }
     }
     
-    public void intervalRemoved(javax.swing.event.ListDataEvent e) {
+    public void intervalRemoved(ListDataEvent e) {
         lastListenerCall="intervalRemoved";
         lastEvent = (ComplexListDataEvent)e;
         if (noEvent) {

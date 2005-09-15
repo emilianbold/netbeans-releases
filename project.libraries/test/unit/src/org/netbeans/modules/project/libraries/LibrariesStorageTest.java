@@ -70,10 +70,6 @@ public class LibrariesStorageTest extends NbTestCase {
         this.storage = new LibrariesStorage (this.storageFolder);
     }
 
-    protected void tearDown() throws Exception {
-    }
-        
-
     public void testGetLibraries() throws Exception {
         this.storage.getLibraries();
         LibraryImplementation[] libs = this.storage.getLibraries();

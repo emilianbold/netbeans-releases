@@ -38,16 +38,6 @@ public class DTDParserTest extends TestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DTDParserTest.class);
-        
-        return suite;
-    }
-    
     public void testParse() {
         
         try {

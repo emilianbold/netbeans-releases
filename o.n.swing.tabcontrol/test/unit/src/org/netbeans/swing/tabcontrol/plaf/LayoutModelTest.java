@@ -13,17 +13,18 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.util.*;
-import java.awt.event.*;
-import junit.framework.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.util.Arrays;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import junit.framework.TestCase;
 import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
-import org.netbeans.swing.tabcontrol.event.*;
-import org.netbeans.swing.tabcontrol.plaf.*;
 
 /** Tests for all of the functionality of TabLayoutModel instances
  *
@@ -38,18 +39,9 @@ public class LayoutModelTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(LayoutModelTest.class);
-        return suite;
-    }
-    
     public void setUp() {
         prepareModel();
     }
-    
-    public static void main(String[] args) {
-        new LayoutModelTest("foo").run();
-    }    
     
     Icon ic = new Icon () {
         public int getIconWidth() {

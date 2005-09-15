@@ -86,10 +86,4 @@ public class ManagedObjectTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ManagedObjectTest.class);
-        return suite;
-    }
-    
-    
 }

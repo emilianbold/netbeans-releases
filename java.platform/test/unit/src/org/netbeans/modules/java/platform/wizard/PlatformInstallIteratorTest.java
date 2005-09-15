@@ -16,20 +16,18 @@ package org.netbeans.modules.java.platform.wizard;
 import java.awt.Component;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import junit.framework.*;
 import java.io.IOException;
-import java.util.*;
-import javax.swing.JComponent;
-import javax.swing.event.*;
+import java.util.Collections;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.platform.*;
+import org.netbeans.modules.java.platform.InstallerRegistry;
+import org.netbeans.modules.java.platform.InstallerRegistryAccessor;
 import org.netbeans.spi.java.platform.CustomPlatformInstall;
 import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 
 /**
@@ -42,18 +40,6 @@ public class PlatformInstallIteratorTest extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(PlatformInstallIteratorTest.class);
-        
-        return suite;
-    }
-    
     public void testSinglePlatformInstall () throws IOException {
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest(new GeneralPlatformInstall[] {
             new FileBasedPlatformInstall ("FileBased1", new WizardDescriptor.Panel[] {

@@ -93,16 +93,6 @@ public class AntProjectHelperTest extends NbTestCase {
         l = new AntBasedTestUtil.TestListener();
     }
     
-    protected void tearDown() throws Exception {
-        scratch = null;
-        projdir = null;
-        pm = null;
-        p = null;
-        h = null;
-        l = null;
-        super.tearDown();
-    }
-
     /**
      * Test that Ant-based projects are at least recognized as such.
      * @throws Exception if anything unexpected happens

@@ -18,8 +18,6 @@ import java.io.IOException;
 import javax.swing.KeyStroke;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.junit.NbTestCase;
-import junit.framework.*;
-
 
 /** Testing basic functionality of Editor Settings API
  * 
@@ -27,19 +25,8 @@ import junit.framework.*;
  */
 public class EditorSettingsTest extends NbTestCase {
     
-    public EditorSettingsTest(java.lang.String testName) {
+    public EditorSettingsTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(EditorSettingsTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
     }
     
     public void testMultiKeyBindingsEquality() throws IOException{

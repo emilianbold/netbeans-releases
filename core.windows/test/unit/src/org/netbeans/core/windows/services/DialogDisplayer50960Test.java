@@ -7,19 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.windows.services;
 
-import java.awt.*;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
-import junit.framework.*;
+import junit.framework.TestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -30,16 +28,11 @@ import org.openide.DialogDisplayer;
 public class DialogDisplayer50960Test extends TestCase {
     private boolean performed = false;
     
-    public DialogDisplayer50960Test (java.lang.String testName) {
+    public DialogDisplayer50960Test (String testName) {
         super (testName);
     }
     
-    public static Test suite () {
-        TestSuite suite = new TestSuite (DialogDisplayer50960Test.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         performed = false;
     }
 

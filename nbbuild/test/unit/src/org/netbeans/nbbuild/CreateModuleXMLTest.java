@@ -40,12 +40,6 @@ public class CreateModuleXMLTest extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
     public void testIncludesAllModulesByDefault() throws Exception {
         Manifest m = ModuleDependenciesTest.createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");

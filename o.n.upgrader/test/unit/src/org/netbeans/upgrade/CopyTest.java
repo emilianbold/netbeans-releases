@@ -27,9 +27,6 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
     public CopyTest (String name) {
         super (name);
     }
-    public static void main (String[] args) {
-        junit.textui.TestRunner.run (new junit.framework.TestSuite (CopyTest.class));
-    }
     
     protected void setUp() throws java.lang.Exception {
         super.setUp();

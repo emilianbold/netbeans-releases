@@ -34,10 +34,6 @@ public class DataFolderMoveTest extends NbTestCase {
         super (name);
     }
 
-    public static void main (String[] args) throws Exception {
-        junit.textui.TestRunner.run(new NbTestSuite (DataFolderMoveTest.class));
-    }
-    
     private static final int FS_WIDTH = 5;
     private static final int FS_DEPTH = 4;
     private static final int TXT_SIZE = 20000;

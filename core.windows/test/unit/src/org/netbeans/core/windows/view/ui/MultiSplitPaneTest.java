@@ -13,15 +13,9 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.util.ArrayList;
 import javax.swing.JSplitPane;
 import javax.swing.JWindow;
-import junit.framework.*;
-
-import org.netbeans.core.*;
-import org.netbeans.core.windows.*;
-import org.netbeans.core.windows.view.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Some basic tests for MultiSplitPane class to verify its resizing behavior.
@@ -51,15 +45,6 @@ public class MultiSplitPaneTest extends NbTestCase {
         //testWindow.getContentPane().add( split );
     }
 
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(MultiSplitPaneTest.class);
-        
-        return suite;
-    }
-    
     protected void resizeSplit( int orientation, int splitSize, int nonResizingSize ) {
         if( orientation == JSplitPane.HORIZONTAL_SPLIT )
             split.setSize( splitSize, nonResizingSize );

@@ -7,13 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.tomcat5;
+
+import java.io.File;
 import javax.enterprise.deploy.spi.Target;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -23,18 +24,13 @@ import org.netbeans.junit.NbTestCase;
 public class TomcatManagerTest extends NbTestCase {
     
     private TomcatManager tm;
-    private java.io.File datadir;
+    private File datadir;
     
-    public static Test suite () {
-        TestSuite suite = new TestSuite (TomcatManagerTest.class);
-        return suite;
-    }
-    
-    public TomcatManagerTest (java.lang.String testName) {
+    public TomcatManagerTest (String testName) {
         super (testName);
     }
     
-    protected void setUp () throws java.lang.Exception {
+    protected void setUp () throws Exception {
         super.setUp ();
         tm = (TomcatManager)TomcatFactory55.create().getDeploymentManager(TomcatFactory55Test.TOMCAT_URI, null, null);
         tm.ensureCatalinaBaseReady(); // This causes the base dir to be created if needed
@@ -180,10 +176,10 @@ public class TomcatManagerTest extends NbTestCase {
 //        System.out.println ("testAddToRegistry");
 //        ServerRegistryNode srn = new ServerRegistryNode ();
 //        try {
-//            org.netbeans.modules.j2ee.deployment.impl.ServerRegistry
+//            j2ee.deployment.impl.ServerRegistry
 //                .getInstance().addInstance("tomcat:dummy manager", "", "");
 //        }
-//        catch (java.io.IOException ioe) {
+//        catch (IOException ioe) {
 //            fail(ioe.getMessage ());
 //            return;
 //        }

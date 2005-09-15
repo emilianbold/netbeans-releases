@@ -10,25 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * EjbRefCustomizerTest.java
- * JUnit based test
- *
- * Created on March 15, 2004, 6:05 PM
- */
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
-import java.util.ResourceBundle;
-import java.beans.Customizer;
-import java.beans.PropertyVetoException;
-import javax.swing.JPanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.EjbRef;
-import org.netbeans.modules.j2ee.sun.share.configbean.ErrorMessageDB;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerErrorPanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerTitlePanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  *
@@ -41,18 +26,8 @@ public class EjbRefCustomizerTest extends TestCase {
         
     }
     
-    public EjbRefCustomizerTest(java.lang.String testName) {
+    public EjbRefCustomizerTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(EjbRefCustomizerTest.class);
-        return suite;
-    }
-        
-    // Add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-    
     
 }

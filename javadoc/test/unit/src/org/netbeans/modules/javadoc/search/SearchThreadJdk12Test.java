@@ -14,7 +14,6 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.io.File;
-import junit.framework.*;
 import java.util.List;
 import java.util.LinkedList;
 import org.netbeans.junit.NbTestCase;
@@ -40,14 +39,6 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertNotNull("missing data file", dataFile);
         fs = new LocalFileSystem();
         fs.setRootDirectory(dataFile);
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SearchThreadJdk12Test.class);
-        return suite;
     }
 
     public void testSearchInJDK14_Class() throws Exception {

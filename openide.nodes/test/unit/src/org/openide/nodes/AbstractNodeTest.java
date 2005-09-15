@@ -11,26 +11,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.openide.nodes;
 
 import java.beans.BeanInfo;
-import junit.framework.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.*;
 import java.awt.Image;
-import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.*;
-import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import junit.framework.TestCase;
 
 /**
  * A test for icon loading only so far.
@@ -42,13 +29,6 @@ public class AbstractNodeTest extends TestCase {
     public AbstractNodeTest(String testName) {
         super(testName);
     }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AbstractNodeTest.class);
-        
-        return suite;
-    }
-
 
     /**
      * Test of setIconBaseWithExtension method, of class org.openide.nodes.AbstractNode.

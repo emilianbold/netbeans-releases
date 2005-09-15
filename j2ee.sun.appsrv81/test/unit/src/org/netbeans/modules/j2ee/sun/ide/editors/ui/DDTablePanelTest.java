@@ -10,31 +10,14 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * DDTablePanelTest.java
- * JUnit based test
- *
- * Created on May 28, 2004, 11:52 AM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.editors.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.text.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
-import java.lang.ref.*;
-import junit.framework.*;
-import org.openide.explorer.propertysheet.editors.*;
-import org.openide.*;
-import org.openide.util.*;
-
+import javax.swing.JLabel;
+import junit.framework.TestCase;
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePairsPropertyEditor;
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
+
 /**
  *
  * @author vkraemer
@@ -64,7 +47,7 @@ public class DDTablePanelTest extends TestCase {
         panel.setSelectedRow(0);
 //        panel.setSelectedRow(1);
 //        panel.setSelectedRow(-1);
-        panel.linkLabel(new javax.swing.JLabel("test label"));
+        panel.linkLabel(new JLabel("test label"));
         panel.getSelectedRow();
         panel.getPropertyValue();
         panel.getHeaderColor();
@@ -72,13 +55,8 @@ public class DDTablePanelTest extends TestCase {
         //panel.editSelectedRow();
     }
     
-    public DDTablePanelTest(java.lang.String testName) {
+    public DDTablePanelTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DDTablePanelTest.class);
-        return suite;
     }
     
     /**

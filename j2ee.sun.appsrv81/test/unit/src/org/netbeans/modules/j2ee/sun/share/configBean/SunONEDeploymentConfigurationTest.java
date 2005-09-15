@@ -168,11 +168,6 @@ public class SunONEDeploymentConfigurationTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SunONEDeploymentConfigurationTest.class);
-        return suite;
-    }
-    
     static SunDeploymentFactory DF = new SunDeploymentFactory();
     static DeploymentManager DM = null;
     static SunONEDeploymentConfiguration warDC = null;

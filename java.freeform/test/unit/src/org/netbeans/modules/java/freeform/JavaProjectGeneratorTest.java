@@ -74,9 +74,6 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         clearWorkDir();
     }
     
-    protected void tearDown() throws Exception {
-    }
-    
     private AntProjectHelper createEmptyProject(String projectFolder, String projectName, boolean notSoEmpty) throws Exception {
         File base = new File(getWorkDir(), projectFolder);
         base.mkdir();

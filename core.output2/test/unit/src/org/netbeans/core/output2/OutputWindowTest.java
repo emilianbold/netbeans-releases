@@ -7,33 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * WrappedTextViewTest.java
- * JUnit based test
- *
- * Created on July 8, 2004, 8:35 PM
  */
 
 package org.netbeans.core.output2;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.ArrayList;
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.text.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
-import javax.swing.text.View;
-import junit.framework.*;
-import junit.framework.*;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import junit.framework.TestCase;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
-import org.openide.ErrorManager;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -45,11 +32,6 @@ public class OutputWindowTest extends TestCase {
     
     public OutputWindowTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(OutputWindowTest.class);
-        return suite;
     }
     
     private OutputWindow win;

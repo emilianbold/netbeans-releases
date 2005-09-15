@@ -7,21 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * IntMapTest.java
- * JUnit based test
- *
- * Created on March 29, 2004, 6:52 PM
  */
 
 package org.netbeans.core.output2;
 
 import java.util.Arrays;
-import junit.framework.*;
-import org.openide.util.Utilities;
+import junit.framework.TestCase;
 
 /**
  *
@@ -29,13 +22,8 @@ import org.openide.util.Utilities;
  */
 public class IntMapTest extends TestCase {
     
-    public IntMapTest(java.lang.String testName) {
+    public IntMapTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(IntMapTest.class);
-        return suite;
     }
     
     public void testFirst() {

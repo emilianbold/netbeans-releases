@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import org.openide.filesystems.Repository;
 /** JUnit test suite with Jemmy support
  *
  * @author pj97932
- * @version 1.0
  */
 public class ParserPresentTest extends NbTestCase {
     
@@ -40,13 +39,6 @@ public class ParserPresentTest extends NbTestCase {
         super(testName);
     }
     
-    /** method used for explicit testsuite definition
-     */
-    public static junit.framework.Test suite() {
-        TestSuite suite = new NbTestSuite(ParserPresentTest.class);
-        return suite;
-    }
-
     public void testParserPresent() throws IOException {
         JspParserAPI api = JspParserFactory.getJspParser();
         assertNotNull(api);
@@ -60,21 +52,4 @@ public class ParserPresentTest extends NbTestCase {
         assertSame("JSP parser instance should be the same all the time", api1, api2);
     }
     
-    /** method called before each testcase
-     */
-    protected void setUp() throws IOException {
-    }
-    
-    /** method called after each testcase<br>
-     * resets Jemmy WaitComponentTimeout
-     */
-    protected void tearDown() {
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 }

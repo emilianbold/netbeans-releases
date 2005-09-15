@@ -1,8 +1,14 @@
 /*
- * FoldHierarchyExecutionTest.java
- * JUnit based test
- *
- * Created on June 27, 2004, 1:03 AM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.editor.fold;
@@ -11,16 +17,14 @@ import java.util.Collections;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
-import junit.framework.*;
-import junit.framework.*;
-import org.netbeans.junit.*;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.junit.MemoryFilter;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
-import org.netbeans.spi.editor.fold.FoldOperation;
 
 /**
  *
@@ -33,21 +37,10 @@ public class SimpleFoldManagerTest extends NbTestCase {
     static final int FOLD_START_OFFSET_1 = 5;
     static final int FOLD_END_OFFSET_1 = 10;
     
-    public SimpleFoldManagerTest(java.lang.String testName) {
+    public SimpleFoldManagerTest(String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SimpleFoldManagerTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-
     /**
      * Test the creation of several folds.
      */
@@ -132,7 +125,7 @@ public class SimpleFoldManagerTest extends NbTestCase {
             return (o == fold.getType())
                 || (o == fold.getDescription()) // requires non-null description during construction
                 || (o == fold.getParent())
-                || (o instanceof org.netbeans.modules.editor.fold.FoldOperationImpl)
+                || (o instanceof FoldOperationImpl)
                 || (o instanceof Position);
             
             // Will count possible FoldChildren and ExtraInfo

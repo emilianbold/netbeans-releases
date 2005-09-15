@@ -71,11 +71,6 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
         assertNotNull ("Previous call is done just to initialize the Environment.getProviders()", l);
     }
 
-    protected void tearDown() throws Exception {
-    }
-    
-    
-    
     public void testAskForEnvironmentFromLookup () throws Exception {
         // this is going to clear the cache in URLMapper
         Lkp.INSTANCE.add (new MyURLMapper ());

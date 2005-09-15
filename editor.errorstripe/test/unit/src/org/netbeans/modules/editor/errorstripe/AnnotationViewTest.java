@@ -59,9 +59,6 @@ public class AnnotationViewTest extends NbTestCase {
         CaretMarkProviderCreator.switchOff = true;
     }
 
-    protected void tearDown() throws Exception {
-    }
-
     public static Test suite() {
         TestSuite suite = new TestSuite(AnnotationViewTest.class);
         

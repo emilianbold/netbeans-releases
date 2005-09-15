@@ -7,24 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * SelectionModelTest.java
- *
- * Created on May 27, 2003, 10:31 PM
  */
 
 package org.netbeans.swing.tabcontrol.plaf;
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.util.*;
-import java.awt.event.*;
-import junit.framework.*;
-import org.netbeans.swing.tabcontrol.*;
-import org.netbeans.swing.tabcontrol.event.*;
+
+import java.awt.Component;
+import java.awt.Graphics;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
+import junit.framework.TestCase;
+import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
+import org.netbeans.swing.tabcontrol.TabData;
+import org.netbeans.swing.tabcontrol.TabDataModel;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
+
 /** Tests for all of the functionality of TabLayoutModel instances
  *
  * @author  Tim Boudreau
@@ -38,11 +40,6 @@ public class SelectionModelTest extends TestCase implements ComplexListDataListe
     public SelectionModelTest(String testName) {
         super(testName);
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SelectionModelTest.class);
-        return suite;
-    }    
     
     Icon ic = new Icon () {
         public int getIconWidth() {
@@ -371,7 +368,7 @@ public class SelectionModelTest extends TestCase implements ComplexListDataListe
         new SelectionModelTest("foo").testEverything();
     }
     
-    public void contentsChanged(javax.swing.event.ListDataEvent e) {
+    public void contentsChanged(ListDataEvent e) {
         lastListenerCall="contentsChanged";
         lastEvent = (ComplexListDataEvent)e;
         if (noEvent) {
@@ -403,7 +400,7 @@ public class SelectionModelTest extends TestCase implements ComplexListDataListe
         }
     }
     
-    public void intervalAdded(javax.swing.event.ListDataEvent e) {
+    public void intervalAdded(ListDataEvent e) {
         lastListenerCall="intervalAdded";
         lastEvent = (ComplexListDataEvent)e;
         if (noEvent) {
@@ -411,7 +408,7 @@ public class SelectionModelTest extends TestCase implements ComplexListDataListe
         }
     }
     
-    public void intervalRemoved(javax.swing.event.ListDataEvent e) {
+    public void intervalRemoved(ListDataEvent e) {
         lastListenerCall="intervalRemoved";
         lastEvent = (ComplexListDataEvent)e;
         if (noEvent) {

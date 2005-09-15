@@ -7,18 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.editor.errorstripe.spi;
 
-import junit.framework.*;
-import java.awt.Color;
-import java.text.MessageFormat;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import junit.framework.TestCase;
 import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 
 /**
@@ -29,18 +24,6 @@ public class StatusTest extends TestCase {
     
     public StatusTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(StatusTest.class);
-        
-        return suite;
     }
 
     /**

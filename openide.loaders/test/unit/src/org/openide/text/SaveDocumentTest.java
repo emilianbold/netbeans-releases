@@ -75,10 +75,6 @@ public class SaveDocumentTest extends NbTestCase {
         super(s);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SaveDocumentTest.class));
-    }
-
     protected void setUp() throws Exception {
         TXTDataLoader loader = (TXTDataLoader)TXTDataLoader.getLoader (TXTDataLoader.class);
         org.openide.loaders.AddLoaderManuallyHid.addRemoveLoader (loader, true);

@@ -50,11 +50,6 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(XMLPropertiesConvertorTest.class));
-        System.exit(0);
-    }
-    
     protected void setUp() throws java.lang.Exception {
         super.setUp();
         Lookup.getDefault().lookup(ModuleInfo.class);

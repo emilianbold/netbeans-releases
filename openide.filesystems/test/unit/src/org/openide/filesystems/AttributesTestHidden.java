@@ -46,23 +46,6 @@ public class AttributesTestHidden extends TestBaseHid {
         super(name);
     }
 
-    /*public static Test suite() {
-        // let suite to fail when tried execute
-        return null;
-    }*/
-
-    protected void setUp() throws Exception {
-        super.setUp();
-        
-        // add specific setup code here
-    }
-    
-    protected void tearDown() throws Exception {
-        // add specific tear-down code here
-        
-        super.tearDown();
-    }
-      
     /**
      *  setAttribute did not write all changes to .nbattrs and after gc() WeakReference
      *  was lost and from .nbattrs was read some old value.

@@ -28,12 +28,6 @@ public class ActionMapKeysTest extends TestCase {
         super (testName);
     }
 
-    protected void setUp () throws Exception {
-    }
-
-    protected void tearDown () throws Exception {
-    }
-
     public void testJumpNextAction () {
         JumpNextAction a = (JumpNextAction)JumpNextAction.get (JumpNextAction.class);
         assertEquals ("jumpNext", a.getActionMapKey ());

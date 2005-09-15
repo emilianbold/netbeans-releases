@@ -17,12 +17,7 @@ import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.openide.DialogDescriptor;
-
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
 
@@ -34,18 +29,6 @@ public class NbPresenterTest extends NbTestCase {
     
     public NbPresenterTest (String testName) {
         super (testName);
-    }
-    
-    public static Test suite () {
-        TestSuite suite = new TestSuite (NbPresenterTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
-        super.setUp ();
-    }
-
-    protected void tearDown() throws java.lang.Exception {
     }
     
     protected boolean runInEQ () {

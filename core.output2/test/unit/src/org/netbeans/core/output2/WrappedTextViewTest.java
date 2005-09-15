@@ -7,32 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * WrappedTextViewTest.java
- * JUnit based test
- *
- * Created on July 8, 2004, 8:35 PM
  */
 
 package org.netbeans.core.output2;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.image.BufferedImage;
+import java.awt.Rectangle;
 import java.io.File;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.text.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import javax.swing.text.View;
-import junit.framework.*;
-import junit.framework.*;
+import junit.framework.TestCase;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
-import org.openide.ErrorManager;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -42,13 +36,8 @@ import org.openide.windows.OutputListener;
  */
 public class WrappedTextViewTest extends TestCase {
     
-    public WrappedTextViewTest(java.lang.String testName) {
+    public WrappedTextViewTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(WrappedTextViewTest.class);
-        return suite;
     }
     
     private OutputWindow win;
@@ -56,7 +45,7 @@ public class WrappedTextViewTest extends TestCase {
     private OutWriter out = null;
     JFrame jf = null;
 
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         jf = new JFrame();
         win = new OutputWindow();
         OutputWindow.DEFAULT = win;

@@ -16,14 +16,9 @@ package org.netbeans.modules.junit.output;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import junit.framework.*;
-import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.tools.ant.module.spi.AntEvent;
-import org.apache.tools.ant.module.spi.AntLogger;
-import org.apache.tools.ant.module.spi.AntSession;
-import org.openide.util.Mutex;
+import junit.framework.TestCase;
 
 /**
  *
@@ -31,12 +26,9 @@ import org.openide.util.Mutex;
  */
 public class RegexpUtilsTest extends TestCase {
     
-    /** */
     private final Field instRefField;
-    /** */
     private final Method methodSpecialTrim;
     
-    /** */
     private RegexpUtils inst;
     
     public RegexpUtilsTest(String testName) throws NoSuchFieldException,
@@ -51,12 +43,6 @@ public class RegexpUtilsTest extends TestCase {
         methodSpecialTrim.setAccessible(true);
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(RegexpUtilsTest.class);
-        
-        return suite;
-    }
-    
     public void setUp() throws IllegalAccessException {
         instRefField.set(null, null);
         

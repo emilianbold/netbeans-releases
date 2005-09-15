@@ -7,29 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.upgrade;
 
-import java.util.*;
+import java.util.Set;
+import org.netbeans.junit.NbTestCase;
 
 /** Tests to check that copy of files works.
  *
  * @author Jaroslav Tulach
  */
-public final class IncludeExcludeTest extends org.netbeans.junit.NbTestCase {
+public final class IncludeExcludeTest extends NbTestCase {
     private Set includeExclude;
     
     public IncludeExcludeTest (String name) {
         super (name);
     }
-    public static void main (String[] args) {
-        junit.textui.TestRunner.run (new junit.framework.TestSuite (IncludeExcludeTest.class));
-    }
     
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
         super.setUp();
 
         String reader = "# ignore comment\n" +

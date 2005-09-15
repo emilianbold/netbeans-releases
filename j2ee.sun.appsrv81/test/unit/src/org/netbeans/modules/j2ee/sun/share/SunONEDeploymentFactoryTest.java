@@ -57,10 +57,6 @@ public class SunONEDeploymentFactoryTest extends TestCase implements Constants {
         super(testName);
     }
         
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static SunDeploymentFactory DF = 
         new SunDeploymentFactory();
     
@@ -202,12 +198,6 @@ public class SunONEDeploymentFactoryTest extends TestCase implements Constants {
         }*/
     //}
     
-	public static Test suite() {
-		TestSuite suite = new TestSuite(SunONEDeploymentFactoryTest.class);
-		
-		return suite;
-	}
-	
 	/** Test of getDisplayName method, of class org.netbeans.modules.j2ee.sun.share.SunONEDeploymentFactory. */
 	public void testGetDisplayName() {
 		System.out.println("testGetDisplayName");

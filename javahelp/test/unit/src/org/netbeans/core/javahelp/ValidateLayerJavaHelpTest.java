@@ -32,19 +32,6 @@ public class ValidateLayerJavaHelpTest extends NbTestCase {
         super( name );
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite( ValidateLayerJavaHelpTest.class );
-        
-        return suite;
-    }
-    
     //
     // override in subclasses
     //

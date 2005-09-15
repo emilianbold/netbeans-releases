@@ -7,49 +7,51 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.awt;
 
-import java.io.*;
-import junit.framework.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-
+import java.awt.Component;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import junit.framework.TestCase;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceDataObject;
 
 /** Mostly to test the correct behaviour of AWTTask.waitFinished.
  *
  * @author Jaroslav Tulach
  */
 public class ToolbarPoolTest extends TestCase {
-    org.openide.filesystems.FileObject toolbars;
-    org.openide.loaders.DataFolder toolbarsFolder;
+    FileObject toolbars;
+    DataFolder toolbarsFolder;
     
-    public ToolbarPoolTest (java.lang.String testName) {
+    public ToolbarPoolTest (String testName) {
         super (testName);
     }
     
-    public static Test suite () {
-        TestSuite suite = new TestSuite (ToolbarPoolTest.class);
-        return suite;
-    }
-
-    protected void setUp() throws java.lang.Exception {
-        org.openide.filesystems.FileObject root = org.openide.filesystems.Repository.getDefault ().getDefaultFileSystem ().getRoot ();
-        toolbars = org.openide.filesystems.FileUtil.createFolder (root, "Toolbars");
-        toolbarsFolder = org.openide.loaders.DataFolder.findFolder (toolbars);
-        org.openide.filesystems.FileObject[] arr = toolbars.getChildren ();
+    protected void setUp() throws Exception {
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        toolbars = FileUtil.createFolder (root, "Toolbars");
+        toolbarsFolder = DataFolder.findFolder (toolbars);
+        FileObject[] arr = toolbars.getChildren ();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete ();
         }
         
         ToolbarPool tp = ToolbarPool.getDefault ();
         tp.waitFinished ();
-    }
-
-    protected void tearDown() throws java.lang.Exception {
     }
 
     public void testGetConf () throws Exception {
@@ -63,10 +65,10 @@ public class ToolbarPoolTest extends TestCase {
 
     
     public void testCreateConf () throws Exception {
-        javax.swing.JLabel conf = new javax.swing.JLabel ();
+        JLabel conf = new JLabel ();
         conf.setName ("testCreateConf");
         
-        conf = (javax.swing.JLabel)writeInstance (toolbars, "conf1.ser", conf);
+        conf = (JLabel)writeInstance (toolbars, "conf1.ser", conf);
         
         ToolbarPool tp = ToolbarPool.getDefault ();
         
@@ -92,7 +94,7 @@ public class ToolbarPoolTest extends TestCase {
     public void testWaitsForToolbars () throws Exception {
         FileObject tlb = FileUtil.createFolder (toolbars, "tlbx");
         DataFolder f = DataFolder.findFolder (tlb);
-        InstanceDataObject.create (f, "test1", javax.swing.JLabel.class);
+        InstanceDataObject.create (f, "test1", JLabel.class);
         
         ToolbarPool tp = ToolbarPool.getDefault ();
         
@@ -103,7 +105,7 @@ public class ToolbarPoolTest extends TestCase {
         
         assertLabels ("One subcomponent", 1, myTlbs[0]);
         
-        InstanceDataObject.create (f, "test2", javax.swing.JLabel.class);
+        InstanceDataObject.create (f, "test2", JLabel.class);
         
         tp.waitFinished ();
         
@@ -115,17 +117,17 @@ public class ToolbarPoolTest extends TestCase {
             public Object create;
             
             public void run () throws IOException {
-                org.openide.filesystems.FileObject fo = FileUtil.createData (folder, name);
-                org.openide.filesystems.FileLock lock = fo.lock ();
+                FileObject fo = FileUtil.createData (folder, name);
+                FileLock lock = fo.lock ();
                 ObjectOutputStream oos = new ObjectOutputStream (fo.getOutputStream (lock));
                 oos.writeObject (inst);
                 oos.close ();
                 lock.releaseLock ();
                 
                 DataObject obj = DataObject.find (fo);
-                org.openide.cookies.InstanceCookie ic =     
-                    (org.openide.cookies.InstanceCookie)
-                    obj.getCookie (org.openide.cookies.InstanceCookie.class);
+                InstanceCookie ic =     
+                    (InstanceCookie)
+                    obj.getCookie (InstanceCookie.class);
                 
                 assertNotNull ("Cookie created", ic);
                 try {
@@ -141,16 +143,16 @@ public class ToolbarPoolTest extends TestCase {
         return w.create;
     }
     
-    private static void assertLabels (String msg, int cnt, java.awt.Component c) {
+    private static void assertLabels (String msg, int cnt, Component c) {
         int real = countLabels (c);
         assertEquals (msg, cnt, real);
     }
     
-    private static int countLabels (java.awt.Component c) {
-        if (c instanceof javax.swing.JLabel) return 1;
-        if (! (c instanceof javax.swing.JComponent)) return 0;
+    private static int countLabels (Component c) {
+        if (c instanceof JLabel) return 1;
+        if (! (c instanceof JComponent)) return 0;
         int cnt = 0;
-        java.awt.Component[] arr = ((javax.swing.JComponent)c).getComponents ();
+        Component[] arr = ((JComponent)c).getComponents ();
         for (int i = 0; i < arr.length; i++) {
             cnt += countLabels (arr[i]);
         }

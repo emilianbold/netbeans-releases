@@ -43,14 +43,6 @@ public class PriorityListenerListTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-        super.tearDown();
-    }
-
     public void testAddAndRemoveListenersOnThreeLevels() {
         int TEST_PRIORITY_1 = 0;
         int TEST_PRIORITY_2 = 3;

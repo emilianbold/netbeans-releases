@@ -7,28 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.openide.text;
 
-
-import java.io.File;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.VetoableChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
+import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
-
-import junit.textui.TestRunner;
-
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.text.CloneableEditorSupport;
-
+import org.openide.ErrorManager;
+import org.openide.util.Lookup;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
 
 /** Test to simulate problem #46885
  * @author  Jaroslav Tulach
@@ -44,25 +45,22 @@ implements CloneableEditorSupport.Env {
     private transient boolean modified = false;
     /** if not null contains message why this document cannot be modified */
     private transient String cannotBeModified;
-    private transient java.util.Date date = new java.util.Date ();
-    private transient java.beans.PropertyChangeSupport propL = new java.beans.PropertyChangeSupport (this);
-    private transient java.beans.VetoableChangeListener vetoL;
+    private transient Date date = new Date ();
+    private transient PropertyChangeSupport propL = new PropertyChangeSupport (this);
+    private transient VetoableChangeListener vetoL;
     
     public ReloadTest (String s) {
         super(s);
     }
 
     /** For subclasses to change to more nb like kits. */
-    protected javax.swing.text.EditorKit createEditorKit () {
+    protected EditorKit createEditorKit () {
         return null;
     }
     
     
     protected void setUp () {
-        support = new CES (this, org.openide.util.Lookup.EMPTY);
-    }
-    
-    protected void tearDown () {
+        support = new CES (this, Lookup.EMPTY);
     }
     
     protected boolean runInEQ() {
@@ -91,7 +89,7 @@ implements CloneableEditorSupport.Env {
         s = doc.getText (0, doc.getLength ());
         
         content = "NOT TO be loaded";
-        propL.firePropertyChange (CloneableEditorSupport.Env.PROP_TIME, null, new java.util.Date (oldtime));
+        propL.firePropertyChange (CloneableEditorSupport.Env.PROP_TIME, null, new Date (oldtime));
         
         waitAWT ();
         
@@ -108,23 +106,23 @@ implements CloneableEditorSupport.Env {
     // Implementation of the CloneableEditorSupport.Env
     //
     
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
         propL.addPropertyChangeListener (l);
     }    
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
         propL.removePropertyChangeListener (l);
     }
     
-    public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
+    public synchronized void addVetoableChangeListener(VetoableChangeListener l) {
         assertNull ("This is the first veto listener", vetoL);
         vetoL = l;
     }
-    public void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
+    public void removeVetoableChangeListener(VetoableChangeListener l) {
         assertEquals ("Removing the right veto one", vetoL, l);
         vetoL = null;
     }
     
-    public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {
+    public CloneableOpenSupport findCloneableOpenSupport() {
         return null;
     }
     
@@ -132,16 +130,16 @@ implements CloneableEditorSupport.Env {
         return "text/plain";
     }
     
-    public java.util.Date getTime() {
+    public Date getTime() {
         return date;
     }
     
-    public java.io.InputStream inputStream() throws java.io.IOException {
-        return new java.io.ByteArrayInputStream (content.getBytes ());
+    public InputStream inputStream() throws IOException {
+        return new ByteArrayInputStream (content.getBytes ());
     }
-    public java.io.OutputStream outputStream() throws java.io.IOException {
-        class ContentStream extends java.io.ByteArrayOutputStream {
-            public void close () throws java.io.IOException {
+    public OutputStream outputStream() throws IOException {
+        class ContentStream extends ByteArrayOutputStream {
+            public void close () throws IOException {
                 super.close ();
                 content = new String (toByteArray ());
             }
@@ -158,7 +156,7 @@ implements CloneableEditorSupport.Env {
         return modified;
     }
 
-    public void markModified() throws java.io.IOException {
+    public void markModified() throws IOException {
         if (cannotBeModified != null) {
             final String notify = cannotBeModified;
             IOException e = new IOException () {
@@ -166,7 +164,7 @@ implements CloneableEditorSupport.Env {
                     return notify;
                 }
             };
-            org.openide.ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            ErrorManager.getDefault ().annotate (e, cannotBeModified);
             throw e;
         }
         
@@ -179,11 +177,11 @@ implements CloneableEditorSupport.Env {
 
     /** Implementation of the CES */
     private final class CES extends CloneableEditorSupport {
-        public CES (Env env, org.openide.util.Lookup l) {
+        public CES (Env env, Lookup l) {
             super (env, l);
         }
         
-        public org.openide.windows.CloneableTopComponent.Ref getRef () {
+        public CloneableTopComponent.Ref getRef () {
             return allEditors;
         }
         
@@ -207,8 +205,8 @@ implements CloneableEditorSupport.Env {
             return "ToolTip";
         }
 
-        protected javax.swing.text.EditorKit createEditorKit () {
-            javax.swing.text.EditorKit retValue = ReloadTest.this.createEditorKit ();
+        protected EditorKit createEditorKit () {
+            EditorKit retValue = ReloadTest.this.createEditorKit ();
             if (retValue == null) {
                 retValue = super.createEditorKit();
             }

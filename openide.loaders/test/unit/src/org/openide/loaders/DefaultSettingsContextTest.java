@@ -38,10 +38,6 @@ public final class DefaultSettingsContextTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(DataObjectInvalidationTest.class));
-    }
-    
     protected void setUp() throws java.lang.Exception {
         super.setUp();
         
@@ -56,10 +52,6 @@ public final class DefaultSettingsContextTest extends NbTestCase {
         assertNotNull("file not found", fo);
         dobj = DataObject.find(fo);
         
-    }
-    
-    protected void tearDown() throws java.lang.Exception {
-        super.tearDown();
     }
     
     public void testOperations() throws Exception {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.MutualExclusionSupport;
 
 /**
  * ResourcePoolTest.java
@@ -27,18 +26,6 @@ public class MutualExclusionSupportTest extends NbTestCase {
     
     public MutualExclusionSupportTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-
-    public static junit.framework.Test suite() {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(MutualExclusionSupportTest.class);
-        
-        return suite;
     }
 
     /**

@@ -7,13 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  * Test of class <code>MessageStack</code>.
@@ -33,10 +33,6 @@ public class MessageStackTest extends TestCase {
 
     protected void setUp() throws Exception {
         stack = new MessageStack(2);
-    }
-
-    public static Test suite() {
-        return new TestSuite(MessageStackTest.class);
     }
 
     public void testSetMessage() {

@@ -7,17 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.*;
+import java.util.List;
 
 /**
  * Tests adding and removing of breakpoints and firing of breakpoint events.
@@ -96,14 +95,6 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         assertEquals("Wrong PCE name", "breakpoints", pce.getPropertyName());
         bpts = dm.getBreakpoints();
         assertEquals("Wrong number of installed breakpoints", bptSize + 1, bpts.length);
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 
     class TestBreakpoint extends Breakpoint

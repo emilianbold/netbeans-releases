@@ -31,17 +31,6 @@ public class Deadlock35847Test extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(Deadlock35847Test.class));
-    }
-    
-    protected void setUp() throws Exception {
-    }
-    /*
-    protected void tearDown() throws Exception {
-    }
-     */
-    
     public void testLoaderThatStopsToRecognizeWhatItHasRecognized () throws Exception {
         ForgetableLoader l = (ForgetableLoader)DataLoader.getLoader(ForgetableLoader.class);
         AddLoaderManuallyHid.addRemoveLoader(l, true);

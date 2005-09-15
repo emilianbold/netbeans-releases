@@ -37,19 +37,6 @@ public class DataNodeTest extends NbTestCase {
         System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.DataNodeTest$Lkp");
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(DataNodeTest.class));
-        // Kill process since currently this pops up GUI windows or something:
-        System.exit(0);
-    }
-    
-    /*
-    protected void setUp() throws Exception {
-    }
-    protected void tearDown() throws Exception {
-    }
-     */
-    
     /** Test that for all examples to be found in the system file system,
      * the node delegate has the same object as a cookie from DataObject.class.
      * (It is fine to have a different object from a more specific cookie, as

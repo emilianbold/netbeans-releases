@@ -39,11 +39,6 @@ public final class SimpleDESTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SimpleDESTest.class));
-        System.exit (0);
-    }
-    
     protected void setUp() throws java.lang.Exception {
         clearWorkDir ();
         
@@ -59,10 +54,6 @@ public final class SimpleDESTest extends NbTestCase {
         obj = DataObject.find(fo);
         
         assertEquals ("The right class", obj.getClass (), SO.class);
-    }
-    
-    protected void tearDown() throws java.lang.Exception {
-        super.tearDown();
     }
     
     public void testHasEditorCookieForResonableContentOfFiles () throws Exception {

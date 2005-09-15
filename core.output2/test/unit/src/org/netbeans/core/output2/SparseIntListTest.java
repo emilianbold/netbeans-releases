@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.output2;
 
-import java.lang.ref.WeakReference;
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  * Test for org.netbeans.core.output2.SparseIntList.
@@ -23,21 +22,14 @@ import junit.framework.*;
  */
 public class SparseIntListTest extends TestCase {
     
-    public SparseIntListTest(java.lang.String testName) {
+    public SparseIntListTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SparseIntListTest.class);
-        return suite;
     }
     
     private SparseIntList l = null;
     protected void setUp() throws Exception {
         l = new SparseIntList(20);
     }
-    
-    protected void tearDown() throws Exception {}
     
     public void testGetLessThanZeroReturnsZero() {
         System.out.println("testGetLessThanZeroReturnsZero");

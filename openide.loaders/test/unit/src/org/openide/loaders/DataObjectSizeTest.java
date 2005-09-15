@@ -34,10 +34,6 @@ public class DataObjectSizeTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(DataObjectSizeTest.class));
-    }
-
     protected void setUp() throws java.lang.Exception {
         if (original == null) {
             String fsstruct [] = new String [] {
