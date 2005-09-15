@@ -277,7 +277,9 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             inputPane.setEditable(true);
             inputPane._setContentType(inputContentType);
             inputPane.setTransferHandler(new InputPaneTransferHandler(inputPane.getTransferHandler()));
-            inputPane.getDocument().addDocumentListener(new InputPaneDocumentListener());
+
+            // registers itself
+            InputPaneDocumentListener lst = new InputPaneDocumentListener();
 
             // Make sure this is done after initializeToolbar()
             setInsertTabKey(false, false);
@@ -1605,7 +1607,14 @@ LOOP:
      *
      *
      */
-    protected class InputPaneDocumentListener implements DocumentListener {
+    protected class InputPaneDocumentListener implements DocumentListener, PropertyChangeListener {
+        private Document oldDoc;
+        
+        public InputPaneDocumentListener() {
+            getInputPane().addPropertyChangeListener(this);
+            updateDocument();
+        }
+        
         public void updateTimer() {
             if (getTypingTimer() != null) {
                 if (getTypingTimer().isRunning()) {
@@ -1629,6 +1638,17 @@ LOOP:
 
         public void removeUpdate(DocumentEvent e) {
             updateTimer();
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals("document")) {
+                updateDocument();
+            }
+        }
+        private void updateDocument() {
+            if (oldDoc != null) oldDoc.removeDocumentListener(this);
+            oldDoc = getInputPane().getDocument();
+            oldDoc.addDocumentListener(this);
         }
     }
 
