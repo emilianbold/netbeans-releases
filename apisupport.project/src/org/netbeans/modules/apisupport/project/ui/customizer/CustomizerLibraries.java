@@ -71,6 +71,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     void refresh() {
         platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.setEnabled(getProperties().isStandalone());
+        managePlafsButton.setEnabled(getProperties().isStandalone());
         updateEnabled();
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
         dependencyList.setModel(getProperties().getDependenciesListModel());
