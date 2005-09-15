@@ -178,11 +178,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     private String[] initSuiteModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
             new BasicInfoWizardPanel(settings, TYPE_SUITE),
-            new PlatformSelectionWizardPanel(settings)
         };
         String[] steps = new String[] {
             getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
-            getMessage("LBL_PlatformSelectionPanel_Title") // NOI18N
         };
         return steps;
     }
