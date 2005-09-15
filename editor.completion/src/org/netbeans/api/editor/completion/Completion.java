@@ -45,6 +45,10 @@ public final class Completion {
      * <br>
      * The completion will be shown if there are any results to be shown
      * for the particular context.
+     *
+     * <p>
+     * This method can be called from any thread but when
+     * called outside of AWT the request will be rescheduled into AWT.
      */
     public void showCompletion() {
         CompletionImpl.get().showCompletion();
@@ -52,6 +56,11 @@ public final class Completion {
     
     /**
      * Hide a completion popup window if it's opened.
+     *
+     * <p>
+     * This method can be called from any thread.
+     * The cancelling of the possibly running tasks is done synchronously
+     * and the GUI will be updated in the AWT thread.
      */
     public void hideCompletion() {
         CompletionImpl.get().hideCompletion();
@@ -63,16 +72,25 @@ public final class Completion {
      * <br>
      * The documentation popup will be shown if there are any results to be shown
      * for the particular context.
+     *
+     * <p>
+     * This method can be called from any thread but when
+     * called outside of AWT the request will be rescheduled into AWT.
      */
     public void showDocumentation() {
-        CompletionImpl.get().showDoc();
+        CompletionImpl.get().showDocumentation();
     }
     
     /**
      * Hides a documentation popup window if it's opened.
+     *
+     * <p>
+     * This method can be called from any thread.
+     * The cancelling of the possibly running tasks is done synchronously
+     * and the GUI will be updated in the AWT thread.
      */
     public void hideDocumentation() {
-        CompletionImpl.get().hideDoc();
+        CompletionImpl.get().hideDocumentation();
     }
 
     /**
@@ -81,6 +99,10 @@ public final class Completion {
      * <br>
      * The tooltip popup will be shown if there are any results to be shown
      * for the particular context.
+     *
+     * <p>
+     * This method can be called from any thread but when
+     * called outside of AWT the request will be rescheduled into AWT.
      */
     public void showToolTip() {
         CompletionImpl.get().showToolTip();
@@ -88,6 +110,11 @@ public final class Completion {
     
     /**
      * Hides a tooltip popup window if it's opened.
+     *
+     * <p>
+     * This method can be called from any thread.
+     * The cancelling of the possibly running tasks is done synchronously
+     * and the GUI will be updated in the AWT thread.
      */
     public void hideToolTip() {
         CompletionImpl.get().hideToolTip();

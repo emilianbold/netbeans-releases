@@ -83,15 +83,18 @@ public class JavaEditorWarmUpTask implements Runnable{
         = Boolean.getBoolean("netbeans.debug.editor.warmup"); // NOI18N
     
     private static final int STATUS_INIT = 0;
-    private static final int STATUS_KITS_INITED = 1;
-    private static final int STATUS_KIT_ASSIGNED = 2;
-    private static final int STATUS_VIEWS_OPTIMIZED = 3;
-    private static final int STATUS_FINISHED = 4;
+    private static final int STATUS_CREATE_PANE = 1;
+    private static final int STATUS_CREATE_DOCUMENTS = 2;
+    private static final int STATUS_SWITCH_DOCUMENTS = 3;
+    private static final int STATUS_TRAVERSE_VIEWS = 4;
+    private static final int STATUS_RENDER_FRAME = 5;
     
     private int status = STATUS_INIT;
 
     private JEditorPane pane;
     private JFrame frame;
+    private Document emptyDoc;
+    private Document longDoc;
     private Graphics bGraphics;
     
     private BaseKit javaKit;
@@ -121,15 +124,13 @@ public class JavaEditorWarmUpTask implements Runnable{
                 }
 
                 Iterator componentIterator = Registry.getComponentIterator();
-                if (componentIterator.hasNext()) { // at least one component opened
-                    status = STATUS_FINISHED;
-                } else {
-                    status = STATUS_KITS_INITED;
+                if (!componentIterator.hasNext()) { // no components opened yet
+                    status = STATUS_CREATE_PANE;
                     SwingUtilities.invokeLater(this); // must run in AWT
-                }
+                } // otherwise stop because editor pane(s) already opened (optimized)
                 break;
                 
-            case STATUS_KITS_INITED: // now create editor component and assign a kit to it
+            case STATUS_CREATE_PANE: // now create editor component and assign a kit to it
                 assert SwingUtilities.isEventDispatchThread(); // This part must run in AWT
 
                 pane = new JEditorPane();
@@ -144,15 +145,15 @@ public class JavaEditorWarmUpTask implements Runnable{
 
                 Registry.removeComponent(pane);
 
-                status = STATUS_KIT_ASSIGNED;
+                status = STATUS_CREATE_DOCUMENTS;
                 RequestProcessor.getDefault().post(this);
                 break;
                 
-            case STATUS_KIT_ASSIGNED:
+            case STATUS_CREATE_DOCUMENTS:
 
                 // Have two documents - one empty and another one filled with many lines
-                Document emptyDoc = javaKit.createDefaultDocument();
-                Document longDoc = pane.getDocument();
+                emptyDoc = javaKit.createDefaultDocument();
+                longDoc = pane.getDocument();
 
                 try {
                     // Fill the document with data.
@@ -164,15 +165,30 @@ public class JavaEditorWarmUpTask implements Runnable{
                     }
                     longDoc.insertString(0, sb.toString(), null);
 
-                    // Switch between empty doc and long several times
-                    // to force view hierarchy creation
-                    for (int i = 0; i < VIEW_HIERARCHY_CREATION_COUNT; i++) {
-                        pane.setDocument(emptyDoc);
+                    status = STATUS_SWITCH_DOCUMENTS;
+                    SwingUtilities.invokeLater(this);
 
-                        // Set long doc - causes view hierarchy to be rebuilt
-                        pane.setDocument(longDoc);
-                    }
+                } catch (BadLocationException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+                break;
 
+            case STATUS_SWITCH_DOCUMENTS:
+                // Switch between empty doc and long several times
+                // to force view hierarchy creation
+                for (int i = 0; i < VIEW_HIERARCHY_CREATION_COUNT; i++) {
+                    pane.setDocument(emptyDoc);
+
+                    // Set long doc - causes view hierarchy to be rebuilt
+                    pane.setDocument(longDoc);
+                }
+                
+                status = STATUS_TRAVERSE_VIEWS;
+                RequestProcessor.getDefault().post(this);
+                break;
+                
+            case STATUS_TRAVERSE_VIEWS:
+                try {
                     // Create buffered image for painting simulation
                     BufferedImage bImage = new BufferedImage(
                         IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -250,11 +266,11 @@ public class JavaEditorWarmUpTask implements Runnable{
                     ErrorManager.getDefault().notify(e);
                 }
                     
-                status = STATUS_VIEWS_OPTIMIZED;
+                status = STATUS_RENDER_FRAME;
                 SwingUtilities.invokeLater(this);
                 break;
 
-            case STATUS_VIEWS_OPTIMIZED:
+            case STATUS_RENDER_FRAME:
                 frame = new JFrame();
                 EditorUI ui = Utilities.getEditorUI(pane);
                 JComponent mainComp = null;
@@ -278,20 +294,11 @@ public class JavaEditorWarmUpTask implements Runnable{
                         + (System.currentTimeMillis()-startTime));
                     startTime = System.currentTimeMillis();
                 }
-                
-                cleanup();
                 break;
-
+                
             default:
                 throw new IllegalStateException();
         }
     }
     
-    private void cleanup() {
-        pane = null;
-        frame = null;
-        bGraphics = null;
-        javaKit = null;
-    }
-
 }

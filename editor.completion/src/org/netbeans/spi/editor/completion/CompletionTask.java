@@ -71,6 +71,10 @@ public interface CompletionTask {
      * <br>
      * Once the cancel is done on the task no more querying or refreshing
      * is done on it.
+     *
+     * <p>
+     * This method may potentially be called from any thread.
      */
     public void cancel();
+
 }

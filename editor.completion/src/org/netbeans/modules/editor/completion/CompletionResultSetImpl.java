@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.completion;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JToolTip;
@@ -41,6 +42,8 @@ public final class CompletionResultSetImpl {
             = CompletionSpiPackageAccessor.get();
 
     private final CompletionImpl completionImpl;
+    
+    private final Object resultId;
     
     private final CompletionTask task;
     
@@ -68,10 +71,13 @@ public final class CompletionResultSetImpl {
     
     private int estimatedItemWidth;
     
-    CompletionResultSetImpl(CompletionImpl completionImpl, CompletionTask task, int queryType) {
+    CompletionResultSetImpl(CompletionImpl completionImpl,
+    Object resultId, CompletionTask task, int queryType) {
         assert (completionImpl != null);
+        assert (resultId != null);
         assert (task != null);
         this.completionImpl = completionImpl;
+        this.resultId = resultId;
         this.task = task;
         this.queryType = queryType;
         this.anchorOffset = -1; // not set
@@ -84,11 +90,11 @@ public final class CompletionResultSetImpl {
     /**
      * Get the result set instance associated with this implementation.
      */
-    public CompletionResultSet getResultSet() {
+    public synchronized CompletionResultSet getResultSet() {
         return resultSet;
     }
     
-    public void setResultSet(CompletionResultSet resultSet) {
+    public synchronized void setResultSet(CompletionResultSet resultSet) {
         assert (resultSet != null);
         assert (this.resultSet == null);
         this.resultSet = resultSet;
@@ -114,29 +120,29 @@ public final class CompletionResultSetImpl {
      * Mark that results from this result set should no longer
      * be taken into account.
      */
-    public void markInactive() {
+    public synchronized void markInactive() {
         this.active = false;
     }
 
-    public String getTitle() {
+    public synchronized String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
+    public synchronized void setTitle(String title) {
         checkNotFinished();
         this.title = title;
     }
     
-    public int getAnchorOffset() {
+    public synchronized int getAnchorOffset() {
         return anchorOffset;
     }
     
-    public void setAnchorOffset(int anchorOffset) {
+    public synchronized void setAnchorOffset(int anchorOffset) {
         checkNotFinished();
         this.anchorOffset = anchorOffset;
     }
     
-    public boolean addItem(CompletionItem item) {
+    public synchronized boolean addItem(CompletionItem item) {
         assert (item != null) : "Added item cannot be null";
         checkNotFinished();
         if (!active || queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
@@ -159,12 +165,15 @@ public final class CompletionResultSetImpl {
         return cont;
     }
     
-    public List getItems() {
+    /**
+     * @return non-null list of items.
+     */
+    public synchronized List getItems() {
         assert isFinished() : "Adding not finished";
-        return items;
+        return (items != null) ? items : Collections.EMPTY_LIST;
     }
     
-    public void setDocumentation(CompletionDocumentation documentation) {
+    public synchronized void setDocumentation(CompletionDocumentation documentation) {
         checkNotFinished();
         if (!active || queryType != CompletionProvider.DOCUMENTATION_QUERY_TYPE) {
             return;
@@ -172,11 +181,15 @@ public final class CompletionResultSetImpl {
         this.documentation = documentation;
     }
     
-    public CompletionDocumentation getDocumentation() {
+    public synchronized CompletionDocumentation getDocumentation() {
         return documentation;
     }
     
-    public void setToolTip(JToolTip toolTip) {
+    public synchronized JToolTip getToolTip() {
+        return toolTip;
+    }
+    
+    public synchronized void setToolTip(JToolTip toolTip) {
         checkNotFinished();
         if (!active || queryType != CompletionProvider.TOOLTIP_QUERY_TYPE) {
             return;
@@ -184,8 +197,8 @@ public final class CompletionResultSetImpl {
         this.toolTip = toolTip;
     }
     
-    public JToolTip getToolTip() {
-        return toolTip;
+    public synchronized boolean isFinished() {
+        return finished;
     }
     
     public void finish() {
@@ -199,17 +212,21 @@ public final class CompletionResultSetImpl {
         completionImpl.finishNotify(this);
     }
     
-    public synchronized boolean isFinished() {
-        return finished;
-    }
-    
     public int getSortType() {
         return completionImpl.getSortType();
     }
     
-    public void estimateItems(int estimatedItemCount, int estimatedItemWidth) {
+    public synchronized void estimateItems(int estimatedItemCount, int estimatedItemWidth) {
         this.estimatedItemCount = estimatedItemCount;
         this.estimatedItemWidth = estimatedItemWidth;
+    }
+    
+    CompletionImpl getCompletionImpl() {
+        return completionImpl;
+    }
+    
+    Object getResultId() {
+        return resultId;
     }
     
     private void checkNotFinished() {
