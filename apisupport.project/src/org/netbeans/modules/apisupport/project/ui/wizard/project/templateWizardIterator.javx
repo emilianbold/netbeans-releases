@@ -147,34 +147,28 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     // unzipping utilities..
 
     private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
-        ZipInputStream str = null;
+        ZipInputStream str = new ZipInputStream(source);
         try {
-            str = new ZipInputStream(source);
             ZipEntry entry = str.getNextEntry();
             while (entry != null) {
                 String relPath = entry.getName();
                 FileObject fo = createFileObject(projectRoot, relPath);
                 
                 OutputStream out = null;
-                FileLock lock = null;
+                FileLock lock = fo.lock();
                 try {
-                    lock = fo.lock();
                     out = fo.getOutputStream(lock);
                     FileUtil.copy(str, out);
                 } finally {
                     if (out != null) {
                         out.close();
                     }
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
+                    lock.releaseLock();
                 }
                 entry = str.getNextEntry();
             }
         } finally {
-            if (str != null) {
-                str.close();
-            }
+            str.close();
         }
     } 
     
