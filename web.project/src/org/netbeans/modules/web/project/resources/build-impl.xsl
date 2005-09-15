@@ -429,8 +429,45 @@ is divided into following sections:
                 </macrodef>
             </target>
 
+            <target name="-init-macrodef-copy-ear-war">
+                <macrodef name="copy-ear-war">
+                    <attribute name="file"/>
+                    <attribute name="propname"/>
+                    <sequential>
+                        <property name="temp.dirname" value="${{dist.ear.dir}}/temp"/>
+                        <mkdir dir="${{dist.ear.dir}}/temp"/>
+                        <basename property="base_@{{propname}}" file="@{{file}}"/>
+                        <unzip src="@{{file}}" dest="${{temp.dirname}}">
+                            <patternset>
+                                <include name="META-INF/tlds/*.tld"/>
+                            </patternset>
+                        </unzip>
+                        <available file="${{temp.dirname}}/META-INF/tlds" type="dir" property="hastlds_@{{propname}}"/>
+                        <condition value="${{build.web.dir.real}}/WEB-INF/lib" property="copy.to.dir_@{{propname}}">
+                            <isset property="hastlds_@{{propname}}"/>
+                        </condition>
+                        <condition value="${{dist.ear.dir}}" property="copy.to.dir_@{{propname}}">
+                            <not>
+                                <isset property="hastlds_@{{propname}}"/>
+                            </not>
+                        </condition>
+                        <copy file="@{{file}}" todir="${{copy.to.dir_@{{propname}}}}"/>
+                        <!--manifest handling-->
+                        <condition value="${{base_@{{propname}}}}" property="@{{propname}}">
+                            <not>
+                                <isset property="hastlds_@{{propname}}"/>
+                            </not>
+                        </condition>
+                        <condition value="" property="@{{propname}}">
+                            <isset property="hastlds_@{{propname}}"/>
+                        </condition>
+                        <delete dir="${{dist.ear.dir}}/temp"/>
+                    </sequential>
+                </macrodef>
+            </target>
+
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -783,7 +820,7 @@ is divided into following sections:
             <target name="do-dist">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest</xsl:attribute>
             </target>
-
+            
             <target name="library-inclusion-in-manifest" depends="init">
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <!-- copy libraries into ear  -->
@@ -810,11 +847,13 @@ is divided into following sections:
                             <xsl:with-param name="files" select="@files"/>
                             <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
                             <xsl:with-param name="libfile" select="webproject3:file"/>
+                            <xsl:with-param name="ear" select="'true'"/>
+                            <xsl:with-param name="property" select="$base.prop.name"/>
                         </xsl:call-template>
                       </xsl:if>
                       <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="libfile" select="webproject3:file"/>
-                            <copy file="{$libfile}" todir="${{dist.ear.dir}}"/>
+                            <copy-ear-war file="{$libfile}" propname="{concat($base.prop.name,'.X')}"/>
                       </xsl:if>
                     </xsl:if>
                     <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@dirs]">
@@ -896,6 +935,7 @@ is divided into following sections:
                          </attribute>
                     </xsl:if>
                 </manifest>
+                <delete dir="${{dist.ear.dir}}/temp"/>
             </target>
 
             <target name="library-inclusion-in-archive" depends="init">
@@ -1670,7 +1710,7 @@ to simulate
             <xsl:param name="libfile"/>
             <xsl:if test="$files &gt; 0">
                 <xsl:variable name="propertyName" select="concat($property, '.', $index)"/>
-                <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>} </xsl:text>
+                <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>.X} </xsl:text>
                 <xsl:call-template name="manifestPrintEntriesIterateFilesIncreasingOrder">
                     <xsl:with-param name="files" select="$files+(-1)"/>
                     <xsl:with-param name="index" select="$index+1"/>
@@ -1684,14 +1724,27 @@ to simulate
             <xsl:param name="files" />
             <xsl:param name="target"/>
             <xsl:param name="libfile"/>
+            <xsl:param name="ear"/>
+            <xsl:param name="property"/>
             <xsl:if test="$files &gt; 0">
                 <xsl:variable name="fileNo" select="$files+(-1)"/>
                 <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
-                <copy file="{$lib}" todir="{$target}"/>
+                
+                <xsl:variable name="propertyName" select="concat($property, '.', $files, '.X')"/>
+                <xsl:if test="$ear='true'">
+                    <copy-ear-war file="{$lib}" propname="{$propertyName}"/>
+                </xsl:if>
+                
+                <xsl:if test="$ear!='true'">
+                    <copy file="{$lib}" todir="{$target}"/>
+                </xsl:if>
+                
                 <xsl:call-template name="copyIterateFiles">
                     <xsl:with-param name="files" select="$fileNo"/>
                     <xsl:with-param name="target" select="$target"/>
                     <xsl:with-param name="libfile" select="$libfile"/>
+                    <xsl:with-param name="ear" select="$ear"/>
+                    <xsl:with-param name="property" select="$property"/>
                 </xsl:call-template>
             </xsl:if>
         </xsl:template>
