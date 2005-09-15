@@ -14,6 +14,8 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
 import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
@@ -31,6 +33,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  * Support for managing broken project references. Project freshly checkout from
@@ -140,30 +144,65 @@ public class BrokenReferencesSupport {
                 return;
         }
         brokenAlertShown = true;
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        JButton closeOption = new JButton (NbBundle.getMessage(BrokenReferencesAlertPanel.class, "CTL_Broken_References_Close"));
-                        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrokenReferencesAlertPanel.class, "AD_Broken_References_Close"));
-                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
-                            true,
-                            new Object[] {closeOption},
-                            closeOption,
-                            DialogDescriptor.DEFAULT_ALIGN,
-                            null,
-                            null); // NOI18N
-                        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-                        Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-                        dlg.setVisible(true);
-                    } finally {
-                        synchronized (BrokenReferencesSupport.class) {
-                            brokenAlertLastTime = System.currentTimeMillis();
-                            brokenAlertShown = false;
-                        }
+        final Runnable task = new Runnable() {
+            public void run() {
+                try {
+                    JButton closeOption = new JButton (NbBundle.getMessage(BrokenReferencesAlertPanel.class, "CTL_Broken_References_Close"));
+                    closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrokenReferencesAlertPanel.class, "AD_Broken_References_Close"));
+                    DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
+                        NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+                        true,
+                        new Object[] {closeOption},
+                        closeOption,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        null,
+                        null); // NOI18N
+                    dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+                    Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+                    dlg.setVisible(true);
+                } finally {
+                    synchronized (BrokenReferencesSupport.class) {
+                        brokenAlertLastTime = System.currentTimeMillis();
+                        brokenAlertShown = false;
                     }
                 }
-            });
+            }
+        };
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run () {
+                Frame f = WindowManager.getDefault().getMainWindow();
+                if (f == null || f.isShowing()) {
+                    task.run();
+                }
+                else {
+                    new MainWindowListener (f,task);
+                }
+            }
+        });
+    }
+    
+    
+    private static class MainWindowListener extends WindowAdapter {
+        
+        private Frame frame;
+        private Runnable task;
+        
+        /**
+         * Has to be called by the event thread!
+         *
+         */
+        public MainWindowListener (Frame frame, Runnable task) {
+            assert frame != null && task != null;
+            assert SwingUtilities.isEventDispatchThread();
+            this.frame = frame;
+            this.task = task;
+            frame.addWindowListener(this);
+        }
+        
+        public /*@Override*/ void windowOpened(java.awt.event.WindowEvent e) {
+            MainWindowListener.this.frame.removeWindowListener (this);
+            SwingUtilities.invokeLater(this.task);
+        }
     }
     
     
