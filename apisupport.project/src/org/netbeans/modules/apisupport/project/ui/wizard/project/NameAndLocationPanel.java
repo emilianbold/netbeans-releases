@@ -27,6 +27,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 
 /**
  * The second panel in project template wizard.
@@ -104,8 +105,15 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void checkValidity() {
-        //TODO:
-        setValid(Boolean.TRUE);
+        if (txtName.getText().trim().length() == 0) {
+            setErrorMessage(getMessage("ERR_Name_Prefix_Empty"));
+            return;
+        }
+        if (!Utilities.isJavaIdentifier(txtName.getText().trim())) {
+            setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
+            return;
+        }
+        setErrorMessage(null);
     }
     
     private void loadCombo() {
