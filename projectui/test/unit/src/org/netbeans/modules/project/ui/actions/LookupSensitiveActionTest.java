@@ -15,28 +15,15 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import junit.framework.*;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-
-import org.netbeans.api.project.TestUtil;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 public class LookupSensitiveActionTest extends NbTestCase {
     
@@ -78,7 +65,9 @@ public class LookupSensitiveActionTest extends NbTestCase {
         
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[] { } );
         TestLSA tlsa = new TestLSA( lookup );
-        
+	assertTrue ("TestLSA action is enabled.", tlsa.isEnabled ());
+	tlsa.refreshCounter = 0;
+	
         lookup.change( new Object[] { d1 } );       
         assertEquals( "No refresh should be called ", 0, tlsa.refreshCounter );
         lookup.change( new Object[] { d2 } );       
@@ -147,7 +136,9 @@ public class LookupSensitiveActionTest extends NbTestCase {
             
             DataObject dobj = (DataObject)context.lookup( DataObject.class );
             
-            putValue( Action.NAME, dobj.getName() );
+            if (dobj != null) {
+		putValue( Action.NAME, dobj.getName() );
+	    }
             
         }
         
