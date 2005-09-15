@@ -13,8 +13,10 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.io.File;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  * Represents <em>Packaging</em> panel in Netbeans Module customizer.
@@ -201,11 +203,24 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     // </editor-fold>//GEN-END:initComponents
     
     private void browseLicense(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLicense
-        JFileChooser chooser = new JFileChooser(licenseValue.getText());
+        String startDir = getProperties().getProjectDirectory();
+        String currentLicence = licenseValue.getText().trim();
+        if (!currentLicence.equals("")) {
+            File currentLicenceF = new File(currentLicence);
+            if (!currentLicenceF.isAbsolute()) {
+                currentLicenceF = new File(startDir, currentLicence);
+            }
+            if (currentLicenceF.exists() && currentLicenceF.getParent() != null) {
+                startDir = currentLicenceF.getParent();
+            }
+        }
+        JFileChooser chooser = new JFileChooser(startDir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            licenseValue.setText(chooser.getSelectedFile().getAbsolutePath());
+            String relPath = PropertyUtils.relativizeFile(
+                    getProperties().getProjectDirectoryFile(), chooser.getSelectedFile());
+            licenseValue.setText(relPath);
         }
     }//GEN-LAST:event_browseLicense
     
