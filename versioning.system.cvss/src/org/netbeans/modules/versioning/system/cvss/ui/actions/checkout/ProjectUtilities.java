@@ -16,6 +16,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.explorer.ExplorerManager;
@@ -86,13 +87,27 @@ final class ProjectUtilities {
         return (ExplorerManager.Provider) tc;
     }
 
+    /**
+     * Runs <i>New Project...</i> wizard with redefined defaults:
+     * <ul>
+     * <li>default project directory to working folder to
+     * capture creating new project in placeholder
+     * directory prepared by CVS server admin
+     * <li>CommonProjectActions.EXISTING_SOURCES_FOLDER
+     * pointing to working folder to capture
+     * typical <i>... from Existing Sources</i> panel
+     * <i>Add</i> button behaviour.
+     * </ul>
+     */
     public static void newProjectWizard(File workingDirectory) {
         Action action = CommonProjectActions.newProjectAction();
         if (action != null) {
-            // #58486 honored by j2seproject PanelSourceFolders.java
+            File original = ProjectChooser.getProjectsFolder();
+            ProjectChooser.setProjectsFolder(workingDirectory);
             FileObject workingFolder = FileUtil.toFileObject(workingDirectory);
             action.putValue(CommonProjectActions.EXISTING_SOURCES_FOLDER, workingFolder);
             performAction(action);
+            ProjectChooser.setProjectsFolder(original);
         }
     }
 
