@@ -126,6 +126,20 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         super.componentOpened();
         peer.peerComponentOpened();
     }
+
+    /**
+     * delegate to the apppropriate active element's component
+     */
+    public boolean requestFocusInWindow() {
+        return peer.requestFocusInWindow();
+    }
+
+    /**
+     * delegate to the apppropriate active element's component
+     */
+    public void requestFocus() {
+        peer.requestFocus();
+    }    
     
     /**
      * hides the old element when switching elements.

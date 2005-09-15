@@ -190,6 +190,14 @@ public final class MultiViewPeer  {
         showCurrentElement(true);
     }
     
+    boolean requestFocusInWindow() {
+        return model.getActiveElement().getVisualRepresentation().requestFocusInWindow();
+    }
+    
+    void requestFocus() {
+        model.getActiveElement().getVisualRepresentation().requestFocus();
+    }
+    
     /**
      * hides the old element when switching elements.
      */

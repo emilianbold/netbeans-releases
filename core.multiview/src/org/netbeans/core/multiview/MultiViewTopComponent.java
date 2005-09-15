@@ -226,6 +226,20 @@ public final class MultiViewTopComponent
     public boolean canClose() {
         return peer.canClose();
     }
+
+    /**
+     * delegate to the apppropriate active element's component
+     */
+    public boolean requestFocusInWindow() {
+        return peer.requestFocusInWindow();
+    }
+
+    /**
+     * delegate to the apppropriate active element's component
+     */
+    public void requestFocus() {
+        peer.requestFocus();
+    }
     
 //    public Lookup getLookup() {
 //        return peer.getLookup(super.getLookup());
