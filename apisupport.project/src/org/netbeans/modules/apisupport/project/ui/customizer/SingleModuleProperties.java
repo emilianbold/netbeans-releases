@@ -288,6 +288,10 @@ public final class SingleModuleProperties extends ModuleProperties {
         return moduleType == NbModuleTypeProvider.STANDALONE;
     }
     
+    boolean isNetBeansOrg() {
+        return moduleType == NbModuleTypeProvider.NETBEANS_ORG;
+    }
+    
     boolean dependingOnImplDependency() {
         Set/*<ModuleDependency>*/ deps = getDependenciesListModel().getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {

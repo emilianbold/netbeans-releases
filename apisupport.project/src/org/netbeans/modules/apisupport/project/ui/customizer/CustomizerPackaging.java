@@ -32,33 +32,43 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         super(props, CustomizerPackaging.class);
         initComponents();
         refresh();
-        licenseValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                File currentLicenceF = getCurrentLicenceFile();
-                if (currentLicenceF != null && !currentLicenceF.isFile()) {
-                    setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
-                } else {
-                    setErrorMessage(null);
+        if (!getProperties().isNetBeansOrg()) {
+            licenseValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+                public void insertUpdate(DocumentEvent e) {
+                    File currentLicenceF = getCurrentLicenceFile();
+                    if (currentLicenceF != null && !currentLicenceF.isFile()) {
+                        setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
+                    } else {
+                        setErrorMessage(null);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            license.setEnabled(false);
+            licenseValue.setEnabled(false);
+            browseLicense.setEnabled(false);
+        }
     }
     
     void refresh() {
         UIUtil.setText(jarFileValue, getProperties().getJarFile());
         needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
         isGlobal.setSelected(getBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL));
-        UIUtil.setText(licenseValue, getProperty(SingleModuleProperties.LICENSE_FILE));
         UIUtil.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
         UIUtil.setText(authorValue, getProperty(SingleModuleProperties.NBM_MODULE_AUTHOR));
+        if (!getProperties().isNetBeansOrg()) {
+            UIUtil.setText(licenseValue, getProperty(SingleModuleProperties.LICENSE_FILE));
+        }
     }
     
     public void store() {
         setBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART, needsRestart.isSelected());
         setBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL, isGlobal.isSelected());
-        setProperty(SingleModuleProperties.LICENSE_FILE, licenseValue.getText());
         setProperty(SingleModuleProperties.NBM_HOMEPAGE, homePageValue.getText());
         setProperty(SingleModuleProperties.NBM_MODULE_AUTHOR, authorValue.getText());
+        if (!getProperties().isNetBeansOrg()) {
+            setProperty(SingleModuleProperties.LICENSE_FILE, licenseValue.getText());
+        }
     }
     
     private String getCurrentLicence() {
@@ -107,32 +117,32 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         org.openide.awt.Mnemonics.setLocalizedText(license, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_License"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 6);
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         add(license, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(licenseValue, gridBagConstraints);
 
         homePage.setLabelFor(homePageValue);
         org.openide.awt.Mnemonics.setLocalizedText(homePage, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_HomePage"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(homePage, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -142,7 +152,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         org.openide.awt.Mnemonics.setLocalizedText(nbmPkgMetadata, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_NBMPackageMetadata"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
@@ -152,14 +162,14 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         org.openide.awt.Mnemonics.setLocalizedText(author, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_Author"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(author, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -170,7 +180,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         org.openide.awt.Mnemonics.setLocalizedText(jarFile, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_JarFile"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jarFile, gridBagConstraints);
@@ -178,7 +188,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         jarFileValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -186,7 +196,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
@@ -195,7 +205,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         org.openide.awt.Mnemonics.setLocalizedText(needsRestart, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "CTL_NeedsRestartOnInstall"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(needsRestart, gridBagConstraints);
@@ -203,14 +213,17 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         org.openide.awt.Mnemonics.setLocalizedText(isGlobal, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "CTL_MustBeInstalledGlobally"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(isGlobal, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weighty = 1.0;
         add(filler, gridBagConstraints);
 
@@ -223,8 +236,8 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.insets = new java.awt.Insets(18, 12, 6, 0);
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
         add(browseLicense, gridBagConstraints);
 
     }
