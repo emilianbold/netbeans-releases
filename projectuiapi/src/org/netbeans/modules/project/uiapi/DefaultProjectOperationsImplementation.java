@@ -215,6 +215,8 @@ public final class DefaultProjectOperationsImplementation {
                 handle.progress(++workDone);
             }
             
+            //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
+            ProjectManager.getDefault().clearNonProjectCache();
             Project nue = ProjectManager.getDefault().findProject(target);
             
             assert nue != null;
@@ -299,6 +301,8 @@ public final class DefaultProjectOperationsImplementation {
                 
             ProjectOperations.notifyDeleted(project);
             
+            //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
+            ProjectManager.getDefault().clearNonProjectCache();
             Project nue = ProjectManager.getDefault().findProject(target);
             
             assert nue != null;
