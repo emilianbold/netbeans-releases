@@ -463,6 +463,7 @@ do *not* want to share this file! Also ${nbm_alias} and ${storepass} are used in
 the NBM signing process.
 
 license.file - optional. Location of license text to use when creating an NBM.
+(External modules only.)
 
 manifest.mf - JAR manifest location. Avoid overriding.
 
