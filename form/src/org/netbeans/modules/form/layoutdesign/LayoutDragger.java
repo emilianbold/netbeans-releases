@@ -1280,10 +1280,13 @@ class LayoutDragger implements LayoutConstants {
         return getClearWayToParent(interval, parent, dimension, alignment) != null;
     }
 
-    private static LayoutInterval getClearWayToParent(LayoutInterval interval, LayoutInterval parent, int dimension, int alignment) {
+    private static LayoutInterval getClearWayToParent(LayoutInterval interval,
+            LayoutInterval topParent, int dimension, int alignment)
+    {
         LayoutRegion space = interval.getCurrentSpace();
-        while (interval.getParent() != parent) {
-            if (interval.getParent().isSequential()) {
+        LayoutInterval parent = interval.getParent();
+        while (parent != topParent) {
+            if (parent.isSequential()) {
                 int startIndex, endIndex;
                 if (alignment == LEADING) {
                     startIndex = 0;
@@ -1299,7 +1302,8 @@ class LayoutDragger implements LayoutConstants {
                     return null;
                 }
             }
-            interval = interval.getParent();
+            interval = parent;
+            parent = interval.getParent();
         }
         return interval;
     }
