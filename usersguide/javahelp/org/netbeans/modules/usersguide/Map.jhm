@@ -667,6 +667,21 @@ NetbeansDebuggerBreakpointExceptionJPDA-->
 <!--ID for unmapped options nodes-->
    <mapID target="org.openide.options.SystemOption" url="pending.html" /> 
 
+  <!--ID for CSH in Options | Modern View - General Category: --> 
+  <mapID target="netbeans.optionsDialog.general" url="configure/options_general.html" />
+
+  <!--ID for CSH in Options | Modern View - Editor Category: --> 
+  <mapID target="netbeans.optionsDialog.editor" url="configure/options_editor.html" />
+
+  <!--ID for CSH in Options | Modern View - Fonts and Colors Category: --> 
+  <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
+
+  <!--ID for CSH in Options | Modern View - Advanced-Ant Category: --> 
+  <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
+
+  <!--ID for CSH in Options | Modern View - Advanced-Form Editor Category: --> 
+  <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
+
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
 
