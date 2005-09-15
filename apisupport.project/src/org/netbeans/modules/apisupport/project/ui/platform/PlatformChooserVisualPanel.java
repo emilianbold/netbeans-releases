@@ -71,13 +71,15 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
                 } catch (IOException e) {
                     setPlafLabel(plafDir.getAbsolutePath());
                 }
-                if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
+                if (!NbPlatform.isSupportedPlatform(plafDir)) {
+                    setErrorMessage(NbBundle.getMessage(PlatformChooserVisualPanel.class,
+                            "MSG_UnsupportedPlatform")); // NOI18N
+                } else if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
                     setErrorMessage(NbBundle.getMessage(PlatformChooserVisualPanel.class,
                             "MSG_NameIsAlreadyUsedGoToNext")); // NOI18N
                 } else {
                     setErrorMessage(null);
                 }
-                setValid(Boolean.TRUE);
             } else {
                 setErrorMessage(null);
                 setValid(Boolean.FALSE);

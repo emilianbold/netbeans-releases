@@ -554,6 +554,18 @@ public final class NbPlatform implements Comparable {
         return findCoreJar(destdir) != null;
     }
     
+    public static boolean isSupportedPlatform(File destdir) {
+        boolean valid = false;
+        File coreJar = findCoreJar(destdir);
+        if (coreJar != null) {
+            String platformDir = coreJar.getParentFile().getParentFile().getName();
+            assert platformDir.startsWith("platform"); // NOI18N
+            int version = Integer.parseInt(platformDir.substring(8)); // 8 == "platform".length
+            valid = version >= 6;
+        }
+        return valid;
+    }
+    
     /**
      * Find a display name for a NetBeans platform on disk.
      * @param destdir a dir passing {@link #isPlatformDirectory}

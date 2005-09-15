@@ -199,4 +199,9 @@ public class NbPlatformTest extends TestBase {
         assertTrue("valid label", NbPlatform.isLabelValid("whatever"));
     }
     
+    public void testIsSupportedPlatform() {
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
+        assertTrue("platform supported", NbPlatform.isSupportedPlatform(def.getDestDir()));
+    }
+    
 }
