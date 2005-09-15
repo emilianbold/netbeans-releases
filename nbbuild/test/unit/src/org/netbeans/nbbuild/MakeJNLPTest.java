@@ -361,6 +361,9 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPSucceedsWhenExtraFileIsExcluded() throws Exception {
         doCompareJNLPFileWithUpdateTracking(false, "lib/nbexec", " verifyexcludes=' one, lib/nbexec, three ' ");
     }
+    public void testGenerateJNLPSucceedsWhenModuleAutoDepsArePresent() throws Exception {
+        doCompareJNLPFileWithUpdateTracking(false, "config/ModuleAutoDeps/aaa-my-module.xml", " verifyexcludes=' none ' ");
+    }
     
     private void doCompareJNLPFileWithUpdateTracking(boolean useNonModule, String fakeEntry, String extraScript) throws Exception {
         File nonModule = generateJar (new String[0], ModuleDependenciesTest.createManifest());

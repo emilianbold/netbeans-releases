@@ -246,6 +246,7 @@ public class MakeJNLP extends Task {
         
         fileToOwningModule.remove(relative(f, clusterRoot));
         fileToOwningModule.remove("config/Modules/" + dashcnb + ".xml");
+        fileToOwningModule.remove("config/ModuleAutoDeps/" + dashcnb + ".xml");
         fileToOwningModule.remove("update_tracking/" + dashcnb + ".xml");
         
         String path = mf.getMainAttributes().getValue("Class-Path");
