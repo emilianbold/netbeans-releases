@@ -409,8 +409,8 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     if (in != null) {
                         in.close();
                     }
-                } catch (IOException ex) {
-                    // ignore already closed
+                } catch (IOException exc) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                 }
             }
         }
