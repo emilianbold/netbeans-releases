@@ -137,6 +137,10 @@ is divided into following sections:
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
                 </xsl:call-template>
+                <xsl:call-template name="createRootAvailableTest">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                    <xsl:with-param name="propName">have.sources</xsl:with-param>
+                </xsl:call-template>
                 <condition property="netbeans.home+have.tests">
                     <and>
                         <isset property="netbeans.home"/>
@@ -529,6 +533,7 @@ is divided into following sections:
 
             <target name="-do-compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2seproject3:javac/>
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
