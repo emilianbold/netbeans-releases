@@ -96,7 +96,7 @@ public final class DDProvider {
                             // so lets not set the original to null here but wait
                             // until the file becomes parsable again to do a merge
                             //webSvcProxy.setOriginal(null);
-                            webSvcProxy.setProxyVersion(version);
+                            webSvcProxy.setProxyVersion(Webservices.VERSION_1_1);
                         }
                     }
                 } catch (java.io.IOException ex){}
