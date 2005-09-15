@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
 
 import java.io.File;
+import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -100,6 +101,12 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
                 return;
             }
         }
+        String packageName = comPackageName.getEditor().getItem().toString().trim();
+        if (packageName.length() == 0 || !Pattern.matches("[a-zA-Z0-9.]*", packageName)) { //NOI18N
+            setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
+            return;
+        }
+        
         setErrorMessage(null);
     }
     

@@ -13,7 +13,10 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -99,6 +102,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
                 setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Icon_Invalid"));
                 return;
             }
+        }
+        String packageName = comPackageName.getEditor().getItem().toString().trim();
+        if (packageName.length() == 0 || !Pattern.matches("[a-zA-Z0-9.]*", packageName)) { //NOI18N
+            setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
+            return;
         }
         setErrorMessage(null);
     }

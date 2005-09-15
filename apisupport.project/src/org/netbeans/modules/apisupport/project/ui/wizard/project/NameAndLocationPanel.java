@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
+import java.util.regex.Pattern;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -113,6 +114,12 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
             return;
         }
+        String packageName = comPackageName.getEditor().getItem().toString().trim();
+        if (packageName.length() == 0 || !Pattern.matches("[a-zA-Z0-9.]*", packageName)) { //NOI18N
+            setErrorMessage(getMessage("ERR_Package_Invalid"));
+            return;
+        }
+        
         setErrorMessage(null);
     }
     
