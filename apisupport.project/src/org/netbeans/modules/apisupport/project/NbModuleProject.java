@@ -106,6 +106,7 @@ public final class NbModuleProject implements Project {
     
     private LocalizedBundleInfo bundleInfo;
     private String infoDisplayName;
+    private boolean needNewEvaluator;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -471,7 +472,7 @@ public final class NbModuleProject implements Project {
             public void configurationXmlChanged(AntProjectEvent ev) {
                 // type could be changed
                 typeProvider.reset();
-                eval = null;
+                resetEvaluator();
                 // Module dependencies may have changed.
                 maybeFireChange();
             }
@@ -532,15 +533,21 @@ public final class NbModuleProject implements Project {
         return cp.toString();
     }
     
-    public PropertyEvaluator evaluator() {
-        if (eval == null) {
+    public synchronized PropertyEvaluator evaluator() {
+        if (needNewEvaluator) {
             try {
                 eval = createEvaluator(getModuleList());
             } catch (IOException ex) {
-                throw new IllegalStateException(ex.getMessage());
+                // keep the eval as it is
+                Util.err.notify(ErrorManager.INFORMATIONAL, ex);
             }
+            needNewEvaluator = false;
         }
         return eval;
+    }
+    
+    private synchronized void resetEvaluator() {
+        needNewEvaluator = true;
     }
     
     private final Map/*<String,FileObject>*/ directoryCache = new WeakHashMap();
