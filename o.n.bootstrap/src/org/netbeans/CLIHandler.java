@@ -643,22 +643,25 @@ public abstract class CLIHandler extends Object {
         // using 1.6 method if available to make the file readable just 
         // to its owner
         boolean success = false;
-        try {
-            Method m = File.class.getMethod("setReadable", new Class[] { Boolean.TYPE, Boolean.TYPE }); // NOI18N
-            Object s1 = m.invoke(file, new Object[] {Boolean.FALSE, Boolean.FALSE});
-            Object s2 = m.invoke(file, new Object[] {Boolean.TRUE, Boolean.TRUE});
-            success = Boolean.TRUE.equals(s1) && Boolean.TRUE.equals(s2);
-        } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-        } catch (NoSuchMethodException ex) {
-            ex.printStackTrace();
+        
+        String vm = System.getProperty("java.version"); // NOI18N
+        if (vm != null && vm.startsWith("1.6")) { // NOI18N
+            try {
+                Method m = File.class.getMethod("setReadable", new Class[] { Boolean.TYPE, Boolean.TYPE }); // NOI18N
+                Object s1 = m.invoke(file, new Object[] {Boolean.FALSE, Boolean.FALSE});
+                Object s2 = m.invoke(file, new Object[] {Boolean.TRUE, Boolean.TRUE});
+                success = Boolean.TRUE.equals(s1) && Boolean.TRUE.equals(s2);
+            } catch (InvocationTargetException ex) {
+                ex.printStackTrace();
+            } catch (IllegalAccessException ex) {
+                ex.printStackTrace();
+            } catch (NoSuchMethodException ex) {
+                ex.printStackTrace();
+            }
         }
         if (success) {
             return;
         }
-        System.err.println("FAILURE!!!!!");
         try {
             // try to make it only user-readable (on Unix)
             // since people are likely to leave a+r on their userdir
