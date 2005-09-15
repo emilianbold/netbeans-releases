@@ -479,6 +479,8 @@ class SplitSubModel {
     }
 
     public boolean setSplitWeights( ModelElement[] snapshots, double[] splitWeights ) {
+        if( 0 == snapshots.length )
+            return false;
         for( int i=0; i<snapshots.length; i++ ) {
             Node node = (Node)snapshots[i];
             if( null == node || null == node.getParent() )
