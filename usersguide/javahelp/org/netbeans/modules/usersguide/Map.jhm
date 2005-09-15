@@ -158,7 +158,7 @@
 <mapID target="editing.macros.invoking" url="editing/macros/invoking.html" />
 <mapID target="editing.jumplist" url="editing/jumplist.html" />
 <mapID target="editing.wordmatch" url="editing/wordmatch.html" />
-<mapID target="editing.fastimport" url="editing/fastimport.html" />
+<mapID target="editing.fastimport-task" url="editing/fastimport.html" />
 <mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
 <mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
@@ -410,6 +410,9 @@ the Options window:-->
 
 <!--CSH - Insert Internationalized String dialog:-->
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
+
+<!--CSH page for Fast Import dialog-->
+<mapID target="editing.fastimport" url="editing/fastimport.html" />
 
 <!-- Csh page (and help topic) for Tools->Options, Printing node and subnodes :-->
 <mapID target="editing.printing" url="editing/configuring/printing.html" />
