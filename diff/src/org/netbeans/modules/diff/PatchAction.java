@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -147,6 +148,19 @@ public class PatchAction extends NodeAction {
             (fo.isData()) ? "TITLE_SelectPatchForFile"
                           : "TITLE_SelectPatchForFolder", fo.getNameExt());
         chooser.setDialogTitle(title);
+
+        // setup filters, default one filters patch files
+        FileFilter patchFilter = new javax.swing.filechooser.FileFilter() {
+            public boolean accept(File f) {
+                return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
+            }
+            public String getDescription() {
+                return "Patch Files (*.diff, *.patch)";
+            }
+        };
+        chooser.addChoosableFileFilter(patchFilter);
+        chooser.setFileFilter(patchFilter);
+
         chooser.setApproveButtonText(NbBundle.getMessage(PatchAction.class, "BTN_Patch"));
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(PatchAction.class, "BTN_Patch_mnc").charAt(0));
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(PatchAction.class, "BTN_Patch_tooltip"));
@@ -169,23 +183,52 @@ public class PatchAction extends NodeAction {
         boolean patchFailed = false;
         for (int i = 0; i < fileDiffs.length; i++) {
             //System.out.println("applyFileDiffs(): fileName = "+fileDiffs[i].getFileName());
-            FileObject file;
-            if (fo.isData()) file = fo;
-            else file = findChild(fo, fileDiffs[i].getFileName());//fo.getFileObject(fileDiffs[i].getFileName());
-            if (file == null) {
-                notFoundFileNames.add(FileUtil.getFileDisplayName(fo) + '/' + fileDiffs[i].getFileName());
+            FileObject targetFileObject;
+            if (fo.isData()) {
+                targetFileObject = fo;
             } else {
-                FileObject backup = createFileBackup(file);
-                if (applyDiffsTo(fileDiffs[i].getDifferences(), file)) {
-                    appliedFiles.add(file);
-                    backups.put(file, backup);
-                    file.refresh(true);
+                String indexName = fileDiffs[i].getIndexName();
+                if (indexName != null) {
+                    targetFileObject = fo.getFileObject(indexName);
+                } else {
+                    targetFileObject = findChild(fo, fileDiffs[i].getFileName());
                 }
-                else {
+            }
+
+            if (targetFileObject == null) {
+                Difference[] diffs = fileDiffs[i].getDifferences();
+                String filePath = fileDiffs[i].getIndexName();
+                if (diffs.length == 1 && diffs[0].getFirstStart() == 0 && filePath != null) {
+                    // create new targetFileObject
+                    try {
+                        targetFileObject = FileUtil.createData(fo, filePath);
+                    } catch (IOException e) {
+                        ErrorManager err = ErrorManager.getDefault();
+                        err.annotate(e, "Patch can not create new file, skipping...");  // NOI18N
+                        err.notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
+            }
+
+            if (targetFileObject == null) {
+                String indexName = fileDiffs[i].getIndexName();
+                if (indexName != null) {
+                    notFoundFileNames.add(FileUtil.getFileDisplayName(fo) + '/' + indexName);
+                } else {
+                    notFoundFileNames.add("sourceHostPath:" + fileDiffs[i].getFileName());
+                }
+            } else {
+                FileObject backup = createFileBackup(targetFileObject);
+                if (applyDiffsTo(fileDiffs[i].getDifferences(), targetFileObject)) {
+                    appliedFiles.add(targetFileObject);
+                    backups.put(targetFileObject, backup);
+                    targetFileObject.refresh(true);
+                } else {
                     patchFailed = true;
                 }
             }
         }
+
         if (notFoundFileNames.size() > 0) {
             StringBuffer files = new StringBuffer();
             for (int i = 0; i < notFoundFileNames.size(); i++) {
@@ -210,10 +253,14 @@ public class PatchAction extends NodeAction {
         }
     }
 
+    /**
+     * Flaky heuristics to find remote path on local system.
+     */
     private static FileObject findChild(FileObject folder, String child) {
         child = child.replace(File.separatorChar, '/');
         StringTokenizer tokenizer = new StringTokenizer(child, "/");
         FileObject ch = null;
+        // FIXME it's for sure wrong, it can be confused by /path/DUPL/somethigs/DULP/some.file
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
             ch = folder.getFileObject(token);
@@ -318,7 +365,20 @@ public class PatchAction extends NodeAction {
         StringBuffer filenames=new StringBuffer(), 
                      exceptions=new StringBuffer();
         for (int i = 0; i < files.size(); i++) {
-            FileObject backup=(FileObject) backups.get(files.get(i));
+            FileObject targetFileObject = (FileObject) files.get(i);
+            FileObject backup=(FileObject) backups.get(targetFileObject);
+
+            // delete files that become empry
+            if (targetFileObject.getSize() == 0) {
+                try {
+                    targetFileObject.delete();
+                } catch (IOException e) {
+                    ErrorManager err = ErrorManager.getDefault();
+                    err.annotate(e, "Patch can not delete file, skipping...");
+                    err.notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+
             try {
                 backup.delete();
             }

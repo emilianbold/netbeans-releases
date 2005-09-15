@@ -79,7 +79,7 @@ public class Patch extends Reader {
         //PushbackReader recognizedSource = new PushbackReader(source, pushBackLimit);
         Patch.SinglePatchReader patchReader = new Patch.SinglePatchReader(source);
         int[] diffType = new int[1];
-        String[] fileName = new String[1];
+        String[] fileName = new String[2];
         while (patchReader.hasNextPatch(diffType, fileName)) {
             //System.out.println("Have a next patch of name '"+fileName[0]+"'");
             Difference[] diffs = null;
@@ -95,7 +95,7 @@ public class Patch extends Reader {
                     break;
             }
             if (diffs != null) {
-                fileDifferences.add(new FileDifferences((fileName[0] != null) ? fileName[0].intern() : null, diffs));
+                fileDifferences.add(new FileDifferences(fileName[0], fileName[1], diffs));
             }
         }
         return (FileDifferences[]) fileDifferences.toArray(new FileDifferences[fileDifferences.size()]);
@@ -738,7 +738,7 @@ public class Patch extends Reader {
                             name.append(c);
                         }
                     }
-                    fileName[0] = name.toString();
+                    fileName[1] = name.toString();
                 } else if (input.startsWith(CONTEXT_MARK1B) || !contextBeginDetected && input.startsWith(UNIFIED_MARK1)) {
                     StringBuffer name;
                     if (input.startsWith(CONTEXT_MARK1B)) {
@@ -799,17 +799,29 @@ public class Patch extends Reader {
     public static class FileDifferences extends Object {
         
         private String fileName;
+        private String indexName;
         private Difference[] diffs;
         
-        public FileDifferences(String fileName, Difference[] diffs) {
+        public FileDifferences(String fileName, String indexName, Difference[] diffs) {
             this.fileName = fileName;
             this.diffs = diffs;
+            this.indexName = indexName;
         }
-        
+
+        /**
+         * @return header filename (typically absolute path on source host) or null
+         */
         public final String getFileName() {
             return fileName;
         }
-        
+
+        /**
+         * @return relative Index: file name or null
+         */
+        public final String getIndexName() {
+            return indexName;
+        }
+
         public final Difference[] getDifferences() {
             return diffs;
         }
