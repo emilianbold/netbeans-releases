@@ -199,9 +199,15 @@ public class NbPlatformTest extends TestBase {
         assertTrue("valid label", NbPlatform.isLabelValid("whatever"));
     }
     
-    public void testIsSupportedPlatform() {
+    public void testIsSupportedPlatform() throws Exception {
         NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         assertTrue("platform supported", NbPlatform.isSupportedPlatform(def.getDestDir()));
+    }
+    
+    public void testContains() throws Exception {
+        assertTrue("contains suite3/nbplatform", NbPlatform.contains(file(extexamplesF, "suite3/nbplatform")));
+        assertTrue("contains nbbuild/netbeans", NbPlatform.contains(file("nbbuild/netbeans")));
+        assertFalse("doesn't contains whatever/platform", NbPlatform.contains(file("whatever/platform")));
     }
     
 }

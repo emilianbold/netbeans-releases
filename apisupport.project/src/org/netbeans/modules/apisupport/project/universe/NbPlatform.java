@@ -149,6 +149,23 @@ public final class NbPlatform implements Comparable {
         // similar way
         return new NbPlatform(null, null, destDir, sources, new URL[0]);
     }
+
+    /**
+     * Returns whether the platform within the given direcotry is already
+     * registered.
+     */
+    public static boolean contains(File destDir) {
+        boolean contains = false;
+        Iterator it = getPlatforms().iterator();
+        while (it.hasNext()) {
+            NbPlatform p = (NbPlatform) it.next();
+            if (p.getDestDir().equals(destDir)) {
+                contains = true;
+                break;
+            }
+        }
+        return contains;
+    }
     
     /**
      * Register a new platform.
