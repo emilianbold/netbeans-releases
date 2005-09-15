@@ -74,24 +74,24 @@ public class ImageDataLoader extends UniFileLoader {
         return NbBundle.getBundle(ImageDataLoader.class).getString("PROP_ImageLoader_Name");
     }
     
-    /** Gets default system actions. Overrides superclass method. */
+    /**
+     * This methods uses the layer action context so it returns
+     * a non-<code>null</code> value.
+     *
+     * @return  name of the context on layer files to read/write actions to
+     */
+    protected String actionsContext () {
+        return "Loaders/image/png-gif-jpeg-bmp/Actions/";               //NOI18N
+    }
+    
+    /**
+     * This method returns <code>null</code> because it uses method
+     * {@link #actionsContext}.
+     *
+     * @return  <code>null</code>
+     */
     protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get(SaveAsTemplateAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class)
-        };
+        return null;
     }
 
     /** Create the image data object.
