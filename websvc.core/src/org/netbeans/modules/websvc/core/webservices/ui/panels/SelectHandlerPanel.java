@@ -80,12 +80,9 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
         
         BeanTreeView btv = new BeanTreeView();
         btv.getAccessibleContext().
-        setAccessibleName(NbBundle.getMessage(SelectHandlerPanel.class,
-        "LBL_Class_Tree"));		//NOI18N
+        setAccessibleName(NbBundle.getMessage(SelectHandlerPanel.class,"LBL_Class_Tree"));
         btv.getAccessibleContext().setAccessibleDescription
-        (NbBundle.getMessage(SelectHandlerPanel.class,
-        "LBL_SelectHandler"));		//NOI18N
-        
+        (NbBundle.getMessage(SelectHandlerPanel.class,"TTL_SelectHandler"));
         panel.add(btv, "Center");   //NOI18N
         panel.validate();
         validate();

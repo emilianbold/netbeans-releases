@@ -150,7 +150,8 @@ public class MessageHandlerPanel extends JPanel{
         public void actionPerformed(ActionEvent evt){
             
             final SelectHandlerPanel sPanel = new SelectHandlerPanel(project);
-            dlgDesc = new DialogDescriptor(sPanel, "Select Message Handler", true,
+            String title = NbBundle.getMessage(MessageHandlerPanel.class,"TTL_SelectHandler");
+            dlgDesc = new DialogDescriptor(sPanel, title, true,
             new ActionListener(){
                 public void actionPerformed(ActionEvent evt){
                     if(evt.getSource() == NotifyDescriptor.OK_OPTION){
