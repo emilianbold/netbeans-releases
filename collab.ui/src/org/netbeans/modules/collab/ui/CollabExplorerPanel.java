@@ -174,6 +174,8 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
                         if (manager.getSessions().length == 0) {
                             // Show the collab explorer
                             CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_LOGIN);
+                            // clear current selection, #63911
+                            getExplorerManager().setExploredContext(null);
                         } else {
                             updateChangeStatusButton();
                         }
