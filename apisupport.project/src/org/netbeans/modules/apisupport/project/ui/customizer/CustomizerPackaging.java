@@ -36,9 +36,9 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
             public void insertUpdate(DocumentEvent e) {
                 File currentLicenceF = getCurrentLicenceFile();
                 if (currentLicenceF != null && !currentLicenceF.isFile()) {
-                    setWarning(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
+                    setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
                 } else {
-                    setWarning(null);
+                    setErrorMessage(null);
                 }
             }
         });
