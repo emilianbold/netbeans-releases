@@ -179,6 +179,9 @@ PropertyChangeListener {
         lCategories.setListData (v);
         refreshUI ();
     }
+    
+    void deleteScheme (String scheme) {
+    }
         
     
     // other methods ...........................................................

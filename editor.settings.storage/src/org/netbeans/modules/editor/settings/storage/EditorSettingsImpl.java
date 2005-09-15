@@ -153,7 +153,17 @@ public class EditorSettingsImpl extends EditorSettings {
 	String s = getOriginalScheme (scheme); // loc name > name
 	if (s == null)
             addScheme (s = scheme); // create a new scheme!
-
+        
+        if (fontColors.isEmpty ()) {
+            // 2) remove coloring / revert to defaults
+            ColoringStorage.deleteColorings
+                (new String [0], s, "defaultColoring.xml");
+            defaultColors.remove (s);
+            init ();
+            pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
+            return;
+        }
+        
         // 2) save new values to cache
 	Object oldColors = defaultColors.get (s);
         defaultColors.put (s, fontColors);
@@ -210,6 +220,16 @@ public class EditorSettingsImpl extends EditorSettings {
 	if (s == null)
             addScheme (s = scheme); // create a new scheme!
 	
+        if (fontColors.isEmpty ()) {
+            // 2) remove coloring / revert to defaults
+            ColoringStorage.deleteColorings
+                (new String [0], s, "editorColoring.xml");
+            editorFontColors.remove (s);
+            init ();
+            pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
+            return;
+        }
+        
         // 2) save new values to cache
 	Object oldColors = editorFontColors.get (s);
         editorFontColors.put (s, fontColors);

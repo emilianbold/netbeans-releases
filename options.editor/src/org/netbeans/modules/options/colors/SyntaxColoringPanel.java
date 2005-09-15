@@ -109,7 +109,9 @@ PropertyChangeListener {
  
     private String		currentLanguage;
     private String              currentScheme;
+    /** cache Map (String (profile name) > Map (String (language name) > Vector (AttributeSet))). */
     private Map                 schemes = new HashMap ();
+    /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
     private Map                 toBeSaved = new HashMap ();
     private boolean		listen = false;
 
@@ -322,6 +324,17 @@ PropertyChangeListener {
         }
         lCategories.setListData (v);
         refreshUI ();
+    }
+
+    void deleteScheme (String scheme) {
+        Iterator it = colorModel.getLanguages ().iterator ();
+        Map m = new HashMap ();
+        while (it.hasNext ()) {
+            String language = (String) it.next ();
+            m.put (language, new Vector ());
+        }
+        schemes.put (scheme, m);
+        toBeSaved.put (scheme, new HashSet (colorModel.getLanguages ()));
     }
     
         

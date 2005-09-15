@@ -136,7 +136,18 @@ ActionListener {
         syntaxColoringPanel.setCurrentScheme (currentScheme);
         annotationsPanel.setCurrentScheme (currentScheme);
     }
-     
+    
+    private void deleteCurrentScheme () {
+        String currentScheme = (String) cbSchemes.getSelectedItem ();
+        listen = false;
+        cbSchemes.removeItem (currentScheme);
+        editorPanel.deleteScheme (currentScheme);
+        syntaxColoringPanel.deleteScheme (currentScheme);
+        annotationsPanel.deleteScheme (currentScheme);
+        listen = true;
+        cbSchemes.setSelectedIndex (0);
+    }
+    
     
     // other methods ...........................................................
     
@@ -208,6 +219,7 @@ ActionListener {
             return;
         }
         if (e.getSource () == bDelete) {
+            deleteCurrentScheme ();
             return;
         }
     }
