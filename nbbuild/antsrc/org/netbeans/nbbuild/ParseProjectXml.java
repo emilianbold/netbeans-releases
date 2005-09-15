@@ -303,7 +303,7 @@ public final class ParseProjectXml extends Task {
                     throw new BuildException("Cannot set " + domainProperty + " for a non-netbeans.org module", getLocation());
                 }
                 File nball = new File(getProject().getProperty("nb_all"));
-                File basedir = new File(getProject().getProperty("basedir"));
+                File basedir = getProject().getBaseDir();
                 File dir = basedir;
                 while (true) {
                     File parent = dir.getParentFile();
