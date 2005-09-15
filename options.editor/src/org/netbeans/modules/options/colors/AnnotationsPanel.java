@@ -240,7 +240,7 @@ PropertyChangeListener {
         foregroundColorChooser.setEnabled (true);
         backgroundColorChooser.setEnabled (true);
         waveUnderlinedColorChooser.setEnabled (true);
-        
+        listen = false;
         Vector annotations = getAnnotations (currentScheme);
         AttributeSet c = (AttributeSet) annotations.get (index);
         foregroundColorChooser.setColor ((Color) c.getAttribute (StyleConstants.Foreground));
