@@ -573,7 +573,7 @@ public class VisualReplicator { //implements VisualMapper
             clone = metacomp.cloneBeanInstance(relativeProperties);
         }
 
-        if (clone != null)
+        if (clone == null)
             return null;
 
         if (compClone == null)
