@@ -14,6 +14,8 @@
 package org.netbeans;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -438,27 +440,7 @@ public abstract class CLIHandler extends Object {
                 lockFile.getParentFile().mkdirs();
                 lockFile.createNewFile();
                 lockFile.deleteOnExit();
-                try {
-                    // try to make it only user-readable (on Unix)
-                    // since people are likely to leave a+r on their userdir
-                    File chmod = new File("/bin/chmod"); // NOI18N
-                    if (!chmod.isFile()) {
-                        // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
-                        chmod = new File("/usr/bin/chmod"); // NOI18N
-                    }
-                    if (chmod.isFile()) {
-                        int chmoded = Runtime.getRuntime().exec(new String[] {
-                            chmod.getAbsolutePath(),
-                            "go-rwx", // NOI18N
-                            lockFile.getAbsolutePath()
-                        }).waitFor();
-                        if (chmoded != 0) {
-                            throw new IOException("could not run " + chmod + " go-rwx " + lockFile); // NOI18N
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    throw (IOException)new IOException(e.toString()).initCause(e);
-                }
+                secureAccess(lockFile);
                 
                 enterState(10, block);
                 
@@ -653,6 +635,51 @@ public abstract class CLIHandler extends Object {
         
         // failure
         return new Status();
+    }
+
+    /** Make the file readable just to its owner.
+     */
+    private static void secureAccess(final File file) throws IOException {
+        // using 1.6 method if available to make the file readable just 
+        // to its owner
+        boolean success = false;
+        try {
+            Method m = File.class.getMethod("setReadable", new Class[] { Boolean.TYPE, Boolean.TYPE }); // NOI18N
+            Object s1 = m.invoke(file, new Object[] {Boolean.FALSE, Boolean.FALSE});
+            Object s2 = m.invoke(file, new Object[] {Boolean.TRUE, Boolean.TRUE});
+            success = Boolean.TRUE.equals(s1) && Boolean.TRUE.equals(s2);
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace();
+        }
+        if (success) {
+            return;
+        }
+        System.err.println("FAILURE!!!!!");
+        try {
+            // try to make it only user-readable (on Unix)
+            // since people are likely to leave a+r on their userdir
+            File chmod = new File("/bin/chmod"); // NOI18N
+            if (!chmod.isFile()) {
+                // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
+                chmod = new File("/usr/bin/chmod"); // NOI18N
+            }
+            if (chmod.isFile()) {
+                int chmoded = Runtime.getRuntime().exec(new String[] {
+                    chmod.getAbsolutePath(),
+                    "go-rwx", // NOI18N
+                    file.getAbsolutePath()
+                }).waitFor();
+                if (chmoded != 0) {
+                    throw new IOException("could not run " + chmod + " go-rwx " + file); // NOI18N
+                }
+            }
+        } catch (InterruptedException e) {
+            throw (IOException)new IOException(e.toString()).initCause(e);
+        }
     }
 
     /** Class that represents available arguments to the CLI
