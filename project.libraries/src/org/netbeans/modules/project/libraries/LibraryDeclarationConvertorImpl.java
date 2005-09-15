@@ -26,22 +26,15 @@ public class LibraryDeclarationConvertorImpl implements LibraryDeclarationConver
     
     public URL parseResource(final String data) throws SAXException {
         try {
-            return new URL (data);
+            if (data == null) {
+                return null;
+            }
+            else {
+                return new URL (data);
+            }
         } catch (MalformedURLException ex) {
             throw new SAXException("Invalid resource URI: " + data.trim() + ")", ex);  // NOI18N
         }
-    }
-    
-    public URL parseLocation(String data) throws SAXException {
-        try {
-            return new URI(data.trim()).toURL();
-        } catch (MalformedURLException ex) {
-            throw new SAXException("Invalid description URL: " + data.trim() + ")", ex);  // NOI18N
-        }
-		catch (URISyntaxException ex) {
-			throw new SAXException("Invalid resource URI: " + data.trim() + ")", ex);  // NOI18N
-		}
     }    
-    
 }
 

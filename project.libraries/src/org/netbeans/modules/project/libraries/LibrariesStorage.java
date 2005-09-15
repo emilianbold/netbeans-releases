@@ -39,6 +39,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
 
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
     private static final String TIME_STAMPS_FILE = "libraries-timestamps.properties"; //NOI18B
+    private static final String XML_EXT = "xml";    //NOI18N
 
     // persistent storage, it may be null for before first library is store into storage
     private FileObject storage = null;
@@ -104,31 +105,40 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         FileObject libraryDefinitions[] = storage.getChildren();
         for (int i = 0; i < libraryDefinitions.length; i++) {
             FileObject descriptorFile = libraryDefinitions[i];
-            try {
-                handler.setLibrary (null);
-                readLibrary (descriptorFile, parser);
-                LibraryImplementation impl = handler.getLibrary ();
-                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
-                if (provider == null) {
-                    ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
-                }
-                else {                    
-                    if (!isUpToDate(descriptorFile)) {
-                        provider.libraryCreated (impl);
-                        updateTimeStamp(descriptorFile);
+            if (XML_EXT.equalsIgnoreCase(descriptorFile.getExt())) {                          
+                try {
+                    handler.setLibrary (null);
+                    readLibrary (descriptorFile, parser);
+                    LibraryImplementation impl = handler.getLibrary ();
+                    if (impl != null) {
+                        LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+                        if (provider == null) {
+                            ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
+                        }
+                        else if (libraries.keySet().contains(impl.getName())) {
+                                ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Library \""
+                                    +impl.getName()+"\" is already defined, skeeping the definition from: " 
+                                    + FileUtil.getFileDisplayName(descriptorFile));
+                        }
+                        else {                                                
+                            if (!isUpToDate(descriptorFile)) {
+                                provider.libraryCreated (impl);
+                                updateTimeStamp(descriptorFile);
+                            }
+                            librariesByFileNames.put(descriptorFile.getPath(),impl);
+                            libraries.put (impl.getName(),impl);
+                        }
                     }
-                    librariesByFileNames.put(descriptorFile.getPath(),impl);
-                    libraries.put (impl.getName(),impl);
+                } catch (SAXException e) {
+                    ErrorManager.getDefault().notify (e);
+                } catch (javax.xml.parsers.ParserConfigurationException e) {
+                    ErrorManager.getDefault().notify (e);
+                } catch (java.io.IOException e) {
+                    ErrorManager.getDefault().notify (e);
+                } catch (RuntimeException e) {
+                    // Other problem.
+                    ErrorManager.getDefault().notify (e);
                 }
-            } catch (SAXException e) {
-                ErrorManager.getDefault().notify (e);
-            } catch (javax.xml.parsers.ParserConfigurationException e) {
-                ErrorManager.getDefault().notify (e);
-            } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify (e);
-            } catch (RuntimeException e) {
-                // Other problem.
-                ErrorManager.getDefault().notify (e);
             }
         }
         try {
@@ -188,7 +198,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                         String libraryType = library.getType ();
                         LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
                         if (libraryTypeProvider == null) {
-                            ErrorManager.getDefault().log ("Can not store library, the library type is not recognized by any of the LibraryTypeProviders.");	//NOI18N
+                            ErrorManager.getDefault().log (ErrorManager.WARNING, "LibrariesStorage: Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
                             return;
                         }
                         FileObject fo = storage.createData (library.getName(),"xml");   //NOI18N
@@ -299,7 +309,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                     String libraryType = newLibrary.getType ();
                     final LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
                     if (libraryTypeProvider == null) {
-                        ErrorManager.getDefault().log ("Can not store library, the library type is not recognized by any of the LibraryTypeProviders.");	//NOI18N
+                        ErrorManager.getDefault().log (ErrorManager.WARNING, "LibrariesStorageL Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
                         return;
                     }
                     this.storage.getFileSystem().runAtomicAction(
@@ -319,27 +329,29 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         FileObject fo = fe.getFile();
         try {
             final LibraryImplementation impl = readLibrary (fo);
-            LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
-            if (provider == null) {
-                ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
-            }
-            else {
-                synchronized (this) {
-                    this.libraries.put (impl.getName(), impl);
-                    this.librariesByFileNames.put (fo.getPath(), impl);
+            if (impl != null) {
+                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+                if (provider == null) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
-                //Has to be called outside the synchronized block,
-                // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
-                try {
-                    provider.libraryCreated (impl);
-                    updateTimeStamp(fo);
-                    saveTimeStamps();
-                } catch (RuntimeException e) {
-                    String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
-                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
+                else {
+                    synchronized (this) {
+                        this.libraries.put (impl.getName(), impl);
+                        this.librariesByFileNames.put (fo.getPath(), impl);
+                    }
+                    //Has to be called outside the synchronized block,
+                    // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
+                    try {
+                        provider.libraryCreated (impl);
+                        updateTimeStamp(fo);
+                        saveTimeStamps();
+                    } catch (RuntimeException e) {
+                        String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
+                        ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
+                    }
+                    this.fireLibrariesChanged();
                 }
-                this.fireLibrariesChanged();
-            }
+            }            
         } catch (SAXException e) {
             ErrorManager.getDefault().notify (e);
         } catch (javax.xml.parsers.ParserConfigurationException e) {
@@ -361,7 +373,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         if (impl != null) {
             LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
             if (provider == null) {
-                ErrorManager.getDefault().log("LibrariesStorage: Cannot invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Cannot invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
             }
             else {
                 //Has to be called outside the synchronized block,
@@ -389,7 +401,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 readLibrary (definitionFile, impl);
                 LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
                 if (provider == null) {
-                    ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
                 try {
                     //TODO: LibraryTypeProvider should be extended by libraryUpdated method 

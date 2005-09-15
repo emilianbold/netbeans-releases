@@ -15,9 +15,7 @@ package org.netbeans.modules.project.libraries;
 
 import org.xml.sax.*;
 
-public interface LibraryDeclarationConvertor {
-    
-    public java.net.URL parseLocation(final java.lang.String data) throws SAXException;
+public interface LibraryDeclarationConvertor {    
     
     public java.net.URL parseResource(final java.lang.String data) throws SAXException;
     

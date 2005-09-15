@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.project.libraries;
 
+import org.openide.ErrorManager;
 import org.xml.sax.*;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -89,11 +90,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         }
     }
     
-    public void end_library() throws SAXException {
-        LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
-        if (provider == null) {
-            throw new SAXParseException("Invalid library type " + libraryType, null); //NOI18N
-        }
+    public void end_library() throws SAXException {        
         boolean update;
         if (this.library != null) {
             if (this.libraryType == null || !this.libraryType.equals(this.library.getType())) {
@@ -103,6 +100,11 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             update = true;
         }
         else {
+            LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
+            if (provider == null) {
+                ErrorManager.getDefault().log (ErrorManager.WARNING, "LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType);
+                return;
+            }
             this.library = provider.createLibrary();
             update = false;
         }
@@ -134,7 +136,9 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     }
 
     public void handle_resource(java.net.URL data, final Attributes meta) throws SAXException {
-        cpEntries.add(data);
+        if (data != null) {
+            cpEntries.add(data);
+        }
     }
         
     public void handle_name(final java.lang.String data, final Attributes meta) throws SAXException {
