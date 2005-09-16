@@ -35,6 +35,8 @@ Microsystems, Inc. All Rights Reserved.
     <filter pattern="http://translatedfiles\.netbeans\.org/" accept="true"/>
     <!-- dtd are fine they cannot change anyway -->
     <filter pattern="http://www\.netbeans\.org/dtds/.*" accept="true"/>
+    <filter pattern="http://www\.netbeans\.org/servlets/.*" accept="true"/>
+    <filter pattern="http://openide\.netbeans\.org/proposals/.*" accept="true"/>        
     
     <!-- forbid the rest of NetBeans sites -->
     <filter pattern="http://.*netbeans\.org/.*" accept="false"/>
