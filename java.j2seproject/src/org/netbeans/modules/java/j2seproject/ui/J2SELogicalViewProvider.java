@@ -708,6 +708,11 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         // Private methods -----------------------------------------------------
         
         private Collection getKeys() {
+            //#60800, #61584 - when the project is deleted externally do not try to create children, the source groups
+            //are not valid
+            if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
+                return Collections.EMPTY_LIST;
+            }
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             
