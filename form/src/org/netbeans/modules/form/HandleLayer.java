@@ -1905,7 +1905,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         dragPanel.add(comp);
                     }
                     else {
-                        comp.setVisible(false);
+                        // Should not hide top designed component
+                        if (!formDesigner.getTopDesignComponent().equals(movingComponents[i])) {
+                            comp.setVisible(false);
+                        }
                     }
                     avoidDoubleBuffering(comp);
                 }
