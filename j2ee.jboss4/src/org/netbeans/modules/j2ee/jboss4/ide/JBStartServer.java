@@ -240,7 +240,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         }
         
         public void run() {
-            try {
+//            try {
                 Process serverProcess = null;
                 String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
                 
@@ -266,12 +266,13 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 try {
                     serverProcess = pd.exec(null, envp, true, null );
                 } catch (java.io.IOException ioe) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+    
                     fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
                             NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_PD", serverRunFileName)));//NOI18N
+                    
                     return;
                 }
-                
-                serverProcess = pd.exec(null, envp, true, null );
                 
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
                 
@@ -342,9 +343,9 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
                 
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
+//            } catch (IOException e) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//            }
         }
         private final static String STARTUP_SH = "/bin/run.sh";
         private final static String STARTUP_BAT = "/bin/run.bat";
