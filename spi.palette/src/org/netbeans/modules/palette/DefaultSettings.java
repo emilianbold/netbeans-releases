@@ -273,10 +273,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         }
     }
     
-    private synchronized void store() {
-        if( null != settingsFileLock )
-            return;
-        
+    private void store() {
         long startTime = System.currentTimeMillis();
         Node root = (Node)model.getRoot().lookup( Node.class );
         assert null != root;
@@ -287,7 +284,14 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
                 fo = createSettingsFile();
             if( null == fo )
                 return;
-            settingsFileLock = fo.lock();
+            synchronized( this ) {
+                if( null == settingsFileLock ) {
+                    settingsFileLock = fo.lock();
+                } else {
+                    //settings are being stored already at the moment
+                    return;
+                }
+            }
             PrintWriter writer = new PrintWriter( fo.getOutputStream( settingsFileLock ) );
             writer.print( "<root " );
             printAttributes( writer, root );
