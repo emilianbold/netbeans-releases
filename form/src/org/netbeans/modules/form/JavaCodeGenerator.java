@@ -2572,7 +2572,9 @@ class JavaCodeGenerator extends CodeGenerator {
                                 getEventHandlerText(handlerName));
 
                         generateEventHandler(handlerName,
-                                             ev.getComponentEvent().getListenerMethod(),
+                                            (ev.getComponentEvent() == null) ?
+                                                formModel.getFormEvents().getOriginalListenerMethod(handlerName) :
+                                                ev.getComponentEvent().getListenerMethod(),
                                              bodyText);
                     }
                     if (events.length == 1 && bodyText == null)
