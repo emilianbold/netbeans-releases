@@ -38,7 +38,7 @@ public class RADIO implements ActiveEditorDrop {
     private boolean selected = false;
     private boolean disabled = false;
    
-    private String[] groups;
+    private String[] groups = new String[0];
     
     public RADIO() {
     }
@@ -47,9 +47,28 @@ public class RADIO implements ActiveEditorDrop {
 
         Document doc = targetComponent.getDocument();
         if (doc instanceof BaseDocument) {
+            
+            String oldGN = null;
+            if (groupIndex >= 0) // non-empty group list from previous run =>
+                oldGN = groups[groupIndex]; // => save previously selected group name
+            else if (group.length() > 0) // new group was inserted in the previous run
+                oldGN = group;
+            
             groups = findGroups((BaseDocument)doc);
-            if (groups.length > 0 && groupIndex == GROUP_DEFAULT)
-                groupIndex = 0;
+            if (groups.length == 0) // no groups found => reset index
+                groupIndex = GROUP_DEFAULT;
+            
+            if (groups.length > 0) { // some groups found
+                groupIndex = 0; // point at the beginning by default
+                if (groupIndex != GROUP_DEFAULT && oldGN != null) {// non-empty group list from previous run
+                    for (; groupIndex < groups.length; groupIndex++) {
+                        if (oldGN.equalsIgnoreCase(groups[groupIndex]))
+                            break;
+                    }
+                    if (groupIndex == groups.length) // previously selected group not found
+                        groupIndex = 0;
+                }
+            }
         }
         
         RADIOCustomizer c = new RADIOCustomizer(this);
@@ -69,7 +88,7 @@ public class RADIO implements ActiveEditorDrop {
     private String createBody() {
         
         String strName = " name=\"\""; // NOI18N
-        if (groupIndex == -1)
+        if (groupIndex == GROUP_DEFAULT)
             strName = " name=\"" + group + "\""; // NOI18N
         else 
             strName = " name=\"" + groups[groupIndex] + "\""; // NOI18N
