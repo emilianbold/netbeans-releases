@@ -1,24 +1,25 @@
-<?xml version='1.0' encoding='ISO-8859-1'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
                      "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
 
 	<mapID target="tbd" url="tbd.html"/>
-	
+
+	<!-- Start of "Getting Started" section -->
 	<mapID target="about_plugins" url="about/nbmodule-about.html"/>
 	<mapID target="about_system_filesystem" url="about/nbmodule-about-system-filesystem.html"/>
 	<mapID target="about_xml_layers" url="about/about-xml-layers.html"/>
 	<mapID target="about_open_apis" url="about/about-open-apis.html"/>
 	<mapID target="about-netbeans-platform" url="about/about-netbeans-platform.html"/>
+	<!-- End of "About" section -->
 
-	<mapID target="about_create" url="create_plugin/about_create.html"/>
-	
+	<!-- Start of "Creating" section -->
+	<mapID target="about_create" url="create_plugin/about_create.html"/>	
 	<mapID target="about_project_wizards" url="create_plugin/projectlevel_create/about_project_wizards.html"/>	
 	<mapID target="create_module_suite" url="create_plugin/projectlevel_create/create_module_suite.html"/>
 	<mapID target="create_module" url="create_plugin/projectlevel_create/create_module.html"/>
 	<mapID target="create_library_wrapper" url="create_pluginprojectlevel_createprojectlevel/create_library_wrapper.html"/>
-
 	<mapID target="about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>	
 	<mapID target="create_j2se_library_descriptor" url="create_plugin/filelevel_create/create_j2se_library_descriptor.html"/>
 	<mapID target="create_action" url="create_plugin/filelevel_create/create_action.html"/>
@@ -26,22 +27,72 @@
 	<mapID target="create_project_template" url="create_plugin/filelevel_create/create_project_template.html"/>
 	<mapID target="create_window_component" url="create_plugin/filelevel_create/create_window_component.html"/>
 	<mapID target="create_wizard" url="create_plugin/filelevel_create/create_wizard.html"/>
-	
+	<!-- Start of "Create" section -->
 
+	
 	<mapID target="building_plugins" url="build_plugin/building_plugins.html"/>
 	<mapID target="debugging_plugins" url="debug_plugin/debugging_plugins.html"/>	
 	<mapID target="branding_plugins" url="brand_plugin/branding_plugins.html"/>
 	<mapID target="distributing_plugins" url="distribute_plugin/distributing_plugins.html"/>	
 
-	<mapID target="org.netbeans.modules.apisupport.project.ui.SuiteCustomizer" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformChooserWizardPanel" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformInfoWizardPanel" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="tbd.html" />
-	<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="tbd.html" />
+	<!-- Start of "CSH" section -->
+
+		<!-- NetBeans Platform Manager: -->
+		<mapID target="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" url="csh/NbPlatformCustomizer.html"/>
+		<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformChooserWizardPanel" url="csh/NbPlatformCustomizer.html"/>
+
+		<!-- New Project wizard: -->
+			<!-- FeedReader project template: -->
+			<mapID target="org.netbeans.modules.apisupport.feedreader.FeedReaderWizardPanel" url="csh/FeedReaderWizardPanel.html"/>
+			<!-- Module Project -->
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="csh/BasicInfoWizardPanel.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="csh/BasicConfWizardPanel.html"/>
+			<!-- Module Suite Project -->
+				<!-- <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="csh/BasicInfoWizardPanel.html"/>-->
+			<!-- Library Wrapper Module Project -->
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="csh/LibraryStartWizardPanel.html"/>
+			<!-- <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="csh/BasicConfWizardPanel.html"/>-->
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" url="csh/LibraryConfWizardPanel.html"/>
+
+		<!-- New File wizard: -->
+
+			<!-- J2SE Library Descriptor -->
+				<!-- Select Library -->
+				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.SelectLibraryPanel" url="csh/SelectLibraryPanel.html"/> 
+				<!-- Name and Location -->
+				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NameAndLocationPanel" url="csh/NameAndLocationPanel.html"/> 
+
+			<!-- Action -->
+				<!-- Action Type -->
+				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.action.ActionTypePanel" url="csh/ActionTypePanel.html"/> 
+				<!-- GUI Registration -->
+				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.action.GUIRegistrationPanel" url="csh/GUIRegistrationPanel.html"/> 
+				<!-- Name, Icon, and Location -->
+				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.action.NameIconLocationPanel" url="csh/NameIconLocationPanel.html"/> 
+
+			<!-- File Type -->
+				<!-- File Recognition -->
+   				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.loader.FileRecognitionPanel" url="csh/FileRecognitionPanel.html"/>
+				<!-- Name, Icon and Location -->
+   				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.loader.NameAndLocationPanel" url="csh/NameAndLocationPanel.html"/>
+			<!-- Project Template -->
+				<!-- Select Project -->
+   				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.project.SelectProjectPanel" url="csh/SelectProjectPanel.html"/>
+				<!-- Name and Location -->
+   				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.project.NameAndLocationPanel" url="csh/NameAndLocationPanel.html"/>
+
+			<!-- Window Component -->
+				<!-- Basic Settings -->
+   				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.winsys.BasicSettingsPanel" url="csh/BasicSettingsPanel.html"/>
+				<!-- Name, Icon and Location -->
+  				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.winsys.NameAndLocationPanel" url="csh/NameAndLocationPanel.html"/>
+
+			<!-- Wizard -->
+				<!-- Wizard Type -->
+   				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.wizard.WizardTypePanel" url="csh/WizardTypePanel.html"/>
+				<!-- Name, Icon, and Location -->
+   				<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.wizard.NameIconLocationPanel" url="csh/NameIconLocationPanel.html"/>
+	<!-- End of "CSH" section -->
 
 </map>
 
