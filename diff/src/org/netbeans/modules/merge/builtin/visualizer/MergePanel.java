@@ -478,8 +478,8 @@ public class MergePanel extends javax.swing.JPanel {
   }
 
   /**
-   * Instruct view to move given line. It actually
-   * moves as AWT process posted event.
+   * Instruct view to move to given line. It actually
+   * moves when AWT processes posted event.
    */
   public void setCurrentLine(final int line, final int diffLength, final int conflictPos,
                              final int resultLine) {
