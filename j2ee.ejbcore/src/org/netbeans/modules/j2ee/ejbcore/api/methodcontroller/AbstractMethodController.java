@@ -209,30 +209,23 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public boolean hasMethodInInterface(Method m, MethodType methodType, boolean local) {
         boolean result = false;
         JavaClass intf = null;
-        String name = null;
-        org.netbeans.jmi.javamodel.Type retT = null;
-        // return type
+        Method wantedMethod = JMIUtils.duplicate(m);
         if (methodType instanceof MethodType.BusinessMethodType) {
-            name = m.getName();
-            retT = m.getType();
             intf = findBusinessInterface(local? model.getLocal(): model.getRemote());
         }
         else if (methodType instanceof MethodType.CreateMethodType) {
-            name = chopAndUpper(m.getName(),"ejb"); //NOI18N
-            retT = findJavaClass(local? model.getLocal(): model.getRemote());
+            wantedMethod.setName(chopAndUpper(m.getName(),"ejb")); //NOI18N
+            wantedMethod.setType(findJavaClass(local? model.getLocal(): model.getRemote()));
             intf = findJavaClass(local? model.getLocalHome(): model.getHome());
         }
-        if (name == null || intf == null || retT == null) {
+        if (wantedMethod.getName() == null || intf == null || wantedMethod.getType() == null) {
             return true;
         }
         Iterator/*<Feature>*/ features = intf.getFeatures().iterator();
         while (features.hasNext()) {
             Feature f = (Feature)features.next();
             if (f instanceof Method) {
-                Method method = (Method)f;
-                if (name.equals(method.getName())
-                    && retT.getName().equals(method.getType().getName())) {
-                    // XXX check also parameters
+                if (JMIUtils.equalMethods(wantedMethod, (Method) f)) {
                     result = true;
                     break;
                 }
