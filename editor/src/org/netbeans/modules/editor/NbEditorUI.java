@@ -52,6 +52,7 @@ import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.CallbackSystemAction;
@@ -81,8 +82,11 @@ public class NbEditorUI extends ExtEditorUI {
     private ChangeListener listener;
     private FontColorSettings fontColorSettings;    
     private FontColorSettings bfontColorSettings;    
+    private LookupListener weakLookupListener;    
+    private Lookup.Result result;
+    private LookupListener lookupListener;    
     
-    private static final Map /*<mimeType, map of colorings>*/coloringMap = new HashMap(5);
+    private static final Map /*<mimeType, map of colorings>*/mime2Coloring = new HashMap(5);
     
     /**
      *
@@ -156,11 +160,14 @@ public class NbEditorUI extends ExtEditorUI {
                     return null;
                 }
                 MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
-                Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
+                result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
                 Collection inst = result.allInstances();
-                LookupListener lookupListener = new MyLookupListener(mimeType);
-                result.addLookupListener(lookupListener);
-                if (inst.size() > 0){
+                lookupListener = new MyLookupListener(mimeType);
+                weakLookupListener = (LookupListener) WeakListeners.create(
+                        LookupListener.class, lookupListener, result);
+  
+                result.addLookupListener(weakLookupListener);
+                                if (inst.size() > 0){
                     fontColorSettings = (FontColorSettings)inst.iterator().next();
                 }
             }
@@ -174,21 +181,19 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
     protected Map createColoringMap(){
-        Map old = super.createColoringMap();
         FontColorSettings fcs = getFontColorSettings();
         EditorSettings es = getEditorSettings();
         String mimeType = getDocumentContentType();
         if (fcs == null || es == null || mimeType == null){
-            return old;
+            return super.createColoringMap();
         }
-        BaseKit kit = Utilities.getKit(getComponent());
-        String kitMimeType = (kit == null )? null :kit.getContentType();
-        synchronized (coloringMap){
-            Map cm = (Map)coloringMap.get(mimeType);
+        synchronized (mime2Coloring){
+            Map cm = (Map)mime2Coloring.get(mimeType);
             if (cm != null){
                 return cm;
             }
-            cm = super.createColoringMap();
+            cm = new HashMap();
+            cm.putAll(super.createColoringMap());
             String scheme = es.getCurrentFontColorScheme();
             Collection col = fcs.getAllFontColors(scheme);
             Iterator it = col.iterator();
@@ -219,7 +224,7 @@ public class NbEditorUI extends ExtEditorUI {
                 Coloring coloring = new Coloring(font, fore, back);
                 cm.put(name, coloring);
             }
-            coloringMap.put(mimeType, cm);
+            mime2Coloring.put(mimeType, cm);
             return cm;
             
         }
@@ -685,7 +690,11 @@ public class NbEditorUI extends ExtEditorUI {
 
     }
 
-    private static class MyLookupListener implements LookupListener {
+    public Map getColoringMap() {
+        return createColoringMap();
+    }
+
+    private class MyLookupListener implements LookupListener {
 
         private String mimeType;
 
@@ -695,9 +704,13 @@ public class NbEditorUI extends ExtEditorUI {
         }
 
         public void resultChanged(LookupEvent ev) {
-            synchronized (coloringMap){
-                coloringMap.remove(mimeType);
+            synchronized (mime2Coloring){
+                mime2Coloring.remove(mimeType);
             }
+            JTextComponent comp = getComponent();
+            if (comp!=null){
+                comp.repaint();
+            }            
         }
     }
 
