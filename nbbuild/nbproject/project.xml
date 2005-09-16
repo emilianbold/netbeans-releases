@@ -172,7 +172,10 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../ant/grammar</project>
                 <project>../ant/project</project>
                 <project>../apisupport/ant</project>
+                <project>../apisupport/harness</project>
                 <project>../apisupport/project</project>
+                <project>../apisupport/refactoring</project>
+                <project>../apisupport/samples/feedreader-sample-ui</project>
                 <project>../autoupdate</project>
                 <project>../beans</project>
                 <project>../classfile</project>
@@ -274,7 +277,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../junit</project>
                 <project>../libs/commons_logging</project>
                 <project>../libs/form-layout</project>
-                <project>../libs/j2eeeditor</project>
                 <project>../libs/jsch</project>
                 <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
