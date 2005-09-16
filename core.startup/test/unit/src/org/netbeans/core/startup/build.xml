@@ -94,6 +94,10 @@ Microsystems, Inc. All Rights Reserved.
             <param name="sourcedir" value="jars/depends-on-library-src"/>
         </antcall>
         <antcall target="create-jar">
+            <param name="name" value="fails-on-non-existing-package"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+        </antcall>
+        <antcall target="create-jar">
             <param name="name" value="fails-on-lib-unvers"/>
             <param name="sourcedir" value="jars/depends-on-library-src"/>
         </antcall>

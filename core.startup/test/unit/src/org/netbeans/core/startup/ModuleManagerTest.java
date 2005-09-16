@@ -614,6 +614,38 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
     
+    public void testPackageDependencyMayfail() throws Exception {
+        //see #63904:
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Manifest mani;
+            JarFile jf = new JarFile(new File(jars, "simple-module.jar"));
+            try {
+                mani = jf.getManifest();
+            } finally {
+                jf.close();
+            }
+            
+            Module toFail = mgr.create(new File(jars, "fails-on-non-existing-package.jar"), null, false, false, false);
+            Module fixed  = mgr.createFixed(mani, null, this.getClass().getClassLoader());
+            
+            try {
+                mgr.enable(new HashSet(Arrays.asList(new Object[] {toFail, fixed})));
+                fail("Was able to turn on fails-on-non-existing-package.jar without complaint");
+            } catch (InvalidException e) {
+                assertTrue("fails-on-non-existing-package.jar was not enabled", e.getModule() == toFail);
+            }
+            
+            assertTrue("simple-module.jar was enabled", fixed.isEnabled());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    
+    
     // #12549: check that loading of localized manifest attributes works.
     public void testLocalizedManifestAttributes() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();

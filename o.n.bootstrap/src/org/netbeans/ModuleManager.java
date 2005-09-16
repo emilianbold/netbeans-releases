@@ -852,6 +852,10 @@ public final class ModuleManager {
                 Iterator fbIt = fallback.iterator();
                 while (fbIt.hasNext()) {
                     Module m = (Module)fbIt.next();
+                    if (m.isFixed()) {
+                        // cannot disable fixed modules
+                        continue;
+                    }
                     m.setEnabled(false);
                     if (tryingClassLoaderUp) {
                         // OK, taken into account for first module, others are up.
