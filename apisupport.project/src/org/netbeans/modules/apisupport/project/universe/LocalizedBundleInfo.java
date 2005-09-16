@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +23,7 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
@@ -51,6 +54,8 @@ public final class LocalizedBundleInfo {
     
     private EditableProperties props;
     private String path;
+    
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     /**
      * Returns instances initialized by data in the given {@link FileObject}.
@@ -128,7 +133,9 @@ public final class LocalizedBundleInfo {
                     + getClass().getName() + ".setPath()"); // NOI18N
         }
         FileObject bundleFO = FileUtil.toFileObject(new File(getPath()));
+        String oldDisplayName = getDisplayName();
         this.props = Util.loadProperties(bundleFO);
+        firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, getDisplayName());
     }
     
     /**
@@ -168,7 +175,9 @@ public final class LocalizedBundleInfo {
     }
     
     public void setDisplayName(String name) {
+        String oldDisplayName = getDisplayName();
         this.setProperty(NAME, name, false);
+        firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, getDisplayName());
     }
     
     public String getCategory() {
@@ -239,10 +248,24 @@ public final class LocalizedBundleInfo {
         return (String[]) sentences.toArray(new String[sentences.size()]);
     }
     
+    public void addPropertyChangeListener(PropertyChangeListener pchl) {
+        changeSupport.addPropertyChangeListener(pchl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pchl) {
+        changeSupport.removePropertyChangeListener(pchl);
+    }
+    
+    private void firePropertyChange(String propName, Object oldValue, Object newValue) {
+        changeSupport.firePropertyChange(propName, oldValue, newValue);
+    }
+    
+    
     public String toString() {
         return "LocalizedBundleInfo[" + getDisplayName() + "; " + // NOI18N
                 getCategory() + "; " + // NOI18N
                 getShortDescription() + "; " + // NOI18N
                 getLongDescription() + "]"; // NOI18N
     }
+    
 }

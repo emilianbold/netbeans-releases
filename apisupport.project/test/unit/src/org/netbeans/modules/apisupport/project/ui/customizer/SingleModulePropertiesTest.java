@@ -262,7 +262,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("expected content", expected, real);
     }
     
-    public void testaddNonEmptyPackages() throws Exception {
+    public void testAddNonEmptyPackages() throws Exception {
         FileObject srcDir = FileUtil.toFileObject(getWorkDir()).createFolder("src");
         FileUtil.createData(srcDir, "pkg1/Clazz1.java");
         FileUtil.createData(srcDir, "pkg1/Clazz2.java");

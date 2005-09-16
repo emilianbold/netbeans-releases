@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -105,7 +106,6 @@ public final class NbModuleProject implements Project {
     private final NbModuleTypeProviderImpl typeProvider;
     
     private LocalizedBundleInfo bundleInfo;
-    private String infoDisplayName;
     private boolean needNewEvaluator;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
@@ -198,8 +198,12 @@ public final class NbModuleProject implements Project {
         if (mf != null && srcFO != null) {
             bundleInfo = Util.findLocalizedBundleInfo(srcFO, getManifest());
         }
+        Info info = new Info();
+        if (bundleInfo != null) {
+            bundleInfo.addPropertyChangeListener(info);
+        }
         lookup = Lookups.fixed(new Object[] {
-            new Info(),
+            info,
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
@@ -811,24 +815,28 @@ public final class NbModuleProject implements Project {
         return bundleInfo;
     }
     
-    private final class Info implements ProjectInformation {
+    private final class Info implements ProjectInformation, PropertyChangeListener {
         
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
+        private String displayName;
         
-        Info() {}
+        Info() {
+            displayName = bundleInfo != null ? bundleInfo.getDisplayName() : getName();
+        }
         
         public String getName() {
             return getCodeNameBase();
         }
         
         public String getDisplayName() {
-            String newInfoDisplayName = bundleInfo != null ? bundleInfo.getDisplayName() : getName();
-            if (infoDisplayName == null || !newInfoDisplayName.equals(infoDisplayName)) {
-                String oldValue = infoDisplayName;
-                infoDisplayName = newInfoDisplayName;
-                firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldValue, infoDisplayName);
-            }
-            return infoDisplayName;
+            return displayName;
+        }
+        
+        private void setDisplayName(String newDisplayName) {
+            String oldDisplayName = displayName;
+            displayName = newDisplayName == null ? getName() : newDisplayName;
+            firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, displayName);
         }
         
         public Icon getIcon() {
@@ -849,6 +857,12 @@ public final class NbModuleProject implements Project {
         
         private void firePropertyChange(String propName, Object oldValue, Object newValue) {
             changeSupport.firePropertyChange(propName, oldValue, newValue);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
+                setDisplayName((String) evt.getNewValue());
+            }
         }
         
     }
