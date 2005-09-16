@@ -16,6 +16,7 @@ package org.netbeans.editor.ext.html;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.awt.Color;
@@ -39,12 +40,14 @@ import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.javadoc.HelpManager;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.editor.ext.html.javadoc.TagHelpItem;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.ErrorManager;
 
 /**
  * HTML completion results finder
@@ -740,25 +743,59 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
     }
     
-    static class DocItem implements CompletionDocumentation {
-        private HTMLResultItem ri;
+    static class LinkDocItem implements CompletionDocumentation {
+        private URL url;
         
-        public DocItem(HTMLResultItem ri) {
-            this.ri = ri;
+        public LinkDocItem(URL url) {
+            this.url = url;
         }
         
         public String getText() {
-            String help = HelpManager.getDefault().getHelp(ri.getHelpID());
+            String anchor = HelpManager.getDefault().getAnchorText(url);
+            if(anchor != null)
+                return HelpManager.getDefault().getHelpText(url, anchor);
+            else 
+                return HelpManager.getDefault().getHelpText(url);
+        }
+         
+        public URL getURL() {
+            return url;
+        }
+        
+        public CompletionDocumentation resolveLink(String link) {
+            return new LinkDocItem(HelpManager.getDefault().getRelativeURL(url, link));
+        }
+        
+        public Action getGotoSourceAction() {
+            return null;
+        }
+        
+    }
+    
+    
+    static class DocItem implements CompletionDocumentation {
+        private String name;
+        
+        public DocItem(HTMLResultItem ri) {
+            this(ri.getHelpID());
+        }
+        
+        public DocItem(String name) {
+            this.name = name;
+        }
+        
+        public String getText() {
+            String help = HelpManager.getDefault().getHelp(name);
             return help;
         }
         
         public URL getURL() {
-            return HelpManager.getDefault().getHelpURL(ri.getHelpID());
+            return HelpManager.getDefault().getHelpURL(name);
         }
         
         public CompletionDocumentation resolveLink(String link) {
-            //????
-            return null;
+            String currentLink = HelpManager.getDefault().findHelpItem(name).getFile();
+            return new LinkDocItem(HelpManager.getDefault().getRelativeURL(HelpManager.getDefault().getHelpURL(name), link));
         }
         
         public Action getGotoSourceAction() {

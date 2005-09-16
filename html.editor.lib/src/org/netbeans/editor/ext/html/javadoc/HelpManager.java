@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,11 +13,16 @@
 
 package org.netbeans.editor.ext.html.javadoc;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
@@ -65,28 +70,28 @@ public class HelpManager {
                 helpMap = null;
                 lastChange = file.lastModified();
             }*/
-            if (helpMap == null){    
+            if (helpMap == null){
                 //Parse the config file
                 InputStream in = this.getClass().getClassLoader()
-                    .getResourceAsStream("org/netbeans/editor/ext/html/javadoc/resources/HtmlHelp.xml"); //NOI18N
+                .getResourceAsStream("org/netbeans/editor/ext/html/javadoc/resources/HtmlHelp.xml"); //NOI18N
                 if (in == null){
                     helpMap = new Hashtable();
                     return;
                 }
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser parser = factory.newSAXParser();
-
-                SAXHelpHandler handler = new SAXHelpHandler();    
+                
+                SAXHelpHandler handler = new SAXHelpHandler();
                 java.util.Date start = new java.util.Date();
                 parser.parse(in, handler);
                 in.close();
                 
                 //parser.parse(file, handler);
-
+                
                 //System.out.println("Parsing config file takes " + (end.getTime() - start.getTime()));
                 help = handler.getHelpFile();
                 if (help == null || help.equals("")){
-                    help = null; 
+                    help = null;
                     helpMap = new Hashtable();
                     return;
                 }
@@ -101,35 +106,32 @@ public class HelpManager {
                         URL urll = f.toURL();
                         urll = FileUtil.getArchiveRoot(urll);
                         helpZipURL = urll.toString();
-                    }
-                    catch (java.net.MalformedURLException e){
+                    } catch (java.net.MalformedURLException e){
                         ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                         helpMap = new Hashtable();
                         return;
                     }
                 }
             }
-        } 
-        catch (Exception e){
+        } catch (Exception e){
+            e.printStackTrace();
             ErrorManager.getDefault().log(e.toString());
         }
-        
-            
-        
     }
     
     public URL getRelativeHelpToLast(String link){
-        String url = lastURL.toString();
-        
+        return getRelativeURL(lastURL, link);
+    }
+    
+    public URL getRelativeURL(URL baseurl, String link){
+        String url = baseurl.toString();
         int index;
-        
         if (link.trim().charAt(0) == '#'){
             index = url.indexOf('#');
             if (index > -1)
                 url = url.substring(0,url.indexOf('#'));
             url = url + link;
-        }
-        else {
+        } else {
             index = 0;
             url = url.substring(0, url.lastIndexOf('/'));
             while ((index = link.indexOf("../", index)) > -1){      //NOI18N
@@ -140,9 +142,8 @@ public class HelpManager {
         }
         URL newURL = null;
         try{
-            newURL = new URL (url);
-        }
-        catch (java.net.MalformedURLException e){
+            newURL = new URL(url);
+        } catch (java.net.MalformedURLException e){
             ErrorManager.getDefault().log(e.toString());
             return null;
         }
@@ -150,14 +151,15 @@ public class HelpManager {
     }
     
     public String getHelp(String key){
-        if (key == null) 
-            return null;
-        TagHelpItem helpItem = findHelpItem(key);
+        if (key == null) return null;
+        return getHelp(findHelpItem(key));
+    }
+    
+    public String getHelp(TagHelpItem helpItem){
         URL url = getHelpURL(helpItem);
         if (url == null)
             return null;
         
-        //System.out.println(key + " -> url: " + url);
         lastURL = url;
         String help = getHelpText(url);
         int offset = 0;
@@ -178,8 +180,7 @@ public class HelpManager {
                     help = help.substring(0, offset);
                 }
             }
-        }
-        else {
+        } else {
             help = "";
         }
         if (helpItem.getTextBefore() != null)
@@ -201,7 +202,7 @@ public class HelpManager {
         }
         return head;
     }*/
-    private String getHelpText (URL url){
+    public String getHelpText(URL url){
         if (url == null )
             return null;
         try{
@@ -213,30 +214,29 @@ public class HelpManager {
                 count = is.read(buffer);
                 if (count > 0) baos.write(buffer, 0, count);
             } while (count > 0);
-
+            
             is.close();
             String text = baos.toString();
             baos.close();
             return text;
-        }
-        catch (java.io.IOException e){
+        } catch (java.io.IOException e){
+            e.printStackTrace();
             return null;
-        }            
+        }
     }
     
     public URL getHelpURL(String key){
         return getHelpURL(findHelpItem(key));
     }
     
-    private URL getHelpURL(TagHelpItem helpItem){
+    public URL getHelpURLForLink(String link) {
         URL url = null;
         
-        if(helpItem != null){
-            String surl = helpZipURL + helpItem.getFile();
+        if(link != null){
+            String surl = helpZipURL + link;
             try{
-                url = new URL (surl);
-            }
-            catch (java.net.MalformedURLException e){
+                url = new URL(surl);
+            } catch (java.net.MalformedURLException e){
                 ErrorManager.getDefault().log(e.toString());
                 return null;
             }
@@ -245,20 +245,72 @@ public class HelpManager {
         return url;
     }
     
-    private TagHelpItem findHelpItem(String key){
+    public URL getHelpURL(TagHelpItem helpItem){
+        URL url = null;
+        
+        if(helpItem != null){
+            String surl = helpZipURL + helpItem.getFile();
+            try{
+                url = new URL(surl);
+            } catch (java.net.MalformedURLException e){
+                ErrorManager.getDefault().log(e.toString());
+                return null;
+            }
+        }
+        
+        return url;
+    }
+    
+    
+    public TagHelpItem findHelpItem(String key){
         if (key == null) return null;
         init();
         Object o = helpMap.get(key.toUpperCase());
         if (o != null){
             TagHelpItem helpItem = (TagHelpItem)o;
-        
+            
             if (helpItem != null)
                 while (helpItem != null && helpItem.getIdentical() != null){
-                    helpItem = (TagHelpItem)helpMap.get(helpItem.getIdentical().toUpperCase());
+                helpItem = (TagHelpItem)helpMap.get(helpItem.getIdentical().toUpperCase());
                 }
-
+            
             return helpItem;
         }
         return null;
     }
+    
+    public String getHelpText(URL url, String anchor) {
+        String pattern = "<a name=\"" + anchor + "\"";
+        String text = getHelpText(url);
+        BufferedReader br = new BufferedReader(new StringReader(text));
+        String line = null;
+        StringBuffer textAfterAnchor = null;
+        int prestack = 0;
+        try {
+            while((line = br.readLine()) != null) {
+                if(line.indexOf(pattern) != -1) {
+                    //found the anchor -> cut off everything before
+                    textAfterAnchor = new StringBuffer();
+                    textAfterAnchor.append(line.substring(line.indexOf(pattern)));
+                } else if(textAfterAnchor != null) {
+                    //missing <pre> tag hack
+                    if(line.indexOf("<pre") != -1) prestack++;
+                    if(line.indexOf("</pre") != -1) prestack--;
+                    
+                    textAfterAnchor.append(line+"\n");
+                }
+            }
+        }catch(IOException ioe ) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            
+        }
+        return textAfterAnchor == null ? null : "<html><body>" + (prestack < 0 ? "<pre>" : "") + textAfterAnchor.toString();
+    }
+        
+    public String getAnchorText(URL url) {
+        String link = url.toExternalForm();
+        if(link.indexOf('#') != -1) return link.substring(link.indexOf('#') + 1);
+        else return null;
+    }
+    
 }
