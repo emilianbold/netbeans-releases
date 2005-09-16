@@ -14,7 +14,7 @@
         
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>Once your working copies of version-controlled files have been edited, 
-        typically you will want to place your changes into the repository. </p>
+        typically you will then place your changes into the repository. </p>
         <ul class="note">
         <li>Project directories must be located within a 
         local working directory that is registered with the IDE
@@ -24,34 +24,14 @@
             <li>Select the files or directories you wish to commit in the Versioning window,
             Projects window, Files window, or Favorites window.
             <li>Ensure that your local copies of the files are up-to-date by right-clicking
-            and choosing CVS > Update
-            before committing your changes.
-            <li>If the files you want to commit do not already exist in the repository,
-            add them first by right-clicking and choosing CVS > Add.</li>
-            <li>Right-click the files or directories you wish to commit and choose CVS > Commit.</li>
+            and choosing CVS > Update before committing your changes.
+            <li>Right-click the files or directories you wish to commit and choose CVS > Commit.
+            Note that if the files you want to commit do not already exist in the repository,
+            the Commit command will add them.</li>
             <p>The CVS Commit dialog box appears prompting you to enter a message describing
             your changes.</p>
-            <li>If you want to set additional options, specify them using the checkboxes
-            below the Enter Reason field. You can specify the following arguments:
-            <ul>
-                <li><b>Force to Commit.</b>&nbsp; Forces a local commit even if you have not
-                changed the files in your local directory.</li>
-                <li><b>Commit to Branch or Revision.</b>&nbsp; Commits to a branch or revision
-                on the trunk that is higher than the existing revision. Type the revision
-                or branch in the text box.</li>
-                <li><b>Run the Module Program (if any).</b>&nbsp; Invokes the <tt>-n</tt> option
-                and does not run any checkout, commit, or tag programs.
-                <p><b>Note:</b> the  Commit dialog box also includes
-                a <a href="">Common
-                Options tab</a> in which you can set global CVS command options. </li>
-            </ul></li>
         </ol>
-        <ul class="note">
-        <li>If you do not see all of these options, your CVS
-        filesystem is not set to display advanced command options. To set the filesystem's
-        Advanced Options property to True, open the Versioning Manager, click Edit,
-        and select Advanced Mode in the Advanced tab. You can also hold down the
-        Control key while choosing the Commit command.</li></ul>
+
         <table>
             <tr>
                 <th colspan="2" align="left"><a name="seealso">See Also</a></th>
@@ -62,7 +42,7 @@
                 <a href="vcs_diff.html">Comparing File Revisions</a><br>
                 <a href="vcs_cvscommands.html">CVS Commands</a> </td>
             </tr>
-        </table>-->
+        </table>
         <hr>
         <small><a href="../credits.html">Legal Notices</a></small>
         <table border="0" cellpadding="20">
