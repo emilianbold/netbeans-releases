@@ -129,6 +129,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
     /** saving task status */
     private boolean savingCanceled = false;
+    private String nameCache;
 
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor ("Instance processor"); // NOI18N
@@ -738,17 +739,25 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
     /* Overriden to return only first part till the bracket */
     public String getName () {
-        String superName = (String) getPrimaryFile().getAttribute(EA_NAME);
-        if (superName != null) return superName;
-
-        superName = super.getName();
-        int bracket = superName.indexOf (OPEN);
-        if (bracket == -1) {
-            return unescape(superName);
-        } else {
-            warnAboutBrackets(getPrimaryFile());
-            return unescape(superName.substring(0, bracket));
+        if (nameCache != null) {
+            return nameCache;
         }
+        
+        String superName = (String) getPrimaryFile().getAttribute(EA_NAME);
+        if (superName == null) {
+            superName = super.getName();
+            int bracket = superName.indexOf (OPEN);
+            if (bracket == -1) {
+                superName = unescape(superName);
+            } else {
+                warnAboutBrackets(getPrimaryFile());
+                superName = unescape(superName.substring(0, bracket));
+            }
+        }
+        
+        this.nameCache = superName;
+        
+        return superName;
     }
 
     private static final Set warnedAboutBrackets = new WeakSet(); // Set<FileObject>
@@ -1539,6 +1548,12 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     /** filenames list of just created files; sync purpose */
     private static final List createdIDOs =
         Collections.synchronizedList(new ArrayList(1));
+
+    /** Clear name cache */
+    void notifyAttributeChanged(org.openide.filesystems.FileAttributeEvent fae) {
+        nameCache = null;
+        super.notifyAttributeChanged(fae);
+    }
 
     /** helper allowing a Writer to provide context via Lookup.Provider
      */
