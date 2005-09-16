@@ -78,7 +78,7 @@ public class TEXTAREACustomizer extends javax.swing.JPanel {
         textArea.setValue(value);
         
         textArea.setDisabled(jCheckBox1.isSelected());
-        textArea.setReadonly(jCheckBox1.isSelected());
+        textArea.setReadonly(jCheckBox2.isSelected());
         
         int rows = ((Integer)jSpinner1.getValue()).intValue();
         textArea.setRows(rows);
