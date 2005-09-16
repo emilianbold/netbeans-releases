@@ -122,7 +122,7 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
 
         String v = (String)personalStoreService.getProfile().getProperty("licenseKey", ""); // NOI18N
         if (v.trim().length()==0) {
-            personalStoreService.getProfile().setProperty("licenseKey", "NB-42"); // NOI18N
+            personalStoreService.getProfile().setProperty("licenseKey", "NB-50"); // NOI18N
             personalStoreService.getProfile().save();
         }
         String forumManage = personalStoreService.getProfile().getProperty("sunIMAllowForumManage", "deny"); // NOI18N
