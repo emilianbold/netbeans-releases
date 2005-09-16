@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+ *
+-->
+<html>
+    <head>
+        <title>Using CVS-Lite</title>
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Using CVS-Lite</h2>        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The IDE includes tools that allow you to  view 
+        and manage the evolution of changes in version-controlled files. </p>
+
+        <h3>Viewing Versioning Information<a name="viewing"></a></h3>
+        <p>The Versioning
+        window displays the status and revision history of files in each VCS working
+        directory registered with the IDE. Files are displayed in a tree view using
+        icons to indicate their type and current status. 
+        <ul class="note">
+        <li>You can  set whether or
+        not the IDE displays file status annotations and at what level of detail in
+        the Options window. </ul>
+        <p>The Versioning window's file tree represents versioned files using the following
+        icons:
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top">
+                <th scope="col" align="left">Icon</th>
+                <th scope="col" align="center">Description</th>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/defaultNode.gif" alt="Note"></p></td>
+                <td>General version-controlled file node, annotated with a revision number
+                and log message.</td>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/revisionCurrentIcon.gif" alt="Note"></p></td>
+                <td>Current revision node. The current copy of a file as it exists in your
+                working directory.</td>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/revisionIcon.gif" alt="Note"></p></td>
+                <td> Revision subnode. A prior revision of a file existing in the VCS repository.</td>
+            </tr>
+            <tr valign="top">
+            <td align="center"><p><img src="./images/branchIcon.gif" alt="Note"></p></td>
+            <td> Branch revision node. A prior revision of a file existing on a branch
+            in the VCS repository.</td>
+        </table>
+
+        <p>Current VCS file status is indicated by
+        adding the following  badges  to Versioning window file icons:
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top">
+                <th scope="col" align="left"> Badge</th>
+                <th scope="col" align="center">Description</th>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/badgeUpToDate.gif" alt="Note"></p></td>
+                <td>Up to Date badge. The local   copy  of the
+                file is the same as the current repository revision. </td>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/badgeNeedsCheckout.gif" alt="Note"></p></td>
+                <td>Needs Checkout badge. </td>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/badgeLocModified.gif" alt="Note"></p></td>
+                <td>Locally Modified badge. The local copy    of the
+                file has been changed and needs to be committed.</td>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/badgeLocRemoved.gif" alt="Note"></p></td>
+                <td>Locally Removed badge. The local copy   of the
+                file has been removed from the working directory. </td>
+            </tr>
+            <tr valign="top">
+                <td align="center"><p><img src="./images/badgeMergeConflict.gif" alt="Note"></p></td>
+                <td>Merge Conflict badge. The repository copy of the file is a more recent
+                revision than the local copy and contains changes which conflict with the
+                local version's new edits. </td>
+            </tr>
+        </table>
+        <p>To open the Versioning window, choose Window > Versioning > Versioning
+        (Ctrl-8). </p>
+
+        <h3>Monitoring VCS operations in the VCS Output Window <a name="monitor"></a></h3>
+        <p>The VCS Ouput window automatically opens at the bottom of the IDE whenever
+            you run VCS commands  that are set to display output.
+            Each operation opens in
+            its own VCS Output tab which includes a command status bar and a Stop button
+            that you can use to cancel active commands.
+        </p>
+        <p>To open the VCS Output window, choose Window > Versioning > VCS
+        Output 
+        (Ctrl-9). </p>
+
+        <h3>Calling Version Control Commands</h3>
+        <p>The VCS commands  submenu  contains all of the available VCS
+        commands for the currently selected file or directory. The VCS commands submenu
+        assumes the  name of the working directory's VCS profile (CVS, for example)
+        for the selected node.  </p>
+        <p>You can access the VCS commands submenu by right-clicking a file or directory
+        in any of the following:</p>
+        <ul>
+            <li><b>Versioning window</b></li>
+            <li><b>Files window</b></li>
+            <li><strong>Favorites window </strong></li>
+            <li><b>VCS Groups window</b></li>
+            <li><b>Search Results window</b></li>
+            <li><b>Source Editor</b></li>
+            <p>The Status Bar in the bottom left of the IDE window displays the current
+            command's status. If the command is set to display ouput, the output is automatically
+            displayed in the VCS Output window.</p>
+        </ul>
+        <ul class="note">
+            <li>By default, the IDE  presents you with basic
+            options when calling VCS commands. To access advanced
+            command options, hold down the Control key while choosing from the VCS
+            commands submenu. To enable advanced options for all VCS commands,
+            set the Advanced Mode property to True in the working directory's property sheet. </li>
+        </ul>
+
+        <table>
+            <tr>
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr>
+                <td width="23"></td>
+                <td>
+                <a href="./vcs_about.html">About Version Control</a><br>
+                <a href="./vcs_overview.html">Working with Version Control</a><br>
+                <a href="./vcs_quickref.html">VCS Tasks: Quick Reference</a> 
+            </tr>
+        </table>-->
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+    </body>
+</html>
