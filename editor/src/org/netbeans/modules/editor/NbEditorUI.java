@@ -188,14 +188,13 @@ public class NbEditorUI extends ExtEditorUI {
         if (fcs == null || es == null || mimeType == null){
             return super.createColoringMap();
         }
-        BaseKit kit = Utilities.getKit(getComponent());
-        String kitMimeType = (kit == null )? null :kit.getContentType();
         synchronized (mime2Coloring){
             Map cm = (Map)mime2Coloring.get(mimeType);
             if (cm != null){
                 return cm;
             }
-            cm = super.createColoringMap();
+            cm = new HashMap();
+            cm.putAll(super.createColoringMap());
             String scheme = es.getCurrentFontColorScheme();
             Collection col = fcs.getAllFontColors(scheme);
             Iterator it = col.iterator();
@@ -203,6 +202,7 @@ public class NbEditorUI extends ExtEditorUI {
             while (it.hasNext()){
                 AttributeSet as = (AttributeSet) it.next();
                 String name = (String)as.getAttribute(StyleConstants.NameAttribute);
+                
                 if (name == null) {
                     continue;
                 }
@@ -215,7 +215,6 @@ public class NbEditorUI extends ExtEditorUI {
                 }
                 
                 Color fore = (Color)as.getAttribute(StyleConstants.Foreground);
-                
                 if (fore == null){
                     fore = (Color) defaults.getAttribute(StyleConstants.Foreground);
                 }
@@ -228,7 +227,6 @@ public class NbEditorUI extends ExtEditorUI {
             }
             mime2Coloring.put(mimeType, cm);
             return cm;
-            
         }
     }
     
