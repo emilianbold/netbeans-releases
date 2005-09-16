@@ -543,8 +543,12 @@ public class PluginProperties  {
                     hp ="localhost:4848";
                 }
                 String dmUrl = "deployer:Sun:AppServer::"+hp; //NOI18N
-                InstanceProperties instanceProperties = InstanceProperties.createInstanceProperties(dmUrl, username, password, hp);
-                instanceProperties.setProperty("displayName", NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name"));
+                String displayName = NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name");
+                if (null == displayName) {
+                    displayName = hp;
+                }
+                InstanceProperties instanceProperties = InstanceProperties.createInstanceProperties(dmUrl, username, password, displayName);
+                instanceProperties.setProperty("displayName", displayName);
                 instanceProperties.setProperty("DOMAIN", "domain1");
                 //  The LOCATION is the domains directory, not the install root now...
                 instanceProperties.setProperty("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains"+File.separator);

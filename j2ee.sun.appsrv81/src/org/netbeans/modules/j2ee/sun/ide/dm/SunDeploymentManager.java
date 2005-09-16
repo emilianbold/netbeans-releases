@@ -259,7 +259,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             retVal = jvmInfo.isSharedMemory();
             lastIsSharedMem = retVal;
         } catch (java.rmi.RemoteException re) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,re);
+            // there is nothing that we can do here.
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);
         }
         return  retVal;
       
