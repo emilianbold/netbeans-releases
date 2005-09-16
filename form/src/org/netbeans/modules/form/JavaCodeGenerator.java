@@ -421,8 +421,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     if (!getDefaultValue().equals(value))
                         component.setAuxValue(AUX_CODE_GENERATION, value);
-                    else
+                    else if (component.getAuxValue(AUX_CODE_GENERATION) != null) {
                         component.getAuxValues().remove(AUX_CODE_GENERATION);
+                    }
 
                     if (value.equals(VALUE_SERIALIZE)
                             && component.getAuxValue(AUX_SERIALIZE_TO) == null)
@@ -470,8 +471,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     if (!"".equals(value))
                         component.setAuxValue(AUX_CREATE_CODE_PRE, value);
-                    else
+                    else if (component.getAuxValue(AUX_CREATE_CODE_PRE) != null) {
                         component.getAuxValues().remove(AUX_CREATE_CODE_PRE);
+                    }
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_CREATE_CODE_PRE, oldValue, value);
@@ -503,8 +505,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     if (!"".equals(value))
                         component.setAuxValue(AUX_CREATE_CODE_POST, value);
-                    else
+                    else if (component.getAuxValue(AUX_CREATE_CODE_POST) != null) {
                         component.getAuxValues().remove(AUX_CREATE_CODE_POST);
+                    }
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_CREATE_CODE_POST, oldValue, value);
@@ -536,8 +539,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     if (!"".equals(value))
                         component.setAuxValue(AUX_INIT_CODE_PRE, value);
-                    else
+                    else if (component.getAuxValue(AUX_INIT_CODE_PRE) != null) {
                         component.getAuxValues().remove(AUX_INIT_CODE_PRE);
+                    }
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_INIT_CODE_PRE, oldValue, value);
@@ -569,8 +573,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     if (!"".equals(value))
                         component.setAuxValue(AUX_INIT_CODE_POST, value);
-                    else
+                    else if (component.getAuxValue(AUX_INIT_CODE_POST) != null) {
                         component.getAuxValues().remove(AUX_INIT_CODE_POST);
+                    }
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_INIT_CODE_POST, oldValue, value);
@@ -602,8 +607,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     if (!"".equals(value))
                         component.setAuxValue(AUX_SERIALIZE_TO, value);
-                    else
+                    else if (component.getAuxValue(AUX_SERIALIZE_TO) != null) {
                         component.getAuxValues().remove(AUX_SERIALIZE_TO);
+                    }
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_SERIALIZE_TO, oldValue, value);
@@ -642,8 +648,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                         if (!"".equals(value))
                             component.setAuxValue(AUX_CREATE_CODE_CUSTOM, value);
-                        else
+                        else if (component.getAuxValue(AUX_CREATE_CODE_CUSTOM) != null) {
                             component.getAuxValues().remove(AUX_CREATE_CODE_CUSTOM);
+                        }
 
                         formModel.fireSyntheticPropertyChanged(
                             component, PROP_CREATE_CODE_CUSTOM, oldValue, value);
@@ -682,8 +689,9 @@ class JavaCodeGenerator extends CodeGenerator {
                         throw new IllegalArgumentException();
                     if (!getDefaultValue().equals(value))
                         component.setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
-                    else
+                    else if (component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE) != null) {
                         component.getAuxValues().remove(FormDesigner.PROP_DESIGNER_SIZE);
+                    }
                 }
 
                 public Object getValue() {
