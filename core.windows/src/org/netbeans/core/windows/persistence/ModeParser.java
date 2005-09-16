@@ -1448,13 +1448,6 @@ class ModeParser {
                     } catch (IOException exc) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
                     }
-                    try {
-                        if (os != null) {
-                            os.close();
-                        }
-                    } catch (IOException exc) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
-                    }
                     if (lock != null) {
                         lock.releaseLock();
                     }
