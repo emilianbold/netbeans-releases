@@ -69,12 +69,18 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }
     
     void refresh() {
-        platformValue.setSelectedItem(getProperties().getActivePlatform());
+        refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());
         managePlafsButton.setEnabled(getProperties().isStandalone());
         updateEnabled();
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
         dependencyList.setModel(getProperties().getDependenciesListModel());
+    }
+    
+    private void refreshPlatforms() {
+        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
+        platformValue.setSelectedItem(getProperties().getActivePlatform());
+        platformValue.requestFocus();
     }
     
     private void updateEnabled() {
@@ -332,9 +338,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
-        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
-        platformValue.setSelectedItem(getProperties().getActivePlatform());
-        platformValue.requestFocus();
+        refreshPlatforms();
     }//GEN-LAST:event_managePlatforms
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency
