@@ -274,4 +274,21 @@ $${jnlp.resources}
             <param name="run.args" value="${debug.args}"/>
         </antcall>
     </target>
+
+    <target name="-check-for-jnlp-userdir">
+        <property name="jnlp.userdir" location="${user.home}/.${app.name}"/>
+        <condition property="have.jnlp.userdir">
+            <and>
+                <isset property="app.name"/>
+                <available file="${jnlp.userdir}" type="dir"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-clean-jnlp-userdir" depends="-check-for-jnlp-userdir" if="have.jnlp.userdir">
+        <property name="jnlp.userdir.bak" location="${jnlp.userdir}.bak"/>
+        <delete dir="${jnlp.userdir.bak}" failonerror="false"/>
+        <move file="${jnlp.userdir}" tofile="${jnlp.userdir.bak}" failonerror="false"/>
+    </target>
+    <target name="clean" depends="-clean-jnlp-userdir" description="Make sure default JNLP user directory is removed so run-jnlp will not get old test settings."/> <!-- #64249 -->
+    
 </project>

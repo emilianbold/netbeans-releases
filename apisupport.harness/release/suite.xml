@@ -131,6 +131,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete dir="dist" failonerror="false"/>
+        <ant antfile="${harness.dir}/jnlp.xml" target="clean"/>
     </target>
 
     <target name="branding" depends="-init" if="branding.token">
