@@ -446,13 +446,39 @@ the Options window:-->
 <mapID target="NetbeansDebuggerThreadNode" url="debug/CSH/threads_view.html" />
 <mapID target="NetbeansDebuggerBreakpointNode" url="debug/CSH/breakpoint_view.html" />
 
+<!--nodes in the Classes window-->
+<mapID target="NetbeansDebuggerConstructorNode" url="debug/CSH/classes_view.html"/>
+<mapID target="NetbeansDebuggerFieldNode" url="debug/CSH/classes_view.html"/>
+<mapID target="NetbeansDebuggerMethodNode" url="debug/CSH/classes_view.html"/>
+<mapID target="NetbeansDebuggerPackageNode" url="debug/CSH/classes_view.html"/>
 
-<!--TODO - add mappings for debug dialog topics debug.add.breakpoint.java.class
-debug.add.breakpoint.java.exception
-debug.add.breakpoint.java.field
-debug.add.breakpoint.java.method
-debug.add.breakpoint.java.thread
-NetbeansDebuggerBreakpointExceptionJPDA-->
+<mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/CSH/session_properties.html"/>
+<mapID target="NetbeansDebuggerThreadsPropertiesSheet" url="debug/CSH/threads_properties.html"/>
+<mapID target="NetbeansDebuggerOutputWindow" url="debug/CSH/debug_output.html"/>
+
+<mapID target="debug.add.breakpoint.java.class" url="debug/CSH/breakpoint_class.html" />
+<mapID target="debug.add.breakpoint.java.exception" url="debug/CSH/breakpoint_exception.html" />
+<mapID target="debug.add.breakpoint.java.field" url="debug/CSH/breakpoint_variable.html" />
+<mapID target="debug.add.breakpoint.java.method" url="debug/CSH/breakpoint_method.html" />
+<mapID target="debug.add.breakpoint.java.thread" url="debug/CSH/breakpoint_thread.html" />
+<mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="debug/CSH/brkpt_exception.html" />
+<mapID target="NetbeansDebuggerBreakpointLineJPDA" url="debug/CSH/brkpt_line.html" />
+<mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="debug/CSH/brkpt_variable.html" />
+<mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="debug/CSH/brkpt_method.html" />
+<mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="debug/CSH/brkpt_thread.html" />
+<mapID target="NetbeansDebuggerBreakpointClassJPDA" url="debug/CSH/brkpt_class.html" />
+
+<mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/CSH/old_stack_call.html"/>
+
+
+<!--debug actions - usually associated with menu items-->	
+<mapID target="NetbeansDebuggerFixAction" url="debug/debug_fix.html"/>
+<mapID target="NetbeansDebuggerGoToCalledMethodAction" url="debug/debug_callstack.html"/>
+<mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/debug_callstack.html"/>
+<mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_pop.html"/>
+
+
+<!--TODO - add mappings for debug dialog topics-->
 
 <!-- Options | Editing | Java Sources | Override Methods :-->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
