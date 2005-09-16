@@ -523,7 +523,14 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                             // hard fix to accept the japanese localization of manager app
                             String japaneseOK="\u6210\u529f"; //NOI18N
                             msg = line;
-                            if (!(line.startsWith("OK -") || line.startsWith(japaneseOK))) { // NOI18N
+                            // see issue #62529
+                            if (line.indexOf("java.lang.ThreadDeath") != -1) { // NOI18N
+                                String warning = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_ThreadDeathWarning");
+                                pes.fireHandleProgressEvent(
+                                    tmId, 
+                                    new Status(ActionType.EXECUTE, cmdType, warning, StateType.RUNNING)
+                                );
+                            } else if (!(line.startsWith("OK -") || line.startsWith(japaneseOK))) { // NOI18N
                                 error = line;
                             }
                             first = false;
