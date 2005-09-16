@@ -32,6 +32,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -86,6 +87,42 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (!errors.isEmpty()) {
             fail ("Some attributes in files are unreadable" + errors);
         }
+    }
+    
+    public void testValidShadowsInNBProfile () {
+        List/*<String>*/ errors = new ArrayList();
+        
+        FileObject profileFolder = Repository.getDefault().getDefaultFileSystem().findResource("Profiles/NetBeans");
+        if (profileFolder == null) {
+            // might be better to move into editor/options tests as it is valid only if there are options
+            return;
+        }
+        FileObject [] files = profileFolder.getChildren();
+        for (int i=0; i<files.length; i++) {
+            FileObject fo = files[i];
+            
+            try {
+                DataObject obj = DataObject.find (fo);
+                DataShadow ds = (DataShadow)obj.getCookie (DataShadow.class);
+                if (ds != null) {
+                    Object o = ds.getOriginal();
+                    if (o == null) {
+                        errors.add("\nFile " + fo + " has no original.");
+                    }
+                }
+                else if ("shadow".equals(fo.getExt())) {
+                    errors.add("\nFile " + fo + " is not a valid DataShadow.");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                errors.add ("\n    File " + fo + " thrown exception " + ex);
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            fail ("Some shadow files in NetBeans profile are broken:" + errors);
+        }
+        
     }
     
     
