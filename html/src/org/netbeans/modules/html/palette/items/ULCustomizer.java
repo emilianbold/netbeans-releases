@@ -35,6 +35,15 @@ public class ULCustomizer extends javax.swing.JPanel {
         this.ul = ul;
         
         initComponents();
+        
+        if (ul.getType().equals(UL.DEFAULT))
+            jRadioButton1.setSelected(true);
+        else if (ul.getType().equals(UL.DISC))
+            jRadioButton2.setSelected(true);
+        else if (ul.getType().equals(UL.CIRCLE))
+            jRadioButton3.setSelected(true);
+        else if (ul.getType().equals(UL.SQUARE))
+            jRadioButton4.setSelected(true);
     }
     
     public boolean showDialog() {

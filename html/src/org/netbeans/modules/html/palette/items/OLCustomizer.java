@@ -42,6 +42,19 @@ public class OLCustomizer extends javax.swing.JPanel {
         this.ol = ol;
         
         initComponents();
+        
+        if (ol.getType().equals(OL.DEFAULT))
+            jRadioButton1.setSelected(true);
+        else if (ol.getType().equals(OL.ARABIC_NUMBERS))
+            jRadioButton2.setSelected(true);
+        else if (ol.getType().equals(OL.LOWER_ALPHA))
+            jRadioButton3.setSelected(true);
+        else if (ol.getType().equals(OL.UPPER_ALPHA))
+            jRadioButton4.setSelected(true);
+        else if (ol.getType().equals(OL.LOWER_ROMAN))
+            jRadioButton5.setSelected(true);
+        else if (ol.getType().equals(OL.UPPER_ROMAN))
+            jRadioButton6.setSelected(true);
     }
     
     public boolean showDialog() {
@@ -201,6 +214,7 @@ public class OLCustomizer extends javax.swing.JPanel {
         jRadioButton5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OLCustomizer.class, "ACSN_OL_lowerroman"));
         jRadioButton5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OLCustomizer.class, "ACSD_OL_lowerroman"));
 
+        buttonGroup1.add(jRadioButton6);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton6, "I, II, III, ...");
         jRadioButton6.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton6.setMargin(new java.awt.Insets(0, 0, 0, 0));
