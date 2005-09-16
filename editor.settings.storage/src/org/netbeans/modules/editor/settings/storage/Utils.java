@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.KeyStroke;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -73,11 +74,11 @@ public class Utils {
     
     static FileObject getFileObject (
         String[] mimeTypes, 
-        String scheme,
+        String profile,
         String fileNameExt
     ) {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        String folderName = Utils.getFolderName (mimeTypes, scheme);
+        String folderName = Utils.getFolderName (mimeTypes, profile);
         if (folderName == null) return null;
         if (fileNameExt == null)
             return fs.findResource (folderName);
@@ -87,28 +88,28 @@ public class Utils {
     }
     
     /**
-     * Crates FileObject for given mimeTypes and scheme.
+     * Crates FileObject for given mimeTypes and profile.
      */ 
     static String getFolderName (
         String[] mimeTypes, 
-        String scheme
+        String profile
     ) {
         StringBuffer sb = new StringBuffer ();
         sb.append ("Editors");
         int i, k = mimeTypes.length;
         for (i = 0; i < k; i++)
             sb.append ('/').append (mimeTypes [i]);
-        if (scheme != null)
-            sb.append ('/').append (scheme);
+        if (profile != null)
+            sb.append ('/').append (profile);
         return sb.append ('/').toString ();
     }
     
     /**
-     * Crates FileObject for given mimeTypes and scheme.
+     * Crates FileObject for given mimeTypes and profile.
      */ 
     static FileObject createFileObject (
         String[] mimeTypes, 
-        String scheme,
+        String profile,
         String fileName
     ) {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
@@ -117,16 +118,40 @@ public class Utils {
             int i, k = mimeTypes.length;
             for (i = 0; i < k; i++)
                 fo = getFO (fo, mimeTypes [i]);
-            if (scheme != null)
-                fo = getFO (fo, scheme);
+            if (profile != null)
+                fo = getFO (fo, profile);
             if (fileName == null)
                 return fo;
             FileObject fo1 = fo.getFileObject (fileName);
             if (fo1 != null) return fo1;
             return fo.createData (fileName);
         } catch (IOException ex) {
-            ex.printStackTrace ();
+            ErrorManager.getDefault ().notify (ex);
             return null;
+        }
+    }
+    
+    /**
+     * Crates FileObject for given mimeTypes and profile.
+     */ 
+    static void deleteFileObject (
+        String[] mimeTypes, 
+        String profile,
+        String fileName
+    ) {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+        try {
+            FileObject fo = getFO (fs.getRoot (), "Editors");
+            int i, k = mimeTypes.length;
+            for (i = 0; i < k; i++)
+                fo = getFO (fo, mimeTypes [i]);
+            if (profile != null)
+                fo = getFO (fo, profile);
+            fo = fo.getFileObject (fileName);
+            if (fo == null) return;
+            fo.delete ();
+        } catch (IOException ex) {
+            ErrorManager.getDefault ().notify (ex);
         }
     }
        

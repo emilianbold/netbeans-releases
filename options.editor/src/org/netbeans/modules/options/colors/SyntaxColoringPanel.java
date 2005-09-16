@@ -94,8 +94,6 @@ import org.openide.util.NbBundle;
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
 PropertyChangeListener {
     
-    private ColorModel          colorModel = null;
-    
     private JComboBox		cbLanguages = new JComboBox ();
     private JList		lCategories = new JList ();
     private JTextField          tfFont = new JTextField ("");
@@ -107,10 +105,11 @@ PropertyChangeListener {
     private JPanel              previewPanel = new JPanel ();
     private Preview             preview;
  
+    private ColorModel          colorModel = null;
     private String		currentLanguage;
-    private String              currentScheme;
+    private String              currentProfile;
     /** cache Map (String (profile name) > Map (String (language name) > Vector (AttributeSet))). */
-    private Map                 schemes = new HashMap ();
+    private Map                 profiles = new HashMap ();
     /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
     private Map                 toBeSaved = new HashMap ();
     private boolean		listen = false;
@@ -259,7 +258,7 @@ PropertyChangeListener {
                 else
                     c.removeAttribute (StyleConstants.Italic);
                 replaceCurrrentCategory (c);
-                setToBeSaved (currentScheme, currentLanguage);
+                setToBeSaved (currentProfile, currentLanguage);
                 refreshUI (); // refresh font viewer
             }
         }
@@ -275,11 +274,11 @@ PropertyChangeListener {
 	if (colorModel == null) {
             // first update
             colorModel = ColorModel.getDefault ();
-            currentScheme = colorModel.getCurrentScheme ();
+            currentProfile = colorModel.getCurrentProfile ();
             currentLanguage = (String) colorModel.getLanguages ().
                 iterator ().next ();
             Component component = colorModel.getSyntaxColoringPreviewComponent 
-                    (currentScheme, currentLanguage);
+                    (currentProfile, currentLanguage);
             preview = (Preview) component;
             previewPanel.add ("Center", component);
             listen = false;
@@ -299,42 +298,48 @@ PropertyChangeListener {
         if (colorModel == null) return;
 	Iterator it = toBeSaved.keySet ().iterator ();
 	while (it.hasNext ()) {
-	    String scheme = (String) it.next ();
-            Set toBeSavedLanguages = (Set) toBeSaved.get (scheme);
-            Map schemeMap = (Map) schemes.get (scheme);
+	    String profile = (String) it.next ();
+            Set toBeSavedLanguages = (Set) toBeSaved.get (profile);
+            Map schemeMap = (Map) profiles.get (profile);
             Iterator it2 = toBeSavedLanguages.iterator ();
             while (it2.hasNext ()) {
                 String languageName = (String) it2.next ();
                 colorModel.setCategories (
-                    scheme,
+                    profile,
                     languageName,
                     (Vector) schemeMap.get (languageName)
                 );
             }
 	}
+        toBeSaved = new HashMap ();
+        profiles = new HashMap ();
     }
     
-    public void setCurrentScheme (String currentScheme) {
-        String oldScheme = this.currentScheme;
-        this.currentScheme = currentScheme;
-        Vector v = getCategories (currentScheme, currentLanguage);
-        if (v == null) {
-            cloneScheme (oldScheme, currentScheme);
-            v = getCategories (currentScheme, currentLanguage);
-        }
-        lCategories.setListData (v);
+    public void setCurrentProfile (String currentProfile) {
+        String oldProfile = this.currentProfile;
+        this.currentProfile = currentProfile;
+        if (!colorModel.getProfiles ().contains (currentProfile))
+            cloneScheme (oldProfile, currentProfile);
+        Vector categories = getCategories (currentProfile, currentLanguage);
+        lCategories.setListData (categories);
         refreshUI ();
     }
 
-    void deleteScheme (String scheme) {
+    void deleteProfile (String profile) {
         Iterator it = colorModel.getLanguages ().iterator ();
         Map m = new HashMap ();
+        boolean custom = colorModel.isCustomProfile (profile);
         while (it.hasNext ()) {
             String language = (String) it.next ();
-            m.put (language, new Vector ());
+            if (custom)
+                m.put (language, null);
+            else
+                m.put (language, getDefaults (profile, language));
         }
-        schemes.put (scheme, m);
-        toBeSaved.put (scheme, new HashSet (colorModel.getLanguages ()));
+        profiles.put (profile, m);
+        toBeSaved.put (profile, new HashSet (colorModel.getLanguages ()));
+        if (!custom)
+            refreshUI ();
     }
     
         
@@ -349,14 +354,14 @@ PropertyChangeListener {
             m.put (language, new Vector (v));
             setToBeSaved (newScheme, language);
         }
-        schemes.put (newScheme, m);
+        profiles.put (newScheme, m);
     }
     
     private void setCurrentLanguage (String language) {
 	currentLanguage = language;
         
         // setup categories list
-        lCategories.setListData (getCategories (currentScheme, currentLanguage));
+        lCategories.setListData (getCategories (currentProfile, currentLanguage));
         refreshUI ();
     }
     
@@ -434,20 +439,20 @@ PropertyChangeListener {
             c.removeAttribute (EditorStyleConstants.WaveUnderlineColor);
         replaceCurrrentCategory (c);
         
-        setToBeSaved (currentScheme, currentLanguage);
+        setToBeSaved (currentProfile, currentLanguage);
         updatePreview ();
     }
     
     private void updatePreview () {
         preview.setParameters (
-            currentScheme, 
+            currentProfile, 
             currentLanguage, 
-            getCategories (currentScheme, currentLanguage)
+            getCategories (currentProfile, currentLanguage)
         );
     }
     
     /**
-     * Called when current category, scheme or language has been changed.
+     * Called when current category, profile or language has been changed.
      * Updates all ui components.
      */
     private void refreshUI () {
@@ -517,26 +522,42 @@ PropertyChangeListener {
         listen = true;
     }
     
-    private void setToBeSaved (String currentScheme, String currentLanguage) {
-        Set s = (Set) toBeSaved.get (currentScheme);
+    private void setToBeSaved (String currentProfile, String currentLanguage) {
+        Set s = (Set) toBeSaved.get (currentProfile);
         if (s == null) {
             s = new HashSet ();
-            toBeSaved.put (currentScheme, s);
+            toBeSaved.put (currentProfile, s);
         }
         s.add (currentLanguage);
     }
     
-    private Vector getCategories (String scheme, String language) {
-        Map m = (Map) schemes.get (scheme);
+    private Vector getCategories (String profile, String language) {
+        Map m = (Map) profiles.get (profile);
         if (m == null) {
             m = new HashMap ();
-            schemes.put (scheme, m);
+            profiles.put (profile, m);
         }
         Vector v = (Vector) m.get (language);
         if (v == null) {
-            Collection c = colorModel.getCategories 
-                (scheme, language);
-            if (c == null) return null;
+            Collection c = colorModel.getCategories (profile, language);
+            List l = new ArrayList (c);
+            Collections.sort (l, new CategoryComparator ());
+            v = new Vector (l);
+            m.put (language, v);
+        }
+        return v;
+    }
+
+    private Map defaults = new HashMap ();
+    private Vector getDefaults (String profile, String language) {
+        Map m = (Map) defaults.get (profile);
+        if (m == null) {
+            m = new HashMap ();
+            defaults.put (profile, m);
+        }
+        Vector v = (Vector) m.get (language);
+        if (v == null) {
+            Collection c = colorModel.getDefaults (profile, language);
             List l = new ArrayList (c);
             Collections.sort (l, new CategoryComparator ());
             v = new Vector (l);
@@ -548,20 +569,20 @@ PropertyChangeListener {
     private AttributeSet getCurrentCategory () {
         int i = lCategories.getSelectedIndex ();
         if (i < 0) return null;
-        return (AttributeSet) getCategories (currentScheme, currentLanguage).get (i);
+        return (AttributeSet) getCategories (currentProfile, currentLanguage).get (i);
     }
     
     private void replaceCurrrentCategory (AttributeSet newValues) {
         int i = lCategories.getSelectedIndex ();
-        getCategories (currentScheme, currentLanguage).set (i, newValues);
+        getCategories (currentProfile, currentLanguage).set (i, newValues);
     }
     
     private AttributeSet getCategory (
-        String scheme, 
+        String profile, 
         String language, 
         String name
     ) {
-        Vector v = getCategories (scheme, language);
+        Vector v = getCategories (profile, language);
         Iterator it = v.iterator ();
         while (it.hasNext ()) {
             AttributeSet c = (AttributeSet) it.next ();
@@ -583,7 +604,7 @@ PropertyChangeListener {
             category.getAttribute (StyleConstants.NameAttribute)
         )) return null;
         AttributeSet defaultCategory = getCategory 
-            (currentScheme, currentLanguage, "default"); // NOI18N
+            (currentProfile, currentLanguage, "default"); // NOI18N
         return getValue (defaultCategory, key);
     }
     
@@ -594,12 +615,12 @@ PropertyChangeListener {
 	// 1) search current language
 	if (!name.equals (category.getAttribute (StyleConstants.NameAttribute))) {
 	    AttributeSet result = getCategory 
-                (currentScheme, currentLanguage, name);
+                (currentProfile, currentLanguage, name);
             if (result != null) return result;
 	}
 	
 	// 2) search default language
-        return getCategory (currentScheme, ColorModel.ALL_LANGUAGES, name);
+        return getCategory (currentProfile, ColorModel.ALL_LANGUAGES, name);
     }
     
     private Font getFont (AttributeSet category) {

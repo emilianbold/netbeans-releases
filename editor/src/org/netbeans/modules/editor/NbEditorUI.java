@@ -177,7 +177,7 @@ public class NbEditorUI extends ExtEditorUI {
 
     
     private EditorSettings getEditorSettings(){
-        return (EditorSettings) Lookup.getDefault().lookup(EditorSettings.class);        
+        return EditorSettings.getDefault ();
     }
     
     protected Map createColoringMap(){
@@ -194,7 +194,7 @@ public class NbEditorUI extends ExtEditorUI {
             }
             cm = new HashMap();
             cm.putAll(super.createColoringMap());
-            String scheme = es.getCurrentFontColorScheme();
+            String scheme = es.getCurrentFontColorProfile ();
             Collection col = fcs.getAllFontColors(scheme);
             Iterator it = col.iterator();
             AttributeSet defaults = fcs.getTokenFontColors("default"); //NOI18N

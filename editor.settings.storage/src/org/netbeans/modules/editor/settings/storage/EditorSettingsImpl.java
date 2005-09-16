@@ -38,6 +38,8 @@ import org.openide.util.NbBundle;
 
 
 /**
+ * This class contains access methods for editor settings like font & colors
+ * profiles and keymap profiles. 
  *
  * @author Jan Jancura
  */
@@ -46,13 +48,29 @@ public class EditorSettingsImpl extends EditorSettings {
     private PropertyChangeSupport   pcs;
     
     {pcs = new PropertyChangeSupport (this);}
+    
+    static final String HIGHLIGHTING_FILE_NAME = "editorColoring.xml"; // NOI18N
+    static final String KEYBINDING_FILE_NAME = "keybindings.xml";      // NOI18N
+    static final String ALL_LANGUAGES_FILE_NAME = "defaultColoring.xml"; // NOI18N
+    static final String CURRENT_FONT_COLOR_PROFILE = "currentFontColorProfile"; //NOI18N
+    static final String CURRENT_KEYMAP_PROFILE = "currentKeymapProfile"; //NOI18N
 
     
+    /**
+     * Returns set of mimetypes.
+     *
+     * @return set of mimetypes
+     */
     public Set /*<String>*/ getMimeTypes () {
 	if (mimeToLanguage == null) init ();
 	return Collections.unmodifiableSet (mimeToLanguage.keySet ());
     }
     
+    /**
+     * Returns name of language for given mime type.
+     *
+     * @return name of language for given mime type
+     */
     public String getLanguageName (String mimeType) {
 	if (mimeToLanguage == null) init ();
 	return (String) mimeToLanguage.get (mimeType);
@@ -61,46 +79,73 @@ public class EditorSettingsImpl extends EditorSettings {
     
     // FontColors ..............................................................
     
-    public Set /*<String>*/ getFontColorSchemes () {
-	if (schemes == null)
+    /**
+     * Returns set of font & colors profiles.
+     *
+     * @return set of font & colors profiles
+     */
+    public Set /*<String>*/ getFontColorProfiles () {
+	if (fontColorProfiles == null)
 	    init ();
         Set result = new HashSet ();
-        Iterator it = schemes.keySet ().iterator ();
+        Iterator it = fontColorProfiles.keySet ().iterator ();
         while (it.hasNext ()) {
-            String scheme = (String) it.next ();
-            if (!scheme.startsWith ("test"))
-                result.add (scheme);
+            String profile = (String) it.next ();
+            if (!profile.startsWith ("test"))
+                result.add (profile);
         }
 	return result;
     }
     
-    private String currentScheme;
+    private Set systemFontColorProfiles;
     
-    public String getCurrentFontColorScheme () {
-        if (currentScheme == null) {
-            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-            FileObject fo = fs.findResource ("Editors");
-            currentScheme = (String) fo.getAttribute ("currentScheme");
-            if (currentScheme == null)
-                currentScheme = "NetBeans";
-        }
-        if (!getFontColorSchemes ().contains (currentScheme)) {
-            System.out.println("EditorColoringImpl.current scheme not found! " + currentScheme);
-            currentScheme = "NetBeans";
-        }
-        return currentScheme;
+    /**
+     * Returns true for user defined profile.
+     *
+     * @param profile a profile name
+     * @return true for user defined profile
+     */
+    public boolean isCustomFontColorProfile (String profile) {
+        if (systemFontColorProfiles == null) init ();
+        return !systemFontColorProfiles.contains (profile);
     }
     
-    public void setCurrentFontColorScheme (String scheme) {
-        String oldScheme = getCurrentFontColorScheme ();
-        if (oldScheme.equals (scheme)) return;
+    private String currentProfile;
+    
+    /**
+     * Returns name of current font & colors profile.
+     *
+     * @return name of current font & colors profile
+     */
+    public String getCurrentFontColorProfile () {
+        if (currentProfile == null) {
+            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+            FileObject fo = fs.findResource ("Editors");
+            currentProfile = (String) fo.getAttribute 
+                (CURRENT_FONT_COLOR_PROFILE);
+            if (currentProfile == null)
+                currentProfile = "NetBeans";
+        }
+        if (!getFontColorProfiles ().contains (currentProfile)) {
+            currentProfile = "NetBeans";
+        }
+        return currentProfile;
+    }
+    
+    /**
+     * Sets current font & colors profile.
+     *
+     * @param profile a profile name
+     */
+    public void setCurrentFontColorProfile (String profile) {
+        String oldProfile = getCurrentFontColorProfile ();
+        if (oldProfile.equals (profile)) return;
 	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
 	FileObject fo = fs.findResource ("Editors");
         try {
-            fo.setAttribute ("currentScheme", scheme);
-            currentScheme = scheme;
-	    //S ystem.out.println("EditorColoringImpl.setCurrentScheme " + scheme);
-            pcs.firePropertyChange (PROP_CURRENT_FONT_COLOR_SCHEME, oldScheme, currentScheme);
+            fo.setAttribute (CURRENT_FONT_COLOR_PROFILE, profile);
+            currentProfile = profile;
+            pcs.firePropertyChange (PROP_CURRENT_FONT_COLOR_PROFILE, oldProfile, currentProfile);
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
@@ -108,17 +153,24 @@ public class EditorSettingsImpl extends EditorSettings {
     
     private Map defaultColors = new HashMap ();
      
+    /**
+     * Returns font & color defaults for given profile or null, if the profile
+     * is unknown .
+     *
+     * @param profile a profile name
+     * @return font & color defaults for given profile or null
+     */
     public Collection /*<AttributeSet>*/ getDefaultFontColors (
-	String scheme
+	String profile
     ) {
-        // 1) translate scheme name
-	String s = getOriginalScheme (scheme); // loc name > name
+        // 1) translate profile name
+	String s = getOriginalProfile (profile); // loc name > name
 	if (s == null) {
-            s = scheme; // create a new scheme!
-            schemes.put (s, s);
+            s = profile; // create a new profile!
+            fontColorProfiles.put (s, s);
         }
 
-        // 2) init scheme for test mime types
+        // 2) init profile for test mime types
         if (s.startsWith ("test")) {
             int i = s.indexOf ('_');
             defaultColors.put (
@@ -131,7 +183,7 @@ public class EditorSettingsImpl extends EditorSettings {
             
             // 3) load colorings
             Map m = ColoringStorage.loadColorings 
-                (new String [0], s, "defaultColoring.xml");
+                (new String [0], s, ALL_LANGUAGES_FILE_NAME, false);
             if (m != null) {
                 Collection c = m.values ();
                 defaultColors.put (s, c);
@@ -145,19 +197,61 @@ public class EditorSettingsImpl extends EditorSettings {
         );
     }
     
+    private Map defaultColorDefaults = new HashMap ();
+     
+    /**
+     * Returns default values for font & color defaults for given profile 
+     * or null, if the profile is unknown.
+     *
+     * @param profile a profile name
+     * @return font & color defaults for given profile or null
+     */
+    public Collection /*<AttributeSet>*/ getDefaultFontColorDefaults (
+	String profile
+    ) {
+        // 1) translate profile name
+	String s = getOriginalProfile (profile); // loc name > name
+	if (s == null) {
+            s = profile; // create a new profile!
+            fontColorProfiles.put (s, s);
+        }
+
+        // 2) get data from cache or disk
+        if (!defaultColorDefaults.containsKey (s)) {
+            Map m = ColoringStorage.loadColorings 
+                (new String [0], s, ALL_LANGUAGES_FILE_NAME, true);
+            if (m != null) {
+                Collection c = m.values ();
+                defaultColorDefaults.put (s, c);
+            } else
+                defaultColorDefaults.put (s, null);
+        }
+        
+        if (defaultColorDefaults.get (s) == null) return null;
+	return Collections.unmodifiableCollection (
+            (Collection) defaultColorDefaults.get (s)
+        );
+    }
+    
+    /**
+     * Sets font & color defaults for given profile.
+     *
+     * @param profile a profile name
+     * @param fontColors font & color defaults to be used
+     */
     public void setDefaultFontColors (
-	String scheme,
+	String profile,
 	Collection /*<AttributeSet>*/ fontColors
     ) {
-        // 1) translate name of scheme
-	String s = getOriginalScheme (scheme); // loc name > name
+        // 1) translate name of profile
+	String s = getOriginalProfile (profile); // loc name > name
 	if (s == null)
-            addScheme (s = scheme); // create a new scheme!
+            addFontColorsProfile (s = profile); // create a new profile!
         
-        if (fontColors.isEmpty ()) {
+        if (fontColors == null) {
             // 2) remove coloring / revert to defaults
             ColoringStorage.deleteColorings
-                (new String [0], s, "defaultColoring.xml");
+                (new String [0], s, ALL_LANGUAGES_FILE_NAME);
             defaultColors.remove (s);
             init ();
             pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
@@ -169,61 +263,107 @@ public class EditorSettingsImpl extends EditorSettings {
         defaultColors.put (s, fontColors);
         
         // 3) save new values to disk
-        if (!scheme.startsWith ("test"))
+        if (!profile.startsWith ("test"))
             ColoringStorage.saveColorings 
-                (new String [0], s, "defaultColoring.xml", fontColors);
+                (new String [0], s, ALL_LANGUAGES_FILE_NAME, fontColors);
         
-        // 4) update schemes
+        // 4) update profiles
 	pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
     }
     
     private Map editorFontColors = new HashMap ();
     
-    public Collection /*<AttributeSet>*/ getEditorFontColors (
-	String scheme
+    /**
+     * Returns highlighting properties for given profile or null, if the 
+     * profile is not known.
+     *
+     * @param profile a profile name
+     * @return highlighting properties for given profile or null
+     */
+    public Collection /*<AttributeSet>*/ getHighlightings (
+	String profile
     ) {
-        // 1) translate scheme name
-	String s = getOriginalScheme (scheme);
-        if (s == null) s = scheme; // no such scheme
+        // 1) translate profile name
+	String s = getOriginalProfile (profile);
+        if (s == null) s = profile; // no such profile
 
-        // 2) init scheme for test mime types
+        // 2) init profile for test mime types
         if (s.startsWith ("test")) {
             int i = s.indexOf ('_');
             editorFontColors.put (
                 s,
-                getEditorFontColors (s.substring (i + 1))
+                getHighlightings (s.substring (i + 1))
             );
         }
-        
+
+        // 3) read data form disk or cache
         if (!editorFontColors.containsKey (s)) {
-            
             Map m = ColoringStorage.loadColorings 
-                (new String [0], s, "editorColoring.xml");
+                (new String [0], s, HIGHLIGHTING_FILE_NAME, false);
             if (m != null) {
                 Collection c = m.values ();
                 editorFontColors.put (s, c);
             } else
                 editorFontColors.put (s, null);
         }
+        
         if (editorFontColors.get (s) == null) return null;
 	return Collections.unmodifiableCollection (
             (Collection) editorFontColors.get (s)
         );
     }
     
-    public void setEditorFontColors (
-	String scheme,
+    private Map editorFontColorDefaults = new HashMap ();
+    
+    /**
+     * Returns defaults for highlighting properties for given profile,
+     * or null if the profile is not known.
+     *
+     * @param profile a profile name
+     * @return highlighting properties for given profile or null
+     */
+    public Collection /*<AttributeSet>*/ getHighlightingDefaults (
+	String profile
+    ) {
+        // 1) translate profile name
+	String s = getOriginalProfile (profile);
+        if (s == null) s = profile; // no such profile
+
+        // 2) read data form disk or cache
+        if (!editorFontColorDefaults.containsKey (s)) {
+            Map m = ColoringStorage.loadColorings 
+                (new String [0], s, HIGHLIGHTING_FILE_NAME, true);
+            if (m != null) {
+                Collection c = m.values ();
+                editorFontColorDefaults.put (s, c);
+            } else
+                editorFontColorDefaults.put (s, null);
+        }
+        if (editorFontColorDefaults.get (s) == null) return null;
+	return Collections.unmodifiableCollection (
+            (Collection) editorFontColorDefaults.get (s)
+        );
+    }
+    
+    /**
+     * Sets highlighting properties for given profile.
+     *
+     * @param profile a profile name
+     * @param highlighting a highlighting properties to be used
+     */
+    public void setHighlightings (
+	String profile,
 	Collection /*<AttributeSet>*/ fontColors
     ) {
-        // 1) translate scheme name
-	String s = (String) schemes.get (scheme);
+        // 1) translate profile name
+	String s = (String) fontColorProfiles.get (profile);
 	if (s == null)
-            addScheme (s = scheme); // create a new scheme!
+            addFontColorsProfile (s = profile); // create a new profile!
 	
-        if (fontColors.isEmpty ()) {
+        if (fontColors == null) {
             // 2) remove coloring / revert to defaults
             ColoringStorage.deleteColorings
-                (new String [0], s, "editorColoring.xml");
+                (new String [0], s, HIGHLIGHTING_FILE_NAME);
             editorFontColors.remove (s);
             init ();
             pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
@@ -235,9 +375,9 @@ public class EditorSettingsImpl extends EditorSettings {
         editorFontColors.put (s, fontColors);
         
         // 3) save new values to disk
-        if (!scheme.startsWith ("test"))
+        if (!profile.startsWith ("test"))
             ColoringStorage.saveColorings 
-                (new String [0], s, "editorColoring.xml", fontColors);
+                (new String [0], s, HIGHLIGHTING_FILE_NAME, fontColors);
         
 	pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
     }  
@@ -245,34 +385,61 @@ public class EditorSettingsImpl extends EditorSettings {
     
     // KeyMaps .................................................................
     
-    public Set /*<String>*/ getKeyMapNames () {
-	if (keyMaps == null)
-	    init ();
-	return Collections.unmodifiableSet (keyMaps.keySet ());
+    /**
+     * Returns set of keymap profiles.
+     *
+     * @return set of font & colors profiles
+     */
+    public Set /*<String>*/ getKeyMapProfiles () {
+	if (keyMapProfiles == null) init ();
+	return Collections.unmodifiableSet (keyMapProfiles.keySet ());
+    }
+    
+    private Set systemKeymapProfiles;
+    
+    /**
+     * Returns true for user defined profile.
+     *
+     * @param profile a profile name
+     * @return true for user defined profile
+     */
+    public boolean isCustomKeymapProfile (String profile) {
+        if (systemKeymapProfiles == null) init ();
+        return !systemKeymapProfiles.contains (profile);
     }
     
     private String currentKeyMapName;
     
-    public String getCurrentKeyMapName () {
+    /**
+     * Returns name of current keymap profile.
+     *
+     * @return name of current keymap profile
+     */
+    public String getCurrentKeyMapProfile () {
         if (currentKeyMapName == null) {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource ("Editors");
-            currentScheme = (String) fo.getAttribute ("currentKeyMapName");
+            currentProfile = (String) fo.getAttribute (CURRENT_KEYMAP_PROFILE);
             if (currentKeyMapName == null)
                 currentKeyMapName = "NetBeans";
         }
         return currentKeyMapName;
     }
     
-    public void setCurrentKeyMapName (String keyMapName) {
-        String oldKeyMap = getCurrentKeyMapName ();
+    /**
+     * Sets current keymap profile.
+     *
+     * @param profile a profile name
+     */
+    public void setCurrentKeyMapProfile (String keyMapName) {
+        String oldKeyMap = getCurrentKeyMapProfile ();
         if (oldKeyMap.equals (keyMapName)) return;
 	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
 	FileObject fo = fs.findResource ("Editors");
         try {
-            fo.setAttribute ("currentKeyMapName", keyMapName);
+            fo.setAttribute (CURRENT_KEYMAP_PROFILE, keyMapName);
             currentKeyMapName = keyMapName;
-            pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_NAME, oldKeyMap, currentKeyMapName);
+            pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapName);
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
@@ -329,19 +496,21 @@ public class EditorSettingsImpl extends EditorSettings {
 
     // support methods .........................................................
     
-    void addScheme (String scheme) {
-        schemes.put (scheme, scheme);
+    void addFontColorsProfile (String profile) {
+        fontColorProfiles.put (profile, profile);
     }
     
-    private Map schemes;
-    private Map keyMaps;
+    private Map fontColorProfiles;
+    private Map keyMapProfiles;
     private Map mimeToLanguage;
 
     private void init () {
-	schemes = new HashMap ();
-	keyMaps = new HashMap ();
-	keyMaps.put ("NetBeans", "NetBeans");
+	fontColorProfiles = new HashMap ();
+	keyMapProfiles = new HashMap ();
+	keyMapProfiles.put ("NetBeans", "NetBeans");
 	mimeToLanguage = new HashMap ();
+        systemFontColorProfiles = new HashSet ();
+        systemKeymapProfiles = new HashSet ();
 	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
 	FileObject fo = fs.findResource ("Editors");
 	Enumeration e = fo.getFolders (false);
@@ -358,23 +527,23 @@ public class EditorSettingsImpl extends EditorSettings {
 	}
 	
 	if (fo.getName ().equals ("Defaults") && fo.isFolder () &&
-            fo.getFileObject ("editorColoring.xml") != null
+            fo.getFileObject (HIGHLIGHTING_FILE_NAME) != null
         )
-            addScheme (fo);
+            addFontColorsProfile (fo, true); // Editors/XXX/Defaults/editorColoring.xml
         else
-        if (fo.getNameExt ().equals ("editorColoring.xml"))
-            addScheme (fo);
+        if (fo.getNameExt ().equals (HIGHLIGHTING_FILE_NAME))
+            addFontColorsProfile (fo, false); // Editors/XXX/editorColoring.xml
         else
 	if (fo.getName ().equals ("Defaults") && fo.isFolder () &&
-            fo.getFileObject ("keybindings.xml") != null
+            fo.getFileObject (KEYBINDING_FILE_NAME) != null
         )
-            addKeyMap (fo);
+            addKeyMapProfile (fo, true); // Editors/XXX/Defaults/keybindings.xml
         else
-        if (fo.getNameExt ().equals ("keybindings.xml"))
-            addKeyMap (fo);
+        if (fo.getNameExt ().equals (KEYBINDING_FILE_NAME))
+            addKeyMapProfile (fo, false); // Editors/XXX/keybindings.xml
         else
         if (fo.getFileObject ("NetBeans/Defaults/coloring.xml") != null)
-            addMimeType (fo);
+            addMimeType (fo); // Editors/XXX/YYY/NetBeans/Defaults/coloring.xml
     }
 
     private void addMimeType (FileObject fo) {
@@ -390,31 +559,33 @@ public class EditorSettingsImpl extends EditorSettings {
         mimeToLanguage.put (mimeType, languageName);
     }
     
-    private void addScheme (FileObject fo) {
-        String scheme = fo.getParent ().getName ();
+    private void addFontColorsProfile (FileObject fo, boolean systemProfile) {
+        String profile = fo.getParent ().getName ();
         String bundleName = (String) fo.getParent ().getAttribute 
             ("SystemFileSystem.localizingBundle");
-        String locScheme = scheme;
+        String locProfile = profile;
         if (bundleName != null)
             try {
-                locScheme = NbBundle.getBundle (bundleName).getString (scheme);
+                locProfile = NbBundle.getBundle (bundleName).getString (profile);
             } catch (MissingResourceException ex) {}
-        schemes.put (locScheme, scheme);
+        if (systemProfile) systemFontColorProfiles.add (locProfile);
+        fontColorProfiles.put (locProfile, profile);
     }
     
-    private void addKeyMap (FileObject fo) {
-        String keyMapName = fo.getParent ().getName ();
+    private void addKeyMapProfile (FileObject fo, boolean systemProfile) {
+        String profile = fo.getParent ().getName ();
         String bundleName = (String) fo.getParent ().getAttribute 
             ("SystemFileSystem.localizingBundle");
-        String locKeyMapName = keyMapName;
+        String locProfile = profile;
         if (bundleName != null)
             try {
-                locKeyMapName = NbBundle.getBundle (bundleName).getString (keyMapName);
+                locProfile = NbBundle.getBundle (bundleName).getString (profile);
             } catch (MissingResourceException ex) {}
-        keyMaps.put (locKeyMapName, keyMapName);
+        if (systemProfile) systemKeymapProfiles.add (locProfile);
+        keyMapProfiles.put (locProfile, profile);
     }
     
-    public String getOriginalScheme (String schemeName) {
-	return (String) schemes.get (schemeName);
+    String getOriginalProfile (String profile) {
+	return (String) fontColorProfiles.get (profile);
     }
 }

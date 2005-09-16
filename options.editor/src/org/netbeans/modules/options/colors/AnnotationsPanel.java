@@ -149,7 +149,7 @@ PropertyChangeListener {
             // first update
             listen = false;
             colorModel = ColorModel.getDefault ();
-            currentScheme = colorModel.getCurrentScheme ();
+            currentScheme = colorModel.getCurrentProfile ();
             lCategories.setListData (getAnnotations (currentScheme));
             refreshUI ();
             listen = true;
@@ -163,9 +163,11 @@ PropertyChangeListener {
             String scheme = (String) it.next ();
             colorModel.setAnnotations (scheme, getAnnotations (scheme));
         }
+        toBeSaved = new HashSet ();
+        schemes = new HashMap ();
     }
     
-    public void setCurrentScheme (String currentScheme) {
+    public void setCurrentProfile (String currentScheme) {
         String oldScheme = this.currentScheme;
         this.currentScheme = currentScheme;
         Vector v = getAnnotations (currentScheme);
@@ -180,7 +182,7 @@ PropertyChangeListener {
         refreshUI ();
     }
     
-    void deleteScheme (String scheme) {
+    void deleteProfile (String scheme) {
     }
         
     

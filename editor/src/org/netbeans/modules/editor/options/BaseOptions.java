@@ -256,7 +256,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     private EditorSettings getEditorSettings(){
-        return (EditorSettings) Lookup.getDefault().lookup(EditorSettings.class);        
+        return EditorSettings.getDefault ();
     }
     
     public static BaseOptions getOptions(Class kitClass) {

@@ -71,17 +71,17 @@ import org.openide.util.Utilities;
 public class FontAndColorsPanel extends JPanel implements 
 ActionListener {
     
-    private ColorModel		    colorModel;
-    private JComboBox		    cbSchemes;
+    private JComboBox		    cbProfiles;
     private JButton		    bDelete;
     private JButton		    bClone;
     private JTabbedPane		    tabbedPane;
-    
-    private boolean		    listen = false;
     private SyntaxColoringPanel	    syntaxColoringPanel;
     private EditorPanel		    editorPanel;
     private AnnotationsPanel	    annotationsPanel;
-    private String		    currentScheme;
+
+    private ColorModel		    colorModel;
+    private String		    currentProfile;
+    private boolean		    listen = false;
     
  
     /** Creates new form FontAndColorsPanel */
@@ -91,10 +91,11 @@ ActionListener {
         syntaxColoringPanel = new SyntaxColoringPanel ();
         editorPanel = new EditorPanel ();
         annotationsPanel = new AnnotationsPanel ();
-        cbSchemes = new JComboBox ();
-        cbSchemes.addItemListener (new ItemListener () {
+        cbProfiles = new JComboBox ();
+        cbProfiles.addItemListener (new ItemListener () {
             public void itemStateChanged (ItemEvent evt) {
-                cbSchemesItemStateChanged (evt);
+                if (!listen) return;
+                setCurrentProfile ((String) cbProfiles.getSelectedItem ());
             }
         });
         JPanel pButtons = new JPanel (new GridLayout (1, 2, 3, 3));
@@ -114,7 +115,7 @@ ActionListener {
         CellConstraints cc = new CellConstraints ();
         CellConstraints lc = new CellConstraints ();
         builder.addLabel (     loc ("CTL_Color_Profile_Name"), lc.xy (1, 1), 
-                               cbSchemes,                     cc.xy (3, 1));
+                               cbProfiles,                     cc.xy (3, 1));
         builder.add (          pButtons,                      cc.xy (5, 1, "l,d"));
         builder.add (          tabbedPane,                    cc.xyw (1, 3, 5));
 	tabbedPane.addTab (loc ("Syntax_coloring_tab"), syntaxColoringPanel);
@@ -124,28 +125,27 @@ ActionListener {
         tabbedPane.setMnemonicAt (1, loc ("Editor_tab_mnemonic").charAt (0));
         tabbedPane.setMnemonicAt (2, loc ("Annotations_tab_mnemonic").charAt (0));
     }
-
-    private void cbSchemesItemStateChanged (ItemEvent evt) {
-        if (!listen) return;
-        setCurrentScheme ((String) cbSchemes.getSelectedItem ());
+    
+    private void setCurrentProfile (String profile) {
+        if (colorModel.isCustomProfile (profile))
+            loc (bDelete, "CTL_Delete");                              // NOI18N
+        else
+            loc (bDelete, "CTL_Restore");                             // NOI18N
+        currentProfile = profile;
+        editorPanel.setCurrentProfile (currentProfile);
+        syntaxColoringPanel.setCurrentProfile (currentProfile);
+        annotationsPanel.setCurrentProfile (currentProfile);
     }
     
-    private void setCurrentScheme (String scheme) {
-        currentScheme = scheme;
-        editorPanel.setCurrentScheme (currentScheme);
-        syntaxColoringPanel.setCurrentScheme (currentScheme);
-        annotationsPanel.setCurrentScheme (currentScheme);
-    }
-    
-    private void deleteCurrentScheme () {
-        String currentScheme = (String) cbSchemes.getSelectedItem ();
-        listen = false;
-        cbSchemes.removeItem (currentScheme);
-        editorPanel.deleteScheme (currentScheme);
-        syntaxColoringPanel.deleteScheme (currentScheme);
-        annotationsPanel.deleteScheme (currentScheme);
-        listen = true;
-        cbSchemes.setSelectedIndex (0);
+    private void deleteCurrentProfile () {
+        String currentProfile = (String) cbProfiles.getSelectedItem ();
+        editorPanel.deleteProfile (currentProfile);
+        syntaxColoringPanel.deleteProfile (currentProfile);
+        annotationsPanel.deleteProfile (currentProfile);
+        if (colorModel.isCustomProfile (currentProfile)) {
+            cbProfiles.removeItem (currentProfile);
+            cbProfiles.setSelectedIndex (0);
+        }
     }
     
     
@@ -158,15 +158,15 @@ ActionListener {
         
         if (colorModel == null) {
             colorModel = ColorModel.getDefault ();
-            currentScheme = colorModel.getCurrentScheme ();
+            currentProfile = colorModel.getCurrentProfile ();
 
             // init schemes
             listen = false;
-            Iterator it = colorModel.getSchemeNames ().iterator ();
+            Iterator it = colorModel.getProfiles ().iterator ();
             while (it.hasNext ())
-                cbSchemes.addItem (it.next ());
+                cbProfiles.addItem (it.next ());
             listen = true;
-            cbSchemes.setSelectedItem (currentScheme);
+            cbProfiles.setSelectedItem (currentProfile);
         }
     }
     
@@ -175,7 +175,7 @@ ActionListener {
         syntaxColoringPanel.applyChanges ();
         annotationsPanel.applyChanges ();
         if (colorModel == null) return;
-        colorModel.setCurrentScheme (currentScheme);
+        colorModel.setCurrentProfile (currentProfile);
     }
     
     void cancel () {
@@ -196,11 +196,11 @@ ActionListener {
                 loc ("CTL_Create_New_Profile_Message"),                // NOI18N
                 loc ("CTL_Create_New_Profile_Title")                   // NOI18N
             );
-            il.setInputText (currentScheme);
+            il.setInputText (currentProfile);
             DialogDisplayer.getDefault ().notify (il);
             if (il.getValue () == NotifyDescriptor.OK_OPTION) {
                 String newScheme = il.getInputText ();
-                Iterator it = colorModel.getSchemeNames ().iterator ();
+                Iterator it = colorModel.getProfiles ().iterator ();
                 while (it.hasNext ())
                     if (newScheme.equals (it.next ())) {
                         Message md = new Message (
@@ -210,16 +210,16 @@ ActionListener {
                         DialogDisplayer.getDefault ().notify (md);
                         return;
                     }
-                setCurrentScheme (newScheme);
+                setCurrentProfile (newScheme);
                 listen = false;
-                cbSchemes.addItem (il.getInputText ());
-                cbSchemes.setSelectedItem (il.getInputText ());
+                cbProfiles.addItem (il.getInputText ());
+                cbProfiles.setSelectedItem (il.getInputText ());
                 listen = true;
             }
             return;
         }
         if (e.getSource () == bDelete) {
-            deleteCurrentScheme ();
+            deleteCurrentProfile ();
             return;
         }
     }

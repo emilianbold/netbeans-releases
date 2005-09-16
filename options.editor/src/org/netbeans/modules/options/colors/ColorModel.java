@@ -49,11 +49,13 @@ public abstract class ColorModel {
     
     // schemes .................................................................
     
-    public abstract Set /*<String>*/ getSchemeNames ();
+    public abstract Set /*<String>*/ getProfiles ();
     
-    public abstract String getCurrentScheme ();
+    public abstract String getCurrentProfile ();
     
-    public abstract void setCurrentScheme (String s);
+    public abstract boolean isCustomProfile (String profile);
+    
+    public abstract void setCurrentProfile (String profile);
     
     
     // annotations .............................................................
@@ -61,18 +63,21 @@ public abstract class ColorModel {
     public abstract Collection /*<Category>*/ getAnnotations (String scheme);
     
     public abstract void setAnnotations (
-	String scheme, 
+	String profile, 
 	Collection /*<Category>*/ annotations
     );
     
     
     // editor categories .......................................................
     
-    public abstract Collection /*<Category>*/ getEditorCategories (String scheme);
+    public abstract Collection /*<Category>*/ getHighlightings (String profile);
     
-    public abstract void setEditorCategories (
-	String scheme, 
-	Collection /*<Category>*/ editorCategories
+    public abstract Collection /*<Category>*/ getHighlightingDefaults 
+        (String profile);
+    
+    public abstract void setHighlightings (
+	String profile, 
+	Collection /*<Category>*/ highlihgtings
     );
 
     
@@ -80,22 +85,25 @@ public abstract class ColorModel {
     
     public abstract Set /*<String>*/ getLanguages ();
     
-    public abstract Collection /*<Category>*/ getCategories (String scheme, String language);
-    
-//    public abstract Category getCategory (String scheme, String language, String name);
-    
+    public abstract Collection /*<Category>*/ getCategories (String profile, String language);
+
+    public abstract Collection /*<Category>*/ getDefaults (
+	String profile, 
+	String language
+    );
+
     public abstract void setCategories (
-        String scheme,
+        String profile,
         String language, 
         Collection /*<Category>*/ categories
     );
     
     public abstract Component getEditorPreviewComponent (
-        String      scheme
+        String      profile
     );
 	
     public abstract Component getSyntaxColoringPreviewComponent (
-        String      scheme,
+        String      profile,
         String      language
     );
     
@@ -105,7 +113,7 @@ public abstract class ColorModel {
     public static interface Preview {
         
         public void setParameters (
-            String      scheme,
+            String      profile,
             String      language,
             Collection /*<Category>*/ categories
         );

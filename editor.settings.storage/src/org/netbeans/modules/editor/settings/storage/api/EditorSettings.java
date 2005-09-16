@@ -14,65 +14,194 @@
 package org.netbeans.modules.editor.settings.storage.api;
 
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Set;
+import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
 
 
 /**
- * 
+ * This singleton class contains access methods for editor settings like 
+ * font & colors profiles and keymaps. 
+ *
  * @author Jan Jancura
  */
 public abstract class EditorSettings {
     
     
+    private static WeakReference editorSettings;
+    
+    /**
+     * Returns default instance of EditorSettings.
+     *
+     * @return default instance of EditorSettings
+     */
+    public static EditorSettings getDefault () {
+        if (editorSettings != null) {
+            EditorSettings es = (EditorSettings) editorSettings.get ();
+            if (es != null) return es;
+        }
+        EditorSettings es = new EditorSettingsImpl ();
+        editorSettings = new WeakReference (es);
+        return es;
+    }
+    
+    /**
+     * Returns set of mimetypes.
+     *
+     * @return set of mimetypes
+     */
     public abstract Set /*<String>*/ getMimeTypes ();
     
+    /**
+     * Returns name of language for given mime type.
+     *
+     * @return name of language for given mime type
+     */
     public abstract String getLanguageName (String mimeType);
 
     
     // FontColors ..............................................................
     
-    public static final String PROP_CURRENT_FONT_COLOR_SCHEME = "currentFontColorScheme";
+    /** Property name constant. */
+    public static final String PROP_CURRENT_FONT_COLOR_PROFILE = "currentFontColorProfile";
+    /** Property name constant. */
     public static final String PROP_DEFAULT_FONT_COLORS = "defaultFontColors";
+    /** Property name constant. */
     public static final String PROP_EDITOR_FONT_COLORS = "editorFontColors";
 
+
+    /**
+     * Returns set of font & colors profiles.
+     *
+     * @return set of font & colors profiles
+     */
+    public abstract Set /*<String>*/ getFontColorProfiles ();
     
-    public abstract Set /*<String>*/ getFontColorSchemes ();
+    /**
+     * Returns true for user defined profile.
+     *
+     * @param profile a profile name
+     * @return true for user defined profile
+     */
+    public abstract boolean isCustomFontColorProfile (String profile);
     
-    public abstract String getCurrentFontColorScheme ();
+    /**
+     * Returns name of current font & colors profile.
+     *
+     * @return name of current font & colors profile
+     */
+    public abstract String getCurrentFontColorProfile ();
     
-    public abstract void setCurrentFontColorScheme (String scheme);
+    /**
+     * Sets current font & colors profile.
+     *
+     * @param profile a profile name
+     */
+    public abstract void setCurrentFontColorProfile (String profile);
     
+    /**
+     * Returns font & color defaults for given profile or null, if the profile
+     * is unknown .
+     *
+     * @param profile a profile name
+     * @return font & color defaults for given profile or null
+     */
     public abstract Collection /*<AttributeSet>*/ getDefaultFontColors (
-	String scheme
+	String profile
     );
     
+    /**
+     * Returns default values for font & color defaults for given profile 
+     * or null, if the profile is unknown.
+     *
+     * @param profile a profile name
+     * @return font & color defaults for given profile or null
+     */
+    public abstract Collection /*<AttributeSet>*/ getDefaultFontColorDefaults (
+	String profile
+    );
+    
+    /**
+     * Sets font & color defaults for given profile.
+     *
+     * @param profile a profile name
+     * @param fontColors font & color defaults to be used
+     */
     public abstract void setDefaultFontColors (
-	String scheme,
+	String profile,
 	Collection /*<AttributeSet>*/ fontColors
     );
     
-    public abstract Collection /*<AttributeSet>*/ getEditorFontColors (
-	String scheme
+    /**
+     * Returns highlighting properties for given profile or null, if the 
+     * profile is not known.
+     *
+     * @param profile a profile name
+     * @return highlighting properties for given profile or null
+     */
+    public abstract Collection /*<AttributeSet>*/ getHighlightings (
+	String profile
     );
     
-    public abstract void setEditorFontColors (
-	String scheme,
-	Collection /*<AttributeSet>*/ fontColors
+    /**
+     * Returns defaults for highlighting properties for given profile,
+     * or null if the profile is not known.
+     *
+     * @param profile a profile name
+     * @return highlighting properties for given profile or null
+     */
+    public abstract Collection /*<AttributeSet>*/ getHighlightingDefaults (
+	String profile
+    );
+    
+    /**
+     * Sets highlighting properties for given profile.
+     *
+     * @param profile a profile name
+     * @param highlighting a highlighting properties to be used
+     */
+    public abstract void setHighlightings (
+	String profile,
+	Collection /*<AttributeSet>*/ highlightings
     );
     
     
     // KeyMaps .................................................................
     
-    public static final String PROP_CURRENT_KEY_MAP_NAME = "currentKeyMapName";
-    
-    public abstract Set /*<String>*/ getKeyMapNames ();
-    
-    public abstract String getCurrentKeyMapName ();
-    
-    public abstract void setCurrentKeyMapName (String keyMapName);
+    /** Property name constant. */
+    public static final String PROP_CURRENT_KEY_MAP_PROFILE = "currentKeyMapProfile";
 
     
+    /**
+     * Returns set of keymap profiles.
+     *
+     * @return set of font & colors profiles
+     */
+    public abstract Set /*<String>*/ getKeyMapProfiles ();
+    
+    /**
+     * Returns true for user defined profile.
+     *
+     * @param profile a profile name
+     * @return true for user defined profile
+     */
+    public abstract boolean isCustomKeymapProfile (String profile);
+    
+    /**
+     * Returns name of current keymap profile.
+     *
+     * @return name of current keymap profile
+     */
+    public abstract String getCurrentKeyMapProfile ();
+    
+    /**
+     * Sets current keymap profile.
+     *
+     * @param profile a profile name
+     */
+    public abstract void setCurrentKeyMapProfile (String profile);
+
     /**
      * PropertyChangeListener registration.
      *
