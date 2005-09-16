@@ -40,7 +40,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     private int wizardType;
     
     /** Creates a new instance of BasicInfoWizardPanel */
-    public BasicInfoWizardPanel(WizardDescriptor settings, int wizType) {
+    public BasicInfoWizardPanel(final WizardDescriptor settings, final int wizType) {
         super(settings);
         wizardType = wizType;
     }
@@ -64,7 +64,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(BasicInfoWizardPanel.class);
+        return new HelpCtx(BasicInfoWizardPanel.class.getName() + "_" + getWizardTypeString(wizardType)); // NOI18N
     }
     
 }

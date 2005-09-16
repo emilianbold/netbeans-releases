@@ -37,7 +37,7 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
     protected BasicWizardPanel(WizardDescriptor settings) {
         this.settings = settings;
     }
-
+    
     public void setSettings(WizardDescriptor settings) {
         this.settings = settings;
     }
@@ -98,4 +98,19 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
             fireChange();
         }
     }
+    
+    protected static final String getWizardTypeString(int wizardType) {
+        String helpId = null;
+        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
+            helpId = "suite"; // NOI18N
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
+            helpId = "module"; // NOI18N
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
+            helpId = "library"; // NOI18N
+        } else {
+            assert false : "Unknown wizard type =" + wizardType; // NOI18N
+        }
+        return helpId;
+    }
+    
 }
