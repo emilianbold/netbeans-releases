@@ -178,8 +178,8 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("Read fully", s, is.read(copy));
         is.close();
         
-        // change the key
-        copy[s - 1]++;
+        // change one byte in the key
+        copy[4 + 2]++;
         
         FileOutputStream os = new FileOutputStream(runner.resultFile());
         os.write(copy);
