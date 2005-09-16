@@ -18,6 +18,7 @@ import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -133,6 +134,9 @@ public class ResultWindow extends TopComponent {
         setName(ID);
         setDisplayName(NbBundle.getMessage(ResultView.class,
                                            "TITLE_TEST_RESULTS"));      //NOI18N
+        setIcon(Utilities.loadImage(
+                "org/netbeans/modules/junit/output/res/testResults.png",//NOI18N
+	        true));
     }
     
     /**
