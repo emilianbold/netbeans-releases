@@ -72,7 +72,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // in-place editing
     private InPlaceEditLayer textEditLayer;
     private FormProperty editedProperty;
-
+    private InPlaceEditLayer.FinishListener finnishListener;
+            
     // metadata
     private FormModel formModel;
     private FormModelListener formModelListener;
@@ -109,6 +110,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private static String iconURL =
         "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
 
+    private boolean hasPropertyChangeListener = false;
+
     // ----------
     // constructors and setup
     
@@ -133,6 +136,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         add(loadingPanel, BorderLayout.CENTER);
 
         this.formEditor = formEditor;
+        
         explorerManager = new ExplorerManager();
 
         // add FormDataObject to lookup so it can be obtained from multiview TopComponent
@@ -142,7 +146,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             ExplorerUtils.createLookup(explorerManager, map),
             Lookups.fixed(new Object[] { formDataObject,  PaletteUtils.getPalette() }),
             formDataObject.getNodeDelegate().getLookup()
-        });
+        });        
         associateLookup(lookup);
 
         formToolBar = new FormToolBar(this);
@@ -175,31 +179,36 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         add(scrollPane, BorderLayout.CENTER);
 
         explorerManager.setRootContext(formEditor.getFormRootNode());
-        addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
-            public void propertyChange(PropertyChangeEvent evt) {
-                try {
-                    Lookup[] lookups = lookup.getSubLookups();
-                    Node[] oldNodes = (Node[])evt.getOldValue();
-                    Node[] nodes = (Node[])evt.getNewValue();
-                    Lookup lastLookup = lookups[lookups.length-1];
-                    Node delegate = formEditor.getFormDataObject().getNodeDelegate();
-                    if (!(lastLookup instanceof NoNodeLookup)
-                        && (oldNodes.length >= 1)
-                        && (!oldNodes[0].equals(delegate))) {
-                        switchLookup();
-                    } else if ((lastLookup instanceof NoNodeLookup)
-                        && (nodes.length == 0)) {
-                        switchLookup();
+        
+        if(!hasPropertyChangeListener) {
+            addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
+                public void propertyChange(PropertyChangeEvent evt) {
+                    try {
+                        Lookup[] lookups = lookup.getSubLookups();
+                        Node[] oldNodes = (Node[])evt.getOldValue();
+                        Node[] nodes = (Node[])evt.getNewValue();
+                        Lookup lastLookup = lookups[lookups.length-1];
+                        Node delegate = formEditor.getFormDataObject().getNodeDelegate();
+                        if (!(lastLookup instanceof NoNodeLookup)
+                            && (oldNodes.length >= 1)
+                            && (!oldNodes[0].equals(delegate))) {
+                            switchLookup();
+                        } else if ((lastLookup instanceof NoNodeLookup)
+                            && (nodes.length == 0)) {
+                            switchLookup();
+                        }
+                        List list = new ArrayList(nodes.length);
+                        list.addAll(Arrays.asList(nodes));
+                        list.remove(delegate);
+                        explorerManager.setSelectedNodes((Node[])list.toArray(new Node[list.size()]));
+                    } catch (PropertyVetoException ex) {
+                        ex.printStackTrace();
                     }
-                    List list = new ArrayList(nodes.length);
-                    list.addAll(Arrays.asList(nodes));
-                    list.remove(delegate);
-                    explorerManager.setSelectedNodes((Node[])list.toArray(new Node[list.size()]));
-                } catch (PropertyVetoException ex) {
-                    ex.printStackTrace();
                 }
-            }
-        });
+            });            
+            hasPropertyChangeListener = true;
+        }
+        
         
         formModel = formEditor.getFormModel();
         if (formModelListener == null)
@@ -227,6 +236,46 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         // not very nice hack - it's better FormEditorSupport has its
         // listener registered after FormDesigner
         formEditor.reinstallListener();
+        
+    }
+    
+    void reset() {
+        initialized = false;
+            
+        clearSelection();
+        removeAll();
+                
+        componentLayer = null;
+        handleLayer = null;
+        nonVisualTray = null;        
+        layeredPane = null;        
+        if(textEditLayer!=null) {            
+            if (textEditLayer.isVisible()){
+                textEditLayer.finishEditing(false);                
+            }
+            textEditLayer.removeFinishListener(getFinnishListener());
+            textEditLayer=null;               
+        }
+                
+        if (formModel != null) {
+            if (formModelListener != null) {
+                formModel.removeFormModelListener(formModelListener);                
+            }                
+            topDesignComponent = null;
+            formModel = null;
+        }
+        
+        replicator = null;
+        layoutDesigner = null;
+        
+        connectionSource = null;
+        connectionTarget = null;        
+    
+    }
+    
+    void reinitialize(FormEditor formEditor) {
+        this.formEditor = formEditor;
+        initialize();
     }
     
     private void switchLookup() {
@@ -1161,11 +1210,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (textEditLayer == null) {
             textEditLayer = new InPlaceEditLayer();
             textEditLayer.setVisible(false);
-            textEditLayer.addFinishListener(new InPlaceEditLayer.FinishListener() {
-                public void editingFinished(boolean textChanged) {
-                    finishInPlaceEditing(textEditLayer.isTextChanged());
-                }
-            });
+            textEditLayer.addFinishListener(getFinnishListener());
             layeredPane.add(textEditLayer, new Integer(2001));
         }
         try {
@@ -1181,6 +1226,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         textEditLayer.requestFocus();
     }
 
+    private InPlaceEditLayer.FinishListener getFinnishListener() {
+        if(finnishListener==null) {
+           finnishListener =  new InPlaceEditLayer.FinishListener() {
+                public void editingFinished(boolean textChanged) {
+                    finishInPlaceEditing(textEditLayer.isTextChanged());
+                }
+            };
+        }
+        return finnishListener;
+    }
+        
+    
+        
     private void finishInPlaceEditing(boolean applyChanges) {
         if (applyChanges) {
             try {
@@ -1258,7 +1316,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     public void componentDeactivated() {
         if (formModel == null)
             return;
-
+        
         if (textEditLayer != null && textEditLayer.isVisible())
             textEditLayer.finishEditing(false);
 

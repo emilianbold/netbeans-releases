@@ -291,38 +291,25 @@ public class FormEditorSupport extends JavaEditor
         if (multiviewTC == null)
             return super.reloadDocument();
 
-        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        MultiViewPerspective[] mvps = handler.getPerspectives();
-        int openedElement = 0;
-        for (int i=0; i < mvps.length; i++) {
-            if (mvps[i] == handler.getSelectedPerspective()) {
-                openedElement = i; // remember selected element
-                break;
-            }
-        }
-
-        // close all views - should close also the form editor
-        Enumeration en = multiviewTC.getReference().getComponents();
-        while (en.hasMoreElements()) {
-            TopComponent tc = (TopComponent) en.nextElement();
-            tc.close();
-        }
-
-        // Must be done after tc.close(), it sets elementToOpen to 0
-        elementToOpen = openedElement;
-
-        // TODO would be better not to close the form, but just reload
-        // FormModel and update form designer(s) with the new model
-
         org.openide.util.Task docLoadTask = super.reloadDocument();
 
         // after reloading is done, open the form editor again
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                openCloneableTopComponent();
-                multiviewTC.requestActive();
-                MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-                handler.requestActive(handler.getPerspectives()[elementToOpen]);
+                
+                FormDesigner formDesigner = getFormEditor().getFormDesigner();                
+                formDesigner.reset();                
+                
+                // see notifyClosed
+                getFormEditor().closeForm();
+                formEditor = null;
+                
+                // reload
+                loadForm();                       
+                getFormEditor().setFormDesigner(formDesigner);                                                         
+                
+                formDesigner.reinitialize(formEditor);
+                
             }
         });
 
@@ -485,7 +472,7 @@ public class FormEditorSupport extends JavaEditor
         return name;
     }
     
-    private static String getMVTCDisplayName(FormDataObject formDataObject) {
+    private static String getMVTCDisplayName(FormDataObject formDataObject) {        
         boolean readonly = !formDataObject.getPrimaryFile().canWrite();
         int version;
         if (formDataObject.isModified()) {
