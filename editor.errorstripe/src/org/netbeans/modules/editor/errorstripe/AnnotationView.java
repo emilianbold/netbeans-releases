@@ -308,17 +308,27 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     /*private*/ void fullRepaint(final boolean clearMarksCache) {
+        fullRepaint(clearMarksCache, false);
+    }
+    
+    /*private*/ void fullRepaint(final boolean clearMarksCache, final boolean clearModelToViewCache) {
         synchronized (repaintTaskRunnable) {
             repaintTaskRunnable.setClearMarksCache(clearMarksCache);
+            repaintTaskRunnable.setClearModelToViewCache(clearModelToViewCache);
             repaintTask.schedule(QUIET_TIME);
         }
     }
     
     private class RepaintTask implements Runnable {
         private boolean clearMarksCache;
+        private boolean clearModelToViewCache;
 
         public void setClearMarksCache(boolean clearMarksCache) {
             this.clearMarksCache |= clearMarksCache;
+        }
+        
+        public void setClearModelToViewCache(boolean clearModelToViewCache) {
+            this.clearModelToViewCache |= clearModelToViewCache;
         }
         
         private synchronized boolean readAndDestroyClearMarksCache() {
@@ -329,15 +339,27 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             return result;
         }
 
+        private synchronized boolean readAndDestroyClearModelToViewCache() {
+            boolean result = clearModelToViewCache;
+            
+            clearModelToViewCache = false;
+            
+            return result;
+        }
+        
         public void run() {
             final boolean clearMarksCache = readAndDestroyClearMarksCache();
+            final boolean clearModelToViewCache= readAndDestroyClearModelToViewCache();
             
             //Fix for #54193:
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (clearMarksCache) {
-                        synchronized (AnnotationView.this) {
+                    synchronized (AnnotationView.this) {
+                        if (clearMarksCache) {
                             data.clear();
+                        }
+                        if (clearModelToViewCache) {
+                            modelToViewCache = null;
                         }
                     }
                     
@@ -662,11 +684,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
 
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
-        fullRepaint();
-        synchronized (this) {
-            //fix for #63402: clear the modelToViewCache after folds changed:
-            modelToViewCache = null;
-        }
+        //fix for #63402: clear the modelToViewCache after folds changed:
+        //#64498: do not take monitor on this here:
+        fullRepaint(false, true);
     }
 
     public void removeUpdate(DocumentEvent e) {
