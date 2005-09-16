@@ -289,7 +289,9 @@ Controller, ActionListener {
                 ProgressHandle progress = ProgressHandleFactory.createHandle(
                         NbBundle.getMessage(ConnectPanel.class, "CTL_connectProgress"));
                 try {
+                    //System.out.println("Before progress.start()");
                     progress.start();
+                    //System.out.println("After progress.start()");
                     DebuggerEngine[] es = null;
                     if (connector instanceof AttachingConnector)
                         es = DebuggerManager.getDebuggerManager ().startDebugging (
@@ -322,7 +324,9 @@ Controller, ActionListener {
                                 (null, JPDADebugger.class);
                             if (d == null) continue;
                             try {
-                                d.waitRunning ();
+                                // workaround for #64227
+                                if (d.getState() != d.STATE_RUNNING) 
+                                    d.waitRunning ();
                             } catch (DebuggerStartException dsex) {
                                 //ErrorManager.getDefault().notify(ErrorManager.USER, dsex);
                                 // Not necessary to notify - message written to debugger console.
@@ -330,10 +334,13 @@ Controller, ActionListener {
                         }
                     }
                 } finally {
+                    //System.out.println("Before progress.finish()");
                     progress.finish();
+                    //System.out.println("After progress.finish()");
                 }
             }
         });
+        //System.out.println("Before return from ConnectPanel.ok()");
         return true;
     }
     
