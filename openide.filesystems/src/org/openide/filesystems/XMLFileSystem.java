@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -1073,30 +1074,40 @@ public final class XMLFileSystem extends AbstractFileSystem {
         }
 
         public Date lastModified(String name) {
+            URL url = null;
+            Date retval = null;
+            
             if ((content == null) || !(content instanceof String)) {
-                return timeFromDateHeaderField(getLayers());
+                URL[] all = getLayers();
+                url = (all != null && all.length > 0) ? all[0] : null;
+            } else {
+                try {
+                    url = createAbsoluteUrl(name);
+                } catch (IOException iex) {
+                    url = null;
+                }
             }
-
-            URL url;
-
-            try {
-                url = createAbsoluteUrl(name);
-            } catch (IOException iex) {
-                return timeFromDateHeaderField(getLayers());
+            
+            if (url != null) {
+                String protocol = url.getProtocol();
+                if ("jar".equals(protocol)) {//NOI18N
+                    URL tmp = FileUtil.getArchiveFile(url);
+                    url = (tmp != null) ? tmp : url;
+                }
+                
+                if ("file".equals(protocol)) { //NOI18N
+                    File f = new File(URI.create(url.toExternalForm()));
+                    retval = (f.exists()) ? new Date(f.lastModified()) : null;
+                } else {
+                    retval = timeFromDateHeaderField(url);
+                }
             }
-
-            File localFile = getLocalFile(url);
-
-            if (localFile != null) {
-                return new Date(localFile.lastModified());
+            
+            if (retval == null) {
+                retval = new Date(0);
             }
-
-            return timeFromDateHeaderField(url);
-        }
-
-        /** can return null*/
-        private File getLocalFile(URL url0) {
-            return getFileFromResourceString(getLocalResource(url0));
+            
+            return retval;
         }
 
         /** can return null*/

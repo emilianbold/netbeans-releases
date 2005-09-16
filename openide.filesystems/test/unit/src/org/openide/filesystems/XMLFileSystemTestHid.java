@@ -162,6 +162,33 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         fileDeletedAssert("Change in the content", 1);
     }
     
+    public void testIssue62570() throws Exception {
+        File f = writeFile("layer3.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >Ahoj</file>\n" +
+                "<file name='sample2.txt' url='sample2.txt'/>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+              
+        File f2 = new File(f.getParentFile(), "sample2.txt");        
+        if (!f2.exists()) {
+            Thread.sleep(3000);
+            assertTrue(f2.createNewFile());
+        }
+        xfs = new XMLFileSystem(f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+        assertEquals(fo.lastModified().getTime(), f.lastModified());        
+        
+        FileObject fo2 = xfs.findResource ("TestModule/sample2.txt");
+        assertNotNull(fo2);
+        assertEquals(fo2.lastModified().getTime(), f2.lastModified());        
+        assertFalse(fo2.lastModified().equals(fo.lastModified()));        
+        
+    }
+    
     private File writeFile(String name, String content) throws IOException {
         File f = new File (getWorkDir (), name);
         java.io.FileWriter w = new java.io.FileWriter (f);
