@@ -476,15 +476,23 @@ public class MergePanel extends javax.swing.JPanel {
   public int getNumUnresolvedConflicts(){
       return numUnresolvedConflicts;
   }
-  
-  public void setCurrentLine(int line, int diffLength, int conflictPos,
-                             int resultLine) {
+
+  /**
+   * Instruct view to move given line. It actually
+   * moves as AWT process posted event.
+   */
+  public void setCurrentLine(final int line, final int diffLength, final int conflictPos,
+                             final int resultLine) {
       if (line > 0) {
-          showLine12(line, diffLength);
-          showLine3(resultLine, diffLength);
-          if (conflictPos >= 0) this.currentConflictPos = conflictPos;
-          updateStatusLine();
-          updateAcceptButtons(line);
+          SwingUtilities.invokeLater(new Runnable() {
+              public void run() {
+                  showLine12(line, diffLength);
+                  showLine3(resultLine, diffLength);
+                  if (conflictPos >= 0) MergePanel.this.currentConflictPos = conflictPos;
+                  updateStatusLine();
+                  updateAcceptButtons(line);
+              }
+          });
       }
   }
   
@@ -712,6 +720,7 @@ public class MergePanel extends javax.swing.JPanel {
     }
 
     private void showLine12(int line, int diffLength) {
+        assert SwingUtilities.isEventDispatchThread();
         //System.out.println("showLine("+line+", "+diffLength+")");
         this.linesComp1.setActiveLine(line);
         this.linesComp2.setActiveLine(line);
@@ -748,6 +757,7 @@ public class MergePanel extends javax.swing.JPanel {
     }
     
     private void setViewPosition(java.awt.Point p1, java.awt.Point p2) {
+        assert SwingUtilities.isEventDispatchThread();
         jViewport1.setViewPosition(p1);
         jViewport1.repaint(jViewport1.getViewRect());
         jViewport2.setViewPosition(p2);
