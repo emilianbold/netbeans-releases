@@ -46,8 +46,14 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     }
     
     void refresh() {
-        platformValue.setSelectedItem(getProperties().getActivePlatform());
+        refreshPlatforms();
         moduleList.setModel(getProperties().getModulesListModel());
+    }
+    
+    private void refreshPlatforms() {
+        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
+        platformValue.setSelectedItem(getProperties().getActivePlatform());
+        platformValue.requestFocus();
     }
     
     private void updateEnabled() {
@@ -203,9 +209,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
-        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
-        platformValue.setSelectedItem(getProperties().getActivePlatform());
-        platformValue.requestFocus();
+        refreshPlatforms();
     }//GEN-LAST:event_managePlatforms
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

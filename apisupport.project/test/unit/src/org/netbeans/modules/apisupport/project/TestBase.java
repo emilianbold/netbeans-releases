@@ -285,14 +285,19 @@ public abstract class TestBase extends NbTestCase {
         return FileUtil.toFileObject(prjDirF);
     }
     
-    /** Generates an empty suite. */
+    /** Generates an empty suite which has the default platform set. */
     public static SuiteProject generateSuite(File workDir, String prjDir) throws IOException {
+        return generateSuite(workDir, prjDir, NbPlatform.PLATFORM_ID_DEFAULT);
+    }
+    
+    /** Generates an empty suite. */
+    public static SuiteProject generateSuite(File workDir, String prjDir, String platformID) throws IOException {
         File prjDirF = file(workDir, prjDir);
-        SuiteProjectGenerator.createSuiteProject(prjDirF, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(prjDirF, platformID);
         return (SuiteProject) ProjectManager.getDefault().findProject(
                 FileUtil.toFileObject(prjDirF));
     }
-
+    
     /**
      * Generates a suite component module which becomes a part of the given
      * <code>suiteProject</code>.

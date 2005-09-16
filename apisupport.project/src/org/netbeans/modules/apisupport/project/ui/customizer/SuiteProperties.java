@@ -19,13 +19,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-
 
 /**
  * Provides convenient access to a lot of Suite Module's properties.
@@ -36,10 +35,10 @@ public final class SuiteProperties extends ModuleProperties {
     
     public static final String DISABLED_MODULES_PROPERTY = "disabled.modules"; // NOI18N
     public static final String DISABLED_CLUSTERS_PROPERTY = "disabled.clusters"; // NOI18N
-
+    
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     
-    private NbPlatform platform;
+    private NbPlatform activePlatform;
     
     /** Project the current properties represents. */
     private SuiteProject project;
@@ -63,7 +62,6 @@ public final class SuiteProperties extends ModuleProperties {
     /** keeps all information related to branding*/
     private final BasicBrandingModel brandingModel;
     
-    
     /**
      * Creates a new instance of SuiteProperties
      */
@@ -82,9 +80,9 @@ public final class SuiteProperties extends ModuleProperties {
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
         this.moduleListModel = null;
-        // XXX similar to SuiteProject.getActivePlatform:        
-        platform = NbPlatform.getPlatformByID(
-                getEvaluator().getProperty("nbplatform.active")); // NOI18N        
+        // XXX similar to SuiteProject.getActivePlatform:
+        activePlatform = NbPlatform.getPlatformByID(
+                getEvaluator().getProperty("nbplatform.active")); // NOI18N
         firePropertiesRefreshed();
     }
     
@@ -97,13 +95,17 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
     NbPlatform getActivePlatform() {
-        return platform;
+        if (activePlatform == null) {
+            Util.err.log("Platform " + activePlatform + " was presuambly removed. Switching to default."); // NOI18N
+            activePlatform = NbPlatform.getDefaultPlatform();
+        }
+        return activePlatform;
     }
     
     void setActivePlatform(NbPlatform newPlaf) {
-        NbPlatform oldPlaf = this.platform;
-        this.platform = newPlaf;
-        firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);        
+        NbPlatform oldPlaf = this.activePlatform;
+        this.activePlatform = newPlaf;
+        firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);
     }
     
     String[] getDisabledModules() {
@@ -149,7 +151,7 @@ public final class SuiteProperties extends ModuleProperties {
      * pressed properties will not be saved,.
      */
     void storeProperties() throws IOException {
-        ModuleProperties.storePlatform(getHelper(), platform);
+        ModuleProperties.storePlatform(getHelper(), activePlatform);
         getBrandingModel().store();
         
         // store submodules if they've changed

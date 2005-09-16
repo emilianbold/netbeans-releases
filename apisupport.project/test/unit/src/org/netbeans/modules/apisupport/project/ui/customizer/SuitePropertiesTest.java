@@ -251,6 +251,16 @@ public class SuitePropertiesTest extends TestBase {
         assertEquals("two module suite component", 2, suiteProps.getModulesListModel().getSize());
     }
     
+    public void testRefreshingWithRemovedPlatformDoesNotThrowNPE() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1", "custom");
+        SubprojectProvider spp = getSubProjectProvider(suite1);
+        SuiteProperties suiteProps = getSuiteProperties(suite1);
+        NbPlatform.removePlatform(NbPlatform.getPlatformByID("custom"));
+        suiteProps.refresh(spp.getSubprojects());
+        assertNotNull(suiteProps.getActivePlatform());
+        assertEquals("default platform", suiteProps.getActivePlatform(), NbPlatform.getDefaultPlatform());
+    }
+    
     public void testCustomPropertiesReferences_61318() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         assert suite1 != null;
