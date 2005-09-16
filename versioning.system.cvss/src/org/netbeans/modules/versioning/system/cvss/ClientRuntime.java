@@ -262,8 +262,21 @@ public class ClientRuntime {
                 sshConnection.setRepository(cvsRoot.getRepository());
                 return sshConnection;
             } else {
+                // What do we want to achieve here?
+                // It's possible to mimics ordinary cvs or cvsnt behaviour:
+                // Ordinary cvs style (CVS_RSH):
+                //   command += " $hostname [-l$username] $CVS_SERVER"
+                // cvsnt style (CVS_EXT and CVS_RSH):
+                //   command += " cvs server"
+                // I prefer the cvs style, see issue #62683 for details.
+
                 String command = extSettings.extCommand;
-                command += " cvs server"; // NOI18N
+                String cvs_server = System.getProperty("Env-CVS_SERVER", "cvs") + " server";  // NOI18N
+                String userOption = ""; // NOI18N
+                if ( userName != null ) {
+                    userOption = " -l " + userName;  // NOI18N
+                }
+                command += " " + host + userOption + " " + cvs_server; // NOI18N
                 ExtConnection connection = new ExtConnection(command);
                 connection.setRepository(cvsRoot.getRepository());
                 return connection;
