@@ -79,11 +79,9 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 }
                 // adds build/generated/wsclient to resources to be available for code completion
                 if (projectHelper!=null) {
-                    EditableProperties props = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    String wsClientDir = props.getProperty(J2SEProjectProperties.BUILD_DIR)+"/generated/wsclient/"; //NOI18N
                     try {
                         String rootURL =projectHelper.getProjectDirectory().getURL().toString();
-                        URL url = new URL(rootURL+wsClientDir);
+                        URL url = new URL(rootURL+"build/generated/wsclient/"); //NOI18N
                         if (url!=null) result.add(ClassPathSupport.createResource(url));
                     } catch (MalformedURLException ex) {
                     } catch (FileStateInvalidException ex){}
