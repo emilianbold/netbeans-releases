@@ -35,7 +35,7 @@ public class GetProperty implements ActiveEditorDrop {
         "page", 
         "exception" 
     };
-    public static final int BEAN_DEFAULT = 0;
+    public static final int BEAN_DEFAULT = -1;
     public static final String[] implicitTypes = new String[] { // NOI18N
         "javax.servlet.http.HttpServletRequest", 
         "javax.servlet.http.HttpServletResponse",
