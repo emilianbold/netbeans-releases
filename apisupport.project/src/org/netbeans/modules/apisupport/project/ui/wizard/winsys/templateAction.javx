@@ -16,7 +16,7 @@ public class @@TEMPLATENAME@@Action extends AbstractAction {
 
     public @@TEMPLATENAME@@Action() {
         putValue(NAME, NbBundle.getMessage(@@TEMPLATENAME@@Action.class, "CTL_@@TEMPLATENAME@@Action"));
-@@COMMENTICON@@        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("@@ICONPATH@@", true))); 
+@@COMMENTICON@@        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("@@ICONPATH@@", true)));
     }
 
     public void actionPerformed(ActionEvent evt) {

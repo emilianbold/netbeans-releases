@@ -18,13 +18,14 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     private static final long serialVersionUID = 1L;
 
     private static @@TEMPLATENAME@@TopComponent instance;
-    
+
     private @@TEMPLATENAME@@TopComponent() {
         initComponents();
         setName(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "CTL_@@TEMPLATENAME@@TopComponent"));
         setToolTipText(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "HINT_@@TEMPLATENAME@@TopComponent"));
-@@COMMENTICON@@        setIcon(Utilities.loadImage("@@ICONPATH@@", true)); 
+@@COMMENTICON@@        setIcon(Utilities.loadImage("@@ICONPATH@@", true));
     }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -42,8 +43,6 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
-    
-
     /**
      * Gets default instance. Don't use directly, it reserved for '.settings' file only,
      * i.e. deserialization routines, otherwise you can get non-deserialized instance.
@@ -54,15 +53,15 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
         }
         return instance;
     }
-    
+
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
-    
+
     public void componentOpened() {
         // TODO add custom code on component opening
     }
-    
+
     public void componentClosed() {
         // TODO add custom code on component closing
     }
@@ -71,11 +70,11 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     public Object writeReplace() {
         return new ResolvableHelper();
     }
-    
+
     protected String preferredID() {
-        return "@@TEMPLATENAME@@TopComponent"; 
+        return "@@TEMPLATENAME@@TopComponent";
     }
-    
+
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
