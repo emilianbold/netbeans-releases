@@ -50,6 +50,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
     private static final String APPSERVER_VERSION_UNKNOWN = "unknown"; // NOI18N
     private static String version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
     private static final String J2EE_14_JAR = "lib/j2ee.jar"; //NOI18N
+    private static final String JAVA_EE_JAR = "lib/javaee.jar"; //NOI18N
     private static final String JSF_API_JAR = "lib/jsf-api.jar"; //NOI18N
     private static final String JSF_IMPL_JAR = "lib/jsf-impl.jar"; //NOI18N
     private static final String COMMON_LOGGING_JAR = "lib/commons-logging.jar"; //NOI18N
@@ -170,6 +171,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
 
                 List l = new ArrayList();
                 l.add(fileToUrl(new File(root, J2EE_14_JAR)));
+                l.add(fileToUrl(new File(root, JAVA_EE_JAR)));//In case we would have a glassfish for now
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
 
                 File doc = InstalledFileLocator.getDefault().locate("docs/j2eeri-1_4-doc-api.zip", null, false); // NOI18N
