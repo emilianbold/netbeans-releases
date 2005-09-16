@@ -50,7 +50,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Krauskopf
  */
-public class BasicInfoVisualPanel extends BasicVisualPanel {
+public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private NewModuleProjectData data;
     
@@ -65,14 +65,14 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     /** Creates new form BasicInfoVisualPanel */
     public BasicInfoVisualPanel(final WizardDescriptor setting, final int wizType) {
-        super(setting);
+        super(setting, wizType);
         wizardType = wizType;
         initComponents();
         
         data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         setComponentsVisibility();
-        if (wizType == NewNbModuleWizardIterator.TYPE_SUITE) {
+        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             detachModuleTypeGroup();
             locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
@@ -256,7 +256,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             return;
         }
         String bundlekey = null;
-        int counter;
+        int counter = 0;
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
             bundlekey = "TXT_Suite"; //NOI18N
@@ -270,7 +270,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             bundlekey = "TXT_Library"; //NOI18N
             data.setModuleCounter(counter);
         } else {
-            throw new IllegalStateException("Unknown wizard type =" + wizardType); // NOI18N
+            assert false : "Unknown wizard type =" + wizardType; // NOI18N
         }
         setProjectName(getMessage(bundlekey), counter);
     }

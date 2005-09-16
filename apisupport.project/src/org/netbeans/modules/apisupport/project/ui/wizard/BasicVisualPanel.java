@@ -26,7 +26,7 @@ public abstract class BasicVisualPanel extends JPanel {
     
     private WizardDescriptor settings;
     
-    protected BasicVisualPanel(WizardDescriptor setting) {
+    protected BasicVisualPanel(final WizardDescriptor setting) {
         this.settings = setting;
     }
     
@@ -42,7 +42,7 @@ public abstract class BasicVisualPanel extends JPanel {
         setErrorMessage(errorMessage, true);
     }
     
-    /** 
+    /**
      * Set an error message and eventually update panel's validity. If an
      * <em>updateValidity</em> is <code>true</code> also set a validity of this
      * panel. i.e. if the given error message is equal to <code>null</code>
@@ -70,4 +70,25 @@ public abstract class BasicVisualPanel extends JPanel {
         // XXX [-jglick] this is poor form - makes it impossible to safely subclass anything! Please remove
         return NbBundle.getMessage(getClass(), key);
     }
+    
+    abstract static class NewTemplatePanel extends BasicVisualPanel {
+        
+        NewTemplatePanel(final WizardDescriptor settings, final int wizardType) {
+            super(settings);
+            String resource = null;
+            if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
+                resource = "emptySuite"; // NOI18N
+            } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
+                resource = "emptyModule"; // NOI18N
+            } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
+                resource = "libraryModule"; // NOI18N
+            } else {
+                assert false : "Unknown wizard type =" + wizardType; // NOI18N
+            }
+            settings.putProperty("NewProjectWizard_Title", // NOI18N
+                    NbBundle.getMessage(BasicVisualPanel.class, "Templates/Project/APISupport/" + resource));
+        }
+        
+    }
+    
 }
