@@ -524,7 +524,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         protected void reloadModelFromData() {
             if (loading == 0) {
-                Utils.replaceDocument(document, new String(dObj.getDataCache().getData()));
+                Utils.runInAwtDispatchThread(new Runnable() {
+                    public void run() {
+                        Utils.replaceDocument(document, new String(dObj.getDataCache().getData()));
+                    }
+                });
             }
         }
     }
