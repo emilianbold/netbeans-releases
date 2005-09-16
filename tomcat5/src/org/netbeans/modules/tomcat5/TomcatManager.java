@@ -29,12 +29,8 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.ErrorManager;
-import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.w3c.dom.Document;
-import org.xml.sax.*;
 import java.io.*;
-import org.openide.xml.XMLUtil;
 import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
@@ -42,6 +38,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.modules.tomcat5.progress.MultiProgressObjectWrapper;
 import org.netbeans.modules.tomcat5.util.*;
+import org.openide.util.NbBundle;
 
 
 /** DeploymentManager that can deploy to 
@@ -62,6 +59,8 @@ public class TomcatManager implements DeploymentManager {
     
     public static final int TOMCAT_50 = 0;
     public static final int TOMCAT_55 = 1;
+    
+    private static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat";       // NOI18N
     
     /** Manager state. */
     private boolean connected;
@@ -85,6 +84,8 @@ public class TomcatManager implements DeploymentManager {
     private TomcatProperties tomcatProperties;
     
     private int tomcatVersion;
+    
+    private InstanceProperties ip;
 
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
@@ -99,10 +100,24 @@ public class TomcatManager implements DeploymentManager {
         this.connected = conn;
         this.tomcatVersion = tomcatVersion;
         this.uri = uri;
+        ip = InstanceProperties.getInstanceProperties(getUri());
+        if (isBundledTomcat()) {
+            // this allows to localize and update Bundled Tomcat display name
+            String displayName = NbBundle.getMessage(TomcatManager.class, "LBL_BundledTomcat");
+            if (!displayName.equals(ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR))) {
+                ip.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+            }
+        }
     }
 
     public InstanceProperties getInstanceProperties() {
-        return InstanceProperties.getInstanceProperties(getUri());
+        return ip;
+    }
+    
+    public boolean isBundledTomcat() {
+        String val = ip.getProperty(PROP_BUNDLED_TOMCAT);
+        return val != null ? Boolean.valueOf(val).booleanValue()
+                           : false;
     }
     
     public synchronized TomcatProperties getTomcatProperties() {
@@ -712,7 +727,7 @@ public class TomcatManager implements DeploymentManager {
                 //"docBase=\"balancer\""                    // NOI18N For bundled tomcat 5.0.x 
             };
             String passwd = null;
-            if (getTomcatProperties().isBundledTomcat()) {
+            if (isBundledTomcat()) {
                 passwd = TomcatInstallUtil.generatePassword(8);
                 getTomcatProperties().setPassword(passwd);
             }
@@ -778,7 +793,7 @@ public class TomcatManager implements DeploymentManager {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
             return null;
         }
-        if (getTomcatProperties().isBundledTomcat()) {
+        if (isBundledTomcat()) {
             TomcatInstallUtil.patchBundledServerXml(new File(baseDir, "conf/server.xml")); // NOI18N
         }
         return baseDir;

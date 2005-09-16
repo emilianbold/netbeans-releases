@@ -69,7 +69,6 @@ public class TomcatProperties {
     /** server.xml check timestamp */
     private static final String PROP_TIMESTAMP     = "timestamp";       // NOI18N
     private static final String PROP_HOST          = "host";            // NOI18N
-    private static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat";       // NOI18N
     public  static final String PROP_RUNNING_CHECK_TIMEOUT = "runningCheckTimeout"; // NOI18N
     
     // default values
@@ -465,12 +464,6 @@ public class TomcatProperties {
             }
         }
         return DEF_VALUE_RUNNING_CHECK_TIMEOUT;
-    }
-    
-    public boolean isBundledTomcat() {
-        String val = ip.getProperty(PROP_BUNDLED_TOMCAT);
-        return val != null ? Boolean.valueOf(val).booleanValue()
-                           : false;
     }
     
     public String getDisplayName() {
