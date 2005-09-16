@@ -13,6 +13,8 @@
 
 package org.openide.loaders;
 
+import java.lang.ref.WeakReference;
+import javax.swing.event.ChangeEvent;
 import junit.textui.TestRunner;
 
 import org.openide.filesystems.*;
@@ -28,7 +30,7 @@ public class DataLoaderPoolTest extends NbTestCase {
     private FileSystem lfs;
     private DataLoader loaderA;
     private DataLoader loaderB;
-    private DataLoaderPool pool;
+    private Pool pool;
 
     static {
         System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.DataLoaderPoolTest$Lkp"); // NOI18N
@@ -39,20 +41,26 @@ public class DataLoaderPoolTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        pool = DataLoaderPool.getDefault ();
-        assertNotNull (pool);
-        assertEquals (Pool.class, pool.getClass ());
+        DataLoaderPool p = DataLoaderPool.getDefault ();
+        assertNotNull (p);
+        assertEquals (Pool.class, p.getClass ());
+        pool = (Pool)p;
+        pool.clear(false);
         
         loaderA = DataLoader.getLoader(SimpleAUniFileLoader.class);
         loaderB = DataLoader.getLoader(SimpleBUniFileLoader.class);
-        
+
+        clearWorkDir();
         lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
             "folder/file.simple",
         });
+        
     }
     
     protected void tearDown() throws Exception {
-        TestUtilHid.destroyLocalFileSystem(getName());
+        WeakReference ref = new WeakReference(lfs);
+        lfs = null;
+        assertGC("File system can disappear", ref);
     }
     
     /** Method for subclasses (DataLoaderPoolOnlyEventsTest) to do the 
@@ -140,6 +148,36 @@ public class DataLoaderPoolTest extends NbTestCase {
         assertSame("There has been a change", loaderA, newOne.getLoader());
     }
     
+    public void testHowManyTimesWeCallDLPloaders() throws Exception {
+        FileObject fo = lfs.findResource("folder/file.simple");
+        assertNotNull(fo);
+
+        FileObject f1 = FileUtil.createData(fo.getParent(), "f1.simple");
+        FileObject f2 = FileUtil.createData(fo.getParent(), "f2.simple");
+        FileObject f3 = FileUtil.createData(fo.getParent(), "f3.simple");
+        
+        
+        FileObject[] all = fo.getParent().getChildren();
+        assertEquals("No calls to pool yet", 0, pool.cnt);
+        pool.clear(true);
+        
+        for (int i = 0; i < all.length; i++) {
+            DataObject o = DataObject.find(all[i]);
+            assertEquals("Only one call even for " + all[i], 1, pool.cnt);
+            assertEquals("loaderB is first for " + all[i], loaderB, o.getLoader());
+        }
+        
+        pool.loaders.remove(loaderB);
+        pool.fireChangeEvent(new ChangeEvent(pool));
+        
+        for (int i = 0; i < all.length; i++) {
+            DataObject o = DataObject.find(all[i]);
+            assertEquals("One more call - " + all[i], 2, pool.cnt);
+            assertEquals("loaderA is the only one " + all[i], loaderA, o.getLoader());
+        }
+        
+    }
+    
     public static final class SimpleAUniFileLoader extends UniFileLoader {
         public SimpleAUniFileLoader() {
             super(SimpleDataObject.class.getName());
@@ -188,12 +226,25 @@ public class DataLoaderPoolTest extends NbTestCase {
     }
     
     private static final class Pool extends DataLoaderPool {
-        private List loaders;
+        List loaders;
+        int cnt;
         
         public Pool () {
         }
+        
+        public void clear(boolean ass) {
+            loaders = null;
+            cnt = 0;
+            fireChangeEvent(new ChangeEvent(this));
+            if (ass) {
+                assertEquals("No call to loaders", 0, cnt);
+            }
+            cnt = 0;
+        }
 
         public java.util.Enumeration loaders () {
+            cnt++;
+            
             if (loaders == null) {
                 loaders = new ArrayList ();
                 DataLoader loaderA = DataLoader.getLoader(SimpleAUniFileLoader.class);

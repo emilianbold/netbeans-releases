@@ -13,6 +13,7 @@
 
 package org.openide.loaders;
 
+import javax.swing.event.ChangeEvent;
 import junit.framework.AssertionFailedError;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -64,7 +65,7 @@ implements OperationListener {
         assertNotNull (pool);
         assertEquals (Pool.class, pool.getClass ());
         
-        Pool.extra = null;
+        Pool.setExtra(null);
     }
     
     //Clear all stuff when the test finish
@@ -121,7 +122,7 @@ implements OperationListener {
         BrokenLoader loader = (BrokenLoader)DataLoader.getLoader(BrokenLoader.class);
         
         try {
-            Pool.extra = loader;
+            Pool.setExtra(loader);
             
             pool.addOperationListener(this);
             
@@ -141,7 +142,7 @@ implements OperationListener {
                 new OperationEvent (loader.obj),
             });
         } finally {
-            Pool.extra = null;
+            Pool.setExtra(null);
         }
     }
     
@@ -313,7 +314,7 @@ implements OperationListener {
     }
     
     private static final class Pool extends DataLoaderPool {
-        public static DataLoader extra;
+        private static DataLoader extra;
         
         
         protected Enumeration loaders () {
@@ -322,6 +323,12 @@ implements OperationListener {
             } else {
                 return Enumerations.singleton (extra);
             }
+        }
+
+        public static void setExtra(DataLoader aExtra) {
+            extra = aExtra;
+            Pool p = (Pool)DataLoaderPool.getDefault();
+            p.fireChangeEvent(new ChangeEvent(p));
         }
     }
 

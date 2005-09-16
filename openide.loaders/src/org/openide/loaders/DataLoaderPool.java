@@ -16,10 +16,12 @@ package org.openide.loaders;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
@@ -77,6 +79,10 @@ implements java.io.Serializable {
     
     /** Cache of loaders for faster toArray() method. */
     private transient DataLoader[] loaderArray;
+    /** cache of loaders for allLoaders method */
+    private transient List/*<DataLoader>*/ allLoaders;
+    /** counts number of changes in the loaders pool */
+    private transient int cntchanges;
     
     private transient EventListenerList listeners;
     
@@ -130,16 +136,19 @@ implements java.io.Serializable {
      * @param che change event
      */
     protected final void fireChangeEvent (final ChangeEvent che) {
-        loaderArray = null;
         
-	Object[] list;
+    	Object[] list;
         synchronized( this ) {
+            cntchanges++;
+            loaderArray = null;
+            allLoaders = null;
+
             if (listeners == null) return;            
             list = listeners.getListenerList();
         }
         
         // could fire on given array, modifications will copy it out before
-	for (int i = list.length-2; i>=0; i-=2) {
+        for (int i = list.length-2; i>=0; i-=2) {
 	    if (list[i] == ChangeListener.class) {
                 ChangeListener l = (ChangeListener)list[i+1];
                 l.stateChanged(che);
@@ -187,7 +196,7 @@ implements java.io.Serializable {
         }
 
         // could fire on given array, modifications will copy it out before
-	for (int i = list.length-2; i>=0; i-=2) {
+        for (int i = list.length-2; i>=0; i-=2) {
 	    if (list[i] == OperationListener.class) {
                 OperationListener l = (OperationListener)list[i+1];
                 switch (type) {
@@ -233,26 +242,33 @@ implements java.io.Serializable {
      * called.
      * @return enumeration of {@link DataLoader}s */
     public final Enumeration allLoaders () {
-	if (preferredLoader == null) {
-            // enumeration of systemloaders followed by normal loaders
-	    return Enumerations.concat (
-		Enumerations.array ( new Enumeration[] {
-    		    Enumerations.array (getSystemLoaders ()),
-    		    loaders (),
-    		    Enumerations.array (getDefaultLoaders ())
-		} )
-	    );
-	} else {
-            // enumeration of preferred loader folowed by systemloaders and normal loaders
-	    return Enumerations.concat (
-		Enumerations.array ( new Enumeration[] {
-        	    Enumerations.singleton (preferredLoader),
-    		    Enumerations.array (getSystemLoaders ()),
-    		    loaders (),
-    		    Enumerations.array (getDefaultLoaders ())
-		} )
-	    );
-	}
+        List all;
+        int oldcnt;
+        synchronized (this) {
+            all = this.allLoaders;
+            oldcnt = this.cntchanges;
+        }
+        
+        if (all == null) {
+            all = new ArrayList();
+            if (preferredLoader != null) {
+                all.add(preferredLoader);
+            }
+            all.addAll(Arrays.asList(getSystemLoaders()));
+            Enumeration en = loaders();
+            while(en.hasMoreElements()) {
+                all.add(en.nextElement());
+            }
+            all.addAll(Arrays.asList(getDefaultLoaders()));
+            
+            synchronized (this) {
+                if (oldcnt == this.cntchanges) {
+                    this.allLoaders = all;
+                }
+            }
+        }
+        
+        return Collections.enumeration(all);
     }
     
     /** Get an array of loaders that are currently registered.
