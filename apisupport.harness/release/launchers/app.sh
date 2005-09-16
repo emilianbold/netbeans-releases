@@ -25,7 +25,14 @@ fi
 
 args="$@"
 
-userdir=${default_userdir}
+case "`uname`" in
+    Darwin*)
+        userdir=${default_mac_userdir}
+        ;;
+    *)
+        userdir=${default_userdir}
+        ;;
+esac
 while [ $# -gt 0 ] ; do
     case "$1" in
         --userdir) shift; if [ $# -gt 0 ] ; then userdir=$1; fi
