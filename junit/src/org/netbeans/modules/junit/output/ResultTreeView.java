@@ -93,6 +93,10 @@ final class ResultTreeView extends BeanTreeView {
 
             final Node[] childNodes = rootNode.getChildren().getNodes(true);
             for (int i = 0; i < childNodes.length; i++) {
+                if (childNodes[i].getClass() != TestcaseNode.class) {
+                    /* It is a TestMethodNode - do not expand it. */
+                    continue;
+                }
                 TestcaseNode testClassNode = (TestcaseNode) childNodes[i];
                 if (testClassNode.group.containsFailed()) {
                     expandNode(testClassNode);
