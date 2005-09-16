@@ -14,6 +14,7 @@
 package org.netbeans.progress.module;
 
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataListener;
 import org.netbeans.progress.module.ui.StatusLineComponent;
 import org.openide.util.NbBundle;
@@ -22,7 +23,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-public class ProgressListAction extends AbstractAction implements ListDataListener {
+public class ProgressListAction extends AbstractAction implements ListDataListener, Runnable {
     
     /** Creates a new instance of ProcessListAction */
     public ProgressListAction() {
@@ -38,6 +39,11 @@ public class ProgressListAction extends AbstractAction implements ListDataListen
     
     /** Perform the action. Sets/unsets maximzed mode. */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
+       //need to invoke later becauseotherwise the awtlistener possibly catches a mouse event
+        SwingUtilities.invokeLater(this);
+    }
+    
+    public void run() {
         ((StatusLineComponent)Controller.getDefault().getVisualComponent()).showPopup();
     }
 
