@@ -404,7 +404,7 @@
         <property name="foregroundColor">Color.black</property>
         <property name="splashImage"/>
         <property name="frameResizable">True</property>
-        <property name="wizardImageSource">$A(basedir)/../lib/resources/wizard-bg.gif</property>
+        <property name="wizardImageSource">$A(basedir)/../lib/resources/wizard-bg.png</property>
         <property name="backgroundInsets">0, 140, 0, 0</property>
         <property name="useSystemLookAndFeel">False</property>
     </interface>
@@ -703,7 +703,7 @@
         <property name="foregroundColor">Color.black</property>
         <property name="splashImage"/>
         <property name="frameResizable">True</property>
-        <property name="wizardImageSource">$A(basedir)/../lib/resources/wizard-bg.gif</property>
+        <property name="wizardImageSource">$A(basedir)/../lib/resources/wizard-bg.png</property>
         <property name="backgroundInsets">0, 140, 0, 0</property>
         <property name="useSystemLookAndFeel">False</property>
     </interface>
