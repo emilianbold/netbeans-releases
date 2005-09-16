@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="nbbuild" testtypes="unit" attributes="automated"/>
         <module name="core" testtypes="unit" attributes="stable"/>
         <module name="core/startup" testtypes="unit" attributes="stable"/>
+        <module name="core/bootstrap" testtypes="unit" attributes="stable"/>
         <module name="openide" testtypes="unit" attributes="stable"/>
         <module name="openide/fs" testtypes="unit" attributes="stable"/>
         <module name="openide/masterfs" testtypes="unit" attributes="stable"/>
