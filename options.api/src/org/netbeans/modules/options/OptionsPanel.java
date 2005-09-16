@@ -221,7 +221,6 @@ public class OptionsPanel extends JPanel {
             int mnemonic = b.getDisplayedMnemonic ();
             KeyStroke keyStroke = KeyStroke.getKeyStroke 
                 (mnemonic, KeyEvent.ALT_MASK);
-            System.out.println("mnemonic " + ocp + " : " + (char) mnemonic);
             inputMap.put (keyStroke, b);
             getActionMap ().put (b, new SelectAction (i));
             pCategories2.add (b);
