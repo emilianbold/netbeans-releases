@@ -19,7 +19,7 @@ public class @@PREFIX@@DataLoaderBeanInfo extends SimpleBeanInfo {
     }
     
     public Image getIcon(int type) {
-@@IMAGESNIPPET@@
+        @@IMAGESNIPPET@@
     }
 
 }
