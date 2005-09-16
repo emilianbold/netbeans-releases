@@ -32,7 +32,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
+final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implements BasicCustomizer.SubCategoryProvider {
     
     private URL iconSource;
     
@@ -308,4 +308,13 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
         super.addNotify();
         checkValidity();
     }
+
+    public void showSubCategory(String name) {
+        if (name.equals(SuiteCustomizer.BASIC_BRANDING_CHECKBOX)) {
+	    buildWithBranding.requestFocus();
+        } else {
+            throw new IllegalArgumentException(name);
+        }
+    }
+    
 }

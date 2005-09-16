@@ -153,19 +153,22 @@ public final class SuiteActions implements ActionProvider {
         } else if (command.equals("build-zip")) { // NOI18N
             targetNames = new String[] {"build-zip"}; // NOI18N
         } else if (command.equals("build-jnlp")) { // NOI18N
-            targetNames = new String[] {"build-jnlp"}; // NOI18N
-        } else if (command.equals("run-jnlp")) { // NOI18N
-            targetNames = new String[] {"run-jnlp"}; // NOI18N
-        } else if (command.equals("debug-jnlp")) { // NOI18N
-            targetNames = new String[] {"debug-jnlp"}; // NOI18N
-        } else {
-            throw new IllegalArgumentException(command);
-        }
-        
-        if (command.indexOf("jnlp") >= 0) {
             if (promptForAppName()) {
                 return;
             }
+            targetNames = new String[] {"build-jnlp"}; // NOI18N
+        } else if (command.equals("run-jnlp")) { // NOI18N
+            if (promptForAppName()) {
+                return;
+            }
+            targetNames = new String[] {"run-jnlp"}; // NOI18N
+        } else if (command.equals("debug-jnlp")) { // NOI18N
+            if (promptForAppName()) {
+                return;
+            }
+            targetNames = new String[] {"debug-jnlp"}; // NOI18N
+        } else {
+            throw new IllegalArgumentException(command);
         }
         
         try {
@@ -200,10 +203,9 @@ public final class SuiteActions implements ActionProvider {
         d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
         if (DialogDisplayer.getDefault().notify(d).equals(configure)) {
             SuiteCustomizer cpi = ((SuiteCustomizer) project.getLookup().lookup(SuiteCustomizer.class));
-            cpi.showCustomizer(SuiteCustomizer.BUILD, SuiteCustomizer.BASIC_BRANDING);
-            return true;
+            cpi.showCustomizer(SuiteCustomizer.BASIC_BRANDING, SuiteCustomizer.BASIC_BRANDING_CHECKBOX);
         }
-        return false;
+        return true;
     }
     
 }
