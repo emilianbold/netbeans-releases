@@ -102,15 +102,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
-            <file name="F12.instance">
-        	    <attr name="instanceClass" stringvalue="org.netbeans.core.output.NextOutJumpAction"/>
-        	</file>
-            <file name="S-F12.instance">
-        	    <attr name="instanceClass" stringvalue="org.netbeans.core.output.PreviousOutJumpAction"/>
-        	</file>
-            <file name="D-4.instance">
-        	    <attr name="instanceClass" stringvalue="org.netbeans.core.output.OutputWindowAction"/>
-        	</file>
             <file name="S-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
             </file>
