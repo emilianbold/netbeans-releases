@@ -707,15 +707,28 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
       * This boosts IDE reactivity
       */
     public boolean isRunning() {
-         if (isSuspended())
-         return true;
-         long current=System.currentTimeMillis();
-        if (current-timeStampCheckingRunning<7000){
+        return isRunning(false);
+    
+    }
+     /* return the status of an instance.
+      * when not forced, It is optimized to return the previous status if called more than twice within
+      * a 4 seconds intervall
+      * This boosts IDE reactivity
+      */
+    public boolean isRunning(boolean forced) {
+        if (isSuspended())
+        return true;
+        long current=System.currentTimeMillis();
+      //  System.out.println("in in running call"+ (current-timeStampCheckingRunning));
+        if (forced==false)
+            if (current-timeStampCheckingRunning<4000){
+            //  System.out.println("Cached in in running call");
             //timeStampCheckingRunning = current;
             return runningState;
-        }
-        timeStampCheckingRunning = current;
+            }
+//System.out.println("startinsruning"+current);
         runningState = false; // simpleConnect(getHost(),getPort());
+        timeStampCheckingRunning = current;
         
         try {
 
@@ -732,46 +745,30 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
         if ((runningState)&&(nonAdminPortNumber == null)){
             try{
+      //  System.out.println("inrunning get admin port number"+(System.currentTimeMillis()-current));
                 nonAdminPortNumber =  (String)getManagement().getAttribute(new javax.management.ObjectName("com.sun.appserv:type=http-listener,id=http-listener-1,config=server-config,category=config") ,"port");
+              //  sharedMemoryName = getDebugAddressValueReal();
             } catch (Throwable /*IllegalStateException*/ ee) {
             ee.printStackTrace();
            }            
         }
-        return runningState;
+        timeStampCheckingRunning = System.currentTimeMillis();
+//        System.out.println("startinsruning"+(timeStampCheckingRunning-current));
+
+       return runningState;
     }
     
+
     
-    /* quickly test is 'something' is running a the jsotname:port.
-     * if true, further trst need to be done to see if it's *PE or not
-     */
-    private  boolean simpleConnect(String host, int port) {
-        try {
-            if (secure==true)
-                return false;
-            InetSocketAddress isa = new InetSocketAddress(InetAddress.getByName(host), port);
-            Socket socket = new Socket();
-            socket.connect(isa, 500);
-            socket.close();
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
+
     
-    /* may return null
-     * or returns a netbeans specific class that implements the StartServer interface from j2eeserver
-     * need to keep the mapping between a DM and a StartServer object
-     */
-    
-//    public SunServerStateInterface getStartServerInterface() {
-//        return startServerInterface;
-//    }
-    
-    public void ThrowExceptionIfSuspended(){
+    public void  ThrowExceptionIfSuspended(){
         
         /* this is called before any remote call, so it's a good place to do this extra check about being secure of not For EE version
          ** and accordingly set the environment correctly */
+
         if (secureStatusHasBeenChecked == false) {
+                long current=System.currentTimeMillis();
             try{
                 if (PortDetector.isSecurePort(getHost(),getPort())){
                     secure =true;
@@ -788,34 +785,34 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             } catch(Exception e){
                 //Cannot detect if it's secure of not yet..
                 // could be IOException, ConnectException, SocketTimeoutException
+              //  System.out.println("timeout "+( System.currentTimeMillis()-current));
+              //  System.out.println("caanot check secure");
                 secureStatusHasBeenChecked = false;
                 //System.out.println("could be IOException, ConnectException, SocketTimeoutException");
                 //e.printStackTrace();
             }
         }
-//        SunServerStateInterface ssrv = getStartServerInterface();
-//        if(ssrv!=null){
             if (isSuspended()){
+
                 //System.out.println("CANNOT DO A remote operation  WHILE STOPPED IN A BREAK POINT IN DEBUG MODE...");
                 throw new RuntimeException(bundle.getString("MSG_ServerInDebug")) ;
             }
-            
-//        }
+
     }
     
-/**
-      * Returns true if this server is started in debug mode AND debugger is attached to it 
-      * AND threads are suspended (e.g. debugger stopped on breakpoint)
-      */
-     public boolean isSuspended() {
-         return org.netbeans.modules.j2ee.sun.ide.j2ee.StartSunServer.isSuspended(this);//ludo FIXME
-     }      
+    
+    /**
+     * Returns true if this server is started in debug mode AND debugger is attached to it 
+     * AND threads are suspended (e.g. debugger stopped on breakpoint)
+     */
+    public boolean isSuspended() {
+        return org.netbeans.modules.j2ee.sun.ide.j2ee.StartSunServer.isSuspended(this);
+    }      
+    
+    
+   
 
-/* used by a netbeans extension to associatate a StartServer with this DM
-      */
-//    public void setStartServerInterface(SunServerStateInterface o) {
-//        startServerInterface = o;
-//    }
+
     private ServerInterface mmm=null;
     
     public ServerInterface getManagement() {

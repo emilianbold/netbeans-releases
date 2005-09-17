@@ -48,6 +48,10 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     
     /* return true is this  deploymment manager is running*/
     boolean isRunning();
+    /* return true is this  deploymment manager is running, 
+     * if forced is true, no caching of the value is done, so the latest status is available in real time
+     */
+    boolean isRunning(boolean forced);
     
         /* return true is this  deploymment manager needs a restart, because of changes in admin configuration*/
     public boolean isRestartNeeded();
