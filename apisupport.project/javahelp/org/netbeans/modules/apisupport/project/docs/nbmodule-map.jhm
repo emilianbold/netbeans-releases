@@ -19,14 +19,21 @@
 	<mapID target="about_project_wizards" url="create_plugin/projectlevel_create/about_project_wizards.html"/>	
 	<mapID target="create_module_suite" url="create_plugin/projectlevel_create/create_module_suite.html"/>
 	<mapID target="create_module" url="create_plugin/projectlevel_create/create_module.html"/>
-	<mapID target="create_library_wrapper" url="create_pluginprojectlevel_createprojectlevel/create_library_wrapper.html"/>
-	<mapID target="about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>	
-	<mapID target="create_j2se_library_descriptor" url="create_plugin/filelevel_create/create_j2se_library_descriptor.html"/>
-	<mapID target="create_action" url="create_plugin/filelevel_create/create_action.html"/>
-	<mapID target="create_file_type" url="create_plugin/filelevel_create/create_file_type.html"/>
-	<mapID target="create_project_template" url="create_plugin/filelevel_create/create_project_template.html"/>
-	<mapID target="create_window_component" url="create_plugin/filelevel_create/create_window_component.html"/>
-	<mapID target="create_wizard" url="create_plugin/filelevel_create/create_wizard.html"/>
+	<mapID target="create_library_wrapper" url="create_plugin/projectlevel_create/create_library_wrapper.html"/>
+		<!-- Start of "File-level Creating" section -->
+		<mapID target="about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>
+		<mapID target="about_j2se_library_descriptors" url="create_plugin/filelevel_create/about_j2se_library_descriptors.html"/>	
+		<mapID target="create_j2se_library_descriptor" url="create_plugin/filelevel_create/create_j2se_library_descriptor.html"/>
+		<mapID target="about_actions" url="create_plugin/filelevel_create/about_actions.html"/>
+		<mapID target="create_action" url="create_plugin/filelevel_create/create_action.html"/>
+		<mapID target="about_file_types" url="create_plugin/filelevel_create/about_file_types.html"/>
+		<mapID target="create_file_type" url="create_plugin/filelevel_create/create_file_type.html"/>
+		<mapID target="about_project_templates" url="create_plugin/filelevel_create/about_project_templates.html"/>
+		<mapID target="create_project_template" url="create_plugin/filelevel_create/create_project_template.html"/>
+		<mapID target="about_window_components" url="create_plugin/filelevel_create/about_window_components.html"/>
+		<mapID target="create_window_component" url="create_plugin/filelevel_create/create_window_component.html"/>
+		<mapID target="about_wizards" url="create_plugin/filelevel_create/about_wizards.html"/>
+		<mapID target="create_wizard" url="create_plugin/filelevel_create/create_wizard.html"/>
 	<!-- Start of "Create" section -->
 
 	
@@ -45,7 +52,7 @@
 			<!-- FeedReader project template: -->
 			<mapID target="org.netbeans.modules.apisupport.feedreader.FeedReaderWizardPanel" url="csh/FeedReaderWizardPanel.html"/>
 			<!-- Module Project -->
-			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="csh/BasicInfoWizardPanel.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_model" url="csh/BasicInfoWizardPanel.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="csh/BasicConfWizardPanel.html"/>
 			<!-- Module Suite Project -->
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" url="csh/BasicInfoWizardPanel_suite.html"/>-->
@@ -53,6 +60,22 @@
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="csh/LibraryStartWizardPanel.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicInfoWizardPanel_library.html"/>-->
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" url="csh/LibraryConfWizardPanel.html"/>
+
+	        <!-- Project Properties dialog box: -->
+			<!-- Module: -->
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerSources" url="csh/proj_props/CustomizerSources.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerLibraries" url="csh/proj_props/CustomizerLibraries.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDisplay" url="csh/proj_props/CustomizerDisplay.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerVersioning" url="csh/proj_props/CustomizerVersioning.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" url="csh/proj_props/CustomizerCompiling.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerPackaging" url="csh/proj_props/CustomizerPackaging.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDocumenting" url="csh/proj_props/CustomizerDocumenting.html"/>
+			<!-- Suite -->
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSources" url="csh/proj_props/SuiteCustomizerSources.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries" url="csh/proj_props/SuiteCustomizerLibraries.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding" url="csh/proj_props/SuiteCustomizerBasicBranding.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSplashBranding" url="csh/proj_props/SuiteCustomizerSplashBranding.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleList" url="csh/proj_props/SuiteCustomizerModuleList.html"/>
 
 		<!-- New File wizard: -->
 

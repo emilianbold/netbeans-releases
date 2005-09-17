@@ -6,17 +6,40 @@
 <html>
 <head>
 
-	<title>Creating A J2SE Library Descriptor</title>
+	<title>Creating a J2SE Library Descriptor</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>Creating A J2SE Library Descriptor</h2>
+	<h2>Creating a J2SE Library Descriptor</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd</p>
+<p>A J2SE library descriptor is an XML file that, when registered in the <tt>layer.xml</tt> file,
+ adds a new class library to the IDE's
+Library Manager. Whenever the module containing the library descriptor 
+is enabled, the library is present in the Library Manager.
+
+<p><b>To create a J2SE Library descriptor:</b>
+
+<ol>
+	<li><a href="../projectlevel_create/create_module.html">Create a module project</a>.
+<li>From the Projects window or Files window, right-click the project's node
+   and choose New &gt; File/Folder
+   from the pop-up menu.
+   <li>Under Categories, select NetBeans Plug-in Modules. Under File Types, select J2SE Library Descriptor. Click Next.
+   <li>Select the library that you want to make available to the user's IDE. It can be a JAR file
+   or a ZIP file. Alternatively, if the library is not available in the IDE, click
+   Manage Libraries and use the <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/create/tag/taglib/taglib_manage.html">Library Manager</a> to add a new library that you want to make available in the module. Click Next.
+   <li>Type the library name in the Libraray Name edit box.
+   <li>Type the display name in the Display Name edit box.
+   <li>Select or type a package name to house the library descriptor in the Package drop-down list.
+   <li>Click Finish.
+   <p>The IDE adds the new class library to the module. A library descriptor (an XML file) is added to the package specified
+   in the wizard. The <tt>layer.xml</tt> file registers the library descriptor. To see the library's archive files,
+   open the Files window and look in the <tt>release/libs</tt> folder.
+</ol>
 
 <hr>
 <small><a href="credits.html">Legal Notices</a> </small>

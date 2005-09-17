@@ -16,7 +16,28 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd</p>
+<p>A J2SE library descriptor adds a new class library to the 
+Library Manager of the user's IDE. Whenever the module containing the library descriptor 
+is enabled, the library is present in the Library Manager.
+
+<p><b>To create an action:</b>
+
+<ol>
+	<li>Create a module project.
+<li>From the Projects window or Files window, right-click the project's node
+   and choose New &gt; File/Folder
+   from the pop-up menu.
+   <li>Under Categories, select NetBeans Plug-in Modules. Under File Types, select J2SE Library Descriptor. Click Next.
+   <li>Select the library that you want to make available to the user's IDE. Alternatively, click
+   Manage Libraries and use the <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/create/tag/taglib/taglib_manage.html">Library Manager</a> to add a new library that you want to make available in the module. Click Next.
+   <li>Type the library name in the Libraray Name edit box.
+   <li>Type the display name in the Display Name edit box.
+   <li>Select a package to house the library descriptor from the Package drop-down list.
+   <li>Click Finish.
+   <p>The IDE adds the library to the module. To see the library's source files,
+   open the Files window and look in the <tt>release</tt> folder.
+</ol>
+
 
 <hr>
 <small><a href="credits.html">Legal Notices</a> </small>
