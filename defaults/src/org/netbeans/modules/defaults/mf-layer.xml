@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
             </file>
-            <file name="A-RIGHT.shadow">
+            <file name="AS-RIGHT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
             </file>
             <file name="A-C.shadow">
@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-INSERT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
             </file>
-            <file name="A-LEFT.shadow">
+            <file name="AS-LEFT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
             <file name="S-F8.shadow">
