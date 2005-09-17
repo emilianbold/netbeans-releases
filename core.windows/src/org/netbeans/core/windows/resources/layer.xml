@@ -134,44 +134,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/core/resources/toolbarsOption.gif"/>
     </folder>
-    
-    <folder name="Shortcuts">
-        <file name="A-LEFT.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance" />
-        </file>
-        <file name="A-RIGHT.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
-	</file>
-        
-        <file name="D-F4.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
-	</file>
-
-        <file name="D-W.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
-	</file>
-        
-        <file name="S-ESCAPE.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
-	</file>
-        <file name="D-TAB.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
-        </file>
-        <!-- #41477: For KDE on unixes, D-TAB (which is Ctrl+Tab actually) is occupied by OS, so we also register D-BAKC_QUOTE as recent view list action shortcut.
-                     For other OS's, D-TAB is the only default !-->
-        <file name="D-BACK_QUOTE.shadow">
-            <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
-        </file>
-        <file name="D-0.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
-        </file>
-        <file name="D-S-F4.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
-        </file>
-        <file name="S-F4.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
-	</file>
-    </folder>
 
     <folder name="xml">
         <folder name="lookups">

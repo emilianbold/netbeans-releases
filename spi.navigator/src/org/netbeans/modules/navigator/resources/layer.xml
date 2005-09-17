@@ -26,13 +26,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Shortcuts">
-        <file name="D-7.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
-        </file>
-
-    </folder>
-
     <folder name="Navigator">
         <folder name="Panels"/>
     </folder>

@@ -35,12 +35,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>  
     
-    <folder name="Shortcuts">
-        <file name="D-5.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
-        </file>
-    </folder>
-    
     <folder name="Templates">
         <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
         <folder name="Services">
