@@ -22,14 +22,13 @@
     <bind actionName="caret-begin-line" key="C-HOME"/>
     <bind actionName="caret-line-first-column" key="C-A"/>
     <bind actionName="page-up" key="PAGE_UP"/>
-    <bind actionName="caret-backward" key="RIGHT"/>
+    <bind actionName="caret-backward" key="LEFT"/>
     <bind actionName="caret-up" key="C-P"/>
     <bind actionName="find-next" key="A-S"/>
-    <bind actionName="page-up" key="C-Z"/>
     <bind actionName="caret-end-line" key="C-E"/>
     <bind actionName="find-previous" key="A-R"/>
     <bind actionName="caret-forward" key="C-F"/>
-    <bind actionName="caret-forward" key="LEFT"/>
+    <bind actionName="caret-forward" key="RIGHT"/>
     <bind actionName="remove-word-previous" key="C-BACK_SPACE"/>
     <bind actionName="caret-down" key="C-N"/>
     <bind actionName="caret-previous-word" key="A-B"/>
