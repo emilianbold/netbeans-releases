@@ -98,3 +98,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-editor-errorstripe-api" value="${javadoc.web.root}/org-netbeans-modules-editor-errorstripe-api"/>
 <property name="javadoc.docs.org-netbeans-modules-editor-settings" value="${javadoc.web.root}/org-netbeans-modules-editor-settings"/>
 <property name="javadoc.docs.org-netbeans-modules-db" value="${javadoc.web.root}/org-netbeans-modules-db"/>
+<property name="javadoc.docs.org-netbeans-modules-options-api" value="${javadoc.web.root}/org-netbeans-modules-options-api"/>

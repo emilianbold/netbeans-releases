@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:template match="/" >
         <p>
             These modules are required in project.xml file:
+            <xsl:apply-templates select="//dependency" mode="comment" />
             <ul>
                 <xsl:apply-templates select="//dependency" />
             </ul>
@@ -65,6 +66,44 @@ Microsystems, Inc. All Rights Reserved.
                 </xsl:if>
             </xsl:if>
         </api></li>
+    </xsl:template>
+    
+    <xsl:template match="dependency" mode="comment" >
+        <xsl:comment>
+        <xsl:text>&lt;li&gt;&lt;api type='import' group='java' category='</xsl:text>
+        <xsl:choose>
+            <xsl:when test="api-category" >
+                <xsl:value-of select="api-category/text()"/>
+            </xsl:when>
+            <xsl:otherwise>private</xsl:otherwise>
+        </xsl:choose>
+        <xsl:text>' name='</xsl:text>
+        <xsl:choose>
+            <xsl:when test="api-name" >
+                <xsl:apply-templates select="api-name/text()"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="code-name-base/text()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text>' url='@</xsl:text>
+        <xsl:value-of select="translate(code-name-base/text(),'.','-')"/>
+        <xsl:text>@/overview-summary.html' &gt;</xsl:text>
+        <xsl:if test="compile-dependency">
+            The module is needed for compilation. 
+        </xsl:if>
+        <xsl:if test="run-dependency">
+            The module is used during runtime. 
+            <xsl:if test="run-dependency/specification-version">
+                Specification version 
+                <xsl:value-of select="run-dependency/specification-version/node()" />
+                is required.
+            </xsl:if>
+        </xsl:if>
+        <xsl:text>&lt;/api&gt;
+&lt;/li&gt;            
+</xsl:text>
+        </xsl:comment>
     </xsl:template>
 </xsl:stylesheet> 
 

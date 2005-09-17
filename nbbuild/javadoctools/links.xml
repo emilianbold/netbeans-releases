@@ -98,3 +98,4 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-modules-editor-errorstripe-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-editor-errorstripe-api"/>
 <link href="${javadoc.docs.org-netbeans-modules-editor-settings}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-editor-settings"/>
 <link href="${javadoc.docs.org-netbeans-modules-db}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-db"/>
+<link href="${javadoc.docs.org-netbeans-modules-options-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-options-api"/>
