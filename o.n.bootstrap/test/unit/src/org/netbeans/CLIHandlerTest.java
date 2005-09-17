@@ -37,8 +37,8 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     public static junit.framework.Test suite() {
-        return new CLIHandlerTest("testHostNotFound64004");
-        //return new NbTestSuite(CLIHandlerTest.class);
+        //return new CLIHandlerTest("testHostNotFound64004");
+        return new NbTestSuite(CLIHandlerTest.class);
     }
     
     protected void setUp() throws Exception {
