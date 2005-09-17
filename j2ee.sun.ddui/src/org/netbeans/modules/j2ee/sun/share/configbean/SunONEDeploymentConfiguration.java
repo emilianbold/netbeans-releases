@@ -265,7 +265,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
 
-                    final ResourceConfiguratorInterface rci = getResourceConfigurator();
                     final String description = getField(ddBean, "description");
                     final File targetDir = resourceDir;
                     
@@ -281,6 +280,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                      */
                     resourceProcessor.post(new Runnable() {
                         public void run() {
+                            ResourceConfiguratorInterface rci = getResourceConfigurator();
                             rci.createJDBCDataSourceFromRef(refName, description, targetDir);
                         }
                     }, 500);
@@ -354,7 +354,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             SunDeploymentManagerInterface sdmi = (SunDeploymentManagerInterface) dm;
             rci = sdmi.getResourceConfigurator();
         } else {
-            System.out.println("FIXME DeploymentManager is wrong type: " + dm);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Invalid DeploymentManager: " + dm));
         }
         return rci;
     }
@@ -367,10 +367,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             if(ip != null) {
                 dm = ip.getDeploymentManager();
             } else {
-                System.out.println("FIXME Can't get deployment manager!!!");
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null Server InstanceProperties: " + ip));
             }
         } else {
-            System.out.println("FIXME Can't get j2ee module provider!!!");
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null J2eeModuleProvider: " + provider));
         }
         return dm;
     }
