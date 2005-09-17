@@ -53,7 +53,7 @@ public class EditorSettingsImpl extends EditorSettings {
     static final String KEYBINDING_FILE_NAME = "keybindings.xml";      // NOI18N
     static final String ALL_LANGUAGES_FILE_NAME = "defaultColoring.xml"; // NOI18N
     static final String CURRENT_FONT_COLOR_PROFILE = "currentFontColorProfile"; //NOI18N
-    static final String CURRENT_KEYMAP_PROFILE = "currentKeymapProfile"; //NOI18N
+    static final String CURRENT_KEYMAP_PROFILE = "currentProfile"; //NOI18N
 
     
     /**
@@ -418,7 +418,7 @@ public class EditorSettingsImpl extends EditorSettings {
     public String getCurrentKeyMapProfile () {
         if (currentKeyMapName == null) {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-            FileObject fo = fs.findResource ("Editors");
+            FileObject fo = fs.findResource ("Profiles");
             currentProfile = (String) fo.getAttribute (CURRENT_KEYMAP_PROFILE);
             if (currentKeyMapName == null)
                 currentKeyMapName = "NetBeans";
@@ -434,9 +434,11 @@ public class EditorSettingsImpl extends EditorSettings {
     public void setCurrentKeyMapProfile (String keyMapName) {
         String oldKeyMap = getCurrentKeyMapProfile ();
         if (oldKeyMap.equals (keyMapName)) return;
-	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-	FileObject fo = fs.findResource ("Editors");
         try {
+            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+            FileObject fo = fs.findResource ("Profiles");
+            if (fo == null)
+                fo = fs.getRoot ().createFolder ("Profiles");
             fo.setAttribute (CURRENT_KEYMAP_PROFILE, keyMapName);
             currentKeyMapName = keyMapName;
             pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapName);

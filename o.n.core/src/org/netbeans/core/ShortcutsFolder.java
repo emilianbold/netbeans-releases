@@ -14,11 +14,13 @@
 package org.netbeans.core;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import org.netbeans.core.NbKeymap.KeymapAction;
+import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
@@ -45,7 +47,9 @@ class ShortcutsFolder {
 
     private static ShortcutsFolder  shortcutsFolder;
     private Listener                listener = new Listener ();
-    private String                  listenerFolder = null;
+    private FileObject              profilesFileObject;
+    private FileObject              shortcutsFileObject;
+    private FileObject              currentFolder;
     
     
     static void initShortcuts () {
@@ -54,14 +58,22 @@ class ShortcutsFolder {
     }
     
     private ShortcutsFolder () {
-        refresh ();
-        FileObject root = Repository.getDefault ().
-            getDefaultFileSystem ().getRoot ();
-        root.getFileObject (SHORTCUTS_FOLDER).addFileChangeListener (listener);
-        FileObject profilesFolder = root.getFileObject(PROFILES_FOLDER);
-        if (profilesFolder != null) {
-            profilesFolder.addFileChangeListener(listener);
+        try {
+            FileObject root = Repository.getDefault ().
+                getDefaultFileSystem ().getRoot ();
+            profilesFileObject = root.getFileObject (PROFILES_FOLDER);
+            if (profilesFileObject == null)
+                profilesFileObject = root.createFolder (PROFILES_FOLDER);
+            profilesFileObject.addFileChangeListener (listener);
+            
+            shortcutsFileObject = root.getFileObject (SHORTCUTS_FOLDER);
+            if (shortcutsFileObject == null)
+                shortcutsFileObject = root.createFolder (SHORTCUTS_FOLDER);
+            shortcutsFileObject.addFileChangeListener (listener);            
+        } catch (IOException ex) {
+            ErrorManager.getDefault ().notify (ex);
         }
+        refresh ();
     }
     
     private void refresh () {
@@ -71,35 +83,25 @@ class ShortcutsFolder {
         keymap.removeBindings ();
 
         // update main shortcuts
-        readShortcuts (keymap, SHORTCUTS_FOLDER);
+        readShortcuts (keymap, shortcutsFileObject);
         
         // update shortcuts from profile
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject profilesFolder = root.getFileObject(PROFILES_FOLDER);
-        if (profilesFolder != null) {
-            String keymapName = (String) profilesFolder.getAttribute("currentProfile"); // NOI18N
-            if (keymapName == null) {
-                keymapName = "NetBeans"; // NOI18N
-            }
-            String folderName = PROFILES_FOLDER + '/' + keymapName;
-            FileObject profileFolder = root.getFileObject(folderName);
-            if (profileFolder != null) {
-                readShortcuts(keymap, folderName);
-                // add listener to current profile folder
-                if (listenerFolder != null) {
-                    FileObject formerProfileFolder = root.getFileObject(listenerFolder);
-                    if (formerProfileFolder != null) {
-                        formerProfileFolder.removeFileChangeListener(listener);
-                    }
-                }
-                listenerFolder = folderName;
-                profileFolder.addFileChangeListener(listener);
-            }
-        }
+        String keymapName = (String) profilesFileObject.getAttribute
+            (CURRENT_PROFILE_ATTRIBUTE);
+        if (keymapName == null || keymapName.equals (""))
+            keymapName = "NetBeans"; // NOI18N
+        if (currentFolder != null) 
+            currentFolder.removeFileChangeListener (listener);
+        currentFolder = Repository.getDefault ().getDefaultFileSystem ().
+            getRoot ().getFileObject (PROFILES_FOLDER + '/' + keymapName);
+        if (currentFolder == null) return;
+        readShortcuts (keymap, currentFolder);
+        // add listener to current profile folder
+        currentFolder.addFileChangeListener (listener);
     }
     
-    private void readShortcuts (NbKeymap keymap, String folderName) {
-        DataFolder folder = getDataFolder (folderName);
+    private void readShortcuts (NbKeymap keymap, FileObject fileObject) {
+        DataFolder folder = DataFolder.findFolder (fileObject);
         Enumeration en = folder.children (false);
         while (en.hasMoreElements ()) {
             DataObject dataObject = (DataObject) en.nextElement ();
@@ -113,8 +115,7 @@ class ShortcutsFolder {
                 KeyStroke[] keyStrokes = Utilities.stringToKeys (shortcuts);
                 addShortcut (keymap, action, keyStrokes);
             } catch (Exception ex) {
-                ex.printStackTrace ();
-                System.out.println("dataObject: " + dataObject);
+                ErrorManager.getDefault ().notify (ex);
             }
         }
     }
