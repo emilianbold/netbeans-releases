@@ -500,16 +500,22 @@ public abstract class CLIHandler extends Object {
                 byte[] serverAddress = null;
                 int port = -1;
                 try {
+                    enterState(21, block);
                     DataInputStream is = new DataInputStream(new FileInputStream(lockFile));
                     port = is.readInt();
+                    enterState(22, block);
                     key = new byte[KEY_LENGTH];
                     is.readFully(key);
+                    enterState(23, block);
                     byte[] x = new byte[4];
                     is.readFully(x);
+                    enterState(24, block);
                     serverAddress = x;
                     is.close();
+                    enterState(25, block);
                 } catch (IOException ex2) {
                     // ok, try to read it once more
+                    enterState(26, block);
                 }
                 
                 if (key != null && port != -1) {
@@ -585,12 +591,15 @@ public abstract class CLIHandler extends Object {
                                     os.flush();
                                     break;
                                 case REPLY_DELAY:
+                                    enterState(47, block);
                                     // ok, try once more
                                     break;
                                 case -1:
+                                    enterState(48, block);
                                     // EOF. Why does this happen?
                                     break;
                                 default:
+                                    enterState(49, block);
                                     assert false : reply;
                             }
                         }
