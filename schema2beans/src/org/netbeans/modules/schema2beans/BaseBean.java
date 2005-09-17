@@ -1826,138 +1826,11 @@ public abstract class BaseBean implements Cloneable, Bean {
                 }
             }
 
-            //
-            // Look over comments (IZ#20156) and inner-element whitespace.
-            // Comments and inner-element whitespace are only stored
-            // in the DOM Graph.  We only deal in CharacterData here as
-            // all other things are stored in hash tables too.
-            //
 
-            if (binding != null && bean.binding != null && graphManager != null) {
-                Document doc1 = graphManager().getXmlDocument();
-                Node startingNode1 = binding.getNode();
-                Node startingNode2 = bean.binding.getNode();
-                // comments (from second graph) are merged only for MERGE_UPDATE
-                // see also the issue 58499
-                if (startingNode1 != null && startingNode2 != null &&
-                        (mode == MERGE_UPDATE)) {
-                    NodeList nodes1 = startingNode1.getChildNodes();
-                    NodeList nodes2 = startingNode2.getChildNodes();
-                    int pos1 = 0;
-                    int pos2 = 0;
-                    int size1 = nodes1.getLength();
-                    int size2 = nodes2.getLength();
-                    //System.out.println("size1="+size1+" size2="+size2);
-                    Node n1 = null, n2 = null;
-                    while (pos1 < size1 || pos2 < size2) {
-                        //System.out.println("pos1="+pos1+" pos2="+pos2);
-                        if (pos1 < size1) {
-                            n1 = nodes1.item(pos1);
-                            //System.out.println("n1="+n1+" value="+n1.getNodeValue());
-                        } else
-                            n1 = null;
-                        if (pos2 < size2) {
-                            n2 = nodes2.item(pos2);
-                            //System.out.println("n2="+n2+" value="+n2.getNodeValue());
-                        } else
-                            n2 = null;
-                        if (areNodesEqual(n1, n2)) {
-                            ++pos1;
-                            ++pos2;
-                            //System.out.println("--> Same");
-                            continue;
-                        }
-                        //System.out.println("--> Different");
-                        if (pos1 >= size1) {
-                            //System.out.println("New stuff added to end.");
-                            for (; pos2 < size2; ++pos2) {
-                                n2 = nodes2.item(pos2);
-                                if (n2 instanceof CharacterData) {
-                                    Node newNode = doc1.importNode(n2, true);
-                                    startingNode1.appendChild(newNode);
-                                }
-                            }
-                            break;
-                        }
-                        if (pos2 >= size2) {
-                            //System.out.println("Stuff deleted from end.");
-                            for (int i = size1 - 1; i >= pos1; --i) {
-                                n1 = nodes1.item(i);
-                                if (n1 instanceof CharacterData) {
-                                    startingNode1.removeChild(n1);
-                                }
-                            }
-                            break;
-                        }
-                        if (n1 instanceof CharacterData &&
-                                n2 != null && n2.getNodeType() == n1.getNodeType()) {
-                            String value1 = n1.getNodeValue();
-                            String value2 = n2.getNodeValue();
-                            // Are they both just whitespace?
-                            if ((value1 == null || "".equals(value1.trim())) &&
-                                    (value2 == null || "".equals(value2.trim())) ) {
-                                //System.out.println("whitespace was changed in graph 2");
-                                ((CharacterData)n1).setData(value2);
-                                ++pos1;
-                                ++pos2;
-                                continue;
-                            }
-                        }
-                        int j2 = pos2;
-                        int j1 = -1;
-                        for (; j2 < size2; ++j2) {
-                            Node j2node = nodes2.item(j2);
-                            // Skip whitespace here
-                            if (j2node instanceof CharacterData) {
-                                String j2value = j2node.getNodeValue();
-                                if (j2value == null || "".equals(j2value.trim()))
-                                    continue;
-                            }
-                            j1 = findInNodeList(nodes1, j2node, pos1);
-                            if (j1 >= 0)
-                                break;
-                        }
-                        //System.out.println("j1="+j1+" j2="+j2);
-                        if (j1 == pos1 && j2 > pos2) {
-                            //System.out.println("stuff was added in graph 2");
-                            // pos2 thru j2 were added (including pos2 and not j2)
-                            Node nodeToInsertBefore = nodes1.item(j1);
-                            for (; pos2 < j2; ++pos2) {
-                                n2 = nodes2.item(pos2);
-                                if (n2 instanceof CharacterData) {
-                                    Node newNode = doc1.importNode(n2, true);
-                                    //System.out.println("newNode="+newNode);
-                                    ++pos1;
-                                    startingNode1.insertBefore(newNode, nodeToInsertBefore);
-                                }
-                            }
-                            // reestablish nodes1 and size1 data
-                            nodes1 = startingNode1.getChildNodes();
-                            size1 = nodes1.getLength();
-                        } else if (j1 - 1 < pos1) {
-                            //System.out.println("Simply replace n1 with n2");
-                            if (n2 instanceof CharacterData) {
-                                startingNode1.replaceChild(doc1.importNode(n2, true), n1);
-                            }
-                            ++pos1;
-                            ++pos2;
-                        } else {
-                            //System.out.println("stuff was deleted in graph 2");
-                            for (int i = j1 - 1; i >= pos1; --i) {
-                                n1 = nodes1.item(i);
-                                if (n1 instanceof CharacterData) {
-                                    //System.out.println("Deleting: "+n1);
-                                    startingNode1.removeChild(n1);
-                                } else {
-                                    ++pos1;
-                                }
-                            }
-                            // reestablish nodes1 and size1 data
-                            nodes1 = startingNode1.getChildNodes();
-                            size1 = nodes1.getLength();
-                        }
-                    }
-                }
+            if ((mode == MERGE_UPDATE)) {
+                // For MERGE_UPDATE we additionally merge elements which have
+                // no representation in model and exist only in DOMBinding
+                mergeUnsupportedElements(bean);
             }
 
             //
@@ -1971,7 +1844,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                     "MergeWrongClassType_msg", this.getClass().getName(),
                     (bean==null ? "<null>" : bean.getClass().getName())));
     }
-    
+
     /**
      * Compare 2 Node's and tell me if they're roughly equivalent.
      * By roughly equivalent, attributes and children are ignored.
@@ -1994,7 +1867,7 @@ public abstract class BaseBean implements Cloneable, Bean {
             return false;
         return true;
     }
-    
+
     /**
      * Search in @param nodes for an equivalent node to @param node
      * (equivalent as defined by areNodesEqual) starting the search
@@ -2541,4 +2414,218 @@ public abstract class BaseBean implements Cloneable, Bean {
         }
         return _getXPathExpr() + "/" + childName;
     }
+
+    /**
+     * Merge "unsupported" elements - elements which are not represented
+     * in model (whitespaces, comments, unknown atributes and tags),
+     * but they should be merged to DOMBinding
+     * @param bean
+     */
+    private void mergeUnsupportedElements(BaseBean bean) {
+        if (binding != null && bean.binding != null) {
+            Node node = binding.getNode();
+            Node otherNode = bean.binding.getNode();
+            if (node != null && otherNode != null) {
+                mergeNode(node, otherNode);
+                if (isRoot) {
+                    mergeNode(node.getParentNode(), otherNode.getParentNode());
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieves owner document of a node
+     * @param node
+     * @return the owner document
+     */
+    private Document getOwnerDocument(Node node) {
+        return node instanceof Document ? (Document) node : node.getOwnerDocument();
+    }
+
+    /**
+     * Merge "unsupported" attributes and child elements of node
+     * @param node
+     * @param otherNode
+     */
+    private void mergeNode(Node node, Node otherNode) {
+        mergeAttributes(node, otherNode);
+        List children = new LinkedList();
+        NodeList childNodes = node.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            children.add(childNodes.item(i));
+        }
+        Document document = getOwnerDocument(node);
+        NodeList otherChildNodes = otherNode.getChildNodes();
+        for (int i = 0; i < otherChildNodes.getLength(); i++) {
+            Node otherChild = otherChildNodes.item(i);
+            Node currentChild = childNodes.item(i);
+            Node foundChild = findEqualNode(children, otherChild);
+            if (foundChild != null) {
+                if (foundChild != currentChild) {
+                    node.removeChild(foundChild);
+                    node.insertBefore(foundChild, currentChild);
+                }
+            } else {
+                Node child = document.importNode(otherChild, true);
+                node.insertBefore(child, currentChild);
+                short nodeType = child.getNodeType();
+                if (nodeType != Node.TEXT_NODE && nodeType != Node.COMMENT_NODE) {
+                    TraceLogger.error("BaseBean.merge() [" + node + "]: added node " + child); //NOI18N
+                }
+            }
+        }
+        for (Iterator it = children.iterator(); it.hasNext();) {
+            Node child = (Node) it.next();
+            node.removeChild(child);
+            short nodeType = child.getNodeType();
+            if (nodeType != Node.TEXT_NODE && nodeType != Node.COMMENT_NODE) {
+                TraceLogger.error("BaseBean.merge() [" + node + "]: removed node " + child); //NOI18N
+            }
+        }
+    }
+
+    /**
+     * Merge "unsupported" attributes of a node
+     * @param node
+     * @param otherNode
+     */
+    private void mergeAttributes(Node node, Node otherNode) {
+        NamedNodeMap attributes = node.getAttributes();
+        NamedNodeMap otherAttributes = otherNode.getAttributes();
+        if (attributes == null) {
+            return;
+        }
+        List names = new LinkedList();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            names.add(attributes.item(i).getNodeName());
+        }
+        for (Iterator it = names.iterator(); it.hasNext();) {
+            String name = (String) it.next();
+            if (otherAttributes.getNamedItem(name) == null) {
+                attributes.removeNamedItem(name);
+                TraceLogger.error("BaseBean.merge() [" + node + "]: removed attribute " + name); //NOI18N
+            }
+        }
+        Document document = getOwnerDocument(node);
+        for (int i = 0; i < otherAttributes.getLength(); i++) {
+            Node newAttribute = otherAttributes.item(i);
+            String name = newAttribute.getNodeName();
+            String value = newAttribute.getNodeValue();
+            Node currentAttribute = attributes.getNamedItem(name);
+            if (currentAttribute == null) {
+                currentAttribute = document.createAttribute(name);
+                attributes.setNamedItem(currentAttribute);
+                TraceLogger.error("BaseBean.merge() [" + node + "]: added attribute " + name); //NOI18N
+            }
+            currentAttribute.setNodeValue(value);
+        }
+    }
+
+    /**
+     * Search list of nodes for node that is equivalent of given pattern
+     * @param nodes
+     * @param patternNode
+     * @return the node if found otherwise null
+     */
+    private Node findEqualNode(List nodes, Node patternNode) {
+        for (Iterator it = nodes.iterator(); it.hasNext();) {
+            Node node = (Node) it.next();
+            if (equals(node, patternNode)) {
+                it.remove();
+                return node;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Test nodes for equivalency
+     * @param node1
+     * @param node2
+     * @return true if they are equivalent, otherwise false
+     */
+    private boolean equals(Node node1, Node node2) {
+        if (node1 == null || node2 == null) {
+            return node1 == node2;
+        }
+        if (node1.getNodeType() == node2.getNodeType()) {
+            if (!node1.getNodeName().equals(node2.getNodeName())) {
+                return false;
+            }
+            if (!equals(node1.getNodeValue(), node2.getNodeValue())) {
+                return false;
+            }
+            if (!equals(node1.getAttributes(), node2.getAttributes())) {
+                return false;
+            }
+            return equals(node1.getChildNodes(), node2.getChildNodes());
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Test strings for equivalency
+     * @param s1
+     * @param s2
+     * @return true if they are equivalent, otherwise false
+     */
+    private boolean equals(String s1, String s2) {
+        if (s1 == null) {
+            return s2 == null;
+        } else {
+            return s1.equals(s2);
+        }
+
+    }
+
+    /**
+     * Test attributes for equivalency
+     * @param attributes1
+     * @param attributes2
+     * @return true if they are equivalent, otherwise false
+     */
+    private boolean equals(NamedNodeMap attributes1, NamedNodeMap attributes2) {
+        if (attributes1 == null || attributes2 == null) {
+            return attributes1 == attributes2;
+        } else {
+            int n = attributes1.getLength();
+            if (n != attributes2.getLength()) {
+                return false;
+            }
+            for (int i = 0; i < n; i++) {
+                Node attr1 = attributes1.item(i);
+                Node attr2 = attributes2.getNamedItem(attr1.getNodeName());
+                if (attr2 == null || !attr2.getNodeValue().equals(attr2.getNodeValue())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Test node's children for equivalency
+     * @param childNodes1
+     * @param childNodes2
+     * @return true if they are equivalent, otherwise false
+     */
+    private boolean equals(NodeList childNodes1, NodeList childNodes2) {
+        if (childNodes1 == null || childNodes2 == null) {
+            return childNodes1 == childNodes2;
+        } else {
+            int n = childNodes1.getLength();
+            if (n != childNodes2.getLength()) {
+                return false;
+            }
+            for (int i = 0; i < n; i++) {
+                if (!equals(childNodes1.item(i), childNodes2.item(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
 }

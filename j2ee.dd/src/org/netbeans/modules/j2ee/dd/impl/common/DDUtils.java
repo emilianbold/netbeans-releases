@@ -55,9 +55,6 @@ public class DDUtils {
                 // merging original in proxy EjbJar
                 ejbJarProxy.getOriginal().merge(newOriginal, EjbJar.MERGE_UPDATE);
             }
-            // replacing original in proxy EjbJar
-            ejbJarProxy.setOriginal(newOriginal);
-
             ejbJarProxy.setProxyVersion(newVersion.toString());
             ejbJarProxy.setStatus(newEjbJarProxy.getStatus());
             ejbJarProxy.setError(newEjbJarProxy.getError());
