@@ -29,15 +29,16 @@ public class CLIHandlerTest extends NbTestCase {
     private static ByteArrayInputStream nullInput = new ByteArrayInputStream(new byte[0]);
     private static ByteArrayOutputStream nullOutput = new ByteArrayOutputStream();
     
-    private StringBuffer sb;
+    private ByteArrayOutputStream sb;
+    private PrintStream ps;
     
     public CLIHandlerTest(String name) {
         super(name);
     }
     
     public static junit.framework.Test suite() {
-        //return new CLIHandlerTest("testServerCanBeStopped");
-        return new NbTestSuite(CLIHandlerTest.class);
+        return new CLIHandlerTest("testHostNotFound64004");
+        //return new NbTestSuite(CLIHandlerTest.class);
     }
     
     protected void setUp() throws Exception {
@@ -63,11 +64,13 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     protected void runTest () throws Throwable {
-        sb = new StringBuffer ();
-        CLIHandler.registerDebug (sb);
+        sb = new ByteArrayOutputStream();
+        ps = new PrintStream(sb);
+        CLIHandler.registerDebug (ps);
         try {
             super.runTest ();
         } catch (AssertionFailedError ex) {
+            ps.flush();
             AssertionFailedError ne = new AssertionFailedError ("Failed as " + ex.getMessage () + " with text:\n" + sb.toString ());
             ne.setStackTrace (ex.getStackTrace ());
             throw ne;
@@ -310,10 +313,10 @@ public class CLIHandlerTest extends NbTestCase {
             
             protected int cli (Args args) {
                 cnt++;
-                sb.append ("Increased cnt to: ");
-                sb.append (cnt);
-                sb.append (" by thread ");
-                sb.append (Thread.currentThread ());
+                ps.print("Increased cnt to: ");
+                ps.print(cnt);
+                ps.print(" by thread ");
+                ps.print(Thread.currentThread ());
                 return afterFinish;
             }
             
@@ -588,6 +591,32 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("Not called -1", -1, h.cnt);
         // right now the handler will not be called, if there is anything else
         // to do, let's wait for such requirements
+    }
+
+    public void testHostNotFound64004 () throws Exception {
+        class H extends CLIHandler {
+            private int cnt;
+            public int toReturn;
+            
+            public H() {
+                super(CLIHandler.WHEN_INIT);
+            }
+            
+            protected synchronized int cli(Args args) {
+                notifyAll();
+                cnt++;
+                return toReturn;
+            }
+            
+            protected void usage(PrintWriter w) {}
+        }
+        H h = new H();
+        
+        h.toReturn = 7;
+        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, new Integer(667));
+        
+        assertEquals("Called once, increased", 1, h.cnt);
+        assertEquals("Result is provided by H", 7, res.getExitCode());
     }
     
     //

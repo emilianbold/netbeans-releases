@@ -73,7 +73,7 @@ public abstract class CLIHandler extends Object {
     
     /** Testing output of the threads.
      */
-    private static StringBuffer OUTPUT;
+    private static PrintStream OUTPUT = Integer.getInteger("org.netbeans.CLIHandler", 0).intValue() < 0 ? System.err : null; // NOI18N
     
     private int when;
     
@@ -112,16 +112,16 @@ public abstract class CLIHandler extends Object {
      * algorithm in any place in the initialize method.
      */
     private static void enterState(int state, Integer block) {
-        StringBuffer output = OUTPUT;
+        PrintStream output = OUTPUT;
         if (output != null) {
             synchronized (output) {
                 // for easier debugging of CLIHandlerTest
-                output.append ("state: ");
-                output.append (state);
-                output.append (" thread: ");
-                output.append (Thread.currentThread());
+                output.print ("state: "); // NOI18N
+                output.print (state);
+                output.print (" thread: "); // NOI18N
+                output.print (Thread.currentThread());
                 if (block == null) {
-                    output.append ('\n');
+                    output.println ();
                 }
             }
         }
@@ -132,7 +132,7 @@ public abstract class CLIHandler extends Object {
         synchronized (block) {
             if (state == block.intValue()) {
                 if (output != null) {
-                    output.append (" blocked\n");
+                    output.println (" blocked"); // NOI18N
                 }
                 block.notifyAll();
                 try {
@@ -142,7 +142,7 @@ public abstract class CLIHandler extends Object {
                 }
             } else {
                 if (output != null) {
-                    output.append (" not blocked\n");
+                    output.println(" not blocked"); // NOI18N
                 }
             }
         }
@@ -375,7 +375,7 @@ public abstract class CLIHandler extends Object {
     
     /** Registers debugging output for tests.
      */
-    static void registerDebug (StringBuffer sb) {
+    static void registerDebug (PrintStream sb) {
         OUTPUT = sb;
     }
     
@@ -474,6 +474,10 @@ public abstract class CLIHandler extends Object {
                 // address, it can be done asynchronously as nobody needs
                 // the address in the stream if the server is listening
                 byte[] host = InetAddress.getLocalHost().getAddress();
+                if (block != null && block.intValue() == 667) {
+                    // this is here to emulate #64004
+                    throw new java.net.UnknownHostException ("dhcppc0"); // NOI18N
+                }
                 for (int all = 0; all < host.length; all++) {
                     os.write(host[all]);
                 }
