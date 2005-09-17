@@ -45,13 +45,13 @@
 			<!-- FeedReader project template: -->
 			<mapID target="org.netbeans.modules.apisupport.feedreader.FeedReaderWizardPanel" url="csh/FeedReaderWizardPanel.html"/>
 			<!-- Module Project -->
-			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="csh/BasicInfoWizardPanel_module.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="csh/BasicInfoWizardPanel.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="csh/BasicConfWizardPanel.html"/>
 			<!-- Module Suite Project -->
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" url="csh/BasicInfoWizardPanel_suite.html"/>-->
 			<!-- Library Wrapper Module Project -->
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="csh/LibraryStartWizardPanel.html"/>
-			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicConfWizardPanel_library.html"/>-->
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicInfoWizardPanel_library.html"/>-->
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" url="csh/LibraryConfWizardPanel.html"/>
 
 		<!-- New File wizard: -->

@@ -6,17 +6,89 @@
 <html>
 <head>
 
-	<title>About Project-Level Wizards</title>
+<title>About Module Project Templates</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>About Project-Level Wizards</h2>
+<h2>About Module Project Templates</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd</p>
+<p>The IDE contains a set of standard project templates for module development. 
+ The standard distribution of the IDE contains the following module project templates:
+
+ <ul>
+<li><b><img src="../../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module.</b>
+An empty module with a <tt>layer.xml</tt> file and a <tt>bundle.properties</tt> file.</li>
+<li><b><img src="../../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper Module.</b>
+A library wrapped in a module project and a <tt>bundle.properties</tt> file.</li>
+<li><b><img src="../../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite.</b>
+An empty module suite.</li>
+</ul>
+
+<h3>Important Files</h3>
+<p>Module projects and library wrapper module projects have an Important Files node where the IDE stores the Ant script,
+ <tt>layer.xml</tt> file, and other project data.</p>
+
+ <p>The following table lists the contents of the Important Files node and the module project template
+  in which each is found:</p>
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left"> Item</th>
+    <th scope="col" align="left">Description</th>
+    <th scope="col" align="left">Availability</th>
+  </tr>
+ <tr valign="top"> 
+	 <td>XML Layer</td>
+    <td> 
+	    The System Filesystem registration file (<tt>layer.xml</tt>). You use this file
+	    to register new items in the System Filesystem. When you use
+	    file-level templates, the IDE automatically registers
+	    items for you. For example, when you use the Action wizard,
+	    you specify that a Java class should be invoked as a menu item,
+	    toolbar button, or keyboard shortcut, and the IDE registers
+	    your specification accordingly in the<tt>layer.xml</tt> file.
+    </td>
+    <td>Module Project</td>
+  </tr>
+  <tr valign="top"> 
+	  <td>Build Script</td>
+    <td> 
+      The build script called by the IDE. This build script only contains an 
+        import statement that imports targets from <tt>nbproject/build-impl.xml</tt>. 
+        Use the <tt>build.xml</tt> to override targets from <tt>build-impl.xml</tt> 
+        or to create new targets.
+</td>
+<td>Both</td>
+  </tr>
+  
+  <tr valign="top"> 
+    <td>Module Manifest</td>
+    <td> 
+	    <p>The JAR manifest (<tt>manifest.mf</tt>) with sections defining attributes
+	    for the module. By default, the <tt>manifest.mf</tt> file created for a module project
+	    specifies its version, name, <tt>layer.xml</tt>, localizing bundle, and specification version.
+    </td>
+<td>Both</td>
+  </tr>
+   <tr valign="top"> 
+    <td>Project Metadata</td>
+    <td> 
+      <p>The <tt>project.xml</tt> file. IDE-generated 
+      metadata file for specifying module dependencies and classpaths.
+       Although you can edit <tt>project.xml</tt> manually, 
+       you generally do not need to. Either a file-level template,
+       the IDE automatically specifies module dependencies required
+       by the item in question. Should you need to specify module dependencies
+       yourself, use the Libraries panel in the project's Project Properties dialog box.</li>
+      </ul>
+    </td>
+<td>Both</td>
+  </tr>
+</table>
 
 <hr>
 <small><a href="credits.html">Legal Notices</a> </small>
