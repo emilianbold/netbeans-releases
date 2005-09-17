@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -67,6 +66,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.plan.DeploymentPlan;
@@ -305,7 +305,31 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 ResourceConfiguratorInterface rci = getResourceConfigurator();
                 CmpEntityEjb cmpEjbDCB = (CmpEntityEjb) theEjbDCB;
                 String description = getField(ddBean, "description");
-                rci.createJDBCDataSourceForCmp(cmpEjbDCB.getEjbName(), description, resourceDir);
+                String jndiName = rci.createJDBCDataSourceForCmp(cmpEjbDCB.getEjbName(), description, resourceDir);
+
+                // Set the CmpResource jndi-name if not already defined.
+                if(jndiName != null) {
+                    Base parentDCB = cmpEjbDCB.getParent();
+                    if(parentDCB instanceof EjbJarRoot) {
+                        EjbJarRoot ejbJarRoot = (EjbJarRoot) parentDCB;
+                        CmpResource cmpResource = null;
+                        if(ejbJarRoot.getCmpResource() == null) {
+                            cmpResource = StorageBeanFactory.getDefault().createCmpResource();
+                        } else {
+                            cmpResource = (CmpResource)ejbJarRoot.getCmpResource().clone();
+                        }
+                        cmpResource.setJndiName(jndiName);
+                        try {
+                            ejbJarRoot.setCmpResource(cmpResource);
+                        } catch(PropertyVetoException ex) {
+                            // Should never happen
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        }
+                    } else {
+                        // Should never happen
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("CmpEntityBean DConfigBean parent is of wrong type: " + parentDCB));
+                    }
+                }
             }
         }
     }
