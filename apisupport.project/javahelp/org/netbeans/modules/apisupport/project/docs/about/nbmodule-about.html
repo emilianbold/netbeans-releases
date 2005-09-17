@@ -6,31 +6,36 @@
 <html>
 <head>
 
-<title>About NetBeans Plug-in Modules</title>
+<title>About NetBeans Modules</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>About NetBeans Plug-in Modules</h2>
+	<h2>About NetBeans Modules</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-	<p>A NetBeans plug-in module ("plug-in") is a Java archive (JAR) file which contains Java classes written to interact with the 
+	<p>A NetBeans module is a Java archive (JAR) file which contains Java classes written to interact with the 
 	<a href="about-open-apis.html">NetBeans Open APIs</a>. 
-	A plug-in identifies 
-	itself as a plug-in by an entry in its manifest file. NetBeans plug-ins are packaged as NBM files (<tt>.nbm</tt> extension) for non-installer
+	A module identifies 
+	itself as a module by an entry in its <tt>manifest.mf</tt> file.
+       	NetBeans modules are packaged as NBM files (<tt>.nbm</tt> extension) for non-installer
 	distribution, usually via the NetBeans Update Center.
+	<p>NetBeans modules are written with one of two aims in mind:
+	<ul>
+		<li><b>Extending the IDE.</b> You can very easily extend the IDE's functionality with 
+		new features. For example, you can write modules that make your favorite cutting-edge 
+		technologies available to the NetBeans IDE. Or, if you miss some functionality in the IDE, you
+		can add it yourself, by writing a module that provides the desired functionality.
+		<li><b>Building a stand-alone application.</b> You can use the core of NetBeans as a platform on 
+		top of which you develop rich client applications. The core of NetBeans is a separate NetBeans product
+		called the <a href="about-netbeans-platform.html">NetBeans Platform</a>. You can save a lot of development time 
+		by reusing features readily available in the NetBeans Platform. 
+	</ul>
 
-	<p>When an application based on a NetBeans platform is run, the platform's Main class is run. 
-	It then finds the available plug-ins and builds an in-memory registry of them, and performs any 
-	tasks they specify for startup. Generally, a plug-in's code is loaded into memory as it is needed.
 
-	<p>Applications can install plug-ins dynamically - any application can include the Update Center plug-in,
-	to allow users of that application to download digitally-signed upgrades and new features via the web,
-	directly into the running application. Installing an upgrade or a new release does not force users to 
-	download the entire application again. And in an application with multiple plug-ins, upgrades of specific
-       	functionality can be incremental, further improving customer response time and time-to-market. 
+
 
 <hr>
 <small><a href="credits.html">Legal Notices</a> </small>
