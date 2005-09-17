@@ -586,6 +586,8 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     String getOriginalProfile (String profile) {
+	if (fontColorProfiles == null)
+	    init ();
 	return (String) fontColorProfiles.get (profile);
     }
 }
