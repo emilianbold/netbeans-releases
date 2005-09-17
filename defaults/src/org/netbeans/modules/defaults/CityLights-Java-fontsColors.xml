@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <fontcolor name="default" default="default"/>
+    <fontcolor name="java-annotation" foreColor="ff006f00" default="default"/>
+    <fontcolor name="java-block-comment" default="comment"/>
+    <fontcolor name="java-char-literal" default="char"/>
+    <fontcolor name="java-errors" default="error"/>
+    <fontcolor name="java-identifier" default="identifier"/>
+    <fontcolor name="java-keywords" default="keyword"/>
+    <fontcolor name="java-layer-method" default="default"/>
+    <fontcolor name="java-line-comment" default="comment"/>
+    <fontcolor name="java-numeric-literals" default="number"/>
+    <fontcolor name="java-operators" default="operator"/>
+    <fontcolor name="java-string-literal" default="string"/>
+    <fontcolor name="java-whitespace" default="whitespace"/>
+</fontscolors>

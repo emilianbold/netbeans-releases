@@ -1,0 +1,694 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Profiles">
+        <folder name="Emacs">
+            <file name="DELETE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+            </file>
+            <file name="C-D.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+            </file>
+            <file name="A-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="C-X N.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
+            </file>
+            <file name="AS-MINUS.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
+            </file>
+            <file name="F2.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
+            </file>
+            <file name="A-RIGHT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
+            </file>
+            <file name="A-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="C-X BACK_QUOTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
+            </file>
+            <file name="CS-Z.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
+            </file>
+            <file name="C-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="C-Y.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="A-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="C-X F.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+            </file>
+            <file name="AS-S.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance"/>
+            </file>
+            <file name="C-X S.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
+            </file>
+            <file name="S-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="A-LEFT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            </file>
+            <file name="S-F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            </file>
+            <file name="C-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="A-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="A-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance"/>
+            </file>
+            <file name="C-X P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            </file>
+            <file name="CA-S.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
+            </file>
+            <file name="S-DELETE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="CS-MINUS.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="AS-M.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+            </file>
+        </folder>
+        <folder name="NetBeans">
+            <file name="CS-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+            </file>
+            <file name="F12.instance">
+        	    <attr name="instanceClass" stringvalue="org.netbeans.core.output.NextOutJumpAction"/>
+        	</file>
+            <file name="S-F12.instance">
+        	    <attr name="instanceClass" stringvalue="org.netbeans.core.output.PreviousOutJumpAction"/>
+        	</file>
+            <file name="D-4.instance">
+        	    <attr name="instanceClass" stringvalue="org.netbeans.core.output.OutputWindowAction"/>
+        	</file>
+            <file name="S-F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+            </file>
+            <file name="S-A-Left.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
+            </file>
+            <file name="C-R.shadow">
+                <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
+            </file>
+            <file name="D-2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
+            </file>
+            <file name="D-V.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="D-Z.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="F9.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
+            </file>
+            <file name="A-LEFT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            </file>
+            <file name="OS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
+            </file>
+            <file name="DO-T.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
+            </file>
+            <file name="OS-R.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
+            </file>
+            <file name="O-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
+            </file>
+            <file name="F2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
+            </file>
+            <file name="SO-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            </file>
+            <file name="F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
+            </file>
+            <file name="D-Y.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
+            </file>
+            <file name="F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
+            </file>
+            <file name="O-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance"/>
+            </file>
+            <file name="D-F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+            </file>
+            <file name="DS-F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
+            </file>
+            <file name="SO-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
+            </file>
+            <file name="A-RIGHT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
+            </file>
+            <file name="S-F11.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
+            </file>
+            <file name="DS-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+            </file>
+            <file name="DS-F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
+            </file>
+            <file name="D-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
+            </file>
+            <file name="DA-DOWN.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
+            </file>
+            <file name="S-F12.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
+            </file>
+            <file name="C-G.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
+            </file>
+            <file name="S-F2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
+            </file>
+            <file name="O-S-F9.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+            </file>
+            <file name="OS-V.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
+            </file>
+            <file name="F1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
+            </file>
+            <file name="DS-0.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
+            </file>
+            <file name="D-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PrintAction.instance"/>
+            </file>
+            <file name="D-F.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
+            </file>
+            <file name="FIND.instance">
+                <!-- #32733 - Find shortcut should be CTRL-F unless kbd has a Find key -->
+        	    <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
+        	</file>
+            <file name="COPY.instance">
+        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+        	</file>
+            <file name="DS-N.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+            </file>
+            <file name="D-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
+            </file>
+            <file name="C-H.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
+            </file>
+            <file name="DS-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
+            </file>
+            <file name="D-BACK_QUOTE.shadow">
+                <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
+            </file>
+            <file name="DS-J.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
+            </file>
+            <file name="D-N.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+            </file>
+            <file name="S-F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
+            </file>
+            <file name="SO-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
+            </file>
+            <file name="D-F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            </file>
+            <file name="O-F9.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+            </file>
+            <file name="F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            </file>
+            <file name="F12.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
+            </file>
+            <file name="D-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="D-F2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
+            </file>
+            <file name="S-A-Right.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
+            </file>
+            <file name="DS-2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
+            </file>
+            <file name="DS-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+            </file>
+            <file name="S-ESCAPE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+            </file>
+            <file name="D-S.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
+            </file>
+            <file name="DO-F.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
+            </file>
+            <file name="S-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+            </file>
+            <file name="D-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+            </file>
+            <file name="D-F4.shadow">
+        	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+        	</file>
+            <file name="F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+            </file>
+            <file name="DS-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            </file>
+            <file name="D-S-F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            </file>
+            <file name="SO-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
+            </file>
+            <file name="D-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-output2-OutputWindowAction.instance"/>
+            </file>
+            <file name="D-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
+            </file>
+            <file name="S-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+            </file>
+            <file name="DS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
+            </file>
+            <file name="DS-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugTestSingle.instance"/>
+            </file>
+            <file name="DELETE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+            </file>
+            <file name="D-0.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
+            </file>
+            <file name="DO-J.shadow">
+                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+            </file>
+            <file name="DS-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
+            </file>
+            <file name="CONTEXT_MENU.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
+            </file>
+            <file name="S-F10.shadow">
+        	    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
+        	</file>
+	        <file name="C-Q.shadow">
+                <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
+            </file>
+            <file name="D-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="D-I.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
+            </file>
+            <file name="SO-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
+            </file>
+            <file name="SO-2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
+            </file>
+            <file name="SO-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
+            </file>
+            <file name="DA-UP.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance"/>
+            </file>
+            <file name="SO-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
+            </file>
+            <file name="SO-6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
+            </file>
+            <file name="D-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+            </file>
+            <file name="F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+            </file>
+            <file name="S-F1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
+            </file>
+            <file name="D-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-OpenFileAction.instance"/>
+            </file>
+            <file name="D-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
+            </file>
+            <file name="F11.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+            </file>
+        </folder>
+        <folder name="Eclipse">
+            <file name="DELETE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+            </file>
+            <file name="C-F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+            </file>
+            <file name="AS-V.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
+            </file>
+            <file name="C-M.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+            </file>
+            <file name="F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            </file>
+            <file name="AS-Y.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RedoAction.instance"/>
+            </file>
+            <file name="CS-S.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAllAction.instance"/>
+            </file>
+            <file name="F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            </file>
+            <file name="CS-F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            </file>
+            <file name="F11.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
+            </file>
+            <file name="CS-E.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
+            </file>
+            <file name="F2.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+            </file>
+            <file name="C-V.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="AS-J.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/Correct Javadoc Action.instance"/>
+            </file>
+            <file name="C-F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+            </file>
+            <file name="C-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
+            </file>
+            <file name="CS-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            </file>
+            <file name="C-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
+            </file>
+            <file name="C-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="C-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+            </file>
+            <file name="C-R.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
+            </file>
+            <file name="C-Y.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
+            </file>
+            <file name="CS-B.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+            </file>
+            <file name="C-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="S-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="C-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PrintAction.instance"/>
+            </file>
+            <file name="F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+            </file>
+            <file name="C-Z.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="C-COMMA.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
+            </file>
+            <file name="AS-Z.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UndoAction.instance"/>
+            </file>
+            <file name="C-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance"/>
+            </file>
+            <file name="AS-R.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
+            </file>
+            <file name="C-H.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
+            </file>
+            <file name="S-DELETE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="C-S.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
+            </file>
+            <file name="AS-M.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ExtractMethodAction.instance"/>
+            </file>
+            <file name="C-N.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+            </file>
+            <file name="CS-F11.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+            </file>
+            <file name="F12.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
+            </file>
+            <file name="AS-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ChangeParametersAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="NetBeans">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+            <folder name="Defaults">
+                <file name="defaultColoring.xml" url="NetBeans-fontsColorsDefaults.xml">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                </file>
+                <file name="editorColoring.xml" url="NetBeans-editor.xml">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="CityLights">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+            <folder name="Defaults">
+                <file name="defaultColoring.xml" url="CityLights-fontsColorsDefaults.xml">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                </file>
+                <file name="editorColoring.xml" url="CityLights-editor.xml">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="text">
+            <folder name="base">
+                <folder name="Eclipse">
+                    <file name="keybindings.xml" url="Eclipse-keybindings.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                    </file>
+                </folder>
+                <folder name="Emacs">
+                    <file name="keybindings.xml" url="Emacs-keybindings.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="css">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-CSS-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-CSS-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-properties">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-Properties-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-Properties-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="html">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-HTML-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-HTML-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="plain">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-plain-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-plain-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-java">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-Java-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-Java-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-jsp">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-JSP-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-JSP-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-XML-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-XML-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+        <folder name="application">
+            <folder name="xml-dtd">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-DTD-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-DTD-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults..Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

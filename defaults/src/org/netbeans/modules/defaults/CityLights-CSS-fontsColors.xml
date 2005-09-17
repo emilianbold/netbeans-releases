@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <fontcolor name="default" default="default"/>
+    <fontcolor name="css-at-keyword" foreColor="lightGray" default="keyword"/>
+    <fontcolor name="css-comment" foreColor="red" default="comment"/>
+    <fontcolor name="css-eol" default="whitespace"/>
+    <fontcolor name="css-error" default="error"/>
+    <fontcolor name="css-plain" default="default"/>
+    <fontcolor name="css-property" foreColor="cyan" default="default"/>
+    <fontcolor name="css-selector" foreColor="orange" default="default"/>
+</fontscolors>
