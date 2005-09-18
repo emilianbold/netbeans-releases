@@ -56,7 +56,7 @@
 			<!-- FeedReader project template: -->
 			<mapID target="org.netbeans.modules.apisupport.feedreader.FeedReaderWizardPanel" url="csh/FeedReaderWizardPanel.html"/>
 			<!-- Module Project -->
-			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_model" url="csh/BasicInfoWizardPanel.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_module" url="csh/BasicInfoWizardPanel.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="csh/BasicConfWizardPanel.html"/>
 			<!-- Module Suite Project -->
 			<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" url="csh/BasicInfoWizardPanel_suite.html"/>-->
