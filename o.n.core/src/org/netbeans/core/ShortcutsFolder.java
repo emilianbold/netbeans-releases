@@ -41,9 +41,9 @@ import org.openide.util.Utilities;
  */
 class ShortcutsFolder {
     
-    private static final String PROFILES_FOLDER = "Profiles";
+    private static final String PROFILES_FOLDER = "KeyMaps";
     private static final String SHORTCUTS_FOLDER = "Shortcuts";
-    private static final String CURRENT_PROFILE_ATTRIBUTE = "currentProfile";
+    private static final String CURRENT_PROFILE_ATTRIBUTE = "currentKeyMap";
 
     private static ShortcutsFolder  shortcutsFolder;
     private Listener                listener = new Listener ();
