@@ -6,18 +6,50 @@
 <html>
 <head>
 
-	<title>About Creating Plug-in Modules</title>
+	<title>About Creating Modules</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
-
 <body>
-	
-<h2>About Creating Modules</h2>
+	<h2>About Creating Modules</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd</p>
+
+<p>The IDE contains a set of standard project and file templates for module development. 
+ The standard distribution of the IDE contains the following module project templates:
+
+ <ul>
+<li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module.</b>
+Creates an empty module with a <tt>layer.xml</tt> file and a <tt>bundle.properties</tt> file.
+You use a module to implement the logic that integrates the 
+library wrappers into the platform and provides a user interface for receiving user input. </li>
+<li><b><img src="../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper.</b>
+Creates a library wrapped in a module project and a <tt>bundle.properties</tt> file.
+You use a library wrapper to put a library JAR file on a module's classpath
+ and export some or all of the JAR file's packages from the module as public packages.</li>
+<li><b><img src="../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite.</b>
+Creates an empty module suite. You use a module suite to group and deploy a set of interdependent modules and library wrappers.
+</li>
+</ul>
+<p>For details, see <a href="../create_plugin/projectlevel_create/about_project_wizards.html">About Module Project Templates</a>.
+<p>The standard distribution of the IDE contains the following module file templates:
+
+<ul>
+<li><b><img src="../images/libraries.gif" width="16" height="16" alt="J2SE Library Descriptor icon">&nbsp;J2SE Library Descriptor.</b>
+Adds a new class library to the Library Manager of the user's IDE.
+<li><b><img src="../images/action.gif" width="16" height="16" alt="Action icon">&nbsp;Action.</b>
+Creates an action that can be invoked from a menu item, pop-up menu, toolbar button, or keyboard shortcut.</li>
+<li><b><img src="../images/filetype.gif" width="16" height="16" alt="File Type icon">&nbsp;File Type.</b>
+Lets the IDE recognize a new file type.</li>
+<li><b><img src="../images/projtemplate.gif" width="16" height="16" alt="Project Template icon">&nbsp;Project Template.</b>
+Adds a new template to the New Project wizard.</li>
+<li><b><img src="../images/window.gif" width="16" height="16" alt="Window icon">&nbsp;Window Component.</b>
+Creates a new window with an Open action invoked from a menu item.</li>
+<li><b><img src="../images/wizard.gif" width="16" height="16" alt="Window icon">&nbsp;Wizard.</b>
+Creates a new wizard for creating, for example, new files in the IDE.</li>
+</ul>
+<p>For details, see <a href="../create_plugin/filelevel_create/about_file_wizards.html">About Module File Templates</a>.
 
 <hr>
 <small><a href="credits.html">Legal Notices</a> </small>

@@ -12,6 +12,8 @@
 	<mapID target="about_xml_layers" url="about/about-xml-layers.html"/>
 	<mapID target="about_open_apis" url="about/about-open-apis.html"/>
 	<mapID target="about-netbeans-platform" url="about/about-netbeans-platform.html"/>
+	<mapID target="modules_process" url="about/modules_process.html"/>
+	<mapID target="modules_quickref" url="about/modules_quickref.html"/>
 	<!-- End of "About" section -->
 
 	<!-- Start of "Creating" section -->
