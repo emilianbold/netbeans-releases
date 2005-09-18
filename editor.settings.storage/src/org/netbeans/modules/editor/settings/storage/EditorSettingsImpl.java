@@ -53,8 +53,8 @@ public class EditorSettingsImpl extends EditorSettings {
     static final String KEYBINDING_FILE_NAME = "keybindings.xml";      // NOI18N
     static final String ALL_LANGUAGES_FILE_NAME = "defaultColoring.xml"; // NOI18N
     static final String CURRENT_FONT_COLOR_PROFILE = "currentFontColorProfile"; // NOI18N
-    static final String CURRENT_KEYMAP_PROFILE = "currentKeyMap";      // NOI18N
-    static final String KEYMAPS_FOLDER = "KeyMaps";                    // NOI18N
+    static final String CURRENT_KEYMAP_PROFILE = "currentKeymap";      // NOI18N
+    static final String KEYMAPS_FOLDER = "Keymaps";                    // NOI18N
 
     
     /**
