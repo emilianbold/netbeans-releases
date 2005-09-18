@@ -50,6 +50,7 @@ class ShortcutsFolder {
     private FileObject              profilesFileObject;
     private FileObject              shortcutsFileObject;
     private FileObject              currentFolder;
+    private boolean                 debug = System.getProperty ("org.netbeans.optionsDialog.print.shortcuts") != null;
     
     
     static void initShortcuts () {
@@ -94,13 +95,15 @@ class ShortcutsFolder {
             currentFolder.removeFileChangeListener (listener);
         currentFolder = Repository.getDefault ().getDefaultFileSystem ().
             getRoot ().getFileObject (PROFILES_FOLDER + '/' + keymapName);
-        if (currentFolder == null) return;
-        readShortcuts (keymap, currentFolder);
-        // add listener to current profile folder
-        currentFolder.addFileChangeListener (listener);
+        if (currentFolder != null) {
+            readShortcuts (keymap, currentFolder);
+            // add listener to current profile folder
+            currentFolder.addFileChangeListener (listener);
+        }
     }
     
     private void readShortcuts (NbKeymap keymap, FileObject fileObject) {
+        System.out.println("\nreadShortcuts " + fileObject);
         DataFolder folder = DataFolder.findFolder (fileObject);
         Enumeration en = folder.children (false);
         while (en.hasMoreElements ()) {
@@ -112,6 +115,7 @@ class ShortcutsFolder {
             try {
                 Action action = (Action) ic.instanceCreate ();
                 String shortcuts = dataObject.getName ();
+                System.out.println("  " + shortcuts + " : " + action);
                 KeyStroke[] keyStrokes = Utilities.stringToKeys (shortcuts);
                 addShortcut (keymap, action, keyStrokes);
             } catch (Exception ex) {
