@@ -110,7 +110,7 @@ public class EditorSettingsImpl extends EditorSettings {
         return !systemFontColorProfiles.contains (profile);
     }
     
-    private String currentProfile;
+    private String currentFontColorProfile;
     
     /**
      * Returns name of current font & colors profile.
@@ -118,18 +118,18 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return name of current font & colors profile
      */
     public String getCurrentFontColorProfile () {
-        if (currentProfile == null) {
+        if (currentFontColorProfile == null) {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource ("Editors");
-            currentProfile = (String) fo.getAttribute 
+            currentFontColorProfile = (String) fo.getAttribute 
                 (CURRENT_FONT_COLOR_PROFILE);
-            if (currentProfile == null)
-                currentProfile = "NetBeans";
+            if (currentFontColorProfile == null)
+                currentFontColorProfile = "NetBeans";
         }
-        if (!getFontColorProfiles ().contains (currentProfile)) {
-            currentProfile = "NetBeans";
+        if (!getFontColorProfiles ().contains (currentFontColorProfile)) {
+            currentFontColorProfile = "NetBeans";
         }
-        return currentProfile;
+        return currentFontColorProfile;
     }
     
     /**
@@ -144,8 +144,8 @@ public class EditorSettingsImpl extends EditorSettings {
 	FileObject fo = fs.findResource ("Editors");
         try {
             fo.setAttribute (CURRENT_FONT_COLOR_PROFILE, profile);
-            currentProfile = profile;
-            pcs.firePropertyChange (PROP_CURRENT_FONT_COLOR_PROFILE, oldProfile, currentProfile);
+            currentFontColorProfile = profile;
+            pcs.firePropertyChange (PROP_CURRENT_FONT_COLOR_PROFILE, oldProfile, currentFontColorProfile);
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
@@ -408,7 +408,7 @@ public class EditorSettingsImpl extends EditorSettings {
         return !systemKeymapProfiles.contains (profile);
     }
     
-    private String currentKeyMapName;
+    private String currentKeyMapProfile;
     
     /**
      * Returns name of current keymap profile.
@@ -416,14 +416,14 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return name of current keymap profile
      */
     public String getCurrentKeyMapProfile () {
-        if (currentKeyMapName == null) {
+        if (currentKeyMapProfile == null) {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource ("Profiles");
-            currentProfile = (String) fo.getAttribute (CURRENT_KEYMAP_PROFILE);
-            if (currentKeyMapName == null)
-                currentKeyMapName = "NetBeans";
+            currentKeyMapProfile = (String) fo.getAttribute (CURRENT_KEYMAP_PROFILE);
+            if (currentKeyMapProfile == null)
+                currentKeyMapProfile = "NetBeans";
         }
-        return currentKeyMapName;
+        return currentKeyMapProfile;
     }
     
     /**
@@ -440,8 +440,8 @@ public class EditorSettingsImpl extends EditorSettings {
             if (fo == null)
                 fo = fs.getRoot ().createFolder ("Profiles");
             fo.setAttribute (CURRENT_KEYMAP_PROFILE, keyMapName);
-            currentKeyMapName = keyMapName;
-            pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapName);
+            currentKeyMapProfile = keyMapName;
+            pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapProfile);
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
