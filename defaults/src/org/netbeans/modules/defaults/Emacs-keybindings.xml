@@ -1,39 +1,49 @@
 <?xml version="1.0"?>
 
 <bindings>
-    <bind actionName="caret-down" key="DOWN"/>
-    <bind actionName="caret-end-line" key="END"/>
-    <bind actionName="caret-up" key="UP"/>
-    <bind actionName="caret-begin-line" key="AS-COMMA"/>
-    <bind actionName="remove-word-next" key="A-D"/>
-    <bind actionName="find-previous" key="S-F3"/>
-    <bind actionName="page-down" key="C-V"/>
-    <bind actionName="find-next" key="F3"/>
-    <bind actionName="caret-next-word" key="C-RIGHT"/>
-    <bind actionName="select-word" key="CA-W"/>
-    <bind actionName="caret-next-word" key="A-F"/>
-    <bind actionName="page-down" key="PAGE_DOWN"/>
+    <bind actionName="adjust-window-center" key="C-U$C-L"/>
     <bind actionName="caret-backward" key="C-B"/>
-    <bind actionName="caret-line-first-column" key="HOME"/>
-    <bind actionName="caret-previous-word" key="C-LEFT"/>
-    <bind actionName="remove-word-previous" key="A-BACK_SPACE"/>
-    <bind actionName="page-up" key="A-V"/>
-    <bind actionName="find-previous" key="C-R"/>
-    <bind actionName="caret-begin-line" key="C-HOME"/>
-    <bind actionName="caret-line-first-column" key="C-A"/>
-    <bind actionName="page-up" key="PAGE_UP"/>
-    <bind actionName="caret-backward" key="LEFT"/>
-    <bind actionName="caret-up" key="C-P"/>
-    <bind actionName="find-next" key="A-S"/>
-    <bind actionName="caret-end-line" key="C-E"/>
-    <bind actionName="find-previous" key="A-R"/>
-    <bind actionName="caret-forward" key="C-F"/>
-    <bind actionName="caret-forward" key="RIGHT"/>
-    <bind actionName="remove-word-previous" key="C-BACK_SPACE"/>
+    <bind actionName="caret-begin" key="C-HOME"/>
+    <bind actionName="caret-begin" key="ESCAPE$S-COMMA"/>
+    <bind actionName="caret-begin-line" key="HOME"/>
     <bind actionName="caret-down" key="C-N"/>
+    <bind actionName="caret-down" key="DOWN"/>
+    <bind actionName="caret-end" key="C-END"/>
+    <bind actionName="caret-end" key="ESCAPE$S-PERIOD"/>
+    <bind actionName="caret-end-line" key="C-E"/>
+    <bind actionName="caret-end-line" key="END"/>
+    <bind actionName="caret-forward" key="C-F"/>
+    <bind actionName="caret-line-first-column" key="C-A"/>
+    <bind actionName="caret-next-word" key="A-F"/>
+    <bind actionName="caret-next-word" key="C-RIGHT"/>
     <bind actionName="caret-previous-word" key="A-B"/>
-    <bind actionName="replace" key="AS-5"/>
+    <bind actionName="caret-previous-word" key="C-LEFT"/>
+    <bind actionName="caret-up" key="C-P"/>
+    <bind actionName="caret-up" key="UP"/>
+    <bind actionName="comment" key="C-C$C-C"/>
+    <bind actionName="find" key="C-S"/>
+    <bind actionName="find-next" key="A-S"/>
+    <bind actionName="find-next" key="F3"/>
+    <bind actionName="find-previous" key="A-R"/>
+    <bind actionName="find-previous" key="C-R"/>
+    <bind actionName="find-previous" key="S-F3"/>
     <bind actionName="goto-declaration" key="A-PERIOD"/>
-    <bind actionName="find" key="CA-S"/>
     <bind actionName="goto-declaration" key="CA-G"/>
+    <bind actionName="page-down" key="C-V"/>
+    <bind actionName="page-down" key="PAGE_DOWN"/>
+    <bind actionName="page-up" key="A-V"/>
+    <bind actionName="page-up" key="PAGE_UP"/>
+    <bind actionName="remove-word-next" key="A-D"/>
+    <bind actionName="remove-word-previous" key="A-BACK_SPACE"/>
+    <bind actionName="remove-word-previous" key="C-BACK_SPACE"/>
+    <bind actionName="replace" key="AS-5"/>
+    <bind actionName="select-all" key="C-X$H"/>
+    <bind actionName="select-word" key="CA-W"/>
+    <bind actionName="start-macro-recording" key="C-X$S-9"/>
+    <bind actionName="stop-macro-recording" key="C-X$S-0"/>
+    <bind actionName="to-lower-case" key="C-X$C-L"/>
+    <bind actionName="to-upper-case" key="C-X$C-U"/>
+    <bind actionName="toggle-case-identifier-begin" key="A-C"/>
+    <bind actionName="uncomment" key="A-0$C-C$C-C"/>
+    <bind actionName="word-match-next" key="A-SLASH"/>
 </bindings>
