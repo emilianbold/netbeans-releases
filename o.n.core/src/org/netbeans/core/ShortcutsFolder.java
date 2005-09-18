@@ -103,7 +103,7 @@ class ShortcutsFolder {
     }
     
     private void readShortcuts (NbKeymap keymap, FileObject fileObject) {
-        System.out.println("\nreadShortcuts " + fileObject);
+        if (debug) System.out.println ("\nreadShortcuts " + fileObject);
         DataFolder folder = DataFolder.findFolder (fileObject);
         Enumeration en = folder.children (false);
         while (en.hasMoreElements ()) {
@@ -115,7 +115,7 @@ class ShortcutsFolder {
             try {
                 Action action = (Action) ic.instanceCreate ();
                 String shortcuts = dataObject.getName ();
-                System.out.println("  " + shortcuts + " : " + action);
+                if (debug) System.out.println ("  " + shortcuts + " : " + action);
                 KeyStroke[] keyStrokes = Utilities.stringToKeys (shortcuts);
                 addShortcut (keymap, action, keyStrokes);
             } catch (Exception ex) {
