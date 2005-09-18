@@ -22,8 +22,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.*;
 import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
-import org.netbeans.modules.xml.api.model.GrammarQueryManager;
-/** Catalog for App Server 8PE DTDs that enables completion support in editor.
+import org.netbeans.modules.xml.api.model.GrammarQueryManager;/** Catalog for App Server 8PE DTDs that enables completion support in editor.
  *
  * @author Ludo
  */
@@ -207,7 +206,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
             catalogListeners.remove(l);
     }
     
-    void fireCatalogListeners() {
+    public  void fireCatalogListeners() {
         java.util.Iterator iter = catalogListeners.iterator();
         while (iter.hasNext()) {
             CatalogListener l = (CatalogListener) iter.next();
@@ -232,7 +231,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/web/dd/resources/DDCatalog.gif"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N
     }
     
     /**
