@@ -148,10 +148,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     }
     
     public JavaPlatform getJavaPlatform() {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
-                                                tp.getJavaPlatform(), 
-                                                new Specification("J2SE", null)); // NOI18N
-        return platforms[0];
+        return tp.getJavaPlatform();
     }
     
     // private helper methods -------------------------------------------------

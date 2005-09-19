@@ -21,8 +21,6 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.*;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 
@@ -687,11 +685,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     }
     
     private JavaPlatform getJavaPlatform() {
-        String currentJvm = tm.getTomcatProperties().getJavaPlatform();
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        JavaPlatform[] curJvms = jpm.getPlatforms(currentJvm, new Specification("J2SE", null)); // NOI18N
-        assert curJvms.length > 0 : "No Java platform available."; // NOI18N
-        return curJvms[0];
+        return tm.getTomcatProperties().getJavaPlatform();
     }
     
     /** Utility class that just "consumes" the input stream - #58554 workaround

@@ -26,6 +26,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.customizer.CustomizerDataSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -40,6 +41,9 @@ import org.openide.util.Utilities;
  * @author sherold
  */
 public class TomcatProperties {
+    
+    /** Java platform property which is used as a java platform ID */
+    public static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
     
     public static final String DEBUG_TYPE_SOCKET = "SEL_debuggingType_socket";  // NOI18N
     public static final String DEBUG_TYPE_SHARED = "SEL_debuggingType_shared";  // NOI18N
@@ -198,19 +202,22 @@ public class TomcatProperties {
         ip.setProperty(PROP_PASSWORD, value);
     }
     
-    public String getJavaPlatform() {
+    public JavaPlatform getJavaPlatform() {
         String currentJvm = ip.getProperty(PROP_JAVA_PLATFORM);
         JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        JavaPlatform[] curJvms = jpm.getPlatforms(currentJvm, new Specification("J2SE", null)); // NOI18N
-        if (currentJvm == null || curJvms.length == 0) {
-            return jpm.getDefaultPlatform().getDisplayName();
-        } else {
-            return curJvms[0].getDisplayName();
+        JavaPlatform[] installedPlatforms = jpm.getPlatforms(null, new Specification("J2SE", null)); // NOI18N
+        for (int i = 0; i < installedPlatforms.length; i++) {
+            String platformName = (String)installedPlatforms[i].getProperties().get(PLAT_PROP_ANT_NAME);
+            if (platformName != null && platformName.equals(currentJvm)) {
+                return installedPlatforms[i];
+            }
         }
+        // return default platform if none was set
+        return jpm.getDefaultPlatform();
     }
     
-    public void setJavaPlatform(String javaPlatform) {
-        ip.setProperty(PROP_JAVA_PLATFORM, javaPlatform);
+    public void setJavaPlatform(JavaPlatform javaPlatform) {
+        ip.setProperty(PROP_JAVA_PLATFORM, (String)javaPlatform.getProperties().get(PLAT_PROP_ANT_NAME));
     }
     
     public String getJavaOpts() {

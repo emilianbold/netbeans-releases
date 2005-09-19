@@ -266,30 +266,33 @@ public class CustomizerDataSupport {
     
     /** Update the jvm model */
     public void loadJvmModel() {
-        String curJvmName = (String)jvmModel.getSelectedItem();
-        if (curJvmName == null) {
-            curJvmName = tp.getJavaPlatform();
+        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+        JavaPlatformAdapter curJvm = (JavaPlatformAdapter)jvmModel.getSelectedItem();
+        String curPlatformName = null;
+        if (curJvm != null) {
+            curPlatformName = curJvm.getName();
+        } else {
+            curPlatformName = (String)tp.getJavaPlatform().getProperties().get(TomcatProperties.PLAT_PROP_ANT_NAME);
         }
+
         jvmModel.removeAllElements();
         
         // feed the combo with sorted platform list
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
         JavaPlatform[] j2sePlatforms = jpm.getPlatforms(null, new Specification("J2SE", null)); // NOI18N
-        String[] platformDisplayNames = new String[j2sePlatforms.length];
-        for (int i = 0; i < j2sePlatforms.length; i++) {
-            platformDisplayNames[i] = j2sePlatforms[i].getDisplayName();
+        JavaPlatformAdapter[] platformAdapters = new JavaPlatformAdapter[j2sePlatforms.length];
+        for (int i = 0; i < platformAdapters.length; i++) {
+            platformAdapters[i] = new JavaPlatformAdapter(j2sePlatforms[i]);
         }
-        Arrays.sort(platformDisplayNames);
-        for (int i = 0; i < platformDisplayNames.length; i++) {
-            jvmModel.addElement(platformDisplayNames[i]);
-        }
-        
-        // set selected
-        JavaPlatform[] curJvms = jpm.getPlatforms(curJvmName, new Specification("J2SE", null)); // NOI18N
-        if (curJvms.length == 0) {
-            jvmModel.setSelectedItem(jpm.getDefaultPlatform().getDisplayName());
-        } else {
-            jvmModel.setSelectedItem(curJvms[0].getDisplayName());
+        Arrays.sort(platformAdapters);
+        for (int i = 0; i < platformAdapters.length; i++) {
+            JavaPlatformAdapter platformAdapter = platformAdapters[i];
+            jvmModel.addElement(platformAdapter);
+            // try to set selected item
+            if (curPlatformName != null) {
+                if (curPlatformName.equals(platformAdapter.getName())) {
+                    jvmModel.setSelectedItem(platformAdapter);
+                }
+            }   
         }
     }
     
@@ -385,7 +388,8 @@ public class CustomizerDataSupport {
     private void store() {
         
         if (jvmModelFlag) {
-            tp.setJavaPlatform((String)jvmModel.getSelectedItem());
+            JavaPlatformAdapter platformAdapter = (JavaPlatformAdapter)jvmModel.getSelectedItem();
+            tp.setJavaPlatform(platformAdapter.getJavaPlatform());
             jvmModelFlag = false;
         }
         
@@ -496,6 +500,8 @@ public class CustomizerDataSupport {
             return null;
         }
     }
+        
+    // private helper class ---------------------------------------------------
     
     /** 
      * Adapter that implements several listeners, which is useful for dirty model
@@ -536,6 +542,31 @@ public class CustomizerDataSupport {
 
         public void stateChanged(javax.swing.event.ChangeEvent e) {
             modelChanged();
+        }
+    }
+    
+    /** Java platform combo box model helper */
+    private static class JavaPlatformAdapter implements Comparable {
+        private JavaPlatform platform;
+        
+        public JavaPlatformAdapter(JavaPlatform platform) {
+            this.platform = platform;
+        }
+        
+        public JavaPlatform getJavaPlatform() {
+            return platform;
+        }
+        
+        public String getName() {
+            return (String)platform.getProperties().get(TomcatProperties.PLAT_PROP_ANT_NAME);
+        }
+        
+        public String toString() {
+            return platform.getDisplayName();
+        }
+        
+        public int compareTo(Object o) {
+            return toString().compareTo(o.toString());
         }
     }
 }
