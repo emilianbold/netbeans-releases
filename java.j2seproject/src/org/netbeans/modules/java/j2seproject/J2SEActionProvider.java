@@ -260,8 +260,11 @@ class J2SEActionProvider implements ActionProvider {
                 mainClass = (String)ep.get ("main.class"); // NOI18N
                 updateHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
-
-            p.setProperty("main.class", mainClass); // NOI18N
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            } catch (Exception e) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + e);
+            }
             if (!command.equals(COMMAND_RUN)) {
                 p.setProperty("debug.class", mainClass); // NOI18N
             }
