@@ -47,7 +47,8 @@ public class J2SEProjectType {
 
   private static final String J2SE_PROJECT_NAMESPACE_40 = "http://www.netbeans.org/ns/j2se-project/1";// NOI18N
   private static final String J2SE_PROJECT_NAMESPACE_41 = "http://www.netbeans.org/ns/j2se-project/2";// NOI18N
-
+  private static final String J2SE_PROJECT_NAMESPACE_50 = "http://www.netbeans.org/ns/j2se-project/3";// NOI18N
+  
   private static final String STANDARD_IMPORT_STRING = "<import file=\"nbproject/build-impl.xml\"/>";// NOI18N
   private static final String MANAGEMENT_IMPORT_STRING = "<import file=\"nbproject/management-build-impl.xml\"/>";// NOI18N
   private static final String MANAGEMENT_NAME_SPACE = "http://www.netbeans.org/ns/jmx/1";// NOI18N
@@ -58,8 +59,13 @@ public class J2SEProjectType {
       System.err.println("Auxiliary Configuration is null for Project: " + project);// NOI18N
       return false;
     }
-    Element e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_40, true);// NOI18N
-    if (e== null) e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_41, true); // NOI18N
+    Element e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_50, true);// NOI18N
+    if(e == null) {
+        e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_40, true);// NOI18N
+        if (e== null) {
+           e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_41, true); // NOI18N
+        }
+    }
     return (e != null);
   }
 
