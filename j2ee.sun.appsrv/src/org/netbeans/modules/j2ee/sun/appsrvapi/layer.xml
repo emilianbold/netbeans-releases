@@ -19,7 +19,7 @@
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ConnPoolWizard.create" />
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/ConnectionPoolWizardInfo.html"/>
-        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types"/>
      </file>
      <file name="JDBC_Resource">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
@@ -27,7 +27,7 @@
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.DataSourceWizard.create" />
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/DataSourceWizardInfo.html"/>
-        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types"/>
       </file>
       <file name="Persistence_Resource">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
@@ -35,7 +35,7 @@
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.PMFWizard.create" />
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/PersistenceWizardInfo.html"/>
-        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types"/>
      </file>
      <file name="JavaMail_Resource">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
@@ -43,7 +43,7 @@
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.MailWizard.create" />
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMailWizardInfo.html"/>
-        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types"/>
      </file>
      <file name="JMS_Resource">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
@@ -51,7 +51,7 @@
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.JMSWizard.create" />
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMessageWizardInfo.html"/>
-        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types"/>
      </file>
     </folder>
   </folder>
