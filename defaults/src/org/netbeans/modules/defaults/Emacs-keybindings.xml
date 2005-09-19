@@ -3,11 +3,13 @@
 <bindings>
     <bind actionName="adjust-window-center" key="C-U$C-L"/>
     <bind actionName="caret-backward" key="C-B"/>
+    <bind actionName="caret-begin" key="AS-COMMA"/>
     <bind actionName="caret-begin" key="C-HOME"/>
     <bind actionName="caret-begin" key="ESCAPE$S-COMMA"/>
     <bind actionName="caret-begin-line" key="HOME"/>
     <bind actionName="caret-down" key="C-N"/>
     <bind actionName="caret-down" key="DOWN"/>
+    <bind actionName="caret-end" key="AS-PERIOD"/>
     <bind actionName="caret-end" key="C-END"/>
     <bind actionName="caret-end" key="ESCAPE$S-PERIOD"/>
     <bind actionName="caret-end-line" key="C-E"/>
