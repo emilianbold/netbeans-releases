@@ -27,6 +27,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
@@ -38,6 +40,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -61,10 +64,13 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     }
     
     private TreeRootNode(DataFolder folder, SourceGroup g) {
-        super(folder.getNodeDelegate(),
-            folder.createNodeChildren(VISIBILITY_QUERY_FILTER),
+        this (new FilterNode (folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER)),g);
+    }
+    
+    private TreeRootNode (Node originalNode, SourceGroup g) {
+        super(originalNode, new PackageFilterChildren(originalNode),
             new ProxyLookup(new Lookup[] {
-                folder.getNodeDelegate().getLookup(),
+                originalNode.getLookup(),
                 Lookups.singleton(new PathFinder(g)),
                 // no need for explicit search info
             }));
@@ -201,6 +207,39 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         public void removeChangeListener(ChangeListener listener) {
             ell.remove(ChangeListener.class, listener);
         }
+        
+    }
+    
+    
+    private static final class PackageFilterChildren extends FilterNode.Children {
+        
+                
+        public PackageFilterChildren (final Node originalNode) {
+            super (originalNode);
+        }       
+                
+        
+        protected /*@Override*/ Node copyNode (final Node originalNode) {
+            DataObject dobj = (DataObject) originalNode.getLookup().lookup (DataObject.class);
+            return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
+        }
+    }
+    
+    private static final class PackageFilterNode extends FilterNode {
+        
+        public PackageFilterNode (final Node origNode) {
+            super (origNode, new PackageFilterChildren (origNode));
+        }
+        
+        public /*@Override*/ void setName (final String name) {
+            if (Utilities.isJavaIdentifier (name)) {
+                super.setName (name);
+            }
+            else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
+                    NbBundle.getMessage(TreeRootNode.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
+            }
+        }                
         
     }
     
