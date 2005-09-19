@@ -52,7 +52,7 @@ public interface CopyOperationImplementation extends DataFilesProviderImplementa
      * newly created (copied) project into the correct state (including changing its display name
      * to nueName). Should be called on both original and newly created project (in this order).
      *
-     * @param original the original project
+     * @param original <code>null</code> when called on the original project, the original project when called on the new project
      * @param originalPath the project folder of the original project (for consistency
      *                     with MoveOperationImplementation.notifyMoved)
      * @param nueName new name for the newly created project.

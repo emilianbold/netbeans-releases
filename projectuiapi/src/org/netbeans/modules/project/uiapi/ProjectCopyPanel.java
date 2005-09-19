@@ -384,7 +384,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private String computeError() {
         File location = new File(projectLocation.getText());
         
-        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText());
+        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), false);
     }
     
     public void showProgress() {

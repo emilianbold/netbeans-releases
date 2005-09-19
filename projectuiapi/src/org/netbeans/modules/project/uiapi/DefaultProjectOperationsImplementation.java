@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
@@ -37,6 +38,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -47,6 +49,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -264,7 +267,43 @@ public final class DefaultProjectOperationsImplementation {
             public void execute() {
                 String nueName = panel.getNewName();
                 
-                doMoveProject(handle, project, nueName, project.getProjectDirectory().getParent());
+                if (panel.getRenameProjectFolder()) {
+                    doMoveProject(handle, project, nueName, project.getProjectDirectory().getParent());
+                } else {
+                    try {
+                        Project main    = OpenProjects.getDefault().getMainProject();
+                        boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
+                        FileObject projectDirectory = project.getProjectDirectory();
+                        File       projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
+                        Collection operations = project.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+                        
+                        close(project);
+                        
+                        for (Iterator i = operations.iterator(); i.hasNext(); ) {
+                            ((MoveOperationImplementation) i.next()).notifyMoving();
+                        }
+                        for (Iterator i = operations.iterator(); i.hasNext(); ) {
+                            ((MoveOperationImplementation) i.next()).notifyMoved(null, projectDirectoryFile, nueName);
+                        }
+                        
+                        //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
+                        ProjectManager.getDefault().clearNonProjectCache();
+                        Project nue = ProjectManager.getDefault().findProject(projectDirectory);
+                        Collection nueOperations = nue.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+                        
+                        assert nue != null;
+                        
+                        for (Iterator i = nueOperations.iterator(); i.hasNext(); ) {
+                            ((MoveOperationImplementation) i.next()).notifyMoved(project, projectDirectoryFile, nueName);
+                        }
+                        
+                        ProjectManager.getDefault().saveProject(nue);
+                        
+                        open(nue, wasMain);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+		}
             }
         });
     }
@@ -299,8 +338,6 @@ public final class DefaultProjectOperationsImplementation {
                 projectDirectory.delete();
             }
                 
-            ProjectOperations.notifyDeleted(project);
-            
             //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
             ProjectManager.getDefault().clearNonProjectCache();
             Project nue = ProjectManager.getDefault().findProject(target);
@@ -440,7 +477,7 @@ public final class DefaultProjectOperationsImplementation {
         dialog[0] = null;
     }
     
-    static String computeError(File location, String projectNameText) {
+    static String computeError(File location, String projectNameText, boolean pureRename) {
         if (!location.exists()) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Does_Not_Exist");
         }
@@ -455,7 +492,7 @@ public final class DefaultProjectOperationsImplementation {
         
         File projectFolderFile = new File(location, projectNameText);
         
-        if (projectFolderFile.exists()) {
+        if (projectFolderFile.exists() && !pureRename) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Folder_Exists");
         }
         

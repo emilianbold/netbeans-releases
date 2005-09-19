@@ -53,7 +53,7 @@ public interface MoveOperationImplementation extends DataFilesProviderImplementa
      * to nueName) and call {@link ProjectState#notifyDeleted} on the original project.
      * Should be called on both original and newly created project (in this order).
      *
-     * @param original the original project
+     * @param original <code>null</code> when called on the original project, the original project when called on the new project
      * @param originalPath the project folder of the original project
      * @param nueName new name for the newly created project.
      *

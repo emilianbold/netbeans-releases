@@ -133,7 +133,7 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
-        if (project == original) { //TODO: this is illegal
+        if (original == null) {
             //do nothing for the original project.
             return ;
         }
@@ -148,8 +148,8 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
     }
     
     public void notifyMoved(Project original, File originalPath, String nueName) {
-        if (project == original) { //TODO: this is illegal
-            //do nothing for the original project.
+        if (original == null) {
+            project.getAntProjectHelper().notifyDeleted();
             return ;
         }
         

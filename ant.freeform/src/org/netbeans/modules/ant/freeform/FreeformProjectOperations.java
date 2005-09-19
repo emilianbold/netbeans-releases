@@ -68,7 +68,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
         for (Iterator i = folders.iterator(); i.hasNext(); ) {
             Element el = (Element) i.next();
             
-            if ("source-folder".equals(el.getLocalName()) && FreeformProjectType.NS_GENERAL.equals(el.getNamespaceURI())) {
+            if ("source-folder".equals(el.getLocalName()) && FreeformProjectType.NS_GENERAL.equals(el.getNamespaceURI())) { // NOI18N
                 addFile(el, result);
             }
         }
@@ -79,7 +79,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
     }
     
     private void addFile(Element folder, List/*<FileObject>*/ result) {
-        Element location = Util.findElement(folder, "location", FreeformProjectType.NS_GENERAL);
+        Element location = Util.findElement(folder, "location", FreeformProjectType.NS_GENERAL); // NOI18N
         
         if (location == null) {
             return ;
@@ -117,7 +117,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
     }
 
     public void notifyCopied(Project original, File originalPath, String nueName) throws IOException {
-        if (!original.getProjectDirectory().equals(project.getProjectDirectory())) {
+        if (original != null) {
             project.setName(nueName);
         }
     }
@@ -126,8 +126,10 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
     }
 
     public void notifyMoved(Project original, File originalPath, String nueName) throws IOException {
-        if (!original.getProjectDirectory().equals(project.getProjectDirectory())) {
+        if (original != null) {
             project.setName(nueName);
+        } else {
+            project.helper().notifyDeleted();
         }
     }
     

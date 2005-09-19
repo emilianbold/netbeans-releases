@@ -147,7 +147,7 @@ public final class ProjectOperations {
      */
     public static void notifyCopied(Project original, Project nue, File originalPath, String name) throws IOException {
         for (Iterator i = getCopyOperationImplementation(original).iterator(); i.hasNext(); ) {
-            ((CopyOperationImplementation) i.next()).notifyCopied(original, originalPath, name);
+            ((CopyOperationImplementation) i.next()).notifyCopied(null, originalPath, name);
         }
         for (Iterator i = getCopyOperationImplementation(nue).iterator(); i.hasNext(); ) {
             ((CopyOperationImplementation) i.next()).notifyCopied(original, originalPath, name);
@@ -184,7 +184,7 @@ public final class ProjectOperations {
      */
     public static void notifyMoved(Project original, Project nue, File originalPath, String name) throws IOException {
         for (Iterator i = getMoveOperationImplementation(original).iterator(); i.hasNext(); ) {
-            ((MoveOperationImplementation) i.next()).notifyMoved(original, originalPath, name);
+            ((MoveOperationImplementation) i.next()).notifyMoved(null, originalPath, name);
         }
         for (Iterator i = getMoveOperationImplementation(nue).iterator(); i.hasNext(); ) {
             ((MoveOperationImplementation) i.next()).notifyMoved(original, originalPath, name);

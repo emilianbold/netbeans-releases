@@ -137,8 +137,14 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSD_Project_Folder", new Object[] {}));
 
         org.openide.awt.Mnemonics.setLocalizedText(alsoRenameFolder, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Also_Rename_Project_Folder"));
-        alsoRenameFolder.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        alsoRenameFolder.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         alsoRenameFolder.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        alsoRenameFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                alsoRenameFolderActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -204,6 +210,10 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void alsoRenameFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alsoRenameFolderActionPerformed
+        validateDialog();
+    }//GEN-LAST:event_alsoRenameFolderActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -223,6 +233,10 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     
     public String getNewName() {
         return projectName.getText();
+    }
+    
+    public boolean getRenameProjectFolder() {
+        return alsoRenameFolder.isSelected();
     }
     
     public void changedUpdate(DocumentEvent e) {
@@ -277,7 +291,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     private String computeError() {
         File location = FileUtil.toFile(project.getProjectDirectory().getParent());
         
-        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText());
+        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), !getRenameProjectFolder());
     }
     
     public void showProgress() {
