@@ -15,11 +15,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <html>
     <head>
-        <title>Registering a Resource with the SJS Application Server</title>
+        <title>Registering a Resource with the Sun Java System Application Server</title>
         <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
     </head>
 
-    <h2>Registering a Resource with the SJS Application Server</h2>
+    <h2>Registering a Resource with the Sun Java System Application Server</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
     <p>Once you have created a resource object, it needs to be registered with the server. Once registered, the object
     is available to all the applications and resources.</p>
@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     <p><b>To register an individual resource through the contextual menu:</b></p>
     <ol>
         <li>Locate the object in the Projects window or Files window.</li>
-        <li>Right-click on the object and select Register from the contextual menu.</li>
+        <li>Right-click on the object and select Register.</li>
         <li>In the Java Message Service Resource Registration dialog box, 
         check to make sure the JNDI resource name and the server instance are correct.</li>
         <li>Click Register.</li>
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
     <p><b>To delete a resource from the server:</b></p>
     <ol>
         <li>Locate the object you wish to delete in the Runtime window.</li>
-        <li>Right-click on the object and select Delete from the contextual menu.</li>
+        <li>Right-click on the object and select Delete.</li>
     </ol> 
     <p>When you delete a resource from the server it is no longer visible in the Runtime window.</p>
     <p><b>Notes:</b></p>    
@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         <li>After a resource has been removed from the server, it is still listed as a resource in your project.
         Unless you delete the resource from your project, when you deploy your application
         the resource will be registered again. To completely delete the resource and ensure that it is not
-        registered again, delete the resource using the contextual menu in the Files window or the Projects window.</li>
+        registered again, delete the resource using the pop-up menu in the Files window or the Projects window.</li>
     
     
         <li>The JNDI name for a resource must be unique. If the JNDI name is already taken by another resource,
@@ -65,23 +65,15 @@ Microsystems, Inc. All Rights Reserved.
         right click on the resource in the Files or Projects window and choose Properties from the contextual menu and change
         the JNDI name.</li>
     </ul>
-    <table>
-        <tr> 
-            <th colspan=2 align=left><a name="seealso">See Also</a></th>
-        </tr>
-        <tr> 
-            <td width="23"></td>
-            <td>
-            <a href="working_withSJS.html">Working with the SJS Application Server</a></td>
-        </tr>
-    </table>
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="working_withSJS.html">Working with the SJS Application Server</a></dd>
+    </dl>
 
     <hr>
 
     <small><a href="credits.html">Legal Notices</a></small> 
-    <table border="0" cellpadding="20">
-        <tr><td>&nbsp;</td></tr>
-        <tr><td>&nbsp;</td></tr>
+    <table border="0" cellpadding="50">
         <tr><td>&nbsp;</td></tr>
     </table>
 
