@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -127,6 +127,31 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ALL
     );
         
+    private Action INTERRUPT_ACTION = Models.createAction (
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_Interrupt_Label"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
+                if (node instanceof JPDAThread)
+                    return !((JPDAThread) node).isSuspended ();
+                else
+                    return false;
+            }
+            
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++) {
+                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                    if (node instanceof JPDAThread) {
+                        ((JPDAThread) node).interrupt();
+                    }
+                }
+            }
+        },
+        Models.MULTISELECTION_TYPE_ALL
+    );
+        
     private JPDADebugger debugger;
     
     
@@ -155,6 +180,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
             return new Action [] {
                 MAKE_CURRENT_ACTION,
                 a,
+                INTERRUPT_ACTION,
                 GO_TO_SOURCE_ACTION,
             };
         } else
