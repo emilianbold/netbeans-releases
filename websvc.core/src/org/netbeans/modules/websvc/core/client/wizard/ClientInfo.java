@@ -14,6 +14,7 @@
 package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,6 +33,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -55,6 +59,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.core.Utilities;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
@@ -346,6 +354,18 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 			File wsdlFile = chooser.getSelectedFile();
 			jTxtWsdlFile.setText(wsdlFile.getAbsolutePath());
 			previousDirectory = wsdlFile.getPath();
+                        int result = resolveImports(wsdlFile);
+                        if ((result & 0x02) == 0x02) {
+                            String proxyHost = WebProxySetter.getInstance().getProxyHost();
+                            if (proxyHost==null || proxyHost.length()==0)
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(ClientInfo.class,"MSG_SetUpProxyForImports"),NotifyDescriptor.WARNING_MESSAGE));
+                        }
+                        if ((result & 0x01) == 0x01) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(ClientInfo.class,"MSG_IdeGeneratedStaticStubOnly"),NotifyDescriptor.WARNING_MESSAGE));
+                        }
+                                
 		}
 	}//GEN-LAST:event_jBtnBrowseActionPerformed
 
@@ -375,7 +395,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jTxtWsdlURL.setEnabled(fromService);
         String wsdlUrlText = jTxtWsdlURL.getText().trim();
         jBtnGetWsdl.setEnabled(fromService && isValidUrl(wsdlUrlText));
-        jBtnProxy.setEnabled(fromService);
+        //jBtnProxy.setEnabled(fromService);
         jLblLocalFilename.setEnabled(fromService);
         jTxtLocalFilename.setEnabled(fromService);
     }
@@ -828,19 +848,93 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         descriptorPanel.fireChangeEvent();
     }
 
-	private static class WsdlFileFilter extends FileFilter {
-		public boolean accept(File f) {
-			boolean result;
-			if(f.isDirectory() || "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
-				result = true;
-			} else {
-				result = false;
-			}
-			return result;
-		}
+    private static class WsdlFileFilter extends FileFilter {
+            public boolean accept(File f) {
+                    boolean result;
+                    if(f.isDirectory() || "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
+                            result = true;
+                    } else {
+                            result = false;
+                    }
+                    return result;
+            }
 
-		public String getDescription() {
-			return NbBundle.getMessage(ClientInfo.class, "LBL_WsdlFilterDescription"); // NOI18N
-		}
-	}
+            public String getDescription() {
+                    return NbBundle.getMessage(ClientInfo.class, "LBL_WsdlFilterDescription"); // NOI18N
+            }
+    }
+    
+    
+    /** Private method to identify wsdl imports and/or the http wsdl/schema imports
+    */
+    private int resolveImports(File file) {
+            try {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                SAXParser saxParser = factory.newSAXParser();
+                ImportsHandler handler= new ImportsHandler();
+                saxParser.parse(new InputSource(new FileInputStream(file)), handler);
+                int httpImport = (handler.isHttpImport()?1:0);
+                int wsdlImport = (handler.isImportingWsdl()?1:0);
+                return httpImport*2+wsdlImport;
+            } catch(ParserConfigurationException ex) {
+                    // Bogus WSDL, return null.
+            } catch(SAXException ex) {
+                    // Bogus WSDL, return null.
+            } catch(IOException ex) {
+                    // Bogus WSDL, return null.
+            }
+            return 0;
+    }
+    
+    /** this is the handler for local wsdl file scanning for imported wsdl/schema files
+     */
+    private class ImportsHandler extends DefaultHandler {
+        
+        private static final String W3C_WSDL_SCHEMA = "http://schemas.xmlsoap.org/wsdl"; // NOI18N
+        private static final String W3C_WSDL_SCHEMA_SLASH = "http://schemas.xmlsoap.org/wsdl/"; // NOI18N
+        
+        private boolean insideSchema;
+        private boolean httpImport;
+        private boolean importingWsdl;
+        
+        public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
+            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
+                if("types".equals(localname)) { // NOI18N
+                    insideSchema=true;
+                }
+                if("import".equals(localname)) { // NOI18N
+                    String wsdlLocation = attributes.getValue("location"); //NOI18N
+                    // test if wsdl is imported using http
+                    if (wsdlLocation!=null && wsdlLocation.startsWith("http://")) { //NOI18N
+                        httpImport=true;
+                    }
+                    importingWsdl=true;
+                }
+            }
+            
+            if(insideSchema && "import".equals(localname)) { // NOI18N
+                String schemaLocation = attributes.getValue("schemaLocation"); //NOI18N
+                // test if schema is imported using http
+                if (schemaLocation!=null && schemaLocation.startsWith("http://")) //NOI18N
+                    httpImport=true;
+            }
+        }
+        
+        public void endElement(String uri, String localname, String qname) throws SAXException {
+            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
+                if("types".equals(localname)) { // NOI18N
+                    insideSchema=false;
+                }
+            }
+        }
+        
+        boolean isHttpImport() {
+            return httpImport;
+        }
+        
+        boolean isImportingWsdl() {
+            return importingWsdl;
+        }
+    }
 }
