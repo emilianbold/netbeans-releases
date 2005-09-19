@@ -185,6 +185,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         //    interface.
         boolean needsSave = false;
         boolean modifiedProjectProperties = false;
+        boolean modifiedPrivateProperties = false;
         
         /** Locate root of web service client node structure in project,xml, creating it
          *  if it's not found.
@@ -245,6 +246,8 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         }
         
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        
         // Add property for wscompile features
         {
             String featurePropertyName = "wscompile.client." + serviceName + ".features"; // NOI18N
@@ -272,8 +275,22 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
             }
         }
         
+        // create wscompile:httpproxy option
+        if (proxyHost!=null && proxyHost.length()>0) {
+            String proxyProperty = "wscompile.client." + serviceName + ".proxy"; // NOI18N
+            String oldProxyProperty = privateProperties.getProperty(proxyProperty);
+            if(!proxyProperty.equals(oldProxyProperty)) {
+                privateProperties.put(proxyProperty, proxyHost+":"+(proxyPort==null?"8080":proxyPort)); //NOI18N
+                modifiedPrivateProperties = true;
+            }
+        }
+        
         if(modifiedProjectProperties) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+            needsSave = true;
+        }
+        if(modifiedPrivateProperties) {
+            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
             needsSave = true;
         }
         
@@ -810,8 +827,12 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         
     }
     
+    private String proxyHost,proxyPort;
+    
     /** Does nothing in web project */
     public void setProxyJVMOptions(String proxyHost, String proxyPort) {
+        this.proxyHost=proxyHost;
+        this.proxyPort=proxyPort;
     }
     
     /** Stub descriptor for services and clients supported by this project type.

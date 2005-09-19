@@ -499,6 +499,7 @@ is divided into following sections:
                         sourceBase="${{build.generated.dir}}/wsclient"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                         mapping="${{meta.inf.dir}}/{$wsclientname}-mapping.xml"
+                        httpproxy="${{wscompile.client.{$wsclientname}.proxy}}"
                         config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
