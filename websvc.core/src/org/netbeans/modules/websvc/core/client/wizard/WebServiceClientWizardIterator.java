@@ -511,8 +511,14 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 if("types".equals(localname)) { // NOI18N
                     insideSchema=true;
                 }
+                if("import".equals(localname)) { // NOI18N
+                    String wsdlLocation = attributes.getValue("location"); //NOI18N
+                    if (wsdlLocation!=null && wsdlLocation.indexOf("/")<0 && wsdlLocation.endsWith(".wsdl")) { //NOI18N
+                        schemaNames.add(wsdlLocation);
+                    }
+                }
             }
-            if("import".equals(localname) && insideSchema) { // NOI18N
+            if(insideSchema && "import".equals(localname)) { // NOI18N
                 String schemaLocation = attributes.getValue("schemaLocation"); //NOI18N
                 if (schemaLocation!=null && schemaLocation.indexOf("/")<0 && schemaLocation.endsWith(".xsd")) { //NOI18N
                     schemaNames.add(schemaLocation);
