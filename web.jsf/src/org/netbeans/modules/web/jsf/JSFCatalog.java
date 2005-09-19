@@ -98,7 +98,7 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFCatalog.gif"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFCatalog.png"); // NOI18N
     }
     
     /**

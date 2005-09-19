@@ -23,7 +23,7 @@ import org.openide.nodes.Children;
 
 public class JSFConfigNode extends DataNode {
     
-    public static final String ICON_BASE =  "org/netbeans/modules/web/jsf/resources/JSFConfigIcon.gif";
+    public static final String ICON_BASE =  "org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png";
     
     /** Creates a new instance of StrutsConfigNode */
     public JSFConfigNode (final JSFConfigDataObject dataObject) {
