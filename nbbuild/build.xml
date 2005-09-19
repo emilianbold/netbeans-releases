@@ -1205,11 +1205,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="generate-golden-files-init" depends="init,bootstrap" >
     <property name="template.files.dir" location="build/golden" />
     <property name="golden.files.dir" location="../ide/golden" />
+    <condition property="golden.files.eol" value="unix" >
+        <or>
+            <os family="unix" />
+            <os family="mac" />
+        </or>
+    </condition>
+    <property name="golden.files.eol" value="dos" />
     
     <mkdir dir="${template.files.dir}" />
     
     <!-- convert the golden files into platform default encoding -->
-    <fixcrlf srcdir="${golden.files.dir}" destdir="${template.files.dir}" >
+    <fixcrlf srcdir="${golden.files.dir}" destdir="${template.files.dir}" eol="${golden.files.eol}" >
         <include name="*txt" />
     </fixcrlf>
     
@@ -1270,7 +1277,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </condition>
     
     
-    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+    <exec os="Linux SunOS Solaris " dir="." executable="diff" failonerror="no" timeout="60000" >
       <arg value="-u" />
       <arg value="${check.public.packages.template}" />
       <arg value="${check.public.packages.generated}" />
