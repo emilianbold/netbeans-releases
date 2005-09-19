@@ -16,13 +16,14 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Panel;
 import java.io.File;
 import java.util.ArrayList;
 import java.net.URL;
 import java.net.URI;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -31,7 +32,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 
 /**
- * JBoss instance customizer which is accessible from server manager.
+ * WebLogic instance customizer which is accessible from server manager.
  *
  * 
  */
@@ -51,6 +52,21 @@ public class Customizer extends JTabbedPane {
     private void initComponents() {
         getAccessibleContext().setAccessibleName (NbBundle.getMessage(Customizer.class,"ACS_Customizer")); // NOI18N
         getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(Customizer.class,"ACS_Customizer")); // NOI18N
+        // set help ID according to selected tab
+        addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                String helpID = null;
+                switch (getSelectedIndex()) {
+                    case 0 : helpID = "weblogic_customizer_classes";   // NOI18N
+                             break;
+                    case 1 : helpID = "weblogic_customizer_sources";   // NOI18N
+                             break;
+                    case 2 : helpID = "weblogic_customizer_javadoc";   // NOI18N
+                             break;
+                }
+                putClientProperty("HelpID", helpID); // NOI18N
+            }
+        });
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Classes"), createPathTab(CLASSPATH)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Sources"), createPathTab(SOURCES)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Javadoc"), createPathTab(JAVADOC)); // NOI18N
