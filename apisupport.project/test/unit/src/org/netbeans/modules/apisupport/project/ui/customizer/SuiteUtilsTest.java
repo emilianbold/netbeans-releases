@@ -71,5 +71,13 @@ public class SuiteUtilsTest extends TestBase {
         assertNull("module1 became standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
     }
     
+    /** Simulates scenario when deadlock occurs when playing with 64582. */
+    public void testPreventDeadLockWhenAddThenRemoveModule_64582() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        NbModuleProject module1 = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        SuiteUtils.addModule(suite1, module1);
+        SuiteUtils.removeModuleFromSuite(module1);
+    }
+    
 }
 

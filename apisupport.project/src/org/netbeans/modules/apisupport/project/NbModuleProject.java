@@ -537,20 +537,25 @@ public final class NbModuleProject implements Project {
         return cp.toString();
     }
     
-    public synchronized PropertyEvaluator evaluator() {
+    public PropertyEvaluator evaluator() {
         if (needNewEvaluator) {
-            try {
-                eval = createEvaluator(getModuleList());
-            } catch (IOException ex) {
-                // keep the eval as it is
-                Util.err.notify(ErrorManager.INFORMATIONAL, ex);
-            }
-            needNewEvaluator = false;
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    try {
+                        eval = createEvaluator(getModuleList());
+                    } catch (IOException ex) {
+                        // keep the eval as it is
+                        Util.err.notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    needNewEvaluator = false;
+                }
+            });
         }
         return eval;
     }
     
-    private synchronized void resetEvaluator() {
+    // package-private for unit tests only
+    void resetEvaluator() {
         needNewEvaluator = true;
     }
     

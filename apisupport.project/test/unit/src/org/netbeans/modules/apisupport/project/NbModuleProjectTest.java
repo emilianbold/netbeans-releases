@@ -17,10 +17,12 @@ import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 
 // XXX testGetPlatform
 
@@ -93,7 +95,7 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("right module JAR", file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
     }
-    
+
     private String createCP(String[] cp) {
         StringBuffer cpS = new StringBuffer();
         for (int i = 0; i < cp.length; i++) {
@@ -104,7 +106,7 @@ public class NbModuleProjectTest extends TestBase {
         }
         return cpS.toString();
     }
-    
+
     /** #56457 */
     public void testExternalSourceRoots() throws Exception {
         FileObject documentFinderJava = nbroot.getFileObject("editor/libsrc/org/netbeans/editor/DocumentFinder.java");
@@ -116,7 +118,7 @@ public class NbModuleProjectTest extends TestBase {
         Thread.sleep(1000);
         assertEquals("correct owner of DocumentFinder.java", editorLibProject, FileOwnerQuery.getOwner(documentFinderJava));
     }
-    
+
     public void testExternalModules() throws Exception {
         FileObject suite1 = extexamples.getFileObject("suite1");
         FileObject action = suite1.getFileObject("action-project");
@@ -149,7 +151,7 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("right netbeans.dest.dir", file(extexamplesF, "suite3/nbplatform"), PropertyUtils.resolveFile(FileUtil.toFile(dummy), eval.getProperty("netbeans.dest.dir")));
         // XXX more...
     }
-    
+
     public void testGetType() throws Exception {
         assertEquals(NbModuleTypeProvider.NETBEANS_ORG, typeOf(javaProjectProject));
         FileObject suite1 = extexamples.getFileObject("suite1");
@@ -161,10 +163,11 @@ public class NbModuleProjectTest extends TestBase {
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
         assertEquals(NbModuleTypeProvider.STANDALONE, typeOf(dummyProject));
     }
+
     private NbModuleTypeProvider.NbModuleType typeOf(Project p) {
         return ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
     }
-    
+
     public void testSupportsJavadoc() throws Exception {
         assertTrue(javaProjectProject.supportsJavadoc());
         FileObject dir = nbroot.getFileObject("beans");
@@ -173,16 +176,53 @@ public class NbModuleProjectTest extends TestBase {
         NbModuleProject beansProject = (NbModuleProject) p;
         assertFalse(beansProject.supportsJavadoc());
     }
-    
+
     public void testGetNbrootFile() throws Exception {
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(extexamples.getFileObject("suite1/action-project"));
         assertEquals(file("xtest/lib/insanelib.jar"), actionProject.getNbrootFile("xtest/lib/insanelib.jar"));
     }
-    
+
     public void testThatModuleWithOverriddenSrcDirPropertyDoesNotThrowNPE() throws Exception {
         FileObject prjFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "module1");
         FileObject srcFO = prjFO.getFileObject("src");
         FileUtil.moveFile(srcFO, prjFO, "src2");
         ProjectManager.getDefault().findProject(prjFO);
     }
+    
+    public void testEvaluatorDeadlock_64582() throws Exception {
+        final NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(extexamples.getFileObject("suite1/action-project"));
+        
+        // let's simluate deadlock condition of the issue 64582
+        actionProject.resetEvaluator();
+        ModuleList.refresh();
+        Thread evaluatorThread = new Thread(new Runnable() {
+            public void run() {
+                actionProject.evaluator();
+            }
+        });
+        Thread resetingThread = new Thread(new Runnable() {
+            public void run() {
+                ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                    public Object run() {
+                        ProjectManager.mutex().readAccess(new Mutex.Action() {
+                            public Object run() {
+                                actionProject.resetEvaluator();
+                                return null;
+                            }
+                        });
+                        return null;
+                    }
+                });
+            }
+        });
+        evaluatorThread.start();
+        Thread.sleep(20);
+        resetingThread.start();
+        evaluatorThread.join(12000);
+        if (evaluatorThread.isAlive() || resetingThread.isAlive()) {
+            System.err.println("Threads haven't finished in 12s. Seems to be a deadlock.");
+            fail("Presuambly deadlock reached");
+        }
+    }
+    
 }
