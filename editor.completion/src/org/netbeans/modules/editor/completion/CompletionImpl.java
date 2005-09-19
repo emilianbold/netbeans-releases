@@ -13,13 +13,10 @@
 
 package org.netbeans.modules.editor.completion;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.awt.event.*;
 import java.awt.*;
@@ -33,12 +30,14 @@ import javax.swing.text.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsChangeListener;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.spi.editor.completion.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -59,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 
 public class CompletionImpl extends MouseAdapter implements DocumentListener,
-CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener {
+CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener, SettingsChangeListener {
     
     private static final boolean debug
             = Boolean.getBoolean("netbeans.debug.editor.completion");
@@ -161,6 +160,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             }
         });
         pleaseWaitTimer.setRepeats(false);
+        Settings.addSettingsChangeListener(this);
     }
     
     public int getSortType() {
@@ -831,6 +831,13 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                         KeyStroke[] keys = km.getKeyStrokesForAction(a);
                         if (keys != null && keys.length > 0) {
                             ret = keys;
+                        } else {
+                            // try kit's keymap
+                            Keymap km2 = ((BaseKit)kit).getKeymap();
+                            KeyStroke[] keys2 = km2.getKeyStrokesForAction(a);
+                            if (keys2 != null && keys2.length > 0) {
+                                ret = keys2;
+                            }                            
                         }
                     }
                 }
@@ -848,12 +855,17 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             inputMap.put(keys[i], POPUP_HIDE);
         }
         actionMap.put(POPUP_HIDE, new PopupHideAction());
+        
         // Register completion show
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK), COMPLETION_SHOW);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, InputEvent.CTRL_MASK), COMPLETION_SHOW);
+        keys = findEditorKeys(ExtKit.completionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK));
+        for (int i = 0; i < keys.length; i++) {
+            inputMap.put(keys[i], COMPLETION_SHOW);
+        }
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction());
+        
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)), DOC_SHOW);
         actionMap.put(DOC_SHOW, new DocShowAction());
+        
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_MASK), TOOLTIP_SHOW);
         actionMap.put(TOOLTIP_SHOW, new ToolTipShowAction());
     }
@@ -1065,6 +1077,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
             result.markInactive();
             result.getTask().cancel();
+        }
+    }
+
+    public synchronized void settingsChange(org.netbeans.editor.SettingsChangeEvent evt) {
+        if( evt == null) {
+            return;
+        }
+        String settingName = evt.getSettingName();
+        if (SettingsNames.KEY_BINDING_LIST.equals(settingName) || settingName == null){
+            installKeybindings();
         }
     }
     
