@@ -333,8 +333,8 @@ public class MakeJNLP extends Task {
     }
     
     private static String relative(File file, File root) {
-        String sfile = file.toString();
-        String sroot = root.toString() + File.separator;
+        String sfile = file.toString().replace(File.separatorChar, '/');
+        String sroot = (root.toString() + File.separator).replace(File.separatorChar, '/');
         if (sfile.startsWith(sroot)) {
             return sfile.substring(sroot.length());
         }
