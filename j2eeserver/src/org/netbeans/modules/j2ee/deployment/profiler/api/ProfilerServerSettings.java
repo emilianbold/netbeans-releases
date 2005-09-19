@@ -26,8 +26,6 @@ import org.openide.filesystems.FileUtil;
  */
 public final class ProfilerServerSettings {
     
-    private static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
-    
     private JavaPlatform    javaPlatform;
     private String[]        jvmArgs;
     private String[]        env;
