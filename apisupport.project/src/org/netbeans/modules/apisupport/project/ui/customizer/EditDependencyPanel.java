@@ -42,7 +42,11 @@ final class EditDependencyPanel extends JPanel {
         this.origDep = dep;
         initComponents();
         readFromEntry();
-        javadoc = Util.findJavadoc(origDep, platform);
+        if (platform == null) { // NetBeans.org module
+            javadoc = Util.findJavadocForNetBeansOrgModules(origDep);
+        } else {
+            javadoc = Util.findJavadoc(origDep, platform);
+        }
         showJavadocButton.setEnabled(javadoc != null);
     }
     
