@@ -659,9 +659,126 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         if (token != null &&
                 token.getTokenID() == XMLTokenIDs.TAG &&
                 token.getImage().endsWith(">")) token = token.getPrevious();
+
+                if(tokenOnOffset == null) return null;
         
+        //declaration matching e.g. (<!DOCTYPE tutorial SYSTEM "newXMLWizard.dtd">)
+        if(tokenOnOffset.getTokenID() == XMLTokenIDs.DECLARATION) {
+            String tokenImage = tokenOnOffset.getImage();
+            if(tokenImage.startsWith("<!")) { //NOI18N
+                //declaration start
+                TokenItem toki = tokenOnOffset;
+                do {
+                    toki = toki.getNext();
+                } while (toki != null && toki.getTokenID() != XMLTokenIDs.DECLARATION);
+                
+                if(toki != null && toki.getTokenID() == XMLTokenIDs.DECLARATION && toki.getImage().endsWith(">")) {
+                    int start = toki.getOffset();
+                    int end = toki.getOffset() + toki.getImage().length();
+                    return new int[] {start, end};
+                }
+            }
+            if(tokenImage.endsWith(">") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - ">".length())) { //NOI18N
+                //declaration end
+                TokenItem toki = tokenOnOffset;
+                do {
+                    toki = toki.getPrevious();
+                } while (toki != null && toki.getTokenID() != XMLTokenIDs.DECLARATION);
+                if(toki != null && toki.getTokenID() == XMLTokenIDs.DECLARATION && toki.getImage().startsWith("<!")) {
+                    int start = toki.getOffset();
+                    //end = PI_START offset + PI_START length + PI_TARGET length
+                    int end = toki.getOffset() + "<!".length();
+                    return new int[] {start, end};
+                }
+            }
+            super.findMatchingBlock(offset, simpleSearch);
+        }
+        
+        //PI matching e.g. <?xml vertion="1.0"?> will match <?xml (PI-START + PI-TARGET) and ?> (PI-END)
+        if(tokenOnOffset.getTokenID() == XMLTokenIDs.PI_START ||
+                tokenOnOffset.getTokenID() == XMLTokenIDs.PI_TARGET) {
+            //carret in on PI_START or PI_TARGET => find PI end
+            TokenItem toki = tokenOnOffset;
+            do {
+                toki = toki.getNext();
+            } while (toki != null && toki.getTokenID() != XMLTokenIDs.PI_END);
+            if(toki != null && toki.getTokenID() == XMLTokenIDs.PI_END) {
+                int start = toki.getOffset();
+                int end = toki.getOffset() + toki.getImage().length();
+                return new int[] {start, end};
+            }
+        } else if(tokenOnOffset.getTokenID() == XMLTokenIDs.PI_END) {
+            //carret is on PI_END => find PI start
+            TokenItem toki = tokenOnOffset;
+            do {
+                toki = toki.getPrevious();
+            } while (toki != null && toki.getTokenID() != XMLTokenIDs.PI_START);
+            if(toki != null && toki.getTokenID() == XMLTokenIDs.PI_START) {
+                int start = toki.getOffset();
+                //end = PI_START offset + PI_START length + PI_TARGET length
+                int end = toki.getOffset() + toki.getImage().length() + toki.getNext().getImage().length();
+                return new int[] {start, end};
+            }
+        }
+        
+        //CDATA matching
+        if(tokenOnOffset.getTokenID() == XMLTokenIDs.CDATA_SECTION) {
+            String tokenImage = tokenOnOffset.getImage();
+            
+            TokenItem toki = tokenOnOffset;
+            if(tokenImage.startsWith(CDATA_START) && (offset < (tokenOnOffset.getOffset()) + CDATA_START.length())) { //NOI18N
+                //CDATA section start
+                int start = toki.getOffset() + toki.getImage().length() - CDATA_END.length(); //NOI18N
+                int end = toki.getOffset() + toki.getImage().length();
+                return new int[] {start, end};
+            }
+            if(tokenImage.endsWith(CDATA_END) && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - CDATA_END.length())) { //NOI18N
+                //CDATA section end
+                int start = toki.getOffset();
+                int end = toki.getOffset() + CDATA_START.length(); //NOI18N
+                return new int[] {start, end};
+            }
+            return super.findMatchingBlock(offset, simpleSearch);
+        }
+        
+        //match xml comments
+        if(tokenOnOffset.getTokenID() == XMLTokenIDs.BLOCK_COMMENT) {
+            String tokenImage = tokenOnOffset.getImage();
+            TokenItem toki = tokenOnOffset;
+            if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
+                //start html token - we need to find the end token of the html comment
+                while(toki != null) {
+                    if((toki.getTokenID() == XMLTokenIDs.BLOCK_COMMENT)) {
+                        if(toki.getImage().endsWith("-->")) {//NOI18N
+                            //found end token
+                            int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
+                            int end = toki.getOffset() + toki.getImage().length();
+                            return new int[] {start, end};
+                        }
+                    } else break;
+                    toki = toki.getNext();
+                }
+            }
+            if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
+                //end html token - we need to find the start token of the html comment
+                while(toki != null) {
+                    if((toki.getTokenID() == XMLTokenIDs.BLOCK_COMMENT)) {
+                        if(toki.getImage().startsWith("<!--")) { //NOI18N
+                            //found end token
+                            int start = toki.getOffset();
+                            int end = toki.getOffset() + "<!--".length(); //NOI18N
+                            return new int[] {start, end};
+                        }
+                    } else break;
+                    toki = toki.getPrevious();
+                }
+            }
+            return super.findMatchingBlock(offset, simpleSearch);
+        } //eof match xml comments
+        
+        
+        //tags matching
         boolean isInside = false;  // flag, whether the carret is somewhere in a HTML tag
-        
         if( token != null ) {
             if (token.getImage().startsWith("<")) {
                 isInside = true; // the carret is somewhere in '<htmltag' or '</htmltag'
@@ -746,120 +863,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 }
             }
         }
-        
-        if(tokenOnOffset == null) return null;
-        
-        //declaration matching e.g. (<!DOCTYPE tutorial SYSTEM "newXMLWizard.dtd">)
-        if(tokenOnOffset.getTokenID() == XMLTokenIDs.DECLARATION) {
-            String tokenImage = tokenOnOffset.getImage();
-            if(tokenImage.startsWith("<!")) { //NOI18N
-                //declaration start
-                TokenItem toki = tokenOnOffset;
-                do {
-                    toki = toki.getNext();
-                } while (toki != null && toki.getTokenID() != XMLTokenIDs.DECLARATION);
-                
-                if(toki != null && toki.getTokenID() == XMLTokenIDs.DECLARATION && toki.getImage().endsWith(">")) {
-                    int start = toki.getOffset();
-                    int end = toki.getOffset() + toki.getImage().length();
-                    return new int[] {start, end};
-                }
-            }
-            if(tokenImage.endsWith(">") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - ">".length())) { //NOI18N
-                //declaration end
-                TokenItem toki = tokenOnOffset;
-                do {
-                    toki = toki.getPrevious();
-                } while (toki != null && toki.getTokenID() != XMLTokenIDs.DECLARATION);
-                if(toki != null && toki.getTokenID() == XMLTokenIDs.DECLARATION && toki.getImage().startsWith("<!")) {
-                    int start = toki.getOffset();
-                    //end = PI_START offset + PI_START length + PI_TARGET length
-                    int end = toki.getOffset() + "<!".length();
-                    return new int[] {start, end};
-                }
-            }
-        }
-        
-        //PI matching e.g. <?xml vertion="1.0"?> will match <?xml (PI-START + PI-TARGET) and ?> (PI-END)
-        if(tokenOnOffset.getTokenID() == XMLTokenIDs.PI_START ||
-                tokenOnOffset.getTokenID() == XMLTokenIDs.PI_TARGET) {
-            //carret in on PI_START or PI_TARGET => find PI end
-            TokenItem toki = tokenOnOffset;
-            do {
-                toki = toki.getNext();
-            } while (toki != null && toki.getTokenID() != XMLTokenIDs.PI_END);
-            if(toki != null && toki.getTokenID() == XMLTokenIDs.PI_END) {
-                int start = toki.getOffset();
-                int end = toki.getOffset() + toki.getImage().length();
-                return new int[] {start, end};
-            }
-        } else if(tokenOnOffset.getTokenID() == XMLTokenIDs.PI_END) {
-            //carret is on PI_END => find PI start
-            TokenItem toki = tokenOnOffset;
-            do {
-                toki = toki.getPrevious();
-            } while (toki != null && toki.getTokenID() != XMLTokenIDs.PI_START);
-            if(toki != null && toki.getTokenID() == XMLTokenIDs.PI_START) {
-                int start = toki.getOffset();
-                //end = PI_START offset + PI_START length + PI_TARGET length
-                int end = toki.getOffset() + toki.getImage().length() + toki.getNext().getImage().length();
-                return new int[] {start, end};
-            }
-        }
-        
-        //CDATA matching
-        if(tokenOnOffset.getTokenID() == XMLTokenIDs.CDATA_SECTION) {
-            String tokenImage = tokenOnOffset.getImage();
-            
-            TokenItem toki = tokenOnOffset;
-            if(tokenImage.startsWith(CDATA_START) && (offset < (tokenOnOffset.getOffset()) + CDATA_START.length())) { //NOI18N
-                //CDATA section start
-                int start = toki.getOffset() + toki.getImage().length() - CDATA_END.length(); //NOI18N
-                int end = toki.getOffset() + toki.getImage().length();
-                return new int[] {start, end};
-            }
-            if(tokenImage.endsWith(CDATA_END) && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - CDATA_END.length())) { //NOI18N
-                //CDATA section end
-                int start = toki.getOffset();
-                int end = toki.getOffset() + CDATA_START.length(); //NOI18N
-                return new int[] {start, end};
-            }
-        }
-        
-        //match xml comments
-        if(tokenOnOffset.getTokenID() == XMLTokenIDs.BLOCK_COMMENT) {
-            String tokenImage = tokenOnOffset.getImage();
-            TokenItem toki = tokenOnOffset;
-            if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
-                //start html token - we need to find the end token of the html comment
-                while(toki != null) {
-                    if((toki.getTokenID() == XMLTokenIDs.BLOCK_COMMENT)) {
-                        if(toki.getImage().endsWith("-->")) {//NOI18N
-                            //found end token
-                            int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
-                            int end = toki.getOffset() + toki.getImage().length();
-                            return new int[] {start, end};
-                        }
-                    } else break;
-                    toki = toki.getNext();
-                }
-            }
-            if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
-                //end html token - we need to find the start token of the html comment
-                while(toki != null) {
-                    if((toki.getTokenID() == XMLTokenIDs.BLOCK_COMMENT)) {
-                        if(toki.getImage().startsWith("<!--")) { //NOI18N
-                            //found end token
-                            int start = toki.getOffset();
-                            int end = toki.getOffset() + "<!--".length(); //NOI18N
-                            return new int[] {start, end};
-                        }
-                    } else break;
-                    toki = toki.getPrevious();
-                }
-            }
-        } //eof match xml comments
-        
+
         //for the rest of the situations use default impl from ancestor
         return super.findMatchingBlock(offset, simpleSearch);
     }
