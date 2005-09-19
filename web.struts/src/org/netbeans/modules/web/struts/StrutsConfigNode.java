@@ -23,7 +23,7 @@ import org.openide.nodes.Children;
 
 public class StrutsConfigNode extends DataNode {
     
-    public static final String ICON_BASE =  "org/netbeans/modules/web/struts/resources/StrutsConfigIcon.gif";
+    public static final String ICON_BASE =  "org/netbeans/modules/web/struts/resources/StrutsConfigIcon.png";
     
     /** Creates a new instance of StrutsConfigNode */
     public StrutsConfigNode (final StrutsConfigDataObject dataObject) {
