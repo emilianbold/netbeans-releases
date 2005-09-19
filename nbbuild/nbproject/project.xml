@@ -237,6 +237,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../i18n/form</project>
                 <project>../ide/applemenu</project>
                 <!-- Unprojectized: ide/branding -->
+                <project>../ide/defaults</project>
                 <project>../ide/launcher/upgrade</project>
                 <project>../ide/updatecenters</project>
                 <project>../ide/welcome</project>
