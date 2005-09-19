@@ -49,6 +49,8 @@ import org.w3c.dom.Element;
  */
 public final class TargetExecutor implements Runnable {
     
+    private static final boolean USE_PROGRESS = Boolean.getBoolean("org.apache.tools.ant.module.run.TargetExecutor.USE_PROGRESS");
+    
     /**
      * All tabs which were used for some process which has now ended.
      * These are closed when you start a fresh process.
@@ -267,18 +269,20 @@ public final class TargetExecutor implements Runnable {
         }
         
         thisProcess[0] = Thread.currentThread();
-        // #58513: register a progress handle for the task too.
-        handle[0] = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
-            public boolean cancel() {
-                stopProcess(thisProcess[0]);
-                return true;
-            }
-        }, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                io.select();
-            }
-        });
-        handle[0].start();
+	if (USE_PROGRESS) { // XXX #63332: off by default
+	    // #58513: register a progress handle for the task too.
+	    handle[0] = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
+		public boolean cancel() {
+		    stopProcess(thisProcess[0]);
+		    return true;
+		}
+	    }, new AbstractAction() {
+		public void actionPerformed(ActionEvent e) {
+		    io.select();
+		}
+	    });
+	    handle[0].start();
+	}
         StopBuildingAction.registerProcess(thisProcess[0], displayName);
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback);
         

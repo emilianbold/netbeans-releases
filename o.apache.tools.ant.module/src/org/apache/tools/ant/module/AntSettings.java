@@ -67,7 +67,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
         setAutoCloseTabs(true); // #47753
-        setAlwaysShowOutput(false);
+        setAlwaysShowOutput(true); // XXX #63332: prefer false if have unobtrusive progress indication
     }
 
     public String displayName () {
