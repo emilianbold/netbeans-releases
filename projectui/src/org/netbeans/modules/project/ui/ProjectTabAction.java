@@ -41,7 +41,8 @@ public class ProjectTabAction extends AbstractAction {
     
     /** Creates a new instance of BrowserAction */
     public ProjectTabAction( String name, String iconResource, int type ) {
-        super( name, new ImageIcon( Utilities.loadImage( iconResource ) ) );
+        super( name );
+        putValue("iconBase", iconResource); // NOI18N
         this.type = type;
     }
     
