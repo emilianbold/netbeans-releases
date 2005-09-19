@@ -157,12 +157,14 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         public static final int USER_OK_ALL = 3;
 
         private int answer;
+        private IOException exception;
         
         private boolean confirmationDialogCalled;
         
         public TestUserInputHandler(int answer) {
             this.answer = answer;
             this.confirmationDialogCalled = false;
+            this.exception = null;
         }
 
         public void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
@@ -178,7 +180,11 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
                 ((DefaultProjectDeletePanel) panel).setDeleteSources(false);
             }
             
-            executor.execute();
+            try {
+                executor.execute();
+            } catch (IOException e) {
+                exception = e;
+            }
         }
         
     }
@@ -267,7 +273,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget);
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
         
         File newProject = new File(FileUtil.toFile(newTarget), "projMove");
         
@@ -290,7 +296,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget);
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
         
         File newProject = new File(FileUtil.toFile(newTarget), "projMove");
         
@@ -316,7 +322,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget      = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget);
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
         
         File newProject = new File(FileUtil.toFile(newTarget), "projMove");
         
@@ -339,7 +345,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget);
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
         
         Project newProject = ProjectManager.getDefault().findProject(newTarget.getFileObject("projMove"));
         
@@ -358,7 +364,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget);
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
         
         Project newProject = ProjectManager.getDefault().findProject(newTarget.getFileObject("projMove"));
         

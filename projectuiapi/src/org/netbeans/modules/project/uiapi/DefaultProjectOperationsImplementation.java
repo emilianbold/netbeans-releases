@@ -75,7 +75,7 @@ public final class DefaultProjectOperationsImplementation {
     /**
      * @return true if success
      */
-    private static boolean performDelete(Project project, List/*FileObject>*/ toDelete, ProgressHandle handle) {
+    private static boolean performDelete(Project project, List/*FileObject>*/ toDelete, ProgressHandle handle) throws IOException {
         try {
             handle.start(toDelete.size() + 1 /*clean*/);
             
@@ -114,7 +114,6 @@ public final class DefaultProjectOperationsImplementation {
             String message     = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Project_cannot_be_deleted.", new Object[] {displayName});
             
             ErrorManager.getDefault().annotate(e, message);
-            ErrorManager.getDefault().notify(ErrorManager.USER, e);
             
             return false;
         }
@@ -153,7 +152,7 @@ public final class DefaultProjectOperationsImplementation {
         String caption = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption");
         
         handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, new Executor() { // NOI18N
-            public void execute() {
+            public void execute() throws IOException {
                 close(project);
                 
                 if (deletePanel.isDeleteSources()) {
@@ -188,7 +187,7 @@ public final class DefaultProjectOperationsImplementation {
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, false);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
-            public void execute() {
+            public void execute() throws IOException {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
@@ -198,7 +197,7 @@ public final class DefaultProjectOperationsImplementation {
         });
     }
     
-    /*package private for tests*/ static void doCopyProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) {
+    /*package private for tests*/ static void doCopyProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) throws IOException {
         try {
             ProjectOperations.notifyCopying(project);
             
@@ -232,8 +231,8 @@ public final class DefaultProjectOperationsImplementation {
             
             handle.finish();
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-            e.printStackTrace();
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Move", new Object[]{e.getLocalizedMessage()}));
+            throw e;
         }
     }
     //</editor-fold>
@@ -244,12 +243,12 @@ public final class DefaultProjectOperationsImplementation {
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, true);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
-            public void execute() {
+            public void execute() throws IOException {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
 
-                doMoveProject(handle, project, nueName, newTargetFO);
+                doMoveProject(handle, project, nueName, newTargetFO, "ERR_Cannot_Move");
             }
         });
     }
@@ -263,16 +262,18 @@ public final class DefaultProjectOperationsImplementation {
         final DefaultProjectRenamePanel panel = new DefaultProjectRenamePanel(handle, project, nueName);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
-            
-            public void execute() {
+            public void execute() throws IOException {
                 String nueName = panel.getNewName();
                 
                 if (panel.getRenameProjectFolder()) {
-                    doMoveProject(handle, project, nueName, project.getProjectDirectory().getParent());
+                    doMoveProject(handle, project, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
                 } else {
+                    boolean originalOK = true;
+                    Project main    = OpenProjects.getDefault().getMainProject();
+                    boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
+                    Project nue = null;
+                    
                     try {
-                        Project main    = OpenProjects.getDefault().getMainProject();
-                        boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
                         FileObject projectDirectory = project.getProjectDirectory();
                         File       projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
                         Collection operations = project.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
@@ -288,10 +289,15 @@ public final class DefaultProjectOperationsImplementation {
                         
                         //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
                         ProjectManager.getDefault().clearNonProjectCache();
-                        Project nue = ProjectManager.getDefault().findProject(projectDirectory);
-                        Collection nueOperations = nue.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+                        
+                        nue = ProjectManager.getDefault().findProject(projectDirectory);
                         
                         assert nue != null;
+                        
+                        originalOK = false;
+                        
+                        Collection nueOperations = nue.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+                        
                         
                         for (Iterator i = nueOperations.iterator(); i.hasNext(); ) {
                             ((MoveOperationImplementation) i.next()).notifyMoved(project, projectDirectoryFile, nueName);
@@ -301,18 +307,27 @@ public final class DefaultProjectOperationsImplementation {
                         
                         open(nue, wasMain);
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                        if (originalOK) {
+                            open(project, wasMain);
+                        } else {
+                            assert nue != null;
+                            open(nue, wasMain);
+                        }
+                        ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", new Object[]{e.getLocalizedMessage()}));
+                        throw e;
                     }
 		}
             }
         });
     }
     
-    /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) {
+    /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget, String errorKey) throws IOException {
+        boolean originalOK = true;
+        Project main    = OpenProjects.getDefault().getMainProject();
+        boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
+        Project nue = null;
+        
         try {
-            Project main    = OpenProjects.getDefault().getMainProject();
-            boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
-            
             ProjectOperations.notifyMoving(project);
             
             close(project);
@@ -327,6 +342,14 @@ public final class DefaultProjectOperationsImplementation {
                 doCopy(project, toCopy, target);
             }
             
+            //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
+            ProjectManager.getDefault().clearNonProjectCache();
+            nue = ProjectManager.getDefault().findProject(target);
+            
+            assert nue != null;
+            
+            originalOK = false;
+            
             for (Iterator i = toMoveList.iterator(); i.hasNext(); ) {
                 FileObject toCopy = (FileObject) i.next();
                 File       toCopyFile = FileUtil.toFile(toCopy);
@@ -338,11 +361,6 @@ public final class DefaultProjectOperationsImplementation {
                 projectDirectory.delete();
             }
                 
-            //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
-            ProjectManager.getDefault().clearNonProjectCache();
-            Project nue = ProjectManager.getDefault().findProject(target);
-            
-            assert nue != null;
             
             ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueName);
             
@@ -350,7 +368,14 @@ public final class DefaultProjectOperationsImplementation {
             
             open(nue, wasMain);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            if (originalOK) {
+                open(project, wasMain);
+            } else {
+                assert nue != null;
+                open(nue, wasMain);
+            }
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, new Object[]{e.getLocalizedMessage()}));
+            throw e;
         }
     }
     //</editor-fold>
@@ -451,11 +476,24 @@ public final class DefaultProjectOperationsImplementation {
                     
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            executor.execute();
+                            IOException e = null;
+                            
+                            try {
+                                executor.execute();
+                            } catch (IOException ex) {
+                                e = ex;
+                            }
+                            
+                            final IOException ex = e;
                             
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
                                     dialog[0].setVisible(false);
+                                    
+                                    if (ex != null) {
+                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                        ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+                                    }
                                 }
                             });
                         }
@@ -527,7 +565,7 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     static interface Executor {
-        public void execute();
+        public void execute() throws IOException;
     }
     
     public static interface InvalidablePanel {
