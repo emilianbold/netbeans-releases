@@ -179,9 +179,7 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
             if (task != null && !task.isFinished()) {
                 throw new IllegalStateException("Statements are already being executed."); // NOI18N
             }
-            
-            closeExecutionResult();
-            
+
             if (LOG) {
                 LOGGER.log(ErrorManager.INFORMATIONAL, "Executing against " + dbconn); // NOI18N
             }
@@ -220,6 +218,10 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
 
             task = rp.post(new Runnable() {
                 public void run() {
+                    if (LOG) {
+                        LOGGER.log("Started the SQL execution task"); // NOI18N
+                    }
+                    
                     ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutingStatements"));
                     handle.start();
                     handle.switchToIndeterminate();
@@ -227,6 +229,11 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
                     // TODO: is it OK to remove the text from the status bar?
                     StatusDisplayer.getDefault().setStatusText(""); // NOI18N
 
+                    if (LOG) {
+                        LOGGER.log(ErrorManager.INFORMATIONAL, "Closing the old execution result" ); // NOI18N
+                    }
+                    closeExecutionResult();
+                    
                     executionResult = null;
 
                     try {

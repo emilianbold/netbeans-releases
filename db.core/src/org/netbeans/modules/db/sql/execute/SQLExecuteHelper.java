@@ -20,7 +20,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import org.openide.options.SystemOption;
+import org.openide.ErrorManager;
 
 
 /**
@@ -29,6 +29,9 @@ import org.openide.options.SystemOption;
  * @author Andrei Badea
  */
 public final class SQLExecuteHelper {
+    
+    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(SQLExecuteHelper.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
     public static SQLExecutionResult execute(String statements[], Connection conn) throws SQLException {
         List/*<Statement>*/ statementList = new ArrayList();
@@ -39,6 +42,10 @@ public final class SQLExecuteHelper {
             statementList.add(stmt);
             
             String sql = removeComments(statements[i]).trim();
+            if (LOG) {
+                LOGGER.log(ErrorManager.INFORMATIONAL, "Executing: " + sql); // NOI18N
+            }
+            
             String sqlType = sql.substring(0, Math.min(6, sql.length())).toUpperCase();
             if ("SELECT".equals(sqlType)) { // NOI18N
                 ResultSet rs = stmt.executeQuery(sql);
