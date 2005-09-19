@@ -1460,7 +1460,15 @@ public class MergePanel extends javax.swing.JPanel {
         }
     }
     
-    private void setHighlight(StyledDocument doc, int line1, int line2, java.awt.Color color) {
+    private void setHighlight(final StyledDocument doc, final int line1,
+                              final int line2, final java.awt.Color color) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setHighlight(doc, line1, line2, color);
+                }
+            });
+        }
         //System.out.println("setHighlight(): <"+line1+", "+line2+">, color = "+color); // NOI18N
         //Style s = doc.addStyle("diff-style("+color+"):1500", null); // NOI18N
         //      SimpleAttributeSet attrSet = new SimpleAttributeSet();
