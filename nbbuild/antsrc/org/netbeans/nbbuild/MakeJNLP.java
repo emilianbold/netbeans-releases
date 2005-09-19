@@ -308,7 +308,7 @@ public class MakeJNLP extends Task {
                 writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
                 writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "' >\n");
                 writeJNLP.write("  <information>\n");
-                writeJNLP.write("   <title>" + codebase + "</title>\n");
+                writeJNLP.write("   <title>" + n + "</title>\n");
                 writeJNLP.write("   <vendor>NetBeans</vendor>\n");
                 writeJNLP.write("  </information>\n");
                 writeJNLP.write("  <security><all-permissions/></security>\n");

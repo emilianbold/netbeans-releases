@@ -276,6 +276,12 @@ public class MakeJNLPTest extends NbTestCase {
         int first = res.indexOf("jar href");
         assertEquals("Just one jar href ", -1, res.indexOf("jar href", first + 1));
         
+        String extRes = ModuleDependenciesTest.readFile (extJnlp);
+        
+        Matcher m = Pattern.compile("<title>(.*)</title>").matcher(extRes);
+        assertTrue("title is there: " + extRes, m.find());
+        String n = ext.getName().replaceAll(".jar", "");
+        assertEquals("Name of file is used for title", n, m.group(1));
     }
     
     public void testInformationIsTakenFromLocalizedBundle() throws Exception {
