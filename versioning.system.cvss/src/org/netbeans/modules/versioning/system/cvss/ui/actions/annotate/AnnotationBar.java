@@ -543,7 +543,20 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         Dimension dim = textComponent.getSize();
         int width = annotated ? getBarWidth() : 0;
         dim.width = width;
+        dim.height *=2;  // XXX
         return dim;
+    }
+
+    public Dimension getMaximumSize() {
+        return getPreferredSize();
+    }
+
+    public Dimension getSize() {
+        return getPreferredSize();
+    }
+
+    public Dimension getSize(Dimension rv) {
+        return getPreferredSize();
     }
 
     private int getBarWidth() {
