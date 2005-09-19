@@ -50,7 +50,8 @@ class ShortcutsFolder {
     private FileObject              profilesFileObject;
     private FileObject              shortcutsFileObject;
     private FileObject              currentFolder;
-    private boolean                 debug = System.getProperty ("org.netbeans.optionsDialog.print.shortcuts") != null;
+    private ErrorManager            debug = ErrorManager.getDefault ().
+        getInstance (ShortcutsFolder.class.getName ());
     
     
     static void initShortcuts () {
@@ -103,7 +104,7 @@ class ShortcutsFolder {
     }
     
     private void readShortcuts (NbKeymap keymap, FileObject fileObject) {
-        if (debug) System.out.println ("\nreadShortcuts " + fileObject);
+        debug.log ("\nreadShortcuts " + fileObject);
         DataFolder folder = DataFolder.findFolder (fileObject);
         Enumeration en = folder.children (false);
         while (en.hasMoreElements ()) {
@@ -115,7 +116,7 @@ class ShortcutsFolder {
             try {
                 Action action = (Action) ic.instanceCreate ();
                 String shortcuts = dataObject.getName ();
-                if (debug) System.out.println ("  " + shortcuts + " : " + action);
+                debug.log ("  " + shortcuts + " : " + action);
                 KeyStroke[] keyStrokes = Utilities.stringToKeys (shortcuts);
                 addShortcut (keymap, action, keyStrokes);
             } catch (Exception ex) {
