@@ -727,14 +727,18 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="base">
                 <folder name="Eclipse">
-                    <file name="keybindings.xml" url="Eclipse-keybindings.xml">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                    </file>
+                    <folder name="Defaults">
+                        <file name="keybindings.xml" url="Eclipse-keybindings.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        </file>
+                    </folder>
                 </folder>
                 <folder name="Emacs">
-                    <file name="keybindings.xml" url="Emacs-keybindings.xml">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                    </file>
+                    <folder name="Defaults">
+                        <file name="keybindings.xml" url="Emacs-keybindings.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
             <folder name="css">

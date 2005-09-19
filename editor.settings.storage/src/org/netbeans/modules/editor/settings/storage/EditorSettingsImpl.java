@@ -518,35 +518,45 @@ public class EditorSettingsImpl extends EditorSettings {
 	FileObject fo = fs.findResource ("Editors");
 	Enumeration e = fo.getFolders (false);
 	while (e.hasMoreElements ())
-	    init1 ((FileObject) e.nextElement (), 1);
+	    init1 ((FileObject) e.nextElement ());
     }
     
-    private void init1 (FileObject fo, int depth) {
-	if (depth == 1) {
-	    Enumeration e = fo.getChildren (false);
-	    while (e.hasMoreElements ())
-		init1 ((FileObject) e.nextElement (), 2);
-	    return;
-	}
+    private void init1 (FileObject fo) {
+        Enumeration e = fo.getChildren (false);
+        while (e.hasMoreElements ())
+            init2 ((FileObject) e.nextElement ());
+    }
 	
-	if (fo.getName ().equals ("Defaults") && fo.isFolder () &&
+    private void init2 (FileObject fo) {
+        if (fo.getName ().equals ("Defaults") && fo.isFolder () &&
             fo.getFileObject (HIGHLIGHTING_FILE_NAME) != null
         )
-            addFontColorsProfile (fo, true); // Editors/XXX/Defaults/editorColoring.xml
+            addFontColorsProfile (fo, true); // Editors/ProfileName/Defaults/editorColoring.xml
         else
         if (fo.getNameExt ().equals (HIGHLIGHTING_FILE_NAME))
-            addFontColorsProfile (fo, false); // Editors/XXX/editorColoring.xml
-        else
-	if (fo.getName ().equals ("Defaults") && fo.isFolder () &&
-            fo.getFileObject (KEYBINDING_FILE_NAME) != null
-        )
-            addKeyMapProfile (fo, true); // Editors/XXX/Defaults/keybindings.xml
-        else
-        if (fo.getNameExt ().equals (KEYBINDING_FILE_NAME))
-            addKeyMapProfile (fo, false); // Editors/XXX/keybindings.xml
+            addFontColorsProfile (fo, false); // Editors/ProfileName/editorColoring.xml
         else
         if (fo.getFileObject ("NetBeans/Defaults/coloring.xml") != null)
             addMimeType (fo); // Editors/XXX/YYY/NetBeans/Defaults/coloring.xml
+        else
+        if (fo.getPath ().endsWith ("text/base") && fo.isFolder ()) {
+            if (fo.getFileObject ("Defaults/" + KEYBINDING_FILE_NAME) != null)
+                addKeyMapProfile (fo, true); // Editors/text/base/Defaults/keybindings.xml
+            else
+            if (fo.getFileObject (KEYBINDING_FILE_NAME) != null)
+                addKeyMapProfile (fo, false); // Editors/text/base/keybindings.xml
+            Enumeration e = fo.getChildren (false);
+            while (e.hasMoreElements ())
+                init3 ((FileObject) e.nextElement ());
+        }
+    }
+        
+    private void init3 (FileObject fo) {
+        if (fo.getFileObject ("Defaults/" + KEYBINDING_FILE_NAME) != null)
+            addKeyMapProfile (fo, true); // Editors/text/base/ProfileName/Defaults/keybindings.xml
+        else
+        if (fo.getFileObject (KEYBINDING_FILE_NAME) != null)
+            addKeyMapProfile (fo, false); // Editors/text/base/ProfileName/keybindings.xml
     }
 
     private void addMimeType (FileObject fo) {
@@ -576,8 +586,9 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     private void addKeyMapProfile (FileObject fo, boolean systemProfile) {
-        String profile = fo.getParent ().getName ();
-        String bundleName = (String) fo.getParent ().getAttribute 
+        String profile = fo.getName ();
+        if (profile.equals ("base")) profile = "NetBeans";
+        String bundleName = (String) fo.getAttribute 
             ("SystemFileSystem.localizingBundle");
         String locProfile = profile;
         if (bundleName != null)
