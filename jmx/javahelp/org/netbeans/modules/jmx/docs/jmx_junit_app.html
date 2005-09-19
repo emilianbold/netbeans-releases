@@ -16,20 +16,20 @@
 <h2>Writing a JMX MBean JUnit test.<br>
 </h2>
 JMX JUnit tests are full JUnit tests that handle the JMX MBean
-deployment tasks in order for the developper to focus on testing MBean
+deployment tasks, so the developper can focus on testing MBean
 attributes and operations.<br>
 <br>
-You have to go through the following 5 steps in order to achieve MBean
+You have to go through the following five steps in order to implement MBean
 unit testing : <br>
-<h2>1) Generate the MBean JUnit test</h2>
+<h2>1) Generate the MBean JUnit Test</h2>
 JMX JUnit tests can be generated from :<br>
 <ul>
   <li><span style="font-weight: bold;">The <span
  style="font-style: italic;">JMX MBean </span>wizard</span>. During
-the MBean creation, a JUnit test case can be generated. Using this
-wizard allows to generate test cases for <span
+the creation of the MBean, a JUnit test case can be generated. Using this
+wizard allows you to generate test cases for <span
  style="font-weight: bold;">any kind of MBeans (mainly Standard or
-Dynamic)</span>. If yo uwant to generate JUnit tests for new MBeans,
+Dynamic)</span>. If you want to generate JUnit tests for new MBeans,
 you should use this wizard.</li>
   <li><span style="font-weight: bold;"><span style="font-style: italic;">The
 JMX MBean JUnit Test</span> wizard</span>. This wizard allows you to
@@ -37,40 +37,40 @@ generate a JMX JUnit test for an existing MBean. It does its best job
 when generating a test for a <span style="font-weight: bold;">Standard
 MBean</span>. When generating a test for a Dynamic MBean, it will only
 handle the MBean deployment tasks. <span style="font-weight: bold;">You
-will have to add manualy the test cases for each attribute / operation
-you whish to test</span>. If a JUnit test already exist for this MBean
-class (we look for &lt;mbean package&gt;.&lt;MBeanClassName&gt;Test
+will have to add the test cases manually for each attribute / operation
+you wish to test</span>. If a JUnit test already exists for this MBean
+class (a search is performed for the &lt;mbean package&gt;.&lt;MBeanClassName&gt;Test
 file name in the test area), no test can be generated.<br>
   </li>
   <li>The <span style="font-weight: bold; font-style: italic;">Create
-JUnit Test...</span> contextual action accessible from <span
- style="font-weight: bold; font-style: italic;">management</span> menu.
-When an MBean is selected, the action becomes enabled (If no test
-already exists). This action has the same behavior as the previous
+JUnit Test...</span> contextual action accessible from the <span
+ style="font-weight: bold; font-style: italic;">Management</span> menu.
+When an MBean is selected, the action becomes enabled (if no test
+already exists). This action behaves in the same way as the previous
 wizard.<br>
   </li>
 </ul>
 <br>
-<h3>Selecting an MBean constructor<br>
+<h3>Selecting an MBean Constructor<br>
 </h3>
-The MBean that you whish to test can have multiple constructors. When
+The MBean that you wish to test can have multiple constructors. When
 you
-will generate a JUnit test from <span
+ generate a JUnit test using the <span
  style="font-weight: bold; font-style: italic;">JMX MBean JUnit Test</span>
-wizard or <span style="font-weight: bold; font-style: italic;">Create
+wizard or the <span style="font-weight: bold; font-style: italic;">Create
 JUnit Test...</span> action, you will be asked to select a constructor
 from the list of MBean constructors.<br>
-In the case,&nbsp; of a JUnit test generated from the <span
+In the case of a JUnit test generated using the <span
  style="font-weight: bold;"><span style="font-style: italic;">JMX MBean
-</span></span>wizard, the generated MBean default constructor is used.<br>
+</span></span> wizard, the generated MBean default constructor is used.<br>
 <br>
-<h2>2) Updating MBean construction in the JUnit generated test</h2>
-If your MBean under test needs some parameters at construction time,
-you can provide these parameters thanks to the <span
+<h2>2) Updating the MBean Construction in the Generated JUnit Test</h2>
+If the MBean you are testing needs some parameters when it is constructed,
+you can provide these parameters using the <span
  style="font-weight: bold; font-style: italic;">createMBean</span>
 method.<br>
 Go to the createMBean method and update the MBean constructor call.
-This is not needed if your MBean construtor is a void one.<br>
+This is not needed if your MBean construtor is void.<br>
 <br>
 In the following example, the MBean class MYClass expects an Object
 parameter.<br>
@@ -87,14 +87,14 @@ MYClass(Object o) constructor parameters with valid values.</span><br
 <span style="font-style: italic;">&nbsp;}<br>
 <br>
 </span>
-<h2>3) Adding test logic to an MBean attribute test</h2>
+<h2>3) Adding Test Logic to an MBean Attribute Test</h2>
 For each attribute (if any) a test case is generated. The test case
 contains a
 call to get the attribute. <br>
-After the attribute has been get, a call to fail is generated. <span
+After the attribute has been obtained, a call to fail is generated. <span
  style="font-weight: bold;">You have to replace the call to fail method
 with your test logic</span>.<br>
-The following code example test <span style="font-weight: bold;">Toto
+The following code example tests the <span style="font-weight: bold;">Toto
 attribute</span>.<br>
 <br>
 <span style="font-style: italic;">/**</span><br
@@ -126,22 +126,22 @@ test code below by replacing the default call to fail.</span><br
 <span style="font-style: italic;">}<br>
 </span>
 <br>
-<h2>4) Adding test logic to an MBean operation test</h2>
-For each operation (if any) a test case is generated. The test case
+<h2>4) Adding Test Logic to an MBean Operation Test</h2>
+For each operation (if any exist) a test case is generated. The test case
 contains :<br>
 <ul>
-  <li>The operation signature creation.<br>
+  <li>The creation of the operation signature.<br>
   </li>
-  <li>The operation parameters creation <span
- style="font-weight: bold;">that you have to update with valid values</span>.
+  <li>The creation of the operation parameters <span
+ style="font-weight: bold;">that you must update with valid values</span>.
 Some default values are generated.<br>
   </li>
-  <li>The operation invocation.</li>
-  <li>A call to fail method <span style="font-weight: bold;">that you
-have to replace with your test logic</span>.</li>
+  <li>The invocation of the operation.</li>
+  <li>A call to the fail method <span style="font-weight: bold;">that you
+must replace with your test logic</span>.</li>
 </ul>
 <br>
-The following code example is a test for operation <span
+The following code example is a test for the operation <span
  style="font-weight: bold;">addAll(Integer, java.util.Collection)</span><br>
 <span style="font-style: italic;">/**</span><br
  style="font-style: italic;">
@@ -198,7 +198,7 @@ test code below by replacing the default call to fail.</span><br
 <span style="font-style: italic;">}</span><br>
 <br>
 <h2>5) Running the JUnit test</h2>
-Like any other JUnit test, select your MBean test file, right click
+Like any other JUnit test, select your MBean test file, right click,
 then select Run File action.<br>
 <br>
 <h3 class="pHeading2">

@@ -36,8 +36,8 @@ Microsystems, Inc. All Rights Reserved.
     </tocitem>
     <tocitem>Updating existing JMX MBeans
       <tocitem target="jmx_mbean_update_attributes_operations">Adding Attributes / Operations</tocitem>
-      <tocitem target="jmx_mbean_update_registration">Implementing MBeanRegistration interface</tocitem>
-      <tocitem target="jmx_mbean_update_notification">Implementing NotificationEmitter interface</tocitem>
+      <tocitem target="jmx_mbean_update_registration">Implementing the MBeanRegistration Interface</tocitem>
+      <tocitem target="jmx_mbean_update_notification">Implementing the NotificationEmitter Interface</tocitem>
     </tocitem>
     <tocitem>Writing a JMX Agent
      <tocitem target="jmx_agent_app">Generating a JMX Agent</tocitem>

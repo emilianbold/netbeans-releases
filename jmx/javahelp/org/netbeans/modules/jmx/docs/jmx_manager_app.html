@@ -16,10 +16,9 @@
 <h2>Writing a JMX Manager</h2>
 <br>
 This chapter demonstrates the use of the JMX Manager Wizard. Part of
-the
-contained information can be applied to any Java application.<br>
+the information contained here can be applied to any Java application.<br>
 <br>
-Any application that connect to a remote JMX Agent is a JMX Manager.
+Any application that connects to a remote JMX Agent is a JMX Manager.
 This Wizard handles a connection to a remote JMX Agent.<br>
 <br>
 A tutorial is accessible from <a
@@ -42,7 +41,7 @@ project is a <span style="font-style: italic;">Java Application project</span>,
 the agent class will be set as the project main class.&nbsp; You can
 disable these features by unselecting the appropriate checkbox.</li>
   <li>Click <span style="font-style: italic;">Next&gt;</span></li>
-  <li>In order to identify the agent you whish to connect to, click on <span
+  <li>In order to identify the agent you wish to connect to, click on the <span
  style="font-style: italic;">Edit...</span> button to enter a JMX agent
 URL</li>
   <li>A JMX URL is composed of a protocol, a host, a port and a URL
@@ -51,39 +50,39 @@ path. <br>
   <li>First, enter a protocol. If you want to connect to a JDK 1.5 Agent,
 select "<span style="font-style: italic;">RMI JVM Agent</span>". <span
  style="font-weight: bold;">JMX module relies on this protocol</span>.
-If you want to connect to agent generated with this JMX module you
+If you want to connect to the agent generated with this JMX module you
 should select this protocol. You can enter any other protocol (eg:
 jmxmp)</li>
-  <li>Then a host.</li>
-  <li>A port.</li>
-  <li>A URL path. In case of <span style="font-style: italic;">RMI JVM
-Agent </span>the URL path is disabled and automaticaly computed by the
+  <li>Then enter a host.</li>
+  <li>Enter a port.</li>
+  <li>Enter a URL path. In the case of an <span style="font-style: italic;">RMI JVM
+Agent </span>the URL path is disabled and automatically computed by the
 wizard.</li>
-  <li>Click OK when you are done. The JMX Agent URL textfield is
+  <li>Click OK when you have finished. The JMX Agent URL textfield is
 updated with your inputs. You can click on <span
  style="font-style: italic;">Edit...</span> again to update the URL.</li>
   <li>If the connection to the JMX Agent you selected requires
-authentication, you can provide some credentials. Select <span
+authentication, you can provide some credentials. Select the <span
  style="font-style: italic;">Generate Authenticated Connection with
-User Credentials</span> checkbox</li>
+User Credentials</span> checkbox.</li>
   <li>Enter a username and password.<br>
   </li>
   <li>If your connection is not authenticated&nbsp; but you are
 interested in some sample code in order to provide such credentials,
-select <span style="font-style: italic;">Generate Sample Code for
+select the <span style="font-style: italic;">Generate Sample Code for
 Authenticated Connection </span>checkbox.</li>
   <li>Click <span style="font-style: italic;">Finish&gt;</span><br>
   </li>
   <li>The JMX Manager source code is loaded in the editor.</li>
   <li>If you want to get familiar with the generated code, go to the
-manager <span style="font-weight: bold;">connect</span> method. You
-will see how JMX API is used to connect to a remote Agent. Connection
-based on the URL and credentials you provided.</li>
+manager's <span style="font-weight: bold;">connect</span> method. You
+will see how the JMX API is used to connect to a remote Agent. Connection
+is based on the URL and credentials you provided.</li>
   <li>If you selected <span style="font-style: italic;">Generate
 Sample MBean Discovery Code,</span> go to the <span
  style="font-weight: bold;">main</span> method. Uncomment the generated
-code. This code make a call to the remote agent in order to discover
-the running MBeans. The list of discovered MBean is displayed on the
+code. This code makes a call to the remote agent in order to discover
+the running MBeans. The list of discovered MBean is displayed in the
 output.</li>
   <li>You can then run your project like any other Java project (menu<span
  style="font-style: italic;"> Run &gt; Run Main Project</span>). If a

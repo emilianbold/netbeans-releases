@@ -13,69 +13,69 @@
   <link rel="StyleSheet" href="ide.css" type="text/css">
 </head>
 <body>
-<h2>Making an MBean implements javax.management.NotificationEmitter
-interface<br>
+<h2>Implementing the  javax.management.NotificationEmitter
+Interface<br>
 </h2>
 <br>
-Contextual (enabled only if an<span style="font-weight: bold;">
-MBean</span> is selected) action located under the <span
- style="font-style: italic; font-weight: bold;">management</span> menu.
+NotificationEmitter is implemented using a contextual action (enabled only if an<span style="font-weight: bold;">
+MBean</span> is selected) located under the <span
+ style="font-style: italic; font-weight: bold;">Management</span> menu.
 You can access the management menu from :<br>
 <ul>
-  <li>Top level menu</li>
-  <li>Project tree node contextual menu (right click on selected node)<br>
+  <li>The top level menu</li>
+  <li>The contextual menu for the project tree node (right click on selected node)<br>
   </li>
 </ul>
 <br>
-<h2>Action applicability</h2>
+<h2>Applicability of the Action</h2>
 <br>
 This action&nbsp; applies to any MBean type. If an MBean already
 implements this interface, the action is disabled.<br>
-This action applies to any MBean. You don't need to have them
-generated from the MBean wizard. <br>
-MBeans imported from other context can be updated.<br>
-<h2>Using the Implement NotificationEmitter Interface... action<br>
+This action applies to any MBean. You don't need to have generated them
+using the MBean wizard. <br>
+MBeans imported from other contexts can be updated.<br>
+<h2>Using the Implement NotificationEmitter Interface Action<br>
 </h2>
 <br>
 <ol>
-  <li>From the <span style="font-weight: bold; font-style: italic;">management</span>
+  <li>From the <span style="font-weight: bold; font-style: italic;">Management</span>
 menu select <span style="font-weight: bold; font-style: italic;">Implement
 NotificationEmitter Interface...</span></li>
-  <li>The wizard can generate an implementation of <span
+  <li>The wizard can generate an implementation of the <span
  style="font-style: italic;">NotificationEmitter</span> interface based
 on a
 NotificationBroadcasterSupport delegation. Some code to handle the
-notification sequence number can also be generated. Select the
+notification sequence number can also be generated. Check the
 associated checkboxes to have this code generated.</li>
-  <li>If you want your MBean to define notifications click <span
+  <li>If you want your MBean to define notifications, click <span
  style="font-style: italic;">Add Notification</span>.</li>
   <li>In the <span style="font-style: italic;">Notifications </span>Table,
-first row, type in :</li>
+first row, type in the following:</li>
   <ol>
     <li>In the column <span style="font-style: italic;">Notification
 Class</span>
 you can select a standard JMX notification class or type in your own
 Notification class. If you select AttributeChangeNotification class,
-the Notification type will be automaticaly set to
+the Notification type will be automatically set to
 AttributeChangeNotification.ATTRIBUTE_CHANGE.<br>
     </li>
-    <li>In the column <span style="font-style: italic;">Description</span>
+    <li>In the column <span style="font-style: italic;">Description</span>,
 type in a notification description (eg: "Send a notification when the
 Status attribute is changed")</li>
-    <li>In the column Notification type,&nbsp; click <span
+    <li>In the column Notification type,&nbsp; click the <span
  style="font-style: italic;">Edit </span>button.</li>
     <ol>
       <li>Click <span style="font-style: italic;">Add Type</span></li>
       <li>In the column <span style="font-style: italic;">Notification,
-        </span>you
+        </span> you
 can change the default type to your own type (eg :
 com.foo.event.BIRTHDAY)</li>
     </ol>
   </ol>
-  <li>Click OK when you are finished. </li>
+  <li>Click OK when you have finished. </li>
   <li>NotificationEmitter methods are added at the end of the MBean
 class.</li>
-  <li>The updated MBean class file is automaticaly opened in the editor.</li>
+  <li>The updated MBean class file is automatically opened in the editor.</li>
 </ol>
 </body>
 </html>

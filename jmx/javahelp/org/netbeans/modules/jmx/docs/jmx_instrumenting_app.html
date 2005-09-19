@@ -38,11 +38,11 @@ class called <code class="cCode">Something</code> that implements that
 interface. Every method in the interface defines either an attribute or
 an operation in the MBean. By default every method defines an
 operation. Attributes and operations are simply methods which follow
-certain design patterns. A standard MBean is com posed of the MBean
+certain design patterns. A standard MBean is composed of the MBean
 interface which lists the methods for all exposed attributes and
 operations, and the class which implements this interface and provides
 the functionality of the instrumented resource. </p>
-<h2>Using the MBean Wizard to generate a
+<h2>Using the MBean Wizard to Generate a
 Standard MBean</h2>
 <p class="pBody">This section dissects an example standard
 MBean. The MBean wizard is used to generate the classes. <br>
@@ -73,25 +73,25 @@ well suited to add management to an existing class.</li>
 class. Any documentation that is typed from this wizard will be
 generated as :</li>
   <ul>
-    <li>Javadoc for Standard MBean.</li>
-    <li>Added to MBeanInfo in order to provide documentation on MBean
-at runtime for Dynamic and Extended.<br>
+    <li>Javadoc for Standard MBeans.</li>
+    <li>Added to the MBeanInfo to provide documentation on the MBean
+at runtime for Dynamic and Extended MBeans.<br>
     </li>
   </ul>
-  <li>If you want your MBean to implement MBeanRegistration interface,
-select <span style="font-style: italic;">Implement MBeanRegistration
+  <li>If you want your MBean to implement the MBeanRegistration interface,
+check the <span style="font-style: italic;">Implement MBeanRegistration
 Interface</span> checkbox. <span style="font-weight: bold;">MBeanRegistration
-interface is a nice interface that allows your MBean to track its life
+interface is a handy interface that allows your MBean to track its life
 cycle</span>. Events of interest are related to MBean registration
 (pre/post register/unregister callbacks).</li>
   <li>You can check <span style="font-style: italic;">Generate Private
 Fields for preRegister Method Parameters</span>. Selecting this option
-will make the wizard to generate some private field in order to keep
-references on parameters that are passed to preRegister callback.
+will make the wizard generate some private fields to keep
+references on parameters that are passed to preRegister callbacks.
 Keeping references on the provided ObjectName and MBeanServer is
 generally of interest.<br>
   </li>
-  <li>From now, you can click <span style="font-style: italic;">Finish</span>
+  <li>From now on, you can click <span style="font-style: italic;">Finish</span>
 at any time.</li>
   <li>Click <span style="font-style: italic;">Next&gt;</span><br>
   </li>
@@ -99,7 +99,7 @@ at any time.</li>
  style="font-style: italic;">Add Attribute.</span><br>
   </li>
   <li>In the <span style="font-style: italic;">Attributes </span>Table,
-first row, type in :</li>
+first row, type in the following:</li>
   <ol>
     <li>In the column <span style="font-style: italic;">Name</span>
 type
@@ -132,7 +132,7 @@ in an operation name (eg : reset)<br>
 a Java type<span style="font-style: italic;"> </span>(eg: <span
  style="font-style: italic;">void</span>)</li>
     <li>If you want to add input parameters, in the column <span
- style="font-style: italic;">Parameters</span>, click <span
+ style="font-style: italic;">Parameters</span>, click the <span
  style="font-style: italic;">Edit</span> button.</li>
     <ol>
       <li>Click <span style="font-style: italic;">Add Parameter</span></li>
@@ -152,8 +152,8 @@ type in what this parameter represents.</li>
 type in what this operation represents (eg: Reset the current Status)</li>
   </ol>
   <li>Click <span style="font-style: italic;">Next&gt;</span></li>
-  <li>If you want your MBean to send notifications, select <span
- style="font-style: italic;">Implement NotificationEmitter Interface</span>.
+  <li>If you want your MBean to send notifications, select the <span
+ style="font-style: italic;">Implement NotificationEmitter</span> Interface.
 The wizard can generate an implementation of this interface based on a
 NotificationBroadcasterSupport delegation. Some code to handle the
 notification sequence number can also be generated. Select the
@@ -161,12 +161,12 @@ associated checkboxes to have this code generated.</li>
   <li>If you want your MBean to define notifications click <span
  style="font-style: italic;">Add Notification</span>.</li>
   <li>In the <span style="font-style: italic;">Notifications </span>Table,
-first row, type in :</li>
+first row, type in the following:</li>
   <ol>
     <li>In the column <span style="font-style: italic;">Notification
 Class</span>
 you can select a standard JMX notification class or type in your own
-Notification class. If you select AttributeChangeNotification class,
+Notification class. If you select the AttributeChangeNotification class,
 the Notification type will be automaticaly set to
 AttributeChangeNotification.ATTRIBUTE_CHANGE.<br>
     </li>
@@ -191,8 +191,8 @@ com.foo.event.BIRTHDAY)<span style="font-style: italic;"><br>
   <li>The MBean implementation class is opened in the editor.&nbsp;
 If you selected a Standard MBean type, an MBean interface (named <span
  style="font-style: italic;">&lt;MBean
-Name&gt;MBean</span>) implementation class (named <span
- style="font-style: italic;">&lt;MBean Name&gt;) </span>and JUnit test
+Name&gt;MBean</span>), an implementation class (named <span
+ style="font-style: italic;">&lt;MBean Name&gt;) </span>and a JUnit test
 are generated in the src and test packages you selected.</li>
   <li>You can now add your own logic to the generated code and run the
 JUnit test.</li>

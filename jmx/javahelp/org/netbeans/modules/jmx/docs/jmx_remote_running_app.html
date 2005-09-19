@@ -13,14 +13,41 @@
   <link rel="StyleSheet" href="ide.css" type="text/css">
 </head>
 <body>
-<h2>Run your project with Remote Management</h2>
+<h2>Running Your Project with Remote Management</h2>
 <ol>
   <li>Click on <span style="font-style: italic;">Run/Remote
 Management/Run
 Main Project with Remote Management...<br>
     </span></li>
-  <li>If this is the first time you run a management action, a dialog box 
-pops up notifying you that build file will be updated. Click <span
+  <li>If this is the first time you are running a management action, a dialog box 
+pops up notifying you that the build file will be updated. Click <span
+ style="font-style: italic;">Accept</span>.</li>
+  <li>A dialog box is displayed prompting you for some information.
+You can: <br>
+  </li>
+  <ol>
+    <li>Provide an RMI port. A JMXConnectorServer will wait on this
+port for incomming JMX requests.</li>
+    <li>Or provide a management property file that will be used to
+set up a detailed configuration (RMI port, SNMP access and security)</li>
+    <li>You can auto connect JConsole to your process by checking
+the appropriate checkbox</li>
+  </ol>
+  <li>Click <span style="font-style: italic;">OK</span></li>
+  <li>Your process is compiled and run like any Java application. If
+JConsole was enabled, JConsole is displayed. Click on the MBeans Tab to
+visualize your MBeans.</li>
+  <li>If JConsole is launched, close JConsole to stop the session.</li>
+</ol>
+<br>
+<h2>Debugging Your Project with Remote Management</h2>
+<ol>
+  <li>Click on <span style="font-style: italic;">Run/Remote
+Management/Debug
+Main Project with Remote Management...<br>
+    </span></li>
+  <li>If this is the first time you are running a management action, a dialog box 
+pops up notifying you that the build file will be updated. Click <span
  style="font-style: italic;">Accept</span>.</li>
   <li>A dialog box is displayed prompting you for some information.
 You can <br>
@@ -29,41 +56,14 @@ You can <br>
     <li>Provide an RMI port. A JMXConnectorServer will wait on this
 port for incomming JMX requests.</li>
     <li>Or provide a management property file that will be used to
-setup a detailed configuration (RMI port, SNMP access and security)</li>
+set up a detailed configuration (RMI port, SNMP access and security)</li>
     <li>You can auto connect JConsole to your process by clicking on
 the appropriate checkbox</li>
   </ol>
-  <li>Click <span style="font-style: italic;">Ok</span></li>
-  <li>Your process is compiled and run like any Java application. If
-JConsole was enabled, JConsole is displayed. Click on MBeans Tab to
-visualize your MBeans.</li>
-  <li>If JConsole is launched, close JConsole to stop the run session.</li>
-</ol>
-<br>
-<h2>Debug your project with Remote Management</h2>
-<ol>
-  <li>Click on <span style="font-style: italic;">Run/Remote
-Management/Debug
-Main Project with Remote Management...<br>
-    </span></li>
-  <li>If this is the first time you run a management action, a dialog box 
-pops up notifying you that build file will be updated. Click <span
- style="font-style: italic;">Accept</span>.</li>
-  <li>A dialog box is displayed prompting you for some informations.
-You can <br>
-  </li>
-  <ol>
-    <li>Provide an RMI port. A JMXConnectorServer will wait on this
-port for incomming JMX requests.</li>
-    <li>Or provide a management property file that will be used to
-setup a detailed configuration (RMI port, SNMP access and security)</li>
-    <li>You can auto connect JConsole to your process by clicking on
-the appropriate checkbox</li>
-  </ol>
-  <li>Click <span style="font-style: italic;">Ok</span></li>
+  <li>Click <span style="font-style: italic;">OK</span></li>
   <li>Your process is compiled and run like any Java application. The
 debugger is started. If JConsole was enabled, JConsole is displayed.
-Click on MBeans Tab to visualize your MBeans</li>
+Click on the MBeans Tab to visualize your MBeans</li>
   <li>If JConsole is launched, close JConsole to stop the process
 execution.</li>
   <li>Stop the debug Session.</li>

@@ -15,31 +15,31 @@
 <body>
 <h2>Accessing MBeans&nbsp; from JSP</h2>
 In this chapter we cover the steps needed to make a JSP access JMX
-management informations. <br>
+management information. <br>
 <br>
-<h3>Using the JMX Agent and MBean Wizard<br>
+<h3>Using the JMX Agent and MBean Wizards<br>
 </h3>
-The use of these wizards is similar to its use in <span
+The use of these wizards is similar to their use in a <span
  style="font-style: italic;">Java Application</span> Project.<br>
-In the context of a web application, the JMX Agent is not runnable
+In the context of a web application, the JMX Agent is not a runnable
 class. When generating the Agent, unselect the <span
  style="font-style: italic;">Create Main Method.<br>
 </span><span style="font-style: italic;"><br>
 </span>
-<h3>Implement your MBeans</h3>
-Do it the usual way.<br>
+<h3>Implementing Your MBeans</h3>
+Do this the usual way.<br>
 <br>
-<h3>Create, name and register your MBeans within the Agent</h3>
-Do it the usual way (in JMX Agent init method).<br>
+<h3>Creating, Naming and Registering your MBeans Within the Agent</h3>
+Do this the usual way (in the JMX Agent init method).<br>
 <br>
-<h3>Display MBean informations in a JSP</h3>
+<h3>Displaying MBean Information in a JSP</h3>
 Simply add the following line of code to make your JSP access&nbsp; JMX
-MBean data :<br>
+MBean data:<br>
 <span style="font-style: italic;">&lt;%--<br>
 &nbsp;&nbsp;&nbsp; ...<br>
 <br style="font-style: italic;">
 </span><span style="font-style: italic;">&nbsp;&nbsp;&nbsp;
-// Access to the JMX Agent. Doing so, your MBeans will be automaticaly
+// Access the JMX Agent. By doing so, your MBeans will be automatically
 registered.</span><br style="font-style: italic; font-weight: bold;">
 <span style="font-style: italic; font-weight: bold;">&nbsp;&nbsp;&nbsp;
 javax.management.MBeanServer server =

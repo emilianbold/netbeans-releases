@@ -15,25 +15,24 @@
 <body>
 <h2>Java Application Project Configuration</h2>
 Management actions are applied
-to <span style="font-style: italic;">Java Application</span> Project
+to the <span style="font-style: italic;">Java Application</span> Project
 type only. <br>
 <br>
 Configuration steps :<br>
 <ol>
-  <li>You have to set a <span style="font-style: italic;">Java
+  <li>You must set a <span style="font-style: italic;">Java
 Application</span> project as your main projet. <br>
   </li>
-  <li>Set properly your
-Runnable Class in the project properties. This can be done
+  <li>Correctly set your Runnable Class in the project properties. This can be done
 automatically
 when generating a JMX Agent.</li>
   <li>Check existing management related VM Options (if any). Be sure to
-remove these options from the project properties menu. It can conflict
+remove these options from the project properties menu. They can conflict
 with these actions.</li>
   <li><span style="font-weight: bold;">FAT File System issue. </span><span
  style="font-style: italic;">Run Main Project with JConsole</span> and <span
  style="font-style: italic;">Debug Main Project with JConsole</span>
-actions are not working on FAT (see JConsole FAQ for more details on
+actions do not work on FAT (see JConsole FAQ for more details on
 the issue<span style="font-weight: bold;"> </span><a
  href="http://java.sun.com/j2se/1.5.0/docs/guide/management/faq.html">http://java.sun.com/j2se/1.5.0/docs/guide/management/faq.html</a>)<span
  style="font-weight: bold;"><br>
@@ -44,14 +43,14 @@ Management &gt; Run Main Project with Remote Management</span> or <span
  style="font-style: italic;">Debug Main Project with Remote Management
 actions </span>instead<br>
     </li>
-    <li>Or, to workaround this issue, add<span
+    <li>Or, to work around this issue, add<span
  style="font-family: monospace;"><span style="font-weight: bold;"> </span></span><span
  style="font-weight: bold;">-XX:+PerfBypassFileSystemCheck</span> to
-the project VM Options (Project <span style="font-style: italic;">Properties
+the project's VM Options (in the project's <span style="font-style: italic;">Properties
 &gt; Run &gt; VM Options</span> textfield)<span
- style="font-weight: bold;">. DON'T use this option in real
-environment</span>. It is an unsupported option that workaround the
-problem BUT makes the management access unsecure.<br>
+ style="font-weight: bold;">. DO NOT use this option in a real
+environment</span>. It is an unsupported option that works around the
+problem BUT that makes the management access unsecure.<br>
     </li>
   </ul>
 </ol>

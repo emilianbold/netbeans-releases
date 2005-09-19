@@ -13,36 +13,36 @@
   <link rel="StyleSheet" href="ide.css" type="text/css">
 </head>
 <body>
-<h2>Making an MBean implements javax.management.MBeanRegistration
-interface<br>
+<h2>Implementing the javax.management.MBeanRegistration
+Interface<br>
 </h2>
 <br>
-Contextual (enabled only if an<span style="font-weight: bold;">
-MBean</span> is selected) action located under the <span
- style="font-style: italic; font-weight: bold;">management</span> menu.
+MBean registration is performed using a contextual action (enabled only if an <span style="font-weight: bold;">
+MBean</span> is selected) located under the <span
+ style="font-style: italic; font-weight: bold;">Management</span> menu.
 You can access the management menu from :<br>
 <ul>
-  <li>Top level menu</li>
-  <li>Project tree node contextual menu (right click on selected node)<br>
+  <li>The top level menu</li>
+  <li>The contextual menu of the project tree node (right click on selected node)<br>
   </li>
 </ul>
 <br>
-<h2>Action applicability</h2>
+<h2>Applicability of Actions</h2>
 <br>
 This action&nbsp; applies to any MBean type. If an MBean already
 implements this interface, the action is disabled.<br>
-This action applies to any MBean. You don't need to have them
-generated from the MBean wizard. <br>
-MBeans imported from other context can be updated.<br>
+This action applies to any MBean. You don't need to have generated them 
+using the MBean wizard. <br>
+MBeans imported from other contexts can be updated.<br>
 <br>
-<h2>Using the Implement MBeanRegistration Interface... action<br>
+<h2>Using the Implement MBeanRegistration Interface Action<br>
 </h2>
 <br>
 <ol>
-  <li>From the <span style="font-weight: bold; font-style: italic;">management</span>
-menu select <span style="font-weight: bold; font-style: italic;">Implement
+  <li>From the <span style="font-weight: bold; font-style: italic;">Management</span>
+menu, select <span style="font-weight: bold; font-style: italic;">Implement
 MBeanRegistration Interface...</span></li>
-  <li>A windows is displayed with a message listing the set of methods
+  <li>A window is displayed with a message listing the set of methods
 that will be added to the current MBean</li>
   <ul>
     <li>preRegister : Called before the MBean is registered in the
@@ -55,8 +55,7 @@ MBeanServer</li>
     <li>postDeregister : Called after the MBean is unregistered in the
 MBeanServer</li>
   </ul>
-  <li>You have the ability to generate private fields in order to keep
-some references to preRegister method parameters. These parameters are :</li>
+  <li>You can generate private fields to keep references to the preRegister method parameters. These parameters are :</li>
   <ul>
     <li>The MBean ObjectName. If you are interested in the name the
 MBean is given, you should keep a reference to this parameter.<br>
@@ -66,9 +65,9 @@ your MBean to make JMX call to other MBeans, you should keep this
 reference.<br>
     </li>
   </ul>
-  <li>Click OK when you are finished </li>
+  <li>Click OK when you have finished </li>
   <li>MBeanRegistration methods are added at the end of the MBean class.</li>
-  <li>The updated MBean class file is automaticaly opened in the editor.</li>
+  <li>The updated MBean class file is automatically opened in the editor.</li>
 </ol>
 </body>
 </html>
