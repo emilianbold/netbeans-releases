@@ -115,7 +115,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(descTextArea, gridBagConstraints);
 
-        interfaceLabel.setDisplayedMnemonic(bundle.getString("BK0008").charAt(0));
         interfaceLabel.setLabelFor(interfaceTextField);
         interfaceLabel.setText(Util.THIS.getString ("SAXGeneratorCustomizer.interfaceLabel.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -131,7 +130,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(interfaceTextField, gridBagConstraints);
 
-        handlerImplLabel.setDisplayedMnemonic(bundle.getString("BK0004").charAt(0));
         handlerImplLabel.setLabelFor(handlerImplTextField);
         handlerImplLabel.setText(Util.THIS.getString ("SAXGeneratorFilePanel.handlerImplLabel.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -147,7 +145,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(handlerImplTextField, gridBagConstraints);
 
-        stubLabel.setDisplayedMnemonic(bundle.getString("BK0007").charAt(0));
         stubLabel.setLabelFor(stubTextField);
         stubLabel.setText(Util.THIS.getString ("SAXGeneratorCustomizer.stubLabel.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -163,7 +160,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(stubTextField, gridBagConstraints);
 
-        parsletLabel.setDisplayedMnemonic(bundle.getString("BK0005").charAt(0));
         parsletLabel.setLabelFor(parsletTextField);
         parsletLabel.setText(Util.THIS.getString ("SAXGeneratorCustomizer.parsletLabel.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -179,7 +175,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(parsletTextField, gridBagConstraints);
 
-        parsletImplLabel.setDisplayedMnemonic(bundle.getString("BK0003").charAt(0));
         parsletImplLabel.setLabelFor(parsletImplTextField);
         parsletImplLabel.setText(Util.THIS.getString ("SAXGeneratorFilePanel.parsletImplLabel.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -203,7 +198,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(saveCheckBox, gridBagConstraints);
 
-        saveLabel.setDisplayedMnemonic(bundle.getString("BK0006").charAt(0));
         saveLabel.setLabelFor(saveTextField);
         saveLabel.setText(Util.THIS.getString("PROP_bindings_label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
