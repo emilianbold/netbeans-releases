@@ -11,16 +11,23 @@
           <tocitem text="Working with CVS-Lite">
               <tocitem text="About CVS-Lite" target="cvs-lite_about" />
               <tocitem text="CVS-Lite Workflow Overview" target="cvs-lite_overview" /> 
-              <tocitem text="Working with CVS-Lite in the IDE" target="cvs-lite_workingwith" /> 
+              <tocitem text="Working with CVS-Lite in the IDE" target="cvs-lite_working" /> 
               <tocitem text="Using CVS-Lite with IDE Projects" target="cvs-lite_projects" /> 
-
+              <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
+              
               <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" /> 
+              <tocitem text="Updating Local Files" target="cvs-lite_updating" />
               <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
               <tocitem text="Comparing File Revisions" target="cvs-lite_diff" /> 
               <tocitem text="Merging File Revisions" target="cvs-lite_merge" /> 
               <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
-              <tocitem text="Setting Up CVS-Lite" target="cvs-lite_setup" />
-
+              <tocitem text="Creating and Applying a Patch" target="cvs-lite_patch" />              
+              
+              <tocitem text="Reverting Changes" target="cvs-lite_setup" />
+              <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
+              <tocitem text="Working with Branches" target="cvs-lite_branches" />  
+                
+              <tocitem text="Setting Up CVS-Lite" target="cvs-lite_setup" />                  
               <tocitem text="CVS-Lite Tasks: Quick Reference" target="cvs-lite_quickref" /> 
               </tocitem>
       </tocitem>
