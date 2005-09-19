@@ -91,9 +91,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         // initialize the resulting set
         Set result = new HashSet();
         
-        // build the default display name
-        String displayName = NbBundle.getMessage(ServerPropertiesPanel.class, "INSTANCE_DISPLAY_NAME_PREFIX") + " [" + this.host + ":" + this.port +"]"; // NOI18N
-        
         // build the URL
         String url = "deployer:WebLogic:http://" + this.host + ":" + this.port; // NOI18N
         
@@ -101,11 +98,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         String username = this.username;
         String password = this.password;
         
-        // if a user entered a custom display name, we should use it, otherwise
-        // use the default one
-        if (getDisplayName() != null && !getDisplayName().equals(NbBundle.getMessage(WLDeploymentFactory.class, "TXT_displayName"))) { // NOI18N
-            displayName = getDisplayName();
-        }
+        String displayName = (String)wizardDescriptor.getProperty(PROP_DISPLAY_NAME);
         
         // set the additional properties of the instance: server installation 
         // directory, profile root directory, whether the server is local or
@@ -127,15 +120,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         
         // return the result
         return result;
-    }
-    
-    /**
-     * Gets the wizards display name
-     * 
-     * @return the display name
-     */
-    private String getDisplayName() {
-        return (String) wizardDescriptor.getProperty(PROP_DISPLAY_NAME);
     }
     
     // the main and additional instance properties
