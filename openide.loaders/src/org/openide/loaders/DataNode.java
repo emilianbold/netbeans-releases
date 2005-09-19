@@ -41,6 +41,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -65,16 +66,30 @@ public class DataNode extends AbstractNode {
     /** should file extensions be displayed? */
     private static boolean showFileExtensions = true;
 
+    /** Create a data node with the given children set for the given data object.
+    * @param obj object to work with
+    * @param ch children container for the node
+    * @see #getShowFileExtensions
+    */
+    public DataNode (DataObject obj, Children ch) {
+        this(obj, ch, null);
+    }
+
     /** Create a data node for a given data object.
     * The provided children object will be used to hold all child nodes.
     * The name is always set to the base name of the primary file;
     * the display name may instead be set to the base name with extension.
     * @param obj object to work with
     * @param ch children container for the node
+    * @param lookup the lookup to provide content of {@link #getLookup}
+    *   and also {@link #getCookie}
     * @see #getShowFileExtensions
+    *
+    * @since 5.6
+    * @author Libor Kotouc
     */
-    public DataNode (DataObject obj, Children ch) {
-        super (ch);
+    public DataNode (DataObject obj, Children ch, Lookup lookup) {
+        super (ch, lookup);
         this.obj = obj;
 
         propL = new PropL ();
@@ -376,12 +391,21 @@ public class DataNode extends AbstractNode {
      * First of all {@link DataObject#getCookie} is
     * called. If it produces non-<code>null</code> result, that is returned.
     * Otherwise the superclass is tried.
-     * Subclassers overriding this method should consider the recommendations
-     * in {@link DataObject#createNodeDelegate}.
+    * Subclassers overriding this method should consider the recommendations
+    * in {@link DataObject#createNodeDelegate}. Since version 5.6, if 
+    * non-null {@link Lookup} is passed to the constructor, then this 
+    * method directly delegates to <a href="@org-openide-nodes@/org/openide/nodes/Node.html">super.getCookie</a> and does
+    * not query data object at all. This is supposed to provide consistency
+    * between results in <code>getLookup().lookup</code> and <code>getCookie</code>.
     *
     * @return the cookie or <code>null</code>
     */
     public Node.Cookie getCookie (Class cl) {
+        if (ownLookup()) {
+            return super.getCookie(cl);
+        }
+        
+        
         Node.Cookie c = obj.getCookie (cl);
         if (c != null) {
             return c;
@@ -679,6 +703,21 @@ public class DataNode extends AbstractNode {
             }, 300, Thread.MIN_PRIORITY);                    
         }        
         
+    }
+
+    private static Class defaultLookup;
+    /** Returns true if this node is using own lookup and not the standard one.
+     */
+    private boolean ownLookup() {
+        if (defaultLookup == null) {
+            try {
+                defaultLookup = Class.forName("org.openide.nodes.NodeLookup", false, Node.class.getClassLoader());
+            } catch (ClassNotFoundException ex) {
+                ErrorManager.getDefault().notify(ex);
+                return false;
+            }
+        }
+        return !defaultLookup.isInstance(getLookup());
     }
     
     /** Request processor task to update a bunch of names/icons.

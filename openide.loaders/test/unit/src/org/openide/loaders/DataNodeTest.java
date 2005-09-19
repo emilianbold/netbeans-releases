@@ -19,10 +19,13 @@ import junit.textui.TestRunner;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import java.util.Enumeration;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.Repository;
 import org.netbeans.junit.*;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /** Test things about node delegates.
  * @author Jesse Glick
@@ -90,6 +93,29 @@ public class DataNodeTest extends NbTestCase {
         assertEquals ("Now the secondary entry had to be created", 1, TwoPartLoader.get ().secondary);
     }
     
+    public void testDataNodeGetDataFromLookup() throws Exception {
+
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        DataFolder rootFolder = DataFolder.findFolder(sfs.getRoot());
+        
+        class C implements Node.Cookie {
+        }
+        
+        String objectToLookup = "I like my Lookup";
+        C cookieToLookup = new C();
+        Lookup lookup = Lookups.fixed(new Object[] { objectToLookup, cookieToLookup });
+        
+        DataNode node = new DataNode(rootFolder, Children.LEAF, lookup);
+        Object objectLookuped = node.getLookup().lookup(String.class);
+        assertEquals("object is going to be found", objectToLookup, objectLookuped);
+        assertEquals("cookie found.", cookieToLookup, node.getLookup().lookup(C.class));
+
+        assertNull("Cannot return string as cookie", node.getCookie(String.class));
+        assertEquals("But C is found", cookieToLookup, node.getCookie(C.class));
+        
+        assertNull("Data object is not found in lookup", node.getLookup().lookup(DataObject.class));
+        assertNull("DataObject not found in cookies as they delegate to lookup", node.getCookie(DataObject.class));
+    }
     
     private static final class FSWithStatus extends org.openide.filesystems.LocalFileSystem 
     implements FileSystem.HtmlStatus {
