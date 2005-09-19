@@ -160,7 +160,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             g2.setColor(formSettings.getSelectionBorderColor());
             g2.setStroke(getPaintStroke());
             try {
-                Iterator metacomps = formDesigner.getSelectedLayoutComponents().iterator();
+                Iterator metacomps = formDesigner.getSelectedComponents().iterator();
                 boolean first = true;
                 while (metacomps.hasNext()) {
                     RADComponent metacomp = (RADComponent)metacomps.next();
@@ -192,22 +192,25 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             RADComponent metacont = metacomp.getParentComponent();
             convertRectangleFromComponent(selRect, parent);
 
-            Container topCont = formDesigner.getTopVisualContainer();
-            Point convertPoint = convertPointFromComponent(0, 0, topCont);
-            g.translate(convertPoint.x, convertPoint.y);
-            LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
-            Color oldColor = g.getColor();
-            g.setColor(formSettings.getGuidingLineColor());
-            Shape clip = g.getClip();
-            Area area = new Area(new Rectangle(0, 0, topCont.getWidth(), topCont.getHeight()));
-            if (clip != null) {
-                area.intersect(new Area(clip));
+            if ((metacont instanceof RADVisualContainer)
+                && (((RADVisualContainer)metacont).getLayoutSupport() == null)) {
+                Container topCont = formDesigner.getTopVisualContainer();
+                Point convertPoint = convertPointFromComponent(0, 0, topCont);
+                g.translate(convertPoint.x, convertPoint.y);
+                LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
+                Color oldColor = g.getColor();
+                g.setColor(formSettings.getGuidingLineColor());
+                Shape clip = g.getClip();
+                Area area = new Area(new Rectangle(0, 0, topCont.getWidth(), topCont.getHeight()));
+                if (clip != null) {
+                    area.intersect(new Area(clip));
+                }
+                g.setClip(area);
+                layoutDesigner.paintSelection(g, metacomp.getId());
+                g.setClip(clip);
+                g.setColor(oldColor);
+                g.translate(-convertPoint.x, -convertPoint.y);
             }
-            g.setClip(area);
-            layoutDesigner.paintSelection(g, metacomp.getId());
-            g.setClip(clip);
-            g.setColor(oldColor);
-            g.translate(-convertPoint.x, -convertPoint.y);
 
             int correction = formSettings.getSelectionBorderSize() % 2;
             int x = selRect.x - correction;
