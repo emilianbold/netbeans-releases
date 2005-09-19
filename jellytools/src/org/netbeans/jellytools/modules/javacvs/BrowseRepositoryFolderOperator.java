@@ -64,7 +64,7 @@ public class BrowseRepositoryFolderOperator extends NbDialogOperator {
     //****************************************
 
     /** Selects a folder denoted by path.
-     * @param path path to folder (e.g. "/cvs|folder")
+     * @param path path to folder without root (e.g. "folder|subfolder")
      */
     public void selectFolder(String path) {
         new Node(tree(), path).select();
