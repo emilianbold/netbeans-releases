@@ -239,7 +239,7 @@ public final class MainWindow extends JFrame {
         }
         Iterator/*<StatusLineElementProvider>*/ it = c.iterator ();
         JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
-        icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 0));
+        icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 2));
         boolean some = false;
         while (it.hasNext ()) {
             Object o = it.next ();
