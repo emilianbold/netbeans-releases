@@ -403,6 +403,7 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
         javax.swing.event.DocumentListener docListener = new EditDialog.DocListener(editDialog);
         panel.getAttrNameTF().getDocument().addDocumentListener(docListener);
         java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(editDialog);
+        d.getAccessibleContext().setAccessibleDescription(editDialog.getDialogPanel().getAccessibleContext().getAccessibleDescription());
         d.show();
         panel.getAttrNameTF().getDocument().removeDocumentListener(docListener);
         
@@ -513,6 +514,7 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
         panel.getAttrNameTF().getDocument().addDocumentListener(docListener);
 
         java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(editDialog);
+        d.getAccessibleContext().setAccessibleDescription(editDialog.getDialogPanel().getAccessibleContext().getAccessibleDescription());
         d.show();
         panel.getAttrNameTF().getDocument().removeDocumentListener(docListener);
         if (editDialog.getValue().equals(EditDialog.OK_OPTION)) {
