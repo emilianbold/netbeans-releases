@@ -316,7 +316,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             ); // NOI18N
         } else {
             Workspace realWorkspace = (workspace == null) ? WindowManager.getDefault().getCurrentWorkspace() : workspace;
-            dockIfNeeded(realWorkspace);
+            dockIfNeeded();
             super.open(workspace);
         }
     }
@@ -603,27 +603,20 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     /** Dock this top component to editor mode if it is not docked
      * in some mode at this time  */
-    private void dockIfNeeded(Workspace workspace) {
+    private void dockIfNeeded() {
         // dock into editor mode if possible
-        Mode ourMode = workspace.findMode(this);
-
-        if (ourMode == null) {
-            editorMode(workspace).dockInto(this);
+        Mode ourMode = WindowManager.getDefault().findMode(this);
+        if( null == ourMode ) {
+            //dock into 'editor' mode to avoid being tagged as a pre-version-4.0 
+            //TopComponent that is allowed to be drag and dropped outside the editor area
+            ourMode = WindowManager.getDefault().findMode( "editor" );
+            if( null != ourMode ) {
+                 ourMode.dockInto( this );
+            } else {
+                //should not happen - editor mode is always defined
+                ErrorManager.getDefault().log( ErrorManager.WARNING, "The window system cannot find the default editor mode." );
+            }
         }
-    }
-
-    private Mode editorMode(Workspace workspace) {
-        Mode ourMode = workspace.findMode(this);
-
-        if (ourMode == null) {
-            ourMode = workspace.createMode(
-                    CloneableEditorSupport.EDITOR_MODE, getName(),
-                    CloneableEditorSupport.class.getResource("/org/openide/resources/editorMode.gif" // NOI18N
-                    )
-                );
-        }
-
-        return ourMode;
     }
 
     //
