@@ -23,6 +23,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.LinkedList;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -147,32 +148,15 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     // Other
 
     private static JDBCDriver createDriver(Handler handler) {
-        URL[] urls;
-        LinkedList urlList = new LinkedList();
-        for (int i = 0; i < handler.urls.size(); i++)
+        URL[] urls = new URL[handler.urls.size()];
+        int j = 0;
+        for (Iterator i = handler.urls.iterator(); i.hasNext(); j++) {
             try {
-                String initialURL = (String) handler.urls.get(i);
-                String finalURL;
-                finalURL = initialURL;
-
-                // Java Studio support. Covert relative url's to absolute
-                if(initialURL.startsWith("RELATIVE:")) { // NOI18N
-                    // Use a different URL prefix based on the operating system
-                    if( System.getProperty("os.name").toUpperCase().lastIndexOf("WINDOWS") == -1 ) { // NOI18N
-                        // For solaris, two slashes at the beginning causes malformed URL exception 
-                        finalURL = "file:" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9); // NOI18N
-                    } else {  
-                        // For windows
-                        finalURL = "file:/" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9); // NOI18N
-                    }
-                }
-                // end: Java Studio support. Covert relative url's to absolute
-                    
-                urlList.add(new URL(finalURL));
+                urls[j] = new URL((String)i.next());
             } catch (MalformedURLException exc) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
-        urls = (URL[]) urlList.toArray(new URL[urlList.size()]);
+        }
         if (checkClassPathDrivers(handler.clazz, urls) == false) {
             return null;
         }
