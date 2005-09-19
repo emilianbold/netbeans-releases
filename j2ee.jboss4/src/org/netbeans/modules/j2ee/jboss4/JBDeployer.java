@@ -162,7 +162,6 @@ public class JBDeployer implements ProgressObject, Runnable {
                 //delay to prevent hitting the old content before reload
                 for (int i = 0; i < 3; i++) {
                     Thread.sleep(1000);
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
                 }
                 //wait until the url becomes active
                 long start = System.currentTimeMillis();
@@ -170,7 +169,6 @@ public class JBDeployer implements ProgressObject, Runnable {
                     if (URLWait.waitForUrlReady(url, 1000)) {
                         break;
                     }
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
                 }
             }
         }catch(Exception e){
