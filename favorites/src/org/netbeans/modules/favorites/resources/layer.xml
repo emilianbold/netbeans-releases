@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -31,6 +31,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
         </folder>
+        <folder name="System">
+            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance"/>
+        </folder>
     </folder>
 
     <folder name="Menu">
@@ -39,6 +42,14 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-favorites-SelectInFavorites.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
             </file>
+        </folder>
+        <attr name="GoTo/Tools" boolvalue="true" />
+        <folder name="Tools">
+            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance"/>
+            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true" />
+            <attr name="LibrariesCustomizerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/Separator2.instance" boolvalue="true" />
+            <attr name="ServerManagerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true"/>
         </folder>
       <folder name="Window">
             <attr name="org-netbeans-modules-project-ui-physical-tab-action.shadow/ViewFavoritesTabAction.shadow" boolvalue="true" />
