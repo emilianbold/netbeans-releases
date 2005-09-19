@@ -175,7 +175,16 @@ class J2SEActionProvider implements ActionProvider {
                     p = null;
                 }
                 try {
-                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                    FileObject buildFo = findBuildXml();
+                    if (buildFo == null || !buildFo.isValid()) {
+                        //The build.xml was deleted after the isActionEnabled was called
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class,
+                                "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                    }
+                    else {
+                        ActionUtils.runTarget(buildFo, targetNames, p);
+                    }
                 } 
                 catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
@@ -360,7 +369,8 @@ class J2SEActionProvider implements ActionProvider {
     }
 
     public boolean isActionEnabled( String command, Lookup context ) {
-        if ( findBuildXml() == null ) {
+        FileObject buildXml = findBuildXml();
+        if (  buildXml == null || !buildXml.isValid()) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
