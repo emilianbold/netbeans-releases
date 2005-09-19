@@ -5,19 +5,19 @@
     <tocitem text="Servers">
         <tocitem text="Sun Java System Application Server Platform Edition">
             <tocitem text="About the Sun Java System Application Server"  target="aboutplugin"/>
-            <tocitem text="Working with the SJS Application Server"  target="working_withsjs"/>
+            <tocitem text="Working with the Sun Java System Application Server"  target="working_withsjs"/>
             <tocitem text="SJS Application Server Tasks: Quick Reference"  target="sjs_quickref"/>
-            <tocitem text="Registering an SJS Application Server Instance"  target="register_appserver"/>
-            <tocitem text="Accessing the SJS Application Server Admin Console"  target="adminconsole"/>
-            <tocitem text="Modifying JVM Properties of the SJS Application Server"  target="sjs_jvm"/>
-            <tocitem text="Setting up a Connection Pool on the SJS Application Server"  target="def_connpool"/>
-            <tocitem text="Setting up a JDBC Resource on the SJS Application Server"  target="def_jdbcresource"/>
-            <tocitem text="Setting up a JMS Resource on the SJS Application Server"  target="def_jms"/>
-            <tocitem text="Setting up a JavaMail Resource on the SJS Application Server"  target="def_javamail"/>
-            <tocitem text="Setting up a Persistence Manager Resource on the SJS Application Server"  target="def_persistence"/>
+            <tocitem text="Registering a Sun Java System Application Server Instance"  target="register_appserver"/>
+            <tocitem text="Accessing the Sun Java System Application Server Admin Console"  target="adminconsole"/>
+            <tocitem text="Modifying JVM Properties of the Sun Java System Application Server"  target="sjs_jvm"/>
+            <tocitem text="Setting up a Connection Pool on the Sun Java System Application Server"  target="def_connpool"/>
+            <tocitem text="Setting up a JDBC Resource on the Sun Java System Application Server"  target="def_jdbcresource"/>
+            <tocitem text="Setting up a JMS Resource on the Sun Java System Application Server"  target="def_jms"/>
+            <tocitem text="Setting up a JavaMail Resource on the Sun Java System Application Server"  target="def_javamail"/>
+            <tocitem text="Setting up a Persistence Manager Resource on the Sun Java System Application Server"  target="def_persistence"/>
             <tocitem text="Generating Database Lookup Code"  target="lookup_jdbc"/>
             <tocitem text="Generating JMS Send Message Code"  target="lookup_jms"/>
-            <tocitem text="Registering a Resource with the SJS Application Server"  target="register_resource"/>
+            <tocitem text="Registering a Resource with the Sun Java System Application Server"  target="register_resource"/>
         </tocitem>
     </tocitem>
 </tocitem>
