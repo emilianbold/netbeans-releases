@@ -13,9 +13,112 @@
     </head>
     <body>
         <h2>Working with Branches</h2>
-        <p>Coming Soon...</p><br>
-        
-        <hr>
+        <p><small><a href="#seealso">See Also</a></small></p>
+<p>Using the IDE's CVS support  you can work with branches that
+	 enable you to maintain different versions of an entire code base. A branch
+	is created by attaching a branch tag to a file or folder in the repository.
+	When you  modify files in a branch it does not affect
+	the files in the main code line (also known as the "trunk").
+You can, however,  merge any modifications in the branch back into the trunk
+	later.</p>
+<h3>Checking out Branches</h3>
+<p>Once a branch is created, you can check out the branch to copy the files to
+	your local working directory.</p>
+<ul class="note">
+	<li>You must create a new local working directory within which to checkout
+	the branch. </li>
+</ul>
+<p><b>To check out a branch to a local working directory:</b></p>
+<ol><li>Choose CVS &gt; Checkout from the main menu.</li>
+  	<li>On the first page of the CVS Checkout wizard, specify the  location
+  		of the CVS repository by
+  		choosing from the CVS Root drop-down menu. If you are unfamiliar with the
+  		syntax, click the Edit button and enter the required information for the
+  		local CVS working directory you wish to use.</li>
+  	<li>Enter your password in the Password field and click Next. 
+	<li>If you are using a proxy, click the Proxy Configuration button and enter
+		the required information. Click Next. <!--Note that by default the IDE sets this
+	to Use System Proxy Settings.	-->
+	<li>On the Module to Checkout page,  specify the files and directories
+            	you want to check out in the Module field or click the Browse
+     	button to choose from a list of all modules in the repository. </li>
+  	<li>Specify the  branch, revision number, or tag for
+  		the checkout in the Branch field or click the Browse
+	button to choose from a list of all branches in the repository.</li>
+  	<li>Specify the local working directory into which you want to check out the
+  		selected modules or branches. Alternately, you can click the Browse button
+	to navigate to the desired directory on your system.</li>
+  	<li>Click Finish to check out the files.</li>
+  	<p>The IDE initiates the Checkout command for the branch. The IDE's Status
+  		bar  indicates the  progress of the files downloading from the branch
+  		to your local working directory.</p>
+</ol>
+
+
+<h3>Working in a Branch</h3>
+<p>When you are working in a branch, any changes you make are made in the branch
+	and do effect the trunk. To merge files back to the trunk or another branch,
+	you can use the Update command, specifying the revision tags in the advanced
+	options.</p>
+
+<p><b>To merge files from a branch:</b></p><!--todo : add info about merge from trunk (see dialog)-->
+<ol>
+	<li>In the Projects, Files, or Versioning window,  right-click the files or
+		folders you want to merge to the trunk (or a different branch) and choose
+		CVS &gt; Merge
+	Changes from Branch. </li>
+	<li>In the CVS Update dialog box, select <b>Merge from Branch.</b> </li>
+	<li>Specify the branch, revision number, or tag for the checkout in the Merge
+		from Branch field or click the Browse button to choose from a list of all
+		branches in the repository.</li>
+	<li>Select any options you require and click Merge.
+		<p>When you click OK, the files from your branch directory are merged into
+			your local working directory. Merge conflicts are indicated in the Versioning
+			window by the Merge Conflict badge ( <img src="images/badgeMergeConflict.gif" alt="Note"> &nbsp;).</p>
+	</li>
+	<li><a href="vcs_mergeresolve.html">Resolve any merge conflicts</a> in your local working directory resulting from the merge.</li>
+	<li>Right-click the files or folders to commit and choose CVS &gt; Commit.</li>
+	<li>Click OK to <a href="vcs_commit.html">commit your local files to the repository</a>.</li>
+</ol>
+
+
+<h3>Creating a branch</h3>
+<p>Branches are created by adding a branch tag to a file revision or directory.</p>
+
+<p><b>To create a branch:</b></p>
+<ol>
+	<li>In the Projects, Files, or Versioning window, right-click the file or folder
+	you want to be the root of your branch and choose CVS &gt; Branch.</li>
+	<li>In the Branch dialog, enter a Branch name,   Tag name, and set any desired
+		options.</li>
+	<li>Click Branch.</li>
+	<p>The IDE  adds a branch tag to the selected file or directory and creates
+		the branch.</p>
+</ol>
+
+<ul class="note">
+	<li>When you add a branch tag, the branch is immediately created in the repository without requiring the Commit command.</li>
+</ul>
+
+
+<p>For more information on working with branches, see the CVS documentation at:</p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+         <param name="content" value="http://www.nongnu.org/cvs/">
+         <param name="text" value="<html><u>http://www.nongnu.org/cvs/</u></html>"> 
+         <param name="textFontSize" value="medium">
+         <param name="textColor" value="blue">
+        </object></p>
+
+<dl>
+	<dt>
+	<a name="seealso">See Also</a></dt>
+	<dd> <a href="vcs_repositorysetup.html">Setting Up a Version Control System</a></dd> 
+	<dd> <a href="vcs_checkout.html">Checking Out Files from a VCS Repository</a></dd> 
+	<dd> <a href="vcs_update.html">Updating Files in the Local VCS Repository</a></dd> 
+	<dd> <a href="vcs_mergeresolve.html">Resolving Merge Conflicts</a></dd> 
+</dl>
+		  
+		  <hr>
         <small><a href="../credits.html">Legal Notices</a></small>
     </body>
 </html>

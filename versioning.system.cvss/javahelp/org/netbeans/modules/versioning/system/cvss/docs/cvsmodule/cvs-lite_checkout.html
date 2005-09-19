@@ -20,17 +20,20 @@
         <h4>To check out files from a remote repository:</h4>
         <ol>
             <li>Choose CVS > Checkout from the main menu.</li>
-            <li>On the first page of the CVS Checkout wizard, specify the CVS root by choosing from 
-            the CVS Root drop-down menu. If you are unfamiliar with the syntax, click 
-            the Edit button and enter the required information for the local CVS working 
-            directory you wish to use.</li>
-            <li>Enter your password in the Password field. 
-            <li>If you need to use a proxy, click 
-            the Proxy Configuration button and enter the required information. Click Next. Note 
-            that by default the IDE sets this to Use System Proxy Settings.</li>
-            <li>On the Module to Checkout page of the wizard, enter the files and directories you want to
-            check out in the Module(s) field or click the Browse button to choose from
-            a list of all modules in the repository. </li>
+            <li>On the first page of the CVS Checkout wizard, specify the location
+            	of the CVS repository by choosing from the CVS Root drop-down menu.
+            	If you are unfamiliar with the syntax, click the Edit button and
+            	enter the required information for the local CVS working directory
+           	you wish to use.</li>
+            <li>Enter your password in the Password field and click Next. 
+            <li>If you are using a proxy, click 
+            the Proxy Configuration button and enter the required information.
+            	Click Next. 
+           	<!--Note 
+            that by default the IDE sets this to Use System Proxy Settings.--></li>
+            <li>On the Module to Checkout page, specify the files and directories
+            	you want to check out in the Module field or click the Browse
+           	button to choose from a list of all modules in the repository. </li>
             <li>If you need to specify a specific branch, revision number, or tag for the
             checkout, enter the information in the Branch field or click the Browse button to choose from
             a list of all branches in the repository.</li>
@@ -39,8 +42,8 @@
             button to navigate to the desired directory on your system.</li>
             <li>Click Finish to check out the files.</li>
             <p>The IDE initiates the Check out command 
-            and the Output window opens to report download progress of the files from
-            the repository to your local working directory.</p>
+            and the  IDE's Status bar indicates the progress of the files downloading
+           	from the branch to your local working directory.</p>
         </ol>
 
         <table>
