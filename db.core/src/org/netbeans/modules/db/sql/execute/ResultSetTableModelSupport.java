@@ -267,11 +267,15 @@ public class ResultSetTableModelSupport {
             char[] charData = new char[COUNT];
             int read = reader.read(charData, 0, charData.length);
 
-            data = new String(charData, 0, read);
+            if (read >= 0) {
+                data = new String(charData, 0, read); 
 
-            // display an ellipsis if there are more characters in the stream
-            if (read >= COUNT && reader.read() != -1) {
-                data += "..."; // NOI18N
+                // display an ellipsis if there are more characters in the stream
+                if (reader.read() != -1) {
+                    data += "..."; // NOI18N
+                }
+            } else {
+                data = ""; // NOI18N
             }
         }
 
@@ -312,26 +316,31 @@ public class ResultSetTableModelSupport {
         private BinaryColumnValue(InputStream input) throws SQLException, IOException {
             byte[] byteData = new byte[COUNT];
             int read = input.read(byteData, 0, byteData.length);
-            StringBuffer buffer = new StringBuffer(2 + 2 * read);
+            
+            if (read > 0) {
+                StringBuffer buffer = new StringBuffer(2 + 2 * read);
 
-            buffer.append("0x"); // NOI18N
-            for (int i = 0; i < read; i++) {
-                int b = byteData[i];
-                if (b < 0) {
-                    b += 256;
+                buffer.append("0x"); // NOI18N
+                for (int i = 0; i < read; i++) {
+                    int b = byteData[i];
+                    if (b < 0) {
+                        b += 256;
+                    }
+                    if (b < 16) {
+                        buffer.append('0');
+                    }
+                    buffer.append(Integer.toHexString(b).toUpperCase());
                 }
-                if (b < 16) {
-                    buffer.append('0');
+
+                // display an ellipsis if there are more characters in the stream
+                if (input.read() != -1) {
+                    buffer.append("..."); // NOI18N
                 }
-                buffer.append(Integer.toHexString(b).toUpperCase());
-            }
 
-            // display an ellipsis if there are more characters in the stream
-            if (read >= COUNT && input.read() != -1) {
-                buffer.append("..."); // NOI18N
+                data = buffer.toString();
+            } else {
+                data = ""; // NOI18N
             }
-
-            data = buffer.toString();
         }
 
         public String toString() {
