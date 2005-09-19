@@ -23,35 +23,37 @@
         file into the repository. </li></ul>
         <h4>To resolve merge conflicts graphically with the Merge Conflicts Resolver:</h4>
         <ol>
-            <li>Right-click the node of the file whose status is Merge Conflict and choose
-            Resolve Conflicts from the contextual menu. The Merge Conflicts Resolver
-            is displayed with merge conflicts highlighted in red. </li>
+            <li>Right-click the node of the file whose status indicates that
+            	there is a conflict and choose Resolve Conflicts from the
+            	pop-up menu. <p>The Merge Conflicts Resolver is displayed with
+            	merge conflicts highlighted in red. </li>
             <li>Use the Next (<img src="./images/next.gif" alt="Next">) and Previous (<img src="./images/prev.gif" alt="Previous">)
             difference buttons in the upper-lefthand corner to navigate to each conflict
             in the file. </li>
             <li>For each conflict, click Accept above the pane  containing the text that
-            you wish to accept. The text you chose is  highlighted in green and is displayed
-            in the Merge Result pane. The text in the pane you did not choose is highlighted
-            in blue.</li>
-            <li>
-                <p>If neither pane contains the text you want, open your source file and
-                edit it manually. When you are done making changes, right-click the node
-                of the source file and choose CVS&nbsp;> Update
-                from the contextual menu. Then repeat the procedure, beginning with
-                Step 1. </p>
+            you wish to accept. <p>Once you have   chosen the correct
+            	text, it is highlighted in green and displayed in the Merge
+            	Result pane. The text you did not choose is highlighted
+            	in blue.            </li>
+            <li>If neither pane contains the text you want, exit the Merge Conflict
+            	Resolver  and edit your source file manually. When
+            	you are done making changes, right-click the node of the file
+            	and choose CVS&nbsp;> Update
+                from the contextual menu. Then repeat the procedure, beginning
+            	with Step 1. </p>
             </li>
             <li>After resolving each conflict, click OK to exit the Merge
             Conflict Resolver.
             <p>The IDE updates your local working copy with the desired
             changes. 
         </ol>
-        <h4>To resolve conflicts manually in the source file:</h4>
+        <!--<h4>To resolve conflicts manually in the source file:</h4>
         <ol>
         <li>Open the file in the editor.
         <li>For each conflict in the file, delete the arrows and  text that
         	you do not want.
         <li>Save the file.<p>The IDE updates your local working copy with the desired
-            changes. </ol>
+            changes. </ol>-->
             <ul class="note">
             <li>Once you have resolved each merge conflict, you still need to commit the file to add your changes to the repository
             copy. For more information, see <a href="vcs_commit.html">Committing Files to a VCS Repository</a>. </li></ul>
