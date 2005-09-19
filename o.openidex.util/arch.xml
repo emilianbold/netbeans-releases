@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -166,7 +166,7 @@ public class MyNode extends AbstractNode {
         name="SearchAPI"
         type="export"
         category="devel"
-        url="http://openidex.netbeans.org/proposals/api-changes/SearchInfo/javadoc.zip">
+        url="@TOP@index.html">
    defines interfaces <code>SearchInfo</code>, <code>FileObjectFilter</code>
    and a factory class <code>SearchInfoFactory</code>
    </api>
@@ -296,19 +296,19 @@ public class MyNode extends AbstractNode {
          name="FilesystemsAPI"
          type="import"
          category="official"
-         url="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/filesystems/doc-files/api.html">
+         url="@org-openide-filesystems@/org/openide/filesystems/doc-files/api.html">
     </api>
     <api group="java"
          name="LoadersAPI"
          type="import"
          category="official"
-         url="http://www.netbeans.org/download/dev/javadoc/LoadersAPI/org/openide/loaders/doc-files/api.html">
+         url="@org-openide-loaders@/org/openide/loaders/doc-files/api.html">
     </api>
     <api group="java"
          name="GeneralQueriesAPI"
          type="import"
          category="devel"
-         url="http://www.netbeans.org/download/dev/javadoc/GeneralQueriesAPI/index.html">
+         url="@org-netbeans-modules-queries@/index.html">
     </api>
  </answer>
 
