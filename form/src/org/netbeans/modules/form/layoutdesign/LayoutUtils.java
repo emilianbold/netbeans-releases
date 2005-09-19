@@ -289,8 +289,8 @@ public class LayoutUtils implements LayoutConstants {
     /**
      * Computes whether a space overlaps with content of given interval.
      * The difference from LayoutRegion.overlap(...) is that this method goes
-     * recursivelly down to components in case of a group - does not use the
-     * union space for whole group (which might be inaccurate).
+     * recursivelly down to components in case interval is a group - does not
+     * use the union space for whole group (which might be inaccurate).
      */
     static boolean contentOverlap(LayoutRegion space, LayoutInterval interval, int dimension) {
         return contentOverlap(space, interval, -1, -1, dimension);
@@ -320,5 +320,146 @@ public class LayoutUtils implements LayoutConstants {
             }
         }
         return overlap;
+    }
+
+    /**
+     * Finds out whether components under one interval overlap with components
+     * under another interval (in given dimension).
+     */
+    static boolean contentOverlap(LayoutInterval interval1, LayoutInterval interval2, int dimension) {
+        return contentOverlap(interval1, interval2, -1, -1, dimension);
+    }
+
+    /**
+     * @param fromIndex initial index of sub-interval in interval2
+     * @param toIndex last index to consider under interval2
+     */
+    static boolean contentOverlap(LayoutInterval interval1, LayoutInterval interval2,
+                                  int fromIndex, int toIndex, int dimension)
+    {
+        if (!interval2.isGroup()) {
+            if (!interval1.isGroup()) {
+                return LayoutRegion.overlap(interval1.getCurrentSpace(),
+                                            interval2.getCurrentSpace(), dimension, 0);
+            }
+            LayoutInterval temp = interval1;
+            interval1 = interval2;
+            interval2 = interval1;
+        }
+
+        // [more efficient algorithm based on region merging and ordering could be found...]
+        List int2list = null;
+        List addList = null;
+        Iterator it1 = getComponentIterator(interval1);
+        while (it1.hasNext()) {
+            LayoutRegion space1 = ((LayoutInterval)it1.next()).getCurrentSpace();
+            Iterator it2 = int2list != null ?
+                           int2list.iterator() :
+                           getComponentIterator(interval2, fromIndex, toIndex);
+            if (int2list == null && it1.hasNext()) {
+                int2list = new LinkedList();
+                addList = int2list;
+            }
+            while (it2.hasNext()) {
+                LayoutInterval li2 = (LayoutInterval) it2.next();
+                if (LayoutRegion.overlap(space1, li2.getCurrentSpace(), dimension, 0))
+                    return true;
+                if (addList != null)
+                    addList.add(li2);
+            }
+            addList = null;
+        }
+        return false;
+    }
+
+    static Iterator getComponentIterator(LayoutInterval interval) {
+        return new ComponentIterator(interval, 0, interval.getSubIntervalCount()-1);
+    }
+
+    static Iterator getComponentIterator(LayoutInterval interval, int startIndex, int endIndex) {
+        return new ComponentIterator(interval, startIndex, endIndex);
+    }
+
+    private static class ComponentIterator implements Iterator {
+        private LayoutInterval root;
+        private int startIndex, endIndex;
+        private boolean initialized;
+        private int index;
+        private LayoutInterval next;
+
+        ComponentIterator(LayoutInterval interval, int startIndex, int endIndex) {
+            root = interval;
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+            findNext();
+            initialized = true;
+        }
+
+        private void findNext() {
+            LayoutInterval parent;
+            int idx;
+            if (next == null) {
+                if (initialized)
+                    return;
+                if (!root.isGroup()) {
+                    if (root.isComponent()) {
+                        next = root;
+                    }
+                    return;
+                }
+                parent = root; // let's start from root
+                idx = startIndex;
+            }
+            else if (next != root) { // somewhere in the structure
+                parent = next.getParent();
+                idx = index + 1;
+            }
+            else { // root is component, already used
+                next = null;
+                return;
+            }
+
+            next = null;
+            do {
+                while (idx < parent.getSubIntervalCount()) {
+                    if (parent == root && idx > endIndex)
+                        return; // out of the root set
+                    LayoutInterval sub = parent.getSubInterval(idx);
+                    if (sub.isComponent()) { // that's it
+                        next = sub;
+                        index = idx;
+                        return;
+                    }
+                    if (sub.isGroup()) { // go down
+                        parent = sub;
+                        idx = 0;
+                    }
+                    else idx++;
+                }
+                if (parent != root) { // go up
+                    idx = parent.getParent().indexOf(parent) + 1;
+                    parent = parent.getParent();
+                }
+                else break; // all scanned
+            }
+            while (true);
+        }
+
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        public Object next() {
+            if (next == null)
+                throw new NoSuchElementException();
+
+            Object ret = next;
+            findNext();
+            return ret;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

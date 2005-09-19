@@ -25,6 +25,7 @@ import java.util.List;
 public final class LayoutInterval implements LayoutConstants {
     static final int ATTRIBUTE_FILL = 1;
     static final int ATTRIBUTE_FORMER_FILL = 2;
+    static final int ATTR_CLOSED_GROUP = 32;
 
     // attributes denoting intervals with different size behavior in design time
     static final int ATTR_DESIGN_CONTAINER_GAP = 4;
@@ -34,7 +35,8 @@ public final class LayoutInterval implements LayoutConstants {
                                     | ATTR_DESIGN_RESIZING
                                     | ATTR_DESIGN_SUPPRESSED_RESIZING;
 
-    static final int ATTR_PERSISTENT_MASK = ATTRIBUTE_FILL | ATTRIBUTE_FORMER_FILL;
+    static final int ATTR_PERSISTENT_MASK = ATTRIBUTE_FILL | ATTRIBUTE_FORMER_FILL
+                                            | ATTR_CLOSED_GROUP;
 
     // type of the interval - SINGLE, SEQUENTIAL, PARALLEL
     private int type;
@@ -779,8 +781,8 @@ public final class LayoutInterval implements LayoutConstants {
     static boolean isClosedGroup(LayoutInterval group, int alignment) {
         assert group.isParallel();
 
-        if (/*group.hasAttribute(CLOSED_GROUP)
-            ||*/ group.getGroupAlignment() == CENTER
+        if (group.hasAttribute(ATTR_CLOSED_GROUP)
+            || group.getGroupAlignment() == CENTER
             || group.getGroupAlignment() == BASELINE)
         {
             return true;
@@ -794,6 +796,10 @@ public final class LayoutInterval implements LayoutConstants {
             }
         }
         return false;
+    }
+
+    static boolean isExplicitlyClosedGroup(LayoutInterval group) {
+        return group.hasAttribute(ATTR_CLOSED_GROUP);
     }
 
     static boolean isDefaultPadding(LayoutInterval interval) {

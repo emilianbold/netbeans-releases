@@ -37,6 +37,10 @@ class LayoutOperations implements LayoutConstants {
         return layoutModel;
     }
 
+    VisualMapper getMapper() {
+        return visualMapper;
+    }
+
     // -----
 
     /**
@@ -354,6 +358,16 @@ class LayoutOperations implements LayoutConstants {
                                 break;
                             }
                         }
+                        if (!compatible) {
+                            LayoutInterval neighbor = LayoutInterval.getNeighbor(
+                                    group, sub.getAlignment()^1, false, true, true);
+                            if (neighbor != null && neighbor.isEmptySpace()
+                                && neighbor.getPreferredSize() == NOT_EXPLICITLY_DEFINED)
+                            {   // default fixed padding means there is no space for
+                                // independent size chane, so the subgroup can be merged
+                                compatible = true;
+                            }
+                        }
                     }
                 }
                 else compatible = sameAlign;
@@ -544,7 +558,7 @@ class LayoutOperations implements LayoutConstants {
         while (it.hasNext()) {
             LayoutInterval li = (LayoutInterval) it.next();
             if (!li.isEmptySpace()) {
-                if (LayoutUtils.contentOverlap(li.getCurrentSpace(), parent, startIndex, endIndex, dimension^1)) {
+                if (LayoutUtils.contentOverlap(li, parent, startIndex, endIndex, dimension^1)) {
                     // interval overlaps orthogonally
                     if (singleOverlap == null) {
                         singleOverlap = li;
@@ -607,6 +621,7 @@ class LayoutOperations implements LayoutConstants {
         return singleOverlap;
     }
 
+    // [couldn't parallelizeWithParentSequence be used instead? or LayoutFeeder.separateSequence?]
     private void separateGroupContent(LayoutInterval separate, int outPos, int dimension, int alignment) {
         LayoutInterval group = separate.getParent();
         assert group.isParallel();
@@ -754,8 +769,8 @@ class LayoutOperations implements LayoutConstants {
         boolean anyGapTrailing = false; // if true there is some gap at the trailing edge
         boolean sameMinGapLeading = true; // if true all intervals are aligned with the same gap at leading edge
         boolean sameMinGapTrailing = true; // if true all intervals are aligned with the same gap at trailing edge
-        LayoutInterval commonGapLeading = null;
-        LayoutInterval commonGapTrailing = null;
+        int commonGapLeadingSize = Integer.MIN_VALUE;
+        int commonGapTrailingSize = Integer.MIN_VALUE;
 
         // first analyze the group
         for (int i=0; i < group.getSubIntervalCount(); i++) {
@@ -768,31 +783,50 @@ class LayoutOperations implements LayoutConstants {
                 }
             }
 
-            boolean leadingAlign;
-            boolean trailingAlign;
+            boolean leadingAlign = false;
+            boolean trailingAlign = false;
             LayoutInterval leadingGap = null;
             LayoutInterval trailingGap = null;
+            boolean contentResizing = false;
+            boolean noResizing = false;
             if (li.isSequential()) {
-                LayoutInterval sub = li.getSubInterval(0);
-                leadingAlign = LayoutInterval.wantResize(sub) ?
-                               !sub.isEmptySpace() :
-                               LayoutInterval.getEffectiveAlignment(sub) == LEADING;
-                if (sub.isEmptySpace())
-                    leadingGap = sub;
-
-                sub = li.getSubInterval(li.getSubIntervalCount()-1);
-                trailingAlign = LayoutInterval.wantResize(sub) ?
-                                !sub.isEmptySpace() :
-                                LayoutInterval.getEffectiveAlignment(sub) == TRAILING;
-                if (sub.isEmptySpace())
-                    trailingGap = sub;
+                // find out effective alignment of the sequence content without border gaps
+                boolean leadGapRes = false;
+                boolean trailGapRes = false;
+                for (int j=0; j < li.getSubIntervalCount(); j++) {
+                    LayoutInterval sub = li.getSubInterval(j);
+                    if (j == 0 && sub.isEmptySpace()) {
+                        leadingGap = sub;
+                        leadGapRes = LayoutInterval.wantResize(sub);
+                    }
+                    else if (j+1 == li.getSubIntervalCount() && sub.isEmptySpace()) {
+                        trailingGap = sub;
+                        trailGapRes = LayoutInterval.wantResize(sub);
+                    }
+                    else if (!contentResizing && LayoutInterval.wantResize(sub)) {
+                        contentResizing = true;
+                    }
+                }
+                if (!contentResizing) {
+                    if (leadGapRes || trailGapRes) {
+                        leadingAlign = trailGapRes && !leadGapRes;
+                        trailingAlign = leadGapRes && !trailGapRes;
+                    }
+                    else noResizing = true;
+                }
             }
-            else if (!LayoutInterval.wantResize(li)) {
+            else if (LayoutInterval.wantResize(li))
+                contentResizing = true;
+            else
+                noResizing = true;
+
+            if (contentResizing)
+                leadingAlign = trailingAlign = true;
+            else if (noResizing) {
                 int alignment = li.getAlignment();
                 leadingAlign = alignment == LEADING;
                 trailingAlign = alignment == TRAILING;
             }
-            else leadingAlign = trailingAlign = true;
 
             if (leadingAlign) {
                 anyAlignedLeading = true;
@@ -806,16 +840,13 @@ class LayoutOperations implements LayoutConstants {
             if (leadingGap != null) {
                 anyGapLeading = true;
                 if (sameMinGapLeading) {
-                    if (commonGapLeading != null) {
-                        int min1 = leadingGap.getMinimumSize() == USE_PREFERRED_SIZE ?
-                            leadingGap.getPreferredSize() : leadingGap.getMinimumSize();
-                        int min2 = commonGapLeading.getMinimumSize() == USE_PREFERRED_SIZE ?
-                            commonGapLeading.getPreferredSize() : commonGapLeading.getMinimumSize();
-                        if (min1 != min2) {
+                    int size = leadingAlign || leadingGap.getMinimumSize() == USE_PREFERRED_SIZE ?
+                               leadingGap.getPreferredSize() : leadingGap.getMinimumSize();
+                    if (commonGapLeadingSize != Integer.MIN_VALUE) {
+                        if (size != commonGapLeadingSize)
                             sameMinGapLeading = false;
-                        }
                     }
-                    else commonGapLeading = leadingGap;
+                    else commonGapLeadingSize = size;
                 }
             }
             else sameMinGapLeading = false;
@@ -823,16 +854,13 @@ class LayoutOperations implements LayoutConstants {
             if (trailingGap != null) {
                 anyGapTrailing = true;
                 if (sameMinGapTrailing) {
-                    if (commonGapTrailing != null) {
-                        int min1 = trailingGap.getMinimumSize() == USE_PREFERRED_SIZE ?
-                            trailingGap.getPreferredSize() : trailingGap.getMinimumSize();
-                        int min2 = commonGapTrailing.getMinimumSize() == USE_PREFERRED_SIZE ?
-                            commonGapTrailing.getPreferredSize() : commonGapTrailing.getMinimumSize();
-                        if (min1 != min2) {
+                    int size = trailingAlign || trailingGap.getMinimumSize() == USE_PREFERRED_SIZE ?
+                               trailingGap.getPreferredSize() : trailingGap.getMinimumSize();
+                    if (commonGapTrailingSize != Integer.MIN_VALUE) {
+                        if (size != commonGapTrailingSize)
                             sameMinGapTrailing = false;
-                        }
                     }
-                    else commonGapTrailing = trailingGap;
+                    else commonGapTrailingSize = size;
                 }
             }
             else sameMinGapTrailing = false;
@@ -933,10 +961,11 @@ class LayoutOperations implements LayoutConstants {
             }
             else if (sameMinGapLeading) {
                 leadingGap = new LayoutInterval(SINGLE);
-                int size = commonGapLeading.getMinimumSize();
-                if (size == USE_PREFERRED_SIZE)
-                    size = commonGapLeading.getPreferredSize();
-                leadingGap.setSizes(size, size, USE_PREFERRED_SIZE);
+//                int size = commonGapLeading.getMinimumSize();
+//                if (size == USE_PREFERRED_SIZE)
+//                    size = commonGapLeading.getPreferredSize();
+//                leadingGap.setSizes(size, size, USE_PREFERRED_SIZE);
+                leadingGap.setSizes(commonGapLeadingSize, commonGapLeadingSize, USE_PREFERRED_SIZE);
             }
         }
         if (anyGapTrailing) {
@@ -956,10 +985,11 @@ class LayoutOperations implements LayoutConstants {
             }
             else if (sameMinGapTrailing) {
                 trailingGap = new LayoutInterval(SINGLE);
-                int size = commonGapTrailing.getMinimumSize();
-                if (size == USE_PREFERRED_SIZE)
-                    size = commonGapTrailing.getPreferredSize();
-                trailingGap.setSizes(size, size, USE_PREFERRED_SIZE);
+//                int size = commonGapTrailing.getMinimumSize();
+//                if (size == USE_PREFERRED_SIZE)
+//                    size = commonGapTrailing.getPreferredSize();
+//                trailingGap.setSizes(size, size, USE_PREFERRED_SIZE);
+                trailingGap.setSizes(commonGapTrailingSize, commonGapTrailingSize, USE_PREFERRED_SIZE);
             }
         }
 
@@ -1147,6 +1177,27 @@ class LayoutOperations implements LayoutConstants {
         layoutModel.setIntervalSize(main, min, pref, max);
         if (eaten.getParent() != null) {
             layoutModel.removeInterval(eaten);
+        }
+    }
+
+    void suppressResizingOfSurroundingGaps(LayoutInterval interval) {
+        LayoutInterval parent = interval.getParent();
+        while (parent != null) {
+            if (parent.isSequential()) {
+                for (Iterator it=parent.getSubIntervals(); it.hasNext(); ) {
+                    LayoutInterval sub = (LayoutInterval) it.next();
+                    if (sub != interval && sub.isEmptySpace() && LayoutInterval.canResize(sub)) {
+                        int pref = sub.getPreferredSize();
+                        int min = sub.getMinimumSize() != pref ? USE_PREFERRED_SIZE : pref;
+                        int max = USE_PREFERRED_SIZE;
+                        layoutModel.setIntervalSize(sub, min, pref, max);
+                    }
+                }
+            }
+            else if (!LayoutInterval.canResize(parent))
+                break;
+            interval = parent;
+            parent = interval.getParent();
         }
     }
 }

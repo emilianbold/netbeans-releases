@@ -667,11 +667,12 @@ class LayoutDragger implements LayoutConstants {
                 assert sub.isParallel();
 
                 // check if the group is not going to be dissolved (contains moving interval)
-                boolean valid = isValidInterval(sub)
-                    && (operation != RESIZING || isValidNextToResizing(sub, alignment));
+                boolean validForRef = isValidInterval(sub);
+                boolean invalidResizing = validForRef && operation == RESIZING
+                                          && !isValidNextToResizing(sub, alignment);
                 int subGroupOuterAlign;
 
-                if (canGoInsideForNextTo(sub, valid)) {
+                if (!invalidResizing && canGoInsideForNextTo(sub, validForRef)) {
                     int align = alignment;
                     for (int i = LEADING; i <= TRAILING; i++) {
                         if (alignment != LayoutRegion.ALL_POINTS && i != alignment) {
@@ -694,7 +695,7 @@ class LayoutDragger implements LayoutConstants {
                 }
                 else subGroupOuterAlign = alignment;
 
-                if (valid && subGroupOuterAlign != DEFAULT) {
+                if (validForRef && !invalidResizing && subGroupOuterAlign != DEFAULT) {
                     nextToAlignment = checkNextToPosition(sub, subGroupOuterAlign);
                 }
             }
@@ -1221,11 +1222,10 @@ class LayoutDragger implements LayoutConstants {
 
         LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, resizing);
         if (commonParent.isSequential()) {
+            if (interval.getParent() != commonParent)
+                return false;
             resizing = getClearWayToParent(resizing, commonParent, dimension, alignment);
             if (resizing == null)
-                return false;
-            interval = getClearWayToParent(interval, commonParent, dimension, alignment^1);
-            if (interval == null)
                 return false;
 
             int startIndex = commonParent.indexOf(alignment == LEADING ? interval : resizing) + 1;
@@ -1256,9 +1256,10 @@ class LayoutDragger implements LayoutConstants {
                 resizing = getClearWayToParent(resizing, commonParent, dimension, alignment);
                 if (resizing == null)
                     return false;
-                interval = getClearWayToParent(interval, commonParent, dimension, alignment^1);
-                if (interval == null)
-                    return false;
+
+                while (interval.getParent() != commonParent) {
+                    interval = interval.getParent();
+                }
 
                 int startIndex, endIndex;
                 if (alignment == LEADING) {

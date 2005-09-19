@@ -717,7 +717,7 @@ public class LayoutDesigner implements LayoutConstants {
 
     /**
      * Removes currently dragged components from layout model. Called when
-     * the components where dragged out of the form (or to a container not
+     * the components were dragged out of the form (or to a container not
      * managed by this layout model).
      */
     public void removeDraggedComponents() {
@@ -2983,7 +2983,7 @@ public class LayoutDesigner implements LayoutConstants {
             if (LayoutInterval.canResize(li)
                 && (!li.getParent().isParallel()
                     || LayoutInterval.canResize(li.getParent())
-                    || defPref != NOT_EXPLICITLY_DEFINED))
+                    || defPref > 0)) // < 0 default size, == 0 subordinate component (filling)
             {   // resizing component with size-defining role in parent
                 int current = li.getCurrentSpace().size(i);
                 int pref = i == HORIZONTAL ? preferred.width : preferred.height;
