@@ -171,25 +171,26 @@ public class EditorSettingsImpl extends EditorSettings {
             fontColorProfiles.put (s, s);
         }
 
-        // 2) init profile for test mime types
-        if (s.startsWith ("test")) {
-            int i = s.indexOf ('_');
-            defaultColors.put (
-                s,
-                getDefaultFontColors (s.substring (i + 1))
-            );
-        }
-
         if (!defaultColors.containsKey (s)) {
             
-            // 3) load colorings
-            Map m = ColoringStorage.loadColorings 
-                (new String [0], s, ALL_LANGUAGES_FILE_NAME, false);
-            if (m != null) {
-                Collection c = m.values ();
-                defaultColors.put (s, c);
-            } else
-                defaultColors.put (s, null);
+            // 2) init profile for test mime types
+            if (s.startsWith ("test")) {
+                int i = s.indexOf ('_');
+                defaultColors.put (
+                    s,
+                    getDefaultFontColors (s.substring (i + 1))
+                );
+            } else {
+
+                // 3) load colorings
+                Map m = ColoringStorage.loadColorings 
+                    (new String [0], s, ALL_LANGUAGES_FILE_NAME, false);
+                if (m != null) {
+                    Collection c = m.values ();
+                    defaultColors.put (s, c);
+                } else
+                    defaultColors.put (s, null);
+            }
         }
         
         if (defaultColors.get (s) == null) return null;
