@@ -40,6 +40,9 @@
 
 	
 	<mapID target="building_plugins" url="build_plugin/building_plugins.html"/>
+	<mapID target="building_nbm" url="build_plugin/building_nbm.html"/>
+	<mapID target="building_jnlp" url="build_plugin/building_jnlp.html"/>
+		<mapID target="building_zip" url="build_plugin/building_zip.html"/>
 	<mapID target="testing_plugins" url="debug_plugin/testing_plugins.html"/>
 	<mapID target="debugging_plugins" url="debug_plugin/debugging_plugins.html"/>	
 	<mapID target="branding_plugins" url="brand_plugin/branding_plugins.html"/>
