@@ -34,6 +34,7 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.modules.Dependency;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -90,12 +91,19 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     public void testValidShadowsInNBProfile () {
+        // might be better to move into editor/options tests as it is valid only if there are options
         List/*<String>*/ errors = new ArrayList();
+        String PROFILES_FOLDER = "Keymaps"; // should match to org.netbeans.core.ShortcutsFolder
         
-        FileObject profileFolder = Repository.getDefault().getDefaultFileSystem().findResource("Profiles/NetBeans");
+        FileObject profileFolder = Repository.getDefault().getDefaultFileSystem().findResource(PROFILES_FOLDER+"/NetBeans");
         if (profileFolder == null) {
-            // might be better to move into editor/options tests as it is valid only if there are options
-            return;
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+            if (ifl != null) {
+                if (ifl.locate("modules/org-netbeans-modules-defaults.jar", "org.netbeans.modules.defaults/1", false) == null)
+                    // module with profiles is not installed, give up
+                    return;
+            }
+            fail ("folder with keymap profile not found");
         }
         FileObject [] files = profileFolder.getChildren();
         for (int i=0; i<files.length; i++) {
