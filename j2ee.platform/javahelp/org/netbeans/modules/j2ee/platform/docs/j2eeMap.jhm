@@ -308,6 +308,7 @@
     <mapID target="service_locator" url="enterprise/general/service_locator.html" />
     <mapID target="use_db" url="enterprise/general/use_db.html" />
     <mapID target="send_jms" url="enterprise/general/send_jms.html" />
+    <mapID target="send_email" url="enterprise/general/send_email.html" />
 
     <!-- New Enterprise Application Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />
@@ -421,6 +422,7 @@
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.CallEjbPanel" url="ejb/csh/call_ejb.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SelectDatabasePanel" url="enterprise/csh/use_db.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.MessageDestinationPanel" url="enterprise/csh/send_jms.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SendEmailPanel" url="enterprise/csh/send_email.html" />
     
     <!-- End of EJB help -->
 

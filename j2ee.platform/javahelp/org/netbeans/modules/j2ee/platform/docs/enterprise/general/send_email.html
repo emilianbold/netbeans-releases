@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+<meta name="lastupdated" content="2Feb04">
+<!-- p2 -->
+
+<title>Sending an Email from a Java File</title>
+<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Sending an E-mail from a Java File</h2>
+<p><small> <a href="#seealso">See Also</a> </small></p>
+<ol>
+  <li>(Optional) Create a service locator class to handle getting the reference 
+    to the database.</li>
+  <li>Open the Java file from which you want to send the JMS message. The file 
+    must be in an EJB module project or a standard web application project. You 
+    cannot generate lookup code in a free-form web application project.</li>
+  <li>In the Source Edtior, right-click the file and choose Enterprise Resources 
+    &gt; Send E-mail.</li>
+  <li>Specify the JNDI name of the mail resource on the application server.</li>
+  <li>Under Service Locator Strategy, specify whether to generate inline lookup 
+    code or use an existing service locator. You can click the Browse to search 
+    for the service locator class name.</li>
+  <li>Click OK. 
+    <p> The IDE creates two methods: 
+    <ul>
+      <li><tt><b>getSession</b></tt><b>.</b> Looks up the mail resource and creates 
+        a mail session.</li>
+      <li><tt><b>sendMail</b></tt><b>.</b> Constructs and send the e-mail. </li>
+    </ul>
+    <p>The IDE also registers the resource reference in your module's general 
+      deployment descriptor. 
+  </li>
+  <li>In your code, call the <tt>sendMail</tt> method and pass the e-mail adress, 
+    subject, and body as parameters.</li>
+</ol>
+<ul class="note">
+  <li>You have to configure the mail resource on the application server yourself. 
+    If your project's target server is the SJS applciation server, the IDE automatically 
+    configures the resource reference in the application-specific deployment descriptor. 
+    If you are deploying to a different application server, you have to configure 
+    the server-specific deployment descriptors yourself.</li>
+</ul>
+<dl> 
+  <dt>See Also</dt>
+  <dd><a href="service_locator.html">Using a Service Locator</a></dd>
+  <dd><a href="ent_app_configure.html">Editing an Enterprise Application's Deployment 
+    Descriptors</a></dd>
+  <dd><a href="../../ejb/configuring/config_ejb_dd.html">Configuring EJB Deployment 
+    Descriptors</a></dd>
+</dl>
+
+
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+  </body>
+</html>
