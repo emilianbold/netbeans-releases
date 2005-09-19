@@ -13,7 +13,8 @@
     </head>
     <body>
         <h2>Creating and Applying a Patch</h2>
-        <p><small><a href="#seealso">See Also</a></small></p>
+		  <p>Coming Soon...</p>
+        <!--<p><small><a href="#seealso">See Also</a></small></p>
         
         <p>Patch files enable software developers not sharing a common
         repository to distribute and integrate changes that have been made to
@@ -23,33 +24,34 @@
             <li>The Patch command is not available when using
             the IDE's built-in CVS client.</li>
         </ul>
-        <a name="CreatePatch"><h4>To create a patch file of the differences between
+        <a name="CreatePatch"></a>
+		  <h4>To create a patch file of the differences between
             a locally modified  copy of a source   and the repository revision:</h4>
-        </a>
+        
         <ol>
             <li>While pressing the Control key, right-click the locally modified file
             or folder and choose CVS&nbsp;> Diff
             Textual. </li>
-            <li>In the Diff dialog box, identify the revision numbers or dates of the versions
+           <li>In the Diff dialog box, identify the revision numbers or dates of the versions
             you want to compare.
             <ul>
                 <li>If you want to compare your working copy with the revision in the repository
                 upon which your working copy is based, click OK without entering any data.
-                <li>If you want to compare your working copy with any other revision in the
-                repository, click Select to select a revision or tag from the chooser.
-                Alternately, you can enter the revision or tag information in the Revision
-                or Tag text field. <p><b>Note:</b> The HEAD revision is the latest revision that has been
+                <li>If you want to compare your working copy with any other revision
+                	in the repository, click Select to select a revision or tag
+                	from the chooser. Alternately, you can enter the revision or
+                	tag information in the Revision or Tag text field. Then click
+                	OK.
+            <p><b>Note:</b> The HEAD revision is the latest revision that has been
                 committed to the repository.
             </ul>
-            Then click OK.
             <li>In the VCS Output window, ensure that  the correct differences are shown.</li>
             <li>Right-click in the output pane and choose Save To File from the contextual
             menu.</li>
             <li>In the Save Command Output to File dialog, enter the  name
                 of the patch	file and click OK.
                 <p>A patch file is created in the specified location containing the differences
-                between the source code file versions. 
-            </li>
+            between the source code file versions.            </li>
         </ol>
         <h4>To create a patch file of the differences between two repository revisions
         of a source file:</h4>
