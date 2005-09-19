@@ -46,7 +46,12 @@
 	<mapID target="installing_plugins" url="distribute_plugin/installing_plugins.html"/>
 	<mapID target="branding_plugins" url="distribute_plugin/branding_plugins.html"/>
 	<mapID target="distributing_plugins" url="distribute_plugin/distributing_plugins.html"/>	
-	<mapID target="deploying_plugins" url="distribute_plugin/deploying_plugins.html"/>	
+	<mapID target="deploying_plugins" url="distribute_plugin/deploying_plugins.html"/>
+
+	<mapID target="updating_the_ide" url="nbdocs:/org/netbeans/modules/usersguide/configure/modules/autoupdate.html" />	
+	<mapID target="installing_modules_offline" url="nbdocs:/org/netbeans/modules/usersguide/configure/modules/updateoffline.html" />
+	<mapID target="updating_a_multi_user_ide_installation" url="nbdocs:/org/netbeans/modules/usersguide/configure/modules/updateglobally.html" />
+	<mapID target="enabling_or_disabling_a_module" url="nbdocs:/org/netbeans/modules/usersguide/configure/modules/enablemodule.html" />
 
 	<!-- Start of "CSH" section -->
 
