@@ -143,7 +143,11 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
     
     protected void notifyClosed() {
         super.notifyClosed();
-        closeExecutionResult();
+        rp.post(new Runnable() {
+            public void run() {
+                closeExecutionResult();
+            }
+        });
         if (isTemporaryFile() && getDataObject().isValid()) {
             try {
                 getDataObject().delete();
@@ -266,6 +270,8 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
     }
     
     private void closeExecutionResult() {
+        assert rp.isRequestProcessorThread();
+        
         if (executionResult != null) {
             try {
                 executionResult.close();
