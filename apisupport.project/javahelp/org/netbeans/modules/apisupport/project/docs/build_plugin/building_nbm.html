@@ -16,7 +16,18 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>The IDE uses an Ant build script to build your modules. The IDE generates the build script based on the options you enter 
+<p>An NBM file is a NetBeans module packaged for delivery via the web. 
+The principal differences between NBM files and a module JAR files are:
+<ul><li>An NBM file is compressed.
+<li>An NBM file can contain more than one JAR file -- modules can package any libraries they use into their NBM.
+<li>An NBM file contains metadata NetBeans will use to display information about it in the update center,
+such as the manifest contents, the license, etc.
+<li>An NBM files is typically signed for security purposes.</ul>
+
+<p>NBM files are just ZIP files with a special extension, which use the JDK's mechanism 
+for signing jars. Unless you are doing something unusual, you will not need to worry about the 
+contents of an NBM file -- just let the standard Ant build script for NBM creation take care of it for you. 
+The IDE generates the build script based on the options you enter 
 in the project's Project Properties dialog box. You can set the module's dependencies, versioning,
  and packaging information in the Project 
   Properties dialog box. You can further customize program execution by editing 
@@ -35,14 +46,12 @@ in the project's Project Properties dialog box. You can set the module's depende
     of build output folders and files.</li>
 </ul>
 
-<p><b>To build a module:</b>
+<p><b>To build an NBM file:</b>
 
-<ol><li>Select the node of the project you want to build.
-	<li>Choose Build > Build Main Project (F11) or right-click any project in the Projects 
-	window and choose Build Project.</ol>
+<ol><li>In the Projects window, right-click the node of the module project you want to build.
+	<li>Choose Create NBM.</ol>
 
-<p>To build all the modules belonging to a module suite project, right-click the module suite project
- and choose Build All.
+
 
 <hr>
 <small><a href="credits.html">Legal Notices</a> </small>
