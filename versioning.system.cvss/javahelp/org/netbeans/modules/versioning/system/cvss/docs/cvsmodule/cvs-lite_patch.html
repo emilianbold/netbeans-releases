@@ -13,47 +13,31 @@
     </head>
     <body>
         <h2>Creating and Applying a Patch</h2>
-		  <p>Coming Soon...</p>
-        <!--<p><small><a href="#seealso">See Also</a></small></p>
+		  <p><small><a href="#seealso">See Also</a></small></p>
         
-        <p>Patch files enable software developers not sharing a common
+        <p>Patch files enable software developers who are not sharing a common
         repository to distribute and integrate changes that have been made to
-        	the code without requiring files to be changed manually. The IDE enables
-     	  you to create and apply patches that update copies of source files. </p>
-        <ul class="note">
-            <li>The Patch command is not available when using
-            the IDE's built-in CVS client.</li>
-        </ul>
+        	the code without requiring the files to be edited manually. The IDE
+        	enables you to create and apply patches that update copies of source
+        	files. </p>
+
         <a name="CreatePatch"></a>
 		  <h4>To create a patch file of the differences between
             a locally modified  copy of a source   and the repository revision:</h4>
         
         <ol>
-            <li>While pressing the Control key, right-click the locally modified file
-            or folder and choose CVS&nbsp;> Diff
-            Textual. </li>
-           <li>In the Diff dialog box, identify the revision numbers or dates of the versions
-            you want to compare.
-            <ul>
-                <li>If you want to compare your working copy with the revision in the repository
-                upon which your working copy is based, click OK without entering any data.
-                <li>If you want to compare your working copy with any other revision
-                	in the repository, click Select to select a revision or tag
-                	from the chooser. Alternately, you can enter the revision or
-                	tag information in the Revision or Tag text field. Then click
-                	OK.
-            <p><b>Note:</b> The HEAD revision is the latest revision that has been
-                committed to the repository.
-            </ul>
-            <li>In the VCS Output window, ensure that  the correct differences are shown.</li>
-            <li>Right-click in the output pane and choose Save To File from the contextual
-            menu.</li>
-            <li>In the Save Command Output to File dialog, enter the  name
-                of the patch	file and click OK.
-                <p>A patch file is created in the specified location containing the differences
-            between the source code file versions.            </li>
+            <li>Select the file or folder for which you want to create a patch
+           	in the Projects, Files, Versioning, or Favorites window. </li>
+           	<li>Choose CVS&nbsp;> Export <tt>&lt;file_name&gt;</tt> Diff
+            Patch. </li>
+        	  <li>Specify the location where you want to save the patch and enter
+        	  	a name for the patch file. 
+        	  <li>Click Export.
+                <p>A patch file is created in the specified location containing
+           	  the differences between the source file versions.            						
+        	  	</li>
         </ol>
-        <h4>To create a patch file of the differences between two repository revisions
+        <!--<h4>To create a patch file of the differences between two repository revisions
         of a source file:</h4>
         <ol>
             <li>Select the source files from whose differences  you wish to generate the
@@ -111,7 +95,7 @@
             into the file or folder. You should always verify that the patched file
             or folder contains the changes from the patch file after using the Apply
             Patch command.
-        </li></ol>
+        </li></ol>-->
         <ul class="note">
             <li>Because  patches on folders use relative paths
             to the files within them, folder patches must
@@ -125,12 +109,12 @@
             <tr>
                 <td width="23"></td>
                 <td> 
-                    <a href="vcs_diff.html">Comparing File Revisions</a><br>
-                    <a href="vcs_merge.html">Merging File Revisions</a><br>
-                    <a href="vcs_mergeresolve.html">Resolving Merge Conflicts</a>
+                    <a href="cvs-lite_diff.html">Comparing File Revisions</a><br>
+                    <a href="cvs-lite_merge.html">Merging File Revisions</a><br>
+                    <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a>
                 </td>
             </tr>
-        </table>-->
+        </table>
         <hr>
         <small><a href="../credits.html">Legal Notices</a></small>
         <table border="0" cellpadding="20">
