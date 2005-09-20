@@ -624,7 +624,7 @@ the Options window:-->
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
 
-   <mapID target="org.netbeans.core.LoaderPoolNode" url="files/files_unknown.html" /> 
+   <mapID target="org.netbeans.core.LoaderPoolNode" url="configure/options_object_types.html" /> 
 <!--nodes in Options | System | Object Types:-->
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
    <mapID target="objects.object-types" url="files/files_unknown.html" /> 
@@ -679,7 +679,7 @@ the Options window:-->
    <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.AutoupdateType" url="configure/modules/autoupdate.html" />
     <!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
-    <mapID target="org.netbeans.modules.junit.JUnitSettings" url="junit/junit_configuring.html" />
+    <mapID target="org.netbeans.modules.junit.JUnitSettings" url="configure/options_junit_settings.html" />
 <!--Create Tests dialog box-->
     <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_creatingtests.html" />  
         <!--TODO - help topic for Actions dialog; if topic is written, close 39369: -->   
