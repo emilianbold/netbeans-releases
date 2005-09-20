@@ -300,6 +300,8 @@ the Options window:-->
 <mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
 <mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
 <mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
+<!-- CSH Help ID : Options : Classic view : Editing : Internationalization -->
+<mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/options_custominter.html" />
 
 <mapID target="ant_docs" url="ant/ant_docs.html" />
 <mapID target="ant_editing" url="ant/ant_editing.html" />
