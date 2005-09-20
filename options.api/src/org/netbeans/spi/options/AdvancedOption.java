@@ -30,7 +30,15 @@ import javax.swing.JComponent;
  *         &lt;/file&gt;
  *     &lt;/file&gt;
  * &lt;/folder&gt;</pre>
+ * 
+ * Use standard way how to sort items registered in layers:
+ * 
+ * <pre style="background-color: rgb(255, 255, 153);">
+ * &lt;attr name="GeneralPanel/Advanced" boolvalue="true"/&gt;
+ * </pre>
  *
+ * @see OptionsCategory
+ * @see OptionsCategory.PanelController 
  * @author Jan Jancura
  */
 public abstract class AdvancedOption {
