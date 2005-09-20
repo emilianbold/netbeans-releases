@@ -1592,44 +1592,27 @@ public abstract class TreeView extends JScrollPane {
             // Add new key listeners
             addKeyListener(
                 new KeyAdapter() {
-                    private boolean armed = false;
-
-                    public void keyPressed(KeyEvent e) {
+                    public void keyTyped(KeyEvent e) {
                         int modifiers = e.getModifiers();
                         int keyCode = e.getKeyCode();
+                        char c = e.getKeyChar();
 
                         //#43617 - don't eat + and -
-                        if (
-                            (keyCode == KeyEvent.VK_PLUS) || (keyCode == KeyEvent.VK_MINUS) ||
-                                (keyCode == KeyEvent.VK_ADD) || (keyCode == KeyEvent.VK_SUBTRACT)
-                        ) {
-                            return;
-                        }
+                        if ((c == '+') || (c == '-')) return;
 
                         if (((modifiers > 0) && (modifiers != KeyEvent.SHIFT_MASK)) || e.isActionKey()) {
                             return;
                         }
 
-                        char c = e.getKeyChar();
+                        if (Character.isISOControl(c) ||
+                              (keyCode == KeyEvent.VK_SHIFT) ||
+			      (keyCode == KeyEvent.VK_ESCAPE)) return;
 
-                        if (
-                            !Character.isISOControl(c) && (keyCode != KeyEvent.VK_SHIFT) &&
-                                (keyCode != KeyEvent.VK_ESCAPE)
-                        ) {
-                            armed = true;
-                            e.consume();
-                        }
-                    }
+                        final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
+                        searchTextField.setText(String.valueOf(stroke.getKeyChar()));
 
-                    public void keyTyped(KeyEvent e) {
-                        if (armed) {
-                            final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
-                            searchTextField.setText(String.valueOf(stroke.getKeyChar()));
-
-                            displaySearchField();
-                            e.consume();
-                            armed = false;
-                        }
+                        displaySearchField();
+                        e.consume();
                     }
                 }
             );
