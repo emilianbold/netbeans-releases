@@ -1179,10 +1179,14 @@ public class WizardDescriptor extends DialogDescriptor {
             // PENDING:  write something to errorMessage (e.g. Wait to finishing.)
             showWaitCursor();
 
-            newObjects = ((InstantiatingIterator) panels).instantiate();
+            try {
+                newObjects = ((InstantiatingIterator) panels).instantiate();
+            } finally {
 
-            // set cursor back to normal
-            showNormalCursor();
+                // set cursor back to normal
+                showNormalCursor();
+                
+            }
         }
     }
 
