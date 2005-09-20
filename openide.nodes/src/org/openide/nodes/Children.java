@@ -553,7 +553,7 @@ public abstract class Children extends Object {
 
             // otherwise we can wait
             synchronized (LOCK) {
-                while (arr.children == null) {
+                while (initThread != null) {
                     if (IS_LOG_GET_ARRAY) {
                         LOG_GET_ARRAY.log(
                             "waiting for children for " + this + // NOI18N

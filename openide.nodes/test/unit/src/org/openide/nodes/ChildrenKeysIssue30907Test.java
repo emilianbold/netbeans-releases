@@ -80,7 +80,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
     }
     
     public void testProperInitializationEvenIfInvokedFromMultipleThreadsBug30907QuickAddNotifyWithReadAccess () throws Exception {
-        doBug30907 (false, true, 0, 2); 
+        doBug30907 (false, true, 0, 2);
     }
     
     public void testProperInitializationEvenIfInvokedFromMultipleThreadsBug30907QuickAddNotify () throws Exception {
