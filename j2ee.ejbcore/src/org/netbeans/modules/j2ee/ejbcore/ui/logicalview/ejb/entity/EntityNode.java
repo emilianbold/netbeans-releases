@@ -13,11 +13,8 @@
 
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
-
-import javax.jmi.model.Feature;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GenerateDTOAction;
 import org.openide.actions.*;
@@ -30,6 +27,8 @@ import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
@@ -40,6 +39,8 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -85,15 +86,18 @@ public class EntityNode extends AbstractNode implements OpenCookie{
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            null,
-            SystemAction.get(AddActionGroup.class),
-            SystemAction.get(DeleteAction.class),
-            null,
-            SystemAction.get(GoToSourceActionGroup.class),
-            SystemAction.get(GenerateDTOAction.class)
-        };
+        Node[] nodes = (Node[])Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
+        List list = new ArrayList();
+        list.add(SystemAction.get(OpenAction.class));
+        list.add(null);
+        list.add(SystemAction.get(DeleteAction.class));
+        if (nodes.length == 1) {
+            list.add(SystemAction.get(AddActionGroup.class));
+            list.add(null);
+            list.add(SystemAction.get(GoToSourceActionGroup.class));
+            list.add(SystemAction.get(GenerateDTOAction.class));
+        }
+        return (SystemAction[])list.toArray(new SystemAction[0]);
     }
     
     public HelpCtx getHelpCtx() {
