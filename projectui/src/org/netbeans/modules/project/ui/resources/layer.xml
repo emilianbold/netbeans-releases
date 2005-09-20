@@ -412,6 +412,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <attr name="RunProject/Versioning" boolvalue="true"/>
+        <attr name="RunProject/Tools" boolvalue="true" />        
         
         <folder name="Window"> <!-- Add project tab into the Window menu -->
             
