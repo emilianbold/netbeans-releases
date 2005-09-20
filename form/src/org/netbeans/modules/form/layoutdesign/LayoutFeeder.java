@@ -190,12 +190,24 @@ class LayoutFeeder implements LayoutConstants {
             LayoutInterval root = dragger.getTargetContainer().getLayoutRoot(dim);
             analyzeParallel(root, inclusions);
 
-            IncludeDesc preferred = originalPos1 != null ?
-                                    originalPos1 : addAligningInclusion(inclusions);
-            if (inclusions.size() > 1) {
-                mergeParallelInclusions(inclusions, preferred, preserveOriginal);
-                assert inclusions.size() == 1;
+            // make sure an inclusion for parallel aligning is considered, choose best inclusion
+            if (inclusions.isEmpty()) { // inclusion for parallel aligning not found
+                assert aSnappedParallel != null;
+                if (originalPos1 != null && originalPos1.alignment == aEdge)
+                    inclusions.add(originalPos1);
+                else
+                    addAligningInclusion(inclusions);
             }
+            else {
+                IncludeDesc preferred = addAligningInclusion(inclusions); // make sure it is there...
+                if (inclusions.size() > 1) {
+                    if (preferred == null || (preserveOriginal && originalPos1.alignment == aEdge))
+                        preferred = originalPos1;
+                    mergeParallelInclusions(inclusions, preferred, preserveOriginal);
+                    assert inclusions.size() == 1;
+                }
+            }
+
             IncludeDesc found = (IncludeDesc) inclusions.get(0);
             inclusions.clear();
             if (preserveOriginal) { // resized in this dimension only
@@ -225,9 +237,21 @@ class LayoutFeeder implements LayoutConstants {
                     // second round searching
                     analyzeParallel(root, inclusions);
 
-                    if (inclusions.size() > 1) {
-                        mergeParallelInclusions(inclusions, originalPos2 != null ? originalPos2 : originalPos1, false);
-                        assert inclusions.size() == 1;
+                    if (inclusions.isEmpty()) { // inclusion for parallel aligning not found
+                        assert aSnappedParallel != null;
+                        if (originalPos2 != null && originalPos2.alignment == aEdge)
+                            inclusions.add(originalPos2);
+                        else
+                            addAligningInclusion(inclusions);
+                    }
+                    else {
+                        IncludeDesc preferred = addAligningInclusion(inclusions);
+                        if (inclusions.size() > 1) {
+                            if (preferred == null)
+                                preferred = originalPos2 != null ? originalPos2 : originalPos1;
+                            mergeParallelInclusions(inclusions, preferred, false);
+                            assert inclusions.size() == 1;
+                        }
                     }
                     inclusion2 = (IncludeDesc) inclusions.get(0);
                     inclusions.clear();
@@ -1710,7 +1734,9 @@ class LayoutFeeder implements LayoutConstants {
         }
 
         if (inclusions.isEmpty()) { // no inclusion found yet
-            if (group.getParent() == null) {   // this is the last (top) valid group
+            if (group.getParent() == null
+                && (aSnappedParallel == null || canAlignWith(aSnappedParallel, group, aEdge)))
+            {   // this is the last (top) valid group
                 int distance = aSnappedNextTo == group ? -1 : Integer.MAX_VALUE;
                 addInclusion(group, false, distance, Integer.MAX_VALUE, inclusions);
             }
