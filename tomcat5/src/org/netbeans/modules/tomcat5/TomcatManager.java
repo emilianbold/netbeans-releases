@@ -115,6 +115,9 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public boolean isBundledTomcat() {
+        if (ip == null) {
+            return false;
+        }
         String val = ip.getProperty(PROP_BUNDLED_TOMCAT);
         return val != null ? Boolean.valueOf(val).booleanValue()
                            : false;
