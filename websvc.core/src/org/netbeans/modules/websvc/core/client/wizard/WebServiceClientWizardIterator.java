@@ -240,7 +240,6 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
 
         String sourceUrl;
         FileObject sourceWsdlFile = null;
-        List /*FileObject*/ schemas = null;
         
         if(sourceWsdlDownload == null) {
             // Verify the existence of the source WSDL file and that we can get a file object for it.
@@ -253,16 +252,6 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
                 return result;
-            } else {
-                List schemaFiles = ClientBuilder.getSchemaNames(sourceWsdlFile,true);
-                if (schemaFiles!=null && schemaFiles.size()>0) {
-                    schemas=new ArrayList();
-                    FileObject wsdlFolder = sourceWsdlFile.getParent();
-                    for (int i=0;i<schemaFiles.size();i++) {
-                        FileObject schemaFo = wsdlFolder.getFileObject((String)schemaFiles.get(i));
-                        if (schemaFo!=null) schemas.add(schemaFo);
-                    }
-                }
             }
         } else {
             // create a temporary WSDL file
@@ -307,7 +296,6 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             // create temporary Schema Files            
             if (downloadedSchemas!=null) {
                 Iterator it = downloadedSchemas.iterator();
-                schemas = new ArrayList();
                 while (it.hasNext()) {
                     WsdlRetriever.SchemaInfo schemaInfo = (WsdlRetriever.SchemaInfo)it.next();
                     File schemalFile = new File(System.getProperty("java.io.tmpdir"), schemaInfo.getSchemaName());
@@ -342,7 +330,6 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                         DialogDisplayer.getDefault().notify(desc);
                         return result;
                     }
-                    schemas.add(schemaFo);
                 } //end while
             } // end if
         } //end else
@@ -391,7 +378,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         final ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizCreateClient"));
         handle.start(100);
-        final ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, schemas,  packageName, sourceUrl, stubDescriptor);
+        final ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, sourceUrl, stubDescriptor);
         final FileObject sourceWsdlFileTmp = sourceWsdlFile;
         
         org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
