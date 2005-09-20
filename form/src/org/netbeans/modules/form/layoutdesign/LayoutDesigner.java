@@ -1429,134 +1429,134 @@ public class LayoutDesigner implements LayoutConstants {
         LayoutInterval intr = interval;
         LayoutInterval par = parent;
         while (par != null) {
-            if (par.isParallel()) {
-                if (resizing) {
-                    int groupCurrSize = LayoutInterval.getIntervalCurrentSize(par, dimension);
-                    int currSize = LayoutInterval.getIntervalCurrentSize(intr, dimension);
-                    // PENDING currSize could change if groupPrefSize != groupCurrSize
-                    if (groupCurrSize != currSize) {
-                        LayoutInterval seqGroup = intr;
-                        LayoutInterval space = new LayoutInterval(SINGLE);
-                        space.setSize(groupCurrSize - currSize);
-                        int alignment = intr.getAlignment();
-                        int index = (alignment == LEADING) ? -1 : 0;
-                        if (intr.isSequential()) {
-                            int spaceIndex = (alignment == LEADING) ? intr.getSubIntervalCount()-1 : 0;
-                            LayoutInterval adjacentSpace = intr.getSubInterval(spaceIndex);
-                            if (adjacentSpace.isEmptySpace()) {
-                                int spaceSize = LayoutInterval.getIntervalCurrentSize(adjacentSpace, dimension);
-                                layoutModel.removeInterval(adjacentSpace);
-                                space.setSize(groupCurrSize - currSize + spaceSize);
-                            }
-                        } else {
-                            seqGroup = new LayoutInterval(SEQUENTIAL);
-                            layoutModel.setIntervalAlignment(intr, DEFAULT);
-                            seqGroup.setAlignment(alignment);
-                            int i = layoutModel.removeInterval(intr);
-                            layoutModel.addInterval(intr, seqGroup, -1);
-                            layoutModel.addInterval(seqGroup, par, i);
+            if (par.isParallel() && resizing) {
+                int groupCurrSize = LayoutInterval.getIntervalCurrentSize(par, dimension);
+                int currSize = LayoutInterval.getIntervalCurrentSize(intr, dimension);
+                // PENDING currSize could change if groupPrefSize != groupCurrSize
+                if (groupCurrSize != currSize) {
+                    LayoutInterval seqGroup = intr;
+                    LayoutInterval space = new LayoutInterval(SINGLE);
+                    space.setSize(groupCurrSize - currSize);
+                    int alignment = intr.getAlignment();
+                    int index = (alignment == LEADING) ? -1 : 0;
+                    if (intr.isSequential()) {
+                        int spaceIndex = (alignment == LEADING) ? intr.getSubIntervalCount()-1 : 0;
+                        LayoutInterval adjacentSpace = intr.getSubInterval(spaceIndex);
+                        if (adjacentSpace.isEmptySpace()) {
+                            int spaceSize = LayoutInterval.getIntervalCurrentSize(adjacentSpace, dimension);
+                            layoutModel.removeInterval(adjacentSpace);
+                            space.setSize(groupCurrSize - currSize + spaceSize);
                         }
-                        layoutModel.addInterval(space, seqGroup, index);
-                        seqGroup.getCurrentSpace().set(dimension, par.getCurrentSpace());
+                    } else {
+                        seqGroup = new LayoutInterval(SEQUENTIAL);
+                        layoutModel.setIntervalAlignment(intr, DEFAULT);
+                        seqGroup.setAlignment(alignment);
+                        int i = layoutModel.removeInterval(intr);
+                        layoutModel.addInterval(intr, seqGroup, -1);
+                        layoutModel.addInterval(seqGroup, par, i);
                     }
+                    layoutModel.addInterval(space, seqGroup, index);
+                    seqGroup.getCurrentSpace().set(dimension, par.getCurrentSpace());
+                }
+            } else if (par.isSequential()) {
+                // Change resizability of gaps
+                boolean parentSeq = (parent == par);
+                List resizableList = new LinkedList();
+                int alignment = parentSeq ? LayoutInterval.getEffectiveAlignment(interval) : 0;
+                LayoutInterval leadingGap = null;
+                LayoutInterval trailingGap = null;
+                boolean afterDefining = false;
+                Iterator iter = par.getSubIntervals();
+                while (iter.hasNext()) {
+                    LayoutInterval candidate = (LayoutInterval)iter.next();
+                    if (candidate == interval) {
+                        afterDefining = true;
+                    }
+                    if (candidate.isEmptySpace()) {
+                        if (resizing) {
+                            setIntervalResizing(candidate, false);
+                            int currSize = LayoutInterval.getIntervalCurrentSize(candidate, dimension);
+                            int prefSize = prefSizeOfInterval(candidate);
+                            if (currSize != prefSize) {
+                                layoutModel.setIntervalSize(candidate, candidate.getMinimumSize(),
+                                    currSize, candidate.getMaximumSize());
+                                delta += currSize - prefSize;
+                            }
+                        } else if (parentSeq) {
+                            boolean wasFill = candidate.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL);
+                            boolean glue = (candidate.getPreferredSize() != NOT_EXPLICITLY_DEFINED);
+                            if (wasFill) {
+                                trailingGap = candidate;
+                            } else if ((trailingGap == null) || (!trailingGap.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL))) {
+                                if (glue) {
+                                    trailingGap = candidate;
+                                } else {
+                                    if (afterDefining && ((trailingGap == null) || (trailingGap.getPreferredSize() == NOT_EXPLICITLY_DEFINED))) {
+                                        trailingGap = candidate;
+                                    }
+                                }
+                            }
+                            if ((leadingGap == null) && !afterDefining) {
+                                leadingGap = candidate;
+                            } else {
+                                if ((wasFill && ((leadingGap == null) || (!leadingGap.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL))))
+                                    || glue && ((leadingGap == null) || (!leadingGap.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL)
+                                    && (leadingGap.getPreferredSize() == NOT_EXPLICITLY_DEFINED)))) {
+                                    leadingGap = candidate;
+                                }
+                            }
+                        }
+                    } else {
+                        if (candidate.getMaximumSize() == Short.MAX_VALUE) {
+                            resizableList.add(candidate);
+                        }
+                    }
+                }
+                if (resizableList.size() > 0) {
+                    iter = resizableList.iterator();
+                    delta = (LayoutInterval.getIntervalCurrentSize(par, dimension) - prefSizeOfInterval(par) + delta)/resizableList.size();
+                    while (iter.hasNext()) {
+                        LayoutInterval candidate = (LayoutInterval)iter.next();
+                        if (candidate.isGroup()) {
+                            // PENDING currSize could change - we can't modify prefSize of group directly
+                        } else {
+                            if (candidate == interval) {
+                                if (delta != 0) {
+                                    int prefSize = prefSizeOfInterval(candidate);
+                                    layoutModel.setIntervalSize(candidate, candidate.getMinimumSize(),
+                                        Math.max(0, prefSize - delta), candidate.getMaximumSize());
+                                }
+                            } else {
+                                int currSize = LayoutInterval.getIntervalCurrentSize(candidate, dimension);
+                                layoutModel.setIntervalSize(candidate, candidate.getMinimumSize(),
+                                    Math.max(0, currSize - delta), candidate.getMaximumSize());                            
+                            }
+                        }
+                    }
+                }
+                if (parentSeq) {
+                    if (!LayoutInterval.wantResize(par)) {
+                        LayoutInterval gap = null;
+                        if ((alignment == TRAILING) && (leadingGap != null)) {
+                            gap = leadingGap;
+                            setIntervalResizing(leadingGap, !resizing);
+                            layoutModel.changeIntervalAttribute(leadingGap, LayoutInterval.ATTRIBUTE_FILL, true);
+                        }
+                        if ((alignment == LEADING) && (trailingGap != null)) {
+                            gap = trailingGap;
+                            setIntervalResizing(trailingGap, !resizing);
+                            layoutModel.changeIntervalAttribute(trailingGap, LayoutInterval.ATTRIBUTE_FILL, true);
+                        }
+                        if ((gap != null) && (delta != 0) && (gap.getPreferredSize() != NOT_EXPLICITLY_DEFINED)) {
+                            layoutModel.setIntervalSize(gap, gap.getMinimumSize(), 
+                                Math.max(0, gap.getPreferredSize() - delta), gap.getMaximumSize());
+                        }
+                    }
+                    parent = par.getParent(); // use parallel parent for group resizing check
                 }
             }
             intr = par;
             par = par.getParent();
-        }
-        if (parent.isSequential()) {
-            // Change resizability of gaps
-            List resizableList = new LinkedList();
-            int alignment = LayoutInterval.getEffectiveAlignment(interval);
-            LayoutInterval leadingGap = null;
-            LayoutInterval trailingGap = null;
-            boolean afterDefining = false;
-            Iterator iter = parent.getSubIntervals();
-            while (iter.hasNext()) {
-                LayoutInterval candidate = (LayoutInterval)iter.next();
-                if (candidate == interval) {
-                    afterDefining = true;
-                }
-                if (candidate.isEmptySpace()) {
-                    if (resizing) {
-                        setIntervalResizing(candidate, false);
-                        int currSize = LayoutInterval.getIntervalCurrentSize(candidate, dimension);
-                        int prefSize = prefSizeOfInterval(candidate);
-                        if (currSize != prefSize) {
-                            layoutModel.setIntervalSize(candidate, candidate.getMinimumSize(),
-                                currSize, candidate.getMaximumSize());
-                            delta += currSize - prefSize;
-                        }
-                    } else {
-                        boolean wasFill = candidate.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL);
-                        boolean glue = (candidate.getPreferredSize() != NOT_EXPLICITLY_DEFINED);
-                        if (wasFill) {
-                            trailingGap = candidate;
-                        } else if ((trailingGap == null) || (!trailingGap.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL))) {
-                            if (glue) {
-                                trailingGap = candidate;
-                            } else {
-                                if (afterDefining && ((trailingGap == null) || (trailingGap.getPreferredSize() == NOT_EXPLICITLY_DEFINED))) {
-                                    trailingGap = candidate;
-                                }
-                            }
-                        }
-                        if ((leadingGap == null) && !afterDefining) {
-                            leadingGap = candidate;
-                        } else {
-                            if ((wasFill && ((leadingGap == null) || (!leadingGap.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL))))
-                                || glue && ((leadingGap == null) || (!leadingGap.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL)
-                                && (leadingGap.getPreferredSize() == NOT_EXPLICITLY_DEFINED)))) {
-                                leadingGap = candidate;
-                            }
-                        }
-                    }
-                } else {
-                    if (candidate.getMaximumSize() == Short.MAX_VALUE) {
-                        resizableList.add(candidate);
-                    }
-                }
-            }
-            if (resizableList.size() > 0) {
-                iter = resizableList.iterator();
-                delta = (LayoutInterval.getIntervalCurrentSize(parent, dimension) - prefSizeOfInterval(parent) + delta)/resizableList.size();
-                while (iter.hasNext()) {
-                    LayoutInterval candidate = (LayoutInterval)iter.next();
-                    if (candidate.isGroup()) {
-                        // PENDING currSize could change - we can't modify prefSize of group directly
-                    } else {
-                        if (candidate == interval) {
-                            if (delta != 0) {
-                                int prefSize = prefSizeOfInterval(candidate);
-                                layoutModel.setIntervalSize(candidate, candidate.getMinimumSize(),
-                                    Math.max(0, prefSize - delta), candidate.getMaximumSize());
-                            }
-                        } else {
-                            int currSize = LayoutInterval.getIntervalCurrentSize(candidate, dimension);
-                            layoutModel.setIntervalSize(candidate, candidate.getMinimumSize(),
-                                Math.max(0, currSize - delta), candidate.getMaximumSize());                            
-                        }
-                    }
-                }
-            }
-            if (!LayoutInterval.wantResize(parent)) {
-                LayoutInterval gap = null;
-                if ((alignment == TRAILING) && (leadingGap != null)) {
-                    gap = leadingGap;
-                    setIntervalResizing(leadingGap, !resizing);
-                    layoutModel.changeIntervalAttribute(leadingGap, LayoutInterval.ATTRIBUTE_FILL, true);
-                }
-                if ((alignment == LEADING) && (trailingGap != null)) {
-                    gap = trailingGap;
-                    setIntervalResizing(trailingGap, !resizing);
-                    layoutModel.changeIntervalAttribute(trailingGap, LayoutInterval.ATTRIBUTE_FILL, true);
-                }
-                if ((gap != null) && (delta != 0) && (gap.getPreferredSize() != NOT_EXPLICITLY_DEFINED)) {
-                    layoutModel.setIntervalSize(gap, gap.getMinimumSize(), 
-                        Math.max(0, gap.getPreferredSize() - delta), gap.getMaximumSize());
-                }
-            }
-            parent = parent.getParent(); // use parallel parent for group resizing check
         }
         modelListener.activate();
 
