@@ -730,6 +730,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 System.out.println ("\nS StartActionProvider." +
                     "finish () end "
                 );
+            
+            //Notify LOCK2 so that no one is waiting forever
+            synchronized (LOCK2) {
+                LOCK2.notify ();
+            }
         //}
     }
 
