@@ -23,33 +23,29 @@ import org.openide.util.Lookup;
  */
 public class ExplorerPanel extends org.openide.windows.TopComponent 
 implements ExplorerManager.Provider {
-   private ExplorerManager manager = new ExplorerManager();
-   private org.openide.util.Lookup lookup;
+    private ExplorerManager manager = new ExplorerManager();
 
-   public ExplorerPanel() {
-       manager = new ExplorerManager();
-       ActionMap map = getActionMap();
-       map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
-       map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
-       map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-       map.put("delete", ExplorerUtils.actionDelete(manager, true));
+    public ExplorerPanel() {
+        manager = new ExplorerManager();
+        ActionMap map = getActionMap();
+        map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+        map.put("delete", ExplorerUtils.actionDelete(manager, true));
 
-       lookup = ExplorerUtils.createLookup (manager, map);
-   }
+        associateLookup(ExplorerUtils.createLookup (manager, map));
+    }
 
-   public ExplorerManager getExplorerManager() {
-       return manager;
-   }
-   public Lookup getLookup() {
-       return lookup;
-   }
-   public void addNotify() {
-       super.addNotify();
-       ExplorerUtils.activateActions(manager, true);
-   }
-   public void removeNotify() {
-       ExplorerUtils.activateActions(manager, false);
-       super.removeNotify();
-   }
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+    public void addNotify() {
+        super.addNotify();
+        ExplorerUtils.activateActions(manager, true);
+    }
+    public void removeNotify() {
+        ExplorerUtils.activateActions(manager, false);
+        super.removeNotify();
+    }
 }
 
