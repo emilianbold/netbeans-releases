@@ -724,7 +724,7 @@ public class LayoutDesigner implements LayoutConstants {
         if (dragger != null) {
             LayoutComponent[] components = dragger.getMovingComponents();
             for (int i=0; i < components.length; i++) {
-                layoutModel.removeComponentAndIntervals(components[i], true);
+                layoutModel.removeComponentAndIntervals(components[i], !components[i].isLayoutContainer());
             }
             endMoving(false);
         }
