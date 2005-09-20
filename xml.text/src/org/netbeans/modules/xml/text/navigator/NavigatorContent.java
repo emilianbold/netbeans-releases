@@ -125,7 +125,7 @@ public class NavigatorContent extends JPanel   {
             //create the JTree pane
             tree = new PatchedJTree();
             tree.setModel(createTreeModel(dm));
-            
+            tree.setShowsRootHandles(true);
             tree.setRootVisible(false);
             tree.setCellRenderer(new NavigatorTreeCellRenderer());
             tree.putClientProperty("JTree.lineStyle", "Angled");

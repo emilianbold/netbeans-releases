@@ -107,6 +107,10 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     }
     
     public boolean isLeaf() {
+        //XML PI node UI hack - the <?xml ...?> node looks ugly without the handle
+        //if my parent's parent if null so my parent is root - show handle
+        if(getParent() != null && getParent().getParent() == null) return false;
+        
         return getChildCount() == 0;
     }
     
