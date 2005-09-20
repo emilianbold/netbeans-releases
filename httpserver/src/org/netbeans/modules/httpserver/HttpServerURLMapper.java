@@ -107,7 +107,7 @@ public class HttpServerURLMapper extends URLMapper {
         if (fileObject == null)
             return null;
         
-        // if the file is on the localhost, don't return URL with HTTP
+        // if the file is on the localhost, don't return URL with HTTP - issue 39072
         if (FileUtil.toFile(fileObject) != null)
             return null;
 
