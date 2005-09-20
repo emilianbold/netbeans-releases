@@ -12,7 +12,39 @@
 <h2>Module Project Properties Dialog Box: Packaging</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
-<p>tbd</p>
+
+<p>You open the Module Project Properties dialog box by right-clicking 
+a module project and choosing Properties. 
+
+<p>The Packaging page lets you specify the NetBeans Platform, the module's dependencies, and the required tokens:
+
+<ul><li><b>JAR File:</b> Gives the actual JAR file that will be created for the module, in the form <tt>${cluster}/${module.jar}</tt>.</li>
+	<li><b>Needs Restart on Install.</b> Sets <tt>nbm.needs.restart</tt> in the <tt>nbproject/project.properties</tt> file. 
+	<li><b>Must be Installed Globally.</b> Installs the NBM file in the NetBeans installation
+	 directory as well as in the NetBeans user directory. If not selected, the NBM file is
+	  installed only in the NetBeans user directory. Sets <tt>nbm.is.global</tt> in the <tt>nbproject/project.properties</tt> file. 
+	<li><b>License.</b> Points to an optional license file for the NBM file. Sets <tt>license.file</tt>
+	in the <tt>nbproject/project.properties</tt> file. May be an absolute or project-relative path. .
+	 <li><b>Home Page.</b> Sets <tt>nbm.homepage</tt> in the <tt>nbproject/project.properties</tt> file.
+	<li><b>Author.</b> Sets <tt>nbm.module.author</tt> in the <tt>nbproject/project.properties</tt> file. 
+  </ul>
+
+<table>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See also</a></th>
+  </tr>
+  <tr> 
+    <td width="23px">&nbsp;</td>
+    <td><a href="../../create_plugin/projectlevel_create/about_project_wizards.html">About Module Project Templates</a><br>
+      Module Project Properties Dialog Box:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerSources.html">Sources</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerLibraries.html">Libraries</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerDisplay.html">Display</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerVersioning.html">API Versioning</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerCompiling.html">Compiling</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerDocumenting.html">Documenting</a><br>
+  </tr>
+</table>
 
 <hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
 
