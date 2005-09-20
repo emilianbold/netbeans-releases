@@ -671,20 +671,12 @@ is divided into following sections:
                 
             </target>
             
-            <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
-                <xsl:attribute name="if">have.sources</xsl:attribute>
-                <ejbjarproject2:javac destdir="${{classes.dir}}"/>
+            <target name="-copy-meta-inf">
                 <copy todir="${{classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                    <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                     <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
                 </copy>
                 <copy todir="${{classes.dir}}/META-INF">
-                  <fileset dir="${{meta.inf}}" excludes="**/*.dbschema ${{meta.inf.excludes}}"/> 
+                  <fileset dir="${{meta.inf}}" excludes="**/*.dbschema ${{meta.inf.excludes}}"/>
                 </copy>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
@@ -693,7 +685,19 @@ is divided into following sections:
                     </copy>
                  </xsl:if>
             </target>
-
+            
+            <target name="-do-compile">
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-copy-meta-inf<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
+                <ejbjarproject2:javac destdir="${{classes.dir}}"/>
+                <copy todir="${{classes.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    </xsl:call-template>
+                </copy>
+            </target>
+            
             <target name="-post-compile">
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:attribute name="depends">
