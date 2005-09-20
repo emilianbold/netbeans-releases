@@ -43,7 +43,7 @@ import org.w3c.dom.NodeList;
  */
 public class J2SEProjectGenerator {
     
-    static final String MINIMUM_ANT_VERSION = "1.6.3";
+    static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private J2SEProjectGenerator() {}
     
