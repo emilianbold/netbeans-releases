@@ -37,6 +37,7 @@ public abstract class ColorModel {
     
     public static final String ALL_LANGUAGES = 
         NbBundle.getMessage (ColorModel.class, "CTL_All_Languages");
+    public static final String HIGHLIGHTING_LANGUAGE = "Highlighting";
     
     private static ColorModel model;
     
