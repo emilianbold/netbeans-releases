@@ -13,25 +13,31 @@
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
 <p>You open the Module Project Properties dialog box by right-clicking 
-any module project and choosing Properties. 
+a module project and choosing Properties. 
 
-<p>The Sources page shows you the location of the project folder
- in your filesystem.
+<p>The Sources page lets you specify the project folder, the module suite
+ to which the project belongs, and the Java source level:
+
+ <ul><li><b>Project Folder:</b> Displays the location of the project directory.</li>
+	<li><b>Module Suite.</b> Displays the location of the containing suite,
+	if this is a suite component module. If it is a standalone module, the field is not present.
+	<li><b>Source Level.</b> Sets the <tt>javac.source</tt> property in
+	the <tt>nbproject/project.properties</tt> file. The options are 1.4 (default) or 1.5.
+  </ul>
 <table>
   <tr> 
     <th colspan=2 align=left><a name="seealso">See also</a></th>
   </tr>
   <tr> 
     <td width="23px">&nbsp;</td>
-     <td><a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_stand_about.html">About Module Projects</a><br>
+    <td><a href="../../create_plugin/projectlevel_create/about_project_wizards.html">About Module Project Templates</a><br>
       Module Project Properties Dialog Box:<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerLibraries.html">Libraries</a> <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerCompile.html">Compiling</a> <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerWar.html">Packaging</a> <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerJavadoc.html">Documenting</a><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerRun.html">Run</a><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSServiceHost.html">Web Services</a><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSClientHost.html">Web Service Clients</a><br></td>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerLibraries.html">Libraries</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerDisplay.html">Display</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerVersioning.html">API Versioning</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerCompiling.html">Compiling</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerPackaging.html">Packaging</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerDocumenting.html">Documenting</a><br>
   </tr>
 </table>
 
