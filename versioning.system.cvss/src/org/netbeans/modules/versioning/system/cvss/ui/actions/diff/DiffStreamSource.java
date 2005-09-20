@@ -15,16 +15,11 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.api.xml.parsers.DocumentInputSource;
 import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.cookies.EditorCookie;
-import org.openide.ErrorManager;
 
-import javax.swing.text.Document;
 import java.io.*;
 
 /**
@@ -44,6 +39,7 @@ public class DiffStreamSource extends StreamSource {
      * Null is a valid value if base file does not exist in this revision. 
      */ 
     private File            remoteFile;
+    private boolean         binary;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -78,9 +74,7 @@ public class DiffStreamSource extends StreamSource {
     public Reader createReader() throws IOException {
         init();        
         if (revision == null || remoteFile == null) return null;
-        boolean binary = CvsVersioningSystem.getInstance().isText(remoteFile) == false;
         if (binary) {
-            // TODO I guess it should be handled by diff itself, it can use MIME test
             return new StringReader("[Binary File " + getTitle() + "]");
         } else {
             return new FileReader(remoteFile);
@@ -96,6 +90,7 @@ public class DiffStreamSource extends StreamSource {
      */
     synchronized void init() throws IOException {
         if (remoteFile != null || revision == null) return;
+        binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
             remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision);
             failure = null;
@@ -105,6 +100,12 @@ public class DiffStreamSource extends StreamSource {
             throw failure;
         }
         FileObject fo = remoteFile != null ? FileUtil.toFileObject(remoteFile) : null;
-        mimeType = fo != null ? fo.getMIMEType() : "text/plain";        
+        if (fo != null) {
+            mimeType = fo.getMIMEType();
+        } else if (binary) {
+            mimeType = "application/octet-stream";
+        } else {
+            mimeType = "text/plain";
+        }
     }
 }

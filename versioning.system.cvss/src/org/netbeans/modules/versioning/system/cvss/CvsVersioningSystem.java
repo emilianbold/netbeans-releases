@@ -16,7 +16,7 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
-import org.netbeans.lib.cvsclient.event.CVSListener;
+import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
@@ -370,9 +370,17 @@ public class CvsVersioningSystem {
     }
     
     public boolean isText(File file) {
-        // TODO: Let user configure defaults
         if (FILENAME_CVSIGNORE.equals(file.getName())) {
             return true;            
+        }
+        // honor Entries, only if this fails use MIME type, etc.
+        try {
+            Entry entry = sah.getEntry(file);
+            if (entry != null) {
+                return !entry.isBinary();
+            }
+        } catch (IOException e) {
+            // ignore, probably new or nonexistent file
         }
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) return false;
