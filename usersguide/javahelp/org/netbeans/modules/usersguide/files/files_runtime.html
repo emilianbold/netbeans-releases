@@ -1,111 +1,109 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--
- * 
- *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- *
--->
+    <!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+    -->
 <html>
-<head>
-<title>Runtime Window</title>
-<link rel="stylesheet" href="../ide.css" type="text/css"></head>
-<body>
-<h2>Runtime Window</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>The Runtime window is the main entry point to your runtime resources. It shows 
-a logical view of important runtime resources such as the servers, databases, and
- web services that are registered with the IDE. 
-  You can open the Runtime window by choosing Window  &gt; Runtime 
-  (Ctrl-5).
+    <head>
+    <title>Runtime Window</title>
+    <link rel="stylesheet" href="../ide.css" type="text/css"></head>
+    <body>
+    <h2>Runtime Window</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>The Runtime window is the main entry point to your runtime resources. It shows 
+    a logical view of important runtime resources such as the servers, databases, and
+    web services that are registered with the IDE. 
+    You can open the Runtime window by choosing Window  &gt; Runtime 
+    (Ctrl-5).
 
-<h3>Runtime Resources</h3>
-<p>The following table lists the runtime resources as they appear in the Runtime 
-window, with their icons and their descriptions. 
-<table border="1" cellpadding="5" cellspacing="0">
-  <tr align="left"> 
-    <th scope="col"><b>Icon</b></th>
-    <th scope="col"><b>Description</b></th>
-  </tr>
-  <tr> 
-    <td><img src="../images/runtime-window-servers.png"></td>
-    <td><b>Servers</b>
-	    <br>Lists all servers currently registered with the IDE.
-	    For versions of the IDE that are bundled only with the Tomcat Web Server, 
-	    the Tomcat Web Server is automatically registered in the IDE. For versions of 
-	    the IDE that are bundled with both the Tomcat Web Server and SJS Application Server, 
-	    both servers are automatically registered in the IDE. Use the IDE to
-	    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">register</a>
-	    all other servers.</td>
-  </tr>
-  <tr> 
-    <td><img src="../images/runtime-window-processes.png"></td>
-    <td><b>Processes</b>
-	    <br>	    Lists all processes currently being executed within 
-  the IDE. You can terminate a running application by right-clicking its node
-      and choosing Terminate Process. </td>
-  </tr>
-  <tr> 
-    <td><img src="../images/runtime-window-databases.png"></td>
-    <td><b>Databases</b>
-	    <br>Lists the database drivers that have been
-	    <a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">added</a>
-	     to the IDE.</td>
-  </tr>
-  <tr> 
-    <td><img src="../images/runtime-window-webservices.png"></td>
-    <td><b>HTTP Server</b>
-	    <br>When you right-click the node, you can choose commands to start or stop the IDE's internal HTTP server.
-	    You can also <a href="../webbrowser/httpserver-options.html">configure HTTP server options</a>.</td>
-  </tr>
-  <tr> 
-    <td><img src="../images/runtime-window-vcscommands.png"></td>
-    <td><b>VCS Commands</b>
-	    <br>
-      Lists a history of VCS commands called in the current IDE session.</td>
-  </tr>
-  <tr> 
-	  <td><img src="../images/runtime-window-httpserver.png"></td>
-    <td><b>Web Services</b>
-	    <br>Lists all <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/register_ws.html">registered</a> web services. A web service that is registered
-	    can be <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/test_ws.html">tested</a> from the IDE. 
-	    However, before you can register a web service you must 
-	    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/expose_ws.html">deploy</a> it.
+    <h3>Runtime Resources</h3>
+    <p>The following table lists the runtime resources as they appear in the Runtime 
+    window, with their icons and their descriptions. 
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr align="left"> 
+            <th scope="col"><b>Icon</b></th>
+            <th scope="col"><b>Description</b></th>
+        </tr>
+        <tr> 
+            <td><img src="../images/runtime-window-servers.png"></td>
+            <td><b>Servers</b>
+            <br>Lists all servers currently registered with the IDE.
+            For versions of the IDE that are bundled only with the Tomcat Web Server, 
+            the Tomcat Web Server is automatically registered in the IDE. For versions of 
+            the IDE that are bundled with both the Tomcat Web Server and Sun Java System Application Server, 
+            both servers are automatically registered in the IDE. Use the IDE to
+            <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">register</a>
+            all other servers.</td>
+        </tr>
+        <tr> 
+            <td><img src="../images/runtime-window-processes.png"></td>
+            <td><b>Processes</b>
+            <br>Lists all processes currently being executed within 
+            the IDE. You can terminate a running application by right-clicking its node
+            and choosing Terminate Process. </td>
+        </tr>
+        <tr> 
+            <td><img src="../images/runtime-window-databases.png"></td>
+            <td><b>Databases</b>
+            <br>Lists the database drivers that have been
+            <a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">added</a>
+            to the IDE.</td>
+        </tr>
+        <tr> 
+            <td><img src="../images/runtime-window-webservices.png"></td>
+            <td><b>HTTP Server</b>
+            <br>When you right-click the node, you can choose commands to start or stop the IDE's internal HTTP server.
+            You can also <a href="../webbrowser/httpserver-options.html">configure HTTP server options</a>.</td>
+        </tr>
+        <!--<tr> 
+            <td><img src="../images/runtime-window-vcscommands.png"></td>
+            <td><b>VCS Commands</b>
+            <br>
+            Lists a history of VCS commands called in the current IDE session.</td>
+        </tr>-->
+        <tr> 
+            <td><img src="../images/runtime-window-httpserver.png"></td>
+            <td><b>Web Services</b>
+                <br>Lists all <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/register_ws.html">registered</a> web services. A web service that is registered
+                can be <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/test_ws.html">tested</a> from the IDE. 
+                However, before you can register a web service you must 
+                <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/expose/expose_ws.html">deploy</a> it.
     
-<ul class="note">
-<li>If the SJS Application Server is not 
-	<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">registered</a> with the IDE,
-	 this node is disabled.</li>
-</ul>
-</td>
-  </tr>
-  <tr> 
-    <td><img src="../images/runtime-window-xmlentitycatalogs.png"></td>
-    <td><b>DTD and XML Schema Catalogs</b>
-	    <br>Lists all of the <a href="../xml/catalog/xmlcatalog_about.html">XML Catalogs</a> that are 
-currently registered in the IDE.
-	    When you right-click the node, you can <a href="../xml/catalog/xmlcatalog_mount.html">add and remove</a> XML catalogs.</td>
-  </tr>
-</table>
-<p>Other nodes may appear, depending on the modules that are installed in the
-IDE.</p> 
+                <ul class="note">
+                    <li>If the Sun Java System Application Server is not 
+                    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">registered</a> with the IDE,
+                    this node is disabled.</li>
+                </ul>
+            </td>
+        </tr>
+        <tr> 
+            <td><img src="../images/runtime-window-xmlentitycatalogs.png"></td>
+            <td><b>DTD and XML Schema Catalogs</b>
+            <br>Lists all of the <a href="../xml/catalog/xmlcatalog_about.html">XML Catalogs</a> that are 
+            currently registered in the IDE.
+            When you right-click the node, you can <a href="../xml/catalog/xmlcatalog_mount.html">add and remove</a> XML catalogs.</td>
+        </tr>
+    </table>
+    <p>Other nodes may appear, depending on the modules that are installed in the
+    IDE.</p> 
 
-<table>
-  <tr> 
-    <th colspan=2 align=left><a name="seealso">See also</a></th>
-  </tr>
-  <tr> 
-    <td width="23"></td>
-    <td>    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_webapp.html">Deploying a Web Application</a><br>
-<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/deploy/deploy_ejb.html">Deploying an EJB Module</a><br>
-      <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_deploy.html">Deploying 
-      an Enterprise Application</a>
-  </tr>
-</table>
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
+    <dl>
+            <dt><a name="seealso">See also</a></dt>
+            <dd>    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_webapp.html">Deploying a Web Application</a></dd>
+            <dd>    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/deploy/deploy_ejb.html">Deploying an EJB Module</a></dd>
+            <dd>    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_deploy.html">Deploying an Enterprise Application</a></dd>
+    </dl>
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
 </html>
