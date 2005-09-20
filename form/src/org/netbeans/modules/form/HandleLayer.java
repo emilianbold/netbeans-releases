@@ -1953,9 +1953,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             layoutUndoEdit = getLayoutModel().getUndoableEdit();
         }
 
-        final void placeLayoutUndoableEdit() {
+        final void placeLayoutUndoableEdit(boolean autoUndo) {
             if (!layoutUndoMark.equals(getLayoutModel().getChangeMark())) {
                 getFormModel().addUndoableEdit(layoutUndoEdit);
+            }
+            if (autoUndo) {
+                getFormModel().forceUndoOfCompoundEdit();
             }
             layoutUndoMark = null;
             layoutUndoEdit = null;
@@ -2055,11 +2058,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 if (targetContainer == null || targetContainer.getLayoutSupport() != null) {
                     // dropped in old layout support, or on non-visual area
                     createLayoutUndoableEdit();
+                    boolean autoUndo = true;
                     try {
                         formDesigner.getLayoutDesigner().removeDraggedComponents();
                         oldDragger.dropComponents(p, targetContainer);
+                        autoUndo = false;
                     } finally {
-                        placeLayoutUndoableEdit();
+                        placeLayoutUndoableEdit(autoUndo);
                     }
                 }
                 else { // dropped in new layout support
@@ -2070,11 +2075,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         }
                     }
                     createLayoutUndoableEdit();
+                    boolean autoUndo = true;
                     try {
                         formDesigner.getLayoutDesigner().endMoving(true);
+                        autoUndo = false;
                     } finally {
                         getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
-                        placeLayoutUndoableEdit();
+                        placeLayoutUndoableEdit(autoUndo);
                     }
                 }
             }
@@ -2194,6 +2201,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     doLayout(showingComponents[0]);
 
                     createLayoutUndoableEdit();
+                    boolean autoUndo = true;
                     try {
                         formDesigner.getLayoutDesigner().endMoving(true);
                         for (int i=0; i < movingComponents.length; i++) {
@@ -2206,11 +2214,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                 }
                             }
                         }
+                        autoUndo = false;
                     } finally {
                         if (targetContainer != null) {
                             getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
                         }
-                        placeLayoutUndoableEdit();
+                        placeLayoutUndoableEdit(autoUndo);
                     }
                 }
                 else { // old layout support
@@ -2398,6 +2407,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     addedComponent = movingComponents[0];
                     if (getLayoutModel() != null) { // Some beans don't have layout
                         createLayoutUndoableEdit();
+                        boolean autoUndo = true;
                         try {
                             formDesigner.getLayoutDesigner().endMoving(newLayout);
                             LayoutComponent layoutComponent =
@@ -2407,8 +2417,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                     getLayoutModel().addRootComponent(layoutComponent);
                                 }
                             }
+                            autoUndo = false;
                         } finally {
-                            placeLayoutUndoableEdit();
+                            placeLayoutUndoableEdit(autoUndo);
                         }
                     }
                     getComponentCreator().addPrecreatedComponent(

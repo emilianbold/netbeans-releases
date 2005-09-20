@@ -42,6 +42,7 @@ public class DefaultSizeAction extends NodeAction {
         LayoutModel layoutModel = null;
         Object layoutUndoMark = null;
         javax.swing.undo.UndoableEdit layoutUE = null;
+        boolean autoUndo = true;
 
         try {
             for (int i=0; i < nodes.length; i++) {
@@ -73,9 +74,13 @@ public class DefaultSizeAction extends NodeAction {
             if (topDesignComponent != null) {
                 formDesigner.resetDesignerSize();
             }
+            autoUndo = false;
         } finally  {
             if (layoutUE != null && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
                 formModel.addUndoableEdit(layoutUE);
+            }
+            if (autoUndo) {
+                formModel.forceUndoOfCompoundEdit();
             }
         }
     }

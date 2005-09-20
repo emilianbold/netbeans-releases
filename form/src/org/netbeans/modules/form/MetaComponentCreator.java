@@ -87,11 +87,16 @@ public class MetaComponentCreator {
             LayoutModel layoutModel = formModel.getLayoutModel();
             Object layoutUndoMark = layoutModel.getChangeMark();
             javax.swing.undo.UndoableEdit layoutUndoEdit = layoutModel.getUndoableEdit();
+            boolean autoUndo = true;
             try {
                 layoutModel.addRootComponent(new LayoutComponent(component.getId(), true));
+                autoUndo = false;
             } finally {
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     formModel.addUndoableEdit(layoutUndoEdit);
+                }
+                if (autoUndo) {
+                    formModel.forceUndoOfCompoundEdit();
                 }
             }
         }
@@ -335,11 +340,16 @@ public class MetaComponentCreator {
             layoutComp = new LayoutComponent(radComp.getId(), isContainer);
         }
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+        boolean autoUndo = true;
         try {
             LayoutComponent parent = layoutModel.getLayoutComponent(targetCont.getId());    
             layoutModel.addNewComponent(layoutComp, parent, prototype);
+            autoUndo = false;
         } finally {
             formModel.addUndoableEdit(ue);
+            if (autoUndo) {
+                formModel.forceUndoOfCompoundEdit();
+            }
         }
     }
 

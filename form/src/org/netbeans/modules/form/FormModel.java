@@ -60,6 +60,7 @@ public class FormModel
     private boolean undoRedoRecording = false;
     private CompoundEdit compoundEdit;
     private boolean autoEndCoumpoundEdit;
+    private boolean undoCompoundEdit = false;
 
     private FormEvents formEvents;
 
@@ -99,7 +100,13 @@ public class FormModel
                 layoutModel.setChangeRecording(false);
             }
             else {
-                topComp = new RADVisualComponent();
+                topComp = new RADVisualComponent() {
+                    // top-level component does not have a variable
+                    public String getName() {
+                        return FormUtils.getBundleString("CTL_FormTopContainerName"); // NOI18N
+                    }
+                    public void setName(String value) {}
+                };
             }
         }
         else if (java.lang.Object.class != formClass)
@@ -348,9 +355,17 @@ public class FormModel
         if (currentLS == null) { // switching to old layout support
             Object layoutStartMark = layoutModel.getChangeMark();
             UndoableEdit ue = layoutModel.getUndoableEdit();
-            layoutModel.changeContainerToComponent(metacont.getId());
-            if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
-                addUndoableEdit(ue);
+            boolean autoUndo = true;
+            try {
+                layoutModel.changeContainerToComponent(metacont.getId());
+                autoUndo = false;
+            } finally {
+                if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
+                    addUndoableEdit(ue);
+                }
+                if (autoUndo) {
+                    forceUndoOfCompoundEdit();
+                }
             }
         }
     }
@@ -370,18 +385,27 @@ public class FormModel
         setNaturalContainerLayoutImpl(metacont);
         Object layoutStartMark = layoutModel.getChangeMark();
         UndoableEdit ue = layoutModel.getUndoableEdit();
-        if (!layoutModel.changeComponentToContainer(metacont.getId())) {
-            layoutModel.addRootComponent(
-                    new LayoutComponent(metacont.getId(), true));
-        }
-        if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
-            addUndoableEdit(ue);
+        boolean autoUndo = true;
+        try {
+            if (!layoutModel.changeComponentToContainer(metacont.getId())) {
+                layoutModel.addRootComponent(
+                        new LayoutComponent(metacont.getId(), true));
+            }
+            autoUndo = false;
+        } finally {
+            if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
+                addUndoableEdit(ue);
+            }
+            if (autoUndo) {
+                forceUndoOfCompoundEdit();
+            }
         }
     }
 
     public void removeComponent(RADComponent metacomp, boolean fromModel) {
         Object layoutStartMark = null;
         UndoableEdit ue = null;
+        boolean autoUndo = true;
         try {
             if (fromModel) {
                 layoutStartMark = layoutModel.getChangeMark();
@@ -392,9 +416,13 @@ public class FormModel
 
             removeComponentImpl(metacomp, fromModel);
             // [TODO need effective multi-component remove from LayoutModel (start in ComponentInspector.DeleteActionPerformer)]
+            autoUndo = false;
         } finally {
             if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
                 addUndoableEdit(ue); // is added to a compound edit
+            }
+            if (autoUndo) {
+                forceUndoOfCompoundEdit();
             }
         }
     }
@@ -528,12 +556,20 @@ public class FormModel
             if (commit && undoRedoRecording && compoundEdit.isSignificant()) {
                 getUndoRedoManager().undoableEditHappened(
                     new UndoableEditEvent(this, compoundEdit));
+            } else {
+                undoCompoundEdit = false;
             }
             CompoundEdit edit = compoundEdit;
             compoundEdit = null;
             return edit;
         }
         return null;
+    }
+    
+    public void forceUndoOfCompoundEdit() {
+        if (compoundEdit != null) {
+            undoCompoundEdit = true;
+        }
     }
 
     public boolean isCompoundEditInProgress() {
@@ -1033,6 +1069,7 @@ public class FormModel
 
         public void run() {
             List list = pickUpEvents();
+            boolean firedSuccessfully = false;
             try {
                 if (list != null && !list.isEmpty()) {
                     FormModelEvent[] events = new FormModelEvent[list.size()];
@@ -1040,10 +1077,18 @@ public class FormModel
                     t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
                     FormModel.this.fireEvents(events);
                 }
+                firedSuccessfully = true;
             } finally {
                 if (FormModel.this.autoEndCoumpoundEdit) {
-                    FormModel.this.endCompoundEdit(true);
-                    t("coumpound undoable edit ended automatically"); // NOI18N
+                    CompoundEdit edit = FormModel.this.endCompoundEdit(true);
+                    if (edit != null) {
+                        t("coumpound undoable edit ended automatically"); // NOI18N
+                        if ((undoCompoundEdit || !firedSuccessfully) && getUndoRedoManager().canUndo()) {
+                            undoCompoundEdit = false;
+                            getUndoRedoManager().undo();
+                        }
+                    }
+                    undoCompoundEdit = false;
                 }
             }
         }

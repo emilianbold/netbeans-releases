@@ -555,14 +555,19 @@ public class RADVisualComponent extends RADComponent {
             LayoutInterval interval = component.getLayoutInterval(dimension);
             Object layoutUndoMark = layoutModel.getChangeMark();
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+            boolean autoUndo = true;
             try {
                 layoutModel.setIntervalSize(interval, interval.getMinimumSize(false), newValue.intValue(), interval.getMaximumSize(false));
                 getNodeReference().firePropertyChangeHelper(
                     getName(), oldValue, newValue);
+                autoUndo = false;
             } finally {
                 getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     getFormModel().addUndoableEdit(ue);
+                }
+                if (autoUndo) {
+                    getFormModel().forceUndoOfCompoundEdit();
                 }
             }
         }
@@ -646,6 +651,7 @@ public class RADVisualComponent extends RADComponent {
             LayoutInterval interval = component.getLayoutInterval(dimension);
             Object layoutUndoMark = layoutModel.getChangeMark();
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+            boolean autoUndo = true;
             try {
                 layoutModel.setIntervalSize(interval,
                     resizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
@@ -653,10 +659,14 @@ public class RADVisualComponent extends RADComponent {
                     resizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
                 getNodeReference().firePropertyChangeHelper(
                     getName(), oldValue, newValue);                
+                autoUndo = false;
             } finally {
                 getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     getFormModel().addUndoableEdit(ue);
+                }
+                if (autoUndo) {
+                    getFormModel().forceUndoOfCompoundEdit();
                 }
             }
         }

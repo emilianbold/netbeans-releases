@@ -205,6 +205,7 @@ public class SetAnchoringAction extends NodeAction {
             FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
             LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
             Set containers = new HashSet();
+            boolean autoUndo = true;
             try {
                 Iterator iter = mi.getRADComponents().iterator();
                 while (iter.hasNext()) {
@@ -222,6 +223,7 @@ public class SetAnchoringAction extends NodeAction {
                         containers.add(comp.getParentContainer());
                     }
                 }
+                autoUndo = false;
             } finally {
                 Iterator iter = containers.iterator();
                 while (iter.hasNext()) {
@@ -229,6 +231,9 @@ public class SetAnchoringAction extends NodeAction {
                 }
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     formModel.addUndoableEdit(ue);
+                }
+                if (autoUndo) {
+                    formModel.forceUndoOfCompoundEdit();
                 }
             }
         }

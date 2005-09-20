@@ -218,13 +218,18 @@ class CopySupport {
                         resetConstraintProperties = true;
                         Object layoutUndoMark = layoutModel.getChangeMark();
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                        boolean autoUndo = true;
                         boolean fromModel = !(targetComponent instanceof RADVisualContainer)
                                             || ((RADVisualContainer)targetComponent).getLayoutSupport() != null;
                         try {
                             layoutModel.removeComponent(sourceComponent.getId(), fromModel);
+                            autoUndo = false;
                         } finally {
                             if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                                 sourceForm.addUndoableEdit(ue);
+                            }
+                            if (autoUndo) {
+                                sourceForm.forceUndoOfCompoundEdit();
                             }
                         }
                     }
@@ -246,6 +251,7 @@ class CopySupport {
                         LayoutComponent parent = layoutModel.getLayoutComponent(visualCont.getId());
                         Object layoutUndoMark = layoutModel.getChangeMark();
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                        boolean autoUndo = true;
                         if (layoutComponent == null) {
                             layoutComponent = new LayoutComponent(sourceComponent.getId(),
                                 MetaComponentCreator.shouldBeLayoutContainer((RADVisualComponent)sourceComponent));
@@ -253,9 +259,13 @@ class CopySupport {
                         resetConstraintProperties = true;
                         try {
                             layoutModel.addNewComponent(layoutComponent, parent, null);
+                            autoUndo = false;
                         } finally {
                             if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                                 sourceForm.addUndoableEdit(ue);
+                            }
+                            if (autoUndo) {
+                                sourceForm.forceUndoOfCompoundEdit();
                             }
                         }
                     } else {

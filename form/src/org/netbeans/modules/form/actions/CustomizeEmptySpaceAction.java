@@ -92,12 +92,17 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             Object layoutUndoMark = model.getChangeMark();
             javax.swing.undo.UndoableEdit ue = model.getUndoableEdit();
+            boolean autoUndo = true;
             try {
                 customizer.applyValues();
+                autoUndo = false;
             } finally {
                 formModel.fireContainerLayoutChanged(((RADVisualComponent)metacomp).getParentContainer(), null, null, null);
                 if (!layoutUndoMark.equals(model.getChangeMark())) {
                     formModel.addUndoableEdit(ue);
+                }
+                if (autoUndo) {
+                    formModel.forceUndoOfCompoundEdit();
                 }
             }
         }

@@ -950,12 +950,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         LayoutModel layoutModel = formModel.getLayoutModel();
         Object layoutUndoMark = layoutModel.getChangeMark();
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+        boolean autoUndo = true;
         try {
             getLayoutDesigner().align(selectedIds, closed, dimension, alignment);
+            autoUndo = false;
         } finally {
             formModel.fireContainerLayoutChanged((RADVisualContainer)parent, null, null, null);
             if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                 formModel.addUndoableEdit(ue);
+            }
+            if (autoUndo) {
+                formModel.forceUndoOfCompoundEdit();
             }
         }
     }
@@ -1779,7 +1784,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     checkDesignerSize();
                 }
                 updateComponentLayer();
-                getLayoutDesigner().externalSizeChangeHappened();
+                if (getLayoutDesigner() != null) {
+                    getLayoutDesigner().externalSizeChangeHappened();
+                }
             }
         }
         
@@ -1923,6 +1930,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             LayoutModel layoutModel = formModel.getLayoutModel();
             Object layoutUndoMark = layoutModel.getChangeMark();
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+            boolean autoUndo = true;
             LayoutDesigner layoutDesigner = getLayoutDesigner();
             Collection componentIds = componentIds();
             Set containers = new HashSet();
@@ -1938,6 +1946,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         containers.add(comp.getParentContainer());
                     }
                 }
+                autoUndo = false;
             } finally {
                 Iterator iter = containers.iterator();
                 while (iter.hasNext()) {
@@ -1945,6 +1954,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     formModel.addUndoableEdit(ue);
+                }
+                if (autoUndo) {
+                    formModel.forceUndoOfCompoundEdit();
                 }
             }
         }

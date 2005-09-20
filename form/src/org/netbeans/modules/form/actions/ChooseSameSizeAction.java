@@ -204,6 +204,7 @@ public class ChooseSameSizeAction extends NodeAction {
             LayoutModel layoutModel = formModel.getLayoutModel();
             Object layoutUndoMark = layoutModel.getChangeMark();
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+            boolean autoUndo = true;
 
             try {
                 List compIds = getComponentIds(mi.getRADComponents());
@@ -213,10 +214,14 @@ public class ChooseSameSizeAction extends NodeAction {
                 } else {
                     layoutModel.unsetSameSize(compIds, dimension);
                 }
+                autoUndo = false;
             } finally {
                 formModel.fireContainerLayoutChanged(visCont, null, null, null);
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     formModel.addUndoableEdit(ue);
+                }
+                if (autoUndo) {
+                    formModel.forceUndoOfCompoundEdit();
                 }
             }
         }

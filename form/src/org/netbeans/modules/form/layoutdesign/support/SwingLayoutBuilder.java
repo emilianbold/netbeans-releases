@@ -112,7 +112,7 @@ public class SwingLayoutBuilder {
 
     public void createLayout() {
         Throwable th = null;
-        boolean reset = false;
+        boolean reset = true;
         container.removeAll();
         try {
             GroupLayout layout = new GroupLayout(container);
@@ -125,16 +125,11 @@ public class SwingLayoutBuilder {
             layout.setVerticalGroup(verticalGroup);
             composeLinks(layout);
             layout.layoutContainer(container);
-        } catch (Exception ex) {
-            reset = true;
-            th = ex;
-        } catch (Error err) {
-            reset = true;
-            th = err;
-        }
-        if (reset) {
-            container.setLayout(null);
-            throw new RuntimeException("Error occured. Use undo to return to the last good state.", th); // NOI18N
+            reset = false;
+        } finally {
+            if (reset) {
+                container.setLayout(null);
+            }
         }
     }
     

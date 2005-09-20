@@ -215,6 +215,7 @@ public class SelectLayoutAction extends CallableSystemAction {
                     LayoutModel layoutModel = formModel.getLayoutModel();
                     Object layoutUndoMark = layoutModel.getChangeMark();
                     javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                    boolean autoUndo = true;
                     try {
                         formModel.setNaturalContainerLayout(container);
                         if (convertToNew) {
@@ -226,9 +227,13 @@ public class SelectLayoutAction extends CallableSystemAction {
                             }
                             layoutModel.createModel(container.getId(), (java.awt.Container)formDesigner.getComponent(container), idToComponent);
                         }
+                        autoUndo = false;
                     } finally {
                         if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                             formModel.addUndoableEdit(ue);
+                        }
+                        if (autoUndo) {
+                            formModel.forceUndoOfCompoundEdit();
                         }
                     }
                     FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
