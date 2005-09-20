@@ -41,6 +41,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
@@ -197,7 +198,7 @@ public class NbEditorUI extends ExtEditorUI {
             String scheme = es.getCurrentFontColorProfile ();
             Collection col = fcs.getAllFontColors(scheme);
             Iterator it = col.iterator();
-            AttributeSet defaults = fcs.getTokenFontColors("default"); //NOI18N
+            AttributeSet defaults = fcs.getTokenFontColors(SettingsNames.DEFAULT_COLORING); //NOI18N
             while (it.hasNext()){
                 AttributeSet as = (AttributeSet) it.next();
                 String name = (String)as.getAttribute(StyleConstants.NameAttribute);
@@ -223,6 +224,10 @@ public class NbEditorUI extends ExtEditorUI {
 
                 Coloring coloring = new Coloring(font, fore, back);
                 cm.put(name, coloring);
+                JTextComponent c = getComponent();
+                if (SettingsNames.DEFAULT_COLORING.equals(name) && c!=null){ //NOI18N
+                    coloring.apply(getComponent());
+                }
             }
             mime2Coloring.put(mimeType, cm);
             return cm;
