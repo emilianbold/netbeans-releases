@@ -41,6 +41,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     
     private Project project;
     private boolean isMove;
+    private boolean invalid;
     
     private List listeners;
     private ProgressHandle handle;
@@ -187,6 +188,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         projectFolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSN_Project_Folder", new Object[] {}));
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Project_Folder", new Object[] {}));
 
+        extSourcesWarning.setForeground(UIManager.getColor("nb.errorForeground"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -308,6 +310,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         
         if (hasExternalSources() && !isMove) {
             extSourcesWarning.setText(NbBundle.getMessage(ProjectCopyPanel.class, "WRN_External_Sources"));
+            invalid = true;
         }
     }
     
@@ -354,10 +357,15 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     }
     
     public boolean isPanelValid() {
-        return " ".equals(errorMessage.getText());
+        return " ".equals(errorMessage.getText()) && !invalid;
     }
 
     private void validateDialog() {
+        if (invalid) {
+            //no reason to do anything:
+            return ;
+        }
+        
         String newError = computeError();
         boolean changed = false;
         String currentError = errorMessage.getText();
