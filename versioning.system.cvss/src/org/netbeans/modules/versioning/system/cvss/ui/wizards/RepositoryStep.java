@@ -382,11 +382,14 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     private boolean validateCvsRoot() {
         String cvsRoot = selectedCvsRoot();
         String errorMessage = null;
-        boolean supportedMethod = cvsRoot.startsWith(":pserver:"); // NOI18N
-        supportedMethod |= cvsRoot.startsWith(":local:"); // NOI18N
-        supportedMethod |= cvsRoot.startsWith(":fork:"); // NOI18N
-        supportedMethod |= cvsRoot.startsWith(":ext:"); // NOI18N
-        if (cvsRoot == null || supportedMethod == false ) {
+        boolean supportedMethod = false;
+        if (cvsRoot != null) {
+            supportedMethod |= cvsRoot.startsWith(":pserver:"); // NOI18N
+            supportedMethod |= cvsRoot.startsWith(":local:"); // NOI18N
+            supportedMethod |= cvsRoot.startsWith(":fork:"); // NOI18N
+            supportedMethod |= cvsRoot.startsWith(":ext:"); // NOI18N
+        }
+        if (supportedMethod == false ) {
             errorMessage = NbBundle.getMessage(CheckoutWizard.class, "BK1000");
         } else {
             try {
