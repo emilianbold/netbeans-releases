@@ -157,7 +157,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		this.dDBean = dDBean;
 		this.parent = parent;
 		this.baseXpath = dDBean.getXpath();
-		
+                
 		// Build validation field list for this bean
 		// !PW We need a better way to do this.  See comment by validationFieldList
 		//     member definition.
@@ -294,9 +294,25 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 	 * Version retrieval methods
 	 */
 	public J2EEBaseVersion getJ2EEModuleVersion() {
-		return getParent().getJ2EEModuleVersion();
+		Base parent = getParent();
+		if(parent != null) {
+			return getParent().getJ2EEModuleVersion();
+		} else {
+			ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("getJ2EEModuleVersion() called on child DConfigBean with null parent: " + this));
+		}
+		return null;
 	}
 
+	public ASDDVersion getAppServerVersion() {
+		Base parent = getParent();
+		if(parent != null) {
+			return getParent().getAppServerVersion();
+		} else {
+			ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("getAppServerVersion() called on child DConfigBean with null parent: " + this));
+		}
+		return null;
+	}
+        
 	/* ------------------------------------------------------------------------
 	 * Child bean finder methods
 	 */
@@ -502,8 +518,6 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 
 						// !PW FIXME 2nd half - workaround for IZ 41214 (see method comment)
 						parent.beanRemoved(beanXpath);
-                                                
-                                                System.out.println("Removed DCB for " + beanXpath);
 					} else {
 						Object [] args = new Object [2];
 						args[0] = dConfigBean.getDDBean();

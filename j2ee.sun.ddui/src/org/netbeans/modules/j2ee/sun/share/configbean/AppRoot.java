@@ -182,6 +182,7 @@ public class AppRoot extends BaseRoot {
 					sa.setRealm(realm);
 				}
 				
+                                sa.setVersion(getAppServerVersion().getNumericApplicationVersion());
 				return sa;
 			}
 		};
@@ -209,6 +210,7 @@ public class AppRoot extends BaseRoot {
                 result = (SunApplication) provider.newGraph(SunApplication.class);
             }
             
+            result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericApplicationVersion());
             return result;
             
 		}

@@ -361,6 +361,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				// Cache snippet is retrieved below and added to the snippet list
 				// for WebAppRoot.
 				
+                                swa.setVersion(getAppServerVersion().getNumericWebAppVersion());
 				return swa;
 			}
 		};
@@ -390,6 +391,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 result = (SunWebApp) provider.newGraph(SunWebApp.class);
             }
             
+            result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericWebAppVersion());
             return result;
 		}
 	}

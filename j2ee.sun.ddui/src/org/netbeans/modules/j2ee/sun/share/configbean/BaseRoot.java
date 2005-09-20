@@ -34,6 +34,7 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 	private SunONEDeploymentConfiguration dc;
 	private DDBean uri;
 	private DDBean displayNameDD;
+        private ASDDVersion appServerVersion;
 
 	protected SunONEDeploymentConfiguration getConfig() {
 		if(null == getParent()) {
@@ -48,6 +49,8 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 	}
 
 	public BaseRoot() {
+		// Default to 8.1 always for now.
+		appServerVersion = ASDDVersion.SUN_APPSERVER_8_1;
 	}
 
 	protected void init(DDBeanRoot dDBeanRoot, SunONEDeploymentConfiguration dc, DDBean ddbExtra) throws ConfigurationException  {
@@ -108,6 +111,16 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 		// something reasonable, but likely benign.
 		return J2EEVersion.J2EE_1_4;
 	}
+
+        /** Get the AppServer version to be used for saving deployment descriptors.
+         *  Note that this is different than the version of the connected target
+         *  application server (which can be queried by the appropriate method on
+         *  SunONEDeploymentConfiguration.)
+         */
+	public ASDDVersion getAppServerVersion() {
+		return appServerVersion;
+	}
+        
 
 	/** -----------------------------------------------------------------------
 	 * Properties

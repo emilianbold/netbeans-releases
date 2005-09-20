@@ -209,7 +209,8 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 //		Snippet snipCmpMapping = getCmpMappingSnippet();
 		Snippet snipOne = new DefaultSnippet() {
 			public CommonDDBean getDDSnippet() {
-                SunEjbJar sej = (SunEjbJar) DDProvider.getDefault().newGraph(SunEjbJar.class);
+				// This descriptor is always version 8.1
+				SunEjbJar sej = (SunEjbJar) DDProvider.getDefault().newGraph(SunEjbJar.class);
 				
 				EnterpriseBeans eb = sej.newEnterpriseBeans();
 
@@ -251,6 +252,8 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					}
 				}
 				sej.setEnterpriseBeans(eb);
+                                
+                                sej.setVersion(getAppServerVersion().getNumericEjbJarVersion());
 				return sej;
 			}
 		};
@@ -353,6 +356,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 result = (SunEjbJar) provider.newGraph(SunEjbJar.class);
             }
             
+            result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericEjbJarVersion());
             return result;
 		}
 	}
