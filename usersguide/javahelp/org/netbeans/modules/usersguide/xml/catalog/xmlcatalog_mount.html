@@ -7,51 +7,47 @@
 <html>
 <head>
 <meta name="lastupdated" content="24apr2001">
-<title>Mounting and Unmounting an XML Catalog</title>
+<title>Registering an XML Catalog</title>
 <link rel="stylesheet" href="../../ide.css" type="text/css">
 </head>
 <body>
-<h2>Mounting and Unmounting an XML Catalog</h2>
+<h2>Registering an XML Catalog</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Runtime window contains all of your currently mounted XML catalogs under 
-  the XML Entity Catalogs node (<img src="../images/catalog-root.gif" alt="XML entity catalogs node">).</p>
-
-<h4>To mount an XML catalog:</h4>
+<p>The Runtime window contains all of your currently registered <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="glossary_xmlcatalog.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="XML catalogs">
+    <param name="textFontSize" value="small">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object> under the DTD and XML Schema Catalogs node (<img src="../images/catalog-root.gif" alt="XML entity catalogs node">). 
+</p>
+<h4>To register an XML catalog:</h4>
 <ol>
-	<li>In the Runtime window, right-click the XML Entity Catalogs node and choose
-		Add Catalog.</li>
-   <li>Select the type of catalog you want to add in the Catalog Type combo box.
-   	You can choose from the following types:</li>
-  <ul>
-  	<li><b>OASIS Catalog Resolver.</b>&nbsp;Select this option to add an OASIS
-  		 XML catalog. 
-      <p> Select
-      	 the Prefer Public ID checkbox if you want to use
-      	the public identifier specified in the catalog rather than the system
-      	identifier located in the XML document. In most cases,  catalogs
-      	map the public identifier to a local copy of the entity they represent.
-      	In this case, you need to select the Prefer Public ID checkbox for entity
-      	resolution to function properly. 
-    </li>
-    <li><b>XML Catalog.</b>&nbsp;Select this option to add X Catalog v0.2 or
-    	 XML Catalog v0.4 deprecated catalog formats.</li>
-    <li><b>NetBeans Catalog.</b>&nbsp;Select this option to add the Netbeans
-    	IDE catalog in read-only form.</li>
-  </ul>
-  <li>Type the location of the catalog in the Catalog URL field, or click Browse
-  	to specify the file's location. Then click OK. 
-    <p>The appropriate  XML catalog node (<img src="../images/sysCatalog.gif" alt="catalog node icon">)
-       appears under the XML Entity Catalogs node. 
+  <li>Expand the DTD and XML Schema Catalogs node, right-click and the User Catalog 
+    node, and choose Add Local DTD or XML Schema.</li>
+  <li>Select whether which ID to map to the local file: 
+    <ul>
+      <li><b>Public ID.</b> Generally you use this option to redirect references 
+        to a DTD.</li>
+      <li><b>System ID.</b> Generally you use this option to redirect references 
+        to an XML schema.</li>
+    </ul>
+  </li>
+  <li>Browse to the location of the local DTD or XML schema in the URI field. 
+    <p>The appropriate XML catalog entry node (<img src="../images/catalog-entry.gif" alt="catalog entry node">) 
+      appears under the DTD and XML Schema Catalogs node. You can double-click 
+      the node to open the DTD or XML schema in the Source Editor.
   </li>
 </ol>
 <h4>To remove an XML catalog:</h4>
 <ol>
-  <li> Expand the XML Entity Catalogs node in the Runtime window.</li>
-  <li>Right-click the XML catalog node you want to remove and choose Remove.
-  	<p>The 
-  designated  XML catalog node (<img src="../images/sysCatalog.gif" alt="catalog node icon">)
-       is removed from the XML Entity Catalogs node. 
-  </li>
+  <li> Expand DTD and XML Schema Catalogs &gt; User Catalog in the Runtime window.</li>
+  <li>Right-click the XML catalog node you want to remove and choose Delete.</li>
 </ol>
 <table>
   <tr> 
@@ -59,7 +55,7 @@
   </tr>
   <tr> 
     <td width="23"></td>
-    <td><a href="xmlcatalog_about.html">XML Catalog Support in the IDE</a><br>
+    <td><a href="xmlcatalog_about.html">About XML Catalogs</a><br>
       <a href="xmlcatalog_formats.html">XML Catalog Formats</a><br>
       <a href="xmlcatalog_edit.html">Creating and Editing an XML Catalog</a>
   </tr>

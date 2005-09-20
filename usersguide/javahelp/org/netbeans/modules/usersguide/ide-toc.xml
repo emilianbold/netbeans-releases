@@ -174,9 +174,9 @@
       <tocitem text="Working With XML Schemas" target="xml_schemas" />
       <tocitem text="Validating an XML Document" target="xml_validatexml" />
       <tocitem text="Checking an XML Document for Well-Formedness" target="xml_checkxml" />
-      <tocitem text="XML Catalog Support in the IDE" >
-        <tocitem text="About" target="xml_catalogs" />
-        <tocitem text="Mounting and Unmounting an XML Catalog" target="xml_mountcatalogs" />
+      <tocitem text="XML Catalogs" >
+        <tocitem text="About XML Catalogs" target="xml_catalogs" />
+        <tocitem text="Registering an XML Catalog" target="xml_mountcatalogs" />
         <tocitem text="XML Catalog Formats" target="xml_catalogformats" />
         <tocitem text="Creating and Editing an XML Catalog" target="xml_editcatalogs" />
       </tocitem>
@@ -185,14 +185,13 @@
       <tocitem text="Generating a SAX Document Handler" target="xml_generatesax" />
       <tocitem text="Creating and Editing an XSL Stylesheet" target="xml_xslabout" />
       <tocitem text="Performing an XSL Transformation" target="xml_xsltransform" />
-  	  <tocitem text="Global XML Settings" target="xml_settings" />
- 	  <tocitem text="Cascading Style Sheets in the IDE">
+      <tocitem text="Cascading Style Sheets in the IDE">
         <tocitem text="Creating a Cascading Style Sheet" target="css_createcss" />
         <tocitem text="Editing a Cascading Style Sheet" target="css_editcss" />
         <tocitem text="Checking a Cascading Style Sheet for Validity" target="css_checkcss" />
         <tocitem text="Copying and Pasting CSS References" target="css_copypastecss" />
       </tocitem>
-	</tocitem>   
+    </tocitem>   
 
     <tocitem text="Editing Resource Bundles">
       <tocitem text="About Resource Bundles" target="propfiles.intro"/>

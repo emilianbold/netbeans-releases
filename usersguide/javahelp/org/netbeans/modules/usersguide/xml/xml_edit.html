@@ -11,35 +11,31 @@
 <body>
 <h2>Editing an XML Document</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The IDE's Source Editor provides such features
-  as syntax coloring, indentation, and basic code completion to assist you when
-editing XML documents. If your XML file has an associated DTD, you can use
-    code completion to automatically enter the names of any supported element,
-    attribute, or entity. As you type, a combo box displays all matching elements
-    in the DTD.
-  <!--<p>for elements such as end tags and standard entity references. </p>--> 
-  <!--Press Enter to enter 
-  only the element name, or press Shift-Enter to enter a start tag and end tag 
-  for the element.-->
-</p>
+<p>The IDE's Source Editor provides the following features for editing XML documents:</p>
+<ul>
+  <li><b>Syntax coloring</b></li>
+  <li><b>Indentation and reformatting.</b> The IDE indents lines as you type. 
+    You can reformat selected lines or the entire file by pressing Alt-Shift-F.</li>
+  <li><b>Code completion.</b> Basic code completion, such as auto-completion of 
+    element end tags, is available for all XML documents. If your document is 
+    defined by a DTD and the IDE can access the DTD, the Source Editor also offers 
+    code completion for all supported elements, attributes, and entities. As you 
+    type, a combo box displays all matching elements in the DTD. Press Enter to 
+    enter only the element name, or press Shift-Enter to enter a start tag and 
+    end tag for the element.</li>
+  <li><b>Navigator window.</b> The Navigator window (Ctrl-7) displays the structure 
+    of your XML documents. The Navigator window displays the name, attributes, 
+    and text content of each element. You can double-click any element node to 
+    jump to its location in the Source Editor.</li>
+  <li><b>Code folding.</b> You can expand and collapse any element in the Source 
+    Editor.</li>
+</ul>
 <h4>To open an XML file in the Source Editor:</h4>
 <ol>
-  <li>Right-click the XML file's node in the Files window.  
-  <li>Choose Edit from the contextual menu. 
-    <p>The IDE opens the file in a new Source Editor
-      tab and shifts focus to it. Alternately, you can also simply double-click
-    the file's node in the Files window. 
+  <li>Double-click the XML file's node. 
 </ol>
 
-  <ul class="note"> 
-    <li>The Source Editor toolbar contains shortcuts to 
-      the most commonly used XML commands. To disable the Source Editor toolbar, 
-      choose Tools&nbsp; &gt; Options 
-      and expand the Editing node. Then select the Editor Settings node and set 
-      the Show Toolbar property to False. </li>
-  </ul>
-  
-<table>
+  <table>
   <tr> 
     <th colspan=2 align=left nowrap><a name="seealso">See Also</a></th>
   </tr>

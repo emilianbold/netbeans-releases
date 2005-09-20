@@ -12,8 +12,19 @@
 <body>
 <h2>Creating and Editing an XML Catalog</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The IDE provides a template for creating new OASIS XML Catalog files. You
-can edit catalog files as you would any other XML document. </p>
+<p>The IDE provides a template for creating new OASIS <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="glossary_xmlcatalog.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="XML catalog">
+    <param name="textFontSize" value="small">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object> files. You can edit catalog files as you would any other XML document. 
+</p>
 <h4>To create a new OASIS XML Catalog:</h4>
 <ol>
   <li>From the main window, choose File  &gt; New
@@ -26,13 +37,32 @@ can edit catalog files as you would any other XML document. </p>
   </ol>
 
 <h4>To edit an XML catalog:</h4>
-<ol>
-  <li>Mount the catalog file in the Files window if it is not already mounted.</li>
-  <li>Double-click the catalog file node. <p>The file is displayed in the Source Editor.</li>
-</ol>
+<ul>
+  <li>Double-click the catalog node to open it in the Source Editor. 
+    <p>The file is displayed in the Source Editor. Here is a simple <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../samples/Oasis_sample.html">
+        <param name="viewerName" value="NBSecondaryWindow">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerSize" value="600,250">
+        <param name="text" value="example">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontSize" value="small">
+        <param name="textFontWeight" value="bold">
+        <param name="textFontStyle" value="italic">
+        <param name="textColor" value="blue">
+      </object> of an OASIS XML Catalog 1.0 catalog. You can view the spec for 
+      this format at: </p>
+    <p> <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://www.oasis-open.org/committees/entity/spec.html">
+        <param name="text" value="<html><u>http://www.oasis-open.org/committees/entity/spec.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+      </object> </p>
+  </li>
+	</ul>
 <h4>To view a mounted catalog entry in read-only form:</h4>
 <ol>
-  <li>In the Runtime window, expand the XML Entity Catalogs node.</li>
+  <li>In the Runtime window, expand the DTD and XML Schema Catalogs node.</li>
   <li>Expand the node for the desired catalog.</li>
   <li>Right-click the catalog entry node (<img src="../images/catalog-entry.gif" alt="catalog entry node icon">) 
     and choose View. 
@@ -47,7 +77,7 @@ can edit catalog files as you would any other XML document. </p>
   <tr> 
     <td width="23"></td>
     <td>
-      <a href="xmlcatalog_mount.html">Mounting and Unmounting an XML Catalog</a><br>
+      <a href="xmlcatalog_mount.html">Registering an XML Catalog</a><br>
       <a href="xmlcatalog_formats.html">XML Catalog Formats</a><br>
       <a href="../xml_edit.html">Editing an XML Document</a>
   </tr>
