@@ -28,6 +28,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.openide.windows.TopComponent;
 
 /**
  * Handle editing of forms in IDE. It enables to design components and also
@@ -85,7 +86,20 @@ public class FormDesignerOperator extends TopComponentOperator {
      * @param index wait for index-th form designer
      */
     public FormDesignerOperator(String name, int index) {
-        super(waitTopComponent(name, index));
+        super(waitTopComponent(null, name, index, new FormDesignerSubchooser()));
+    }
+    
+    /** Returns TopComponentOperator from parents hierarchy. */
+    private TopComponentOperator findParentTopComponent() {
+        Component parent = getSource().getParent();
+        while(parent != null) {
+            if(parent instanceof TopComponent) {
+                return new TopComponentOperator((JComponent)parent);
+            } else {
+                parent = parent.getParent();
+            }
+        }
+        return null;
     }
     
     /** Returns JToggleButtonOperator instance of Source button
@@ -93,7 +107,7 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public JToggleButtonOperator tbSource() {
         if(_tbSource == null) {
-            _tbSource = new JToggleButtonOperator(this, 
+            _tbSource = new JToggleButtonOperator(findParentTopComponent(),
                                     Bundle.getString("org.netbeans.modules.form.Bundle", 
                                                      "CTL_SourceTabCaption"));
         }
@@ -105,7 +119,7 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public JToggleButtonOperator tbDesign() {
         if(_tbDesign == null) {
-            _tbDesign = new JToggleButtonOperator(this, 
+            _tbDesign = new JToggleButtonOperator(findParentTopComponent(),
                                     Bundle.getString("org.netbeans.modules.form.Bundle", 
                                                      "CTL_DesignTabCaption"));
         }
@@ -117,7 +131,7 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public JToggleButtonOperator tbSelectionMode() {
         if(_tbSelectionMode == null) {
-            _tbSelectionMode = new JToggleButtonOperator(this, new ToolTipChooser(
+            _tbSelectionMode = new JToggleButtonOperator(findParentTopComponent(), new ToolTipChooser(
                                     Bundle.getString("org.netbeans.modules.form.Bundle", 
                                                      "CTL_SelectionMode")));
         }
@@ -129,7 +143,7 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public JToggleButtonOperator tbConnectionMode() {
         if(_tbConnectionMode == null) {
-            _tbConnectionMode = new JToggleButtonOperator(this, new ToolTipChooser(
+            _tbConnectionMode = new JToggleButtonOperator(findParentTopComponent(), new ToolTipChooser(
                                     Bundle.getString("org.netbeans.modules.form.Bundle", 
                                                      "CTL_ConnectionMode")));
         }
@@ -141,7 +155,7 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public JButtonOperator btPreviewForm() {
         if(_btPreviewForm == null) {
-            _btPreviewForm = new JButtonOperator(this, new ToolTipChooser(
+            _btPreviewForm = new JButtonOperator(findParentTopComponent(), new ToolTipChooser(
                                    Bundle.getString("org.netbeans.modules.form.actions.Bundle", 
                                                     "ACT_TestMode")));
         }
@@ -365,6 +379,30 @@ public class FormDesignerOperator extends TopComponentOperator {
         source();
         return new EditorOperator((JComponent)this.waitSubComponent(new EditorOperator.EditorSubchooser()));
     }
+
+    /** Closes this TopComponent instance by IDE API call and wait until 
+     * it is not closed. If this TopComponent is modified (e.g. editor top
+     * component), question dialog is shown and you have to close it. To close 
+     * this TopComponent and discard possible changes use {@link #closeDiscard}
+     * method.
+     */
+    public void close() {
+        // need to find parent MultiviewTopComponent and close it
+        new TopComponentOperator(findParentTopComponent()).close();
+    }
+    
+    /** SubChooser to determine FormDesigner TopComponent
+     * Used in findTopComponent method.
+     */
+    public static final class FormDesignerSubchooser implements ComponentChooser {
+        public boolean checkComponent(Component comp) {
+            return comp.getClass().getName().endsWith("FormDesigner");
+        }
+        
+        public String getDescription() {
+            return " org.netbeans.modules.form.FormDesigner";
+        }
+    }
     
     private static class HandleLayerChooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
@@ -399,7 +437,7 @@ public class FormDesignerOperator extends TopComponentOperator {
             this.tooltip = tooltip;
         }
         public boolean checkComponent(Component comp) {
-            return ((JComponent)comp).getToolTipText().equals(tooltip);
+            return tooltip.equals(((JComponent)comp).getToolTipText());
         }
         public String getDescription() {
             return("ToolTip equals to "+tooltip);
@@ -417,5 +455,4 @@ public class FormDesignerOperator extends TopComponentOperator {
         tbSource();
         tbDesign();
     }
-    
 }

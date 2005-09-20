@@ -38,7 +38,6 @@ public class ComponentPaletteOperator extends TopComponentOperator {
     
     private JCheckBoxOperator _cbSwing;
     private JCheckBoxOperator _cbAWT;
-    private JCheckBoxOperator _cbLayouts;
     private JCheckBoxOperator _cbBeans;
     // "Palette"
     private static final String PALETTE_TITLE = 
@@ -72,16 +71,6 @@ public class ComponentPaletteOperator extends TopComponentOperator {
         return _cbAWT;
     }
     
-    /** Waits for "Layouts" check box button.
-     * @return JCheckBoxOperator instance
-     */
-    public JCheckBoxOperator cbLayouts() {
-        if(_cbLayouts == null) {
-            _cbLayouts = new JCheckBoxOperator(this, "Layouts");  // NOI18N
-        }
-        return _cbLayouts;
-    }
-
     /** Waits for "Beans" check box button.
      * @return JCheckBoxOperator instance
      */
@@ -114,7 +103,6 @@ public class ComponentPaletteOperator extends TopComponentOperator {
      * @see #expandBeans
      * @see #expandSwing
      * @see #expandAWT
-     * @see #expandLayouts
      */
     public void selectComponent(final String displayName) {
         int index = lstComponents().findItemIndex(new ListItemChooser() {
@@ -142,7 +130,6 @@ public class ComponentPaletteOperator extends TopComponentOperator {
     /** Expands Swing components palette and collapses all others. */
     public void expandSwing() {
         collapseAWT();
-        collapseLayouts();
         collapseBeans();
         expand(cbSwing(), true);
     }
@@ -150,24 +137,14 @@ public class ComponentPaletteOperator extends TopComponentOperator {
     /** Expands AWT components palette and collapses all others. */
     public void expandAWT() {
         collapseSwing();
-        collapseLayouts();
         collapseBeans();
         expand(cbAWT(), true);
     }
     
-    /** Expands Layouts components palette and collapses all others. */
-    public void expandLayouts() {
-        collapseSwing();
-        collapseAWT();
-        collapseBeans();
-        expand(cbLayouts(), true);
-    }
-
     /** Expands Beans components palette and collapses all others. */
     public void expandBeans() {
         collapseSwing();
         collapseAWT();
-        collapseLayouts();
         expand(cbBeans(), true);
     }
 
@@ -181,11 +158,6 @@ public class ComponentPaletteOperator extends TopComponentOperator {
         expand(cbAWT(), false);
     }
     
-    /** Collapses Layouts components palette. */
-    public void collapseLayouts() {
-        expand(cbLayouts(), false);
-    }
-
     /** Collapses Beans components palette. */
     public void collapseBeans() {
         expand(cbBeans(), false);
@@ -216,7 +188,6 @@ public class ComponentPaletteOperator extends TopComponentOperator {
         lstComponents();
         cbSwing();
         cbAWT();
-        cbLayouts();
         cbBeans();
     }
 }
