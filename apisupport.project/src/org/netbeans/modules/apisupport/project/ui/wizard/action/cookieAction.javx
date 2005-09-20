@@ -1,9 +1,6 @@
 package @@PACKAGE_NAME@@;
 
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
-
+@@IMPORTS@@
 public final class @@CLASS_NAME@@ extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {

@@ -14,8 +14,13 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
@@ -25,6 +30,31 @@ import org.openide.filesystems.FileObject;
  * Data model used across the <em>New Action Wizard</em>.
  */
 final class DataModel extends BasicWizardIterator.BasicDataModel {
+
+    static final String[] PREDEFINED_COOKIE_CLASSES;
+    
+    private static final String[] HARDCODED_IMPORTS = new String[] {
+        "org.openide.nodes.Node", // NOI18N
+        "org.openide.util.HelpCtx", // NOI18N
+        "org.openide.util.actions.CookieAction" // NOI18N
+    };
+    
+    /** Maps FQCN to CNB. */
+    private static final Map CLASS_TO_CNB/*<String, String>*/;
+    
+    static {
+        Map map = new HashMap(5);
+        map.put("org.openide.loaders.DataObject", "org.openide.loaders"); // NOI18N
+        map.put("org.openide.cookies.EditCookie", "org.openide.nodes"); // NOI18N
+        map.put("org.openide.cookies.OpenCookie", "org.openide.nodes"); // NOI18N
+        map.put("org.netbeans.api.project.Project", "org.netbeans.modules.projectapi"); // NOI18N
+        map.put("org.openide.cookies.EditorCookie", "org.openide.text"); // NOI18N
+        CLASS_TO_CNB = Collections.unmodifiableMap(map);
+        PREDEFINED_COOKIE_CLASSES = new String[5];
+        DataModel.CLASS_TO_CNB.keySet().toArray(PREDEFINED_COOKIE_CLASSES);
+    }
+
+    private static final String NEW_LINE = System.getProperty("line.separator"); // NOI18N
     
     private CreatedModifiedFiles cmf;
     
@@ -83,7 +113,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         cmf = new CreatedModifiedFiles(getProject());
         
-        // Create CallableSystemAction from template
         String actionPath = getDefaultPackagePath(className + ".java"); // NOI18N
         // XXX use nbresloc URL protocol rather than DataModel.class.getResource(...):
         URL template = DataModel.class.getResource(alwaysEnabled
@@ -93,20 +122,33 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
         replaceTokens.put("@@DISPLAY_NAME@@", displayName); // NOI18N
         replaceTokens.put("@@MODE@@", getSelectionMode()); // NOI18N
+        Set imports = new TreeSet(Arrays.asList(HARDCODED_IMPORTS));
+        Set addedFQNCs = new TreeSet();
         if (!alwaysEnabled) {
             String indent = "            "; // NOI18N
-            String newLine = System.getProperty("line.separator"); // NOI18N
             StringBuffer cookieSB = new StringBuffer();
             for (int i = 0; i < cookieClasses.length; i++) {
-                cookieSB.append(indent + cookieClasses[i] + ".class"); // NOI18N
+                // imports for predefined chosen cookie classes
+                if (CLASS_TO_CNB.containsKey(cookieClasses[i])) {
+                    addedFQNCs.add(cookieClasses[i]);
+                }
+                // cookie block
+                cookieSB.append(indent + parseClassName(cookieClasses[i]) + ".class"); // NOI18N
                 if (i != cookieClasses.length - 1) {
-                    cookieSB.append(',' + newLine);
+                    cookieSB.append(',' + NEW_LINE);
                 }
             }
             replaceTokens.put("@@COOKIE_CLASSES_BLOCK@@", cookieSB.toString()); // NOI18N
         }
+        // imports
+        imports.addAll(addedFQNCs);
+        StringBuffer importsBuffer = new StringBuffer();
+        for (Iterator it = imports.iterator(); it.hasNext();) {
+            importsBuffer.append("import " + it.next() + ';' + NEW_LINE); // NOI18N
+        }
+        replaceTokens.put("@@IMPORTS@@", importsBuffer.toString()); // NOI18N
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
-
+        
         // Copy action icon
         if (origIconPath != null) {
             String relativeIconPath = addCreateIconOperation(cmf, origIconPath);
@@ -125,6 +167,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
         if (!alwaysEnabled) {
             cmf.add(cmf.addModuleDependency("org.openide.nodes", -1, null, true)); // NOI18N
+            for (Iterator it = addedFQNCs.iterator(); it.hasNext(); ) {
+                cmf.add(cmf.addModuleDependency((String) CLASS_TO_CNB.get(it.next()), -1, null, true));
+            }
         }
         
         // create layer entry for global menu item
@@ -387,6 +432,15 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 null, null, null, null));
         cmf.add(cmf.createLayerAttribute(sepPath, "instanceClass", // NOI18N
                 "javax.swing.JSeparator")); // NOI18N
+    }
+    
+    /**
+     * Parse class name from a fully qualified class name. If the given name
+     * doesn't contain dot (<em>.</em>), given parameter is returned.
+     */
+    static String parseClassName(final String name) {
+        int lastDot = name.lastIndexOf('.');
+        return lastDot == -1 ? name : name.substring(lastDot + 1);
     }
     
 }

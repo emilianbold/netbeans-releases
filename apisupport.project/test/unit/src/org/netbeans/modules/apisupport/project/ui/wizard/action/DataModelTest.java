@@ -137,7 +137,7 @@ public class DataModelTest extends LayerTestBase {
         
         // first panel data (Action Type)
         data.setAlwaysEnabled(false);
-        data.setCookieClasses(new String[] {"OpenCookie", "EditCookie"});
+        data.setCookieClasses(new String[] {DataModel.PREDEFINED_COOKIE_CLASSES[1], DataModel.PREDEFINED_COOKIE_CLASSES[2]});
         data.setMultiSelection(false);
         
         // second panel data (GUI Registration)

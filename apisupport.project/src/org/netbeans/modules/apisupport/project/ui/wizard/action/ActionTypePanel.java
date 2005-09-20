@@ -15,6 +15,9 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -28,20 +31,28 @@ import org.openide.util.HelpCtx;
  */
 final class ActionTypePanel extends BasicWizardIterator.Panel {
     
+    private static final Map/*<String, String>*/ NAME_TO_FQCN;
+    private static final DefaultComboBoxModel COOKIE_CLASS_MODEL;
+    
+    static {
+        COOKIE_CLASS_MODEL = new DefaultComboBoxModel();
+        Map map = new HashMap(DataModel.PREDEFINED_COOKIE_CLASSES.length);
+        for (int i = 0; i < DataModel.PREDEFINED_COOKIE_CLASSES.length; i++) {
+            String fqcn = DataModel.PREDEFINED_COOKIE_CLASSES[i];
+            String name = DataModel.parseClassName(fqcn);
+            map.put(name, fqcn);
+            COOKIE_CLASS_MODEL.addElement(name);
+        }
+        NAME_TO_FQCN = Collections.unmodifiableMap(map);
+    }
+    
     private DataModel data;
     
     public ActionTypePanel(final WizardDescriptor setting, final DataModel data) {
         super(setting);
         this.data = data;
         initComponents();
-        // XXX temporary hardcoded few ones - where to get all these values?
-        coockieClass.setModel(new DefaultComboBoxModel(new String[] {
-            "DataObject", // NOI18N
-            "EditCookie", // NOI18N
-            "EditorCookie", // NOI18N
-            "OpenCookie", // NOI18N
-            "Project", // NOI18N
-        }));
+        coockieClass.setModel(COOKIE_CLASS_MODEL);
     }
     
     protected String getPanelName() {
@@ -59,8 +70,9 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
                 coockieClass.getEditor().getItem().toString(), ","); // NOI18N
         Collection classes = new ArrayList();
         while (classesST.hasMoreTokens()) {
-            String clazz = (String) classesST.nextToken();
-            classes.add(clazz.trim());
+            String clazz = ((String) classesST.nextToken()).trim();
+            String fqcn = (String) NAME_TO_FQCN.get(clazz);
+            classes.add(fqcn == null ? clazz : fqcn);
         }
         String[] s = new String[classes.size()];
         return (String[]) classes.toArray(s);
@@ -191,3 +203,4 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     // End of variables declaration//GEN-END:variables
     
 }
+
