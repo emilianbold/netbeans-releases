@@ -9,7 +9,7 @@
 	type='line'
         actions='BookmarkActions'
         severity='ok'
-        custom_sidebar_color='0x5890BE'
+        custom_sidebar_color='0x808080'
         browseable='true'/> 
 
 <!-- if will be highlight used again, use this color: highlight='0xB8E6E6' -->
