@@ -17,8 +17,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.26"
-  module="name of your module"
-  author="yourname@netbeans.org"
+  module="Options Dialog SPI"
+  author="jan.jancura@sun.com"
 >
 
   &api-questions;
@@ -41,7 +41,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+   	Options Dialog module contains implementation of Options Dialog and simple SPI. This SPI allows 
+   	installation on custom options panels / categories to Options Dialog.
+
+	<api name="OptionsDialogSPI" group="java" type="export" category="devel" url="@TOP@/@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
+   	
   </p>
  </answer>
 
@@ -61,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+   This module follows NetBeans standard processes (QA, Unit Tests).
   </p>
  </answer>
 
@@ -80,7 +84,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+   Original estimate - 2 developer months. But it was ~6 developer months 
+    on the end.
   </p>
  </answer>
 
@@ -104,7 +109,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+    1) Client would like to install new panel to Options Dialog.
+    2) Client would like to install new panel to Advanced panel.
   </p>
  </answer>
 
@@ -122,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+   For users. Old Options Dialog was bad, and this one is better.
   </p>
  </answer>
 
@@ -156,7 +162,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+   Yes.
   </p>
  </answer>
 
@@ -170,7 +176,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   No standards. No deviations.
   </p>
  </answer>
 
@@ -192,7 +198,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+   There are no earlier versions of this module, and this module has no settings.
   </p>
  </answer>
 
@@ -210,7 +216,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   Current version of JRE is good enough.
   </p>
  </answer>
 
@@ -223,7 +229,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+   JRE is god.
   </p>
  </answer>
 
@@ -258,7 +264,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+   None.
   </p>
  </answer>
 
@@ -276,7 +282,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+    It probably runs on all J2SE platforms, but not the same way - like other 
+    Java applications, you know.
   </p>
  </answer>
 
@@ -295,7 +302,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+    This module follows all NetBeans "standards", and you should use 
+    many magic tokens, xmls and one manifest file to declare dependency on it.
+    See NetBeans docuentation for the current version of this rules, please.
   </p>
  </answer>
 
@@ -323,7 +332,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+   No.
   </p>
  </answer>
 
@@ -339,7 +348,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   Why not?
   </p>
  </answer>
 
@@ -365,7 +374,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+   Yes.
   </p>
  </answer>
 
@@ -383,7 +392,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   You can install it anywere.
   </p>
  </answer>
 
@@ -403,7 +412,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   No.
   </p>
  </answer>
 
@@ -419,7 +428,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   No.
   </p>
  </answer>
 
@@ -442,7 +451,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   No. And yours?
   </p>
  </answer>
 
@@ -462,7 +471,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   ?!?!? Instance of? Class? Yes of course. I have not seen any code without
+   some instance of!!!
   </p>
  </answer>
 
@@ -480,7 +490,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+   I am not crystal gazer.
   </p>
  </answer>
 
@@ -498,7 +508,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+   No.
   </p>
  </answer>
 
@@ -524,7 +534,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   No.
   </p>
  </answer>
 
@@ -542,7 +552,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   No.
   </p>
  </answer>
 
@@ -570,7 +580,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+   No threading model. Just normal NetBeans mass.
   </p>
  </answer>
 
@@ -589,7 +599,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+   None.
   </p>
  </answer>
 
@@ -607,7 +617,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+   None.
   </p>
  </answer>
 
@@ -638,7 +648,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+   No.
   </p>
  </answer>
 
@@ -659,7 +669,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+   Lookups and layers. See JavaDoc.
   </p>
  </answer>
 
@@ -676,7 +686,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+   No.
   </p>
  </answer>
 
@@ -693,7 +703,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+   No.
   </p>
  </answer>
 
@@ -706,7 +716,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   No.
   </p>
  </answer>
 
@@ -720,7 +730,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+   Yes.
   </p>
  </answer>
 
@@ -734,7 +744,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   No hardcoded. Practical - yes, of course.
   </p>
  </answer>
 
@@ -748,7 +758,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   2megabytes, but it depends on weather.
   </p>
  </answer>
 
@@ -770,7 +780,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+   No.
   </p>
  </answer>
 
@@ -794,7 +804,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   No.
   </p>
  </answer>
 
@@ -813,7 +823,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   Code scales very well.
   </p>
  </answer>
 
@@ -831,7 +841,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   I do not know how to enforce perforance of other code running in the same
+   virtual machine. Do you mean some black magic?
   </p>
  </answer>
 
@@ -844,7 +855,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   It depends on current implementation of NB core. Probably yes.
   </p>
  </answer>
 
@@ -858,7 +869,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   No.
   </p>
  </answer>
 
@@ -879,7 +890,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+   No.
   </p>
  </answer>
 
@@ -902,7 +913,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   Yes.
   </p>
  </answer>
 
@@ -923,7 +934,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   No.
   </p>
  </answer>
 
@@ -943,7 +954,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+   <api name="OptionsDialogSPILayers" group="layer" type="export" category="devel" url="@TOP@/@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
+   For registration of custom options panels.
   </p>
  </answer>
 
@@ -961,7 +973,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -978,7 +990,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 
