@@ -105,6 +105,7 @@ PropertyChangeListener {
     private JPanel              previewPanel = new JPanel ();
     private Preview             preview;
  
+    private FontAndColorsPanel  fontAndColorsPanel;
     private ColorModel          colorModel = null;
     private String		currentLanguage;
     private String              currentProfile;
@@ -116,8 +117,9 @@ PropertyChangeListener {
 
     
     /** Creates new form FontAndColorsPanel */
-    public SyntaxColoringPanel () {
-
+    public SyntaxColoringPanel (FontAndColorsPanel fontAndColorsPanel) {
+        this.fontAndColorsPanel = fontAndColorsPanel;
+        
         // 1) init components
         cbLanguages.addActionListener (this);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
@@ -185,6 +187,7 @@ PropertyChangeListener {
     }
  
     public void actionPerformed (ActionEvent evt) {
+        if (!listen) return;
 	if (evt.getSource () == cbEffects) {
 	    effectsColorChooser.setEnabled (cbEffects.getSelectedIndex () > 0);
 	} else
@@ -278,7 +281,7 @@ PropertyChangeListener {
             currentLanguage = (String) colorModel.getLanguages ().
                 iterator ().next ();
             Component component = colorModel.getSyntaxColoringPreviewComponent 
-                    (currentProfile, currentLanguage);
+                (currentLanguage);
             preview = (Preview) component;
             previewPanel.add ("Center", component);
             listen = false;
@@ -355,6 +358,14 @@ PropertyChangeListener {
             setToBeSaved (newScheme, language);
         }
         profiles.put (newScheme, m);
+    }
+    
+    Collection getDeafults () {
+        return getCategories (currentProfile, ColorModel.ALL_LANGUAGES);
+    }
+    
+    Collection getSyntaxColorings () {
+        return getCategories (currentProfile, currentLanguage);
     }
     
     private void setCurrentLanguage (String language) {
@@ -445,9 +456,10 @@ PropertyChangeListener {
     
     private void updatePreview () {
         preview.setParameters (
-            currentProfile, 
-            currentLanguage, 
-            getCategories (currentProfile, currentLanguage)
+            currentLanguage,
+            getDeafults (),
+            fontAndColorsPanel.getHighlights (),
+            getSyntaxColorings ()
         );
     }
     
@@ -532,6 +544,7 @@ PropertyChangeListener {
     }
     
     private Vector getCategories (String profile, String language) {
+        if (colorModel == null) return null;
         Map m = (Map) profiles.get (profile);
         if (m == null) {
             m = new HashMap ();

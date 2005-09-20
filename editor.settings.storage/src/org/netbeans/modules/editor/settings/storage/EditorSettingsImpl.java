@@ -166,19 +166,14 @@ public class EditorSettingsImpl extends EditorSettings {
     ) {
         // 1) translate profile name
 	String s = getOriginalProfile (profile); // loc name > name
-	if (s == null) {
-            s = profile; // create a new profile!
-            fontColorProfiles.put (s, s);
-        }
 
         if (!defaultColors.containsKey (s)) {
             
             // 2) init profile for test mime types
             if (s.startsWith ("test")) {
-                int i = s.indexOf ('_');
                 defaultColors.put (
                     s,
-                    getDefaultFontColors (s.substring (i + 1))
+                    getDefaultFontColors ("NetBeans")
                 );
             } else {
 
@@ -213,10 +208,6 @@ public class EditorSettingsImpl extends EditorSettings {
     ) {
         // 1) translate profile name
 	String s = getOriginalProfile (profile); // loc name > name
-	if (s == null) {
-            s = profile; // create a new profile!
-            fontColorProfiles.put (s, s);
-        }
 
         // 2) get data from cache or disk
         if (!defaultColorDefaults.containsKey (s)) {
@@ -247,8 +238,6 @@ public class EditorSettingsImpl extends EditorSettings {
     ) {
         // 1) translate name of profile
 	String s = getOriginalProfile (profile); // loc name > name
-	if (s == null)
-            addFontColorsProfile (s = profile); // create a new profile!
         
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
@@ -287,7 +276,6 @@ public class EditorSettingsImpl extends EditorSettings {
     ) {
         // 1) translate profile name
 	String s = getOriginalProfile (profile);
-        if (s == null) s = profile; // no such profile
 
         // 2) init profile for test mime types
         if (s.startsWith ("test")) {
@@ -329,7 +317,6 @@ public class EditorSettingsImpl extends EditorSettings {
     ) {
         // 1) translate profile name
 	String s = getOriginalProfile (profile);
-        if (s == null) s = profile; // no such profile
 
         // 2) read data form disk or cache
         if (!editorFontColorDefaults.containsKey (s)) {
@@ -359,8 +346,6 @@ public class EditorSettingsImpl extends EditorSettings {
     ) {
         // 1) translate profile name
 	String s = (String) fontColorProfiles.get (profile);
-	if (s == null)
-            addFontColorsProfile (s = profile); // create a new profile!
 	
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
@@ -500,10 +485,6 @@ public class EditorSettingsImpl extends EditorSettings {
 
     // support methods .........................................................
     
-    void addFontColorsProfile (String profile) {
-        fontColorProfiles.put (profile, profile);
-    }
-    
     private Map fontColorProfiles;
     private Map keyMapProfiles;
     private Map mimeToLanguage;
@@ -603,6 +584,9 @@ public class EditorSettingsImpl extends EditorSettings {
     String getOriginalProfile (String profile) {
 	if (fontColorProfiles == null)
 	    init ();
-	return (String) fontColorProfiles.get (profile);
+	String result = (String) fontColorProfiles.get (profile);
+        if (result != null) return result;
+        fontColorProfiles.put (profile, profile);
+        return profile;
     }
 }

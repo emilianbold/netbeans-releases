@@ -31,6 +31,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
@@ -88,9 +89,9 @@ ActionListener {
     public FontAndColorsPanel () {
         
         // init components
-        syntaxColoringPanel = new SyntaxColoringPanel ();
-        editorPanel = new EditorPanel ();
-        annotationsPanel = new AnnotationsPanel ();
+        syntaxColoringPanel = new SyntaxColoringPanel (this);
+        editorPanel = new EditorPanel (this);
+        annotationsPanel = new AnnotationsPanel (this);
         cbProfiles = new JComboBox ();
         cbProfiles.addItemListener (new ItemListener () {
             public void itemStateChanged (ItemEvent evt) {
@@ -170,6 +171,8 @@ ActionListener {
         }
     }
     
+    
+    
     void applyChanges () {
         editorPanel.applyChanges ();
         syntaxColoringPanel.applyChanges ();
@@ -222,6 +225,18 @@ ActionListener {
             deleteCurrentProfile ();
             return;
         }
+    }
+    
+    Collection getDefaults () {
+        return syntaxColoringPanel.getDeafults ();
+    }
+    
+    Collection getHighlights () {
+        return editorPanel.getHighlightings ();
+    }
+    
+    Collection getSyntaxColorings () {
+        return syntaxColoringPanel.getSyntaxColorings ();
     }
     
     private static String loc (String key) {

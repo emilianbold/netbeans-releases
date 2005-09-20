@@ -98,12 +98,9 @@ public abstract class ColorModel {
         Collection /*<Category>*/ categories
     );
     
-    public abstract Component getEditorPreviewComponent (
-        String      profile
-    );
+    public abstract Component getEditorPreviewComponent ();
 	
     public abstract Component getSyntaxColoringPreviewComponent (
-        String      profile,
         String      language
     );
     
@@ -113,9 +110,10 @@ public abstract class ColorModel {
     public static interface Preview {
         
         public void setParameters (
-            String      profile,
             String      language,
-            Collection /*<Category>*/ categories
+            final Collection /*<Category>*/ defaults,
+            Collection /*<Category>*/ highlightings,
+            Collection /*<Category>*/ syntaxColorings
         );
     } 
 }

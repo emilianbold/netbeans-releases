@@ -92,6 +92,7 @@ PropertyChangeListener {
     private ColorComboBox	backgroundColorChooser = new ColorComboBox ();
     private ColorComboBox	waveUnderlinedColorChooser = new ColorComboBox ();
  
+    private FontAndColorsPanel  fontAndColorsPanel;
     private boolean		listen = false;
     private String              currentScheme;
     private Map                 schemes = new HashMap ();
@@ -99,8 +100,9 @@ PropertyChangeListener {
 
     
     /** Creates new form FontAndColorsPanel */
-    public AnnotationsPanel () {
-
+    public AnnotationsPanel (FontAndColorsPanel fontAndColorsPanel) {
+        this.fontAndColorsPanel = fontAndColorsPanel;
+        
         // 1) init components
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
