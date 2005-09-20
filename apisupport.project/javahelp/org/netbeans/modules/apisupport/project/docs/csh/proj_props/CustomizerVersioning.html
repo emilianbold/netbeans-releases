@@ -12,7 +12,42 @@
 <h2>Module Project Properties Dialog Box: API Versioning</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
-<p>tbd</p>
+<p>You open the Module Project Properties dialog box by right-clicking 
+a module project and choosing Properties. 
+
+<p>The API Versioning page contains the following:
+
+<ul><li><b>Coe Name Base:</b> Displays the code name base of the module.</li>
+	<li><b>Major Release Version.</b> Specifies the major release version in <tt>manifest.mf</tt>; may be blank or a non-negative integer.
+	<li><b>Specification Version.</b> Sets <tt>OpenIDE-Module-Specification-Version</tt> in the <tt>manifest.mf</tt> file. Specifies...
+	<li><b>Append Implementation Versions Automatically.</b> Specifies...
+	<li><b>Implementation Version.</b> Specifies...
+	<li><b>Regular Module|Autoload Module|Eager Module.</b> An autoload module is only loaded when it is needed. An eager module...
+	 A regular module...
+	<li><b>Public Packages.</b> Displays a list of all packages contained in the 
+	source directory plus any <tt>class-path-extensions</tt>. If checked, the package is included among <tt>public-packages</tt>
+	in <tt>nbproject/project.xml</tt>.
+	<li><b>Export Packages Only to Friends.</b> Is checked if and only if there is at least one entry in
+	the list below it. The list may include code name bases of other modules and is sorted. If not 
+	empty, packages are kept in <tt>friend-packages</tt> instead and the friends are listed in <tt>nbproject/project.xml..
+	<li><b>Provided Tokens.</b> Sets <tt>OpenIDE-Module-Provides</tt> in the <tt>manifest.mf</tt> file. 
+</ul>
+<table>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See also</a></th>
+  </tr>
+  <tr> 
+    <td width="23px">&nbsp;</td>
+    <td><a href="../../create_plugin/projectlevel_create/about_project_wizards.html">About Module Project Templates</a><br>
+      Module Project Properties Dialog Box:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerSources.html">Sources</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerLibraries.html">Libraries</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerDisplay.html">Display</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerCompiling.html">Compiling</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerPackaging.html">Packaging</a> <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerDocumenting.html">Documenting</a><br>
+  </tr>
+</table>
 
 <hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
 

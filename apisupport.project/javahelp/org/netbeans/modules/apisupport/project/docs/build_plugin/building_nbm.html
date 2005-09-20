@@ -17,15 +17,15 @@
 <a href="#seealso">See Also</a> 
 </small></p>
 <p>An NBM file is a NetBeans module packaged for delivery via the web. 
-The principal differences between NBM files and a module JAR files are:
+The principal differences between NBM files and module JAR files are:
 <ul><li>An NBM file is compressed.
-<li>An NBM file can contain more than one JAR file -- modules can package any libraries they use into their NBM.
-<li>An NBM file contains metadata NetBeans will use to display information about it in the update center,
+<li>An NBM file can contain more than one JAR file -- modules can package any libraries they use into their NBM file.
+<li>An NBM file contains metadata that NetBeans will use to display information about it in the Update Center,
 such as the manifest contents, the license, etc.
-<li>An NBM files is typically signed for security purposes.</ul>
+<li>An NBM file is typically <i>signed</i> for security purposes.</ul>
 
-<p>NBM files are just ZIP files with a special extension, which use the JDK's mechanism 
-for signing jars. Unless you are doing something unusual, you will not need to worry about the 
+<p>NBM files are just ZIP files with a special extension. They use the JDK's mechanism 
+for signing JAR files. Unless you are doing something unusual, you will not need to worry about the 
 contents of an NBM file -- just let the standard Ant build script for NBM creation take care of it for you. 
 The IDE generates the build script based on the options you enter 
 in the project's Project Properties dialog box. You can set the module's dependencies, versioning,
