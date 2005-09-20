@@ -71,11 +71,11 @@ public class EntityEjbDCBFactory extends AbstractDCBFactory { // implements DCBF
 					jsr88Logger.severe("bug in Utils.getDefaultCmpResourceJndiName");
 				}
 			}*/
-        } else if(null != testRet && 1 == testRet.length && testRet[0].indexOf(BEAN) > -1) {
-            dcbClass = EntityEjb.class;
-        } else {
-            throw Utils.makeCE("ERR_UnknownPersistenceType", testRet, null);
-        }
+		} else if(null != testRet && 1 == testRet.length && testRet[0].indexOf(BEAN) > -1) {
+			dcbClass = EntityEjb.class;
+		} else {
+			throw Utils.makeCE("ERR_UnknownPersistenceType", testRet, null);
+		}
         
 		return dcbClass;
 	}
