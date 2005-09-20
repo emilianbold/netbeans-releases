@@ -194,8 +194,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return ModuleActions.getProjectActions(project);
         }
         
-        public java.awt.Image getIcon(int type) {
-            java.awt.Image img = super.getIcon(type);
+        public Image getIcon(int type) {
+            Image img = super.getIcon(type);
             
             if (files != null && files.iterator().hasNext()) {
                 try {
@@ -209,8 +209,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return img;
         }
         
-        public java.awt.Image getOpenedIcon(int type) {
-            java.awt.Image img = super.getIcon(type);
+        public Image getOpenedIcon(int type) {
+            Image img = super.getIcon(type);
             
             if (files != null && files.iterator().hasNext()) {
                 try {
@@ -380,29 +380,11 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
         
         public String getHtmlDisplayName() {
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = (FileObject) files.iterator().next();
-                    FileSystem.Status stat = fo.getFileSystem().getStatus();
-                    if (stat instanceof FileSystem.HtmlStatus) {
-                        FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-                        
-                        String result = hstat.annotateNameHtml(DISPLAY_NAME, files);
-                        
-                        // Make sure the super string was really modified (XXX why?)
-                        if (!DISPLAY_NAME.equals(result)) {
-                            return result;
-                        }
-                    }
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            return null;
+            return computeAnnotatedHtmlDisplayName(DISPLAY_NAME, files);
         }
         
-        public java.awt.Image getIcon(int type) {
-            java.awt.Image img = getIcon(false);
+        public Image getIcon(int type) {
+            Image img = getIcon(false);
             
             if (files != null && files.iterator().hasNext()) {
                 try {
@@ -416,8 +398,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return img;
         }
         
-        public java.awt.Image getOpenedIcon(int type) {
-            java.awt.Image img = getIcon(true);
+        public Image getOpenedIcon(int type) {
+            Image img = getIcon(true);
             
             if (files != null && files.iterator().hasNext()) {
                 try {
@@ -572,6 +554,45 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return false;
         }
         
+        public String getHtmlDisplayName() {
+            String result = null;
+            DataObject dob = (DataObject) getLookup().lookup(DataObject.class);
+            if (dob != null) {
+                Set files = dob.files();
+                result = computeAnnotatedHtmlDisplayName(displayName, files);
+            }
+            return result;
+        }
+        
+    }
+    
+    /**
+     * Annotates <code>htmlDisplayName</code>, if it is needed, and returns the
+     * result; <code>null</code> otherwise.
+     */
+    private static String computeAnnotatedHtmlDisplayName(
+            final String htmlDisplayName, final Set files) {
+        
+        String result = null;
+        if (files != null && files.iterator().hasNext()) {
+            try {
+                FileObject fo = (FileObject) files.iterator().next();
+                FileSystem.Status stat = fo.getFileSystem().getStatus();
+                if (stat instanceof FileSystem.HtmlStatus) {
+                    FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+                    
+                    String annotated = hstat.annotateNameHtml(htmlDisplayName, files);
+                    
+                    // Make sure the super string was really modified (XXX why?)
+                    if (!htmlDisplayName.equals(annotated)) {
+                        result = annotated;
+                    }
+                }
+            } catch (FileStateInvalidException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        return result;
     }
     
 }
