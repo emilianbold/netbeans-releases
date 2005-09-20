@@ -15,12 +15,13 @@ package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory;
 import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.*;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 
 
 /*
@@ -74,8 +75,13 @@ public class RegistryNodeProvider {
             public Object lookup(Class clazz) {
                 if (DeploymentFactory.class.isAssignableFrom(clazz))
                     return server.getDeploymentFactory();
-                if (DeploymentManager.class.isAssignableFrom(clazz))
-                    return server.getDisconnectedDeploymentManager();
+                if (DeploymentManager.class.isAssignableFrom(clazz)) {
+                    try {
+                        return server.getDisconnectedDeploymentManager();
+                    } catch (DeploymentManagerCreationException dmce) {
+                        ErrorManager.getDefault().notify(dmce);
+                    }
+                }
                 return null;
             }
             public Lookup.Result lookup(Lookup.Template template) {
@@ -90,8 +96,12 @@ public class RegistryNodeProvider {
                 if (DeploymentFactory.class.isAssignableFrom(clazz))
                     return instance.getServer().getDeploymentFactory();
                 if (DeploymentManager.class.isAssignableFrom(clazz)) {
-                    return instance.isConnected() ? instance.getDeploymentManager()
-                        : instance.getDisconnectedDeploymentManager();
+                    try {
+                        return instance.isConnected() ? instance.getDeploymentManager()
+                                                      : instance.getDisconnectedDeploymentManager();
+                    }  catch (DeploymentManagerCreationException dmce) {
+                        ErrorManager.getDefault().notify(dmce);
+                    }
                 }
                 return null;
             }
@@ -108,8 +118,12 @@ public class RegistryNodeProvider {
                     return target.getInstance().getServer().getDeploymentFactory();
                 if (DeploymentManager.class.isAssignableFrom(clazz)) {
                     ServerInstance instance = target.getInstance();
-                    return instance.isConnected() ? instance.getDeploymentManager()
-                        : instance.getDisconnectedDeploymentManager();
+                    try {
+                        return instance.isConnected() ? instance.getDeploymentManager()
+                                                      : instance.getDisconnectedDeploymentManager();
+                    }  catch (DeploymentManagerCreationException dmce) {
+                        ErrorManager.getDefault().notify(dmce);
+                    }
                 }
                 if (Target.class.isAssignableFrom(clazz))
                     return target.getTarget();

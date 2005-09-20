@@ -127,21 +127,15 @@ public class Server implements Node.Cookie {
         return factory;
     }
     
-    public DeploymentManager getDisconnectedDeploymentManager() {
+    public DeploymentManager getDisconnectedDeploymentManager() throws DeploymentManagerCreationException  {
         if(manager == null) {
             manager = getDisconnectedDeploymentManager(dep.getDisconnectedString());
         }
         return manager;
     }
     
-    public DeploymentManager getDisconnectedDeploymentManager(String uri) {
-        try {
-            return getFactory().getDisconnectedDeploymentManager(uri);
-        } catch (Exception e) {
-            IllegalStateException ise = new IllegalStateException();
-            ise.initCause(e);
-            throw ise;
-        }
+    public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
+        return getFactory().getDisconnectedDeploymentManager(uri);
     }
     
     public boolean handlesUri(String uri) {

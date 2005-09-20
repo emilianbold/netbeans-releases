@@ -294,6 +294,9 @@ public abstract class J2eeModuleProvider {
 
             if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
+                ConfigSupportImpl oldConSupp = confSupp;
+                confSupp = null;
+                getConfigSupportImpl().ensureConfigurationReady();
                 if (oldCtxPath == null || oldCtxPath.equals("")) { //NOI18N
                     oldCtxPath = getDeploymentName().replace(' ', '_'); //NOI18N
                     char c [] = oldCtxPath.toCharArray();
@@ -305,9 +308,6 @@ public abstract class J2eeModuleProvider {
                     }
                     oldCtxPath = "/" + new String (c); //NOI18N
                 }
-                ConfigSupportImpl oldConSupp = confSupp;
-                confSupp = null;
-                getConfigSupportImpl().ensureConfigurationReady();
                 getConfigSupportImpl().setWebContextRoot(oldCtxPath);
                 oldConSupp.dispose();
             } else {

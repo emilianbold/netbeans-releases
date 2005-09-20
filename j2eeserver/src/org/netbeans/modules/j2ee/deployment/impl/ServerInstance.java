@@ -25,6 +25,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.openide.filesystems.*;
 import java.util.*;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
@@ -145,7 +146,7 @@ public class ServerInstance implements Node.Cookie {
         return manager != null;
     }
     
-    public DeploymentManager getDisconnectedDeploymentManager() {
+    public DeploymentManager getDisconnectedDeploymentManager() throws DeploymentManagerCreationException {
         if (disconnectedManager != null) return disconnectedManager;
         
         FileObject fo = ServerRegistry.getInstanceFileObject(url);
@@ -170,7 +171,11 @@ public class ServerInstance implements Node.Cookie {
             J2eePlatformFactory fact = server.getJ2eePlatformFactory();
             // TODO this will be removed, implementation of J2EEPlatformFactory will be mandatory
             if (fact != null) {
-                j2eePlatformImpl = fact.getJ2eePlatformImpl(isConnected() ? getDeploymentManager() : getDisconnectedDeploymentManager());
+                try {
+                    j2eePlatformImpl = fact.getJ2eePlatformImpl(isConnected() ? getDeploymentManager() : getDisconnectedDeploymentManager());
+                }  catch (DeploymentManagerCreationException dmce) {
+                    ErrorManager.getDefault().notify(dmce);
+                }
             }
         }
         return j2eePlatformImpl;
@@ -362,7 +367,11 @@ public class ServerInstance implements Node.Cookie {
     
     public StartServer getStartServer() {
         if (startServer == null) {
-            startServer = server.getOptionalFactory ().getStartServer (getDisconnectedDeploymentManager());
+            try {
+                startServer = server.getOptionalFactory ().getStartServer(getDisconnectedDeploymentManager());
+            }  catch (DeploymentManagerCreationException dmce) {
+                ErrorManager.getDefault().notify(dmce);
+            }
         }
         return startServer;
     }
@@ -383,7 +392,11 @@ public class ServerInstance implements Node.Cookie {
     
     public FindJSPServlet getFindJSPServlet() {
         if (findJSPServlet == null) {
-            findJSPServlet = server.getOptionalFactory().getFindJSPServlet (getDisconnectedDeploymentManager());
+            try {
+                findJSPServlet = server.getOptionalFactory().getFindJSPServlet (getDisconnectedDeploymentManager());
+            }  catch (DeploymentManagerCreationException dmce) {
+                ErrorManager.getDefault().notify(dmce);
+            }
         }
         return findJSPServlet;
     }
@@ -684,7 +697,7 @@ public class ServerInstance implements Node.Cookie {
      * Return a connected DeploymentManager if needed by server platform for configuration
      * @return DeploymentManager object for configuration.
      */
-    public DeploymentManager getDeploymentManagerForConfiguration() {
+    public DeploymentManager getDeploymentManagerForConfiguration() throws DeploymentManagerCreationException {
         StartServer ss = getStartServer();
         if (ss != null && ss.needsStartForConfigure()) {
             start();

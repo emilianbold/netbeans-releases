@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
@@ -29,6 +27,7 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.*;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -114,6 +113,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ime);
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+            } catch (DeploymentManagerCreationException dmce) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dmce);
             }
         }
     }
@@ -295,6 +296,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 return null;
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+                return null;
+            } catch (DeploymentManagerCreationException dmce) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dmce);
                 return null;
             }
         }
