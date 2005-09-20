@@ -134,14 +134,17 @@ final class NavigatorTC extends TopComponent {
      */ 
     public void setPanels (List panels) {
         this.panels = panels;
+        int panelsCount = panels == null ? -1 : panels.size();
         // no panel, so make UI look empty
-        if (panels == null || panels.size() == 0) {
+        if (panelsCount <= 0) {
             selectedPanel = null;
             setToEmpty();
         } else {
             // clear regular content 
             contentArea.removeAll();
             panelSelector.removeAllItems();
+            // #63777: hide panel selector when only one panel available
+            panelSelector.setVisible(panelsCount != 1);
             // fill with new content
             NavigatorPanel curPanel = null;
             int i = 0;
