@@ -19,9 +19,7 @@ import java.util.*;
 import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -57,10 +55,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.core.Utilities;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /** Wizard for adding web service clients to an application
  */
@@ -260,7 +254,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 DialogDisplayer.getDefault().notify(desc);
                 return result;
             } else {
-                List schemaFiles = getSchemaNames(sourceWsdlFile);
+                List schemaFiles = ClientBuilder.getSchemaNames(sourceWsdlFile,true);
                 if (schemaFiles!=null && schemaFiles.size()>0) {
                     schemas=new ArrayList();
                     FileObject wsdlFolder = sourceWsdlFile.getParent();
@@ -469,73 +463,5 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
 
     public void removeChangeListener(ChangeListener l) {
         // nothing to do yet
-    }
-    
-    /** Private method to identify schema files to import
-    */
-    private List /*String*/ getSchemaNames(FileObject fo) {
-            List result = null;
-            try {
-                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                    factory.setNamespaceAware(true);
-                    SAXParser saxParser = factory.newSAXParser();
-                    ImportsHandler handler= new ImportsHandler();
-                    saxParser.parse(new InputSource(fo.getInputStream()), handler);
-                    result = handler.getSchemaNames();
-            } catch(ParserConfigurationException ex) {
-                    // Bogus WSDL, return null.
-            } catch(SAXException ex) {
-                    // Bogus WSDL, return null.
-            } catch(IOException ex) {
-                    // Bogus WSDL, return null.
-            }
-
-            return result;
-    }
-    
-    private class ImportsHandler extends DefaultHandler {
-        
-        private static final String W3C_WSDL_SCHEMA = "http://schemas.xmlsoap.org/wsdl"; // NOI18N
-        private static final String W3C_WSDL_SCHEMA_SLASH = "http://schemas.xmlsoap.org/wsdl/"; // NOI18N
-        
-        private List schemaNames;
-        
-        private boolean insideSchema;
-        
-        ImportsHandler() {
-            schemaNames = new ArrayList();
-        }
-        
-        public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
-            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
-                if("types".equals(localname)) { // NOI18N
-                    insideSchema=true;
-                }
-                if("import".equals(localname)) { // NOI18N
-                    String wsdlLocation = attributes.getValue("location"); //NOI18N
-                    if (wsdlLocation!=null && wsdlLocation.indexOf("/")<0 && wsdlLocation.endsWith(".wsdl")) { //NOI18N
-                        schemaNames.add(wsdlLocation);
-                    }
-                }
-            }
-            if(insideSchema && "import".equals(localname)) { // NOI18N
-                String schemaLocation = attributes.getValue("schemaLocation"); //NOI18N
-                if (schemaLocation!=null && schemaLocation.indexOf("/")<0 && schemaLocation.endsWith(".xsd")) { //NOI18N
-                    schemaNames.add(schemaLocation);
-                }
-            }
-        }
-        
-        public void endElement(String uri, String localname, String qname) throws SAXException {
-            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
-                if("types".equals(localname)) { // NOI18N
-                    insideSchema=false;
-                }
-            }
-        }
-        
-        public List/*String*/ getSchemaNames() {
-            return schemaNames;
-        }
     }
 }
