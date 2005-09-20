@@ -90,24 +90,17 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
     
-    public void testValidShadowsInNBProfile () {
+    public void testValidShadows () {
         // might be better to move into editor/options tests as it is valid only if there are options
         List/*<String>*/ errors = new ArrayList();
-        String PROFILES_FOLDER = "Keymaps"; // should match to org.netbeans.core.ShortcutsFolder
         
-        FileObject profileFolder = Repository.getDefault().getDefaultFileSystem().findResource(PROFILES_FOLDER+"/NetBeans");
-        if (profileFolder == null) {
-            InstalledFileLocator ifl = InstalledFileLocator.getDefault();
-            if (ifl != null) {
-                if (ifl.locate("modules/org-netbeans-modules-defaults.jar", "org.netbeans.modules.defaults/1", false) == null)
-                    // module with profiles is not installed, give up
-                    return;
-            }
-            fail ("folder with keymap profile not found");
-        }
-        FileObject [] files = profileFolder.getChildren();
-        for (int i=0; i<files.length; i++) {
-            FileObject fo = files[i];
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        
+        Enumeration en = root.getChildren(true);
+        int cnt = 0;
+        while (en.hasMoreElements()) {
+            FileObject fo = (FileObject)en.nextElement();
+            cnt++;
             
             try {
                 DataObject obj = DataObject.find (fo);
@@ -131,6 +124,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             fail ("Some shadow files in NetBeans profile are broken:" + errors);
         }
         
+        if (cnt == 0) {
+            fail("No file objects on system file system!");
+        }
     }
     
     
