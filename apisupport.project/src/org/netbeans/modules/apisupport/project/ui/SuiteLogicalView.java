@@ -39,12 +39,14 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
@@ -104,7 +106,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
-
+        
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(ProjectInformation.PROP_NAME)) {
                 fireNameChange(null, getName());
@@ -212,23 +214,21 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     /** Represent one module (a suite component) node. */
     private static final class SuiteComponentNode extends AbstractNode {
         
-        private Action defaultAction;
-        private NbModuleProject suiteComponent;
+        private final static Action removeAction = new RemoveSuiteComponentAction();
+        private final static Action defaultAction = new OpenProjectAction();
         
         public SuiteComponentNode(final NbModuleProject suiteComponent) {
-            super(Children.LEAF);
+            super(Children.LEAF, Lookups.fixed(new Object[] {suiteComponent}));
             this.suiteComponent = suiteComponent;
             ProjectInformation info = ProjectUtils.getInformation(suiteComponent);
             setName(info.getName());
             setDisplayName(info.getDisplayName());
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
-            defaultAction = new OpenProjectAction(suiteComponent);
         }
         
         public Action[] getActions(boolean context) {
             return new Action[] {
-                defaultAction,
-                new RemoveSuiteComponentAction(suiteComponent)
+                defaultAction, removeAction
             };
         }
         
@@ -238,56 +238,87 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
     }
     
-    private static final class RemoveSuiteComponentAction extends AbstractAction {
+    private static final class RemoveSuiteComponentAction extends NodeAction {
         
-        private final NbModuleProject suiteComponent;
-        
-        public RemoveSuiteComponentAction(final NbModuleProject suiteComponent) {
-            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemoveModule"));
-            this.suiteComponent = suiteComponent;
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-            try {
-                Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws IOException {
-                        SuiteUtils.removeModuleFromSuite(suiteComponent);
-                        return Boolean.TRUE;
+        protected void performAction(Node[] activatedNodes) {
+            for (int i = 0; i < activatedNodes.length; i++) {
+                final NbModuleProject suiteComponent =
+                        (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
+                assert suiteComponent != null : "NbModuleProject in lookup"; // NOI18N
+                try {
+                    Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                        public Object run() throws IOException {
+                            SuiteUtils.removeModuleFromSuite(suiteComponent);
+                            return Boolean.TRUE;
+                        }
+                    });
+                    // and save the project
+                    if (result == Boolean.TRUE) {
+                        ProjectManager.getDefault().saveProject(suiteComponent);
                     }
-                });
-                // and save the project
-                if (result == Boolean.TRUE) {
-                    ProjectManager.getDefault().saveProject(suiteComponent);
+                } catch (MutexException e) {
+                    ErrorManager.getDefault().notify((IOException)e.getException());
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
                 }
-            } catch (MutexException e) {
-                ErrorManager.getDefault().notify((IOException)e.getException());
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
             }
         }
-    }
-    
-    private static final class OpenProjectAction extends AbstractAction {
         
-        private final NbModuleProject suiteComponent;
-        
-        public OpenProjectAction(final NbModuleProject suiteComponent) {
-            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_OpenProject"));
-            this.suiteComponent = suiteComponent;
+        protected boolean enable(Node[] activatedNodes) {
+            return true;
         }
         
-        public void actionPerformed(ActionEvent evt) {
+        public String getName() {
+            return NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemoveModule");
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+        
+        protected boolean asynchronous() {
+            return false;
+        }
+        
+    }
+    
+    private static final class OpenProjectAction extends NodeAction {
+        
+        protected void performAction(Node[] activatedNodes) {
+            final Project[] projects = new Project[activatedNodes.length];
+            for (int i = 0; i < activatedNodes.length; i++) {
+                NbModuleProject suiteComponent =
+                        (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
+                assert suiteComponent != null : "NbModuleProject in lookup"; // NOI18N
+                projects[i] = suiteComponent;
+            }
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     String previousText = StatusDisplayer.getDefault().getStatusText();
                     StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(SuiteLogicalView.class, "MSG_OpeningProject", // NOI18N
-                            ProjectUtils.getInformation(suiteComponent).getDisplayName()));
-                    OpenProjects.getDefault().open(new Project[] {suiteComponent}, false);
+                            NbBundle.getMessage(SuiteLogicalView.class, "MSG_OpeningProjects"));
+                    OpenProjects.getDefault().open(projects, false);
                     StatusDisplayer.getDefault().setStatusText(previousText);
                 }
             });
         }
+        
+        protected boolean enable(Node[] activatedNodes) {
+            return true;
+        }
+        
+        public String getName() {
+            return NbBundle.getMessage(SuiteLogicalView.class, "CTL_OpenProject");
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+        
+        protected boolean asynchronous() {
+            return false;
+        }
+        
     }
     
 }
