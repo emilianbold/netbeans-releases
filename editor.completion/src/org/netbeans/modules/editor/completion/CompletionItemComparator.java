@@ -15,6 +15,7 @@ package org.netbeans.modules.editor.completion;
 
 import java.util.Comparator;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 
 /**
  * Comparator for completion items either by sort priority or by sort text.
@@ -32,6 +33,14 @@ public class CompletionItemComparator implements Comparator {
     
     private CompletionItemComparator(boolean byPriority) {
         this.byPriority = byPriority;
+    }
+    
+    public static final Comparator get(int sortType) {
+        if (sortType == CompletionResultSet.PRIORITY_SORT_TYPE)
+            return BY_PRIORITY;
+        if (sortType == CompletionResultSet.TEXT_SORT_TYPE)
+            return ALPHABETICAL;
+        throw new IllegalArgumentException();
     }
     
     public int compare(Object o1, Object o2) {

@@ -15,7 +15,6 @@ package org.netbeans.modules.editor.completion;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.awt.event.*;
@@ -509,6 +508,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     anchorOffset = resultSet.getAnchorOffset();
             }
         }
+        Collections.sort(sortedResultItems, CompletionItemComparator.get(getSortType()));
         
         // Request displaying of the completion pane in AWT thread
         final String displayTitle = title;
