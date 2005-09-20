@@ -31,6 +31,7 @@ import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.openide.ErrorManager;
 
 /**
@@ -84,11 +85,19 @@ public class HTMLFormatter extends ExtFormatter {
                 //if so, do not increase the indentation
                 int[] match = sup.findMatchingBlock(token.getOffset(), false);
                 if((match != null && match[0] > endOffset) || match == null) {
-                    //increase indentation
-                    int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
-                    int newLineIndent = previousLineIndentation + getShiftWidth();
-                    changeRowIndent(doc, startOffset, newLineIndent);
-                    return null;
+                    //test if the tag has optional end -> if so not not indent
+                    TokenItem tagNameToken = token.getNext();
+                    DTD dtd = sup.getDTD();
+                    if(tagNameToken != null && dtd != null) {
+                        Element elem = dtd.getElement(tagNameToken.getImage().toUpperCase());
+                        if(elem != null && !elem.hasOptionalEnd()) {
+                            //increase indentation
+                            int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
+                            int newLineIndent = previousLineIndentation + getShiftWidth();
+                            changeRowIndent(doc, startOffset, newLineIndent);
+                            return null;
+                        }
+                    }
                 }
                 
             }
