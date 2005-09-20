@@ -17,75 +17,73 @@
 <p><small> <a href="#seealso">See Also</a> </small></p>
 <p>A server is a computer that serves up applications. Any computer can be turned 
   into a server if you install server software and connect the computer to the 
-  Internet. The following servers are supported by the IDE:</p>
+  Internet. A number of servers are supported by the IDE.</p>
+<h3>J2EE Application Servers</h3>
+<p>A J2EE application server, also known as a J2EE container, is any server that 
+  is fully compliant with the J2EE 1.4 platform. Unlike a regular web server, 
+  an application server can run full enterprise applications, enterprise bean 
+  modules, and web services. It can also use Container-Managed Persistence (CMP) 
+  to handle communication with a database.</p>
+<ul class="note">
+  <li>You can also configure the Tomcat web server to run web services.</li>
+</ul>
+<p>The IDE supports the following application servers:</p>
 <ul>
-  <li><b>Sun Java System Application Server</b> 
-    <p>Use this server and its libraries for the following activities: 
-    <ul>
-      <li>Deploying <a href="../enterprise/general/about_ent_apps.html">enterprise 
-        applications</a> and <a href="../ejb/general/about_ejbs.html">enterprise 
-        beans</a>.</li>
-      <li>Deploying <a href="../webservice/about/about_ws.html">web services</a> 
-        and <a href="../webservice/consume/about_wsc.html">web service clients</a> 
-        that use JSR-109 or JSR-101 stubs.</li>
-      <li>Deploying <a href="../web/about/about_webapps.html">web applications</a>, 
-        <a href="../web/create/jsp/about_jsp_technology.html">JSP pages</a>, and 
-        <a href="../web/create/servlet/about_servlet.html">servlets</a>.</li>
-      <li>Libraries included with the SJS Application Server can be used to <a href="../webservice/build/about_wscompile.html">compile</a> 
-        web services and clients, <a href="../enterprise/general/ent_app_verify.html">verify</a> 
-        that your application implements the J2EE 1.4 specification correctly, 
-        create a new web application with <a href="../web/create/tag/framework/framework_jsf_create.html">JavaServer 
-        Faces (JSF) support</a>, or <a href="../web/create/tag/framework/framework_jsf_add.html">add 
-        JSF support</a> to an existing web application</li>
-    </ul>
-  </li>
-  <li><b>Tomcat Web Server</b> 
-    <p>Use this server and its libraries for the following activities: 
-    <ul>
-      <li>Deploying web applications, JSP pages, and servlets.</li>
-      <li>Deploying web services and web service clients that use JSR-101 stubs. 
-        <table cellpadding="3" cellspacing="0" border="0">
-          <tr valign="top"> 
-            <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-            <td>The Tomcat Web Server is not a J2EE 1.4 container. Therefore, 
-              you cannot deploy a web service client that uses JSR-109 stubs to 
-              this server. When you <a href="../webservice/consume/wsc_create.html">create 
-		      the web service client</a>, make sure that you select
-	      IDE-generated static stub in the Client Type drop-down.</td>
-          </tr>
-        </table>
-      </li>
-    </ul>
+  <li><b>Sun Java System Application Server. </b>The IDE provides the fullest 
+    support for the Sun Java System Application Server. You can stop and start 
+    the server, deploy applications to it, and view the deployed modules right 
+    from the Runtime window. There is a visual editor for server-specific deployment 
+    descriptors and the IDE updates the descriptors automatically as you write 
+    your code. The IDE also automatically configures server resources like connection 
+    pools and JavaMail resources for this application server.</li>
+  <li><b>JBoss Application Server and BEA WebLogic Application Server.</b> The 
+    IDE provides basic support for these application servers. You can start and 
+    stop the server and deploy applications to it. You have to write the server-specific 
+    deployment descriptors and set up the server resources yourself. </li>
+</ul>
+<h3><b>Tomcat Web Server</b> </h3>
+<p>Use this server and its libraries for the following activities: </p>
+<ul>
+  <li>Deploying web applications, JSP pages, and servlets.</li>
+  <li>Deploying web services and web service clients that use JSR-101 stubs. </li>
+  <ul class="note">
+    <li> The Tomcat Web Server is not a J2EE 1.4 container. Therefore, you cannot 
+      deploy a web service client that uses JSR-109 stubs to this server. When 
+      you <a href="../webservice/consume/wsc_create.html">create the web service 
+      client</a>, make sure that you select IDE-generated static stub in the Client 
+      Type drop-down. </li>
+  </ul>
 </ul>
 <h3>Servers in the IDE</h3>
 <p>Before you can deploy an enterprise application, web application, JSP, servlet, 
   or EJB module, the server to which you are going to deploy needs to be <a href="server_register.html">registered</a> 
-  with the IDE. When a server is registered with the IDE, its libraries are available for 
-production, or deployment, or both. For versions of the IDE that are bundled only with the Tomcat 
-  Web Server, the Tomcat Web Server is automatically registered in the IDE. For 
-  versions of the IDE that are bundled with both the Tomcat Web Server and SJS Application 
-  Server, both servers are automatically registered in the IDE.
-  You must register all other servers yourself.</p>
-<table cellpadding="3" cellspacing="0" border="0">
-  <tr valign="top"> 
-    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td>Only once you have a registered the Sun Java System Application Server can you begin 
-	    developing <a href="../enterprise/general/about_ent_apps.html">enterprise applications</a>. </td>
-  </tr>
-</table>
+  with the IDE. When a server is registered with the IDE, its libraries are available 
+  for production, or deployment, or both. For versions of the IDE that are bundled 
+  only with the Tomcat Web Server, the Tomcat Web Server is automatically registered 
+  in the IDE. For versions of the IDE that are bundled with both the Tomcat Web 
+  Server and SJS Application Server, both servers are automatically registered 
+  in the IDE. You must register all other servers yourself.</p>
+<ul class="note">
+      <li>Only once you have a registered the Sun Java System Application Server 
+        can you begin developing <a href="../enterprise/general/about_ent_apps.html">enterprise 
+        applications</a>. </li>
+</ul>
 <p>When a server is registered with the IDE, you can see its node in the Runtime 
   window under the the Servers node. When you create a project in the New Project 
   wizard, you must select the server to which you want to deploy your application. 
   After you create the application, you can change the server by right-clicking 
   the project, choosing Properties, clicking Run, and selecting a different server.</p>
-<dl>
+  <dl> 
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About 
       the Sun Java System Application Server</a></dd>
-      <dd><a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About 
+    <dd><a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About 
       the Tomcat Web Server</a></dd>
-</dl>
-
+    <dd><a href="registering_app_server_weblogic.html">Registering a BEA WebLogic 
+      Server</a></dd>
+    <dd><a href="registering_app_server_jboss.html">Registering a JBoss Application 
+      Server</a></dd>
+  </dl>
 <!-- #EndEditable --> 
 <hr> <small>
 	<a href="../credits.html">Legal Notices</a></small> 

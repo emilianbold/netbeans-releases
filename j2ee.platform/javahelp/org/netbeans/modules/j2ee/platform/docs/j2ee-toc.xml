@@ -33,6 +33,13 @@
 	<tocitem text="Deploying an EJB Module" target="deploy_ejb" />
 	<tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" />
 	<tocitem text="Removing an Application from a Server" target="server_remove" />
+	<tocitem text="Sun Java System Application Server Platform Edition" />
+	<tocitem text="JBoss Application Server" >
+		<tocitem text="Registering a JBoss Application Server" target="registering_app_server_jboss" />
+	</tocitem>
+	<tocitem text="BEA WebLogic Application Server">
+    	<tocitem text="Registering a BEA WebLogic Server" target="registering_app_server_weblogic" />
+    </tocitem>
     </tocitem>
 
 </tocitem>
