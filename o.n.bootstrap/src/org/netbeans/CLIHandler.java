@@ -469,17 +469,22 @@ public abstract class CLIHandler extends Object {
                 
                 os.write(arr);
                 os.flush();
-                
-                // if this turns to be slow due to lookup of getLocalHost
-                // address, it can be done asynchronously as nobody needs
-                // the address in the stream if the server is listening
-                byte[] host = InetAddress.getLocalHost().getAddress();
-                if (block != null && block.intValue() == 667) {
-                    // this is here to emulate #64004
-                    throw new java.net.UnknownHostException ("dhcppc0"); // NOI18N
-                }
-                for (int all = 0; all < host.length; all++) {
-                    os.write(host[all]);
+
+                try {
+                    // if this turns to be slow due to lookup of getLocalHost
+                    // address, it can be done asynchronously as nobody needs
+                    // the address in the stream if the server is listening
+                    byte[] host = InetAddress.getLocalHost().getAddress();
+                    if (block != null && block.intValue() == 667) {
+                        // this is here to emulate #64004
+                        throw new java.net.UnknownHostException ("dhcppc0"); // NOI18N
+                    }
+                    for (int all = 0; all < host.length; all++) {
+                        os.write(host[all]);
+                    }
+                } catch (UnknownHostException unknownHost) {
+                    // if we just cannot get the address, we can go on
+                    unknownHost.printStackTrace();
                 }
                 os.close();
                 

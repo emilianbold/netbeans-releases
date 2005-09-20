@@ -612,11 +612,16 @@ public class CLIHandlerTest extends NbTestCase {
         }
         H h = new H();
         
+        // handlers shall not be executed immediatelly
+        CLIHandler.finishInitialization(true);
+        
         h.toReturn = 7;
         CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, new Integer(667));
+        // finish all calls
+        int newRes = CLIHandler.finishInitialization(false);
         
         assertEquals("Called once, increased", 1, h.cnt);
-        assertEquals("Result is provided by H", 7, res.getExitCode());
+        assertEquals("Result is provided by H", 7, newRes);
     }
     
     //
