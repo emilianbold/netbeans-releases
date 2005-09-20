@@ -23,10 +23,10 @@
     (Ctrl-N) from the main window.</li>
   <li>From the Enterprise category, select one of the following EJB templates:</li>
   <ul>
-    <li><a href="../general/about_session_beans.html">Session Bean</a></li>
-    <li><a href="../general/about_msg_driven_beans.html">Message-Driven Bean</a></li>
-    <li><a href="../general/about_entity_beans.html">Entity Bean</a></li>
-    <li><a href="generate_cmp_beans.html">Entity Beans from Database</a></li>
+    <li><a href="../csh/ejb_new_session.html">Session Bean</a></li>
+    <li><a href="../csh/ejb_new_mdb.html">Message-Driven Bean</a></li>
+    <li><a href="../csh/ejb_new_entity.html">Entity Bean</a></li>
+    <li><a href="../csh/ejb_generate_cmp1.html">Entity Beans from Database</a></li>
   </ul>
   <li>Follow the directions in the rest of the wizard.</li>
 </ol>
@@ -36,9 +36,10 @@
     node. This node contains a node for the bean class and nodes for the bean's 
     business methods and CMP fields. </li>
   <li>Updates the deployment descriptors for the EJB module and the J2EE module 
-    that contains the EJB module. </li>
-  <li>For the Entity Beans from Database template, automatically configures finder 
-    methods, CMP fields, and CMP relationships.</li>
+    that contains the EJB module. If your target server is the Sun Java System 
+    Application Server, the IDE also configures the server-specific deployment 
+    descriptors. For all other application servers, you have to write the server-specific 
+    deployment descriptors yourself.</li>
 </ul>
 <dl>
     <dt>See Also</dt>

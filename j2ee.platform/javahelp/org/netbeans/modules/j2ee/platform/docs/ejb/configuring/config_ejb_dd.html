@@ -21,10 +21,17 @@
   contain behavioral information about components not included directly in code.</p>
 <p>For EJB modules, there are two types of deployment descriptors:</p>
 <ul>
-  <li><b><tt>ejb-jar.xml</tt>. </b>The general J2EE deployment descriptor that 
-    configures deployment settings on any J2EE-compliant implementation. </li>
-  <li><b><tt>sun-ejb-jar.xml</tt>.</b> The server-specific deployment descriptor 
-    that configures deployment settings for the SJS Application Server.</li>
+  <li>The general J2EE deployment descriptor that configures deployment settings 
+    on any J2EE-compliant implementation. The general EJB deployment descriptor 
+    is called <tt>ejb-jar.xml</tt>. The IDE provides a graphical editor for the 
+    general deployment descriptor and automatically updates it when you edit your 
+    code. </li>
+  <li>The server-specific deployment descriptor that configures deployment settings 
+    for the application server to which you are deploying. For the Sun Java System 
+    Application Server, the IDE provides a graphical deployment descriptor editor 
+    and automatically updates the deployment descriptor as you edit your files. 
+    For all other application servers, you have to write the server-specific deployment 
+    descriptors yourself. </li>
 </ul>
 <p><b>To edit <tt>ejb-jar.xml</tt>:</b></p>
 <ol>
@@ -59,8 +66,6 @@
 </ul>
 <p><b>To edit <tt>sun-ejb-jar.xml</tt>:</b></p>
 <ol>
-  <li>In the Projects window, expand the Configuration Files node for your EJB 
-    module project.</li>
   <li>Double-click <tt>sun-ejb-jar.xml</tt> to open it in the graphical editor. 
     <br>
     The graphical editor opens in a Source Editor tab. The editor contains a tree 
@@ -79,26 +84,35 @@
         Visual Editor: Message Bean</a></li>
     </ul>
   </li>
-  <li> Choose File &gt; Save 
-    to save your changes.</li>
+  <li> Choose File &gt; Save to save your changes.</li>
   <li>Right-click <tt>sun-ejb-jar.xml</tt> and choose Edit to edit the deployment 
     descriptor's XML source. You can only open in this mode if the file is not 
     already open in the visual editor. The Source Editor provides code completion 
     and validation for all XML files.</li>
+</ol>
+<p>To edit the server-specific deployment descriptor for any other application 
+  server:</p>
+<ol>
+  <li>Double-click the deployment descriptor node.<br>
+    The IDE opens the XML source of the deployment descriptor in the Source Editor.</li>
 </ol>
 <ul class="note">
   <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
     fully ensure your changes have not cause any errors, you should verify the 
     EJB module. </li>
 </ul>
-<dl>
-    <dt>See Also</dt>
-    <dd><a href="../general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
-    <dd><a href="config_ejb_about.html">About Configuring EJB Modules</a></dd>
-    <dd><a href="../../web/configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a> </dd>
-    <dd><a href="ejb_relationship.html">Managing Container-Managed Relationships</a> </dd>
-    <dd><a href="../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a> </dd>
-    <dd><a href="../editing/refactor_ejb.html">Refactoring an Enterprise Bean</a></dd>
+<dl> 
+  <dt>See Also</dt>
+  <dd><a href="../general/about_deployment_descriptors.html">About Deployment 
+    Descriptors</a></dd>
+  <dd><a href="config_ejb_about.html">About Configuring EJB Modules</a></dd>
+  <dd><a href="../../web/configure/configure_webapp_dd.html">Configuring Web Application 
+    Deployment Descriptors</a> </dd>
+  <dd><a href="ejb_relationship.html">Managing Container-Managed Relationships</a> 
+  </dd>
+  <dd><a href="../../enterprise/general/ent_app_verify.html">Verifying an Enterprise 
+    Application</a> </dd>
+  <dd><a href="../editing/refactor_ejb.html">Refactoring an Enterprise Bean</a></dd>
 </dl>
 
 <hr>

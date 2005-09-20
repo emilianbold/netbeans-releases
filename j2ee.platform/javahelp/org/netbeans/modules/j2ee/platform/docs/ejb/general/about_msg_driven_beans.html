@@ -80,10 +80,8 @@
   <li><b>Container-managed transactions.</b> The bean uses transactions started 
     by the EJB container. The <tt>onMessage</tt> method is invoked in the scope 
     of a transaction determined by the transaction property specified in the bean's 
-    DD editor
-    <!--property sheet-->
-    . If the bean is using container-managed transactions, the IDE specifies <tt>Required</tt> 
-    for the transaction property. 
+    deployment descriptor editor. If the bean is using container-managed transactions, 
+    the IDE specifies <tt>Required</tt> for the transaction property. 
     <p>The bean can use the following <tt>MessageDrivenContext</tt> methods:</p>
     <ul>
       <li>The <tt>setRollbackOnly</tt> method enables the instance to mark the 

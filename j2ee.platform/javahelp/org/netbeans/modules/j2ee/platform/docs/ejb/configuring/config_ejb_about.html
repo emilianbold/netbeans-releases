@@ -60,10 +60,10 @@
 <h3>Deployment Settings</h3>
 <p>There are several key steps to configuring deployment settings:</p>
 <ul>
-  <li><b>Setting the target server.</b> Although the IDE only supports the Sun 
-    Java Systems Application Server, you can have several instances of the server 
-    registered. You can set the target server instance for an EJB module by doing 
-    any of the following: 
+  <li><b>Setting the target server.</b> You have to <a href="../../server/server_register.html">register</a> 
+    an instance of the application server before you can set it as the target 
+    server for a project. You can set the target server instance for an EJB module 
+    by doing any of the following: 
     <ul>
       <li>Specifying the server in the New Project wizard when creating the project.</li>
       <li>Going to an EJB module's Project Properties dialog box and setting the 
@@ -82,29 +82,26 @@
     </ul>
   </li>
   <li><b>Configuring deployment descriptors.</b> The IDE automatically updates 
-    your <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-      <param name="content" value="../glossary/deploymentdesc.html">
-      <param name="viewerActivator" value="javax.help.LinkLabel">
-      <param name="viewerStyle" value="javax.help.Popup">
-      <param name="viewerSize" value="400,220">
-      <param name="text" value="deployment descriptors">
-      <param name="textFontSize" value="small">
-      <param name="textFontFamily" value="SansSerif">
-      <param name="textFontStyle" value="italic">
-      <param name="textFontWeight" value="bold">
-      <param name="textColor" value="blue">
-    </object> as you code your EJB module. Whenever you insert a call to an enterprise 
-    bean or create select or finder methods, the IDE automatically enters the 
-    necessary information in your deployment descriptors. You can manually configure 
-    your deployment descriptors by expanding the EJB module's Configuration Files 
-    node and double-clicking <tt>ejb-jar.xml</tt> or <tt>sun-ejb-jar.xml</tt>.</li>
+    your general deployment descriptors as you code your EJB module. Whenever 
+    you insert a call to an enterprise bean or create select or finder methods, 
+    the IDE automatically enters the necessary information in your deployment 
+    descriptors.
+    <p> For the Sun Java System Application Server, the IDE also configures the 
+      server-specific deployment descriptor as you edit your EJB module. For all 
+      other application servers, you have to write the server-specific deployment 
+      descriptors yourself. You can edit a deployment descriptor by expanding 
+      the EJB module's Configuration Files node and double-clicking the deployment 
+      descriptor node.
+  </li>
 </ul>
 <dl>
     <dt>See Also</dt>
     <dd><a href="../../server/server_register.html">Registering a Server</a></dd>
     <dd><a href="../general/about_deployment_descriptors.html">About Deployment Descriptors</a> </dd>
-    <dd><a href="config_ejb_dd.html">Configuring EJB Deployment Descriptors</dd>
-    <dd><a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_classpath.html">Managing the Classpath</a></dd>
+    
+  <dd><a href="config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></dd>
+  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_classpath.html">Managing 
+    the Classpath</a></dd>
 </dl> 
 <hr>
 <small> <a href="../../credits.html">Legal Notices</a></small> 

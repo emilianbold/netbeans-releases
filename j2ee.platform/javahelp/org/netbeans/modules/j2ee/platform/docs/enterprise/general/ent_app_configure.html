@@ -18,7 +18,7 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p>An enterprise application includes two <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+<p>An enterprise application includes two types of <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
 		      <param name="content" value="../../ejb/glossary/deploymentdesc.html">
       <param name="viewerActivator" value="javax.help.LinkLabel">
       <param name="viewerStyle" value="javax.help.Popup">
@@ -31,11 +31,17 @@
       <param name="textColor" value="blue">
     </object>:</p>
 <ul>
-	<li><b>application.xml.</b> The general J2EE deployment descriptor that configures deployment settings
-	on any J2EE-compliant implementation. It describes the enterprise application, which components it uses,
-	how the components relate to each other, and which resources they use.</li>
-	<li><b>sun-application.xml.</b>	The server-specific deployment descriptor that configures
-       	deployment settings for the SJS Application Server.</li>
+  <li>The general J2EE deployment descriptor that configures deployment settings 
+    on any J2EE-compliant implementation. It describes the enterprise application, 
+    which components it uses, how the components relate to each other, and which 
+    resources they use. The general enterprise application deployment descriptor 
+    is called <tt>application.xml</tt>.</li>
+  <li>The server-specific deployment descriptor that configures deployment settings 
+    for the application server to which you are deploying. For the Sun Java System 
+    Application Server, the IDE provides a graphical deployment descriptor editor 
+    and automatically updates the deployment descriptor as you edit your files. 
+    For all other application servers, you have to write the server-specific deployment 
+    descriptors yourself. </li>
 </ul>
 <p>Entries in these files are automatically generated when you 
 <a href="add_modules_to_ent_app.html">add a module to the enterprise Application</a>.

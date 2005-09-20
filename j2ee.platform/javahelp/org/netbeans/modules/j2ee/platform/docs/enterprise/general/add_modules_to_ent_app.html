@@ -25,8 +25,9 @@
   <li>Adds the module project to the enterprise application project's list of 
     required projects. This means that the module project is cleaned and built 
     whenever you clean and build the enterprise application project.</li>
-  <li>Adds a module reference to the enterprise application's <a href="ent_app_configure.html">deployment 
-    descriptors</a>.</li>
+  <li>Adds a module reference to the enterprise application's general <a href="ent_app_configure.html">deployment 
+    descriptors</a>. If the target server is the Sun Java System Application Server, 
+    the IDE also adds the reference to the server-specific deployment descriptor.</li>
   <li>Packages the module's build output (JAR file or WAR file) into the enterprise 
     application's EAR file when building the project.</li>
 </ul>

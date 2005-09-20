@@ -25,13 +25,10 @@
 <p><b>To define a finder method for an entity bean:</b></p>
 <ol>
   <li>Open the bean class in the Source Editor.</li>
-  <li>Right-click anywhere inside the body of the class and choose EJB Methods 
-      &gt; Add 
-      Finder Method. This command is only enabled when you click within the 
-      body of the class (after the class declaration).</li>
-  <p>You can also right-click enterprise bean's node in the Projects window and choose Add 
-    &gt; Add Finder Method. 
-  </li>
+  <li>Right-click anywhere in the Source Editor and choose EJB Methods &gt; Add 
+    Finder Method.</li>
+  <p>You can also right-click enterprise bean's node in the Projects window and 
+    choose Add &gt; Add Finder Method. 
   <li>In the New Finder Method dialog box, define the method signature: 
     <ol>
       <li type="a"> Add text to the base <tt>findBy</tt> name of the method.</li>
@@ -46,17 +43,17 @@
       <li>Specify any parameters that the method needs.</li>
     </ol>
   </li>
-  <li>Click OK to create the method.
+  <li>Click OK to create the method. 
     <p> The IDE adds the method signature to the bean's interfaces and registers 
-      the method in the deployment descriptor. 
+      the method in the general deployment descriptor. 
     <ul>
       <li>If the entity bean uses CMP, you are done. The IDE adds The container 
         implements the finder method from the signature in the home interface 
         or local home interface, so the home interface and the local home interface 
         are the only places the method appears. </li>
       <li>If the entity bean uses bean-managed persistence (BMP), the IDE adds 
-        an empty <tt>ejbFind<i>yourname</i></tt> method to the bean class so you can 
-        implement the method. You must implement the <tt>ejbFind<i>yourname</i></tt> 
+        an empty <tt>ejbFind<i>yourname</i></tt> method to the bean class so you 
+        can implement the method. You must implement the <tt>ejbFind<i>yourname</i></tt> 
         method yourself.</li>
     </ul>
   </li>
@@ -73,8 +70,8 @@
 </ol>
 <p><b>Notes:</b></p>
 <ul>
-  <li>When the IDE adds a finder method to an enterprise bean, it does not save the 
-    bean class or the bean interfaces. Only when you compile or save the project 
+  <li>When the IDE adds a finder method to an enterprise bean, it does not save 
+    the bean class or the bean interfaces. Only when you compile or save the project 
     are the changes saved to disk.</li>
   <li>To fully remove a finder method from both a enterprise bean, do one of the 
     following: 
@@ -87,6 +84,7 @@
     If you delete the finder method in the Source Editor, the IDE does not remove 
     it from the bean interfaces.</li>
 </ul>
+<!--TODO safe delete? -->
 <dl>
     <dt>See Also</dt>
     <dd><a href="../general/about_entity_beans.html">About Entity Beans</a></dd>

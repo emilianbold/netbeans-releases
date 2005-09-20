@@ -37,11 +37,12 @@
     <td>Add a JAR file to a project's classpath.</td>
     <td> 
       <ol>
-        <li>In the Projects window, right-click the project node and choose Properties.</li>
-        <li>Click <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_classpath.html">Libraries</a>.</li>
-        <li>Click Add JAR and select the JAR file in the file chooser. 
+        <li>In the Projects window, right-click the project's Libraries node and 
+          choose Add JAR.</li>
+        <li>Select the JAR file in the file chooser. 
           <p> If you also want to attach source code and Javadoc for the JAR file, 
-            click <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_libraries.html">Add Library</a> instead. 
+            use the <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_libraries.html">Add 
+            Library</a> command instead. 
         </li>
       </ol>
     </td>
@@ -50,12 +51,11 @@
     <td>Set up compilation dependencies between projects.</td>
     <td> 
       <ol>
-        <li>In the Projects window, right-click the project node and choose Properties.  
-        </li>
-        <li>Click Libraries.</li>
-        <li>Click <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_dependencies.html">Add Project</a> 
-          and select the project folder for the project that you want to add 
-          to the project's classpath. </li>
+        <li>In the Projects window, right-click the project's Libraries node and 
+          choose <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_dependencies.html">Add 
+          Project</a>.</li>
+        <li>Select the project folder for the project that you want to add to 
+          the project's classpath. </li>
       </ol>
     </td>
   </tr>
@@ -64,8 +64,9 @@
     <td> 
       <ol>
     <li>Open the module project and the enterprise application project.</li>
-  <li>In the Projects window, right-click the enterprise application node for 
-    the J2EE application and choose Add J2EE Module.</li>
+        <li>In the Projects window, right-click the enterprise application node for 
+          the J2EE application and choose <a href="add_modules_to_ent_app.html">Add 
+          J2EE Module</a>.</li>
   <li>In the dialog box, select the module and click OK.</li>
       </ol>
     </td>
@@ -115,9 +116,9 @@
     <td>Verify an enterprise application.</td>
     <td>
 	  <ol>
-	<li>Right-click any web application module, EJB module, or enterprise application project 
-    in the Projects window and choose Verify. 
-    <p>The Verifier window opens and displays all the results.</p>
+	    <li>Right-click any module project whose target server is the Sun Java 
+          System Application Server and choose Verify. 
+          <p>The Verifier window opens and displays all the results.</p>
   </li>
   <li>Filter the results according to your needs: 
     <ul>
