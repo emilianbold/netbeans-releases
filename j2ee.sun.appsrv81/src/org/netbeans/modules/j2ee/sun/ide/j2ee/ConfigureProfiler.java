@@ -54,7 +54,7 @@ public class ConfigureProfiler {
         
             String ext = (isUnix() ? "conf" : "bat");
         String asEnvScriptFilePath  = PluginProperties.getDefault().getInstallRoot()+"/config/asenv." + ext;
-        System.out.println("asEnvScriptFilePath="+asEnvScriptFilePath);
+  //      System.out.println("asEnvScriptFilePath="+asEnvScriptFilePath);
         File asEnvScriptFile = new File(asEnvScriptFilePath);
         String lineBreak = System.getProperty("line.separator");
         
@@ -100,8 +100,8 @@ public class ConfigureProfiler {
     // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
     public static boolean removeProfilerInDOmain(DeploymentManagerProperties dmProps) {
         String domainScriptFilePath =dmProps.getLocation()+ "domain1/config/domain.xml";
-                System.out.println("domainScriptFilePath=" +domainScriptFilePath);
-                File domainScriptFile = new File(domainScriptFilePath);
+
+        File domainScriptFile = new File(domainScriptFilePath);
         
         // Load domain.xml
         Document domainScriptDocument = loadDomainScriptFile(domainScriptFilePath);
@@ -109,19 +109,22 @@ public class ConfigureProfiler {
         
         // Remove  'profiler' element(s)
         NodeList profilerElementNodeList = domainScriptDocument.getElementsByTagName("profiler");
-        if (profilerElementNodeList != null && profilerElementNodeList.getLength() > 0)
+        if (profilerElementNodeList != null && profilerElementNodeList.getLength() > 0){
             while (profilerElementNodeList.getLength() > 0) profilerElementNodeList.item(0).getParentNode().removeChild(profilerElementNodeList.item(0));
-        
+            // Save domain.xml
+            return saveDomainScriptFile(domainScriptDocument, domainScriptFilePath);
+        } else {
+            return true;//no need to save.
+        }
 
         
-        // Save domain.xml
-        return saveDomainScriptFile(domainScriptDocument, domainScriptFilePath);    
+    
     }
    // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
     public static boolean instrumentProfilerInDOmain(DeploymentManagerProperties dmProps, String nativeLibraryPath, String[] jvmOptions) {
         String domainScriptFilePath =dmProps.getLocation()+ "domain1/config/domain.xml";
-                System.out.println("domainScriptFilePath=" +domainScriptFilePath);
-                File domainScriptFile = new File(domainScriptFilePath);
+
+        File domainScriptFile = new File(domainScriptFilePath);
         
         // Load domain.xml
         Document domainScriptDocument = loadDomainScriptFile(domainScriptFilePath);
@@ -136,13 +139,13 @@ public class ConfigureProfiler {
         // (This won't happen for NetBeans Profiler, but is a valid scenario)
         // Otherwise new 'profiler' element is inserted according to provided parameters
         if (nativeLibraryPath != null || jvmOptions != null) {
-
+            
             // Create "profiler" element
             Element profilerElement = domainScriptDocument.createElement("profiler");
             profilerElement.setAttribute("enabled", "true");
             profilerElement.setAttribute("name", "NetBeansProfiler");
             if (nativeLibraryPath != null) profilerElement.setAttribute("native-library-path", nativeLibraryPath);
-
+            
             // Create "jvm-options" element
             if (jvmOptions != null) {
                 for (int i = 0; i < jvmOptions.length; i++) {
@@ -152,19 +155,19 @@ public class ConfigureProfiler {
                     profilerElement.appendChild(jvmOptionsElement);
                 }
             }
-
+            
             // Find the "java-config" element
             NodeList javaConfigNodeList = domainScriptDocument.getElementsByTagName("java-config");
             if (javaConfigNodeList == null || javaConfigNodeList.getLength() == 0) {
                 System.err.println("ConfigFilesUtils: cannot find 'java-config' section in domain config file " + domainScriptFilePath);
                 return false;
             }
-
+            
             // Insert the "profiler" element as a first child of "java-config" element
             Node javaConfigNode = javaConfigNodeList.item(0);
             if (javaConfigNode.getFirstChild() != null) javaConfigNode.insertBefore(profilerElement, javaConfigNode.getFirstChild());
             else javaConfigNode.appendChild(profilerElement);
-        
+            
         }
         
         // Save domain.xml

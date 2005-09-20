@@ -613,7 +613,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public ProgressObject startTarget(Target Target, int mode, ProfilerServerSettings settings) {
         //in theory, target should not be null, but it is always null there!!!
        // System.out.println("in startTarget, debug="+debug);
-       // System.out.println("\n\n\nin startTarget, Target="+Target);
+        //System.out.println("\n\n\nin startTarget, Target="+Target+"\nsettings="+settings);
         this.debug = mode==MODE_DEBUG;
         pes.clearProgressListener();
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
@@ -625,9 +625,13 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             
         }
 
-      if (settings!=null){
-          ConfigureProfiler.instrumentProfilerInDOmain(new  DeploymentManagerProperties(dm) , null,settings.getJvmArgs())  ;
-}     
+        if (settings!=null){
+            ConfigureProfiler.instrumentProfilerInDOmain(new  DeploymentManagerProperties(dm) , null,settings.getJvmArgs())  ;
+        } else{
+            //reset the profilere
+            ConfigureProfiler.removeProfilerInDOmain(new DeploymentManagerProperties(dm));
+            
+        }
         cmd = CMD_START;
         
         if (isRunning()) {
@@ -642,7 +646,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     
 
     public ProgressObject stopTarget(Target target) {
- //       System.out.println("           in stopTarget");
+       // System.out.println("           in stopTarget");
         pes.clearProgressListener();
         if (!isRunning()) {
             pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
