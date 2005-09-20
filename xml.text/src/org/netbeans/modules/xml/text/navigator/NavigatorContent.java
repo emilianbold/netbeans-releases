@@ -38,6 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -124,7 +125,8 @@ public class NavigatorContent extends JPanel   {
             
             //create the JTree pane
             tree = new PatchedJTree();
-            tree.setModel(createTreeModel(dm));
+            TreeModel model = createTreeModel(dm);
+            tree.setModel(model);
             tree.setShowsRootHandles(true);
             tree.setRootVisible(false);
             tree.setCellRenderer(new NavigatorTreeCellRenderer());
@@ -186,6 +188,13 @@ public class NavigatorContent extends JPanel   {
             };
             tree.addMouseListener(pmml);
             
+            //expand all root elements which are tags 
+            TreeNode rootNode = (TreeNode)model.getRoot();
+            for(int i = 0; i < rootNode.getChildCount(); i++) {
+                TreeNode node = rootNode.getChildAt(i);
+                if(node.getChildCount() > 0)
+                    tree.expandPath(new TreePath(new TreeNode[]{rootNode, node}));
+            }
         }
         
         private TreeModel createTreeModel(DocumentModel dm) {
