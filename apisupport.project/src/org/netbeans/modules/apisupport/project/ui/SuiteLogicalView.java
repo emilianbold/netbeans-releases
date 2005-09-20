@@ -219,7 +219,6 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public SuiteComponentNode(final NbModuleProject suiteComponent) {
             super(Children.LEAF, Lookups.fixed(new Object[] {suiteComponent}));
-            this.suiteComponent = suiteComponent;
             ProjectInformation info = ProjectUtils.getInformation(suiteComponent);
             setName(info.getName());
             setDisplayName(info.getDisplayName());
