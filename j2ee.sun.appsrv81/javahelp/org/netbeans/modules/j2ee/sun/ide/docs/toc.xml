@@ -15,8 +15,6 @@
             <tocitem text="Setting up a JMS Resource on the Sun Java System Application Server"  target="def_jms"/>
             <tocitem text="Setting up a JavaMail Resource on the Sun Java System Application Server"  target="def_javamail"/>
             <tocitem text="Setting up a Persistence Manager Resource on the Sun Java System Application Server"  target="def_persistence"/>
-            <tocitem text="Generating Database Lookup Code"  target="lookup_jdbc"/>
-            <tocitem text="Generating JMS Send Message Code"  target="lookup_jms"/>
             <tocitem text="Registering a Resource with the Sun Java System Application Server"  target="register_resource"/>
         </tocitem>
     </tocitem>
