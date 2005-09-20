@@ -62,8 +62,6 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
     private void init () {
         // main content
         pane = new JScrollPane();
-        
-        
         pane.setBorder (BorderFactory.createEmptyBorder());
         pane.setViewportBorder(BorderFactory.createEmptyBorder());
         
