@@ -139,6 +139,9 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
+
+        // XXX unnecessarily creates a SourcesHelper, which is then GC's
+        // as it is not hold. This is probably unneeded now that issue 63359 was fixed.
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String configFilesLabel = org.openide.util.NbBundle.getMessage(EarProject.class, "LBL_Node_ConfigBase"); //NOI18N
         
