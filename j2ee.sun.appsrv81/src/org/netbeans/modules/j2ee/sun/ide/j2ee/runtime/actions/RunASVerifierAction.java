@@ -61,13 +61,15 @@ public class RunASVerifierAction extends NodeAction {
     }
     
     public void launchVerifier(String archiveLocation){
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); // System.getProperty("com.sun.aas.installRoot");
-        System.setProperty("com.sun.aas.configRoot", installRoot+"/config");
-        System.setProperty("com.sun.aas.verifier.xsl", installRoot+"/lib/verifier");
-        System.setProperty("server.name", "server");
-  //      ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-  //      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        
+        java.io.File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null != irf && irf.exists()) {
+            String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+            System.setProperty("com.sun.aas.configRoot", installRoot+"/config");
+            System.setProperty("com.sun.aas.verifier.xsl", installRoot+"/lib/verifier");
+            System.setProperty("server.name", "server");
+      //      ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
+      //      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        }        
         try{
             VerifierSupport.launchVerifier(archiveLocation,null);
         } catch (Throwable t) {
