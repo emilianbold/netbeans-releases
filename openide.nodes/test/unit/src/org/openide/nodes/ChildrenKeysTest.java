@@ -13,10 +13,10 @@
 
 package org.openide.nodes;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.*;
 import java.util.*;
-import org.openide.ErrorManager;
-import junit.framework.*;
 import org.netbeans.junit.*;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -42,10 +42,12 @@ public class ChildrenKeysTest extends NbTestCase {
 
     public void testGetNodesFromTwoThreads57769() throws Exception {
         final Ticker t1 = new Ticker();
+        final List who = new java.util.Vector();
         
         final int[] count = new int[1];
         Children children= new Children.Keys() {
             protected Node[] createNodes(Object key) {
+                who.add(new Exception("Creating: " + count[0] + " for key: " + key));
                 count[0]++;
                 AbstractNode n = new AbstractNode(Children.LEAF);
                 n.setName(key.toString());
@@ -61,22 +63,34 @@ public class ChildrenKeysTest extends NbTestCase {
         
         // Get optimal nodes from other thread
         Thread t = new Thread() {
+            Node[] keep;
             public void run() {
                 t1.tick();
-                node.getChildren().getNodes(true);
+                keep = node.getChildren().getNodes(true);
             }
         };
         t.start();
         t1.waitOn();
         
         // and also from main thread
-        node.getChildren().getNodes();
+        Node[] remember = node.getChildren().getNodes();
         
         // wait for other thread
         t.join();
         
-        // verify creation count
-        assertEquals("Just two nodes created", 2, count[0]);
+        if (2 != count[0]) {
+            StringWriter w = new StringWriter();
+            PrintWriter pw = new PrintWriter(w);
+            w.write("Just two nodes created: " + count[0] + " stacks:\n");
+            Iterator it = who.iterator();
+            while (it.hasNext()) {
+                Exception e = (Exception)it.next();
+                e.printStackTrace(pw);
+            }
+            pw.close();
+            
+            fail(w.toString());;
+        }
     }
 
     

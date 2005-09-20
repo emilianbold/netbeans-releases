@@ -68,14 +68,6 @@ final class ChildrenArray extends NodeAdapter {
         return nodes;
     }
 
-    private synchronized Map getMap() {
-        if (map == null) {
-            map = Collections.synchronizedMap(new WeakHashMap(7));
-        }
-
-        return map;
-    }
-
     /** Clears the array of nodes.
     */
     public void clear() {
@@ -113,13 +105,16 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public Collection nodesFor(Children.Info info) {
-        Collection nodes = (Collection) getMap().get(info);
+    public synchronized Collection nodesFor(Children.Info info) {
+        if (map == null) {
+            map = new WeakHashMap(7);
+        }
+        Collection nodes = (Collection) map.get(info);
 
         if (nodes == null) {
             nodes = info.entry.nodes();
             info.length = nodes.size();
-            getMap().put(info, nodes);
+            map.put(info, nodes);
         }
 
         return nodes;
@@ -129,10 +124,14 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public void useNodes(Children.Info info, Collection list) {
+    public synchronized void useNodes(Children.Info info, Collection list) {
+        if (map == null) {
+            map = new WeakHashMap(7);
+        }
+        
         info.length = list.size();
 
-        getMap().put(info, list);
+        map.put(info, list);
     }
 
     public String toString() {
