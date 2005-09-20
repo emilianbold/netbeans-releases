@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
 <tocitem text="Connecting to a Pointbase Database" target="pointbasedb" />
 <tocitem text="Defining Database Explorer Properties" target="dbconfig" />
 <tocitem text="Defining Database Explorer Debug Mode" target="manipsql" />
-<tocitem text="Defining Database Explorer Fetch Limitations" target="db.explorer.misc" />
+<!--<tocitem text="Defining Database Explorer Fetch Limitations" target="db.explorer.misc" />-->
 
 </tocitem>
 <tocitem text="Using a Database Connection">
