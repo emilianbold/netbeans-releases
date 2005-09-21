@@ -16,7 +16,27 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd</p>
+<p>A project template is registered in the New Project wizard by
+the <tt>layer.xml</tt> file. There are two broad categories of project template:
+ <ul>
+	 <li>Templates that the user extends to create their own project. For example,
+	 in the IDE a user choses 'Web Application' in the New Project wizard, then the IDE
+	 creates a project consisting of a JSP file, a <tt>web.xml</tt> file, a server-specific deployment file,
+	 and project metadata within a specific structure that is useful for web application projects.
+	 <li>Samples that illustrate some aspect of project functionality. For example,
+	 in the Samples directory within the New Project wizard, an Anagram Game is included
+	 to demonstrate J2SE functionality. Samples are a kind of project template; they
+	 have the same behavior as project templates, but they are used for a different purpose.
+ </ul>
+ <p>Before you can use the <a href="../../csh/SelectProjectPanel.html">New Project Template wizard</a>,
+ you must have project in the IDE that is structured in exactly the way that you would like it
+ to be available in the New Project wizard. For example, if you are going to create a new
+  project template, you must first lay it out in the IDE. Then use the New Project Template wizard
+   to add the template to the New Project wizard. When you make the module that contains
+   the new project template available as an <a href="../../build_plugin/building_nbm.html">NBM file</a>,
+   the user can install it via the Update Center and then, once it has been successfully installed,
+    select it from the New Project wizard.
+  
 <table>
          <tr>
 		 <th colspan=2 align=left><a name="seealso">See also</th>
