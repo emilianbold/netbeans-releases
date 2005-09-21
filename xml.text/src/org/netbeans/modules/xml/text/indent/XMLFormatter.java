@@ -46,7 +46,7 @@ import org.netbeans.modules.xml.text.syntax.javacc.lib.JJEditorSyntax;
 public class XMLFormatter extends ExtFormatter {
 
     //at least one character
-    private static final Pattern VALID_TAG_NAME = Pattern.compile("\\w+"); // NOI18N
+    private static final Pattern VALID_TAG_NAME = Pattern.compile("[\\w+|-]*"); // NOI18N
 
     public XMLFormatter(Class kitClass) {
         super(kitClass);
