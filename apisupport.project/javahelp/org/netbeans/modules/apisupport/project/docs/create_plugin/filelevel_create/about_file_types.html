@@ -16,7 +16,75 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd</p>
+
+<p>Many file types are recognized by default by the IDE. For example, JSP files, Java source files,
+and HTML files are recognized as such and the IDE provides functionality specific to the file type.
+ For JSP and HTML files the IDE provides special syntax highlighting that is different
+  to the syntax highlighting provided for Java source files. The menu items provided for JSP files
+   are different to those provided for HTML files. For example, you can compile a JSP file
+   but not an HTML file.
+
+   <p>Recognition of a file type is generally made possible via its extension. All JSP files
+   have a <tt>.jsp</tt> extension, while all Java source files have a <tt>.java</tt> extension.
+   You can use the <a href="../../csh/FileRecognitionPanel.html">New File Type wizard</a> to
+    let the IDE recognize other file types. For example, if you have a file type with
+     the file extension <tt>.xyz</tt>, you can let the IDE recognize all files with
+     this extension and then provide functionality specific for this file type.
+
+     <p>But you can also let the IDE distinguish between XML files. Even though
+      all XML files have an <tt>.xml</tt> extension, you can let the IDE provide
+      different functionality for <tt>abc.xml</tt> than for <tt>def.xml</tt>, depending
+      on the namespace defined for the XML file in question.
+
+      <p>When you use the New File Type wizard, the IDE
+ creates the following files for you:
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+	  <th scope="col" align="left" width="30">File</th>
+    <th scope="col" align="left">Purpose</th>
+  </tr>
+
+  <tr valign="top"> 
+	  <td><tt><i>xxx</i>DataLoader.java</tt></td>
+	  <td>A class that extends <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-loaders/org/openide/loaders/UniFileLoader.html">
+    <param name="text" value="<html><u>Class UniFileLoader</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>.</td>
+  </tr>
+  <tr valign="top"> 
+    <td><tt><i>xxx</i>DataBeanInfo.java</tt></td>
+    <td>Additional information, such as the related icon.
+</td>
+  </tr>
+  <td><tt><i>xxx</i>DataNode.java</tt><br>
+	  <td>A class that extends <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-loaders/org/openide/loaders/DataNode.html">
+    <param name="text" value="<html><u>Class DataNode</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>.</td>
+  </tr>
+<tr valign="top"> 
+    <td><tt><i>xxx</i>DataObject.java</tt></td>
+     <td>A class that extends <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-loaders/org/openide/loaders/MultiDataObject.html">
+    <param name="text" value="<html><u>Class MultiDataObject</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>.</td>
+</td>
+  </tr>
+<tr valign="top"> 
+    <td><tt>resolver.xml</tt></td>
+    <td>Declarative resolution of MIME-type.
+</td>
+  </tr>
+</table>
+
 <table>
          <tr>
 		 <th colspan=2 align=left><a name="seealso">See also</th>
