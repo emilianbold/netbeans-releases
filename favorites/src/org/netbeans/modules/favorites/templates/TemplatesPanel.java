@@ -19,6 +19,10 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
@@ -63,6 +67,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private ExplorerManager manager;
     private TemplateTreeView view;
     private JTree tree;
+    static private Set newlyCreatedFolders;
+    
     static private FileObject templatesRoot;
     
     /** Creates new form TemplatesPanel */
@@ -152,37 +158,14 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
 
         private boolean acceptTemplate (DataObject d) {
-            if (! isTemplate (d) && hasChildren (d))  {
+            if (d.isTemplate ()) {
+                return true;
+            } else if (d instanceof DataFolder)  {
                 Object o = d.getPrimaryFile ().getAttribute ("simple"); // NOI18N
                 return o == null || Boolean.TRUE.equals (o);
-            }
-            return isTemplate (d);
-        }
-        
-        private boolean hasChildren (DataObject folder) {
-            if (! (folder instanceof DataFolder)) {
+            } else {
                 return false;
             }
-            
-            DataFolder f = (DataFolder) folder;
-            DataObject[] ch = f.getChildren ();
-            boolean ok = false;
-            for (int i = 0; i < ch.length; i++) {
-                if (isTemplate (ch [i])) {
-                    ok = true;
-                } else if (ch[i] instanceof DataFolder && hasChildren (ch [i])) {
-                    ok = true;
-                    break;
-                }
-            }
-            return ok;
-        }
-        
-        // TODO: useless method, can remove it
-        private boolean isTemplate (DataObject dobj) {
-            if (dobj.isTemplate ())
-                return true;
-            return false;
         }
     }
     
@@ -400,16 +383,19 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }//GEN-LAST:event_newFolderButtonActionPerformed
     
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        Node [] nodes = manager.getSelectedNodes ();
+        Node [] nodes = manager.getSelectedNodes (); 
         for (int i = 0; i < nodes.length; i++) {
             try {
+                if (! nodes [i].isLeaf ()) {
+                    nodes [i].getChildren ().remove (nodes [i].getChildren ().getNodes ());
+                }
                 nodes [i].destroy ();
             } catch (IOException ioe) {
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
             }
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
-    
+
     private void duplicateButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
@@ -518,7 +504,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             Node [] filtered = new Node [orig.length];
             for (int i = 0; i < orig.length; i++) {
                 DataObject dobj = getDOFromNode (orig [i]);
-                if (dobj.isTemplate () && ! (dobj instanceof DataFolder)) {
+                if (dobj.isTemplate ()) {
                     filtered [i] = new TemplateNode (orig [i], Children.LEAF);
                 } else {
                     filtered [i] = new TemplateNode (orig [i]);
@@ -601,11 +587,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
         
         try {
-            df = DataFolder.create (pref, "New Folder");
-            df.setTemplate (true);
+            df = DataFolder.create (pref, NbBundle.getBundle(TemplatesPanel.class).getString("TXT_TemplatesPanel_NewFolderName")); // NOI18N
             assert df != null : "New subfolder found in folder " + pref;
         } catch (IOException ioe) {
-            ErrorManager.getDefault ().notify (ioe);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
         }
         
         return df;
