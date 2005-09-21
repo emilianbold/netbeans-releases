@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- We need absolute path to ${netbeans.dest} -->
     <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
-    <property name="buildnum" value="release50_beta-${buildnumber}"/>
+    <property name="buildnum" value="dev-${buildnumber}"/>
     <property name="sanitystart.args" value="-J-Dnetbeans.close=true ${sanitystart.args.additional}"/>
 
     <!-- Set up automatic all-* targets: -->
@@ -446,7 +446,7 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
       <include name="${nb.cluster.platform.dir}/lib/nbexec.cmd" />      
     </fixcrlf>
 
-    <echo file="${netbeans.dest.dir}/build_info">NetBeans release50_beta build
+    <echo file="${netbeans.dest.dir}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
 Date:     ${buildday}
@@ -1189,7 +1189,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
     if="cluster.name"
   >
-    <property name="buildnum" value="release50_beta-${buildnumber}"/>
+    <property name="buildnum" value="dev-${buildnumber}"/>
     <echo message="Packaging sources of ${cluster.name} modules"/>
     <resolve name="cluster-modules" value="${cluster.name}"/>
     <mkdir dir="${netbeans.build.dir}"/>
