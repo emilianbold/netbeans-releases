@@ -354,12 +354,18 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 			File wsdlFile = chooser.getSelectedFile();
 			jTxtWsdlFile.setText(wsdlFile.getAbsolutePath());
 			previousDirectory = wsdlFile.getPath();
-                        if (hasHttpImports(wsdlFile)) {
+                        int result = resolveImports(wsdlFile);
+                        if ((result & 0x02) == 0x02) {
                             String proxyHost = WebProxySetter.getInstance().getProxyHost();
                             if (proxyHost==null || proxyHost.length()==0)
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                     NbBundle.getMessage(ClientInfo.class,"MSG_SetUpProxyForImports"),NotifyDescriptor.WARNING_MESSAGE));
-                        }    
+                        }
+                        if ((result & 0x01) == 0x01) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(ClientInfo.class,"MSG_IdeGeneratedStaticStubOnly"),NotifyDescriptor.WARNING_MESSAGE));
+                        }
+                                
 		}
 	}//GEN-LAST:event_jBtnBrowseActionPerformed
 
@@ -861,14 +867,16 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     
     /** Private method to identify wsdl imports and/or the http wsdl/schema imports
     */
-    private boolean hasHttpImports(File file) {
+    private int resolveImports(File file) {
             try {
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 factory.setNamespaceAware(true);
                 SAXParser saxParser = factory.newSAXParser();
                 ImportsHandler handler= new ImportsHandler();
                 saxParser.parse(new InputSource(new FileInputStream(file)), handler);
-                return handler.hasHttpImports();
+                int httpImport = (handler.isHttpImport()?1:0);
+                int wsdlImport = (handler.isImportingWsdl()?1:0);
+                return httpImport*2+wsdlImport;
             } catch(ParserConfigurationException ex) {
                     // Bogus WSDL, return null.
             } catch(SAXException ex) {
@@ -876,7 +884,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             } catch(IOException ex) {
                     // Bogus WSDL, return null.
             }
-            return false;
+            return 0;
     }
     
     /** this is the handler for local wsdl file scanning for imported wsdl/schema files
@@ -888,6 +896,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         
         private boolean insideSchema;
         private boolean httpImport;
+        private boolean importingWsdl;
         
         public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
             if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
@@ -899,6 +908,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                     // test if wsdl is imported using http
                     if (wsdlLocation!=null && wsdlLocation.startsWith("http://")) { //NOI18N
                         httpImport=true;
+                        importingWsdl=true;
                     }
                 }
             }
@@ -919,8 +929,12 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             }
         }
         
-        boolean hasHttpImports() {
+        boolean isHttpImport() {
             return httpImport;
+        }
+        
+        boolean isImportingWsdl() {
+            return importingWsdl;
         }
     }
 }
