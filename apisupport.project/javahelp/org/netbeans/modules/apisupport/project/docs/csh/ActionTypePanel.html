@@ -20,10 +20,10 @@
 	<li><b>Always Enabled (use CallableSystemAction).</b> Specifies that the action will be invoked
 	from a menu item in the menu bar, from a toolbar button in a toolbar, or from a keyboard shortcut anywhere
 	in the IDE.
-	<li><b>Conditionally Enabled (use CookieAction).</b> Specifies the classes for which the action will created.
+	<li><b>Conditionally Enabled (use CookieAction).</b> Specifies the classes for which the action will be created.
 	This is normally one of your own classes. For example, if you use the <a href="FileRecognitionPanel.html">New File wizard</a>,
 	one of the generated classes is called <tt><i>something</i>DataObject</tt>. This is the name of the cookie class
-	that you type in the Conditionally Enabled field. However, optionally, you can also include one or more of the
+	that you type in the Conditionally Enabled drop-down list. However, optionally, you can also include one or more of the
         following, which creates the action for all classes that subclass them:
 	 <ul>
 		 <li>DataObject</li>
@@ -31,9 +31,10 @@
 		 <li>EditorCookie</li>
 		 <li>OpenCookie</li>
 		 <li>Project</li></ul>
-	 <li><b>Allow Multiple Selections.</b> Specifies the conditions under which the 
+	 <li><b>User Selects One Node.</b><br>
+	 <b>User May Select Multiple Nodes.</b> Specifies the conditions under which the 
 	  action will be enabled. By default, the action will only be enabled when the
-	  node for which it is created is selected. If you select this checkbox, the action
+	  node for which it is created is selected. If you select User May Select Multiple Nodes, the action
 	   will also be enabled when more nodes than just the node for which it is created
 	    is selected.
  </ul>
