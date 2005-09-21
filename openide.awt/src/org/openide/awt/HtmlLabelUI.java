@@ -299,10 +299,11 @@ class HtmlLabelUI extends LabelUI {
             ? (r.getWidth() - (ins.left + ins.right + icon.getIconWidth() + r.getIconTextGap() + r.getIndent()))
             : (r.getWidth() - (ins.left + ins.right + r.getIndent()));
 
-        Color foreground = ensureContrastingColor(getForegroundFor(r), getBackgroundFor(r));
+        Color background = getBackgroundFor(r);
+        Color foreground = ensureContrastingColor(getForegroundFor(r), background);
 
         if (r.isHtml()) {
-            HtmlRenderer.renderHTML(text, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true);
+            HtmlRenderer._renderHTML(text, 0, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true, background);
         } else {
             HtmlRenderer.renderPlainString(text, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true);
         }
