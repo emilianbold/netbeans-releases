@@ -48,13 +48,21 @@ public class SuiteProjectGeneratorTest extends TestBase {
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + targetPrjDir, p);
-        SuiteProject.OpenedHook hook = (SuiteProject.OpenedHook) p.getLookup().lookup(SuiteProject.OpenedHook.class);
-        assertNotNull("has an OpenedHook", hook);
-        hook.projectOpened(); // protected but can use package-private access
+        openProject(p);
         // check generated module
         for (int i=0; i < SUITE_CREATED_FILES.length; i++) {
             assertNotNull(SUITE_CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(SUITE_CREATED_FILES[i]));
         }
     }
+
+    /** Accessor method for those who wish to simulate open of a project 
+     * and in case of suite for example generate the build.xml
+     */
+    public static void openProject(final Project p) {
+        SuiteProject.OpenedHook hook = (SuiteProject.OpenedHook) p.getLookup().lookup(SuiteProject.OpenedHook.class);
+        assertNotNull("has an OpenedHook", hook);
+        hook.projectOpened(); // protected but can use package-private access
+    }
+    
 }

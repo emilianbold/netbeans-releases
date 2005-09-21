@@ -54,6 +54,9 @@ public abstract class TestBase extends NbTestCase {
 
     /** Represents netbeans.org CVS tree this test is run in. */
     protected FileObject nbroot;
+    
+    /** represents destination directory with NetBeans */
+    protected File destDirF;
 
     protected File extexamplesF;
     protected FileObject extexamples;
@@ -65,6 +68,11 @@ public abstract class TestBase extends NbTestCase {
         assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
         nbroot = FileUtil.toFileObject(nbrootF);
         assertNotNull("have a file object for nbroot", nbroot);
+        
+        destDirF = file(nbrootF, "nbbuild/netbeans").getAbsoluteFile();
+        assertTrue("Directory really exists: " + destDirF, destDirF.isDirectory());
+
+        
         extexamplesF = file(nbrootF, EEP);
         assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
         extexamples = FileUtil.toFileObject(extexamplesF);
@@ -126,6 +134,7 @@ public abstract class TestBase extends NbTestCase {
         } finally {
             os.close();
         }
+        
         return userPropertiesFile;
     }
     
