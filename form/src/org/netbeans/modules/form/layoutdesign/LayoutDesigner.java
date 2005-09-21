@@ -731,7 +731,9 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     public void paintMoveFeedback(Graphics2D g) {
-        dragger.paintMoveFeedback(g);
+        if (dragger != null) { // Dragger might not be initialized yet
+            dragger.paintMoveFeedback(g);
+        }
     }
     
     /**
