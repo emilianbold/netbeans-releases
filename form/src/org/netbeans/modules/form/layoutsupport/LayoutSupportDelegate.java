@@ -430,6 +430,7 @@ public interface LayoutSupportDelegate {
      *        (e.g. like content pane of JFrame)
      * @param component real component being resized
      * @param index position of the component in its container
+     * @param originalBounds original bounds of the resized component.
      * @param sizeChanges Insets object with size differences
      * @param posInCont position of mouse in the container delegate
      * @return component layout constraints for resized component; null if
@@ -439,6 +440,7 @@ public interface LayoutSupportDelegate {
                                             Container containerDelegate,
                                             Component component,
                                             int index,
+                                            Rectangle originalBounds,
                                             Insets sizeChanges,
                                             Point posInCont);
 

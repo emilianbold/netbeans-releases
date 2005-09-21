@@ -1254,7 +1254,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     }
 
     // NOTE: does not create a new Rectangle instance
-    private Rectangle convertRectangleToComponent(Rectangle rect,
+    Rectangle convertRectangleToComponent(Rectangle rect,
                                                   Component targetComp)
     {
         Point p = convertPointToComponent(rect.x, rect.y, targetComp);
@@ -1815,11 +1815,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             }
             else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
                 oldMove(p);
-
-                    for (int i=0; i<movingBounds.length; i++) {
-                        movingBounds[i].x = p.x - convertPoint.x - hotSpot.x + originalBounds[i].x - convertPoint.x;
-                        movingBounds[i].y = p.y - convertPoint.y - hotSpot.y + originalBounds[i].y - convertPoint.y;
-                    }
+                for (int i=0; i<movingBounds.length; i++) {
+                    movingBounds[i].x = p.x - convertPoint.x - hotSpot.x + originalBounds[i].x - convertPoint.x;
+                    movingBounds[i].y = p.y - convertPoint.y - hotSpot.y + originalBounds[i].y - convertPoint.y;
+                }
             }
             else {
                 for (int i=0; i<movingBounds.length; i++) {
@@ -2285,8 +2284,31 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 Dimension size = new Dimension(movingBounds[0].width, movingBounds[0].height);
                 formDesigner.getComponentLayer().setDesignerSize(size);
                 doLayout(formDesigner.getComponentLayer());
-            }
-            else {
+            } if (oldDrag && (targetContainer = getTargetContainer(p, modifiers)) != null && targetContainer.getLayoutSupport() != null) {
+                oldMove(p);
+                for (int i=0; i<movingBounds.length; i++) {
+                    int xchange = p.x - convertPoint.x - hotSpot.x;
+                    if ((resizeType & LayoutSupportManager.RESIZE_LEFT) != 0) {
+                        movingBounds[i].x = originalBounds[i].x - convertPoint.x + xchange;
+                        xchange = -xchange;
+                    } else {
+                        movingBounds[i].x = originalBounds[i].x - convertPoint.x;
+                    }
+                    if ((resizeType & (LayoutSupportManager.RESIZE_RIGHT | LayoutSupportManager.RESIZE_LEFT)) != 0) {
+                        movingBounds[i].width = originalBounds[i].width + xchange;
+                    }
+                    int ychange = p.y - convertPoint.y - hotSpot.y;
+                    if ((resizeType & LayoutSupportManager.RESIZE_UP) != 0) {
+                        movingBounds[i].y = originalBounds[i].y - convertPoint.y + ychange;
+                        ychange = -ychange;
+                    } else {
+                        movingBounds[i].y = originalBounds[i].y - convertPoint.y;
+                    }
+                    if ((resizeType & (LayoutSupportManager.RESIZE_DOWN | LayoutSupportManager.RESIZE_UP)) != 0) {
+                        movingBounds[i].height = originalBounds[i].height + ychange;
+                    }
+                }
+            } else {
                 super.move(p, modifiers);
             }
         }
@@ -2296,6 +2318,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg) {
+            for (int i=0; i<showingComponents.length; i++) {
+                paintDraggedComponent(showingComponents[i], gg);
+            }
             oldDragger.paintDragFeedback(g);
         }
     }
@@ -2461,7 +2486,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             LayoutSupportManager laysup = targetContainer.getLayoutSupport();
             Container cont = (Container) formDesigner.getComponent(targetContainer);
             Container contDel = targetContainer.getContainerDelegate(cont);
-            Point posInCont = convertPointToComponent(p.x, p.y, cont);
+            Point posInCont = convertPointToComponent(p.x, p.y, contDel);
             Point posInComp = hotSpot;
             index = laysup.getNewIndex(cont, contDel,
                                        showingComponents[0], -1,

@@ -505,6 +505,7 @@ class ComponentDragger
                         constr = layoutSupport.getResizedConstraints(
                                      targetContainer, targetContainerDel,
                                      comp, metacomp.getComponentIndex(),
+                                     handleLayer.convertRectangleToComponent(new Rectangle(originalBounds[i]), targetContainerDel),
                                      sizeChanges, posInCont);
                     }
                 }

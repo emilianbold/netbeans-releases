@@ -743,6 +743,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                                    Container containerDelegate,
                                                    Component component,
                                                    int index,
+                                                   Rectangle originalBounds,
                                                    Insets sizeChanges,
                                                    Point posInCont)
     {

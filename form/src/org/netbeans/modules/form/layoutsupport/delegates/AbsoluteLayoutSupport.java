@@ -251,15 +251,15 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                                                    Container containerDelegate,
                                                    Component component,
                                                    int index,
+                                                   Rectangle originalBounds,
                                                    Insets sizeChanges,
                                                    Point posInCont)
     {
         int x, y, w, h;
-        Rectangle bounds = component.getBounds();
-        x = bounds.x;
-        y = bounds.y;
-        w = bounds.width;
-        h = bounds.height;
+        x = originalBounds.x;
+        y = originalBounds.y;
+        w = originalBounds.width;
+        h = originalBounds.height;
 
         Dimension prefSize = component.getPreferredSize();
         int currentW, currentH;
