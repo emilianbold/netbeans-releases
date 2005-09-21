@@ -20,8 +20,10 @@ import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -68,13 +70,13 @@ public class SwitchBranchAction extends AbstractSystemAction {
     }
     
     private void switchBranch() {
-        File [] roots = getFilesToProcess();
+        Context context = getContext();
 
         UpdateCommand cmd = new UpdateCommand();
         String title = MessageFormat.format(NbBundle.getBundle(SwitchBranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
                                          new Object[] { getContextDisplayName() });
         
-        SwitchBranchPanel settings = new SwitchBranchPanel(roots);
+        SwitchBranchPanel settings = new SwitchBranchPanel(context.getFiles());
 
         JButton swich = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Switch"));
         JButton cancel = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Cancel"));
@@ -98,6 +100,8 @@ public class SwitchBranchAction extends AbstractSystemAction {
         List newFolders = new ArrayList();
         List others = new ArrayList();
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        
+        File [] roots = context.getRootFiles();
         for (int i = 0; i < roots.length; i++) {
             File root = roots[i];
             // FIXME this check fails on workdir root, it's incorectly recognides as locally new
@@ -136,7 +140,12 @@ public class SwitchBranchAction extends AbstractSystemAction {
             cmd.setPruneDirectories(true);
             cmd.setFiles((File[]) others.toArray(new File[others.size()]));
             
-            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            GlobalOptions options = new GlobalOptions();
+            if (context.getExclusions().size() > 0) {
+                options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+            }
+            
+            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
             ExecutorSupport.notifyError(executors);
         }
     }

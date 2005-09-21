@@ -42,6 +42,7 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -319,10 +320,13 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         } else {
             cmd.setDisplayName(NbBundle.getMessage(SynchronizePanel.class, "BK0002"));
         }
-        cmd.setFiles(context.getFiles());
+        GlobalOptions options = new GlobalOptions();
+        if (context.getExclusions().size() > 0) {
+            options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+        }
+        cmd.setFiles(context.getRootFiles());
         cmd.setBuildDirectories(true);
         cmd.setPruneDirectories(true);
-        GlobalOptions options = new GlobalOptions();
         options.setDoNoChanges(doNoChanges);
         // TODO: javacvs library fails to obey the -P flag when -q is specified
 //        options.setModeratelyQuiet(true);

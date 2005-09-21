@@ -18,8 +18,10 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecu
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.tag.RtagCommand;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -58,12 +60,12 @@ public class MergeBranchAction extends AbstractSystemAction {
     }
     
     public void performCvsAction(ActionEvent ev) {
-        File [] roots = getFilesToProcess();
+        Context context = getContext();
 
         String title = MessageFormat.format(NbBundle.getBundle(MergeBranchAction.class).getString("CTL_MergeBranchDialog_Title"), 
                                          new Object[] { getContextDisplayName() });
         
-        MergeBranchPanel settings = new MergeBranchPanel(roots);
+        MergeBranchPanel settings = new MergeBranchPanel(context.getFiles());
 
         JButton merge = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Merge"));
         JButton cancel = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Cancel"));
@@ -84,7 +86,7 @@ public class MergeBranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
        
-        RequestProcessor.getDefault().post(new MergeBranchExecutor(roots, settings));
+        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings));
     }
  
     /**
@@ -92,12 +94,12 @@ public class MergeBranchAction extends AbstractSystemAction {
      */ 
     private static class MergeBranchExecutor implements Runnable {
 
-        private final File[] roots;
+        private final Context context;
         private final MergeBranchPanel settings;
         private String temporaryTag;
 
-        public MergeBranchExecutor(File[] roots, MergeBranchPanel settings) {
-            this.roots = roots;
+        public MergeBranchExecutor(Context context, MergeBranchPanel settings) {
+            this.context = context;
             this.settings = settings;
         }
 
@@ -130,6 +132,11 @@ public class MergeBranchAction extends AbstractSystemAction {
 
             String branchName = settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName();
             String headTag = temporaryTag != null ? temporaryTag : branchName; 
+
+            GlobalOptions options = new GlobalOptions();
+            if (context.getExclusions().size() > 0) {
+                options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+            }
             
             if (settings.isUsingMergeTag()) {
                 cmd.setMergeRevision1(settings.getMergeTagName());
@@ -137,9 +144,9 @@ public class MergeBranchAction extends AbstractSystemAction {
             } else {
                 cmd.setMergeRevision1(headTag);
             }
-            cmd.setFiles(roots);
+            cmd.setFiles(context.getRootFiles());
         
-            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
             return ExecutorSupport.wait(executors);
         }
 
@@ -156,7 +163,7 @@ public class MergeBranchAction extends AbstractSystemAction {
             cmd.setTagByRevision(temporaryTag);
             cmd.setTag(settings.getAfterMergeTagName());
         
-            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, roots, null);
+            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, context.getFiles(), null);
             return ExecutorSupport.wait(executors);
         }
 
@@ -173,7 +180,7 @@ public class MergeBranchAction extends AbstractSystemAction {
             cmd.setTagByRevision(settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName());
             cmd.setTag(temporaryTag);
 
-            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, roots, null);
+            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, context.getFiles(), null);
             return ExecutorSupport.wait(executors);
         }
 
@@ -183,7 +190,7 @@ public class MergeBranchAction extends AbstractSystemAction {
             cmd.setDeleteTag(true);
             cmd.setTag(temporaryTag);
         
-            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, roots, null);
+            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, context.getFiles(), null);
             return ExecutorSupport.wait(executors);
         }
     }

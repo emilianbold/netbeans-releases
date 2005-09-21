@@ -105,7 +105,7 @@ public class Utils {
     public static Context getCurrentContext(int includingFileStatus, int includingFolderStatus) {
         Context context = getCurrentContext();
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = context.getFiles();
+        File [] files = context.getRootFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation fi = cache.getStatus(file);

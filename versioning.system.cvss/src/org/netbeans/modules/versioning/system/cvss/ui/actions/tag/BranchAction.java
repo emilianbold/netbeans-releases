@@ -18,8 +18,10 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecu
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -54,14 +56,14 @@ public class BranchAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(ActionEvent ev) {
-        File [] roots = getFilesToProcess();
+        Context context = getContext();
 
         String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"),
                                      new Object[] { getContextDisplayName() });
 
         JButton branch = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Branch"));
         JButton cancel = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Cancel"));
-        BranchSettings settings = new BranchSettings(roots);
+        BranchSettings settings = new BranchSettings(context.getFiles());
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
                 title,
@@ -80,36 +82,40 @@ public class BranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
 
-        RequestProcessor.getDefault().post(new BranchExecutor(roots, settings));
+        RequestProcessor.getDefault().post(new BranchExecutor(context, settings));
     }
     
     private static class BranchExecutor implements Runnable {
 
-        private final File[] roots;
+        private final Context context;
         private final BranchSettings settings;
 
-        public BranchExecutor(File[] roots, BranchSettings settings) {
-            this.roots = roots;
+        public BranchExecutor(Context context, BranchSettings settings) {
+            this.context = context;
             this.settings = settings;
         }
 
         public void run() {
             if (settings.isTaggingBase()) {
-                if (!tag(roots, settings.computeBaseTagName())) return;
+                if (!tag(context.getFiles(), settings.computeBaseTagName())) return;
             }
-            if (!branch(roots, settings.getBranchName())) return;
+            if (!branch(context.getFiles(), settings.getBranchName())) return;
             if (settings.isCheckingOutBranch()) {
-                update(roots, settings.getBranchName());
+                update(context, settings.getBranchName());
             }
         }
 
-        private void update(File[] roots, String revision) {
+        private void update(Context context, String revision) {
             UpdateCommand cmd = new UpdateCommand();
 
+            GlobalOptions options = new GlobalOptions();
+            if (context.getExclusions().size() > 0) {
+                options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+            }
             cmd.setUpdateByRevision(revision);
-            cmd.setFiles(roots);
+            cmd.setFiles(context.getRootFiles());
         
-            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
             ExecutorSupport.notifyError(executors);
         }
 

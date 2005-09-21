@@ -17,8 +17,10 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -44,7 +46,14 @@ public class UpdateAction extends AbstractSystemAction {
 
     public void performCvsAction(ActionEvent ev) {
 
-        File [][] flatRecursive = Utils.splitFlatOthers(getFilesToProcess());
+        Context context = getContext();
+        GlobalOptions options = null;
+        if (context.getExclusions().size() > 0) {
+            options = new GlobalOptions();
+            options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+        }
+        
+        File [][] flatRecursive = Utils.splitFlatOthers(context.getRootFiles());
         if (flatRecursive[0].length > 0) {
             UpdateCommand cmd = new UpdateCommand();
             cmd.setDisplayName(NbBundle.getMessage(UpdateAction.class, "BK0001"));
@@ -52,7 +61,7 @@ public class UpdateAction extends AbstractSystemAction {
             cmd.setPruneDirectories(false);
             cmd.setRecursive(false);
             cmd.setFiles(flatRecursive[0]);
-            UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
         }
         if (flatRecursive[1].length > 0) {
             UpdateCommand cmd = new UpdateCommand();
@@ -60,7 +69,7 @@ public class UpdateAction extends AbstractSystemAction {
             cmd.setBuildDirectories(true);
             cmd.setPruneDirectories(true);
             cmd.setFiles(flatRecursive[1]);
-            UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
         }
     }
 }

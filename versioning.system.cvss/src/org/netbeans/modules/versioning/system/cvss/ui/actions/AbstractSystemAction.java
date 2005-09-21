@@ -219,7 +219,7 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
     }
     
     public boolean isEnabled() {
-        return getFilesToProcess().length > 0;
+        return getContext().getRootFiles().length > 0;
     }
 
     protected int getFileEnabledStatus() {

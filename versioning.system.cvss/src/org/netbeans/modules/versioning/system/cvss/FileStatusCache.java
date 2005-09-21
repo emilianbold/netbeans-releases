@@ -250,17 +250,22 @@ public class FileStatusCache {
      *  
      * @param dir directory to cleanup
      */ 
-    public void clearVirtualDirectoryContents(File dir, boolean recursive) {
+    public void clearVirtualDirectoryContents(File dir, boolean recursive, File [] exclusions) {
         Map files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files == null) {
            return;
         }
         Set set = new HashSet(files.keySet());
         Map newMap = null;
-        for (Iterator i = set.iterator(); i.hasNext();) {
+        outter: for (Iterator i = set.iterator(); i.hasNext();) {
             File file = (File) i.next();
+            if (exclusions != null) {
+                for (int j = 0; j < exclusions.length; j++) {
+                    if (Utils.isParentOrEqual(exclusions[j], file)) continue outter; 
+                }
+            }
             if (recursive && file.isDirectory()) {
-                clearVirtualDirectoryContents(file, true);
+                clearVirtualDirectoryContents(file, true, exclusions);
             }
             FileInformation fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
             if ((fi.getStatus() & STATUS_MISSING) != 0) {

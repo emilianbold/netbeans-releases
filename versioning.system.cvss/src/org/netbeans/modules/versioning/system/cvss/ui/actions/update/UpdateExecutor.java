@@ -93,7 +93,7 @@ public class UpdateExecutor extends ExecutorSupport {
         refreshedFiles = new HashSet(toRefresh.size());
         
         for (int i = 0; i < files.length; i++) {
-            cache.clearVirtualDirectoryContents(files[i], ucmd.isRecursive());
+            cache.clearVirtualDirectoryContents(files[i], ucmd.isRecursive(), ucmd.getGlobalOptions().getExclusions());
         }
         
         Set filesystems = new HashSet(2);
@@ -152,6 +152,7 @@ public class UpdateExecutor extends ExecutorSupport {
     private void refreshRecursively(File file) {
         try {
             if (cvs.isIgnoredFilename(file)) return;
+            if (cmd.getGlobalOptions().isExcluded(file)) return;
             if (file.isDirectory()) {
                 if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return;
                 File [] files = file.listFiles();
@@ -170,6 +171,7 @@ public class UpdateExecutor extends ExecutorSupport {
     
     private void refreshFlat(File file) {
         if (cvs.isIgnoredFilename(file)) return;
+        if (cmd.getGlobalOptions().isExcluded(file)) return;
         if (refreshedFiles.contains(file)) return;
         if (file.isDirectory()) {
             File [] files = file.listFiles();
