@@ -16,23 +16,56 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd</p>
-<table>
-         <tr>
-		 <th colspan=2 align=left><a name="seealso">See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
-         
-	 <td> 
-		 <a href="create_j2se_library_descriptor.html">Creating a J2SE Library Descriptor</a><br>
-		 <a href="create_action.html">Creating an Action</a><br>
-		 <a href="create_file_type.html">Creating a File Type</a> <br> 
-		 <a href="create_project_template.html">Creating a Project Template</a><br>
-		 <a href="create_window_component.html">Creating a Window Component</a> <br> 
-		 <a href="create_wizard.html">Creating a Wizard</a> <br> 
-      </td>
+
+<p>A window component creates a window (also known as 'view') for a plug-in module. For example,
+the IDE's Projects window is a 'window', just as the Navigator, Output window, Palette, and Debugger.
+ The main class in each of the modules that define these windows subclasses
+  <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-windows/org/openide/windows/TopComponent.html">
+    <param name="text" value="<html><u>Class TopComponent</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+    </object>. <p>Understanding and working with the <tt>TopComponent</tt> class is the key to creating
+ useful and reliable windows in the IDE. By using the Window Component wizard,
+  you can be sure of the success of the initial development phase.
+ When you use the New Window Component wizard, the IDE
+ creates the following files for you:
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+	  <th scope="col" align="left" width="30">File</th>
+    <th scope="col" align="left">Purpose</th>
   </tr>
+
+  <tr valign="top"> 
+	  <td><tt><i>xxx</i>Action.java</tt></td>
+	  <td>An action that the <tt>layer.xml</tt> file registers in the Window menu. The IDE
+	   creates this Action class to display the component.</td>
+  </tr>
+  <tr valign="top"> 
+    <td><tt><i>xxx</i>TopComponent.java</tt></td>
+    <td>The class that extends <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-windows/org/openide/windows/TopComponent.html">
+    <param name="text" value="<html><u>Class TopComponent</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>. <p>The following methods are provided when you use the New Window Component wizard:
+<ul><li><tt>getDefault()</tt>
+	<li><tt>getPersistenceType()</tt>
+	<li><tt>componentOpened()</tt>
+	<li><tt>componentClosed()</tt>
+	<li><tt>writeReplace()</tt>
+	<li><tt>preferredID()</tt>
+</ul>
+</td>
+  </tr>
+  <td><tt><i>xxx</i>TopComponent.xml</tt><br>
+  <tt><i>xxx</i>TopComponent_1.xml</tt></td>
+	  <td>Dock, instantiate, and load the window. There should be no need
+	   to touch these files at all.</td>
+  </tr>
+ 
 </table><hr>
 <small><a href="credits.html">Legal Notices</a> </small>
 </body></html>

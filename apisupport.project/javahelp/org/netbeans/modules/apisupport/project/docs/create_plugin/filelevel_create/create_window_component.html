@@ -20,6 +20,18 @@
 <ol>
 	<li>Right-click a module project and choose New &gt; Window Component.
 	<li>Follow the steps in the <a href="../../csh/BasicSettingsPanel.html">New Window Component wizard</a>.
+	<li>After completing the wizard, you can do one or more of the following:
+	<ul>
+		<li>Use the Form editor to design the window.
+		<li>Place the window component in a different position. In the <tt>layer.xml</tt> file,
+		tweak the Modes section.
+		<li>Use the <a href="../../csh/ActionTypePanel.html">New Action wizard</a> to add an action
+		to the new file type's pop-up menu. When you do so, select Always Enabled in
+		the first page of the <a href="../../csh/ActionTypePanel.html">New Action wizard</a>.
+		<li>Add your own code to <tt>componentOpened()</tt> and <tt>componentClosed()</tt> to
+		 specify what will happen when the window opens and closes.
+		
+	</ul>
 </ol>
 
 <hr>
