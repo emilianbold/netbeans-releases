@@ -209,6 +209,7 @@ public class XMLFormatter extends ExtFormatter {
             if (typedText.charAt(0) == '>') {
                 //get the token before typed text
                 TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
+                TokenItem origToken = token;
                 int start = token.getOffset();
                 if (token.getTokenContextPath().contains(XMLDefaultTokenContext.contextPath) &&
                         !token.getImage().endsWith("/>")) {
@@ -254,21 +255,27 @@ public class XMLFormatter extends ExtFormatter {
                             String tagname = token.getImage().substring(1); //cut '<'
                             //test whether there is a matching close tag,
                             //if so, do not autocomplete.
-                            int[] match = sup.findMatchingBlock(token.getOffset(), false);
-                            if((match != null && match[0] < dotPos) || match == null) {
-                                //there isn't a _real_ matching tag => autocomplete
-                                //note: the test for match index is necessary since the '<'  in <tag> matches the '>' character on the end of the tag.
-                                if(VALID_TAG_NAME.matcher(tagname).matches()) { //check the tag name 
-                                    doc.atomicLock();
-                                    try {
-                                        doc.insertString( dotPos, "</"+tagname+">" , null);
-                                    } catch( BadLocationException exc ) {
-                                        //do nothing
-                                    } finally {
-                                        doc.atomicUnlock();
+                            
+                            //test if the '>' char is the lastnonwhite char on the line
+                            //to prevent autocompletion of tags written before a text
+                            int fnwfw = Utilities.getFirstNonWhiteFwd(doc, origToken.getOffset() + origToken.getImage().length());
+                            if(fnwfw != -1 && Utilities.getLineOffset(doc, origToken.getOffset()) < Utilities.getLineOffset(doc, fnwfw)) {
+                                int[] match = sup.findMatchingBlock(token.getOffset(), false);
+                                if((match != null && match[0] < dotPos) || match == null) {
+                                    //there isn't a _real_ matching tag => autocomplete
+                                    //note: the test for match index is necessary since the '<'  in <tag> matches the '>' character on the end of the tag.
+                                    if(VALID_TAG_NAME.matcher(tagname).matches()) { //check the tag name 
+                                        doc.atomicLock();
+                                        try {
+                                            doc.insertString( dotPos, "</"+tagname+">" , null);
+                                        } catch( BadLocationException exc ) {
+                                            //do nothing
+                                        } finally {
+                                            doc.atomicUnlock();
+                                        }
+                                        //return cursor back
+                                        target.setCaretPosition(dotPos);
                                     }
-                                    //return cursor back
-                                    target.setCaretPosition(dotPos);
                                 }
                             }
                         }
