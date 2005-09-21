@@ -62,7 +62,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     protected void storeToDataModel() {
         data.setAlwaysEnabled(alwaysEnabled.isSelected());
         data.setCookieClasses(getCookieClasses());
-        data.setMultiSelection(multiSelection.isSelected());
+        data.setMultiSelection(isMutliSelection());
     }
     
     private String[] getCookieClasses() {
@@ -87,6 +87,10 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         return new HelpCtx(ActionTypePanel.class);
     }
     
+    private boolean isMutliSelection() {
+        return modeMultiple.isSelected();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -97,19 +101,21 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         whenEnabledGroup = new javax.swing.ButtonGroup();
+        modeGroup = new javax.swing.ButtonGroup();
         alwaysEnabled = new javax.swing.JRadioButton();
         condionallyEnabled = new javax.swing.JRadioButton();
         coockieClassTxt = new javax.swing.JLabel();
         coockieClass = new javax.swing.JComboBox();
-        multiSelection = new javax.swing.JCheckBox();
         filler = new javax.swing.JLabel();
+        modeOne = new javax.swing.JRadioButton();
+        modeMultiple = new javax.swing.JRadioButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         whenEnabledGroup.add(alwaysEnabled);
         alwaysEnabled.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(alwaysEnabled, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_AlwaysEnabled"));
-        alwaysEnabled.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        alwaysEnabled.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         alwaysEnabled.setMargin(new java.awt.Insets(0, 0, 0, 0));
         alwaysEnabled.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -127,7 +133,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
 
         whenEnabledGroup.add(condionallyEnabled);
         org.openide.awt.Mnemonics.setLocalizedText(condionallyEnabled, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_ConditionallyEnabled"));
-        condionallyEnabled.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        condionallyEnabled.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         condionallyEnabled.setMargin(new java.awt.Insets(0, 0, 0, 0));
         condionallyEnabled.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -140,7 +146,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(condionallyEnabled, gridBagConstraints);
 
         coockieClassTxt.setLabelFor(coockieClass);
@@ -162,25 +168,39 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
         add(coockieClass, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(multiSelection, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_AllowMultipleSelections"));
-        multiSelection.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        multiSelection.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 0);
-        add(multiSelection, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(filler, gridBagConstraints);
+
+        modeGroup.add(modeOne);
+        modeOne.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(modeOne, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_ModeOneNode"));
+        modeOne.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        modeOne.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 18, 6, 0);
+        add(modeOne, gridBagConstraints);
+
+        modeGroup.add(modeMultiple);
+        org.openide.awt.Mnemonics.setLocalizedText(modeMultiple, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_ModeMultipleNode"));
+        modeMultiple.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        modeMultiple.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 0);
+        add(modeMultiple, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -189,7 +209,8 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         boolean enabled = condionallyEnabled.isSelected();
         coockieClass.setEnabled(enabled);
         coockieClassTxt.setEnabled(enabled);
-        multiSelection.setEnabled(enabled);
+        modeOne.setEnabled(enabled);
+        modeMultiple.setEnabled(enabled);
     }//GEN-LAST:event_condionallyEnabledActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -198,7 +219,9 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     private javax.swing.JComboBox coockieClass;
     private javax.swing.JLabel coockieClassTxt;
     private javax.swing.JLabel filler;
-    private javax.swing.JCheckBox multiSelection;
+    private javax.swing.ButtonGroup modeGroup;
+    private javax.swing.JRadioButton modeMultiple;
+    private javax.swing.JRadioButton modeOne;
     private javax.swing.ButtonGroup whenEnabledGroup;
     // End of variables declaration//GEN-END:variables
     
