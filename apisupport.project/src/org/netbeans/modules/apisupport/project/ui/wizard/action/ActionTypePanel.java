@@ -62,7 +62,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     protected void storeToDataModel() {
         data.setAlwaysEnabled(alwaysEnabled.isSelected());
         data.setCookieClasses(getCookieClasses());
-        data.setMultiSelection(isMutliSelection());
+        data.setMultiSelection(isMultiSelection());
     }
     
     private String[] getCookieClasses() {
@@ -87,7 +87,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         return new HelpCtx(ActionTypePanel.class);
     }
     
-    private boolean isMutliSelection() {
+    private boolean isMultiSelection() {
         return modeMultiple.isSelected();
     }
     
