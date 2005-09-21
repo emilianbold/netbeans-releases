@@ -115,7 +115,8 @@ public class NewProject extends BasicAction {
 
                         LinkedList filesToOpen = new LinkedList();
 
-                        Project p = null;        
+                        boolean mainProjectSet = false;
+                        Project firstProject = null;
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
                             Object obj = it.next ();
                             FileObject newFo;
@@ -135,12 +136,14 @@ public class NewProject extends BasicAction {
                                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Found unrecognized object " + obj + " in result set from instantiate()");
                                 continue;
                             }
-                            boolean mainProjectSet = false;
                             // check if it's a project directory
                             if (newFo.isFolder()) {
                                 try {
-                                    p = ProjectManager.getDefault().findProject(newFo);
+                                    Project p = ProjectManager.getDefault().findProject(newFo);
                                     if (p != null) {
+                                        if (firstProject == null) {
+                                            firstProject = p;
+                                        }
                                         // It is a project, so open it
                                         OpenProjectList.getDefault().open(p);
                                         if (setFirstMainFinal && !mainProjectSet) {
@@ -164,9 +167,9 @@ public class NewProject extends BasicAction {
                         ProjectUtilities.makeProjectTabVisible( true );
                         
                         // Second open the files                
-                        if ( filesToOpen.isEmpty() && p != null) {
+                        if (filesToOpen.isEmpty() && firstProject != null) {
                             // Just select and expand the project node
-                            ProjectUtilities.selectAndExpandProject( p );
+                            ProjectUtilities.selectAndExpandProject(firstProject);
                         }
                         else {
                             for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files

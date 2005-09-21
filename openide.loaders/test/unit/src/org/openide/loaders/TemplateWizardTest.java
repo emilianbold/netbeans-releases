@@ -7,24 +7,28 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
+import java.awt.Component;
 import java.io.IOException;
-import javax.swing.event.ChangeListener;
-import junit.textui.TestRunner;
-import org.netbeans.junit.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
+import org.netbeans.junit.NbTestCase;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.*;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-
-
-
+import org.openide.filesystems.Repository;
+import org.openide.util.HelpCtx;
 /** Checks the testable behaviour of TemplateWizard
  * @author Jaroslav Tulach, Jiri Rechtacek
  */
@@ -34,7 +38,7 @@ public class TemplateWizardTest extends NbTestCase {
         super(name);
     }
     
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
          FileObject fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
          FileUtil.createFolder (fo, "Templates");
     }
@@ -42,7 +46,7 @@ public class TemplateWizardTest extends NbTestCase {
     /** Does getIterator honours DataObject's cookies?
      */
     public void testGetIteratorHonoursDataObjectsCookies () throws Exception {
-        LocalFileSystem fs = new LocalFileSystem ();
+        FileSystem fs = FileUtil.createMemoryFileSystem();
         DataObject obj;
         Loader l = (Loader)Loader.findObject (Loader.class, true);
         try {
@@ -55,6 +59,47 @@ public class TemplateWizardTest extends NbTestCase {
         TemplateWizard.Iterator it = TemplateWizard.getIterator (obj);
         
         assertEquals ("Iterator obtained from the object's cookie", obj, it);
+    }
+    
+    public void testIteratorBridge() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject fo = fs.getRoot().createData("x");
+        final FileObject a = fs.getRoot().createData("a");
+        final FileObject b = fs.getRoot().createData("b");
+        final FileObject c = fs.getRoot().createData("c");
+        final FileObject d = fs.getRoot().createData("d");
+        fo.setAttribute("instantiatingIterator", new WizardDescriptor.InstantiatingIterator() {
+            public Set instantiate() throws IOException {
+                return new LinkedHashSet(Arrays.asList(new FileObject[] {
+                    d,
+                    c,
+                    a,
+                    b,
+                }));
+            }
+            public void removeChangeListener(ChangeListener l) {}
+            public void addChangeListener(ChangeListener l) {}
+            public void uninitialize(WizardDescriptor wizard) {}
+            public void initialize(WizardDescriptor wizard) {}
+            public void previousPanel() {}
+            public void nextPanel() {}
+            public String name() {return null;}
+            public boolean hasPrevious() {return false;}
+            public boolean hasNext() {return false;}
+            public WizardDescriptor.Panel current() {return null;}
+        });
+        System.out.println("natural order:" + new HashSet(Arrays.asList(new DataObject[] {
+            DataObject.find(d),
+            DataObject.find(c),
+            DataObject.find(a),
+            DataObject.find(b),
+        })));
+        assertEquals("order preserved (#64760)", Arrays.asList(new DataObject[] {
+            DataObject.find(d),
+            DataObject.find(c),
+            DataObject.find(a),
+            DataObject.find(b),
+        }), new ArrayList(TemplateWizard.getIterator(DataObject.find(fo)).instantiate(new TemplateWizard())));
     }
     
     private static class DO extends DataFolder implements TemplateWizard.Iterator {
@@ -70,7 +115,7 @@ public class TemplateWizardTest extends NbTestCase {
 
         public void addChangeListener(ChangeListener l) {
         }
-        public TemplateWizard.Panel current() {
+        public WizardDescriptor.Panel current() {
             return null;
         }
         public boolean hasNext() {
@@ -81,7 +126,7 @@ public class TemplateWizardTest extends NbTestCase {
         }
         public void initialize(TemplateWizard wiz) {
         }
-        public java.util.Set instantiate(TemplateWizard wiz) throws IOException {
+        public Set instantiate(TemplateWizard wiz) throws IOException {
             throw new IOException ();
         }
         public String name() {
@@ -132,7 +177,7 @@ public class TemplateWizardTest extends NbTestCase {
             public I () {
                 super (arr);
             }
-            public java.util.Set instantiate (TemplateWizard wiz) throws IOException {
+            public Set instantiate (TemplateWizard wiz) throws IOException {
                 throw new IOException ();
             }
             public void initialize(TemplateWizard wiz) {}
@@ -154,10 +199,10 @@ public class TemplateWizardTest extends NbTestCase {
             index = i;
         }
         
-        public void removeChangeListener (javax.swing.event.ChangeListener l) {
+        public void removeChangeListener (ChangeListener l) {
         }
 
-        public void addChangeListener (javax.swing.event.ChangeListener l) {
+        public void addChangeListener (ChangeListener l) {
         }
 
         public void storeSettings (Object settings) {
@@ -170,11 +215,11 @@ public class TemplateWizardTest extends NbTestCase {
             return true;
         }
 
-        public org.openide.util.HelpCtx getHelp () {
+        public HelpCtx getHelp () {
             return null;
         }
 
-        public java.awt.Component getComponent () {
+        public Component getComponent () {
             return new JPanel ();
         }
         

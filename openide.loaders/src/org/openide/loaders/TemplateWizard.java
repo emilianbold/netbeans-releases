@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,6 +27,7 @@ import java.awt.Cursor;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -149,22 +150,6 @@ public class TemplateWizard extends WizardDescriptor {
         super.initialize ();
     }
 
-    /** Getter for default filesystem to create objects on.
-     * @return the first non hidden filesystem or null if none
-     */
-    final FileSystem getEnabledSystem () {
-        // search for a filesystem
-        Enumeration en = Repository.getDefault().fileSystems();
-        while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem)en.nextElement();
-            if (!fs.isHidden()) {
-                // found first non hidden filesystem
-                return fs;
-            }
-        }
-        return null;
-    }
-
     /** This is method used by TemplateWizardPanel1 to change the template
     */
     final void setTemplateImpl (DataObject obj, boolean notify) {
@@ -229,19 +214,14 @@ public class TemplateWizard extends WizardDescriptor {
         
         
 
-    /** Getter for target folder. If the folder does not
-    * exists it is created at this point.
-    *
-    * @return the target folder
-    * @exception IOException if the possible creation of the folder fails
-    */
+    /**
+     * Getter for target folder.
+     * @return the target folder
+     * @throws IOException if the target folder has not been set
+     */
     public DataFolder getTargetFolder () throws IOException {
         if (targetDataFolder == null) {
-            // bugfix #28357, check if filesystem is null
-            if (getEnabledSystem () == null) {
-                throw new IOException (NbBundle.getMessage(TemplateWizard.class, "ERR_NoFilesystem"));
-            }
-            targetDataFolder = DataFolder.findFolder (getEnabledSystem ().getRoot ());
+            throw new IOException(NbBundle.getMessage(TemplateWizard.class, "ERR_NoFilesystem"));
         }
         return targetDataFolder;
     }
@@ -478,7 +458,7 @@ public class TemplateWizard extends WizardDescriptor {
                     }
                 });
             }
-            d.show ();
+            d.setVisible(true);
         } catch (IllegalStateException ise) {
             thrownMessage = ise;
         }
@@ -578,21 +558,21 @@ public class TemplateWizard extends WizardDescriptor {
         if (desc != null) return desc;
         desc = (URL)obj.getPrimaryFile().getAttribute(EA_DESCRIPTION);
         if (desc != null) return desc;
-	// Backwards compatibility:
+        // Backwards compatibility:
         String rsrc = (String) obj.getPrimaryFile ().getAttribute (EA_DESC_RESOURCE);
-	if (rsrc != null) {
-	    try {
-		URL better = new URL ("nbresloc:/" + rsrc); // NOI18N
-		try {
-		    setDescription (obj, better);
-		} catch (IOException ioe) {
-		    // Oh well, just ignore.
-		}
-		return better;
-	    } catch (MalformedURLException mfue) {
-		ErrorManager.getDefault().notify(mfue);
-	    }
-	}
+        if (rsrc != null) {
+            try {
+                URL better = new URL ("nbresloc:/" + rsrc); // NOI18N
+                try {
+                    setDescription (obj, better);
+                } catch (IOException ioe) {
+                    // Oh well, just ignore.
+                }
+                return better;
+            } catch (MalformedURLException mfue) {
+                ErrorManager.getDefault().notify(mfue);
+            }
+        }
         return null;
     }
 
@@ -657,7 +637,7 @@ public class TemplateWizard extends WizardDescriptor {
             // old style iterator
             it = (Iterator)unknownIterator;
         } if (unknownIterator instanceof WizardDescriptor.InstantiatingIterator) {
-            it = new TemplateWizard.Brigde2Iterator ((WizardDescriptor.InstantiatingIterator) unknownIterator);
+            it = new InstantiatingIteratorBridge((WizardDescriptor.InstantiatingIterator) unknownIterator);
         }
         if (it != null) {
             return it;
@@ -922,9 +902,9 @@ public class TemplateWizard extends WizardDescriptor {
         }
     }
     
-    static class Brigde2Iterator implements TemplateWizard.Iterator {
+    private static class InstantiatingIteratorBridge implements TemplateWizard.Iterator {
         private WizardDescriptor.InstantiatingIterator instantiatingIterator;
-        public Brigde2Iterator (WizardDescriptor.InstantiatingIterator it) {
+        public InstantiatingIteratorBridge (WizardDescriptor.InstantiatingIterator it) {
             instantiatingIterator = it;
         }
         
@@ -970,11 +950,14 @@ public class TemplateWizard extends WizardDescriptor {
             java.util.Iterator it = workSet.iterator ();
             Object obj;
             DataObject dobj;
-            HashSet resultSet = new HashSet (workSet.size ());
+            Set/*<DataObject>*/ resultSet = new LinkedHashSet(workSet.size());
             while (it.hasNext ()) {
                 obj = it.next ();
                 assert obj != null;
-                if (obj instanceof DataObject) continue;
+                if (obj instanceof DataObject) {
+                    // XXX what?? aren't we adding it?
+                    continue;
+                }
                 if (obj instanceof FileObject) {
                     try {
                         dobj = DataObject.find ((FileObject)obj);
@@ -984,8 +967,8 @@ public class TemplateWizard extends WizardDescriptor {
                     }
                 } else if (obj instanceof Node) {
                     dobj = (DataObject)((Node)obj).getCookie (DataObject.class);
+                    assert dobj != null : obj; // XXX assertions are not appropriate here!
                     resultSet.add (dobj);
-                    assert dobj != null : obj;
                 }
             }
             return resultSet;
@@ -996,24 +979,5 @@ public class TemplateWizard extends WizardDescriptor {
         }
         
     }
-    /*
-      public static void main (String[] args) throws java.lang.Exception {
-        TemplateWizard wiz = new TemplateWizard ();
-        
-        
-        FileObject fo = FileSystemCapability.ALL.findResource(
-          "Templates/AWTForms/Frame.java"
-        );
-        DataObject obj = DataObject.find (fo);
-
-        fo = FileSystemCapability.ALL.findResource(
-          "test"
-        );
-        DataFolder f = DataFolder.findFolder(fo);
-        
-        
-        wiz.instantiate();
-      }
-    */  
 
 }
