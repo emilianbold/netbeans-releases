@@ -589,7 +589,7 @@ class LayoutDragger implements LayoutConstants {
     private void checkRootForNextTo(LayoutInterval layoutRoot, int alignment) {
         assert alignment == LayoutRegion.ALL_POINTS || alignment == LEADING || alignment == TRAILING;
 
-        if (operation == RESIZING && !isValidNextToResizing(layoutRoot, alignment))
+        if (operation == RESIZING && isValidNextToResizing(layoutRoot, alignment) != 1)
             return;
 
         LayoutRegion rootSpace = layoutRoot.getCurrentSpace();
@@ -655,7 +655,7 @@ class LayoutDragger implements LayoutConstants {
 
             if (sub.isComponent()) {
                 if (isValidInterval(sub)
-                    && (operation != RESIZING || isValidNextToResizing(sub, alignment)))
+                    && (operation != RESIZING || isValidNextToResizing(sub, alignment) == 1))
                 {   // sub is a component not moved nor resized
                     nextToAlignment = checkNextToPosition(sub, alignment);
                 }
@@ -668,11 +668,11 @@ class LayoutDragger implements LayoutConstants {
 
                 // check if the group is not going to be dissolved (contains moving interval)
                 boolean validForRef = isValidInterval(sub);
-                boolean invalidResizing = validForRef && operation == RESIZING
-                                          && !isValidNextToResizing(sub, alignment);
+                int validResizing = validForRef && operation == RESIZING ?
+                                    isValidNextToResizing(sub, alignment) : 1;
                 int subGroupOuterAlign;
 
-                if (!invalidResizing && canGoInsideForNextTo(sub, validForRef)) {
+                if (validResizing != -1 && canGoInsideForNextTo(sub, validForRef)) {
                     int align = alignment;
                     for (int i = LEADING; i <= TRAILING; i++) {
                         if (alignment != LayoutRegion.ALL_POINTS && i != alignment) {
@@ -695,7 +695,7 @@ class LayoutDragger implements LayoutConstants {
                 }
                 else subGroupOuterAlign = alignment;
 
-                if (validForRef && !invalidResizing && subGroupOuterAlign != DEFAULT) {
+                if (validForRef && validResizing == 1 && subGroupOuterAlign != DEFAULT) {
                     nextToAlignment = checkNextToPosition(sub, subGroupOuterAlign);
                 }
             }
@@ -1214,26 +1214,33 @@ class LayoutDragger implements LayoutConstants {
         }
     }
 
-    private boolean isValidNextToResizing(LayoutInterval interval, int alignment) {
+    /**
+     * @return 1 - is valid for next to resizing
+     *         0 - not valid, but some sub-interval could be
+     *        -1 - not valid, even no sub-interval
+     */
+    private int isValidNextToResizing(LayoutInterval interval, int alignment) {
         assert alignment == LEADING || alignment == TRAILING;
         LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
         if (interval.isParentOf(resizing))
-            return interval.getParent() == null && clearWayToParent(resizing, interval, dimension, alignment);
+            return interval.getParent() == null && clearWayToParent(resizing, interval, dimension, alignment) ?
+                   1 : 0;
 
         LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, resizing);
         if (commonParent.isSequential()) {
             if (interval.getParent() != commonParent)
-                return false;
+                return -1;
             resizing = getClearWayToParent(resizing, commonParent, dimension, alignment);
             if (resizing == null)
-                return false;
+                return -1;
 
             int startIndex = commonParent.indexOf(alignment == LEADING ? interval : resizing) + 1;
             int endIndex = commonParent.indexOf(alignment == LEADING ? resizing : interval) - 1;
             return startIndex <= endIndex
-                   && !LayoutUtils.contentOverlap(movingSpace, commonParent, startIndex, endIndex, dimension^1);
+                   && !LayoutUtils.contentOverlap(movingSpace, commonParent, startIndex, endIndex, dimension^1) ?
+                   1 : -1;
         }
-        return false;
+        return -1;
     }
 
     private boolean isValidAlignedResizing(LayoutInterval interval, int alignment) {

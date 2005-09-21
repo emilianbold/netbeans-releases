@@ -1256,6 +1256,7 @@ class LayoutFeeder implements LayoutConstants {
         int pos = interval.getCurrentSpace().positions[dimension][alignment];
         int outPos = parent.getParent().getCurrentSpace().positions[dimension][alignment];
 
+        boolean parallel = false;
         int d = alignment == LEADING ? -1 : 1;
         int start = parent.indexOf(interval);
         int end = lower.isComponent() ? start : -1;
@@ -1274,14 +1275,18 @@ class LayoutFeeder implements LayoutConstants {
                         }
                         else end = -1; // there was only a gap before
                     }
-                    else end = i;  // no orthogonal overlap, count this in
+                    else { // no orthogonal overlap, count this in
+                        end = i;
+                        if (!parallel && LayoutUtils.contentOverlap(space, li, dimension))
+                            parallel = true;
+                    }
                 }
                 if ((i == 0 || i+d == n) && endPos == Integer.MIN_VALUE && end != -1) { // last gap or non-overlapping
-                    if (end != start ) {
+                    if (end != start && (parallel || dimension == HORIZONTAL)) {
                         end = i;
                         endPos = outPos;
                     }
-                    else end = -1; // only gap
+                    else end = -1; // only gap or not in parallel with anything (in vertical dimension)
                 }
                 if (endPos != Integer.MIN_VALUE) {
                     LayoutInterval toPar = lower.getParent().isSequential() ? lower.getParent() : lower;
@@ -1380,33 +1385,32 @@ class LayoutFeeder implements LayoutConstants {
 
         boolean resizingOp = dragger.isResizing(dimension);
 
+        // hack: remove the aligning interval temporarily not to influence the follwoing analysis
+        LayoutInterval tempRemoved = interval.getParent().isSequential() ? interval.getParent() : interval;
+        int removedIndex = parParent.remove(tempRemoved);
+
+        // check if we shouldn't rather align with a whole group (parent of toAlignWith)
         boolean alignWithParent = false;
-        if (LayoutInterval.getDirectNeighbor(interval, alignment, false) == null) {
-            // check if we shouldn't rather align with a whole group (parent of toAlignWith)
-
-            // hack: remove the aligning interval temporarily not to influence the follwoing analysis
-            LayoutInterval tempRemoved = interval.getParent().isSequential() ? interval.getParent() : interval;
-            int removedIndex = parParent.remove(tempRemoved);
-
-            LayoutInterval alignParent;
-            do {
-                alignParent = LayoutInterval.getFirstParent(toAlignWith, PARALLEL);
-                if (alignParent == null)
-                    return; // aligning with parent (the interval must be already aligned)
-                if (canSubstAlignWithParent(toAlignWith, dimension, alignment, resizingOp)) { // toAlignWith is at border and we use parent instead
-                    if (alignParent == parParent)
+        LayoutInterval alignParent;
+        do {
+            alignParent = LayoutInterval.getFirstParent(toAlignWith, PARALLEL);
+            if (alignParent == null)
+                return; // aligning with parent (the interval must be already aligned)
+            if (canSubstAlignWithParent(toAlignWith, dimension, alignment, resizingOp)) {
+                // toAlignWith is at border so we can perhaps use the parent instead
+                if (alignParent == parParent) {
+                    if (LayoutInterval.getDirectNeighbor(interval, alignment, false) == null)
                         alignWithParent = true;
-                    else
-                        toAlignWith = alignParent;
                 }
+                else toAlignWith = alignParent;
             }
-            while (toAlignWith == alignParent);
-
-            parParent.add(tempRemoved, removedIndex); // add back temporarily removed
-
-            if (alignParent != parParent)
-                return; // can't align (toAlignWith is too deep)
         }
+        while (toAlignWith == alignParent);
+
+        parParent.add(tempRemoved, removedIndex); // add back temporarily removed
+
+        if (alignParent != parParent)
+            return; // can't align (toAlignWith is too deep)
 
         // check congruence of effective alignment
         int effAlign = LayoutInterval.getEffectiveAlignment(toAlignWith, alignment);
@@ -1704,7 +1708,15 @@ class LayoutFeeder implements LayoutConstants {
             else if (LayoutUtils.contentOverlap(addingSpace, sub, dimension^1)) {
                 boolean dimOverlap = LayoutRegion.overlap(addingSpace, subSpace, dimension, 0);
                 if (dimOverlap && !solveOverlap) {
-                    continue; // don't want to deal with the overlap here
+                    IncludeDesc origPos = originalPositions1[dimension];
+                    if (origPos == null || (aEdge^1) != origPos.alignment
+                        || (origPos.parent != sub && !sub.isParentOf(origPos.parent)))
+                    {   // don't want to deal with the overlap here
+                        continue; 
+                    }
+                    // otherwise overlapping enclosing space of 'sub' does not
+                    // matter as the other edge of adding component resides
+                    // inside 'sub', so this position should be in sequence
                 }
                 int distance;
                 if (!dimOverlap) { // determine distance from the interval
@@ -1776,8 +1788,16 @@ class LayoutFeeder implements LayoutConstants {
             // is no overlap in horizontal dimension (i.e. force inserting into sequence)
             if (ortOverlap || (dimension == VERTICAL && !dimOverlap && !parallelWithSequence)) {
                 if (dimOverlap) { // overlaps in both dimensions
-                    if (!solveOverlap) {
-                        return; // don't want to solve the overlap in this sequence
+                    if (!solveOverlap) { // don't want to solve the overlap in this sequence
+                        IncludeDesc origPos = originalPositions1[dimension];
+                        if (origPos == null || (aEdge^1) != origPos.alignment
+                            || (origPos.parent != sub && !sub.isParentOf(origPos.parent)))
+                        {   // overlap will be solved in the other dimension
+                            return; 
+                        }
+                        // otherwise overlapping enclosing space of 'sub' does not
+                        // matter as the other edge of adding component resides
+                        // inside 'sub', so this position should be in sequence
                     }
                     inSequence = true;
                     distance = ortDistance = 0;
@@ -2005,6 +2025,7 @@ class LayoutFeeder implements LayoutConstants {
 
         // 2nd remove incompatible inclusions, move compatible ones to same level
         LayoutInterval commonGroup = best.parent.isSequential() ? best.parent.getParent() : best.parent;
+        boolean originalInCommonGroup = original != null ? original.parent == commonGroup : false;
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc != best) {
@@ -2121,6 +2142,8 @@ class LayoutFeeder implements LayoutConstants {
                 commonGroup = parent;
                 index = 0;
             }
+            if (originalInCommonGroup)
+                original.parent = commonGroup;
         }
         else {
             commonSeq = new LayoutInterval(SEQUENTIAL);
@@ -2205,6 +2228,11 @@ class LayoutFeeder implements LayoutConstants {
                 best.newSubGroup = true;
             }
             operations.addContent(subGroup, commonSeq, index);
+
+            if (originalInCommonGroup && original.neighbor != null && subGroup.isParentOf(original.neighbor)) {
+                original.parent = LayoutInterval.getFirstParent(original.neighbor, PARALLEL);
+                correctNeighborInSequence(original);
+            }
         }
     }
 
@@ -2280,6 +2308,11 @@ class LayoutFeeder implements LayoutConstants {
             boolean endGap = false;
 
             if (commonGroup.isSequential()) {
+                if (iDesc1.alignment == TRAILING) {
+                    IncludeDesc temp = iDesc1;
+                    iDesc1 = iDesc2;
+                    iDesc2 = temp;
+                }
                 if (commonGroup.isParentOf(iDesc1.parent)) {
                     ext1 = iDesc1.parent.isSequential() ? iDesc1.parent : iDesc1.neighbor;
                     if (ext1 != null) {
@@ -2289,7 +2322,10 @@ class LayoutFeeder implements LayoutConstants {
                         startIndex = commonGroup.indexOf(ext1.getParent());
                     }
                 }
-                else startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
+                else {
+                    startIndex = iDesc1.index;
+                    startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
+                }
 
                 endIndex = commonGroup.getSubIntervalCount() - 1;
                 if (commonGroup.isParentOf(iDesc2.parent)) {
@@ -2301,7 +2337,10 @@ class LayoutFeeder implements LayoutConstants {
                         endIndex = commonGroup.indexOf(ext2.getParent());
                     }
                 }
-                else endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
+                else {
+                    endIndex = iDesc2.index - 1;
+                    endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
+                }
             }
 
             if (endIndex > startIndex + 1
@@ -2364,6 +2403,7 @@ class LayoutFeeder implements LayoutConstants {
                 if (iDesc2.parent.isParentOf(iDesc1.parent)) {
                     iDesc2.parent = iDesc1.parent;
                     iDesc2.index = iDesc1.index;
+                    iDesc2.newSubGroup = iDesc1.newSubGroup;
                     iDesc2.neighbor = iDesc1.neighbor;
                     if (endGap) // there's an outer gap
                         iDesc2.fixedPosition = false;
@@ -2371,6 +2411,7 @@ class LayoutFeeder implements LayoutConstants {
                 else if (iDesc1.parent.isParentOf(iDesc2.parent)) {
                     iDesc1.parent = iDesc2.parent;
                     iDesc1.index = iDesc2.index;
+                    iDesc1.newSubGroup = iDesc2.newSubGroup;
                     iDesc1.neighbor = iDesc2.neighbor;
                     if (startGap) // there's an outer gap
                         iDesc1.fixedPosition = false;
