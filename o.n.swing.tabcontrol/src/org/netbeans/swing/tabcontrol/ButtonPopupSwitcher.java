@@ -178,10 +178,19 @@ final class ButtonPopupSwitcher
         Point p = e.getPoint();
         p = SwingUtilities.convertPoint((Component) e.getSource(), p, pTable);
         if (pTable.contains(p)) {
-            SwitcherTableItem item = pTable.getSelectedItem();
+            final SwitcherTableItem item = pTable.getSelectedItem();
             if (item != null) {
-                item.activate();
+                // #62062 and #60235 - focus related
+                // the posting of popup hiding creates problems for focus handling on macosx
+                // a workaround that seems to work everywhere is to post the activation as well,
+                // scheduling it to happen after the popup is hidden.
+                // Note: if we can get rid of hiding posting, we can remove the posted activation as well I believe
                 hideCurrentPopup();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        item.activate();
+                    }
+                });
                 e.consume();
             }
         }
