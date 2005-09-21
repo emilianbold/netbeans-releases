@@ -1891,12 +1891,17 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             else {
                 // re-init in next AWT round - to finish compound undo edit of
                 // this round and start a new one properly
+                // UGLY temporary fix of issue 64808
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
-                                init();
-                                move(e);
+                                EventQueue.invokeLater(new Runnable() {
+                                    public void run() {
+                                        init();
+                                        move(e);
+                                    }
+                                });
                             }
                         });
                     }
