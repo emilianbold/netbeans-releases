@@ -48,11 +48,11 @@ public class TemplateManager extends org.netbeans.performance.test.utilities.Per
     public ComponentOperator open(){
         String menu = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") +
         "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.ui.templates.Bundle","LBL_TemplatesAction_Name");
+        Bundle.getStringTrimmed("org.netbeans.modules.favorites.templates.Bundle","LBL_TemplatesAction_Name");
 
         MainWindowOperator.getDefault().menuBar().pushMenu(menu);
         
-        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.core.ui.templates.Bundle","LBL_TemplatesPanel_Title"));
+        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.favorites.templates.Bundle","LBL_TemplatesPanel_Title"));
     }
     
     
