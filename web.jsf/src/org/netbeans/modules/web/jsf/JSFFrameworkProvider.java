@@ -56,7 +56,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private JSFConfigurationPanel panel;
     /** Creates a new instance of JSFFrameworkProvider */
     public JSFFrameworkProvider() {
-        super("Java Server Faces", "Java Server Faces");   //NOI18N
+        super(
+                NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name"),               // NOI18N
+                NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
 
     public Set extend (WebModule wm) {
