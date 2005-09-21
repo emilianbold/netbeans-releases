@@ -21,6 +21,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -123,7 +124,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      */
     private Object defaultLookupRef;
 
-    /** Listener to the data object's node or null */
+    /** Holds support for sync with node display name or null */
     private NodeName nodeName;
 
     // Do not use, deprecated.
@@ -822,7 +823,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             out.writeObject(getDisplayName());
         }
 
-        Node.Handle h = (nodeName == null) ? null : nodeName.node.getHandle();
+        Node n = (nodeName == null) ? null : nodeName.getNode();
+        Node.Handle h = (n == null) ? null : n.getHandle();
         out.writeObject(h);
     }
 
@@ -874,8 +876,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
 
             if (h != null) {
                 Node n = h.getNode();
-                nodeName = new NodeName(this);
-                nodeName.attach(n);
+                NodeName.connect(this, n);
             }
         }
 
@@ -1006,6 +1007,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         }
     }
 
+    private void attachNodeName(NodeName nodeName) {
+        this.nodeName = nodeName;
+    }
+
     /** Each top component that wishes to be cloned should implement
     * this interface, so CloneAction can check it and call the cloneComponent
     * method.
@@ -1116,24 +1121,22 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     }
 
     /** This class provides the connection between the node name and
-    * a name of the component.
-    */
+     * a name of the component.
+     *
+     * @deprecated Please do not use. This support class does nothing much
+     * useful. If you need to synchronize display name of your TopComponent
+     * with some Node's display name, we recommend you to do it manually in
+     * your client's code.
+     */
     public static class NodeName extends NodeAdapter {
-        /** weak reference to the top component */
-        private transient Reference top;
+        /** asociation with top component */
+        private TopComponent top;
 
-        /** node we are attached to or null */
-        private transient Node node;
+        /** weak ref to node we are attached to or null */
+        private Reference node;
 
-        /** Constructs new name adapter that
-        * can be attached to any node and will listen on changes
-        * of its display name and modify the name of the component.
-        *
-        * @param top top compoonent to modify its name
-        */
-        public NodeName(TopComponent top) {
-            this.top = new WeakReference(top);
-        }
+        /** Listener to node, used for weak listening */
+        private NodeListener nodeL;
 
         /** Connects a top component and a node. The name of
         * component will be updated as the name of the node
@@ -1148,58 +1151,49 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             new NodeName(top).attach(n);
         }
 
-        /** Attaches itself to a given node.
-        */
-        final void attach(Node n) {
-            TopComponent top = (TopComponent) this.top.get();
-
-            if (top != null) {
-                synchronized (top) {
-                    // ok no change
-                    if (n == node) {
-                        return;
-                    }
-
-                    // change the node we are attached to
-                    if (node != null) {
-                        node.removeNodeListener(this);
-                    }
-
-                    node = n;
-
-                    if (n != null) {
-                        n.addNodeListener(this);
-                        top.setActivatedNodes(new Node[] { n });
-                        top.setName(n.getDisplayName());
-                    }
-                }
-            }
+        /** Constructs new name adapter that
+         * can be attached to any node and will listen on changes
+         * of its display name and modify the name of the component.
+         *
+         * @param top top component to modify its name
+         * 
+         * @deprecated Please do not use, public just by an accident.
+         */
+        public NodeName(TopComponent top) {
+            this.top = top;
         }
 
         /** Listens to Node.PROP_DISPLAY_NAME.
+         *
+         * @deprecated Please do not use, public just by an accident.
         */
         public void propertyChange(PropertyChangeEvent ev) {
-            TopComponent top = (TopComponent) this.top.get();
-
-            if (top == null) {
-                // stop listening if top component no longer exists
-                if (ev.getSource() instanceof Node) {
-                    Node n = (Node) ev.getSource();
-                    n.removeNodeListener(this);
-                }
-
-                return;
-            }
-
-            // ensure we are attached
-            attach(node);
-
             if (ev.getPropertyName().equals(Node.PROP_DISPLAY_NAME)) {
-                top.setName(node.getDisplayName());
+                Node n = (Node) node.get();
+                if (n != null) {
+                    top.setName(n.getDisplayName());
+                }
             }
         }
-    }
-     // end of NodeName
+        
+        /** Attaches itself to a given node.
+        */
+        private void attach(Node n) {
+            synchronized (top) {
+                node = new WeakReference(n);
+                nodeL = (NodeListener) WeakListeners.create(NodeListener.class, this, n);
+                n.addNodeListener(nodeL);
+                top.attachNodeName(this);
+                top.setActivatedNodes(new Node[] { n });
+                top.setName(n.getDisplayName());
+            }
+        }
+
+        private Node getNode() {
+            return (Node) node.get();
+        }
+        
+    } // end of NodeName
 
     /** Instance of this class is serialized instead of TopComponent itself.
     * Emulates behaviour of serialization of externalizable objects
