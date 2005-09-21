@@ -237,7 +237,7 @@ public class NbEditorUI extends ExtEditorUI {
                 Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
                     toFont (as) : null;
                 
-                final Coloring coloring = new Coloring (
+                Coloring coloring = new Coloring (
                     font,
                     Coloring.FONT_MODE_DEFAULT,
                     fore,
@@ -248,19 +248,9 @@ public class NbEditorUI extends ExtEditorUI {
                 );
 
                 cm.put(name, coloring);
-                final JTextComponent c = getComponent();
-                if (SettingsNames.DEFAULT_COLORING.equals(name) && c!=null){ //NOI18N
-                    Runnable runnable = new Runnable(){
-                        public void run(){
-                            coloring.apply(c);
-                        }
-                    };
-                    Utilities.runInEventDispatchThread(runnable);
-                }
             }
             mime2Coloring.put(mimeType, cm);
             return cm;
-            
         }
     }
     
@@ -741,10 +731,7 @@ public class NbEditorUI extends ExtEditorUI {
             synchronized (mime2Coloring){
                 mime2Coloring.remove(mimeType);
             }
-            JTextComponent comp = getComponent();
-            if (comp!=null){
-                comp.repaint();
-            }            
+            settingsChangeImpl(null);
         }
     }
 
