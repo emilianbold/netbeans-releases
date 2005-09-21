@@ -85,8 +85,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="JSP_Servlet">
             <folder name="Struts">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
                 <file name="StrutsAction.java" url="templates/StrutsAction.template">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
                     <attr name="template" boolvalue="true"/>
                     <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
@@ -98,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template"/>
                 <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template"/>
                 <file name="StrutsFormBean.java" url="templates/StrutsFormBean.template">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
                     <attr name="template" boolvalue="true"/>
                     <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
