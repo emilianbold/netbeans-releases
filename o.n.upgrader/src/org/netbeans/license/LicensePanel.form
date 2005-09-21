@@ -34,6 +34,8 @@
         <Property name="rows" type="int" value="1"/>
         <Property name="text" preCode="jTextAreaTop.setText(bundle.getString(&quot;MSG_LicenseDlgLabelTop&quot;));"/>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
+        <Property name="focusable" type="boolean" value="false"/>
+        <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -67,6 +69,8 @@
         <Property name="rows" type="int" value="2"/>
         <Property name="text" preCode="jTextAreaBottom.setText(bundle.getString(&quot;MSG_LicenseDlgLabelBottom&quot;));"/>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
+        <Property name="focusable" type="boolean" value="false"/>
+        <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>

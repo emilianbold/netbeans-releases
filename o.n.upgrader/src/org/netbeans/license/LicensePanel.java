@@ -47,20 +47,10 @@ final class LicensePanel extends javax.swing.JPanel {
         this.getAccessibleContext().setAccessibleDescription
         (bundle.getString("ACSD_LicensePanel"));
         
-        jTextAreaTop.getAccessibleContext().setAccessibleName
-        (bundle.getString("ACSN_TopLabel"));
-        jTextAreaTop.getAccessibleContext().setAccessibleDescription
-        (bundle.getString("ACSD_TopLabel"));
-        
         jEditorPane1.getAccessibleContext().setAccessibleName
         (bundle.getString("ACSN_EditorPane"));
         jEditorPane1.getAccessibleContext().setAccessibleDescription
         (bundle.getString("ACSD_EditorPane"));
-        
-        jTextAreaBottom.getAccessibleContext().setAccessibleName
-        (bundle.getString("ACSN_BottomLabel"));
-        jTextAreaBottom.getAccessibleContext().setAccessibleDescription
-        (bundle.getString("ACSD_BottomLabel"));
     }
     
     /** This method is called from within the constructor to
@@ -77,7 +67,7 @@ final class LicensePanel extends javax.swing.JPanel {
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS));
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         jTextAreaTop.setBackground(getBackground());
         jTextAreaTop.setColumns(20);
         jTextAreaTop.setEditable(false);
@@ -86,6 +76,8 @@ final class LicensePanel extends javax.swing.JPanel {
         jTextAreaTop.setRows(1);
         jTextAreaTop.setText(bundle.getString("MSG_LicenseDlgLabelTop"));
         jTextAreaTop.setWrapStyleWord(true);
+        jTextAreaTop.setFocusable(false);
+        jTextAreaTop.setRequestFocusEnabled(false);
         add(jTextAreaTop);
 
         jEditorPane1.setEditable(false);
@@ -102,6 +94,8 @@ final class LicensePanel extends javax.swing.JPanel {
         jTextAreaBottom.setRows(2);
         jTextAreaBottom.setText(bundle.getString("MSG_LicenseDlgLabelBottom"));
         jTextAreaBottom.setWrapStyleWord(true);
+        jTextAreaBottom.setFocusable(false);
+        jTextAreaBottom.setRequestFocusEnabled(false);
         add(jTextAreaBottom);
 
     }

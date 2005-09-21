@@ -30,7 +30,6 @@ import javax.swing.JPanel;
 import org.netbeans.util.Util;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
 /**
  * Displays LicensePanel to user. User must accept license to continue. 
  * if user does not accept license UserCancelException is thrown.
@@ -99,8 +98,6 @@ public final class AcceptLicense {
         d.setResizable(true);
         //Center on screen
         d.setLocationRelativeTo(null);
-        //Make reject button default
-        noButton.requestFocus();
         d.setVisible(true);
         
         if ("yes".equals(command)) {  // NOI18N
