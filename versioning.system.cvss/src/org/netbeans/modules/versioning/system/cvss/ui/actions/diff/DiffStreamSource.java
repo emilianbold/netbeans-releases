@@ -17,6 +17,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -77,7 +78,7 @@ public class DiffStreamSource extends StreamSource {
         if (binary) {
             return new StringReader("[Binary File " + getTitle() + "]");
         } else {
-            return new FileReader(remoteFile);
+            return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);
         }
     }
 
