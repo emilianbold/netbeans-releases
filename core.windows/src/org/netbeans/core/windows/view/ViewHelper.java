@@ -233,7 +233,7 @@ final class ViewHelper {
             elements[ i ] = snapshot.getOriginator();
             //if this splitter has been merged with a nested splitter with the same orientation
             //then the nested split child split weight must be corrected according to its parent
-            splitWeights[ i ] = correctNestedSplitWeight( children[i].getSnapshot().getParent(), splitWeights[i] );
+            splitWeights[ i ] = correctNestedSplitWeight( snapshot.getParent(), splitWeights[i] );
         }
 
         controllerHandler.userChangedSplit( elements, splitWeights );

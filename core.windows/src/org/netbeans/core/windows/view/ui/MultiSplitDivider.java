@@ -185,7 +185,7 @@ public class MultiSplitDivider implements Accessible {
 
             rect.y = p.y;
         }
-        splitPane.validate();//invalidate();
+        splitPane.splitterMoved();//invalidate();
     }
     
     private void initDragMinMax() {

@@ -318,13 +318,21 @@ class SplitSubModel {
             double attachWeight = parent.getChildSplitWeight(attachNode);
             // Create new branch.
             int orientation = (side == Constants.TOP || side == Constants.BOTTOM) ? Constants.VERTICAL : Constants.HORIZONTAL;
-            SplitNode newSplit = new SplitNode(orientation);
-            parent.removeChild(attachNode);
-            int addingIndex = (side == Constants.TOP || side == Constants.LEFT) ? 0 : -1;
-            int oldIndex = addingIndex == 0 ? -1 : 0;
-            newSplit.setChildAt(addingIndex, Constants.DROP_TO_SIDE_RATIO, addingNode);
-            newSplit.setChildAt(oldIndex, 1D - Constants.DROP_TO_SIDE_RATIO, attachNode);
-            parent.setChildAt(attachIndex, attachWeight, newSplit);
+            if( orientation == parent.getOrientation() ) {
+                //reuse existing split
+                if( side == Constants.BOTTOM || side == Constants.RIGHT )
+                    attachIndex++;
+                parent.setChildAt( attachIndex, Constants.DROP_TO_SIDE_RATIO, addingNode );
+            } else {
+                //split orientation does not match, create a new sub-split
+                SplitNode newSplit = new SplitNode(orientation);
+                parent.removeChild(attachNode);
+                int addingIndex = (side == Constants.TOP || side == Constants.LEFT) ? 0 : -1;
+                int oldIndex = addingIndex == 0 ? -1 : 0;
+                newSplit.setChildAt(addingIndex, Constants.DROP_TO_SIDE_RATIO, addingNode);
+                newSplit.setChildAt(oldIndex, 1D - Constants.DROP_TO_SIDE_RATIO, attachNode);
+                parent.setChildAt(attachIndex, attachWeight, newSplit);
+            }
         }
         
         return true;
@@ -419,14 +427,29 @@ class SplitSubModel {
             root = null;
         } else {
             parent.removeChild(node);
+            
+            List children = parent.getChildren();
 
-            if(parent.getChildren().isEmpty()) {
+            if(children.isEmpty()) {
                 // Parent split is empty, remove it too.
                 if(parent == root) {
                     root = null;
                 } else {                
                     SplitNode grandParent = parent.getParent();
                     grandParent.removeChild(parent);
+                }
+            } else if( children.size() == 1 ) {
+                //the parent has only one child left - move the orphan to its grand-parent
+                Node orphan = (Node)children.get( 0 );
+                if( parent == root ) {
+                    orphan.setParent( null );
+                    root = orphan;
+                } else {
+                    SplitNode grandParent = parent.getParent();
+                    int index = grandParent.getChildIndex( parent );
+                    double weight = grandParent.getChildSplitWeight( parent );
+                    grandParent.removeChild( parent );
+                    grandParent.setChildAt( index, weight, orphan );
                 }
             }
         }

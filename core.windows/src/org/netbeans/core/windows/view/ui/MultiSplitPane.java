@@ -62,6 +62,8 @@ public class MultiSplitPane extends JPanel
     //the width or height of the divider bar
     private int dividerSize;
     
+    private boolean userMovedSplit = false;
+    
     public MultiSplitPane() {
         setLayout( new MultiSplitLayout() );
         addMouseMotionListener( this );
@@ -293,31 +295,6 @@ public class MultiSplitPane extends JPanel
     }
     
     /**
-     * @return True if the list of children or any of the children has been modified.
-     */
-    private boolean isDirty() {
-        if( dirty )
-            return true;
-        for( int i=0; i<getCellCount(); i++ ) {
-            MultiSplitCell cell = cellAt( i );
-            if( cell.isDirty() )
-                return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Reset the 'dirty' flag.
-     */
-    private void cleanDirty() {
-        this.dirty = false;
-        for( int i=0; i<getCellCount(); i++ ) {
-            MultiSplitCell cell = cellAt( i );
-            cell.setDirty( false );
-        }
-    }
-    
-    /**
      * Shrink/grow children components.
      * 
      * @param newSize Split pane's new widht/height depending on split orientation.
@@ -518,6 +495,11 @@ public class MultiSplitPane extends JPanel
         }
     }
     
+    void splitterMoved() {
+        userMovedSplit = true;
+        validate();
+    }
+    
     // *************************************************************************
     // Accessibility
     
@@ -599,9 +581,9 @@ public class MultiSplitPane extends JPanel
             //set children bounds
             layoutCells();
 
-            if( isDirty() ) {
-                //split positions have changed, fire a property change
-                cleanDirty();
+            if( userMovedSplit ) {
+                //user dragged splitbar to a new location -> fire a property change
+                userMovedSplit = false;
                 firePropertyChange( "splitPositions", null, this );
             }
             
