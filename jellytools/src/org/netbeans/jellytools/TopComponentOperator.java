@@ -313,12 +313,20 @@ public class TopComponentOperator extends JComponentOperator {
             // TopComponent.close in AWT thread and handle question dialog in a different thread
             closeWindow();
         } else {
-            // run in dispatch thread
-            runMapping(new MapVoidAction("close") {
-                public void map() {
-                    ((TopComponent)getSource()).close();
+            if(isOpened()) {
+                // run in dispatch thread
+                runMapping(new MapVoidAction("close") {
+                    public void map() {
+                        ((TopComponent)getSource()).close();
+                    }
+                });
+            } else {
+                // try to find enclosing MultiviewTopComponent
+                TopComponentOperator parent = findParentTopComponent();
+                if(parent != null) {
+                    parent.close();
                 }
-            });
+            }
             waitComponentShowing(false);
         }
     }
@@ -494,15 +502,23 @@ public class TopComponentOperator extends JComponentOperator {
      * @param popupPath menu path separated by '|' (e.g. "CVS|Refresh")
      */
     public void pushMenuOnTab(String popupPath) {
-        this.makeComponentVisible();
-        TabbedAdapter ta = findTabbedAdapter();
-        int index = ta.indexOf((TopComponent)getSource());
-        
-        Rectangle r = new Rectangle();
-        ta.getTabRect(index, r);
-        Point p = new Point (r.x + (r.width / 2), r.y + (r.height / 2));
-        Component tabsComp = ta.getComponentAt(p);
-        new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, p.x, p.y)).pushMenu(popupPath);
+        if(isOpened()) {
+            this.makeComponentVisible();
+            TabbedAdapter ta = findTabbedAdapter();
+            int index = ta.indexOf((TopComponent)getSource());
+
+            Rectangle r = new Rectangle();
+            ta.getTabRect(index, r);
+            Point p = new Point (r.x + (r.width / 2), r.y + (r.height / 2));
+            Component tabsComp = ta.getComponentAt(p);
+            new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, p.x, p.y)).pushMenu(popupPath);
+        } else {
+            // try to find enclosing MultiviewTopComponent
+            TopComponentOperator parent = findParentTopComponent();
+            if(parent != null) {
+                parent.pushMenuOnTab(popupPath);
+            }
+        }
     }
     
     /** Returns TabbedAdapter component from parents hierarchy. 
@@ -548,4 +564,31 @@ public class TopComponentOperator extends JComponentOperator {
 	    });
     }
 
+    /** Returns true if this TopComponent is opened. If it is not opened, it
+     * usually means it is contained within MultiviewTopComponent.
+     * @return true if open, false otherwise
+     */
+    protected boolean isOpened() {
+        // run in dispatch thread
+        return runMapping(new MapBooleanAction("isOpened") { // NOI18N
+            public boolean map() {
+                return ((TopComponent)getSource()).isOpened();
+            }
+        });
+    }
+
+    /** Returns TopComponentOperator from parents hierarchy. It should be
+     * MultiviewTopComponent.
+     */
+    protected TopComponentOperator findParentTopComponent() {
+        Component parent = getSource().getParent();
+        while(parent != null) {
+            if(parent instanceof TopComponent) {
+                return new TopComponentOperator((JComponent)parent);
+            } else {
+                parent = parent.getParent();
+            }
+        }
+        return null;
+    }
 }

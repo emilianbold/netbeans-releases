@@ -89,19 +89,6 @@ public class FormDesignerOperator extends TopComponentOperator {
         super(waitTopComponent(null, name, index, new FormDesignerSubchooser()));
     }
     
-    /** Returns TopComponentOperator from parents hierarchy. */
-    private TopComponentOperator findParentTopComponent() {
-        Component parent = getSource().getParent();
-        while(parent != null) {
-            if(parent instanceof TopComponent) {
-                return new TopComponentOperator((JComponent)parent);
-            } else {
-                parent = parent.getParent();
-            }
-        }
-        return null;
-    }
-    
     /** Returns JToggleButtonOperator instance of Source button
      * @return JToggleButtonOperator instance
      */
