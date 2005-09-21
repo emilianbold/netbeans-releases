@@ -78,6 +78,8 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
     
     void refresh() {
         getBrandingModel().brandingEnabledRefresh();        
+        getBrandingModel().initName(true);
+        getBrandingModel().initTitle(true);
         buildWithBranding.setSelected(getBrandingModel().isBrandingEnabled());
         nameValue.setText(getBrandingModel().getName());
         titleValue.setText(getBrandingModel().getTitle());

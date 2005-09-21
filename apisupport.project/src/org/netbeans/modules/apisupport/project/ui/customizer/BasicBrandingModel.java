@@ -238,8 +238,8 @@ public class BasicBrandingModel {
     
     private void init() {
         initBundleKeys();
-        initName();
-        initTitle();
+        initName(false);
+        initTitle(false);
         brandingEnabledRefresh();
     }
     
@@ -253,8 +253,8 @@ public class BasicBrandingModel {
         return (text != null) ? text : "???"; // NOI18N
     }
 
-    private void initName()  {
-        if (name == null) {
+    void initName(boolean reread)  {
+        if (name == null || reread) {
             name = suiteProps.getProperty(NAME_PROPERTY);
         }
         
@@ -269,8 +269,8 @@ public class BasicBrandingModel {
         assert name != null;
     }
     
-    private void initTitle()  {
-        if (title == null) {
+    void initTitle(boolean reread)  {
+        if (title == null || reread) {
             String initTitle = suiteProps.getProperty(TITLE_PROPERTY);
             
             if (initTitle == null) {
