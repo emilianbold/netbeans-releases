@@ -37,6 +37,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
@@ -214,15 +215,38 @@ public class NbEditorUI extends ExtEditorUI {
                 }
                 
                 Color fore = (Color)as.getAttribute(StyleConstants.Foreground);
-                
                 if (fore == null){
                     fore = (Color) defaults.getAttribute(StyleConstants.Foreground);
                 }
                 
+                Color underline = (Color)as.getAttribute(StyleConstants.Underline);
+                if (underline == null){
+                    underline = (Color) defaults.getAttribute(StyleConstants.Underline);
+                }
+
+                Color strike = (Color)as.getAttribute(StyleConstants.StrikeThrough);
+                if (strike == null){
+                    strike = (Color) defaults.getAttribute(StyleConstants.StrikeThrough);
+                }
+                
+                Color wave = (Color)as.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+                if (wave == null){
+                    wave = (Color) defaults.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+                }
+                
                 Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
                     toFont (as) : null;
+                
+                Coloring coloring = new Coloring (
+                    font,
+                    Coloring.FONT_MODE_DEFAULT,
+                    fore,
+                    back,
+                    underline,
+                    strike,
+                    wave
+                );
 
-                Coloring coloring = new Coloring(font, fore, back);
                 cm.put(name, coloring);
                 JTextComponent c = getComponent();
                 if (SettingsNames.DEFAULT_COLORING.equals(name) && c!=null){ //NOI18N
