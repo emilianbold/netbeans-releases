@@ -62,6 +62,10 @@ implements CloneableEditorSupport.Env {
     public NotifyModifiedTest(java.lang.String testName) {
         super(testName);
     }
+  
+//    public static Test suite() {
+//        return new NotifyModifiedTest("testUndoDoesMarkFileAsDirtyIssue56963");
+//    }
     
     protected void setUp () {
         ic = new InstanceContent ();
@@ -122,7 +126,7 @@ implements CloneableEditorSupport.Env {
         doc.remove (7, 3);
         assertEquals ("Still one modification2", 1, support.notifyModified);
         
-        support.saveDocument ();
+        support.saveDocument (); Thread.sleep(300);
         assertEquals ("Marked unmodified", 1, support.notifyUnmodified);
 
         doc.remove (0, 1);
@@ -338,7 +342,7 @@ implements CloneableEditorSupport.Env {
 
         String text = doc.getText (0, doc.getLength ());
 
-        support.saveDocument ();
+        support.saveDocument (); Thread.sleep(300);
         support.assertModified (false, "Not modified");
         
         shouldVetoNotifyModified = true;
@@ -467,10 +471,10 @@ implements CloneableEditorSupport.Env {
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
         err.log("Going to save");
-        support.saveDocument ();
+        support.saveDocument (); Thread.sleep(300);
         waitEQ ();
         err.log("Saved");
-        
+
         assertTrue ("Can undo as well", support.getUndoRedo ().canUndo ());
         
         err.log("Going to undo");
@@ -508,7 +512,7 @@ implements CloneableEditorSupport.Env {
         assertEquals ("Empty", 0, doc.getLength ());
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
-        support.saveDocument ();
+        support.saveDocument (); Thread.sleep(300);
         waitEQ ();
         
         assertTrue ("Can undo as well", support.getUndoRedo ().canUndo ());
@@ -568,10 +572,9 @@ implements CloneableEditorSupport.Env {
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
         err.log("Before save");
-        support.saveDocument ();
+        support.saveDocument (); Thread.sleep(300);
         waitEQ ();
         err.log("After save");
-        
         
         assertTrue ("Can undo as well", support.getUndoRedo ().canUndo ());
         assertEquals ("Once modified", 1, support.notifyModified);
