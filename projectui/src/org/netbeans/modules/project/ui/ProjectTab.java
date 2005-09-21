@@ -238,6 +238,12 @@ public class ProjectTab extends TopComponent
         super.requestFocusInWindow();
         return btv.requestFocusInWindow();
     }
+
+    //#41258: In the SDI, requestFocus is called rather than requestFocusInWindow:
+    public void requestFocus() {
+        super.requestFocus();
+        btv.requestFocus();
+    }
     
     // PERSISTENCE
     
