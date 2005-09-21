@@ -1872,7 +1872,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             }
         }
 
-        final boolean end(MouseEvent e) {
+        final boolean end(final MouseEvent e) {
             dragPanel.removeAll();
 
             boolean retVal;
@@ -1893,7 +1893,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 // this round and start a new one properly
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        init();
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                init();
+                                move(e);
+                            }
+                        });
                     }
                 });
             }
