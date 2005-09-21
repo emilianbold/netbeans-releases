@@ -155,7 +155,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     }
     
     public boolean isProfiling(Target target) {
-        
         return isRunning();
     }
     public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
@@ -201,7 +200,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         if (cmd == CMD_NONE) {
             cmd = CMD_START;
         } 
-        
+        ConfigureProfiler.removeProfilerInDOmain(new DeploymentManagerProperties(dm));
         pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
                                                      ct, "",
                                                      StateType.RUNNING));
@@ -492,9 +491,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 //////////                out.println(sxLine);
 //////////                if (bDebug) System.out.println("Feeding in Line:" + sxLine);
 //////////            }
-            out.println("");
-            out.println("");
-            out.println("changeit");
+            out.println(((SunDeploymentManagerInterface)dm).getUserName());
+            out.println(((SunDeploymentManagerInterface)dm).getPassword());
+            out.println(readMasterPasswordFile());
             out.flush();
         } catch (Exception e) {
          //   getLogger().log(Level.INFO,"WRITE TO INPUT ERROR", e);
@@ -504,6 +503,45 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             } catch (Throwable t) {}
         }
     }
+    private static final String MASTER_PASSWORD_ALIAS="master-password";//NOI18N
+    private char[] getMasterPasswordPassword() {
+        return MASTER_PASSWORD_ALIAS.toCharArray();
+    }
+    
+    protected String readMasterPasswordFile() {
+        String mpw= "changeit";//NOI18N
+        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
+        String domain ;
+        String domainDir ;
+        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath();
+        
+        domain = dmProps.getDomainName();
+        domainDir = dmProps.getLocation();
+        
+        final File pwdFile = new File(domainDir + File.separator + domain  +File.separator+"master-password");
+        if (pwdFile.exists()) {
+            try {
+                
+                Class pluginRootFactoryClass =org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader().
+                        loadClass("com.sun.enterprise.security.store.PasswordAdapter");//NOI18N
+                java.lang.reflect.Constructor constructor =pluginRootFactoryClass.getConstructor(new Class[] {String.class, getMasterPasswordPassword().getClass()});
+                Object PasswordAdapter =constructor.newInstance(new Object[] {pwdFile.getAbsolutePath(),getMasterPasswordPassword() });
+                Class PasswordAdapterClazz = PasswordAdapter.getClass();
+                java.lang.reflect.Method method =PasswordAdapterClazz.getMethod("getPasswordForAlias", new Class[]{  MASTER_PASSWORD_ALIAS.getClass()});//NOI18N
+                mpw = (String)method.invoke(PasswordAdapter, new Object[] {MASTER_PASSWORD_ALIAS });
+                
+                
+                return mpw;
+            } catch (Exception ex) {
+            //    ex.printStackTrace();
+                return mpw;
+            }
+        } else {
+            //Return null if the password file does not exist.
+            return mpw;
+        }
+    }  
+    
     private void asyncExec(final String[] arr) {
         new Thread(new Runnable() {
             public void run() {
@@ -637,24 +675,25 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         if (isRunning()) {
             cmd = CMD_RESTART;
         }
-        if (settings!=null){
-            //Need to verify all the settings are applied....
-        }
+
         
-        return startDeploymentManager( );
+        ct = CommandType.START;
+        pes.clearProgressListener();
+        pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,ct, "",StateType.RUNNING));
+        RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
+        return this;
     }
     
 
     public ProgressObject stopTarget(Target target) {
        // System.out.println("           in stopTarget");
         pes.clearProgressListener();
-        if (!isRunning()) {
+        if (!(((SunDeploymentManagerInterface)dm).isRunning(true))) {
             pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
                                                          CommandType.STOP, "",
                                                          StateType.COMPLETED));
             return this;
         } 
-        
         return stopDeploymentManager();
     }
     
