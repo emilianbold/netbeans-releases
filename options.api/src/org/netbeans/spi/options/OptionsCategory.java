@@ -106,10 +106,10 @@ public abstract class OptionsCategory {
         
         /**
          * Should returns <code>true</code> if some option value in this 
-         * category is not valid.
+         * category is valid.
          *
          * @return <code>true</code> if some option value in this 
-         * category is not valid
+         * category is valid
          */
         public abstract boolean isValid ();
         
