@@ -51,7 +51,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.NewType;
-
 /**
  * Toolbar Customizer showing a tree of all available actions. Users can drag actions
  * to toolbars to add new toolbar buttons.
@@ -127,6 +126,23 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     
     static void endToolbarEditMode() {
         ToolbarPool.getDefault().putClientProperty( "editMode", null ); // NOI18N
+        //remove empty toolbars
+        DataFolder folder = ToolbarPool.getDefault().getFolder();
+        DataObject[] children = folder.getChildren();
+        for( int i=0; i<children.length; i++ ) {
+            final DataFolder subFolder = (DataFolder)children[i].getCookie( DataFolder.class );
+            if( null != subFolder && subFolder.getChildren().length == 0 ) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        try {
+                            subFolder.delete();
+                        } catch( IOException e ) {
+                            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                        }
+                    }
+                });
+            }
+        }
     }
     
     /** @return returns string from bundle for given string pattern */
