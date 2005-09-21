@@ -221,7 +221,7 @@ cause it to fail.
             <group packages="${javadoc.packages}">
                 <title>${javadoc.hyperlinked.title}</title>
             </group>
-            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="../../openide/api/doc"/>
+            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="."/>
             &links;
             <doctitle>NetBeans ${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
@@ -245,7 +245,7 @@ cause it to fail.
             <group packages="${javadoc.packages}">
                 <title>${javadoc.hyperlinked.title}</title>
             </group>
-            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="../../openide/api/doc"/>
+            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="."/>
             &links;
             <doctitle>NetBeans ${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
