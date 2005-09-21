@@ -52,8 +52,6 @@ import javax.swing.border.TitledBorder;
 
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
-import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.spi.options.OptionsCategory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

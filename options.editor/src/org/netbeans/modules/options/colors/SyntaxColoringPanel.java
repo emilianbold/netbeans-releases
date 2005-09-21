@@ -77,7 +77,6 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.options.colors.ColorComboBox.Value;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.openide.DialogDescriptor;
