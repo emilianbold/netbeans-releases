@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <property name="test.user.dir" location="build/testuserdir"/>
         <property name="install" location="${netbeans.dest.dir}"/>
-        <property name="run.args.common" value="--userdir ${test.user.dir} -J-Dnetbeans.logger.console=true -J-ea"/>
+        <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-ea'/>
         <!-- In case run from a suite module, to get app.name and/or branding.token: -->
         <property file="${suite.dir}/nbproject/private/private.properties"/>
         <property file="${suite.dir}/nbproject/project.properties"/>
@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="run.exe" location="${platform.cluster}\lib\nbexec.exe"/>
         <property name="run.sh" location="${platform.cluster}/lib/nbexec"/>
         <property name="branding.token" value="-"/> <!-- fallback value if not set -->
-        <property name="run.args.prepared" value="--branding ${branding.token} --clusters ${run.platform.clusters}"/>
+        <property name="run.args.prepared" value='--branding ${branding.token} --clusters "${run.platform.clusters}"'/>
     </target>
 
     <target name="run" depends="-prepare-as-app,-prepare-as-platform">

@@ -154,7 +154,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="reload" depends="netbeans">
         <ant antfile="${harness.dir}/run.xml" target="run">
-            <property name="run.args" value="--reload ${cluster}/${module.jar}"/>
+            <property name="run.args" value='--reload "${cluster}/${module.jar}"'/>
         </ant>
     </target>
     

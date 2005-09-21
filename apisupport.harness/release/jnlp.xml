@@ -144,7 +144,7 @@ $${jnlp.resources}
                 <include name="*.jnlp"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}"/>
+                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}"/><!-- XXX potential SPACE_IN_PATH bug -->
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}/netbeans/">
@@ -152,7 +152,7 @@ $${jnlp.resources}
                 <include name="*.jnlp"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/netbeans/"/>
+                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/netbeans/"/><!-- XXX potential SPACE_IN_PATH bug -->
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}/app/">
@@ -160,7 +160,7 @@ $${jnlp.resources}
                 <include name="*.jnlp"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/app/"/>
+                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/app/"/><!-- XXX potential SPACE_IN_PATH bug -->
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}">
@@ -251,7 +251,7 @@ $${jnlp.resources}
         <property name="run.javaws" value="javaws"/>
         <property name="run.args" value=""/>
         <exec executable="${run.javaws}">
-            <arg path="${build.jnlp.local.dir}/master.jnlp"/>
+            <arg file="${build.jnlp.local.dir}/master.jnlp"/>
             <env key="JAVAWS_VM_ARGS" value="${run.args}"/>
         </exec>
     </target>

@@ -198,7 +198,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="jnlp.signjar.alias" value="jnlp" />
     <property name="jnlp.signjar.keystore" location="${jnlp.dest.dir}/default.keystore" />
     <property name="jnlp.signjar.password" value="netbeans" />
-    <property name="jnlp.codebase" value="file:${jnlp.dest.dir}" />
+    <property name="jnlp.codebase" value="file:${jnlp.dest.dir}" /><!-- XXX potential SPACE_IN_PATH bug -->
     
     <target name="jnlp" depends="init,netbeans,jnlp-master" description="Builds JNLP descriptor and signs JAR files" >
         <fail unless="jnlp.dest.dir" >
@@ -469,5 +469,4 @@ Microsystems, Inc. All Rights Reserved.
         </fixdependencies>
     </target>
 
-    
 </project>
