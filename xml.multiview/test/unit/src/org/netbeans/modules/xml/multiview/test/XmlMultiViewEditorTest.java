@@ -194,6 +194,6 @@ public class XmlMultiViewEditorTest extends NbTestCase {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        TestRunner.run(suite());
+        TestRunner.run(new NbTestSuite(XmlMultiViewEditorTest.class));
     }
 }
