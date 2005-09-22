@@ -32,9 +32,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import org.netbeans.spi.options.OptionsCategory.PanelController;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.NewAction;
@@ -56,9 +58,10 @@ import org.openide.windows.WindowManager;
 
 public class OptionsWindowAction extends AbstractAction {
 
-    private WeakReference       optionsPanel;
-    private WeakReference       dialog;
-    private int                 index = -1;
+    /** Link to dialog, if its opened. */
+    private Dialog              dialog;
+    /** weak link to options dialog DialogDescriptor. */
+    private WeakReference       optionsDialogDescriptor;
     
     
     public OptionsWindowAction () {
@@ -69,102 +72,47 @@ public class OptionsWindowAction extends AbstractAction {
     }
 
     public void actionPerformed (ActionEvent evt) {     
-        Object source = evt.getSource ();
-        if (source == DialogDescriptor.OK_OPTION) {
-            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
-            Dialog d = (Dialog) dialog.get ();
-            op.save ();
-            index = op.getCurrentIndex ();
-            d.setVisible (false);
-            dialog = null;
-        } else
-//        if (evt.getActionCommand ().equals ("Apply")) {
-//            optionsPanel.save ();
-//            optionsPanel = null;
-//        } else
-        if (source == DialogDescriptor.CANCEL_OPTION) {
-            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
-            Dialog d = (Dialog) dialog.get ();
-            op.cancel ();
-            index = op.getCurrentIndex ();
-            d.setVisible (false);
-            dialog = null;
-        } else
-        if (evt.getActionCommand ().equals ("Classic")) {
-            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
-            Dialog d = (Dialog) dialog.get ();
-            op.cancel ();
-            index = op.getCurrentIndex ();
-            d.setVisible (false);
-            dialog = null;
-            try {
-                ClassLoader cl = (ClassLoader) Lookup.getDefault ().lookup (ClassLoader.class);
-                Class clz = cl.loadClass ("org.netbeans.core.actions.OptionsAction");
-                CallableSystemAction a = (CallableSystemAction) SystemAction.
-                    findObject (clz, true);
-                a.putValue ("additionalActionName", loc ("Modern"));
-                a.putValue (
-                    "additionalActionListener", 
-                    new ActionListener () {
-                        public void actionPerformed (ActionEvent e) {
-                            RequestProcessor.getDefault ().post (new Runnable () {
-                                public void run () {
-                                    OptionsWindowAction.this.actionPerformed 
-                                        (new ActionEvent (this, 0, "Open"));
-                                }
-                            });
-                        }
-                    }
-                );
-                a.performAction ();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-//            JButton bApply = (JButton) loc (new JButton (), "Apply");
-//            bApply.setActionCommand ("Classic");                      //NOI18N
-            Dialog d = dialog == null ? null : (Dialog) dialog.get ();
-            if (d != null) {
-                d.setVisible (true);
-                d.toFront ();
-                return;
-            }
-            JButton bClassic = (JButton) loc (new JButton (), "Classic");
-            bClassic.setActionCommand ("Classic");                      //NOI18N
-            OptionsPanel op = optionsPanel == null ? 
-                null : (OptionsPanel) optionsPanel.get ();
-            if (op == null) {
-                op = new OptionsPanel ();
-                optionsPanel = new WeakReference (op);
-            } else
-                op.update ();
-            
-            final DialogDescriptor descriptor = new DialogDescriptor (
-                op,
+        if (dialog != null) {
+            // dialog already opened
+            dialog.setVisible (true);
+            dialog.toFront ();
+            return;
+        }
+        
+        DialogDescriptor descriptor = optionsDialogDescriptor == null ?
+            null : 
+            (DialogDescriptor) optionsDialogDescriptor.get ();
+        
+        if (descriptor == null) {
+            // create new DialogDescriptor for options dialog
+            JButton bClassic = (JButton) loc (new JButton (), "CTL_Classic");//NOI18N
+            JButton bOK = (JButton) loc (new JButton (), "CTL_OK");//NOI18N
+
+            OptionsPanel optionsPanel = new OptionsPanel ();
+            descriptor = new DialogDescriptor (
+                optionsPanel,
                 "Options",
                 false,
                 new Object[] {
-                    DialogDescriptor.OK_OPTION,
-                    //bApply,
+                    bOK,
                     DialogDescriptor.CANCEL_OPTION
                 },
                 DialogDescriptor.OK_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, null, this
+                DialogDescriptor.DEFAULT_ALIGN, null, null
             );
-            if (index >= 0)
-                op.setCurrentIndex (index);
             descriptor.setAdditionalOptions (new Object[] {bClassic});
-            descriptor.setHelpCtx (op.getHelpCtx ());
-            final OptionsPanel op1 = op;
-            op.addPropertyChangeListener ("helpCtx", new PropertyChangeListener () {
-                public void propertyChange (PropertyChangeEvent evt) {
-                    descriptor.setHelpCtx (op1.getHelpCtx ());
-                }
-            });
-            d = DialogDisplayer.getDefault ().createDialog (descriptor);
-            d.setVisible (true);
-            dialog = new WeakReference (d);
+            descriptor.setHelpCtx (optionsPanel.getHelpCtx ());
+            OptionsPanelListener listener = new OptionsPanelListener 
+                (descriptor, optionsPanel, bOK, bClassic);
+            descriptor.setButtonListener (listener);
+            optionsPanel.addPropertyChangeListener (listener);
+        } else {
+            OptionsPanel optionsPanel = (OptionsPanel) descriptor.getMessage ();
+            optionsPanel.update ();
         }
+        
+        dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
+        dialog.setVisible (true);
     }
     
     private static String loc (String key) {
@@ -183,6 +131,82 @@ public class OptionsWindowAction extends AbstractAction {
                 loc (key)
             );
         return c;
+    }
+    
+    private class OptionsPanelListener implements PropertyChangeListener,
+    ActionListener {
+        private DialogDescriptor    descriptor;
+        private OptionsPanel        optionsPanel;
+        private JButton             bOK;
+        private JButton             bClassic;
+        
+        
+        OptionsPanelListener (
+            DialogDescriptor descriptor, 
+            OptionsPanel optionsPanel,
+            JButton bOK,
+            JButton bClassic
+        ) {
+            this.descriptor = descriptor;
+            this.optionsPanel = optionsPanel;
+            this.bOK = bOK;
+            this.bClassic = bClassic;
+        }
+        
+        public void propertyChange (PropertyChangeEvent ev) {
+            if (ev.getPropertyName ().equals (
+                "buran" + PanelController.PROP_HELP_CTX)               //NOI18N
+            )
+                descriptor.setHelpCtx (optionsPanel.getHelpCtx ());
+            else
+            if (ev.getPropertyName ().equals (
+                "buran" + PanelController.PROP_VALID)                  //NOI18N
+            )
+                bOK.setEnabled (optionsPanel.dataValid ());
+        }
+        
+        public void actionPerformed (ActionEvent e) {
+            if (e.getSource () == bOK) {
+                optionsPanel.save ();
+                dialog.setVisible (false);
+                dialog = null;
+            } else
+            if (e.getSource () == DialogDescriptor.CANCEL_OPTION) {
+                optionsPanel.cancel ();
+                dialog.setVisible (false);
+                dialog = null;
+            } else
+            if (e.getSource () == bClassic) {
+                optionsPanel.cancel ();
+                dialog.setVisible (false);
+                dialog = null;
+                try {
+                    ClassLoader cl = (ClassLoader) Lookup.getDefault ().
+                        lookup (ClassLoader.class);
+                    Class clz = cl.loadClass 
+                        ("org.netbeans.core.actions.OptionsAction");
+                    CallableSystemAction a = (CallableSystemAction) 
+                        SystemAction.findObject (clz, true);
+                    a.putValue ("additionalActionName", loc ("CTL_Modern"));
+                    a.putValue (
+                        "additionalActionListener", 
+                        new ActionListener () {
+                            public void actionPerformed (ActionEvent e) {
+                                RequestProcessor.getDefault ().post (new Runnable () {
+                                    public void run () {
+                                        OptionsWindowAction.this.actionPerformed 
+                                            (new ActionEvent (this, 0, "Open"));
+                                    }
+                                });
+                            }
+                        }
+                    );
+                    a.performAction ();
+                } catch (Exception ex) {
+                    ErrorManager.getDefault ().notify (ex);
+                }
+            } // classic
+        }
     }
 }
 

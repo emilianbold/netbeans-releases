@@ -114,7 +114,7 @@ public class OptionsPanel extends JPanel {
     private Color                   highlighted = new Color (224, 232, 246);
     private Color                   highlightedB = new Color (152, 180, 226);
     private Color                   iconViewBorder = new Color (127, 157, 185);
-    private HelpCtxListener         helpCtxListener = new HelpCtxListener ();
+    private ControllerListener      coltrollerListener = new ControllerListener ();
     
     
     private static String loc (String key) {
@@ -163,6 +163,7 @@ public class OptionsPanel extends JPanel {
                 get (i);
             PanelController controller = ocp.create ();
             categoryToController.put (ocp, controller);
+            controller.addPropertyChangeListener (coltrollerListener);
             JComponent component = controller.getComponent ();
             categoryToPanel.put (ocp, component);
             maxW = Math.max (maxW, component.getPreferredSize ().width);
@@ -268,16 +269,8 @@ public class OptionsPanel extends JPanel {
     }
     
     void setCurrentIndex (int i) {
-        if (currentCategory != -1) {
+        if (currentCategory != -1)
             buttons [currentCategory].setNormal ();
-            
-            // remove helpCtxListener
-            OptionsCategory oocp = (OptionsCategory) 
-                optionCategories.get (currentCategory);
-            PanelController controller = (PanelController) categoryToController.
-                get (oocp);
-            controller.removePropertyChangeListener (helpCtxListener);
-        }
         if (i != -1)
             buttons [i].setSelected ();
         currentCategory = i;
@@ -295,11 +288,6 @@ public class OptionsPanel extends JPanel {
         validate ();
         repaint ();
         firePropertyChange ("helpCtx", null, null);
-            
-        // add helpCtxListener
-        PanelController controller = (PanelController) categoryToController.
-            get (ocp);
-        controller.addPropertyChangeListener (helpCtxListener);
     }
     
     HelpCtx getHelpCtx () {
@@ -326,6 +314,20 @@ public class OptionsPanel extends JPanel {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
             ((PanelController) it.next ()).cancel ();
+    }
+    
+    boolean dataValid () {
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            if (!((PanelController) it.next ()).isValid ()) return false;
+        return true;
+    }
+    
+    boolean isChanged () {
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            if (((PanelController) it.next ()).isChanged ()) return true;
+        return false;
     }
     
     
@@ -364,9 +366,10 @@ public class OptionsPanel extends JPanel {
         }
     }
     
-    class HelpCtxListener implements PropertyChangeListener {
+    class ControllerListener implements PropertyChangeListener {
         public void propertyChange (PropertyChangeEvent evt) {
-            OptionsPanel.this.firePropertyChange ("helpCtx", null, null);
+            OptionsPanel.this.firePropertyChange 
+                ("buran" + evt.getPropertyName (), null, null);
         }
     }
     
