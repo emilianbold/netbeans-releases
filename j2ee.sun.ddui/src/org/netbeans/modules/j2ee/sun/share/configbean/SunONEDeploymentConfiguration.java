@@ -77,6 +77,8 @@ import org.netbeans.modules.j2ee.sun.share.config.DDFilesListener;
 import org.netbeans.modules.j2ee.sun.share.config.StandardDDImpl;
 import org.openide.util.RequestProcessor;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbConnectionFactory;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 
 
 /** Manages the deployment plan I/O and access for initializing DConfigBeans
@@ -236,7 +238,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
             // by the plugin.
             BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
-
+            
             if(theEjbDCB == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
                 return;
@@ -248,8 +250,26 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 String ejbName = getField(ddBean, "ejb-name");
                 String messageDestinationName = getField(ddBean, "message-destination-link");
                 String messageDestinationType = getField(ddBean, "message-destination-type");
-
+                
                 rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
+                MdbConnectionFactory mcf = StorageBeanFactory.getDefault().createMdbConnectionFactory();
+                String connectionFactoryJndiName= "jms/" + messageDestinationName + "Factory"; //NOI18N
+                mcf.setJndiName(connectionFactoryJndiName);
+                try {
+                    ((MDEjb) theEjbDCB).setMdbConnectionFactory(mcf);
+                } catch (PropertyVetoException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+                
+                MessageDestination md = StorageBeanFactory.getDefault().createMessageDestination();
+                md.setMessageDestinationName(messageDestinationName);
+                md.setJndiName(theEjbDCB.getJndiName());
+                EjbJarRoot root = (EjbJarRoot) theEjbDCB.getParent();
+                try {
+                    root.addMessageDestination(md);
+                } catch (PropertyVetoException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             }
         } else if("resource-ref".equals(type)) {
             if(ddBean instanceof StandardDDImpl) {
@@ -257,24 +277,24 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 if(o instanceof ResourceRef) {
                     ResourceRef theResRefDCB = (ResourceRef) o;
                     final String refName = getField(ddBean, "res-ref-name");
-
+                    
                     try {
                         theResRefDCB.setJndiName(refName);
                     } catch(PropertyVetoException ex) {
                         // !PW Should never happen.
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
-
+                    
                     final String description = getField(ddBean, "description");
                     final File targetDir = resourceDir;
                     
-                    /** !PW This mechanism is from the original incarnation of this code from 
+                    /** !PW This mechanism is from the original incarnation of this code from
                      *  appsrv plugin module in NB 4.1.  There should be a more stable
                      *  way to solve any such timing issue.  This method is likelky
                      *  unstable.
                      */
-                    /* Creating a RequestProcessor to create resources seperately to 
-                     * prevent NPE while initial loading of IDE because of call to 
+                    /* Creating a RequestProcessor to create resources seperately to
+                     * prevent NPE while initial loading of IDE because of call to
                      * access DatabaseRuntimeManager.getConnection(). This NPE
                      * causes failure while loading WebServices Registry in Runtime Tab
                      */
@@ -295,18 +315,18 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
             // by the plugin.
             BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
-
+            
             if(theEjbDCB == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
                 return;
             }
-
+            
             if(theEjbDCB instanceof CmpEntityEjb) {
                 ResourceConfiguratorInterface rci = getResourceConfigurator();
                 CmpEntityEjb cmpEjbDCB = (CmpEntityEjb) theEjbDCB;
                 String description = getField(ddBean, "description");
                 String jndiName = rci.createJDBCDataSourceForCmp(cmpEjbDCB.getEjbName(), description, resourceDir);
-
+                
                 // Set the CmpResource jndi-name if not already defined.
                 if(jndiName != null) {
                     Base parentDCB = cmpEjbDCB.getParent();

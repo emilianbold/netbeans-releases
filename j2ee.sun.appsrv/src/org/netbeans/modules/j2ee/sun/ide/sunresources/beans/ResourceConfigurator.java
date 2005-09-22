@@ -109,7 +109,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jmsResource.setJndiName(jndiName);
         //String msgDstnType = getMessageDestinationInfo(MESSAGE_DSTN_TYPE, messageBean);
         jmsResource.setResType(msgDstnType);
-        jmsResource.setEnabled("True"); //NOI18N
+        jmsResource.setEnabled("true"); //NOI18N
         jmsResource.setDescription(""); //NOI18N
         PropertyElement prop = jmsResource.newPropertyElement();
         prop.setName("Name"); //NOI18N
@@ -136,7 +136,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 assert(false); //control should never reach here
             }
         }
-        jmsCntnFactoryResource.setEnabled("True"); //NOI18N
+        jmsCntnFactoryResource.setEnabled("true"); //NOI18N
         jmsCntnFactoryResource.setDescription(""); //NOI18N
         resources.addJmsResource(jmsCntnFactoryResource);
         try{
