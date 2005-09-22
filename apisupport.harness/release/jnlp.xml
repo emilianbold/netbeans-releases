@@ -176,6 +176,7 @@ $${jnlp.resources}
             <property name="jnlp.dest.dir" value="${jnlp.dest.dir}/app"/>
             <property name="jnlp.master.dir" value="${jnlp.master.dir}"/>
             <property name="jnlp.master.codebase" value="app/"/>
+            <property name="jnlp.codebase" value="$$$$codebase"/>
             <property name="jnlp.signjar.alias" value="${jnlp.signjar.alias}"/>
             <property name="jnlp.signjar.keystore" location="${jnlp.signjar.keystore}"/>
             <property name="jnlp.signjar.password" value="${jnlp.signjar.password}"/>

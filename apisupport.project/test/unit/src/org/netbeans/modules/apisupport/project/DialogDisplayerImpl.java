@@ -14,7 +14,7 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.awt.Dialog;
-import junit.framework.TestCase;
+import junit.framework.Assert;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -33,10 +33,10 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     
     public static void returnFromNotify(Object value) {
         Object o = DialogDisplayer.getDefault();
-        TestCase.assertEquals("My class", DialogDisplayerImpl.class, o.getClass());
+        Assert.assertEquals("My class", DialogDisplayerImpl.class, o.getClass());
         
-        TestCase.assertNull("No previous value", toReturn);
-        TestCase.assertNotNull("Cannot have null return value", value);
+        Assert.assertNull("No previous value", toReturn);
+        Assert.assertNotNull("Cannot have null return value", value);
         toReturn = value;
     }
 
@@ -44,12 +44,12 @@ public class DialogDisplayerImpl extends DialogDisplayer {
         Object r = toReturn;
         toReturn = null;
         
-        TestCase.assertNotNull("We are supposed to return a value", r);
+        Assert.assertNotNull("We are supposed to return a value", r);
         return r;
     }
 
     public Dialog createDialog(DialogDescriptor descriptor) {
-        TestCase.fail("Not implemented");
+        Assert.fail("Not implemented");
         return null;
     }
     
