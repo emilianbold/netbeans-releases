@@ -133,7 +133,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         ModulesNode(final SuiteProject suite) {
             super(createSuiteComponentNodes(suite));
             this.suite = suite;
-            setName(NbBundle.getMessage(SuiteLogicalView.class, "CTL_Modules"));
+            setName("modules"); // NOI18N
             setDisplayName(NbBundle.getMessage(SuiteLogicalView.class, "CTL_Modules"));
             suite.getHelper().addAntProjectListener(new AntProjectListener() {
                 public void configurationXmlChanged(AntProjectEvent ev) {
