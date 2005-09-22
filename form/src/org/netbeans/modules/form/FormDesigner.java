@@ -388,14 +388,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             formModelListener.formChanged(null);
     }
 
-    void updateComponentLayer() {
+    private void updateComponentLayer(final boolean fireChange) {
         if (getLayoutDesigner() == null) return;
         componentLayer.revalidate();
 
         // after the components are layed out, sync the layout designer
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (getLayoutDesigner().updateCurrentState()) {
+                if (getLayoutDesigner().updateCurrentState() && fireChange) {
                     formModel.fireFormChanged(); // hack: to regenerate code once again
                 }
                 updateResizabilityActions();
@@ -410,7 +410,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     void updateContainerLayout(RADVisualContainer metacont, boolean revalidate) {
         replicator.updateContainerLayout(metacont);
         if (revalidate) {
-            updateComponentLayer();
+            updateComponentLayer(true);
         }
         else {
             componentLayer.repaint();
@@ -1678,7 +1678,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     formClone.setVisible(true);
                     componentLayer.setTopDesignComponent(formClone);
                     setupDesignerSize();
-                    updateComponentLayer();
+                    updateComponentLayer(false);
                 }
                 return;
             }
@@ -1783,7 +1783,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 else { // check if not smaller than minimum size
                     checkDesignerSize();
                 }
-                updateComponentLayer();
+                updateComponentLayer(true);
                 if (getLayoutDesigner() != null) {
                     getLayoutDesigner().externalSizeChangeHappened();
                 }
