@@ -210,7 +210,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Padding"));
         jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Padding"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, "The amount of space between the cells.");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "LBL_TABLE_SpacingHelp"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -221,7 +221,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jLabel7.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_SpacingHelp"));
         jLabel7.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_SpacingHelp"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, "The amount of space between the border of the cell and its content.");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "LBL_TABLE_PaddingHelp"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
