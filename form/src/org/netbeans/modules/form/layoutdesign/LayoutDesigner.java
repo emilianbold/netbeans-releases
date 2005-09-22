@@ -377,7 +377,7 @@ public class LayoutDesigner implements LayoutConstants {
                      boolean lockDimension,
                      Rectangle[] bounds)
     {
-        if (!visualStateUpToDate) {
+        if (!visualStateUpToDate || (dragger == null)) {
             return; // visual state of layout structure not updated yet (from last operation)
         }
 
