@@ -66,16 +66,29 @@ public abstract class MultiFileLoader extends DataLoader {
 
         // if this loader does not recognizes this file => return
         if (primary == null) return null;
+        
+        if (ERR_WILL_LOG) {
+            ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " is accepting: " + fo); // NOI18N
+        }
 
         MultiDataObject obj;
         try {
             // create the multi object
             obj = createMultiObject (primary);
+            if (ERR_WILL_LOG) {
+                ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " created object for: " + fo + " obj: " + obj); // NOI18N
+            }
         } catch (DataObjectExistsException ex) {
             // object already exists
             DataObject dataObject = ex.getDataObject ();
+            if (ERR_WILL_LOG) {
+                ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " object already exists for: " + fo + " obj: " + dataObject); // NOI18N
+            }
             
             if (dataObject.getLoader () != this) {
+                if (ERR_WILL_LOG) {
+                    ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " loader is wrong: " + dataObject.getLoader().getClass().getName()); // NOI18N
+                }
                 // try to update the data object by allowing other 
                 // loaders to take care of the object
                 dataObject = checkCollision (dataObject, fo);
@@ -83,22 +96,37 @@ public abstract class MultiFileLoader extends DataLoader {
             
             if (!(dataObject instanceof MultiDataObject)) {
                 // but if it is not MultiDataObject, propadate the exception
+                if (ERR_WILL_LOG) {
+                    ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " object is not MultiDataObject: " + dataObject); // NOI18N
+                }
                 throw ex;
             }
             obj = (MultiDataObject)dataObject;
         }
 
         if (obj.getLoader () != this) {
+            if (ERR_WILL_LOG) {
+                ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " wrong loader: " + obj.getLoader().getClass().getName()); // NOI18N
+            }
             // this primary file is recognized by a different
             // loader. We should not add entries to it
             return null;
         }
 
         // mark all secondary entries used
+        if (ERR_WILL_LOG) {
+            ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " marking secondary entries"); // NOI18N
+        }
         obj.markSecondaryEntriesRecognized (recognized);
 
         // if the file is not between
-        obj.registerEntry (fo);
+        if (ERR_WILL_LOG) {
+            ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " register entry: " + fo); // NOI18N
+        }
+        org.openide.loaders.MultiDataObject.Entry e = obj.registerEntry (fo);
+        if (ERR_WILL_LOG) {
+            ERR.log(ErrorManager.INFORMATIONAL, getClass().getName() + " success: " + e); // NOI18N
+        }
 
         return obj;
     }

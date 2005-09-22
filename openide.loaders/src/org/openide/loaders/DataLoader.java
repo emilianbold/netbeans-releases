@@ -42,6 +42,10 @@ import org.openide.util.io.SafeException;
 * @author Jaroslav Tulach
 */
 public abstract class DataLoader extends SharedClassObject {
+    /** error manager for logging the happenings in loaders */
+    static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.openide.loaders.DataLoader"); // NOI18N
+    /** flag to know whether log messages will be logged */
+    static final boolean ERR_WILL_LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
 
     // XXX why is this necessary? otherwise reading loader pool now throws heavy
     // InvalidClassException's reading (abstract!) DataLoader...? --jglick
@@ -77,7 +81,7 @@ public abstract class DataLoader extends SharedClassObject {
         putProperty (PROP_REPRESENTATION_CLASS, representationClass);
         putProperty (PROP_REPRESENTATION_CLASS_NAME, representationClass.getName());
         if (representationClass.getClassLoader() == getClass().getClassLoader()) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Use of super(" + representationClass.getName() + ".class) in " + getClass().getName() + "() should be replaced with super(\"" + representationClass.getName() + "\") to reduce unnecessary class loading");
+            ERR.log(ErrorManager.WARNING, "Use of super(" + representationClass.getName() + ".class) in " + getClass().getName() + "() should be replaced with super(\"" + representationClass.getName() + "\") to reduce unnecessary class loading");
         }
     }
 
@@ -159,10 +163,10 @@ public abstract class DataLoader extends SharedClassObject {
             try {
                 actions = mgr.instanceCreate ();
             } catch (IOException ex) {
-                ErrorManager.getDefault ().notify (ex);
+                ERR.notify (ex);
                 actions = null;
             } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault ().notify (ex);
+                ERR.notify (ex);
                 actions = null;
             }
             if (actions == null) {
@@ -246,7 +250,7 @@ public abstract class DataLoader extends SharedClassObject {
                     fo = FileUtil.createFolder (fo, context);
 
                 } catch (IOException ex) {
-                    ErrorManager.getDefault ().notify (ex);
+                    ERR.notify (ex);
                 }
                 newlyCreated = true;
             }
@@ -491,14 +495,14 @@ public abstract class DataLoader extends SharedClassObject {
                     if ( version == 0 && isdefault && !defactions[i].equals(ac))
                         isdefault = false;
                 } catch (ClassNotFoundException ex) {
-                    ErrorManager.getDefault ().annotate (
+                    ERR.annotate (
                         ex, org.openide.ErrorManager.INFORMATIONAL, 
                         null, null, null, null
                     );
                     if (main == null) {
                         main = ex;
                     } else {
-                        ErrorManager.getDefault ().annotate (main, ex);
+                        ERR.annotate (main, ex);
                     }
                 }
             }
@@ -518,7 +522,7 @@ public abstract class DataLoader extends SharedClassObject {
             SafeException se = new SafeException (main);
             // Provide a localized message explaining that there is no big problem.
             String message = NbBundle.getMessage (DataLoader.class, "EXC_missing_actions_in_loader", getDisplayName ());
-            ErrorManager.getDefault ().annotate (se, message);
+            ERR.annotate (se, message);
             throw se;
         }
     }
