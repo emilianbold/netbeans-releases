@@ -238,6 +238,10 @@ public class ProjectUtilities {
      */    
     public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
         assert newObjectName != null; // SimpleTargetChooserPanel.isValid returns false if it is... XXX should it use an error label instead?
+
+        if (newObjectName.indexOf('/') != -1 || newObjectName.indexOf('\\') != -1) {
+            return NbBundle.getMessage(ProjectUtilities.class, "MSG_not_valid_filename", newObjectName);
+        }
         
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
