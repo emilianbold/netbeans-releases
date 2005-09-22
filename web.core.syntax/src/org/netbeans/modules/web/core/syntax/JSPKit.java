@@ -120,7 +120,7 @@ public class JSPKit extends NbEditorKit {
     
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
-                    new JspJavaGenerateGotoPopupAction(),
+            new JspJavaGenerateGotoPopupAction(),
                     new JavaKit.JavaJMIGotoSourceAction(),
                     new JavaKit.JavaJMIGotoDeclarationAction(),
                     new JavaKit.JavaGotoSuperImplementation(),
@@ -191,7 +191,7 @@ public class JSPKit extends NbEditorKit {
             JavaKit jkit = (JavaKit)kit;
             String sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
             //create a special javasyntax patched for use in JSPs (fix of #55628)
-            return new JavaSyntax(sourceLevel, true); 
+            return new JavaSyntax(sourceLevel, true);
         } else {
             return new HTMLSyntax();
         }
@@ -208,14 +208,14 @@ public class JSPKit extends NbEditorKit {
         
     }
     
-    /** This method now returns null since the code completion is got from 
+    /** This method now returns null since the code completion is got from
      * code completion providers declared in the module layer.
      */
     public Completion createCompletion(ExtEditorUI extEditorUI) {
         return null;
     }
     
-    /** This method now returns null since the code completion is got from 
+    /** This method now returns null since the code completion is got from
      * code completion providers declared in the module layer.
      */
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
@@ -257,36 +257,14 @@ public class JSPKit extends NbEditorKit {
                     ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
                     
                     TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
-                    /*if (token != null && token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
-                            && token.getTokenID().getNumericID() != JspTagTokenContext.TAG_ID)
-                        token = token.getPrevious();*/
-                    if (token != null && token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
-                    /*&& token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID*/){
-                        boolean isScriptletDelimiter = token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID;
-                        
+                    if (token != null && token.getTokenContextPath().contains(JspTagTokenContext.contextPath)) {
                         if (dotPos > 0) {
                             int[] matchBlk = sup.findMatchingBlock(dotPos - 1, false);
                             if (matchBlk != null) {
-                                dotPos = matchBlk[0];
-                                if (!isScriptletDelimiter){
-                                    // Find out, where the opossite close/open tag ends.
-                                    token = sup.getTokenChain(dotPos, dotPos+1);
-                                    while (token != null
-                                            && !(token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID
-                                            && token.getTokenContextPath().contains(JspTagTokenContext.contextPath))) {
-                                        token = token.getNext();
-                                    }
-                                    if (select) {
-                                        caret.moveDot(token.getOffset()+token.getImage().length());
-                                    } else {
-                                        caret.setDot(token.getOffset()+token.getImage().length());
-                                    }
-                                } else{
-                                    if (select) {
-                                        caret.moveDot(matchBlk[1]);
-                                    } else {
-                                        caret.setDot(matchBlk[1]);
-                                    }
+                                if (select) {
+                                    caret.moveDot(matchBlk[1]);
+                                } else {
+                                    caret.setDot(matchBlk[1]);
                                 }
                             }
                         }
@@ -322,12 +300,12 @@ public class JSPKit extends NbEditorKit {
     }
     
     public static class JavaDocShowAction extends BaseAction {
-
+        
         public JavaDocShowAction() {
             super(javaDocShowAction);
-            putValue ("helpID", JavaDocShowAction.class.getName ()); // NOI18N
+            putValue("helpID", JavaDocShowAction.class.getName()); // NOI18N
         }
-
+        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 ExtEditorUI eeui = (ExtEditorUI)Utilities.getEditorUI(target);
@@ -349,7 +327,7 @@ public class JSPKit extends NbEditorKit {
                         Object obj = JCExtension.findItemAtCaretPos(target);
                         CompletionJavaDoc javadoc = ExtUtilities.getCompletionJavaDoc(target);
                         if (javadoc!=null){
-                            //show the javadoc if found 
+                            //show the javadoc if found
                             javadoc.setContent(obj);
                             javadoc.addToHistory(obj);
                         }
@@ -374,7 +352,7 @@ public class JSPKit extends NbEditorKit {
                         poss = ti.getOffset() + ti.getImage().length();
                         
                         //check for unclosed tag
-                        //for example if the help is invoken on 
+                        //for example if the help is invoken on
                         //<table |
                         // <tr> ...
                         //the help for <%@include is displayed (first CC item)
@@ -455,7 +433,7 @@ public class JSPKit extends NbEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             FoldHierarchy hierarchy = FoldHierarchy.get(target);
             // Hierarchy locking done in the utility method
-            FoldUtilities.expand(hierarchy, JspFoldTypes.SCRIPTLET);            
+            FoldUtilities.expand(hierarchy, JspFoldTypes.SCRIPTLET);
             FoldUtilities.expand(hierarchy, JspFoldTypes.DECLARATION);
         }
     }
@@ -470,11 +448,11 @@ public class JSPKit extends NbEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             FoldHierarchy hierarchy = FoldHierarchy.get(target);
             // Hierarchy locking done in the utility method
-            FoldUtilities.collapse(hierarchy, JspFoldTypes.SCRIPTLET);        
+            FoldUtilities.collapse(hierarchy, JspFoldTypes.SCRIPTLET);
             FoldUtilities.collapse(hierarchy, JspFoldTypes.DECLARATION);
         }
     }
-
+    
     private static TokenContextPath getTokenContextPath(Caret caret, Document doc){
         if (doc instanceof BaseDocument){
             int dotPos = caret.getDot();
@@ -497,7 +475,7 @@ public class JSPKit extends NbEditorKit {
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
                 TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
-
+                
                 if (path != null && path.contains(JavaTokenContext.contextPath)){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
@@ -508,16 +486,16 @@ public class JSPKit extends NbEditorKit {
                         }
                     }
                 }
-            }            
+            }
             super.actionPerformed(e, target);
         }
-    }    
+    }
     
     public static class JspDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
                 TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
-
+                
                 if (path != null && path.contains(JavaTokenContext.contextPath)){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
@@ -528,21 +506,21 @@ public class JSPKit extends NbEditorKit {
                         }
                     }
                 }
-            }            
+            }
             super.actionPerformed(e, target);
         }
     }
-
+    
     public static class JspDeleteCharAction extends ExtDeleteCharAction {
         
         public JspDeleteCharAction(String nm, boolean nextChar) {
             super(nm, nextChar);
         }
-
+        
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
                 TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
-
+                
                 if (path != null && path.contains(JavaTokenContext.contextPath)){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
@@ -553,19 +531,19 @@ public class JSPKit extends NbEditorKit {
                         }
                     }
                 }
-            }            
+            }
             super.actionPerformed(e, target);
         }
     }
- 
+    
     public static class JspJavaGenerateGotoPopupAction extends JavaKit.JavaGenerateGoToPopupAction {
         
         protected void addAction(JTextComponent target, JMenu menu,
-        String actionName) {
+                String actionName) {
             BaseKit kit = Utilities.getKit(target);
             if (kit == null) return;
             Action a = kit.getActionByName(actionName);
-            if (a!=null){ 
+            if (a!=null){
                 //test context only for context-aware actions
                 if(ExtKit.gotoSourceAction.equals(actionName) ||
                         ExtKit.gotoDeclarationAction.equals(actionName) ||
@@ -593,4 +571,4 @@ public class JSPKit extends NbEditorKit {
     }
     
 }
-    
+
