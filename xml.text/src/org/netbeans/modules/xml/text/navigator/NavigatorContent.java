@@ -151,11 +151,14 @@ public class NavigatorContent extends JPanel   {
                 public void mousePressed(MouseEvent e) {
                     int selRow = tree.getRowForLocation(e.getX(), e.getY());
                     if(selRow != -1) {
-                        if(e.getClickCount() == 2) {
-                            TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-                            TreeNodeAdapter tna = (TreeNodeAdapter)selPath.getLastPathComponent();
-                            openAndFocusElement(tna);
-                        }
+                        TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+                        TreeNodeAdapter tna = (TreeNodeAdapter)selPath.getLastPathComponent();
+                        if(e.getClickCount() == 2)
+                            openAndFocusElement(tna, false);
+                        
+                        if(e.getClickCount() == 1)
+                            openAndFocusElement(tna, true); //select active line only
+                        
                     }
                 }
             };
@@ -210,7 +213,7 @@ public class NavigatorContent extends JPanel   {
             }
         }
         
-        private void openAndFocusElement(final TreeNodeAdapter selected) {
+        private void openAndFocusElement(final TreeNodeAdapter selected, final boolean selectLineOnly) {
             BaseDocument bdoc = (BaseDocument)selected.getDocumentElement().getDocument();
             DataObject dobj = NbEditorUtilities.getDataObject(bdoc);
             if(dobj == null) return ;
@@ -223,15 +226,15 @@ public class NavigatorContent extends JPanel   {
                     JEditorPane[] panes = ec.getOpenedPanes();
                     if (panes != null && panes.length > 0) {
                         // editor already opened, so just select
-                        selectElementInPane(panes[0], selected);
-                    } else {
+                        selectElementInPane(panes[0], selected, false);
+                    } else if(selectLineOnly) {
                         // editor not opened yet
                         ec.open();
                         try {
                             ec.openDocument(); //wait to editor to open
                             panes = ec.getOpenedPanes();
                             if (panes != null && panes.length > 0) {
-                                selectElementInPane(panes[0], selected);
+                                selectElementInPane(panes[0], selected, true);
                             }
                         }catch(IOException ioe) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
@@ -241,18 +244,20 @@ public class NavigatorContent extends JPanel   {
             });
         }
         
-        private void selectElementInPane(final JEditorPane pane, final TreeNodeAdapter tna) {
+        private void selectElementInPane(final JEditorPane pane, final TreeNodeAdapter tna, final boolean focus) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     pane.setCaretPosition(tna.getDocumentElement().getStartOffset());
                 }
             });
-            // try to activate outer TopComponent
-            Container temp = pane;
-            while (!(temp instanceof TopComponent)) {
-                temp = temp.getParent();
+            if(focus) {
+                // try to activate outer TopComponent
+                Container temp = pane;
+                while (!(temp instanceof TopComponent)) {
+                    temp = temp.getParent();
+                }
+                ((TopComponent) temp).requestActive();
             }
-            ((TopComponent) temp).requestActive();
         }
         
         private TreeModel createTreeModel(DocumentModel dm) {
