@@ -669,12 +669,27 @@ class LayoutFeeder implements LayoutConstants {
         addToGroup(iDesc1, iDesc2);
 
         // align in parallel if required
-        if (iDesc2 != null && iDesc2.snappedParallel != null) {
-            alignInParallel(iDesc2.snappedParallel, iDesc2.alignment, iDesc1.snappedParallel != null);
+        if (iDesc1.snappedParallel != null || (iDesc2 != null && iDesc2.snappedParallel != null)) {
+            LayoutInterval alignedGroup = null;
+            LayoutInterval toAlignWith = null;
+            int alignment = -1;
+            if (iDesc2 != null && iDesc2.snappedParallel != null) {
+                toAlignWith = iDesc2.snappedParallel;
+                alignment = iDesc2.alignment;
+                alignedGroup = alignInParallel(addingInterval, toAlignWith, alignment);
+            }
+            if (iDesc1.snappedParallel != null) {
+                LayoutInterval aGroup = alignInParallel(addingInterval, iDesc1.snappedParallel, iDesc1.alignment);
+                if (alignedGroup == null) {
+                    alignedGroup = aGroup;
+                    toAlignWith = iDesc1.snappedParallel;
+                    alignment = iDesc1.alignment;
+                }
+            }
+            if (alignedGroup != null)
+                checkParallelSameSize(alignedGroup, addingInterval, toAlignWith, alignment);
         }
-        if (iDesc1.snappedParallel != null) {
-            alignInParallel(iDesc1.snappedParallel, iDesc1.alignment, false);
-        }
+        // [need a better check - based on presence of added interval in parallel group]
 
         // post processing
         LayoutInterval parent = addingInterval.getParent();
@@ -1344,17 +1359,18 @@ class LayoutFeeder implements LayoutConstants {
      * This method aligns an interval (just simply added to the layout - so it
      * is already placed correctly where it should appear) in parallel with
      * another interval.
+     * @return parallel group with aligned intervals if some aligning changes happened,
+     *         null if addingInterval has already been aligned or could not be aligned
      */
-    private void alignInParallel(LayoutInterval toAlignWith, int alignment, boolean preAlign) {
+    private LayoutInterval alignInParallel(LayoutInterval interval, LayoutInterval toAlignWith, int alignment) {
         assert alignment == LEADING || alignment == TRAILING;
 
         if (toAlignWith.getParent() == null)
-            return; // aligning with root - nothing to do (the interval must be already aligned)
+            return null; // aligning with root - nothing to do (the interval must be already aligned)
 
-        LayoutInterval interval = addingInterval;
         if (toAlignWith.isParentOf(interval)) {
             assert LayoutInterval.isAlignedAtBorder(interval, toAlignWith, alignment);
-            return; // already aligned to parent
+            return null; // already aligned to parent
         }
         else { 
             assert !interval.isParentOf(toAlignWith); // can't align with own subinterval
@@ -1379,8 +1395,8 @@ class LayoutFeeder implements LayoutConstants {
                 parParent = LayoutInterval.getFirstParent(interval, PARALLEL);
             }
             else parParent = null;
-            if (parParent == null)
-                return; // not parent of toAlignWith - can't align with interval from different branch
+            if (parParent == null) // not parent of toAlignWith
+                return null; // can't align with interval from different branch
         }
 
         boolean resizingOp = dragger.isResizing(dimension);
@@ -1395,7 +1411,7 @@ class LayoutFeeder implements LayoutConstants {
         do {
             alignParent = LayoutInterval.getFirstParent(toAlignWith, PARALLEL);
             if (alignParent == null)
-                return; // aligning with parent (the interval must be already aligned)
+                return null; // aligning with parent (the interval must be already aligned)
             if (canSubstAlignWithParent(toAlignWith, dimension, alignment, resizingOp)) {
                 // toAlignWith is at border so we can perhaps use the parent instead
                 if (alignParent == parParent) {
@@ -1410,7 +1426,7 @@ class LayoutFeeder implements LayoutConstants {
         parParent.add(tempRemoved, removedIndex); // add back temporarily removed
 
         if (alignParent != parParent)
-            return; // can't align (toAlignWith is too deep)
+            return null; // can't align (toAlignWith is too deep)
 
         // check congruence of effective alignment
         int effAlign = LayoutInterval.getEffectiveAlignment(toAlignWith, alignment);
@@ -1538,39 +1554,6 @@ class LayoutFeeder implements LayoutConstants {
             layoutModel.setIntervalAlignment(aligning1, alignment);
         }
 
-        if (/*resizingOp && */!preAlign && LayoutInterval.wantResize(aligning2)) {
-            boolean contentResizing = false;
-            for (Iterator it=group.getSubIntervals(); it.hasNext(); ) {
-                LayoutInterval li = (LayoutInterval) it.next();
-                if (li != aligning2 && LayoutInterval.wantResize(li)) {
-                    contentResizing = true;
-                    break;
-                }
-            }
-            if (!contentResizing) { // interval resized according to non-resizing content
-                operations.suppressGroupResizing(group);
-            }
-            if (!LayoutInterval.canResize(group)) {
-                layoutModel.changeIntervalAttribute(aligning2, LayoutInterval.ATTRIBUTE_FILL, true);
-                // the aligning component should not have explicit size
-                if (resizingOp && interval.isComponent()) {
-                    java.awt.Dimension prefSize = operations.getMapper()
-                            .getComponentPreferredSize(interval.getComponent().getId());
-                    int pref = dimension == HORIZONTAL ? prefSize.width : prefSize.height;
-                    if (interval.getPreferredSize() < pref)
-                        layoutModel.setIntervalSize(interval, 0, 0, interval.getMaximumSize());
-                    else
-                        layoutModel.setIntervalSize(interval,
-                                interval.getMinimumSize(), NOT_EXPLICITLY_DEFINED, interval.getMaximumSize());
-                }
-            }
-            if ((aligning1.isComponent() || LayoutInterval.getCount(aligning1, DEFAULT, true) == 1)
-                && (aligning2.isComponent() || LayoutInterval.getCount(aligning2, DEFAULT, true) == 1))
-            {   // aligning single components
-                setParallelSameSize(group, aligning2, dimension, alignment);
-            }
-        }
-
         // create the remainder group next to the aligned group
         if (!remainder.isEmpty()) {
             int index = commonSeq.indexOf(group);
@@ -1588,6 +1571,8 @@ class LayoutFeeder implements LayoutConstants {
                 operations.mergeParallelGroups(sideGroup);
             }
         }
+
+        return group;
     }
 
     private int extract(LayoutInterval interval, List toAlign, List toRemain, int alignment) {
@@ -1613,6 +1598,57 @@ class LayoutFeeder implements LayoutConstants {
         return effAlign;
     }
 
+    private void checkParallelSameSize(LayoutInterval group,
+                                       LayoutInterval interval,
+                                       LayoutInterval toAlignWith,
+                                       int alignment)
+    {
+        LayoutInterval aligned1 = toAlignWith;
+        while (aligned1.getParent() != group) {
+            aligned1 = aligned1.getParent();
+        }
+        LayoutInterval aligned2 = interval;
+        while (aligned2.getParent() != group) {
+            aligned2 = aligned2.getParent();
+        }
+        boolean resizingOp = dragger.isResizing(dimension);
+
+        if (/*resizingOp && */LayoutInterval.wantResize(aligned2)) {
+            boolean contentResizing = false;
+            for (Iterator it=group.getSubIntervals(); it.hasNext(); ) {
+                LayoutInterval li = (LayoutInterval) it.next();
+                if (li != aligned2 && LayoutInterval.wantResize(li)) {
+                    contentResizing = true;
+                    break;
+                }
+            }
+            if (!contentResizing) { // interval resized according to non-resizing content
+                operations.suppressGroupResizing(group);
+            }
+            if (!LayoutInterval.canResize(group)) {
+                layoutModel.changeIntervalAttribute(aligned2, LayoutInterval.ATTRIBUTE_FILL, true);
+                // the aligning component should not have explicit size
+                if (resizingOp && interval.isComponent()) {
+                    java.awt.Dimension prefSize = operations.getMapper()
+                            .getComponentPreferredSize(interval.getComponent().getId());
+                    int pref = dimension == HORIZONTAL ? prefSize.width : prefSize.height;
+                    if (interval.getPreferredSize() < pref)
+                        layoutModel.setIntervalSize(interval, 0, 0, interval.getMaximumSize());
+                    else
+                        layoutModel.setIntervalSize(interval,
+                                interval.getMinimumSize() != USE_PREFERRED_SIZE ? interval.getMinimumSize() : NOT_EXPLICITLY_DEFINED,
+                                NOT_EXPLICITLY_DEFINED,
+                                interval.getMaximumSize());
+                }
+            }
+            if ((aligned1.isComponent() || LayoutInterval.getCount(aligned1, DEFAULT, true) == 1)
+                && (aligned2.isComponent() || LayoutInterval.getCount(aligned2, DEFAULT, true) == 1))
+            {   // aligning single components
+                setParallelSameSize(group, aligned2, dimension, alignment);
+            }
+        }
+    }
+
     private void setParallelSameSize(LayoutInterval group, LayoutInterval aligned, int dimension, int alignment) {
         LayoutInterval alignedComp = getOneNonEmpty(aligned);
 
@@ -1635,7 +1671,9 @@ class LayoutFeeder implements LayoutConstants {
                             layoutModel.setIntervalAlignment(li, alignment);
                             int min = sub.getMinimumSize();
                             layoutModel.setIntervalSize(sub,
-                                    sub.getMinimumSize(), sub.getPreferredSize(), Short.MAX_VALUE);
+                                    sub.getMinimumSize() != USE_PREFERRED_SIZE ? sub.getMinimumSize() : NOT_EXPLICITLY_DEFINED,
+                                    sub.getPreferredSize(),
+                                    Short.MAX_VALUE);
                             layoutModel.changeIntervalAttribute(sub, LayoutInterval.ATTRIBUTE_FILL, true);
                         }
                     }
@@ -1719,20 +1757,20 @@ class LayoutFeeder implements LayoutConstants {
                     // inside 'sub', so this position should be in sequence
                 }
                 int distance;
-                if (!dimOverlap) { // determine distance from the interval
-                    if (aSnappedNextTo != null
-                        && (sub == aSnappedNextTo || aSnappedNextTo.getParent() == null
-                            || sub.isParentOf(aSnappedNextTo)))
-                    {   // preferred distance
-                        distance = -1;
-                    }
-                    else { // explicit distance
-                        int dstL = LayoutRegion.distance(subSpace, addingSpace,
-                                                         dimension, TRAILING, LEADING);
-                        int dstT = LayoutRegion.distance(addingSpace, subSpace,
-                                                         dimension, TRAILING, LEADING);
-                        distance = dstL >= 0 ? dstL : dstT;
-                    }
+                if (aSnappedNextTo != null
+                    && (sub == aSnappedNextTo
+                        || sub.isParentOf(aSnappedNextTo)
+                        || aSnappedNextTo.getParent() == null
+                        || LayoutInterval.getNeighbor(sub, aEdge, true, true, false) == aSnappedNextTo))
+                {   // aSnappedNextTo is related to this position with 'sub' as neighbor
+                    distance = -1; // IncludeDesc.snappedNextTo will be set if distance == -1
+                }
+                else if (!dimOverlap) { // determine distance from 'sub'
+                    int dstL = LayoutRegion.distance(subSpace, addingSpace,
+                                                     dimension, TRAILING, LEADING);
+                    int dstT = LayoutRegion.distance(addingSpace, subSpace,
+                                                     dimension, TRAILING, LEADING);
+                    distance = dstL >= 0 ? dstL : dstT;
                 }
                 else distance = 0; // overlapping
 

@@ -2707,7 +2707,8 @@ public class LayoutDesigner implements LayoutConstants {
     private void setDefaultSizeInContainer(LayoutInterval interval) {
         if (!interval.isGroup()) {
             if (LayoutInterval.canResize(interval))
-                operations.resizeInterval(interval, interval.getMinimumSize());
+                operations.resizeInterval(interval,
+                        interval.getMinimumSize() != USE_PREFERRED_SIZE ? interval.getMinimumSize() : NOT_EXPLICITLY_DEFINED);
         }
         else {
             for (Iterator it=interval.getSubIntervals(); it.hasNext(); ) {
