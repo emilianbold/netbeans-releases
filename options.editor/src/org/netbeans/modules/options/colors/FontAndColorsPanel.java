@@ -75,7 +75,7 @@ ActionListener {
     private JButton		    bClone;
     private JTabbedPane		    tabbedPane;
     private SyntaxColoringPanel	    syntaxColoringPanel;
-    private EditorPanel		    editorPanel;
+    private HighlightingPanel		    editorPanel;
     private AnnotationsPanel	    annotationsPanel;
 
     private ColorModel		    colorModel;
@@ -88,7 +88,7 @@ ActionListener {
         
         // init components
         syntaxColoringPanel = new SyntaxColoringPanel (this);
-        editorPanel = new EditorPanel (this);
+        editorPanel = new HighlightingPanel (this);
         annotationsPanel = new AnnotationsPanel (this);
         cbProfiles = new JComboBox ();
         cbProfiles.addItemListener (new ItemListener () {
