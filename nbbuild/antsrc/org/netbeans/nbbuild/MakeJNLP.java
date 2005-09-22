@@ -244,10 +244,19 @@ public class MakeJNLP extends Task {
             throw new BuildException(ex);
         }
         
-        fileToOwningModule.remove(relative(f, clusterRoot));
-        fileToOwningModule.remove("config/Modules/" + dashcnb + ".xml");
-        fileToOwningModule.remove("config/ModuleAutoDeps/" + dashcnb + ".xml");
-        fileToOwningModule.remove("update_tracking/" + dashcnb + ".xml");
+        log("project files: " + fileToOwningModule, Project.MSG_DEBUG);
+        String name = relative(f, clusterRoot);
+        log("  removing: " + name, Project.MSG_DEBUG);
+        fileToOwningModule.remove(name);
+        name = "config/Modules/" + dashcnb + ".xml";
+        log("  removing: " + name, Project.MSG_DEBUG);
+        fileToOwningModule.remove(name);
+        name = "config/ModuleAutoDeps/" + dashcnb + ".xml";
+        log("  removing: " + name, Project.MSG_DEBUG);
+        fileToOwningModule.remove(name);
+        name = "update_tracking/" + dashcnb + ".xml";
+        log("  removing: " + name, Project.MSG_DEBUG);
+        fileToOwningModule.remove(name);
         
         String path = mf.getMainAttributes().getValue("Class-Path");
         if (path != null) {
@@ -255,7 +264,8 @@ public class MakeJNLP extends Task {
             while(tok.hasMoreElements()) {
                 String s = tok.nextToken();
                 File e = new File(f.getParentFile(), s);
-                fileToOwningModule.remove(relative(e, clusterRoot));
+                String r = relative(e, clusterRoot);
+                fileToOwningModule.remove(r);
             }
         }
         

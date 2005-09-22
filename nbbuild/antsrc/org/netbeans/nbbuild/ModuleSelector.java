@@ -192,7 +192,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
                         throw new BuildException("<file/> without name attribute in " + where);
                     }
                     
-                    files.put(file, module);
+                    files.put(file.replace(File.separatorChar, '/'), module);
                 }
             }
             
