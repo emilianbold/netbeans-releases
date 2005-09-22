@@ -436,8 +436,8 @@ public class CustomizerDataSupport {
         }
         
         if (sharedMemModelFlag || socketModelFlag) {
-            tp.setDebugType(sharedMemModelFlag ? TomcatProperties.DEBUG_TYPE_SHARED 
-                                               : TomcatProperties.DEBUG_TYPE_SOCKET);
+            tp.setDebugType(sharedMemModel.isSelected() ? TomcatProperties.DEBUG_TYPE_SHARED 
+                                                        : TomcatProperties.DEBUG_TYPE_SOCKET);
             sharedMemModelFlag = false;
             socketModelFlag = false;
         }
