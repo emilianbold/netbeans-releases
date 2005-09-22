@@ -15,18 +15,15 @@ public final class @@CLASS_NAME@@ extends CookieAction {
         return "@@DISPLAY_NAME@@";
     }
 
-    public String iconResource() {
-        return @@ICON_RESOURCE@@;
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
     protected Class[] cookieClasses() {
         return new Class[] {
 @@COOKIE_CLASSES_BLOCK@@
         };
+    }
+    @@ICON_RESOURCE_METHOD@@
+    @@INITIALIZE_METHOD@@
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
     protected boolean asynchronous() {

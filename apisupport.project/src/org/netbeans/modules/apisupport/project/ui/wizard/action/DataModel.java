@@ -30,7 +30,7 @@ import org.openide.filesystems.FileObject;
  * Data model used across the <em>New Action Wizard</em>.
  */
 final class DataModel extends BasicWizardIterator.BasicDataModel {
-
+    
     static final String[] PREDEFINED_COOKIE_CLASSES;
     
     private static final String[] HARDCODED_IMPORTS = new String[] {
@@ -53,8 +53,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         PREDEFINED_COOKIE_CLASSES = new String[5];
         DataModel.CLASS_TO_CNB.keySet().toArray(PREDEFINED_COOKIE_CLASSES);
     }
-
+    
     private static final String NEW_LINE = System.getProperty("line.separator"); // NOI18N
+    
+    /** Default indent. (four spaces hardcoded currently). */
+    private static final String INDENT = "    "; // NOI18N
+    /** Double {@link #INDENT}. */
+    private static final String INDENT_2X = INDENT + INDENT; // NOI18N
     
     private CreatedModifiedFiles cmf;
     
@@ -125,7 +130,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         Set imports = new TreeSet(Arrays.asList(HARDCODED_IMPORTS));
         Set addedFQNCs = new TreeSet();
         if (!alwaysEnabled) {
-            String indent = "            "; // NOI18N
             StringBuffer cookieSB = new StringBuffer();
             for (int i = 0; i < cookieClasses.length; i++) {
                 // imports for predefined chosen cookie classes
@@ -133,7 +137,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     addedFQNCs.add(cookieClasses[i]);
                 }
                 // cookie block
-                cookieSB.append(indent + parseClassName(cookieClasses[i]) + ".class"); // NOI18N
+                cookieSB.append(INDENT_2X + INDENT + parseClassName(cookieClasses[i]) + ".class"); // NOI18N
                 if (i != cookieClasses.length - 1) {
                     cookieSB.append(',' + NEW_LINE);
                 }
@@ -152,9 +156,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // Copy action icon
         if (origIconPath != null) {
             String relativeIconPath = addCreateIconOperation(cmf, origIconPath);
-            replaceTokens.put("@@ICON_RESOURCE@@", '"' + relativeIconPath + '"'); // NOI18N
+            replaceTokens.put("@@ICON_RESOURCE_METHOD@@", DataModel.generateIconResourceMethod(relativeIconPath)); // NOI18N
+            replaceTokens.put("@@INITIALIZE_METHOD@@", ""); // NOI18N
         } else {
-            replaceTokens.put("@@ICON_RESOURCE@@", "null"); // NOI18N
+            replaceTokens.put("@@ICON_RESOURCE_METHOD@@", ""); // NOI18N
+            replaceTokens.put("@@INITIALIZE_METHOD@@", DataModel.generateNoIconInitializeMethod()); // NOI18N
         }
         
         // add layer entry about the action
@@ -441,6 +447,21 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     static String parseClassName(final String name) {
         int lastDot = name.lastIndexOf('.');
         return lastDot == -1 ? name : name.substring(lastDot + 1);
+    }
+    
+    private static String generateIconResourceMethod(final String relativeIconPath) {
+        return NEW_LINE +
+                INDENT + "protected String iconResource() {" + NEW_LINE + // NOI18N
+                INDENT_2X + "return \"" + relativeIconPath + "\";" + NEW_LINE + // NOI18N
+                INDENT + "}"; // NOI18N
+    }
+    
+    private static String generateNoIconInitializeMethod() {
+        return "protected void initialize() {" + NEW_LINE + // NOI18N
+                INDENT_2X + "super.initialize();" + NEW_LINE + // NOI18N
+                INDENT_2X + "// see org.openide.util.actions.SystemAction.iconResource() javadoc for more details" + NEW_LINE + // NOI18N
+                INDENT_2X + "putValue(\"noIconInMenu\", Boolean.TRUE);" + NEW_LINE + // NOI18N
+                INDENT + "}" + NEW_LINE; // NOI18N
     }
     
 }

@@ -12,18 +12,11 @@ public final class @@CLASS_NAME@@ extends CallableSystemAction {
     public String getName() {
         return "@@DISPLAY_NAME@@";
     }
-
-    public String iconResource() {
-        return @@ICON_RESOURCE@@;
-    }
-
+    @@ICON_RESOURCE_METHOD@@
+    @@INITIALIZE_METHOD@@
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-
-//    protected void initialize() {
-//        super.initialize();
-//    }
 
     protected boolean asynchronous() {
         return false;
