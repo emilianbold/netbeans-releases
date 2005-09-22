@@ -109,7 +109,11 @@ public class RegisterPointbase implements DatabaseRuntime {
         }
     }
     private void createLocalInstallation(){
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
+            return;
+        }
+        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         String dest = System.getProperty("netbeans.user");
         try{
             unzip(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/j2ee/sun/ide/j2ee/db/pointbasescripts.zip") , new File(dest));
@@ -163,7 +167,11 @@ public class RegisterPointbase implements DatabaseRuntime {
         
     }
     public void   register(){
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
+            return;
+        }
+        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot==null){
             return;
         }
@@ -226,6 +234,14 @@ public class RegisterPointbase implements DatabaseRuntime {
             return false;
     }
     
+    public boolean isRegisterable() {
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
+            return false;
+        }
+        return true;
+    }
+    
     /**
      * Is database server up and running.
      */
@@ -264,7 +280,11 @@ public class RegisterPointbase implements DatabaseRuntime {
      *
      **/
     public File getScriptsLocation(){
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
+            return null;
+        }
+        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot == null) {
             Util.showInformation(NbBundle.getMessage(StartAction.class, "ERR_NotThere"));
             return null;

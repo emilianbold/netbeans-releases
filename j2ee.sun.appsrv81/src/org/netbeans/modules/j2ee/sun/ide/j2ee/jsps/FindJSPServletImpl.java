@@ -51,14 +51,11 @@ public class FindJSPServletImpl implements FindJSPServlet {
     }
     
     private File findBaseDir() {
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot"); 
-
- 
-        if (installRoot == null) {
-            ///System.out.println("cannot start please specify com.sun.aas.installRoot");
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
             return null;
-        } 
-        return new File(installRoot);
+        }
+        return irf;
     }
     
     private String getContextRootString(String moduleContextPath) {

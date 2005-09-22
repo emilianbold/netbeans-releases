@@ -51,7 +51,7 @@
 					</folder>
 
 					<folder name="CAR">
-						<file name="META-INF\sun-client-application.xml"/>
+						<file name="META-INF\sun-application-client.xml"/>
 					</folder>
 
 

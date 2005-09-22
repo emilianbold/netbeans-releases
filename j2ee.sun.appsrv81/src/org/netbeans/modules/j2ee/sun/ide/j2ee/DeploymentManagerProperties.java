@@ -118,14 +118,17 @@ public class DeploymentManagerProperties {
      * @return Value of property location.
      */
     public java.lang.String getLocation() {
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); // System.getProperty("com.sun.aas.installRoot");
+        java.io.File irf = PluginProperties.getDefault().getInstallRoot();
+        String installRoot = null;
+        if (null != irf && irf.exists())
+            installRoot = irf.getAbsolutePath(); // System.getProperty("com.sun.aas.installRoot");
         if (instanceProperties==null)
             return installRoot;
         String ret= instanceProperties.getProperty(LOCATION_ATTR) ;
         if (ret==null){
             return installRoot;
         }
-        if (ret.equals ( PluginProperties.getDefault().getInstallRoot().getAbsolutePath())){
+        if (ret.equals ( installRoot )){
             //upgrade from previous semantic of this field in EA2: it was the app server location
             //not the domain location...
             ret = ret +File.separator+"domains"+File.separator;

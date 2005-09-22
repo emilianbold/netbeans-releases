@@ -53,7 +53,12 @@ public class ConfigureProfiler {
     public static boolean modifyAsEnvScriptFile( String targetJavaHomePath) {
         
             String ext = (isUnix() ? "conf" : "bat");
-        String asEnvScriptFilePath  = PluginProperties.getDefault().getInstallRoot()+"/config/asenv." + ext;
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
+            return false;
+        }
+        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        String asEnvScriptFilePath  = installRoot+"/config/asenv." + ext;
   //      System.out.println("asEnvScriptFilePath="+asEnvScriptFilePath);
         File asEnvScriptFile = new File(asEnvScriptFilePath);
         String lineBreak = System.getProperty("line.separator");

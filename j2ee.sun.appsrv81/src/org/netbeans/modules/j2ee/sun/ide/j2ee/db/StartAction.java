@@ -14,7 +14,6 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee.db;
 
 
-
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -48,6 +47,11 @@ public class StartAction extends CallableSystemAction {
     }
     
     public void performAction()  {
+        if (RegisterPointbase.getDefault().isRegisterable() == false) {
+            org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util.showWarning(
+                    NbBundle.getMessage(StartAction.class, "WRN_NO_DB_INSTANCE"));
+            return;
+        }
         RegisterPointbase.getDefault().start(0);// do not wait for the server to start.
         
     }

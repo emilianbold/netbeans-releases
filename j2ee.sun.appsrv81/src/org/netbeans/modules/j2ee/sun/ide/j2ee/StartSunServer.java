@@ -246,8 +246,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         StateType state = StateType.COMPLETED;
         int errorCode=-1;
         
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath();
-
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
+            return;
+        }
+        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
        
         domain = dmProps.getDomainName();
         domainDir = dmProps.getLocation();
@@ -257,8 +260,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             dmProps.setDomainName(domain);
         }
         if (null == domainDir) {
-            domainDir = PluginProperties.getDefault().getInstallRoot()+
-                    File.separator+"domains";
+            domainDir = installRoot+File.separator+"domains";
             dmProps.setLocation(domainDir);
         }
         String asadminCmd = installRoot + File.separator +

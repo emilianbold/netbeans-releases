@@ -29,14 +29,11 @@ public final class PlatformFactory extends J2eePlatformFactory {
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties (dm);
 //        String location = dmProps.getLocation();
-        String location = PluginProperties.getDefault().getInstallRoot().getAbsolutePath();
-        if (location != null) {
-            File root = new File (location);
-            if (root != null && root.exists()) {
-                return new PlatformImpl (root, dmProps.getDisplayName (), dmProps.getInstanceProperties ());
-            }
+        File irf = PluginProperties.getDefault().getInstallRoot();
+        if (null == irf || !irf.exists()) {
+            return null;
         }
-        return null;
+        return new PlatformImpl (irf, dmProps.getDisplayName (), dmProps.getInstanceProperties ());
     }
     
 }
