@@ -14,11 +14,18 @@
 package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 
 /**
  * Test functionality of ModuleList.
@@ -231,6 +238,34 @@ public class ModuleListTest extends TestBase {
         assertEquals(nbrootF, ModuleList.findNetBeansOrg(file("xml/tax/lib")));
         assertEquals(null, ModuleList.findNetBeansOrg(file("xml/tax/lib/src")));
         assertEquals(null, ModuleList.findNetBeansOrg(File.listRoots()[0]));
+    }
+    
+    public void testrefreshSuiteModuleList() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        final NbModuleProject p = TestBase.generateSuiteComponent(suite1, "module1a");
+        ModuleList ml = ModuleList.getModuleList(
+                FileUtil.toFile(p.getProjectDirectory()),
+                NbPlatform.getDefaultPlatform().getDestDir());
+        assertNotNull("module1a is in the suite1's module list", ml.getEntry("org.example.module1a"));
+        assertEquals("no public packages in the ModuleEntry", 0, ml.getEntry("org.example.module1a").getPublicPackages().length);
+        
+        // added package must be reflected in the refreshed list (63561)
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                ProjectXMLManager pxm = new ProjectXMLManager(p.getHelper());
+                String[] newPP = new String[] { "org.example.module1a" };
+                pxm.replacePublicPackages(newPP);
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("replace public packages", result.booleanValue());
+        ProjectManager.getDefault().saveProject(p);
+        
+        ModuleList.refreshSuiteModuleList(FileUtil.toFile(suite1.getProjectDirectory()));
+        ml = ModuleList.getModuleList(
+                FileUtil.toFile(p.getProjectDirectory()),
+                NbPlatform.getDefaultPlatform().getDestDir());
+        assertEquals("one public packages in the refreshed ModuleEntry", 1, ml.getEntry("org.example.module1a").getPublicPackages().length);
     }
     
 }

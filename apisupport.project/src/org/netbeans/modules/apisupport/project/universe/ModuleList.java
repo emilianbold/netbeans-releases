@@ -725,6 +725,14 @@ public final class ModuleList {
     }
     
     /**
+     * Refresh cached module list for the given suite. If there is not such a
+     * cached list yet, the method is just no-op.
+     */
+    public static void refreshSuiteModuleList(File suiteDir) {
+        sourceLists.remove(suiteDir);
+    }
+    
+    /**
      * Whether whether a given dir is root of netbeans.org CVS.
      */
     public static boolean isNetBeansOrg(File dir) {
