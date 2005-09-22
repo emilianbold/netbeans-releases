@@ -45,6 +45,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -538,8 +539,10 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     private static void close(final Project prj) {
-        Mutex.EVENT.readAccess(new Runnable() {
-            public void run() {
+        Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+		LifecycleManager.getDefault().saveAll();
+		
                 Action closeAction = CommonProjectActions.closeProjectAction();
                 closeAction = closeAction instanceof ContextAwareAction ? ((ContextAwareAction) closeAction).createContextAwareInstance(Lookups.fixed(new Object[] {prj})) : null;
                 
@@ -549,6 +552,8 @@ public final class DefaultProjectOperationsImplementation {
                     //fallback:
                     OpenProjects.getDefault().close(new Project[] {prj});
                 }
+                
+                return null;
             }
         });
     }
