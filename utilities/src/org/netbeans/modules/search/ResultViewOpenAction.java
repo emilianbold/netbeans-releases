@@ -37,6 +37,8 @@ public class ResultViewOpenAction extends AbstractAction {
                 ResultViewOpenAction.class,
                 "TEXT_ACTION_SEARCH_RESULTS");                          //NOI18N
         putValue(NAME, name);
+        putValue("iconBase",                                            //NOI18N
+                 "org/netbeans/modules/search/res/find.gif");           //NOI18N
     }
     
     /**
