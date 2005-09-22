@@ -10,17 +10,14 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.modules;
 
+import java.io.File;
+import java.util.Collection;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
-
-import java.io.File;
-
-import java.util.Collection;
-
 
 /**
  * Service providing the ability to locate a module-installed file in
@@ -32,30 +29,36 @@ import java.util.Collection;
  */
 public abstract class InstalledFileLocator {
     private static final InstalledFileLocator DEFAULT = new InstalledFileLocator() {
-            public File locate(String rp, String cnb, boolean l) {
-                InstalledFileLocator[] ifls = getInstances();
-
-                for (int i = 0; i < ifls.length; i++) {
-                    File f = ifls[i].locate(rp, cnb, l);
-
-                    if (f != null) {
-                        return f;
-                    }
+        public File locate(String rp, String cnb, boolean l) {
+            InstalledFileLocator[] ifls = getInstances();
+            
+            for (int i = 0; i < ifls.length; i++) {
+                File f = ifls[i].locate(rp, cnb, l);
+                
+                if (f != null) {
+                    return f;
                 }
-
-                return null;
             }
-        };
-
+            
+            return null;
+        }
+    };
+    
     private static InstalledFileLocator[] instances = null;
     private static Lookup.Result result = null;
-
+    /**
+     * Used just for guarding direct access to {@link #instances} and {@link #result}.
+     * Should not call foreign code while holding this.
+     * Cf. comments in #64710.
+     */
+    private static final Object LOCK = new String(InstalledFileLocator.class.getName());
+    
     /**
      * No-op constructor for use by subclasses.
      */
     protected InstalledFileLocator() {
     }
-
+    
     /**
      * Try to locate a file.
      * <div class="nonnormative">
@@ -102,8 +105,8 @@ public abstract class InstalledFileLocator {
      * which is accessible to the module class loader. For example:
      * </p>
      * <pre>
-    <span class="type">Class</span> <span class="variable-name">c</span> = ClassMyModuleDefines.<span class="keyword">class</span>;
-    <span class="type">URL</span> <span class="variable-name">u</span> = c.getProtectionDomain().getCodeSource().getLocation();
+     <span class="type">Class</span> <span class="variable-name">c</span> = ClassMyModuleDefines.<span class="keyword">class</span>;
+     <span class="type">URL</span> <span class="variable-name">u</span> = c.getProtectionDomain().getCodeSource().getLocation();
      * </pre>
      * <p>
      * When running from a JAR file, this will typically give e.g.
@@ -123,25 +126,25 @@ public abstract class InstalledFileLocator {
      * as well as module layers and perhaps project-specific storage. To find data in
      * the system filesystem, use the Filesystems API, e.g. in your layer you can predefine:
      * </p>
-    <pre>
-    &lt;<span class="function-name">filesystem</span>&gt;
-    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"MyModule"</span>&gt;
-        &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"data.xml"</span> <span class="variable-name">url</span>=<span class="string">"contents-in-module-jar.xml"</span>/&gt;
-    &lt;/<span class="function-name">folder</span>&gt;
-    &lt;/<span class="function-name">filesystem</span>&gt;
-    </pre>
+     <pre>
+     &lt;<span class="function-name">filesystem</span>&gt;
+     &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"MyModule"</span>&gt;
+     &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"data.xml"</span> <span class="variable-name">url</span>=<span class="string">"contents-in-module-jar.xml"</span>/&gt;
+     &lt;/<span class="function-name">folder</span>&gt;
+     &lt;/<span class="function-name">filesystem</span>&gt;
+     </pre>
      * <p>
      * Then in your code use:
      * </p>
-    <pre>
-    <span class="type">String</span> <span class="variable-name">path</span> = <span class="string">"MyModule/data.xml"</span>;
-    <span class="type">FileSystem</span> <span class="variable-name">sfs</span> = Repository.getDefault().getDefaultFileSystem();
-    <span class="type">FileObject</span> <span class="variable-name">fo</span> = sfs.findResource(path);
-    <span class="keyword">if</span> (fo != <span class="constant">null</span>) {
-    <span class="comment">// use fo.getInputStream() etc.
-    </span>    <span class="comment">// FileUtil.toFile(fo) will often be null, do not rely on it!
-    </span>}
-    </pre>
+     <pre>
+     <span class="type">String</span> <span class="variable-name">path</span> = <span class="string">"MyModule/data.xml"</span>;
+     <span class="type">FileSystem</span> <span class="variable-name">sfs</span> = Repository.getDefault().getDefaultFileSystem();
+     <span class="type">FileObject</span> <span class="variable-name">fo</span> = sfs.findResource(path);
+     <span class="keyword">if</span> (fo != <span class="constant">null</span>) {
+     <span class="comment">// use fo.getInputStream() etc.
+     </span>    <span class="comment">// FileUtil.toFile(fo) will often be null, do not rely on it!
+     </span>}
+     </pre>
      * </div>
      * @param relativePath path from install root, e.g. <samp>docs/OpenAPIs.zip</samp>
      *                     or <samp>modules/ext/somelib.jar</samp>
@@ -152,7 +155,7 @@ public abstract class InstalledFileLocator {
      * @return the requested <code>File</code>, if it can be found, else <code>null</code>
      */
     public abstract File locate(String relativePath, String codeNameBase, boolean localized);
-
+    
     /**
      * Get a master locator.
      * Lookup is searched for all registered locators.
@@ -165,36 +168,36 @@ public abstract class InstalledFileLocator {
     public static InstalledFileLocator getDefault() {
         return DEFAULT;
     }
-
-    private static synchronized InstalledFileLocator[] getInstances() {
-        if (instances == null) {
-            if (result == null) {
-                result = Lookup.getDefault().lookup(new Lookup.Template(InstalledFileLocator.class));
-                result.addLookupListener(
-                    new LookupListener() {
-                        public void resultChanged(LookupEvent e) {
-                            // Should not try to acquire lock inside lookup's lock, since result.allInstances
-                            // could then deadlock (#50289). However this means that actual changes in the IFL's
-                            // in lookup will not be recognized immediately. Probably that doesn't matter since
-                            // they will rarely change.
-                            RequestProcessor.getDefault().post(
-                                new Runnable() {
-                                    public void run() {
-                                        synchronized (InstalledFileLocator.class) {
-                                            instances = null;
-                                        }
-                                    }
-                                }
-                            );
-                        }
-                    }
-                );
+    
+    private static InstalledFileLocator[] getInstances() {
+        synchronized (LOCK) {
+            if (instances != null) {
+                return instances;
             }
-
-            Collection /*<InstalledFileLocator>*/ c = result.allInstances();
-            instances = (InstalledFileLocator[]) c.toArray(new InstalledFileLocator[c.size()]);
         }
-
-        return instances;
+        
+        Lookup.Result _result;
+        synchronized (LOCK) {
+            _result = result;
+        }
+        if (_result == null) {
+            _result = Lookup.getDefault().lookup(new Lookup.Template(InstalledFileLocator.class));
+            _result.addLookupListener(new LookupListener() {
+                public void resultChanged(LookupEvent e) {
+                    synchronized (LOCK) {
+                        instances = null;
+                    }
+                }
+            });
+            synchronized (LOCK) {
+                result = _result;
+            }
+        }
+        
+        Collection/*<InstalledFileLocator>*/ c = _result.allInstances();
+        synchronized (LOCK) {
+            return instances = (InstalledFileLocator[]) c.toArray(new InstalledFileLocator[c.size()]);
+        }
     }
+    
 }
