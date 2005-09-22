@@ -31,17 +31,9 @@ public class CustomizerGeneral extends javax.swing.JPanel {
     public CustomizerGeneral(CustomizerDataSupport custData) {
         this.custData = custData;
         initComponents();
-        usernameTextField.addFocusListener(custData.getSaveOnFocusLostListener());
-        passwordField.addFocusListener(custData.getSaveOnFocusLostListener());
-        jSpinner1.addFocusListener(custData.getSaveOnFocusLostListener());
-        monitorCheckBox.addFocusListener(custData.getSaveOnFocusLostListener());
         
-        // we can't listen on the jspinner directly, but on its text field
         JTextField jSpinner1TextField = ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField();
         JTextField jSpinner2TextField = ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField();
-        
-        jSpinner1TextField.addFocusListener(custData.getSaveOnFocusLostListener());
-        jSpinner2TextField.addFocusListener(custData.getSaveOnFocusLostListener());
         
         // work-around for jspinner incorrect fonts
         Font font = usernameTextField.getFont();

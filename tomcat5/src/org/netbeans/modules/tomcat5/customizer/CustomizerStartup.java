@@ -43,17 +43,7 @@ public class CustomizerStartup extends javax.swing.JPanel {
         
         updateCustomScriptComponents();
         
-        jCheckBox1.addFocusListener(custData.getSaveOnFocusLostListener());
-        jCheckBox4.addFocusListener(custData.getSaveOnFocusLostListener());
-        browseButton.addFocusListener(custData.getSaveOnFocusLostListener());
-        jRadioButton1.addFocusListener(custData.getSaveOnFocusLostListener());
-        jRadioButton2.addFocusListener(custData.getSaveOnFocusLostListener());
-        jTextField1.addFocusListener(custData.getSaveOnFocusLostListener());
-        jTextField4.addFocusListener(custData.getSaveOnFocusLostListener());
-        
-        // we can't listen on the jspinner directly, but on its text field
         JTextField jSpinner1TextField = ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField();        
-        jSpinner1TextField.addFocusListener(custData.getSaveOnFocusLostListener());
         
         // work-around for jspinner incorrect fonts
         Font font = jTextField1.getFont();

@@ -92,12 +92,6 @@ public class CustomizerDataSupport {
     private TomcatProperties tp;
     private TomcatManager tm;
     
-    private FocusListener saveOnFocusLostListener = new FocusAdapter() {
-        public void focusLost(FocusEvent evt) {
-            store();
-        }
-    };
-    
     /**
      * Creates a new instance of CustomizerDataSupport 
      */
@@ -116,6 +110,7 @@ public class CustomizerDataSupport {
         jvmModel.addListDataListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 jvmModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -124,6 +119,7 @@ public class CustomizerDataSupport {
         javaOptsModel.addDocumentListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 javaOptsModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -138,6 +134,7 @@ public class CustomizerDataSupport {
         usernameModel.addDocumentListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 usernameModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -146,6 +143,7 @@ public class CustomizerDataSupport {
         passwordModel.addDocumentListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 passwordModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -154,6 +152,7 @@ public class CustomizerDataSupport {
         sharedMemNameModel.addDocumentListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 sharedMemNameModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
 
@@ -162,6 +161,7 @@ public class CustomizerDataSupport {
         scriptPathModel.addDocumentListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 scriptPathModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -170,6 +170,7 @@ public class CustomizerDataSupport {
         secManagerModel.addItemListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 secManagerModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -178,6 +179,7 @@ public class CustomizerDataSupport {
         customScriptModel.addItemListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 customScriptModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -186,6 +188,7 @@ public class CustomizerDataSupport {
         forceStopModel.addItemListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 forceStopModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -194,6 +197,7 @@ public class CustomizerDataSupport {
         monitorModel.addItemListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 monitorModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
 
@@ -205,6 +209,7 @@ public class CustomizerDataSupport {
         sourceModel.addListDataListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 sourceModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -213,6 +218,7 @@ public class CustomizerDataSupport {
         javadocModel.addListDataListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 javadocModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -221,6 +227,7 @@ public class CustomizerDataSupport {
         serverPortModel.addChangeListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 serverPortModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -229,6 +236,7 @@ public class CustomizerDataSupport {
         shutdownPortModel.addChangeListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 shutdownPortModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -237,6 +245,7 @@ public class CustomizerDataSupport {
         debugPortModel.addChangeListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 debugPortModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -248,6 +257,7 @@ public class CustomizerDataSupport {
         socketModel.addItemListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 socketModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -257,6 +267,7 @@ public class CustomizerDataSupport {
         sharedMemModel.addItemListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 sharedMemModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
         
@@ -376,10 +387,6 @@ public class CustomizerDataSupport {
     
     public SpinnerNumberModel getDebugPortModel() {
         return debugPortModel;
-    }
-    
-    public FocusListener getSaveOnFocusLostListener() {
-        return saveOnFocusLostListener;
     }
     
     // private helper methods -------------------------------------------------

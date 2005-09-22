@@ -184,7 +184,6 @@ public class Customizer extends JTabbedPane {
                         addPathElement ();
                     }
                 });
-                addButton.addFocusListener(custData.getSaveOnFocusLostListener());
                 c = new GridBagConstraints();
                 c.gridx = 1;
                 c.gridy = 1;
@@ -221,7 +220,6 @@ public class Customizer extends JTabbedPane {
                     }
                 });
                 removeButton.setEnabled(false);
-                removeButton.addFocusListener(custData.getSaveOnFocusLostListener());
                 c = new GridBagConstraints();
                 c.gridx = 1;
                 c.gridy = 3;
@@ -239,7 +237,6 @@ public class Customizer extends JTabbedPane {
                         moveUpPathElement ();
                     }
                 });
-                moveUpButton.addFocusListener(custData.getSaveOnFocusLostListener());
                 moveUpButton.setEnabled(false);
                 c = new GridBagConstraints();
                 c.gridx = 1;
@@ -258,7 +255,6 @@ public class Customizer extends JTabbedPane {
                         moveDownPathElement ();
                     }
                 });
-                moveDownButton.addFocusListener(custData.getSaveOnFocusLostListener());
                 moveDownButton.setEnabled(false);
                 c = new GridBagConstraints();
                 c.gridx = 1;

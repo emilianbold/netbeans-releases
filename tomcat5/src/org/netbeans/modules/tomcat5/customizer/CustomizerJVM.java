@@ -28,9 +28,6 @@ public class CustomizerJVM extends javax.swing.JPanel {
     public CustomizerJVM(CustomizerDataSupport custData) {
         this.custData = custData;
         initComponents();
-        jvmComboBox.addFocusListener(custData.getSaveOnFocusLostListener());
-        jTextField1.addFocusListener(custData.getSaveOnFocusLostListener());
-        jCheckBox1.addFocusListener(custData.getSaveOnFocusLostListener());
     }
     
     /** This method is called from within the constructor to
