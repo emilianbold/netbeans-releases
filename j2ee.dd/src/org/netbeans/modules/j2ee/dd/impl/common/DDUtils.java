@@ -49,6 +49,12 @@ public class DDUtils {
     public static void merge(EjbJarProxy ejbJarProxy, InputStream is) {
         try {
             EjbJarProxy newEjbJarProxy = createEjbJarProxy(is);
+            if (newEjbJarProxy.getStatus() == EjbJar.STATE_INVALID_UNPARSABLE) {
+                ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+                ejbJarProxy.setProxyVersion(null);
+                ejbJarProxy.setError(newEjbJarProxy.getError());
+                return;
+            }
             BigDecimal newVersion = newEjbJarProxy.getVersion();
             EjbJar newOriginal = newEjbJarProxy.getOriginal();
             if (newVersion.equals(ejbJarProxy.getVersion())) {// the same version
