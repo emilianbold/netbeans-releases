@@ -136,7 +136,7 @@ final public class FormPropertyEditorManager extends Object
         String[][] registered = formSettings.getRegisteredEditors();
         for (int i = 0; i < registered.length; i++) {
             String[] typereg = registered[i];
-            if (typereg.length > 0) {
+            if ((typereg != null) && (typereg.length > 0)) {
                 if (typereg[0].equals(typeName)) {
                     for (int j = 1; j < typereg.length; j++) {
                         try {
