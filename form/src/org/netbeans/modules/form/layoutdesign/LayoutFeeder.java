@@ -815,7 +815,7 @@ class LayoutFeeder implements LayoutConstants {
                     continue;
                 }
                 if (iiDesc.snappedParallel != null
-                    && (!seq.isParentOf(iiDesc.snappedParallel.getParent()) || originalGap == null))
+                    && (!seq.isParentOf(iiDesc.snappedParallel) || originalGap == null))
                 {   // starting/ending edge aligned in parallel - does not need a gap
                     continue;
                 }
@@ -832,7 +832,7 @@ class LayoutFeeder implements LayoutConstants {
                           || (i == TRAILING && originalTPosFixed);
             }
             else { // single position only (either next to or parallel)
-                if (iDesc1.snappedParallel == null || !seq.isParentOf(iDesc1.snappedParallel.getParent()))
+                if (iDesc1.snappedParallel == null || !seq.isParentOf(iDesc1.snappedParallel))
                     aligned = i == iDesc1.alignment;
                 else // special case - aligning with interval in the same sequence - to subst. its position
                     aligned = i == (iDesc1.alignment^1);
@@ -917,7 +917,7 @@ class LayoutFeeder implements LayoutConstants {
 
         // aligning in parallel with interval in the same sequence was resolved
         // by substituting its position
-        if (iDesc1.snappedParallel != null && seq.isParentOf(iDesc1.snappedParallel.getParent())) {
+        if (iDesc1.snappedParallel != null && seq.isParentOf(iDesc1.snappedParallel)) {
             iDesc1.snappedParallel = null; // set to null not to try alignInParallel later
         }
 
