@@ -90,19 +90,24 @@ public class ProxyClassLoader extends ClassLoader {
      * @param parents the new parents to add (append to list)
      * @throws IllegalArgumentException in case of a null or cyclic parent (duplicate OK)
      */
-    public synchronized void append(ClassLoader[] nueparents) throws IllegalArgumentException {
-        // XXX should this be synchronized?
+    public void append(ClassLoader[] nueparents) throws IllegalArgumentException {
         if (nueparents == null) throw new IllegalArgumentException("null parents array"); // NOI18N
         for (int i = 0; i < nueparents.length; i++) {
             if (nueparents[i] == null) throw new IllegalArgumentException("null parent"); // NOI18N
         }
+        ClassLoader[] resParents = null;
         ModuleFactory moduleFactory = (ModuleFactory)Lookup.getDefault().lookup(ModuleFactory.class);
         if (moduleFactory != null && moduleFactory.removeBaseClassLoader()) {
             // this hack is here to prevent having the application classloader
             // as parent to all module classloaders.
-            parents = coalesceAppend(new ClassLoader[0], nueparents);
+            resParents = coalesceAppend(new ClassLoader[0], nueparents);
         } else {
-            parents = coalesceAppend(parents, nueparents);
+            resParents = coalesceAppend(parents, nueparents);
+        }
+        synchronized (this) {
+            // synchronized because we don't want to mess up potentially running
+            // classloading
+            parents = resParents;
         }
     }
     
