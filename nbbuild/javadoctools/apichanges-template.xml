@@ -101,11 +101,11 @@ is the proper place.
     </head>
     <body>
 
-<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+<p class="overviewlink"><a href="@TOP@/overview-summary.html">Overview</a></p>
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the <a href="http://CHANGEME.netbeans.org/">CHANGEME API</a>.</p>
+<p>This document lists changes made to the <a href="@TOP@/overview-summary.html">CHANGEME API</a>.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>
