@@ -155,11 +155,17 @@ public final class SingleModuleProperties extends ModuleProperties {
         // reset
         this.suiteProvider = suiteProvider;
         this.moduleType = moduleType;
+        universeDependencies = null;
+        modCategories = null;
         availablePublicPackages = null;
         dependencyListModel = null;
         friendListModel = null;
         requiredTokensListModel = null;
         projectXMLManager = null;
+        if (moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
+            assert getSuiteDirectory() != null;
+            ModuleList.refreshSuiteModuleList(new File(getSuiteDirectory()));
+        }
         ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         majorReleaseVersion = manifestManager.getReleaseVersion();
         specificationVersion = manifestManager.getSpecificationVersion();
@@ -176,10 +182,6 @@ public final class SingleModuleProperties extends ModuleProperties {
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
-        }
-        if (moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
-            assert getSuiteDirectory() != null;
-            ModuleList.refreshSuiteModuleList(new File(getSuiteDirectory()));
         }
         firePropertiesRefreshed();
     }
