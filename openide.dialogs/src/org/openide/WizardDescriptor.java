@@ -2056,7 +2056,7 @@ public class WizardDescriptor extends DialogDescriptor {
             JSeparator sep = new JSeparator();
             sep.setForeground(Color.darkGray);
 
-            add(fullRightPanel, BorderLayout.CENTER);
+            add(new JScrollPane (fullRightPanel), BorderLayout.CENTER);
             add(sep, BorderLayout.SOUTH);
         }
 
