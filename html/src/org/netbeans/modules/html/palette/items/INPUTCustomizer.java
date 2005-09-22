@@ -87,7 +87,7 @@ public class INPUTCustomizer extends javax.swing.JPanel {
             input.setType(INPUT.TYPE_HIDDEN);
 
         input.setDisabled(jCheckBox1.isSelected());
-        input.setReadonly(jCheckBox1.isSelected());
+        input.setReadonly(jCheckBox2.isSelected());
         
         String width = jTextField4.getText();
         input.setWidth(width);
