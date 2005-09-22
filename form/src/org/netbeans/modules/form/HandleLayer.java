@@ -1859,9 +1859,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     formDesigner.getLayoutDesigner().paintMoveFeedback(g);
                     g.translate(-convertPoint.x, -convertPoint.y);
                 }
-                else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
-                    showingComponents[i].setBounds(movingBounds[i]);
-                    oldPaintFeedback(g, gg);
+                else if (oldDrag && ((targetContainer != null && targetContainer.getLayoutSupport() != null)
+                        || (targetContainer == null && isTopComponent()))) {
+                    if (!isTopComponent()) {
+                        showingComponents[i].setBounds(movingBounds[i]);
+                        doLayout(showingComponents[i]);
+                        oldPaintFeedback(g, gg);
+                    }
                 }
                 else if (showingComponents != null) { // non-visual area
                     Component comp = showingComponents[i];
@@ -2134,6 +2138,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             RADVisualContainer metacont = getSourceContainer();
             if (isTopComponent()) {
                 newDrag = getLayoutModel().getLayoutComponent(movingComponents[0].getId()) != null;
+                oldDrag = !newDrag;
                 fixedTarget = null;
             }
             else if (metacont != null) {
@@ -2294,7 +2299,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 Dimension size = new Dimension(movingBounds[0].width, movingBounds[0].height);
                 formDesigner.getComponentLayer().setDesignerSize(size);
                 doLayout(formDesigner.getComponentLayer());
-            } if (oldDrag && (targetContainer = getTargetContainer(p, modifiers)) != null && targetContainer.getLayoutSupport() != null) {
+            } else if (oldDrag && (targetContainer = getTargetContainer(p, modifiers)) != null && targetContainer.getLayoutSupport() != null) {
                 oldMove(p);
                 for (int i=0; i<movingBounds.length; i++) {
                     int xchange = p.x - convertPoint.x - hotSpot.x;
