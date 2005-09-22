@@ -177,6 +177,10 @@ public final class SingleModuleProperties extends ModuleProperties {
                 ErrorManager.getDefault().notify(ioe);
             }
         }
+        if (moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
+            assert getSuiteDirectory() != null;
+            ModuleList.refreshSuiteModuleList(new File(getSuiteDirectory()));
+        }
         firePropertiesRefreshed();
     }
     
@@ -660,9 +664,9 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     /**
      * Helper method to get the <code>ModuleList</code> for the project this
-     * instance manage.
+     * instance manage. <strong>Package-private only for unit tests.</strong>
      */
-    private ModuleList getModuleList() throws IOException {
+    ModuleList getModuleList() throws IOException {
         if (getActivePlatform() != this.originalPlatform) {
             return ModuleList.getModuleList(
                     FileUtil.toFile(getHelper().getProjectDirectory()), getActivePlatform().getDestDir());
