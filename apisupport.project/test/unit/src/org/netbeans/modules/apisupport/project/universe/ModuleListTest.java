@@ -240,7 +240,7 @@ public class ModuleListTest extends TestBase {
         assertEquals(null, ModuleList.findNetBeansOrg(File.listRoots()[0]));
     }
     
-    public void testrefreshSuiteModuleList() throws Exception {
+    public void testRefreshSuiteModuleList() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         final NbModuleProject p = TestBase.generateSuiteComponent(suite1, "module1a");
         ModuleList ml = ModuleList.getModuleList(
