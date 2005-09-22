@@ -290,7 +290,7 @@ public class Utils {
         beginJmiTransaction(true);
         boolean rollback = true;
         try {
-            getContents(javaClass).remove(method);
+            getContents(javaClass).remove(getMethod(javaClass, method));
             rollback = false;
         } finally {
             endJmiTransaction(rollback);

@@ -456,7 +456,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     }
                 }
             }
-            rollback = true;
+            rollback = false;
         } finally {
             endWriteJmiTransaction(rollback);
         }
