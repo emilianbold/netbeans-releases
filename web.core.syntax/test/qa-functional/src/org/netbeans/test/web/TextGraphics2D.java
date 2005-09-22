@@ -63,12 +63,16 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public String getTextUni() {
+        String str;
         int start;
         StringBuffer buf = new StringBuffer().append(this.buf);
         while ((start=buf.indexOf("  ")) > -1) {
             buf.deleteCharAt(start);
         }
-        return buf.toString();
+        str = buf.toString();
+        // remove '...' ussually rendered when the left epression is too long 
+        str = str.replaceAll("[.]{3} ?", "");
+        return str;
     }
     
     public void clearRect(int param, int param1, int param2, int param3) {
@@ -140,21 +144,12 @@ public class TextGraphics2D extends Graphics2D {
             int param4, int param5) {
     }
     
-    public void drawString(String str, int param, int param2) {
-        if (buf.length() > 0 && buf.charAt(buf.length()-1) != ' ') {
-            buf.append(' ');
-        }
-        buf.append(str);
+    public void drawString(String str, int x, int y) {
+        drawString(str, (float) x, (float) y);
     }
     
-    public void drawString(AttributedCharacterIterator iterator, int param,
-            int param2) {
-        if (buf.length() > 0 && buf.charAt(buf.length()-1) != ' ') {
-            buf.append(' ');
-        }
-        for (char c=iterator.first(); c != iterator.DONE; c=iterator.next()) {
-            buf.append(c);
-        }
+    public void drawString(AttributedCharacterIterator iterator, int x, int y) {
+        drawString(iterator, (float) x, (float) y);
     }
     
     public void fillArc(int param, int param1, int param2, int param3, int param4,
@@ -247,11 +242,7 @@ public class TextGraphics2D extends Graphics2D {
             AffineTransform affineTransform) {
     }
     
-    public void drawString(String str, float param, float param2) {
-        // ignore '...' ussually rendered when the left epression is too long
-        if ("...".equals(str)) {
-            return;
-        }
+    public void drawString(String str, float x, float y) {
         if (buf.length()>0 && buf.charAt(buf.length()-1) != ' ') {
             buf.append(' ');
         }
@@ -259,12 +250,7 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public void drawString(AttributedCharacterIterator iterator,
-            float param, float param2) {
-        // ignore '...' ussually rendered when the left epression is too long
-        if (iterator.next() == '.' && iterator.next() == '.'
-                && iterator.next() == '.') {
-            return;
-        }
+            float x, float y) {
         if (buf.length()>0 && buf.charAt(buf.length()-1)!=' ') {
             buf.append(' ');
         }
