@@ -16,6 +16,10 @@ package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
@@ -90,6 +94,26 @@ public class SyncFileNode extends AbstractNode {
         }
 
         return actions;
+    }
+
+    /**
+     * Provide cookies to actions.
+     * If a node represents primary file of a DataObject
+     * it has respective DataObject cookies.
+     */
+    public Cookie getCookie(Class klass) {
+        FileObject fo = FileUtil.toFileObject(getFile());
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                if (fo.equals(dobj.getPrimaryFile())) {
+                    return dobj.getCookie(klass);
+                }
+            } catch (DataObjectNotFoundException e) {
+                // ignore file without data objects
+            }
+        }
+        return super.getCookie(klass);
     }
 
     private void initProperties() {
