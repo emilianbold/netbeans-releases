@@ -317,7 +317,7 @@ public class J2SEProjectGenerator {
         }        
         FileObject fo = FileUtil.toFileObject(dir);
         if (fo != null) {
-            fo.refresh(false);
+            fo.getChildren();
         }
     }
 }
