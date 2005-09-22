@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.text.navigator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
@@ -22,7 +23,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.Collection;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -41,13 +47,21 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 
 /** XML Navigator UI component containing a tree of XML elements.
@@ -136,12 +150,11 @@ public class NavigatorContent extends JPanel   {
             MouseListener ml = new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
                     int selRow = tree.getRowForLocation(e.getX(), e.getY());
-                    TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
                     if(selRow != -1) {
                         if(e.getClickCount() == 2) {
+                            TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
                             TreeNodeAdapter tna = (TreeNodeAdapter)selPath.getLastPathComponent();
-                            JTextComponent jtc = Utilities.getLastActiveComponent();
-                            if(jtc != null) jtc.getCaret().setDot(tna.getDocumentElement().getStartOffset());
+                            openAndFocusElement(tna);
                         }
                     }
                 }
@@ -188,13 +201,58 @@ public class NavigatorContent extends JPanel   {
             };
             tree.addMouseListener(pmml);
             
-            //expand all root elements which are tags 
+            //expand all root elements which are tags
             TreeNode rootNode = (TreeNode)model.getRoot();
             for(int i = 0; i < rootNode.getChildCount(); i++) {
                 TreeNode node = rootNode.getChildAt(i);
                 if(node.getChildCount() > 0)
                     tree.expandPath(new TreePath(new TreeNode[]{rootNode, node}));
             }
+        }
+        
+        private void openAndFocusElement(final TreeNodeAdapter selected) {
+            BaseDocument bdoc = (BaseDocument)selected.getDocumentElement().getDocument();
+            DataObject dobj = NbEditorUtilities.getDataObject(bdoc);
+            if(dobj == null) return ;
+            
+            final EditorCookie.Observable ec = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
+            if(ec == null) return ;
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JEditorPane[] panes = ec.getOpenedPanes();
+                    if (panes != null && panes.length > 0) {
+                        // editor already opened, so just select
+                        selectElementInPane(panes[0], selected);
+                    } else {
+                        // editor not opened yet
+                        ec.open();
+                        try {
+                            ec.openDocument(); //wait to editor to open
+                            panes = ec.getOpenedPanes();
+                            if (panes != null && panes.length > 0) {
+                                selectElementInPane(panes[0], selected);
+                            }
+                        }catch(IOException ioe) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        }
+                    }
+                }
+            });
+        }
+        
+        private void selectElementInPane(final JEditorPane pane, final TreeNodeAdapter tna) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    pane.setCaretPosition(tna.getDocumentElement().getStartOffset());
+                }
+            });
+            // try to activate outer TopComponent
+            Container temp = pane;
+            while (!(temp instanceof TopComponent)) {
+                temp = temp.getParent();
+            }
+            ((TopComponent) temp).requestActive();
         }
         
         private TreeModel createTreeModel(DocumentModel dm) {
