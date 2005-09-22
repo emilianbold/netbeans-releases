@@ -226,7 +226,7 @@ public class NavigatorContent extends JPanel   {
                     JEditorPane[] panes = ec.getOpenedPanes();
                     if (panes != null && panes.length > 0) {
                         // editor already opened, so just select
-                        selectElementInPane(panes[0], selected, false);
+                        selectElementInPane(panes[0], selected, !selectLineOnly);
                     } else if(selectLineOnly) {
                         // editor not opened yet
                         ec.open();
