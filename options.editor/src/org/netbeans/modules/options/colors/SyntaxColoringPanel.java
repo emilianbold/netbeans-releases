@@ -575,7 +575,7 @@ PropertyChangeListener {
             v = new Vector (l);
             m.put (language, v);
         }
-        return v;
+        return new Vector (v);
     }
     
     private AttributeSet getCurrentCategory () {
