@@ -13,8 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.util.Iterator;
+import java.util.SortedSet;
+import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 
@@ -49,7 +52,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     public void store() {
         if (!disabled) {
             getBundle().setDisplayName(nameValue.getText());
-            getBundle().setCategory((String) categoryValue.getSelectedItem());
+            getBundle().setCategory(getSelectedCategory());
             getBundle().setShortDescription(shortDescValue.getText());
             getBundle().setLongDescription(longDescValue.getText());
         }
@@ -64,19 +67,33 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         UIUtil.setText(shortDescValue, getBundle().getShortDescription());
         longDescValue.setText(getBundle().getLongDescription());
         fillUpCategoryValue();
-        categoryValue.setSelectedItem(getCategory());
     }
     
     private void fillUpCategoryValue() {
-        categoryValue.removeAllItems();
-        for (Iterator it = getProperties().getModuleCategories().iterator(); it.hasNext(); ) {
-            Object next = it.next();
-            this.categoryValue.addItem(next);
-        }
-        if (!getProperties().getModuleCategories().contains(getCategory())) {
-            // put module's own category at the beginning
-            categoryValue.insertItemAt(getCategory(), 0);
-        }
+        categoryValue.setEnabled(false);
+        categoryValue.setModel(ComponentFactory.COMBO_WAIT_MODEL);
+        categoryValue.setSelectedItem(ComponentFactory.WAIT_VALUE);
+        ModuleProperties.RP.post(new Runnable() {
+            public void run() {
+                final SortedSet moduleCategories = getProperties().getModuleCategories();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        DefaultComboBoxModel model = new DefaultComboBoxModel();
+                        categoryValue.removeAllItems();
+                        for (Iterator it = moduleCategories.iterator(); it.hasNext(); ) {
+                            model.addElement(it.next());
+                        }
+                        if (!moduleCategories.contains(getCategory())) {
+                            // put module's own category at the beginning
+                            model.insertElementAt(getCategory(), 0);
+                        }
+                        categoryValue.setModel(model);
+                        categoryValue.setSelectedItem(getCategory());
+                        categoryValue.setEnabled(true);
+                    }
+                });
+            }
+        });
     }
     
     private String getCategory() {
@@ -89,6 +106,11 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         if (SingleModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
             fillUpCategoryValue();
         }
+    }
+    
+    private String getSelectedCategory() {
+        String cat = (String) categoryValue.getSelectedItem();
+        return ComponentFactory.WAIT_VALUE == cat ? getCategory() : cat;
     }
     
     /** This method is called from within the constructor to

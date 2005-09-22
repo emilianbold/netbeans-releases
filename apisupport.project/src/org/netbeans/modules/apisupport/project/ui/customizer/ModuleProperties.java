@@ -25,6 +25,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * Basic support for storing general module's properties.
@@ -34,6 +35,8 @@ import org.openide.filesystems.FileUtil;
 abstract class ModuleProperties {
     
     public static final String PROPERTIES_REFRESHED = "propertiesRefreshed"; // NOI18N
+    
+    static final RequestProcessor RP = new RequestProcessor(ModuleProperties.class.getName());
     
     // Helpers for storing and retrieving real values currently stored on the disk
     private AntProjectHelper helper;

@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.apisupport.project.EditableManifest;
@@ -345,15 +346,20 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     /**
-     * Always returns fresh list model of all dependencies in the module's
-     * universe regarding the currently selected platform.
+     * Returns a set of all available modules dependencies ({@link
+     * ModuleDependency}) in the module's universe according to the currently
+     * selected platform ({@link #getActivePlatform()})<p>
+     * <strong>Note:</strong> Don't call this method from EDT, since it may be
+     * really slow. The {@link AssertionError} will be thrown if you try to do
+     * so.
      */
-    DependencyListModel getUniverseDependenciesListModel() {
-        // when you get here platform is always valid
+    SortedSet/*<ModuleDependency>*/ getUniverseDependencies() {
+        assert !SwingUtilities.isEventDispatchThread() :
+            "SingleModuleProperties.getUniverseDependencies() cannot be called from EDT"; // NOI18N
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
-        return new DependencyListModel(universeDependencies);
+        return universeDependencies;
     }
     
     FriendListModel getFriendListModel() {
@@ -561,8 +567,17 @@ public final class SingleModuleProperties extends ModuleProperties {
         return getHelper().resolveFile(getEvaluator().getProperty("manifest.mf")); // NOI18N
     }
 
-    // XXX shareable model
+    /**
+     * Returns a set of all available categories in the module's universe
+     * according to the currently selected platform ({@link
+     * #getActivePlatform()})<p>
+     * <strong>Note:</strong> Don't call this method from EDT, since it may be
+     * really slow. The {@link AssertionError} will be thrown if you try to do
+     * so.
+     */
     SortedSet getModuleCategories() {
+        assert !SwingUtilities.isEventDispatchThread() :
+            "SingleModuleProperties.getModuleCategories() cannot be called from EDT"; // NOI18N
         if (modCategories == null && !reloadModuleListInfo()) {
             return new TreeSet();
         }
@@ -571,9 +586,11 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     /**
      * Prepare all ModuleDependencies from this module's universe. Also prepare
-     * all categories.
+     * all categories. <strong>Package-private only for unit tests.</strong>
      */
     boolean reloadModuleListInfo() {
+        assert !SwingUtilities.isEventDispatchThread() : 
+            "SingleModuleProperties.reloadModuleListInfo() cannot be called from EDT"; // NOI18N
         if (isActivePlatformValid()) {
             try {
                 SortedSet/*<String>*/ allCategories = new TreeSet(Collator.getInstance());

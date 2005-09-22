@@ -26,7 +26,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.DependencyListModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.RequiredTokenListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
@@ -369,8 +368,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        DependencyListModel model = getProperties().getUniverseDependenciesListModel();
-        final AddModulePanel addPanel = new AddModulePanel(model, getProperties().getActivePlatform());
+        final AddModulePanel addPanel = new AddModulePanel(getProperties());
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_AddModuleDependencyTitle"));// NOI18N

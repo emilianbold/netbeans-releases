@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.Iterator;
@@ -24,7 +25,6 @@ import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.DefaultListModel;
 import javax.swing.InputMap;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -58,17 +58,19 @@ final class AddModulePanel extends JPanel {
     private AddModuleFilter filterer;
     private URL currectJavadoc;
     
-    AddModulePanel(final ComponentFactory.DependencyListModel universeModules,
-            final NbPlatform platform) {
-        this.universeModules = universeModules;
+    private final SingleModuleProperties props;
+    
+    AddModulePanel(final SingleModuleProperties props) {
+        this.props = props;
         initComponents();
-        moduleList.setModel(universeModules);
+        fillUpUniverseModules();
         moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(true));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 showDescription();
                 ModuleDependency dep = getSelectedDependency();
                 if (dep != null) {
+                    NbPlatform platform = props.getActivePlatform();
                     if (platform == null) { // NetBeans.org module
                         currectJavadoc = Util.findJavadocForNetBeansOrgModules(dep);
                     } else {
@@ -115,6 +117,28 @@ final class AddModulePanel extends JPanel {
             }
         }
         // XXX would be nice to also bind S-PageDown etc. to scroll the Description area
+    }
+    
+    private void fillUpUniverseModules() {
+        filterValue.setEnabled(false);
+        filterValue.setText(ComponentFactory.WAIT_VALUE);
+        moduleList.setEnabled(false);
+        moduleList.setModel(ComponentFactory.LIST_WAIT_MODEL);
+        ModuleProperties.RP.post(new Runnable() {
+            public void run() {
+                final SortedSet universeDeps = props.getUniverseDependencies();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        universeModules = ComponentFactory.createDependencyListModel(universeDeps);
+                        moduleList.setModel(universeModules);
+                        moduleList.setEnabled(true);
+                        filterValue.setText("");
+                        filterValue.setEnabled(true);
+                        filterValue.requestFocusInWindow();
+                    }
+                });
+            }
+        });
     }
     
     private void showDescription() {
@@ -166,7 +190,7 @@ final class AddModulePanel extends JPanel {
     
     ModuleDependency getSelectedDependency() {
         Object o = moduleList.getSelectedValue();
-        if (o == ComponentFactory.PLEASE_WAIT) {
+        if (o == ComponentFactory.WAIT_VALUE) {
             return null;
         } else {
             return (ModuleDependency) o;
@@ -201,9 +225,7 @@ final class AddModulePanel extends JPanel {
             };
             if (filterer == null) {
                 // Slow to create it, so show Please wait...
-                DefaultListModel dummy = new DefaultListModel();
-                dummy.addElement(ComponentFactory.PLEASE_WAIT);
-                moduleList.setModel(dummy);
+                moduleList.setModel(ComponentFactory.LIST_WAIT_MODEL);
                 filterTask = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         if (filterer == null) {
