@@ -255,10 +255,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 </file>
                 <attr name="quick-start.url/prj-import-guide.url" boolvalue="true"/>
-                <file name="prj-import-guide.url" url="nbresloc:/org/netbeans/modules/utilities/prj-import-guide.url">
+                <file name="platform-tutorial.url" url="nbresloc:/org/netbeans/modules/utilities/platform-tutorial.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 </file>
-                <attr name="prj-import-guide.url/using-netbeans.url" boolvalue="true"/>
+                <attr name="platform-tutorial.url/using-netbeans.url" boolvalue="true"/>
                 <file name="using-netbeans.url" url="nbresloc:/org/netbeans/modules/utilities/using-netbeans.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 </file>
