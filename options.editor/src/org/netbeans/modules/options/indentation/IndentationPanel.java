@@ -39,6 +39,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
@@ -81,9 +83,10 @@ ChangeListener, ActionListener {
     private boolean         originalAddStar;
     private boolean         originalNewLine;
     private boolean         originalSpace;
-    private int             originalStatementIndent;
-    private int             originalIndent;
+    private int             originalStatementIndent = 0;
+    private int             originalIndent = 0;
     private boolean         listen = false;
+    private boolean         changed = false;
 
 	
     public IndentationPanel () {
@@ -99,7 +102,9 @@ ChangeListener, ActionListener {
         cbAddStar.addActionListener (this);
         cbExpandTabs.addActionListener (this);
         cbSpace.addActionListener (this);
+        tfStatementIndent.setModel (new SpinnerNumberModel (0, 0, 50, 1));
         tfStatementIndent.addChangeListener (this);
+        tfIndent.setModel (new SpinnerNumberModel (0, 0, 50, 1));
         tfIndent.addChangeListener (this);
         epPreview.setEditable (false);
 
@@ -175,11 +180,13 @@ ChangeListener, ActionListener {
     public void stateChanged (ChangeEvent e) {
         if (!listen) return;
         updatePreview ();
+        changed = true;
     }
     
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
         updatePreview ();
+        changed = true;
     }
 
     public void update () {
@@ -209,9 +216,9 @@ ChangeListener, ActionListener {
         originalAddStar = model.getJavaFormatLeadingStarInComment ();
         originalNewLine = model.getJavaFormatNewlineBeforeBrace ();
         originalSpace = model.getJavaFormatSpaceBeforeParenthesis ();
-        originalStatementIndent = model.
-            getJavaFormatStatementContinuationIndent ();
-        originalIndent = model.getSpacesPerTab ();
+        originalStatementIndent = Math.max
+            (model.getJavaFormatStatementContinuationIndent (), 0);
+        originalIndent = Math.max (model.getSpacesPerTab (), 0);
         
         // init components
         listen = false;
@@ -230,19 +237,23 @@ ChangeListener, ActionListener {
         
         // update preview
         updatePreview ();
+        changed = false;
     }
     
     public void applyChanges () {
     }
     
     public void cancel () {
-        if (model == null) return; // not initialized yet...
+        if (!changed) return; // not initialized yet...
         model.setJavaFormatLeadingStarInComment (originalAddStar);
         model.setJavaFormatNewlineBeforeBrace (originalNewLine);
         model.setJavaFormatSpaceBeforeParenthesis (originalSpace);
         model.setExpandTabs (originalExpandedTabs);
-        model.setJavaFormatStatementContinuationIndent (originalStatementIndent);
-        model.setSpacesPerTab (originalIndent);
+        if (originalStatementIndent >= 0)
+            model.setJavaFormatStatementContinuationIndent 
+                (originalStatementIndent);
+        if (originalIndent >= 0)
+            model.setSpacesPerTab (originalIndent);
     }
     
     public boolean dataValid () {
@@ -250,6 +261,6 @@ ChangeListener, ActionListener {
     }
     
     public boolean isChanged () {
-        return true;
+        return changed;
     }
 }
