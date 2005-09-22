@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,8 +46,13 @@ final class DocIndexItem extends Object {
         this.remark = remark;
         this.contextURL = contextURL;
         this.spec = spec;
-        if (spec != null && spec.length() > 3) { // spec format ../pckg/Classname.html
-            pckg = spec.substring(3, spec.indexOf('.', 3) + 1);
+        if (spec != null ) { // spec format ../pckg/Classname.html
+            int offset = spec.startsWith("../")? 3: 0;
+            int length = spec.lastIndexOf('/');
+            length = length < 0? spec.length(): length + 1;
+            pckg = spec.substring(offset, length);
+//            System.out.println("DII.length: " + length);
+//            System.out.println("DII: " + length + ", " + pckg + " <- " + spec);
             pckg = pckg.replace('/', '.');
         }
     }
@@ -84,6 +89,7 @@ final class DocIndexItem extends Object {
     }
 
     public void setPackage( String pckg ) {
+//            System.out.println("DII.set: " + pckg);
         this.pckg = pckg;
     }
 
