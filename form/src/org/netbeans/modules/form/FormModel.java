@@ -595,7 +595,7 @@ public class FormModel
 
     // [Undo manager performing undo/redo in AWT event thread should not be
     //  probably implemented here - in FormModel - but seperately.]
-    static class UndoRedoManager extends UndoRedo.Manager {
+    class UndoRedoManager extends UndoRedo.Manager {
         private Mutex.ExceptionAction runUndo = new Mutex.ExceptionAction() {
             public Object run() throws Exception {
                 superUndo();
@@ -610,6 +610,8 @@ public class FormModel
         };
 
         public void superUndo() throws CannotUndoException {
+            FormDesigner designer = FormEditor.getFormDesigner(FormModel.this);
+            designer.getHandleLayer().endDragging(null); // Issue 64791
             super.undo();
         }
         public void superRedo() throws CannotRedoException {
