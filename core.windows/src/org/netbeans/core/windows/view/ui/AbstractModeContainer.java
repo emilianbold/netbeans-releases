@@ -22,6 +22,7 @@ import org.netbeans.core.windows.view.ModeContainer;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
@@ -131,7 +132,18 @@ public abstract class AbstractModeContainer implements ModeContainer {
                 selectedTopComponent.requestFocus();
                 
             } else {
-                selectedTopComponent.requestFocusInWindow();
+                //#60235 - on macosx 1.5 there seems to be a bug with requesting focus.
+                // this piece of code seems to workaround most of the usecases in 60235
+                if (Utilities.getOperatingSystem() == Utilities.OS_MAC && System.getProperty("java.vm.version").indexOf("1.5") > -1) {//NOI18N
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+                            selectedTopComponent.requestFocus();
+                        }
+                    });
+                } else {
+                    selectedTopComponent.requestFocusInWindow();
+                }
             }
         }
     }
