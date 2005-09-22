@@ -69,10 +69,10 @@ public class OptionsOperator extends NbDialogOperator {
 
     private static final String CLASSIC_VIEW_LABEL = Bundle.getStringTrimmed(
                                                         "org.netbeans.modules.options.Bundle",
-                                                        "Classic");
+                                                        "CTL_Classic");
     private static final String MODERN_VIEW_LABEL = Bundle.getStringTrimmed(
                                                         "org.netbeans.modules.options.Bundle",
-                                                        "Modern");
+                                                        "CTL_Modern");
     
     /**
      * Waits for the Options window opened
