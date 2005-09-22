@@ -145,6 +145,7 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
             jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             // set title
             jc.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage (NewWebFreeformProjectWizardIterator.class, "TXT_NewWebFreeformProjectWizardIterator_NewProjectWizardTitle")); // NOI18N
+            jc.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (NewWebFreeformProjectWizardIterator.class, "ACSD_NewWebFreeformProjectWizardIterator_NewProjectWizardTitle")); // NOI18N
         }
     }
     

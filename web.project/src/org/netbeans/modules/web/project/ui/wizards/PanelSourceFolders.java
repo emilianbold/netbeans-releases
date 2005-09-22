@@ -289,6 +289,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jTextFieldWebPages, gridBagConstraints);
+        jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_WebPagesFolder"));
 
         jButtonWebpagesLocation.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_BrowseLocation_Button"));
         jButtonWebpagesLocation.addActionListener(new java.awt.event.ActionListener() {
@@ -303,6 +304,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonWebpagesLocation, gridBagConstraints);
+        jButtonWebpagesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseWebPageFolder"));
 
         jLabelLibraries.setLabelFor(jTextFieldLibraries);
         jLabelLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_Label"));
@@ -320,6 +322,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jTextFieldLibraries, gridBagConstraints);
+        jTextFieldLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_LibrariesFolder"));
 
         jButtonLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_BrowseLocation_Button"));
         jButtonLibraries.addActionListener(new java.awt.event.ActionListener() {
@@ -334,6 +337,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonLibraries, gridBagConstraints);
+        jButtonLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseLibrariesFolder"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;

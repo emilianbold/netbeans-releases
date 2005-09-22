@@ -466,6 +466,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        serverInstanceLabel.setLabelFor(serverInstanceComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(serverInstanceLabel, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_Server"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -489,9 +490,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(serverInstanceComboBox, gridBagConstraints);
+        serverInstanceComboBox.getAccessibleContext().setAccessibleName("Server");
         serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_Server_ComboBox_A11YDesc"));
 
         j2eeSpecLabel.setDisplayedMnemonic(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
+        j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(j2eeSpecLabel, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -507,6 +510,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(j2eeSpecComboBox, gridBagConstraints);
+        j2eeSpecComboBox.getAccessibleContext().setAccessibleName("J2EE Version");
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
 
         jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));

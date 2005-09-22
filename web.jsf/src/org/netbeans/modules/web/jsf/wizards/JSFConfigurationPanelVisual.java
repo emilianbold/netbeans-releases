@@ -73,6 +73,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         add(tServletName, gridBagConstraints);
+        tServletName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ServletName"));
 
         lURLPattern.setLabelFor(tURLPattern);
         lURLPattern.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_URL_Pattern"));
@@ -90,6 +91,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         add(tURLPattern, gridBagConstraints);
+        tURLPattern.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_Mapping"));
 
         cbValidate.setSelected(true);
         cbValidate.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Validate_XML"));
@@ -101,6 +103,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(cbValidate, gridBagConstraints);
+        cbValidate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ValidateXML"));
 
         cbVerify.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Verify_Objects"));
         cbVerify.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
@@ -111,6 +114,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         add(cbVerify, gridBagConstraints);
+        cbVerify.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_VerifyObjects"));
 
         cbPackageJars.setSelected(true);
         cbPackageJars.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Package_JARs"));
@@ -122,6 +126,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(cbPackageJars, gridBagConstraints);
+        cbPackageJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_PackageJarToWar"));
 
         jPanel1.setEnabled(false);
         jPanel1.setFocusable(false);

@@ -87,6 +87,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(srcStructLabel, gridBagConstraints);
+        srcStructLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SourceStructureComboBox_A11YDesc"));
 
         srcStructComboBox.setMinimumSize(new java.awt.Dimension(160, 18));
         srcStructComboBox.setPreferredSize(new java.awt.Dimension(160, 18));

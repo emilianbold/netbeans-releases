@@ -142,6 +142,8 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         setJdk14Panel.add(warningJdk14TextArea, gridBagConstraints);
+        warningJdk14TextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSN_LabelSetSourceLevel14"));
+        warningJdk14TextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSD_LabelSetSourceLevel14"));
 
         downgradeJdk14CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetJdk14").charAt(0));
         downgradeJdk14CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetJdk14"));
@@ -183,6 +185,8 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         setSourceLevel14Panel.add(warningSourceLevel14TextArea1, gridBagConstraints);
+        warningSourceLevel14TextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSN_LabelSetSourceLevel14"));
+        warningSourceLevel14TextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSD_LabelSetSourceLevel14"));
 
         downgradeSourceLevel14CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetSourceLevel14").charAt(0));
         downgradeSourceLevel14CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetSourceLevel14"));

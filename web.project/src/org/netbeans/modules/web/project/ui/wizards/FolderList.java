@@ -134,6 +134,7 @@ public final class FolderList extends javax.swing.JPanel {
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setViewportView(roots);
+        roots.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FolderList.class, "ACSD_FolderList"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
