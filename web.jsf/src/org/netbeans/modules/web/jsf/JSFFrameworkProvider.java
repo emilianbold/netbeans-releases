@@ -94,11 +94,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return null;
     }
     
-    private static String readResource(InputStream is) throws IOException {
+    private static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
         StringBuffer sb = new StringBuffer();
         String lineSep = System.getProperty("line.separator");//NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         String line = br.readLine();
         while (line != null) {
             sb.append(line);
@@ -150,13 +150,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         public void run() throws IOException {
             
             // copy struts-config.xml
-            String content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/faces-config.xml").getInputStream ()); //NOI18N
+            String content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/faces-config.xml").getInputStream (), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(wm.getWebInf(), "faces-config.xml");//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8"); //NOI18N
             //copy Welcome.jsp
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/welcomeJSF.jsp").getInputStream ()); //NOI18N
+            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/welcomeJSF.jsp").getInputStream (), "UTF-8"); //NOI18N
             target = FileUtil.createData(wm.getDocumentBase(), "welcomeJSF.jsp");//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8");  //NOI18N
             
             // Enter servlet into the deployment descriptor
             FileObject dd = wm.getDeploymentDescriptor();
@@ -215,10 +215,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
         }
         
-        private void createFile(FileObject target, String content) throws IOException{            
+        private void createFile(FileObject target, String content, String encoding) throws IOException{            
             FileLock lock = target.lock();
             try {
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock)));
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), encoding));
                 bw.write(content);
                 bw.close();
 
@@ -230,7 +230,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
          */
         private void changeIndexJSP(FileObject indexjsp) throws IOException {
-            String content = readResource(indexjsp.getInputStream());
+            
+            String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
+            
             // what find
             String find = "<h1>JSP Page</h1>"; // NOI18N
             String endLine = System.getProperty("line.separator"); //NOI18N
@@ -245,8 +247,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 replace.append("\">");                              //NOI18N
                 replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
                 replace.append("</a>");                             //NOI18N
-                content = content.replaceFirst(find, replace.toString());
-                createFile(indexjsp, content);
+                content = content.replaceFirst(find, new String (replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
+                createFile(indexjsp, content, "UTF-8"); //NOI18N
             }
         }
     }

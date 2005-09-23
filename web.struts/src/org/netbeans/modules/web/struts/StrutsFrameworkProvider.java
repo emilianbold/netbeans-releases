@@ -116,11 +116,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         return null;
     }
     
-    private static String readResource(InputStream is) throws IOException {
+    private static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
         StringBuffer sb = new StringBuffer();
         String lineSep = System.getProperty("line.separator");//NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         String line = br.readLine();
         while (line != null) {
             sb.append(line);
@@ -177,10 +177,10 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             this.wm = wm;
         }
         
-        private void createFile(FileObject target, String content) throws IOException{            
+        private void createFile(FileObject target, String content, String encoding) throws IOException{            
             FileLock lock = target.lock();
             try {
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock)));
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), encoding));
                 bw.write(content);
                 bw.close();
 
@@ -192,31 +192,31 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         
         public void run() throws IOException {
             // copy struts-config.xml
-            String content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-config.xml").getInputStream ()); //NOI18N
+            String content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-config.xml").getInputStream (), "UTF-8"); //NOI18N
             content = content.replaceFirst("____ACTION_MAPPING___",  //NOI18N
                     StrutsConfigUtilities.getActionAsResource(panel.getURLPattern(), "/Welcome"));
             content = content.replaceFirst("_____MESSAGE_RESOURCE____",  //NOI18N
                     panel.getAppResource().replace('.', '/'));
             FileObject target = FileUtil.createData(wm.getWebInf(), "struts-config.xml");//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8"); //NOI18N
             //copy tiles-defs.xml
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/tiles-defs.xml").getInputStream ()); //NOI18N
+            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/tiles-defs.xml").getInputStream (), "UTF-8"); //NOI18N
             target = FileUtil.createData(wm.getWebInf(), "tiles-defs.xml");//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8"); //NOI18N
             //copy validation.xml
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validation.xml").getInputStream ()); //NOI18N
+            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validation.xml").getInputStream (), "UTF-8"); //NOI18N
             target = FileUtil.createData(wm.getWebInf(), "validation.xml");//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8"); //NOI18N
             //copy validator-rules.xml
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validator-rules.xml").getInputStream ()); //NOI18N
+            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validator-rules.xml").getInputStream (), "UTF-8"); //NOI18N
             target = FileUtil.createData(wm.getWebInf(), "validator-rules.xml");//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8"); //NOI18N
             //copy Welcome.jsp
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/welcome.jsp").getInputStream ()); //NOI18N
+            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/welcome.jsp").getInputStream (), "UTF-8"); //NOI18N
             target = FileUtil.createData(wm.getDocumentBase(), "welcomeStruts.jsp");//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8"); //NOI18N
             //MessageResource.properties
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/MessageResources.properties").getInputStream ()); //NOI18N
+            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/MessageResources.properties").getInputStream (), "UTF-8"); //NOI18N
             Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());
             SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             String sresource = panel.getAppResource();
@@ -232,29 +232,29 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     targetFolder = targetFolder.getFileObject(folders[i]);
             }
             target = FileUtil.createData(targetFolder, name);//NOI18N
-            createFile(target, content);
+            createFile(target, content, "UTF-8"); //NOI18N
             
             if (panel.addTLDs()){
                 //copy struts-bean.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-bean.tld").getInputStream ()); //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-bean.tld").getInputStream (), "UTF-8"); //NOI18N
                 target = FileUtil.createData(wm.getWebInf(), "struts-bean.tld");//NOI18N
-                createFile(target, content);
+                createFile(target, content, "UTF-8"); //NOI18N
                 //copy struts-html.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-html.tld").getInputStream ()); //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-html.tld").getInputStream (), "UTF-8"); //NOI18N
                 target = FileUtil.createData(wm.getWebInf(), "struts-html.tld");//NOI18N
-                createFile(target, content);
+                createFile(target, content, "UTF-8"); //NOI18N
                 //copy struts-logic.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-logic.tld").getInputStream ()); //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-logic.tld").getInputStream (), "UTF-8"); //NOI18N
                 target = FileUtil.createData(wm.getWebInf(), "struts-logic.tld");//NOI18N
-                createFile(target, content);
+                createFile(target, content, "UTF-8"); //NOI18N
                 //copy struts-nested.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-nested.tld").getInputStream ()); //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-nested.tld").getInputStream (), "UTF-8"); //NOI18N
                 target = FileUtil.createData(wm.getWebInf(), "struts-nested.tld");//NOI18N
-                createFile(target, content);
+                createFile(target, content, "UTF-8"); //NOI18N
                 //copy struts-tiles.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-tiles.tld").getInputStream ()); //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-tiles.tld").getInputStream (), "UTF-8"); //NOI18N
                 target = FileUtil.createData(wm.getWebInf(), "struts-tiles.tld");//NOI18N
-                createFile(target, content);
+                createFile(target, content, "UTF-8"); //NOI18N
             }
             
             // Enter servlet into the deployment descriptor
@@ -335,7 +335,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
          */
         private void changeIndexJSP(FileObject indexjsp) throws IOException {
-            String content = readResource(indexjsp.getInputStream());
+            String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NOI18N
             // what find
             String find = "<h1>JSP Page</h1>"; // NOI18N
             String endLine = System.getProperty("line.separator"); //NOI18N
@@ -351,7 +351,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 replace.append(NbBundle.getMessage(StrutsFrameworkProvider.class,"LBL_STRUTS_WELCOME_PAGE"));
                 replace.append("</a>");                             //NOI18N
                 content = content.replaceFirst(find, replace.toString());
-                createFile(indexjsp, content);
+                createFile(indexjsp, content, "UTF-8"); //NOI18N
             }
         }
     }
