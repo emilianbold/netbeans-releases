@@ -249,6 +249,19 @@ public class LayoutUtils implements LayoutConstants {
         }
     }
 
+    static int getVisualPosition(LayoutInterval interval, int dimension, int alignment) {
+        if (interval.isEmptySpace()) {
+            assert alignment == LEADING || alignment == TRAILING;
+            LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(interval, alignment, false);
+            if (neighbor != null) {
+                interval = neighbor;
+                alignment ^= 1;
+            }
+            else interval = LayoutInterval.getFirstParent(interval, PARALLEL);
+        }
+        return interval.getCurrentSpace().positions[dimension][alignment];
+    }
+
     /**
      * Returns list of components that reside in the <code>root</code>
      * layout interval - the list contains only components whose layout

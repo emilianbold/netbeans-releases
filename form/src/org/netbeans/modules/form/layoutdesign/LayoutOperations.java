@@ -701,7 +701,7 @@ class LayoutOperations implements LayoutConstants {
     /**
      * Makes given interval parallel with part of its parent sequence.
      */
-    void parallelizeWithParentSequence(LayoutInterval interval, int endIndex) {
+    void parallelizeWithParentSequence(LayoutInterval interval, int endIndex, int dimension) {
         LayoutInterval parent = interval.getParent();
         assert parent.isParallel();
         LayoutInterval parParent = parent;
@@ -723,7 +723,7 @@ class LayoutOperations implements LayoutConstants {
         if (interval.getAlignment() == DEFAULT) {
             layoutModel.setIntervalAlignment(interval, parent.getGroupAlignment());
         }
-        addParallelWithSequence(interval, parentSeq, startIndex, endIndex);
+        addParallelWithSequence(interval, parentSeq, startIndex, endIndex, dimension);
 
         if (parent.getSubIntervalCount() == 1) {
             addContent(layoutModel.removeInterval(parent, 0),
@@ -735,13 +735,17 @@ class LayoutOperations implements LayoutConstants {
         }
     }
 
-    void addParallelWithSequence(LayoutInterval interval, LayoutInterval seq, int startIndex, int endIndex) {
+    void addParallelWithSequence(LayoutInterval interval, LayoutInterval seq, int startIndex, int endIndex, int dimension) {
         LayoutInterval group;
         if (startIndex > 0 || endIndex < seq.getSubIntervalCount()-1) {
             group = new LayoutInterval(PARALLEL);
             if (interval.getAlignment() != DEFAULT) {
                 group.setGroupAlignment(interval.getAlignment());
             }
+            int startPos = LayoutUtils.getVisualPosition(seq.getSubInterval(startIndex), dimension, LEADING);
+            int endPos = LayoutUtils.getVisualPosition(seq.getSubInterval(endIndex), dimension, TRAILING);
+            group.getCurrentSpace().set(dimension, startPos, endPos);
+
             if (startIndex != endIndex) {
                 LayoutInterval subSeq = new LayoutInterval(SEQUENTIAL);
                 subSeq.setAlignment(seq.getAlignment());

@@ -1195,7 +1195,7 @@ class LayoutFeeder implements LayoutConstants {
                      parentSeq.getSubInterval(end).getCurrentSpace().positions[dimension][alignment^1] :
                      parentSeq.getParent().getCurrentSpace().positions[dimension][alignment];
         end -= d;
-        operations.parallelizeWithParentSequence(seq, end);
+        operations.parallelizeWithParentSequence(seq, end, dimension);
         parentPar = seq.getParent();
         parentPar.getCurrentSpace().positions[dimension][alignment] = endPos;
         return parentPar;
@@ -1317,7 +1317,7 @@ class LayoutFeeder implements LayoutConstants {
                     }
                     else assert endGap == null || endGap.isEmptySpace();
 
-                    operations.parallelizeWithParentSequence(toPar, end);
+                    operations.parallelizeWithParentSequence(toPar, end, dimension);
                     end = -1; // don't try anymore
                     increment -= Math.abs(endPos - pos);
                     if (increment < 0)
