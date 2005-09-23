@@ -53,6 +53,17 @@ public class UpdateExecutor extends ExecutorSupport {
      * @return array of executors that will execute the command (or array of splitted commands)
      */ 
     public static UpdateExecutor [] executeCommand(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
+
+        UpdateExecutor [] executors = createExecutors(cmd, cvs, options);
+        if (executors != null) {
+            for (int i = 0; i < executors.length; i++) {
+                executors[i].execute();
+            }
+        }
+        return executors;
+    }
+
+    public static UpdateExecutor [] createExecutors(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateExecutor_CmdDisplayName"));
         try {
@@ -61,15 +72,14 @@ public class UpdateExecutor extends ExecutorSupport {
             ErrorManager.getDefault().notify(e);
             return null;
         }
-        UpdateExecutor [] executors = new UpdateExecutor[cmds.length]; 
+        UpdateExecutor [] executors = new UpdateExecutor[cmds.length];
         for (int i = 0; i < cmds.length; i++) {
             Command command = cmds[i];
             executors[i] = new UpdateExecutor(cvs, (UpdateCommand) command, options);
-            executors[i].execute();
         }
         return executors;
     }
-    
+
     private UpdateExecutor(CvsVersioningSystem cvs, UpdateCommand cmd, GlobalOptions options) {
         super(cvs, cmd, options);
         rwUpdate = options == null || !options.isDoNoChanges();

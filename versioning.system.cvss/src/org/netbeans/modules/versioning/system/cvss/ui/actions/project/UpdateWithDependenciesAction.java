@@ -18,9 +18,13 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.SubprojectProvider;
 
@@ -42,16 +46,48 @@ public final class UpdateWithDependenciesAction extends NodeAction {
     }
 
     protected void performAction(Node[] nodes) {
-        UpdateCommand cmd = new UpdateCommand();
-        cmd.setDisplayName("Updating");
-        cmd.setBuildDirectories(true);
-        cmd.setPruneDirectories(true);
-        File[] files = getFilesToProcess(nodes);
-        assert files.length > 0;
-        cmd.setFiles(files);
 
-        UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+        Set projects = new HashSet();
+        Set contexts = new LinkedHashSet();
+        List executors = new LinkedList();
 
+        for (int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+            Project project =  (Project) node.getLookup().lookup(Project.class);
+            addUpdateContexts(contexts, project, projects);
+        }
+
+        if (contexts.size() > 0) {
+            Iterator it = contexts.iterator();
+            while (it.hasNext()) {
+                Context ctx = (Context) it.next();
+
+                UpdateCommand updateCommand = new UpdateCommand();
+                updateCommand.setBuildDirectories(true);
+                updateCommand.setPruneDirectories(true);
+                updateCommand.setFiles(ctx.getFiles());
+
+                GlobalOptions gtx = new GlobalOptions();
+                gtx.setExclusions((File[]) ctx.getExclusions().toArray(new File[0]));
+                ExecutorSupport[] execs = UpdateExecutor.createExecutors(updateCommand, CvsVersioningSystem.getInstance(), gtx);
+                if (execs != null) {
+                    for (int i = 0; i < execs.length; i++) {
+                        ExecutorSupport exec = execs[i];
+                        executors.add(exec);
+                    }
+                }
+            }
+        }
+
+        if (executors.size() > 0) {
+            ExecutorGroup group = new ExecutorGroup("Updating with dependencies", executors.size());
+            Iterator it = executors.iterator();
+            while (it.hasNext()) {
+                ExecutorSupport executorSupport = (ExecutorSupport) it.next();
+                executorSupport.joinGroup(group);
+                executorSupport.execute();
+            }
+        }
     }
 
     protected boolean enable(Node[] nodes) {
@@ -75,8 +111,32 @@ public final class UpdateWithDependenciesAction extends NodeAction {
         return null;
     }
 
-    private File[] getFilesToProcess(Node[] nodes) {
-        Collection files = getActivatedFiles(nodes);
+    private static void addUpdateContexts(Collection contexts, Project project, Set updatedProjects) {
+        if (updatedProjects.contains(project)) {
+            return;
+        }
+        updatedProjects.add(project);
+
+        Context ctx = createProjectContext(project);
+        if (ctx.getFiles().length > 0) {
+            contexts.add(ctx);
+        }
+
+        SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+        Iterator it = deps.getSubprojects().iterator();
+        while (it.hasNext()) {
+            Project subProject = (Project) it.next();
+            addUpdateContexts(contexts, subProject, updatedProjects);  // RESURSION
+        }
+    }
+
+    private static Context createProjectContext(Project project) {
+        List files = new LinkedList();
+        List roots = new LinkedList();
+        List excludes = new LinkedList();
+
+        // remove nonversioned files
+        Utils.addProjectFiles(files, roots, excludes, project);
         Iterator it = files.iterator();
         while (it.hasNext()) {
             File file = (File) it.next();
@@ -91,29 +151,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
                 it.remove();
             }
         }
-        return (File[]) files.toArray(new File[files.size()]);
-    }
-
-    private static Collection getActivatedFiles(Node[] nodes) {
-        Set files = new LinkedHashSet(nodes.length);
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            Project project =  (Project) node.getLookup().lookup(Project.class);
-            addProjectFiles(files, project);
-
-        }
-        return files;
-    }
-
-    private static void addProjectFiles(Collection files, Project project) {
-        // TODO: use Context instead of list of files, especialy here in Update command
-        Utils.addProjectFiles(files, new ArrayList(), new ArrayList(), project);
-        SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
-        Iterator it = deps.getSubprojects().iterator();
-        while (it.hasNext()) {
-            Project dep = (Project) it.next();
-            addProjectFiles(files, dep);  // RESURSION
-        }
+        return new Context(files, roots, excludes);
     }
 
 }
