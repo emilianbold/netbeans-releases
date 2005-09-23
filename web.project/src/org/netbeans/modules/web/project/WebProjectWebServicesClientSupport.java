@@ -436,12 +436,16 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         //    Side effect: Regenerate build-impl.xsl
         //    Optional - if last service, remove properties we generated.
         boolean needsSave = false;
+        boolean needsSave1 = false;
         
         /** Remove properties from project.properties
          */
         String featureProperty = "wscompile.client." + serviceName + ".features"; // NOI18N
         String packageProperty = "wscompile.client." + serviceName + ".package"; // NOI18N
+        String proxyProperty = "wscompile.client." + serviceName + ".proxy"; //NOI18N
+        
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties ep1 =  helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         
         if(ep.getProperty(featureProperty) != null) {
             ep.remove(featureProperty);
@@ -453,8 +457,17 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
             needsSave = true;
         }
         
+        if(ep1.getProperty(proxyProperty) != null) {
+            ep1.remove(proxyProperty);
+            needsSave1 = true;
+        }
+        
         if(needsSave) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }
+        
+        if(needsSave1) {
+            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
         }
         
         /** Locate root of web service client node structure in project,xml
@@ -490,7 +503,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         
         // !PW Lastly, save the project if we actually made any changes to any
         // properties or the build script.
-        if(needsSave) {
+        if(needsSave || needsSave1) {
             try {
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
