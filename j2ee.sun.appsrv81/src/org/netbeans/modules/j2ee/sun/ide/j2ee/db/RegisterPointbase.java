@@ -227,7 +227,7 @@ public class RegisterPointbase implements DatabaseRuntime {
     /**
      * Whether this runtime accepts this connection string.
      */
-    public boolean acceptsConnectionUrl(String url){
+    public boolean acceptDatabaseURL(String url){
         if (url.startsWith("jdbc:pointbase"))
             return true;
         else
