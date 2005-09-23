@@ -46,7 +46,7 @@ public final class AcceptLicense {
      */
     public static void showLicensePanel () throws Exception {
         Util.setDefaultLookAndFeel();
-        URL url = AcceptLicense.class.getResource("LICENSE.html"); // NOI18N
+        URL url = AcceptLicense.class.getResource("LICENSE.txt"); // NOI18N
         LicensePanel licensePanel = new LicensePanel(url);
         ResourceBundle bundle = NbBundle.getBundle(AcceptLicense.class);
         String yesLabel = bundle.getString("MSG_LicenseYesButton");

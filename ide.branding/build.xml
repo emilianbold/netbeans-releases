@@ -35,9 +35,9 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <include name="netbeans.png" />
       <include name="shortcuts.pdf" />
       <include name="CREDITS.html"/>
-      <include name="LICENSE.html"/>
-      <include name="REDISTRIBUTION.html"/>
-      <include name="THIRD-PARTY.html"/>
+      <include name="LICENSE.txt"/>
+      <include name="DISTRIBUTION.txt"/>
+      <include name="THIRDPARTYLICENSE.txt"/>
     </patternset>
   
   
@@ -85,17 +85,17 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
         <exclude name="netbeans.png"/>
         <exclude name="netbeans.icns"/>
         <exclude name="shortcuts.pdf"/>
-        <exclude name="LICENSE.html"/>
-        <exclude name="REDISTRIBUTION.html"/>
-        <exclude name="THIRD-PARTY.html"/>
+        <exclude name="LICENSE.txt"/>
+        <exclude name="DISTRIBUTION.txt"/>
+        <exclude name="THIRDPARTYLICENSE.txt"/>
       </fileset>
     </copy>
     <copy todir="${cluster}" file="release/netbeans.png"/>
     <copy todir="${cluster}" file="release/netbeans.icns"/>
     <copy todir="${cluster}" file="release/shortcuts.pdf"/>
-    <copy todir="${cluster}" file="release/LICENSE.html"/>
-    <copy todir="${cluster}" file="release/REDISTRIBUTION.html"/>
-    <copy todir="${cluster}" file="release/THIRD-PARTY.html"/>
+    <copy todir="${cluster}" file="release/LICENSE.txt"/>
+    <copy todir="${cluster}" file="release/DISTRIBUTION.txt"/>
+    <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
     <copy todir="${cluster}" file="../launcher/os2/nbos2icons.zip"/>
   </target>
   
