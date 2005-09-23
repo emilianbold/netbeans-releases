@@ -91,8 +91,7 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
         curHints.addLookupListener(this);
         
         navigatorTC.getPanelSelector().addActionListener(this);
-        curNode = obtainFirstCurNode();
-        setContext(curNode);
+        updateContext();
     }
     
     /** Stops listening to selected nodes */
@@ -138,8 +137,6 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
      */
     public void resultChanged(LookupEvent ev) {
         if (!navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
-            curNode = obtainFirstCurNode();
-            
             ActNodeSetter nodeSetter = new ActNodeSetter();
             synchronized (NODE_SETTER_LOCK) {
                 if (nodeSetterTask != null) {
@@ -159,13 +156,15 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
     }
     
     /** Important worker method, sets navigator content (available panels)
-     * according to providers found in given context.
-     *
-     * @param node Node context, may be also null
+     * according to providers found in current lookup context.
      */
-    private void setContext (Node node) {
+    private void updateContext () {
+        // #63165: curNode has to be modified only in updateContext
+        // body, to prevent situation when curNode is null in getLookup
+        curNode = obtainFirstCurNode();
+        Node node = curNode;
+        
         Node oldNode = oldNodeRef != null ? (Node)oldNodeRef.get() : null;
-        // same node, do nothing...
         
         //commented out because of activated nodes problems when using NavigatorLookupHint-s.
 //        if ((oldNode != null) && (oldNode.equals(node))) {
@@ -270,6 +269,12 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
      * Public only due to impl reasons, please treate as private.
      */ 
     public Lookup getLookup () {
+        // #63165: null check must be here, because curNode may be null sometimes, 
+        // and as this lookup is given to clients, this method can be called 
+        // anytime, so we can't avoid the situation where curNode is null
+        if (curNode == null) {
+            return Lookup.EMPTY;
+        }
         return curNode.getLookup();
     }
 
@@ -304,9 +309,7 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
                 SwingUtilities.invokeLater(this);
             } else {
                 // AWT thread
-                Collection nodeList = curNodes.allInstances();
-                Node curNode = nodeList.isEmpty() ? null : (Node)nodeList.iterator().next();
-                setContext(curNode);
+                updateContext();
             }
         }
         
