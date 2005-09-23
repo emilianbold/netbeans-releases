@@ -203,6 +203,8 @@ public class FileStatusCache {
             return fi;
         }
 
+        file = FileUtil.normalizeFile(file);
+        dir = FileUtil.normalizeFile(dir);
         Map newFiles = new HashMap(files);
         if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
             newFiles.remove(file);
@@ -273,7 +275,10 @@ public class FileStatusCache {
                 newMap.remove(file);
             }
         }
-        if (newMap != null) turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
+        if (newMap != null) {
+            dir = FileUtil.normalizeFile(dir);
+            turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
+        }
     }
 
     // --- Package private contract ------------------------------------------
@@ -327,6 +332,10 @@ public class FileStatusCache {
         if (isNotManagedByDefault(dir)) {
             return NOT_MANAGED_MAP; 
         }
+
+        // scan and populate cache with results
+
+        dir = FileUtil.normalizeFile(dir);
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
