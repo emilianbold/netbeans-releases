@@ -13,10 +13,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.util.Arrays;
-import javax.swing.event.ListSelectionListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 
@@ -34,35 +30,16 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
         super(suiteProps, SuiteCustomizerLibraries.class);
         initComponents();
         refresh();
-        moduleList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
-        moduleList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    updateEnabled();
-                }
-            }
-        });
-        suiteProps.addPropertyChangeListener(this);
     }
     
     void refresh() {
         refreshPlatforms();
-        moduleList.setModel(getProperties().getModulesListModel());
     }
     
     private void refreshPlatforms() {
         platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
         platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.requestFocus();
-    }
-    
-    private void updateEnabled() {
-        boolean enabled = moduleList.getSelectedIndex() != -1;
-        removeModuleButton.setEnabled(enabled);
-    }
-    
-    private ComponentFactory.SuiteSubModulesListModel getModuleListModel() {
-        return (ComponentFactory.SuiteSubModulesListModel) moduleList.getModel();
     }
     
     /** This method is called from within the constructor to
@@ -78,12 +55,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
         platformValue = org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
         managePlafsButton = new javax.swing.JButton();
-        moduleLabel = new javax.swing.JLabel();
-        modulesSP = new javax.swing.JScrollPane();
-        moduleList = new javax.swing.JList();
-        buttonPanel = new javax.swing.JPanel();
-        addModuleButton = new javax.swing.JButton();
-        removeModuleButton = new javax.swing.JButton();
+        filler = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -129,57 +101,17 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         add(platformPanel, gridBagConstraints);
 
-        moduleLabel.setLabelFor(moduleList);
-        org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_Modules"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 0);
-        add(moduleLabel, gridBagConstraints);
-
-        modulesSP.setViewportView(moduleList);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weighty = 1.0;
-        add(modulesSP, gridBagConstraints);
-
-        buttonPanel.setLayout(new java.awt.GridLayout(2, 1, 0, 6));
-
-        org.openide.awt.Mnemonics.setLocalizedText(addModuleButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_AddButton"));
-        addModuleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addModule(evt);
-            }
-        });
-
-        buttonPanel.add(addModuleButton);
-
-        org.openide.awt.Mnemonics.setLocalizedText(removeModuleButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_RemoveButton"));
-        removeModuleButton.setEnabled(false);
-        removeModuleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeModule(evt);
-            }
-        });
-
-        buttonPanel.add(removeModuleButton);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(buttonPanel, gridBagConstraints);
+        add(filler, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -188,41 +120,17 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
         getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
     }//GEN-LAST:event_platformValueItemStateChanged
     
-    private void removeModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModule
-        getModuleListModel().removeModules(Arrays.asList(moduleList.getSelectedValues()));
-        if (moduleList.getModel().getSize() > 0) {
-            moduleList.setSelectedIndex(0);
-        }
-        moduleList.requestFocus();
-    }//GEN-LAST:event_removeModule
-    
-    private void addModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModule
-        Project project = UIUtil.chooseSuiteComponent(this, getProperties().getProjectDisplayName());
-        if (project != null) {
-            if (getModuleListModel().contains(project)) {
-                moduleList.setSelectedValue(project, true);
-            } else {
-                getModuleListModel().addModule(project);
-            }
-        }
-    }//GEN-LAST:event_addModule
-    
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
         refreshPlatforms();
     }//GEN-LAST:event_managePlatforms
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addModuleButton;
-    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JLabel filler;
     private javax.swing.JButton managePlafsButton;
-    private javax.swing.JLabel moduleLabel;
-    private javax.swing.JList moduleList;
-    private javax.swing.JScrollPane modulesSP;
     private javax.swing.JLabel platform;
     private javax.swing.JPanel platformPanel;
     private javax.swing.JComboBox platformValue;
-    private javax.swing.JButton removeModuleButton;
     // End of variables declaration//GEN-END:variables
     
 }
