@@ -101,13 +101,13 @@ public class OptionsPanel extends JPanel {
     private JPanel                  pOptions;
     private JScrollPane             jScrollPane1;
     private JLabel                  lTitle;
-    private JComponent              currentComponent;
     //                              List (OptionsCategory)
     private List                    optionCategories;
     private int                     currentCategory = -1;
     private Button[]                buttons;
     private Map                     categoryToPanel = new HashMap ();
     private Map                     categoryToController = new HashMap ();
+    private Set                     updatedCategories = new HashSet ();
         
     private Color                   selected = new Color (193, 210, 238);
     private Color                   selectedB = new Color (149, 106, 197);
@@ -137,9 +137,6 @@ public class OptionsPanel extends JPanel {
     
     /** Creates new form OptionsPanel */
     public OptionsPanel () {
-        final ProgressHandle progressHandle = ProgressHandleFactory.
-            createHandle (loc ("CTL_Loading_Options"));
-        progressHandle.start ();
 
         // 1) Load panels.
         FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
@@ -256,6 +253,7 @@ public class OptionsPanel extends JPanel {
             categoryToController.get (category);
         try {
             controller.update ();
+            updatedCategories.add (category);
         } catch (Throwable t) {
             ErrorManager.getDefault ().notify (t);
         }
@@ -264,14 +262,19 @@ public class OptionsPanel extends JPanel {
             public void run () {
                 Iterator it = optionCategories.iterator ();
                 it.next ();
+                int i = 1;
                 while (it.hasNext ())
                     try {
-                        ((PanelController) categoryToController.get (it.next ())).
+                        OptionsCategory category = (OptionsCategory) it.next ();
+                        ((PanelController) categoryToController.get (category)).
                             update ();
+                        updatedCategories.add (category);
+                        if (getCurrentIndex () == i)
+                            setCurrentIndex (i);
+                        i++;
                     } catch (Throwable t) {
                         ErrorManager.getDefault ().notify (t);
                     }
-                progressHandle.finish ();
             }
         });
     }
@@ -288,12 +291,17 @@ public class OptionsPanel extends JPanel {
         currentCategory = i;
         OptionsCategory ocp = (OptionsCategory) 
             optionCategories.get (i);
-        if (currentComponent != null)
-            pOptions.remove (currentComponent);
-        pOptions.add (
-            "Center",
-            currentComponent = (JComponent) categoryToPanel.get (ocp)
-        );
+        pOptions.removeAll ();
+        if (updatedCategories.contains (ocp))
+            pOptions.add (
+                "Center",
+                (JComponent) categoryToPanel.get (ocp)
+            );
+        else {
+            JLabel label = new JLabel ("Loading Settings ...");
+            label.setHorizontalAlignment (label.CENTER);
+            pOptions.add ("Center", label);
+        }
         lTitle.setIcon (new ImageIcon (Utilities.loadImage (ocp.getIconBase () + ".png")));
         lTitle.setText (ocp.getTitle ());
         invalidate ();
