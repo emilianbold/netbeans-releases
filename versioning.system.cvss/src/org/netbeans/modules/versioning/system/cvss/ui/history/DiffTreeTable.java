@@ -21,7 +21,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.cvsclient.command.log.LogInformation;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -55,14 +54,13 @@ class DiffTreeTable extends TreeTableView {
     }
     
     private void setupColumns() {
-        Node.Property [] columns = new Node.Property[5];
+        Node.Property [] columns = new Node.Property[4];
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
         columns[0] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_NAME, String.class, "", "");
         columns[0].setValue("TreeColumnTTV", Boolean.TRUE);
-        columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_REVISION, String.class, loc.getString("LBL_DiffTree_Column_Revision"), loc.getString("LBL_DiffTree_Column_Revision_Desc"));
-        columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
-        columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
-        columns[4] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
+        columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
+        columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
+        columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
         setProperties(columns);
     }
     
@@ -71,10 +69,9 @@ class DiffTreeTable extends TreeTableView {
             public void run() {
                 int width = getWidth();
                 treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 25 / 100);
-                treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 10 / 100);
-                treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 15 / 100);
-                treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);
-                treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 40 / 100);
+                treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
+                treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
+                treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 50 / 100);
             }
         });
     }
@@ -94,7 +91,7 @@ class DiffTreeTable extends TreeTableView {
         }
     }
 
-    void setSelection(LogInformation.Revision revision) {
+    void setSelection(SearchHistoryPanel.DispRevision revision) {
         RevisionNode node = (RevisionNode) getNode(rootNode, revision);
         if (node == null) return;
         ExplorerManager em = ExplorerManager.find(this);
@@ -107,7 +104,7 @@ class DiffTreeTable extends TreeTableView {
 
     private Node getNode(Node node, Object obj) {
         Object object = node.getLookup().lookup(obj.getClass());
-        if (obj == object) return node;
+        if (obj.equals(object)) return node;
         Enumeration children = node.getChildren().nodes();
         while (children.hasMoreElements()) {
             Node child = (Node) children.nextElement();
@@ -193,7 +190,7 @@ class DiffTreeTable extends TreeTableView {
             if (key instanceof SearchHistoryPanel.ResultsContainer) {
                 node = new RevisionNode((SearchHistoryPanel.ResultsContainer) key);
             } else { // key instanceof SearchHistoryPanel.DispRevision
-                node = new RevisionNode(((SearchHistoryPanel.DispRevision) key).getRevision());
+                node = new RevisionNode(((SearchHistoryPanel.DispRevision) key));
             }
             return new Node[] { node };
         }

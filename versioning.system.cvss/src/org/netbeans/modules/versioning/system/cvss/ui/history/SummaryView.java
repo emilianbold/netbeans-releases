@@ -88,16 +88,38 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         ArrayList newResults = new ArrayList(results.size());
         for (Iterator i = results.iterator(); i.hasNext();) {
             Object o = i.next();
-            newResults.add(o);
             if (o instanceof SearchHistoryPanel.ResultsContainer) {
+                newResults.add(o);
                 SearchHistoryPanel.ResultsContainer container = (SearchHistoryPanel.ResultsContainer) o;
                 for (Iterator j = container.getRevisions().iterator(); j.hasNext();) {
-                    LogInformation.Revision revision = (LogInformation.Revision) j.next();
-                    newResults.add(new SearchHistoryPanel.DispRevision(revision, true));
+                    SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) j.next();
+                    newResults.add(revision);
                 }
+                for (Iterator j = container.getRevisions().iterator(); j.hasNext();) {
+                    SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) j.next();
+                    addResults(newResults, revision, 1);
+                }
+            } else {
+                newResults.add(o);
+                addResults(newResults, (SearchHistoryPanel.DispRevision) o, 0);
             }
         }
         return newResults;
+    }
+
+    private void addResults(ArrayList newResults, SearchHistoryPanel.DispRevision dispRevision, int indentation) {
+        dispRevision.setIndentation(indentation);
+        List children = dispRevision.getChildren();
+        if (children != null) {
+            for (Iterator i = children.iterator(); i.hasNext();) {
+                SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) i.next();
+                newResults.add(revision);
+            }
+            for (Iterator i = children.iterator(); i.hasNext();) {
+                SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) i.next();
+                addResults(newResults, revision, indentation + 1);
+            }
+        }
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -267,7 +289,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            master.showDiff(drev.getRevision());
+            master.showDiff(drev);
         } else {
             SearchHistoryPanel.ResultsContainer container = (SearchHistoryPanel.ResultsContainer) o;
             master.showDiff(container);
@@ -352,8 +374,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             setLayout(new BorderLayout());
             add(textPane);
             add(actionsPane, BorderLayout.PAGE_END);
-            actionsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
-            actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 10, 0));
+            actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
+            textPane.setBorder(null);
         }
         
         public Color darker(Color c) {
@@ -392,14 +414,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, true);
                 sd.insertString(0, container.getName(), null);
                 sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
-                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + container.getPath() + "\n", null);
-                
-                
-                LogInformation.Revision newestRev = (LogInformation.Revision) container.getRevisions().get(0);
-                LogInformation.Revision oldestRev = (LogInformation.Revision) container.getRevisions().get(container.getRevisions().size() - 1);
-                
-                sd.insertString(sd.getLength(), oldestRev.getNumber() + " - " + newestRev.getNumber() + FIELDS_SEPARATOR, null);
-                sd.insertString(sd.getLength(), defaultFormat.format(newestRev.getDate()) + "\n", null);
+                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + container.getPath(), null);
                 sd.setCharacterAttributes(0, sd.getLength(), style, false);
                 sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
             } catch (BadLocationException e) {
@@ -407,7 +422,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
             
             actionsPane.removeAll();
-            actionsPane.validate();
+            actionsPane.revalidate();
         }
 
         private void renderRevision(JList list, SearchHistoryPanel.DispRevision dispRevision, final int index, boolean isSelected) {
@@ -435,10 +450,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             LogInformation.Revision revision = dispRevision.getRevision();
             String commitMessage = revision.getMessage();
             if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1);
+            int indentation = dispRevision.getIndentation();
             try {
                 sd.remove(0, sd.getLength());
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, true);
-                if (!dispRevision.isIndented()) {
+                if (indentation == 0) {
                     sd.insertString(0, dispRevision.getRevision().getLogInfoHeader().getFile().getName(), null);
                     sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getName().substring(0, dispRevision.getName().lastIndexOf('/')) + "\n", null);
@@ -460,7 +476,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     }
                 }
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
-                if (dispRevision.isIndented()) {
+                if (indentation > 0) {
                     sd.setParagraphAttributes(0, sd.getLength(), indentStyle, false);
                 } else {
                     sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
@@ -476,29 +492,41 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     Rectangle2D rect = fm.getStringBounds(commitMessage, textPane.getGraphics());
                     int nlc, i;
                     for (nlc = -1, i = 0; i != -1 ; i = commitMessage.indexOf('\n', i + 1), nlc++);
-                    if (!dispRevision.isIndented()) nlc++;
+                    if (indentation == 0) nlc++;
                     int lines = (int) (rect.getWidth() / (width - 80) + 1);
-                    int ph = fm.getHeight() * (lines + nlc + 1) + 10;
+                    int ph = fm.getHeight() * (lines + nlc + 1) + 0;
                     textPane.setPreferredSize(new Dimension(width - 50, ph));
                 }
             }
             
             actionsPane.removeAll();
             String prev = Utils.previousRevision(dispRevision.getRevision().getNumber());
-            diffLink = (prev != null) ? new HyperlinkLabel("Diff to " + prev, foregroundColor, backgroundColor)  : null;
-            if (diffLink != null) {
+            if (prev != null) {
+                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_DiffTo"));
+                l1.setForeground(foregroundColor);
+                actionsPane.add(l1);
+                diffLink = new HyperlinkLabel(prev, foregroundColor, backgroundColor);
+                diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
                 actionsPane.add(diffLink);
+            } else {
+                diffLink = null;
             }
             
             Project prj = Utils.getProject(dispRevision.getRevision().getLogInfoHeader().getFile());
             if (prj != null) {
                 String prjName = ProjectUtils.getInformation(prj).getDisplayName();
-                acpLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_AssociateChangesInProject", prjName), foregroundColor, backgroundColor);
+                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitIn"));
+                l1.setForeground(foregroundColor);
+                actionsPane.add(l1);
+                acpLink = new HyperlinkLabel("\"" + prjName + "\"", foregroundColor, backgroundColor);
                 actionsPane.add(acpLink);
+                JLabel l2 = new JLabel(",");
+                l2.setForeground(foregroundColor);
+                actionsPane.add(l2);
             } else {
                 acpLink = null;
             }
-            acopLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_AssociateChangesInOpenProjects"), foregroundColor, backgroundColor);
+            acopLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitInOpenProjects"), foregroundColor, backgroundColor);
             actionsPane.add(acopLink);
             actionsPane.revalidate();
         }

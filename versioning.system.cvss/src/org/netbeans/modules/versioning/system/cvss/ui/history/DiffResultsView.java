@@ -109,7 +109,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             Runnable runnable = new Runnable() {
                 public void run() {
                     SearchHistoryPanel.ResultsContainer container1 = (SearchHistoryPanel.ResultsContainer) nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
-                    LogInformation.Revision r1 = (LogInformation.Revision) nodes[0].getLookup().lookup(LogInformation.Revision.class);
+                    SearchHistoryPanel.DispRevision r1 = (SearchHistoryPanel.DispRevision) nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                     try {
                         currentIndex = treeView.getSelection()[0];
                         if (nodes.length == 1) {
@@ -121,12 +121,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                             }
                         } else if (nodes.length == 2) {
                             LogInformation.Revision r2 = (LogInformation.Revision) nodes[1].getLookup().lookup(LogInformation.Revision.class);
-                            if (r2.getLogInfoHeader() != r1.getLogInfoHeader()) {
+                            if (r2.getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
                                 throw new Exception();
                             }
-                            String revision2 = r1.getNumber();
+                            String revision2 = r1.getRevision().getNumber();
                             String revision1 = r2.getNumber();
-                            showDiff(r1.getLogInfoHeader(), revision1, revision2, false);
+                            showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
                         }
                     } catch (Exception e) {
                         showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));
@@ -168,16 +168,16 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         treeView.setSelection(idx);
     }
 
-    private void showRevisionDiff(LogInformation.Revision rev, boolean showLastDifference) {
-        String revision2 = rev.getNumber();
+    private void showRevisionDiff(SearchHistoryPanel.DispRevision rev, boolean showLastDifference) {
+        String revision2 = rev.getRevision().getNumber();
         String revision1 = Utils.previousRevision(revision2);
-        showDiff(rev.getLogInfoHeader(), revision1, revision2, showLastDifference);
+        showDiff(rev.getRevision().getLogInfoHeader(), revision1, revision2, showLastDifference);
     }
 
     private void showContainerDiff(SearchHistoryPanel.ResultsContainer container, boolean showLastDifference) {
         List revs = container.getRevisions();
-        LogInformation.Revision newest = (LogInformation.Revision) revs.get(0);
-        showDiff(newest.getLogInfoHeader(), container.getEldestRevision(), newest.getNumber(), showLastDifference);
+        SearchHistoryPanel.DispRevision newest = (SearchHistoryPanel.DispRevision) revs.get(0);
+        showDiff(newest.getRevision().getLogInfoHeader(), container.getEldestRevision(), newest.getRevision().getNumber(), showLastDifference);
     }
 
     void onNextButton() {
@@ -225,7 +225,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
      *
      * @param revision revision to select
      */
-    void select(LogInformation.Revision revision) {
+    void select(SearchHistoryPanel.DispRevision revision) {
         treeView.requestFocusInWindow();
         treeView.setSelection(revision);
     }

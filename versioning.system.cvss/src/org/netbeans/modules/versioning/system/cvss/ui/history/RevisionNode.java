@@ -26,8 +26,6 @@ import org.netbeans.api.project.ProjectUtils;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.io.File;
@@ -42,25 +40,28 @@ import java.beans.PropertyEditorSupport;
 class RevisionNode extends AbstractNode {
     
     static final String COLUMN_NAME_NAME        = "name";
-    static final String COLUMN_NAME_REVISION    = "revision";
     static final String COLUMN_NAME_DATE        = "date";
     static final String COLUMN_NAME_USERNAME    = "username";
     static final String COLUMN_NAME_MESSAGE     = "message";
-    static final String COLUMN_NAME_PATH        = "path";
         
     private LogInformation.Revision                 revision;
     private SearchHistoryPanel.ResultsContainer     container;
+    private String                                  path;
 
     public RevisionNode(SearchHistoryPanel.ResultsContainer container) {
         super(new RevisionNodeChildren(container), Lookups.singleton(container));
         this.container = container;
         this.revision = null;
+        this.path = container.getPath();
+        setName(((SearchHistoryPanel.DispRevision) container.getRevisions().get(0)).getRevision().getLogInfoHeader().getFile().getName());
         initProperties();
     }
 
-    public RevisionNode(LogInformation.Revision revision) {
-        super(Children.LEAF, Lookups.fixed(new Object [] { revision }));
-        this.revision = revision;
+    public RevisionNode(SearchHistoryPanel.DispRevision revision) {
+        super(revision.getChildren() == null ? Children.LEAF : new RevisionNodeChildren(revision), Lookups.fixed(new Object [] { revision }));
+        this.path = revision.getPath();
+        this.revision = revision.getRevision();
+        setName(revision.getRevision().getNumber());
         initProperties();
     }
 
@@ -72,9 +73,8 @@ class RevisionNode extends AbstractNode {
         return container;
     }
 
-    public String getName() {
-        LogInformation.Revision rev = revision != null ? revision : (LogInformation.Revision) container.getRevisions().get(0);
-        return rev.getLogInfoHeader().getFile().getName();
+    public String getShortDescription() {
+        return path;
     }
 
     public Action[] getActions(boolean context) {
@@ -95,11 +95,9 @@ class RevisionNode extends AbstractNode {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
         
-        ps.put(new RevisionProperty());
         ps.put(new DateProperty());
         ps.put(new UsernameProperty());
         ps.put(new MessageProperty());
-        ps.put(new PathProperty());
         
         sheet.put(ps);
         setSheet(sheet);        
@@ -125,38 +123,6 @@ class RevisionNode extends AbstractNode {
             } catch (Exception e) {
                 return super.getPropertyEditor();
             }
-        }
-    }
-    
-    private class RevisionProperty extends CommitNodeProperty {
-
-        public RevisionProperty() {
-            super(COLUMN_NAME_REVISION, String.class, COLUMN_NAME_REVISION, COLUMN_NAME_REVISION);
-        }
-
-        public Object getValue() {
-            if (revision != null) {
-                return revision.getNumber();
-            } else {
-                List revs = container.getRevisions();
-                LogInformation.Revision newest = (LogInformation.Revision) revs.get(0);
-                if (container.getEldestRevision() == null) {
-                    return newest.getNumber();
-                } else {
-                    return container.getEldestRevision() + " - " +  newest.getNumber();
-                }
-            }
-        }
-    }
-
-    private class PathProperty extends CommitNodeProperty {
-
-        public PathProperty() {
-            super(COLUMN_NAME_PATH, String.class, COLUMN_NAME_PATH, COLUMN_NAME_PATH);
-        }
-
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            return "";
         }
     }
     

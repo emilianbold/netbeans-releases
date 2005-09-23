@@ -15,7 +15,6 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.netbeans.lib.cvsclient.command.log.LogInformation;
 
 import java.util.*;
 
@@ -26,12 +25,17 @@ import java.util.*;
  */
 class RevisionNodeChildren extends Children.Keys {
     
-    private final SearchHistoryPanel.ResultsContainer    container;
+    private SearchHistoryPanel.ResultsContainer container;
+    private SearchHistoryPanel.DispRevision     revision;
 
     public RevisionNodeChildren(SearchHistoryPanel.ResultsContainer container) {
         this.container = container;
     }
 
+    public RevisionNodeChildren(SearchHistoryPanel.DispRevision revision) {
+        this.revision = revision;
+    }
+    
     protected void addNotify() {
         refreshKeys();
     }
@@ -41,11 +45,15 @@ class RevisionNodeChildren extends Children.Keys {
     }
     
     private void refreshKeys() {
-        setKeys(container.getRevisions());
+        if (container != null) {
+            setKeys(container.getRevisions());
+        } else {
+            setKeys(revision.getChildren());
+        }
     }
     
     protected Node[] createNodes(Object key) {
-        LogInformation.Revision fn = (LogInformation.Revision) key;
+        SearchHistoryPanel.DispRevision fn = (SearchHistoryPanel.DispRevision) key;
         RevisionNode node = new RevisionNode(fn);
         return new Node[] { node };
     }

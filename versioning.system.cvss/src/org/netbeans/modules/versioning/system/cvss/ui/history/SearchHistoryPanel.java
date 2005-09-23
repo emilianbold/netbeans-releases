@@ -224,47 +224,72 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         List dispResults = new ArrayList();
         List results = new ArrayList(list);
         Collections.sort(results, new ByRemotePathRevisionNumberComparator());
-        ResultsContainer currentContainer = null;
-        LogInformation.Revision lastRevision = null;
+
         int n = results.size();
+        if (n == 0) return dispResults;
+        
         for (int i = 0; i < n; i++) {
             LogInformation.Revision revision = (LogInformation.Revision) results.get(i);
-            if (!sameCategory(revision, lastRevision)) {
-                if (i < n - 1) {
-                    LogInformation.Revision nextRevision = (LogInformation.Revision) results.get(i + 1);
-                    if (sameCategory(revision, nextRevision)) {
-                        currentContainer = new ResultsContainer(revision);
-                        dispResults.add(currentContainer);
-                    } else {
-                        currentContainer = null;
+            results.set(i, new DispRevision(revision));
+        }
+        
+        ResultsContainer currentContainer = null;
+        
+        currentContainer = new ResultsContainer(((DispRevision) results.get(0)).getRevision().getLogInfoHeader());
+        dispResults.add(currentContainer);
+        
+        for (int i = 0; i < n; i++) {
+            DispRevision revision = (DispRevision) results.get(i);
+            if (currentContainer.getHeader() != revision.getRevision().getLogInfoHeader()) {
+                if (currentContainer.getRevisions().size() < 1) {
+                    dispResults.remove(currentContainer);
+                    if (currentContainer.getRevisions().size() == 1) {
+                        dispResults.add(currentContainer.getRevisions().get(0));
                     }
                 }
+                currentContainer = new ResultsContainer(revision.getRevision().getLogInfoHeader());
+                dispResults.add(currentContainer);
+            }
+            DispRevision parent = getParentRevision(results, revision);
+            if (parent != null) {
+                parent.addRevision(revision);
             } else {
-                if (currentContainer != null) {
-                    currentContainer.add(revision);
-                }
+                currentContainer.add(revision);
             }
-            if (currentContainer == null) {
-                dispResults.add(new DispRevision(revision, false));
+        }
+        if (currentContainer.getRevisions().size() < 1) {
+            dispResults.remove(currentContainer);
+            if (currentContainer.getRevisions().size() == 1) {
+                dispResults.add(currentContainer.getRevisions().get(0));
             }
-            lastRevision = revision;
         }
         return dispResults;
     }
 
-    private static boolean sameCategory(LogInformation.Revision revision, LogInformation.Revision lastRevision) {
-        if (lastRevision == null) return false;
-        if (!revision.getLogInfoHeader().getRepositoryFilename().equals(lastRevision.getLogInfoHeader().getRepositoryFilename())) return false;
-        String b1 = revision.getNumber().substring(0, revision.getNumber().lastIndexOf('.'));
-        String b2 = lastRevision.getNumber().substring(0, lastRevision.getNumber().lastIndexOf('.'));
-        return b1.equals(b2);
+    private static DispRevision getParentRevision(List results, DispRevision revision) {
+        String number = revision.getRevision().getNumber();
+        for (;;) {
+            int idx = number.lastIndexOf('.', number.lastIndexOf('.') - 1);
+            if (idx == -1) return null;
+            number = number.substring(0, idx);
+            LogInformation.Revision parentRev = revision.getRevision().getLogInfoHeader().new Revision();
+            parentRev.setNumber(number);
+            int index = Collections.binarySearch(results, new DispRevision(parentRev), revisionsComparator);
+            if (index >= 0) return (DispRevision) results.get(index);
+        }
     }
+    
+    private static final Comparator revisionsComparator = new ByRemotePathRevisionNumberComparator() {
+        public int compare(Object o1, Object o2) {
+            return super.compare(((DispRevision) o1).getRevision(), ((DispRevision) o2).getRevision());
+        }
+    };
 
     void executeSearch() {
         search();
     }
 
-    void showDiff(LogInformation.Revision revision) {
+    void showDiff(DispRevision revision) {
         tbDiff.setSelected(true);
         refreshComponents(true);
         diffView.select(revision);
@@ -281,21 +306,26 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         private List revisions = new ArrayList(2);
         private String name;
         private String path;
+        private final LogInformation header;
 
-        public ResultsContainer(LogInformation.Revision newestRevision) {
-            revisions.add(newestRevision);
-            File file = newestRevision.getLogInfoHeader().getFile();
+        public ResultsContainer(LogInformation header) {
+            this.header = header;
+            File file = header.getFile();
             try {
                 name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName();
             } catch (Exception e) {
-                name = newestRevision.getLogInfoHeader().getRepositoryFilename();
+                name = header.getRepositoryFilename();
                 if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
             }
             path = name.substring(0, name.lastIndexOf('/'));
             name = name.substring(path.length() + 1); 
         }
 
-        public void add(LogInformation.Revision revision) {
+        public LogInformation getHeader() {
+            return header;
+        }
+
+        public void add(DispRevision revision) {
             revisions.add(revisions.size(), revision);
         }
         
@@ -308,12 +338,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
 
         public String getEldestRevision() {
-            LogInformation.Revision rev = (LogInformation.Revision) revisions.get(revisions.size() - 1);
-            return Utils.previousRevision(rev.getNumber());
+            DispRevision rev = (DispRevision) revisions.get(revisions.size() - 1);
+            return Utils.previousRevision(rev.getRevision().getNumber());
         }
 
         public String getNewestRevision() {
-            return ((LogInformation.Revision) revisions.get(0)).getNumber();
+            return ((DispRevision) revisions.get(0)).getRevision().getNumber();
         }
         
         public String getPath() {
@@ -321,17 +351,19 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
 
         public File getFile() {
-            return ((LogInformation.Revision) revisions.get(0)).getLogInfoHeader().getFile();
+            return header.getFile();
         }
     }
 
     static class DispRevision {
         
         private final LogInformation.Revision revision;
-        private final boolean indented;
         private String name;
+        private List  children;
+        private String path;
+        private int indentation;
 
-        public DispRevision(LogInformation.Revision revision, boolean indented) {
+        public DispRevision(LogInformation.Revision revision) {
             this.revision = revision;
             File file = revision.getLogInfoHeader().getFile();
             try {
@@ -340,36 +372,80 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 name = revision.getLogInfoHeader().getRepositoryFilename();
                 if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
             }
-            this.indented = indented;
+            path = name.substring(0, name.lastIndexOf('/'));            
         }
 
         public String getName() {
             return name;
         }
 
+        public String getPath() {
+            return path;
+        }
+
         public LogInformation.Revision getRevision() {
             return revision;
         }
 
-        public boolean isIndented() {
-            return indented;
+        public void addRevision(DispRevision revision) {
+            if (children == null) {
+                children = new ArrayList();
+            }
+            children.add(revision);
+        }
+
+        public List getChildren() {
+            return children;
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof DispRevision)) return false;
+            return revision.equals(((DispRevision) o).revision);
+        }
+
+        public int hashCode() {
+            return revision.hashCode();
+        }
+
+        public int getIndentation() {
+            return indentation;
+        }
+        
+        public void setIndentation(int indentation) {
+            this.indentation = indentation;
         }
     }
 
+    /**
+     * Sorts found commits by 1. Filename 2. revision number
+     */ 
     private static class ByRemotePathRevisionNumberComparator implements Comparator {
 
         public int compare(Object o1, Object o2) {
             LogInformation.Revision r1 = (LogInformation.Revision) o1;
             LogInformation.Revision r2 = (LogInformation.Revision) o2;
-            int namec = r1.getLogInfoHeader().getRepositoryFilename().compareTo(r2.getLogInfoHeader().getRepositoryFilename());
+            int namec = r1.getLogInfoHeader().getFile().getName().compareToIgnoreCase(r2.getLogInfoHeader().getFile().getName());
             if (namec != 0) return namec;
-            // 1.2  ?  1.4.4.2
-            int revc = r2.getNumber().length() - r1.getNumber().length();
-            if (revc != 0) return revc;
-            // 1.4.4.3  ?  1.4.4.2
-            long r1l = Long.parseLong(r1.getNumber().replaceAll("\\.", ""));
-            long r2l = Long.parseLong(r2.getNumber().replaceAll("\\.", ""));
-            return r1l < r2l ? 1 : r1l > r2l ? -1 : 0;
+            namec = r1.getLogInfoHeader().getRepositoryFilename().compareToIgnoreCase(r2.getLogInfoHeader().getRepositoryFilename());
+            if (namec != 0) return namec;
+            return compareRevisions(r1.getNumber(), r2.getNumber());
+        }
+    }
+    
+    public static int compareRevisions(String r1, String r2) {
+        StringTokenizer st1 = new StringTokenizer(r1, ".");
+        StringTokenizer st2 = new StringTokenizer(r2, ".");
+        for (;;) {
+            if (!st1.hasMoreTokens()) {
+                return st2.hasMoreTokens() ? -1 : 0;
+            }
+            if (!st2.hasMoreTokens()) {
+                return st1.hasMoreTokens() ? 1 : 0;
+            }
+            int n1 = Integer.parseInt(st1.nextToken());
+            int n2 = Integer.parseInt(st2.nextToken());
+            if (n1 != n2) return n2 - n1;
         }
     }
     
