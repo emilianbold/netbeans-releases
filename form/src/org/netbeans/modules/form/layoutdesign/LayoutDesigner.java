@@ -165,7 +165,7 @@ public class LayoutDesigner implements LayoutConstants {
                 if (!interval.isSequential()) {
                     // filling gap in empty root group
                     assert interval.getParent() == null;
-                    if (space.isSet(dimension)) {
+                    if (imposeGaps && space.isSet(dimension)) {
                         imposeCurrentGapSize(sub, space.size(dimension), dimension);
                     }
                 }

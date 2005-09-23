@@ -703,14 +703,23 @@ public class LayoutModel implements LayoutConstants {
     public Object getChangeMark() {
         return new Integer(changeMark);
     }
+    
+    public void endUndoableEdit() {
+        if (lastUndoableEdit != null) {
+            lastUndoableEdit.endMark = getChangeMark();
+            lastUndoableEdit = null;
+        }
+    }
+    
+    public boolean isUndoableEditInProgress() {
+        return (lastUndoableEdit != null);
+    }
 
     public UndoableEdit getUndoableEdit() {
         if (recordingChanges && !undoRedoInProgress) {
             LayoutUndoableEdit undoEdit = new LayoutUndoableEdit();
             undoEdit.startMark = getChangeMark();
-            if (lastUndoableEdit != null) {
-                lastUndoableEdit.endMark = undoEdit.startMark;
-            }
+            endUndoableEdit();
             lastUndoableEdit = undoEdit;
             return undoEdit;
         }

@@ -398,6 +398,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 if (getLayoutDesigner().updateCurrentState() && fireChange) {
                     formModel.fireFormChanged(); // hack: to regenerate code once again
                 }
+                formModel.getLayoutModel().endUndoableEdit();
                 updateResizabilityActions();
                 componentLayer.repaint();
             }
@@ -1678,6 +1679,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     formClone.setVisible(true);
                     componentLayer.setTopDesignComponent(formClone);
                     setupDesignerSize();
+                    getLayoutDesigner().externalSizeChangeHappened();
                     updateComponentLayer(false);
                 }
                 return;
@@ -1785,7 +1787,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
                 updateComponentLayer(true);
                 if (getLayoutDesigner() != null) {
-                    getLayoutDesigner().externalSizeChangeHappened();
+                    LayoutModel layoutModel = formModel.getLayoutModel();
+                    if (!layoutModel.isUndoableEditInProgress() && formModel.isCompoundEditInProgress()) {
+                        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                        formModel.addUndoableEdit(ue);
+                    }
+                    if (formModel.isCompoundEditInProgress()) {
+                        getLayoutDesigner().externalSizeChangeHappened();
+                    }
                 }
             }
         }
