@@ -175,16 +175,28 @@ public class OptionsPanel extends JPanel {
         // title bar
         JPanel pTitle = new JPanel (new BorderLayout ());
         lTitle = new JLabel ();
-        lTitle.setBackground (SystemColor.activeCaption); // new Color (0, 85, 229));
-        lTitle.setForeground (SystemColor.activeCaptionText);
+        if (Utilities.isWindows ()) {
+            lTitle.setBackground (SystemColor.activeCaption);
+            lTitle.setForeground (SystemColor.activeCaptionText);
+        } else {
+            lTitle.setBackground (Color.white);
+            lTitle.setForeground (Color.black);
+        }
         Font f = lTitle.getFont ();
         lTitle.setFont (new Font (f.getName (), Font.BOLD, 16));
         lTitle.setIconTextGap (8);
         lTitle.setOpaque (true);
-        pTitle.setBorder (new CompoundBorder (
-            new LoweredBorder (),
-            new LineBorder (SystemColor.activeCaption, 1)
-        ));
+        if (Utilities.isWindows ()) {
+            pTitle.setBorder (new CompoundBorder (
+                new LoweredBorder (),
+                new LineBorder (SystemColor.activeCaption, 1)
+            ));
+        } else {
+            pTitle.setBorder (new CompoundBorder (
+                new LineBorder (iconViewBorder, 1),
+                new LineBorder (Color.white, 2)
+            ));
+        }
         pTitle.add ("Center", lTitle);
 
         // icon view
