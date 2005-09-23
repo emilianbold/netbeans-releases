@@ -523,6 +523,8 @@ final class PropUtils {
 
         //        System.err.println(" result of noDlgUpdatePRop:" + o);
         if (o instanceof Exception) {
+            if( o instanceof InvocationTargetException )
+                o = ((InvocationTargetException)o).getTargetException();
             processThrowable((Exception) o, title, newValue);
         }
 

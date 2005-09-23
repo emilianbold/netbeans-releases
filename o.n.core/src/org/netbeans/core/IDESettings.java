@@ -579,7 +579,7 @@ public class IDESettings extends SystemOption {
             } catch (PatternSyntaxException e) {
                 IllegalArgumentException iae = new IllegalArgumentException();
                 iae.initCause( e );
-                ErrorManager.getDefault().annotate( iae, e.getLocalizedMessage() );
+                ErrorManager.getDefault().annotate( iae, ErrorManager.USER, e.getMessage(), e.getLocalizedMessage(), null, null );
                 throw iae;
             }
         }
