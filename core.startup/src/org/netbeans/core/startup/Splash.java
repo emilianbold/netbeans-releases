@@ -277,6 +277,9 @@ public final class Splash  implements SwingConstants {
          * Defines the single line of text this component will display.
          */
         public void setText(final String text) {
+	    // trying to set again the same text?
+	    if (text!=null && text.equals(this.text)) return;
+	    
             // run in AWT, there were problems with accessing font metrics
             // from now AWT thread
             EventQueue.invokeLater(new Runnable() {
