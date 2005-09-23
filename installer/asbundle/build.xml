@@ -353,7 +353,7 @@ Creating NetBeans.app bundle using ${nb.dir} as master
     </exec>
                                                                                                                                  
     <echo message="Copying the icon into the correct place" />
-    <copy file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/nb4.1/netbeans.icns"
+    <copy file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/nb5.0/netbeans.icns"
           todir="${build.dir}/${app.dir}/Contents/Resources"/>
                                                                                                                                  
     <echo message="Generating Info.plist" />
