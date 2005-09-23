@@ -815,6 +815,7 @@ public class Evaluator implements JavaParserVisitor {
                 if (!evaluationContext.canInvokeMethods()) {
                     return Assert.error(node, "calleeException", new UnsupportedOperationException(), ctx);
                 }
+                evaluationContext.methodToBeInvoked();
                 return method.instanceContext.invokeMethod(frameThread, method.method, method.args,
                                                         ObjectReference.INVOKE_SINGLE_THREADED | ObjectReference.INVOKE_NONVIRTUAL);
             } catch (InvalidTypeException e) {
@@ -862,6 +863,7 @@ public class Evaluator implements JavaParserVisitor {
                     if (!evaluationContext.canInvokeMethods()) {
                         return Assert.error(node, "calleeException", new UnsupportedOperationException(), ctx);
                     }
+                    evaluationContext.methodToBeInvoked();
                     return classContext.invokeMethod(frameThread, method.method, method.args, ClassType.INVOKE_SINGLE_THREADED);
                 }
             } catch (InvalidTypeException e) {
@@ -1231,6 +1233,7 @@ public class Evaluator implements JavaParserVisitor {
             if (!evaluationContext.canInvokeMethods()) {
                 throw new UnsupportedOperationException();
             }
+            evaluationContext.methodToBeInvoked();
             return (PrimitiveValue) reference.invokeMethod(frameThread, toCall, new ArrayList(0), ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (UnsupportedOperationException uoex) {
             evaluationContext.setCanInvokeMethods(false);

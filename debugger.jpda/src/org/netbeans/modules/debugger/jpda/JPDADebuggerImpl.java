@@ -511,6 +511,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 imports.addAll (Arrays.asList (EditorContextBridge.getImports (
                     getEngineContext ().getURL (frame, "Java")
                 )));
+                final List[] disabledBreakpoints = new List[] { null };
                 EvaluationContext context;
                 org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = 
                     expression.evaluator (
@@ -518,10 +519,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             frame,
                             imports, 
                             staticImports,
-                            methodCallsUnsupportedExc == null
+                            methodCallsUnsupportedExc == null,
+                            new Runnable() {
+                                public void run() {
+                                    if (disabledBreakpoints[0] == null) {
+                                        disabledBreakpoints[0] = disableAllBreakpoints ();
+                                    }
+                                }
+                            }
                         )
                     );
-                List l = disableAllBreakpoints ();
                 try {
                     return evaluator.evaluate ();
                 } finally {
@@ -529,7 +536,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         methodCallsUnsupportedExc =
                                 new InvalidExpressionException(new UnsupportedOperationException());
                     }
-                    enableAllBreakpoints (l);
+                    if (disabledBreakpoints[0] != null) {
+                        enableAllBreakpoints (disabledBreakpoints[0]);
+                    }
                 }
             } catch (EvaluationException e) {
                 InvalidExpressionException iee = new InvalidExpressionException (e);

@@ -35,6 +35,7 @@ public class EvaluationContext {
     private List       sourceImports;
     private List       staticImports;
     private boolean canInvokeMethods;
+    private Runnable methodInvokePreproc;
 
     /**
      * Creates a new context in which to evaluate expresions.
@@ -44,7 +45,7 @@ public class EvaluationContext {
      * @param staticImports list of static imports
      */
     public EvaluationContext(StackFrame frame, List imports, List staticImports,
-                             boolean canInvokeMethods) {
+                             boolean canInvokeMethods, Runnable methodInvokePreproc) {
         if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
         if (imports == null) throw new IllegalArgumentException("Imports argument must not be null");
         if (staticImports == null) throw new IllegalArgumentException("Static imports argument must not be null");
@@ -52,6 +53,7 @@ public class EvaluationContext {
         this.sourceImports = imports;
         this.staticImports = staticImports;
         this.canInvokeMethods = canInvokeMethods;
+        this.methodInvokePreproc = methodInvokePreproc;
     }
 
     public List getStaticImports() {
@@ -73,5 +75,12 @@ public class EvaluationContext {
     void setCanInvokeMethods(boolean canInvokeMethods) {
         this.canInvokeMethods = canInvokeMethods;
     }
+    
+    void methodToBeInvoked() {
+        if (methodInvokePreproc != null) {
+            methodInvokePreproc.run();
+        }
+    }
+    
 }
 
