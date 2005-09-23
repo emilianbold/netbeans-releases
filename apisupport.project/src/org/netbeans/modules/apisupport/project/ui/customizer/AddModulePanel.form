@@ -46,9 +46,6 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JList" name="moduleList">
-          <Properties>
-            <Property name="selectionMode" type="int" value="0"/>
-          </Properties>
         </Component>
       </SubComponents>
     </Container>

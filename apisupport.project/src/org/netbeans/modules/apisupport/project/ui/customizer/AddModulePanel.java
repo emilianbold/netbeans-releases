@@ -68,13 +68,14 @@ final class AddModulePanel extends JPanel {
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 showDescription();
-                ModuleDependency dep = getSelectedDependency();
-                if (dep != null) {
+                currectJavadoc = null;
+                ModuleDependency[] deps = getSelectedDependencies();
+                if (deps.length == 1) {
                     NbPlatform platform = props.getActivePlatform();
                     if (platform == null) { // NetBeans.org module
-                        currectJavadoc = Util.findJavadocForNetBeansOrgModules(dep);
+                        currectJavadoc = Util.findJavadocForNetBeansOrgModules(deps[0]);
                     } else {
-                        currectJavadoc = Util.findJavadoc(dep, platform);
+                        currectJavadoc = Util.findJavadoc(deps[0], platform);
                     }
                 }
                 showJavadocButton.setEnabled(currectJavadoc != null);
@@ -145,11 +146,11 @@ final class AddModulePanel extends JPanel {
         StyledDocument doc = descValue.getStyledDocument();
         try {
             doc.remove(0, doc.getLength());
-            ModuleDependency dep = getSelectedDependency();
-            if (dep == null) {
+            ModuleDependency[] deps = getSelectedDependencies();
+            if (deps.length != 1) {
                 return;
             }
-            String longDesc = dep.getModuleEntry().getLongDescription();
+            String longDesc = deps[0].getModuleEntry().getLongDescription();
             if (longDesc != null) {
                 doc.insertString(0, longDesc, null);
             }
@@ -163,7 +164,7 @@ final class AddModulePanel extends JPanel {
                 String filterTextLC = filterText.toLowerCase(Locale.US);
                 Style match = doc.addStyle(null, null);
                 match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
-                Set/*<String>*/ matches = filterer.getMatchesFor(filterText, dep);
+                Set/*<String>*/ matches = filterer.getMatchesFor(filterText, deps[0]);
                 Iterator it = matches.iterator();
                 while (it.hasNext()) {
                     String hit = (String) it.next();
@@ -188,13 +189,11 @@ final class AddModulePanel extends JPanel {
         }
     }
     
-    ModuleDependency getSelectedDependency() {
-        Object o = moduleList.getSelectedValue();
-        if (o == ComponentFactory.WAIT_VALUE) {
-            return null;
-        } else {
-            return (ModuleDependency) o;
-        }
+    ModuleDependency[] getSelectedDependencies() {
+        Object[] objects = moduleList.getSelectedValues();
+        ModuleDependency[] deps = new ModuleDependency[objects.length];
+        System.arraycopy(objects, 0, deps, 0, objects.length);
+        return deps;
     }
     
     private void search() {
@@ -262,7 +261,7 @@ final class AddModulePanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         setPreferredSize(new java.awt.Dimension(400, 300));
         moduleLabel.setLabelFor(moduleList);
         org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Module"));
@@ -274,7 +273,6 @@ final class AddModulePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(moduleLabel, gridBagConstraints);
 
-        moduleList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         moduleSP.setViewportView(moduleList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -378,7 +378,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         descriptor.setButtonListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (DialogDescriptor.OK_OPTION.equals(e.getSource()) &&
-                        addPanel.getSelectedDependency() == null) {
+                        addPanel.getSelectedDependencies().length == 0) {
                     return;
                 }
                 d.setVisible(false);
@@ -387,10 +387,12 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         });
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            ModuleDependency newDep = addPanel.getSelectedDependency();
-            if (!getDepListModel().getDependencies().contains(newDep)) {
-                getDepListModel().addDependency(newDep);
-                dependencyList.setSelectedValue(newDep, true);
+            ModuleDependency[] newDeps = addPanel.getSelectedDependencies();
+            for (int i = 0; i < newDeps.length; i++) {
+                if (!getDepListModel().getDependencies().contains(newDeps[i])) {
+                    getDepListModel().addDependency(newDeps[i]);
+                    dependencyList.setSelectedValue(newDeps[i], true);
+                }
             }
             dependencyList.requestFocus();
         }
