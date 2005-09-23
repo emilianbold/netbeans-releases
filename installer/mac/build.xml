@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="NetBeans.app" basedir="." default="tarball">
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
-  <property name="appname" value="NetBeans"/>
+  <property name="appname" value="NetBeansIDE5.0Dev"/>
   <property name="appversion" value="5.0dev"/>
   <property name="version" value="5.0dev"/>
   <property name="nbClusterDir" value="nb5.0"/>
