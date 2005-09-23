@@ -194,8 +194,12 @@ public abstract class ExecutorSupport implements CVSListener  {
                 clientRuntime.log(s + "\n");  // NOI18N
                 message.setLength(0);
             }
-        } else {
-            if (logCommandOutput()) {
+        } else {            
+            // If waiting for lock command execution looks deadlocked, always propagate
+            // E cvs server: [09:38:43] waiting for httpd's lock in /shared/data/ccvs/
+            boolean locked = e.getMessage().indexOf("waiting for") != -1;  // NOI18N
+            locked &= e.getMessage().indexOf("lock in") != -1; // NOI18N
+            if (locked || logCommandOutput()) {
                 if (e.getMessage().length() > 0) {  // filter out bogus newlines
                     clientRuntime.log(e.getMessage() + "\n");  // NOI18N
                 }
@@ -234,6 +238,8 @@ public abstract class ExecutorSupport implements CVSListener  {
                     toRefresh.clear();
                     if (result.isAborted()) {
                         failure = result.getError();
+                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1006", new Date(), getDisplayName());
+                        logFinishedCommand(msg);
                         return;
                     }
                     if (error instanceof CommandException) {
@@ -253,11 +259,8 @@ public abstract class ExecutorSupport implements CVSListener  {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, failure);
                     }
                 } else {
-                    if (group == null || group.finished()) {
-                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), getDisplayName());
-                        clientRuntime.log(msg + "\n"); // NOI18N
-                        clientRuntime.focusLog();
-                    }
+                    String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), getDisplayName());
+                    logFinishedCommand(msg);
                     commandFinished((ClientRuntime.Result) e.getSource());
                     if (cmd.hasFailed()) {
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
@@ -287,6 +290,13 @@ public abstract class ExecutorSupport implements CVSListener  {
                     listener.taskFinished(task);
                 }
             }
+        }
+    }
+
+    private void logFinishedCommand(String msg) {
+        if (group == null || group.finished()) {
+            clientRuntime.log(msg + "\n"); // NOI18N
+            clientRuntime.focusLog();
         }
     }
 
@@ -581,5 +591,21 @@ public abstract class ExecutorSupport implements CVSListener  {
             }
         }
         return success;
+    }
+
+    /**
+     * Cancels following executor supports in the same group.
+     */
+    public void cancelGroup() {
+        if (group != null) {
+            group.cancel();
+        }
+    }
+
+    public boolean isGroupCancelled() {
+        if (group != null) {
+            return group.isCancelled();
+        }
+        return false;
     }
 }

@@ -39,11 +39,13 @@ class CommandRunnable implements Runnable, Cancellable {
     private ProgressHandle      progressHandle;
     private String              progressName;
     private Thread              runnableThread;
+    private ExecutorSupport     support;
 
-    public CommandRunnable(Client client, GlobalOptions options, Command cmd) {
+    public CommandRunnable(Client client, GlobalOptions options, Command cmd, ExecutorSupport support) {
         this.client = client;
         this.options = options;
         this.cmd = cmd;
+        this.support = support;
     }
 
     void setProgressHandle(ProgressHandle handle, String name) {
@@ -52,24 +54,33 @@ class CommandRunnable implements Runnable, Cancellable {
     }
     
     public void run() {
-        runnableThread = Thread.currentThread();
-        progressHandle.start();
-        CounterRunnable counterUpdater = new CounterRunnable();
-        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
-        counterUpdater.initTask(counterTask);
-        try {
-            counterTask.schedule(500);
-            client.executeCommand(cmd, options);
-        } catch (Throwable e) {
-            failure = e;
-        } finally {
-            counterTask.cancel();
+        if (support.isGroupCancelled()) {
+            aborted = true;
             finished = true;
+            return;
+        }
+        runnableThread = Thread.currentThread();
+        try {
+            progressHandle.start();
+            CounterRunnable counterUpdater = new CounterRunnable();
+            RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+            counterUpdater.initTask(counterTask);
             try {
-                client.getConnection().close();
+                counterTask.schedule(500);
+                client.executeCommand(cmd, options);
             } catch (Throwable e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                failure = e;
+            } finally {
+                counterTask.cancel();
+                finished = true;
+                try {
+                    client.getConnection().close();
+                } catch (Throwable e) {
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                }
             }
+        } finally {
+            progressHandle.finish();
         }
     }
 
@@ -99,6 +110,7 @@ class CommandRunnable implements Runnable, Cancellable {
         client.abort();
         failure = new InterruptedException();
         runnableThread.interrupt();
+        support.cancelGroup();
         return true;
     }
 

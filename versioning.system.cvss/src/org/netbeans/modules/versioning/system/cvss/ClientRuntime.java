@@ -125,7 +125,7 @@ public class ClientRuntime {
         }
 
         client.getEventManager().addCVSListener(mgr);
-        final CommandRunnable cr = new CommandRunnable(client, globalOptions, cmd);
+        final CommandRunnable cr = new CommandRunnable(client, globalOptions, cmd, mgr);
         RequestProcessor.Task task = requestProcessor.create(cr);
         String name = mgr.getDisplayName();  // TODO share handle
         final ProgressHandle handle = ProgressHandleFactory.createHandle(name, cr);
@@ -139,7 +139,6 @@ public class ClientRuntime {
                 } catch (Throwable e) {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                    
                 } finally {
-                    handle.finish();
                     log.getOut().close();
                     log = IOProvider.getDefault().getIO(cvsRoot.toString(), false);
                 }

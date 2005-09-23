@@ -17,6 +17,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.ErrorManager;
+import org.openide.util.Cancellable;
 import org.openide.nodes.Node;
 import org.openide.windows.WindowManager;
 import org.openide.cookies.EditorCookie;
@@ -82,7 +83,7 @@ public class AnnotationsAction extends AbstractSystemAction {
                 if (panes == null) {
                     return;
                 }
-                JEditorPane currentPane = panes[0];
+                final JEditorPane currentPane = panes[0];
                 LogOutputListener ab = AnnotationBarManager.showAnnotationBar(currentPane);
 
                 AnnotateCommand annotate = new AnnotateCommand();
@@ -116,7 +117,12 @@ public class AnnotationsAction extends AbstractSystemAction {
                     lexecutor.setSilent(true);
                     lexecutor.execute();
 
-
+                    group.addCancellable(new Cancellable(){
+                        public boolean cancel() {
+                            AnnotationBarManager.hideAnnotationBar(currentPane);
+                            return true;
+                        }
+                    });
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
                     err.annotate(e, "Can not load revision of " + file);
