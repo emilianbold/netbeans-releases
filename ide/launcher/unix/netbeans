@@ -37,12 +37,15 @@ fi
 #     . /etc/netbeans.conf
 # fi
 
-args="$@"
+# XXX the following treatment destroys proper usage of spaces in non-userdir params:
+args=""
 
-userdir=${netbeans_default_userdir}
+userdir="${netbeans_default_userdir}"
 while [ $# -gt 0 ] ; do
     case "$1" in
-        --userdir) shift; if [ $# -gt 0 ] ; then userdir=$1; fi
+        --userdir) shift; if [ $# -gt 0 ] ; then userdir="$1"; fi
+            ;;
+        *) args="$args $1"
             ;;
     esac
     shift

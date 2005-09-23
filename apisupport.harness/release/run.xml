@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="run.exe" location="${install}\${run.app.exe}"/>
         <property name="run.sh" location="${install}/${run.app.sh}"/>
         <mkdir dir="${test.user.dir}/etc"/>
-        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters=${cluster}</echo>
+        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters="${cluster}"</echo>
         <property name="run.args.prepared" value=""/>
     </target>
 

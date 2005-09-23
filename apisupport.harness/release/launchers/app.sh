@@ -23,7 +23,8 @@ if [ -f "$progdir/../etc/$APPNAME".conf ] ; then
     . "$progdir/../etc/$APPNAME".conf
 fi
 
-args="$@"
+# XXX does not correctly deal with spaces in non-userdir params
+args=""
 
 case "`uname`" in
     Darwin*)
@@ -36,6 +37,8 @@ esac
 while [ $# -gt 0 ] ; do
     case "$1" in
         --userdir) shift; if [ $# -gt 0 ] ; then userdir="$1"; fi
+            ;;
+        *) args="$args $1"
             ;;
     esac
     shift
