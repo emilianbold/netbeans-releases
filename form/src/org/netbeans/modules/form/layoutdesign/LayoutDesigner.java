@@ -128,9 +128,9 @@ public class LayoutDesigner implements LayoutConstants {
                     Iterator it2 = comp.getSubcomponents();
                     while (it2.hasNext()) {
                         LayoutComponent subComp = (LayoutComponent) it2.next();
-                        bounds = visualMapper.getComponentBounds(comp.getId());
-                        int baseline = visualMapper.getBaselinePosition(comp.getId());
-                        comp.setCurrentBounds(bounds, baseline);
+                        bounds = visualMapper.getComponentBounds(subComp.getId());
+                        int baseline = visualMapper.getBaselinePosition(subComp.getId());
+                        subComp.setCurrentBounds(bounds, baseline);
                     }
                     for (int i=0; i < DIM_COUNT; i++) {
                         updateLayoutStructure(comp.getLayoutRoot(i), i, false);
