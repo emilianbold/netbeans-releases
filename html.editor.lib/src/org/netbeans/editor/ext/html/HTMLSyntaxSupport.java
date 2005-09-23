@@ -521,8 +521,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 
             }
         
-
-        throw new BadLocationException( "Misuse at " + offset, offset ); // NOI18N
+        return null;
     }
         
     public List getPossibleEndTags( int offset, String prefix ) throws BadLocationException {
