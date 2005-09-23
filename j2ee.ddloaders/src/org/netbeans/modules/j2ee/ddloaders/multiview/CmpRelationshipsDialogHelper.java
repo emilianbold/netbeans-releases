@@ -117,14 +117,14 @@ public class CmpRelationshipsDialogHelper {
             boolean setter = hasSetter();
             boolean ejbNameChanged = !equal(origEjbName, ejbName);
             boolean fieldChanged = !equal(origFieldName, fieldName) || !equal(origFieldType, fieldType);
-            boolean getterChanged = origGetter != getter;
-            boolean setterChanged = origSetter != setter;
+            boolean getterChanged = origGetter != getter || fieldChanged;
+            boolean setterChanged = origSetter != setter || fieldChanged;
             if (ejbNameChanged || fieldChanged || getterChanged || setterChanged) {
                 if (origEntityHelper != null) {
-                    if (getterChanged || fieldChanged) {
+                    if (getterChanged) {
                         Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
                     }
-                    if (setterChanged || fieldChanged) {
+                    if (setterChanged) {
                         Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
                     }
                     if (fieldChanged) {
@@ -156,10 +156,10 @@ public class CmpRelationshipsDialogHelper {
                             if (setterMethod == null) {
                                 setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
                             }
-                            if (getter) {
+                            if (getter && getterChanged) {
                                 entityMethodController.addMethod(getterMethod, true, true);
                             }
-                            if (setter) {
+                            if (setter && setterChanged) {
                                 entityMethodController.addMethod(setterMethod, true, true);
                             }
                             rollback = false;
