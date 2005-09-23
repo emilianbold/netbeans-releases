@@ -94,6 +94,9 @@ public class DiffStreamSource extends StreamSource {
         binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
             remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision);
+            if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
+                binary = !CvsVersioningSystem.getInstance().isText(remoteFile);
+            }
             failure = null;
         } catch (Exception e) {
             failure = new IOException("Cannot initialize stream source");
