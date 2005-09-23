@@ -79,6 +79,9 @@ public abstract class TestBase extends NbTestCase {
         assertNotNull("have a file object for extexamples", extexamples);
         // Need to set up private locations in extexamples, as if they were opened in the IDE.
         clearWorkDir();
+		
+		InputOutputProviderImpl.registerCase(this);
+		
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
         File userPropertiesFile = initializeBuildProperties(getWorkDir(), apisZip);
@@ -103,6 +106,12 @@ public abstract class TestBase extends NbTestCase {
         }
         NbPlatform.reset();
     }
+	
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		InputOutputProviderImpl.registerCase(null);
+	}
+	
     
     /**
      * Sets up global build.properties for the default platform.
