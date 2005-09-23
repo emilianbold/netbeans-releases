@@ -276,7 +276,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false" />
 	    <file name="Folder.shadow">
-                <attr name="originalFile" stringvalue="Templates/Other/Folder"/>
+                <attr name="originalFile" stringvalue="Templates/Folder"/>
             </file>
 	</folder>
         

@@ -191,6 +191,13 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </folder>
         </folder>
+        
+        <folder name="Privileged">
+            <!-- overwrite definition of privileged Folder from core/ui -->
+	    <file name="Folder.shadow">
+                <attr name="originalFile" stringvalue="Templates/Other/Folder"/>
+            </file>
+	</folder>
     </folder>
     
     <folder name="Windows2">
