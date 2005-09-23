@@ -64,8 +64,6 @@ public interface Category {
     
     Lookup getLookup();
     
-    boolean moveItem( Item source, Item target, boolean moveBefore );
-    
     boolean dropItem( Transferable dropItem, int dndAction, Item target, boolean dropBefore );
     
     boolean dragOver( DropTargetDragEvent e );

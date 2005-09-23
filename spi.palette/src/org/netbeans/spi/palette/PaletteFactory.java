@@ -58,7 +58,7 @@ public final class PaletteFactory {
      */
     public static PaletteController createPalette( String rootFolderName, PaletteActions customActions ) 
             throws IOException {
-        return createPalette( rootFolderName, customActions, null, null );
+        return createPalette( rootFolderName, customActions, null, DragAndDropHandler.getDefault() );
     }
     
     
@@ -98,7 +98,7 @@ public final class PaletteFactory {
      * @param customActions Import actions for palette customizer.
      */
     public static PaletteController createPalette( Node paletteRoot, PaletteActions customActions ) {
-        return createPalette( paletteRoot, customActions, null, null );
+        return createPalette( paletteRoot, customActions, null, DragAndDropHandler.getDefault() );
     }
     
     /**
@@ -128,8 +128,10 @@ public final class PaletteFactory {
         lookupObjects.add( customActions );
         if( null != filter )
             lookupObjects.add( filter );
-        if( null != dndHandler )
-            lookupObjects.add( dndHandler );
+        
+        if( null == dndHandler )
+            dndHandler = DragAndDropHandler.getDefault();
+        lookupObjects.add( dndHandler );
         
 
         RootNode root = new RootNode( paletteRoot, Lookups.fixed( lookupObjects.toArray() ) );

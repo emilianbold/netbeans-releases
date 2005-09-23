@@ -156,9 +156,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
             //dragging an item to reorder or move to a different category
             //or dragging something from outside the palette to create a new item
             boolean res = false;
-            if( targetCategory == dragSourceCategory && null != draggingItem ) {
-                res = targetCategory.moveItem( draggingItem, targetItem, dropBefore );
-            } else if( null != targetCategory ) {
+            if( null != targetCategory ) {
                 Transferable t;
                 if( null != draggingItem ) {
                     //internal drag'n'drop - an item is being moved from a different category
@@ -240,7 +238,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
                 CategoryButton button = (CategoryButton)target;
                 targetCategory = button.getCategory();
             } 
-            if( null == targetCategory ) {
+            if( null == targetCategory || !palette.getModel().canReorderCategories() ) {
                 dtde.rejectDrag();
                 removeDropLine();
                 return;
@@ -268,13 +266,13 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
                 CategoryButton button = (CategoryButton)target;
                 targetCategory = button.getCategory();
             } 
-            if( null == targetCategory || !targetCategory.dragOver( dtde ) ) {
+            if( null != targetCategory && targetCategory.dragOver( dtde ) ) {
+                dtde.acceptDrag( dtde.getDropAction() );
+            } else {
                 dtde.rejectDrag();
                 removeDropLine();
                 targetItem = null;
                 return;
-            } else {
-                dtde.acceptDrag( dtde.getDropAction() );
             }
 
             if( target instanceof CategoryList ) {

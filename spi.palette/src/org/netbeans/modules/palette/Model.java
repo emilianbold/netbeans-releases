@@ -77,4 +77,6 @@ public interface Model {
     Lookup getRoot();
     
     boolean moveCategory( Category source, Category target, boolean moveBefore );
+    
+    boolean canReorderCategories();
 }

@@ -31,6 +31,8 @@ import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.modules.palette.ui.DnDSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.PasteType;
@@ -187,35 +189,9 @@ public class DefaultCategory implements Category, NodeListener {
         return -1;
     }
     
-    public boolean moveItem( Item source, Item target, boolean moveBefore ) {
-        int sourceIndex = itemToIndex( source );
-        int targetIndex = itemToIndex( target );
-        if( !moveBefore ) {
-            targetIndex++;
-        }
-        if( sourceIndex >= 0 && targetIndex >= 0 && sourceIndex != targetIndex ) {
-            if( sourceIndex < targetIndex ) {
-                targetIndex--;
-            }
-            Index order = (Index)categoryNode.getCookie( Index.class );
-            if( null == order ) {
-                return false;
-            }
-            order.move( sourceIndex, targetIndex );
-            items = null;
-            return true;
-        }
-        
-        return false;
-    }
-
     public boolean dragOver( DropTargetDragEvent e ) {
-        boolean res = e.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR );
         DragAndDropHandler handler = getDragAndDropHandler();
-        if( null != handler ) {
-            res |= handler.canDrop( getLookup(), e.getCurrentDataFlavors(), e.getDropAction() );
-        }
-        return res;
+        return handler.canDrop( getLookup(), e.getCurrentDataFlavors(), e.getDropAction() );
     }
 
     public boolean dropItem( Transferable dropItem, int dndAction, Item target, boolean dropBefore ) {
@@ -224,52 +200,13 @@ public class DefaultCategory implements Category, NodeListener {
             targetIndex++;
         }
         DragAndDropHandler handler = getDragAndDropHandler();
-        boolean res;
-        if( null != handler ) {
-            res = handler.doDrop( getLookup(), dropItem, dndAction, targetIndex );
-        } else {
-            res = performDefaultDrop( dropItem, dndAction, target, dropBefore, targetIndex );
-        }
+        boolean res = handler.doDrop( getLookup(), dropItem, dndAction, targetIndex );
+        items = null;
         return res;
     }
     
     private DragAndDropHandler getDragAndDropHandler() {
         return (DragAndDropHandler)categoryNode.getLookup().lookup( DragAndDropHandler.class );
-    }
-    
-    private boolean performDefaultDrop( Transferable dropItem, int dndAction, Item target, boolean dropBefore, int targetIndex ) {
-        try {
-            PasteType paste = categoryNode.getDropType( dropItem, dndAction, targetIndex );
-            if( null != paste ) {
-                Item[] itemsBefore = getItems();
-                paste.paste();
-                items = null;
-                Item[] itemsAfter = getItems();
-                
-                if( itemsAfter.length == itemsBefore.length+1 ) {
-                    Item newItem = null;
-                    for( int i=itemsAfter.length-1; i>=0; i-- ) {
-                        newItem = itemsAfter[i];
-                        for( int j=0; j<itemsBefore.length; j++ ) {
-                            if( newItem.equals( itemsBefore[j] ) ) {
-                                newItem = null;
-                                break;
-                            }
-                        }
-                        if( null != newItem ) {
-                            break;
-                        }
-                    }
-                    if( null != newItem && targetIndex >= 0 ) {
-                        moveItem( newItem, target, dropBefore );
-                    }
-                }
-                return true;
-            }
-        } catch( IOException ioE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
-        }
-        return false;
     }
     
     public String toString() {

@@ -88,4 +88,7 @@ public class ProxyModel implements Model {
         original.clearSelection();
     }
 
+    public boolean canReorderCategories() {
+        return original.canReorderCategories();
+    }
 }

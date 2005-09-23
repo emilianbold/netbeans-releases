@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import javax.swing.Action;
+import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteFilter;
 import org.openide.nodes.*;
@@ -123,7 +124,7 @@ public class DefaultModel implements Model, NodeListener {
         return categories;
     }
     
-    static boolean canBlock() {
+    public static boolean canBlock() {
         return !Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess ();
     }
 
@@ -210,25 +211,12 @@ public class DefaultModel implements Model, NodeListener {
     }
     
     public boolean moveCategory( Category source, Category target, boolean moveBefore ) {
-        int sourceIndex = categoryToIndex( source );
         int targetIndex = categoryToIndex( target );
         if( !moveBefore ) {
             targetIndex++;
         }
-        if( sourceIndex >= 0 && targetIndex >= 0 && sourceIndex != targetIndex ) {
-            if( sourceIndex < targetIndex ) {
-                targetIndex--;
-            }
-            Index order = (Index)rootNode.getCookie( Index.class );
-            if( null == order ) {
-                return false;
-            }
-            order.move( sourceIndex, targetIndex );
-            categories = null;
-            return true;
-        }
-        
-        return false;
+        DragAndDropHandler handler = getDragAndDropHandler();
+        return handler.moveCategory( source.getLookup(), targetIndex );
     }
 
     private int categoryToIndex( Category category ) {
@@ -264,5 +252,13 @@ public class DefaultModel implements Model, NodeListener {
                 return items[i];
         }
         return null;
+    }
+
+    public boolean canReorderCategories() {
+        return getDragAndDropHandler().canReorderCategories( rootNode.getLookup() );
+    }
+    
+    private DragAndDropHandler getDragAndDropHandler() {
+        return (DragAndDropHandler)rootNode.getLookup().lookup( DragAndDropHandler.class );
     }
 }

@@ -12,8 +12,8 @@
  */
 
 package org.netbeans.spi.palette;
-
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.beans.BeanInfo;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-
+import org.openide.util.datatransfer.ExTransferable;
 /**
  *
  * @author S. Aubrecht
@@ -208,7 +208,7 @@ public class CategoryTest extends AbstractPaletteTestHid {
         Item source = itemsBeforeMove[0];
         Item target = itemsBeforeMove[itemsBeforeMove.length-1];
         
-        cat.moveItem( source, target, true );
+        cat.dropItem( createTransferable( source ), DnDConstants.ACTION_COPY_OR_MOVE, target, true );
         
         Item[] itemsAfterMove = cat.getItems();
         
@@ -234,7 +234,7 @@ public class CategoryTest extends AbstractPaletteTestHid {
         Item source = itemsBeforeMove[0];
         Item target = itemsBeforeMove[itemsBeforeMove.length-1];
         
-        cat.moveItem( source, target, false );
+        cat.dropItem( createTransferable( source ), DnDConstants.ACTION_COPY_OR_MOVE, target, false );
         
         Item[] itemsAfterMove = cat.getItems();
         
@@ -314,5 +314,13 @@ public class CategoryTest extends AbstractPaletteTestHid {
         assertEquals( tgtItemsBefore.length, tgtItemsAfter.length-1 );
         assertEquals( target.getName(), tgtItemsAfter[5].getName() );
         assertEquals( dropItem.getName(), tgtItemsAfter[5+1].getName() );
+    }
+    
+    private Transferable createTransferable( final Item item ) {
+        return new ExTransferable.Single( PaletteController.ITEM_DATA_FLAVOR ) {
+            protected Object getData() throws IOException, UnsupportedFlavorException {
+                return item.getLookup();
+            }
+        };
     }
 }
