@@ -22,6 +22,7 @@ import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.spi.VersioningListener;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
@@ -112,8 +113,8 @@ public class CvsVersioningSystem {
     private CvsVersioningSystem() {
     }
 
-    public CvsFileTableModel getFileTableModel(File [] roots, int displayStatuses) {
-        return new CvsFileTableModel(roots, displayStatuses);
+    public CvsFileTableModel getFileTableModel(Context context, int displayStatuses) {
+        return new CvsFileTableModel(context, displayStatuses);
     }
     
     /**

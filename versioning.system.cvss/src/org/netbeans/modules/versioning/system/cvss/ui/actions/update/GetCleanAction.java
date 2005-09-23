@@ -67,7 +67,7 @@ public class GetCleanAction extends AbstractSystemAction {
 
     private void revertModifications() {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = cache.listFiles(getFilesToProcess(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
+        File [] files = cache.listFiles(getContext(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             rollback(file, VersionsCache.REVISION_BASE);

@@ -53,8 +53,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(ActionEvent ev) {
-        File [] files = getFilesToProcess();
-        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(files, FileInformation.STATUS_VERSIONED_CONFLICT).getNodes();
+        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(getContext(), FileInformation.STATUS_VERSIONED_CONFLICT).getNodes();
         if (nodes.length == 0) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflicts")));

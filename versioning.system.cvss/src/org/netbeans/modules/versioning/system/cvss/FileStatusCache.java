@@ -18,6 +18,7 @@ import org.netbeans.modules.versioning.spi.VersioningListener;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.lib.cvsclient.admin.Entry;
@@ -127,17 +128,18 @@ public class FileStatusCache {
      * These are locally and remotely modified and ignored files. This method
      * returns no folders.
      *
-     * @param roots folders to examine
+     * @param context context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
-    public File [] listFiles(File [] roots, int includeStatus) {
+    public File [] listFiles(Context context, int includeStatus) {
         Set set = new HashSet();
         Map allFiles = cacheProvider.getAllModifiedValues();
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) allFiles.get(file);
             if (info.isDirectory() || (info.getStatus() & includeStatus) == 0) continue;
+            File [] roots = context.getRootFiles();
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
                 if (root instanceof FlatFolder) {
@@ -149,6 +151,17 @@ public class FileStatusCache {
                     if (Utils.isParentOrEqual(root, file)) {
                         set.add(file);
                         break;
+                    }
+                }
+            }
+        }
+        if (context.getExclusions().size() > 0) {
+            for (Iterator i = context.getExclusions().iterator(); i.hasNext();) {
+                File excluded = (File) i.next();
+                for (Iterator j = set.iterator(); j.hasNext();) {
+                    File file = (File) j.next();
+                    if (Utils.isParentOrEqual(excluded, file)) {
+                        j.remove();
                     }
                 }
             }

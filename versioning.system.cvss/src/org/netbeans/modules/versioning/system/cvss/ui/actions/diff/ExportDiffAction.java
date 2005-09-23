@@ -78,7 +78,7 @@ public class ExportDiffAction extends AbstractSystemAction {
     protected File [] getFilesToProcess() {
         CvsModuleConfig config = CvsModuleConfig.getDefault();
         CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(
-                super.getFilesToProcess(), enabledForStatus).getNodes();
+                super.getContext(), enabledForStatus).getNodes();
         Set modifiedFiles = new HashSet();
         for (int i = 0; i < nodes.length; i++) {
             File file = nodes[i].getFile();

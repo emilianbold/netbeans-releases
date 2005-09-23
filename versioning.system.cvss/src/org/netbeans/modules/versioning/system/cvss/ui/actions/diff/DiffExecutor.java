@@ -104,7 +104,7 @@ public class DiffExecutor {
      * @return File [] array of Files having specified status
      */
     public static File [] getModifiedFiles(Context context, int includeStatus) {
-        CvsFileTableModel model = CvsVersioningSystem.getInstance().getFileTableModel(context.getFiles(), includeStatus);
+        CvsFileTableModel model = CvsVersioningSystem.getInstance().getFileTableModel(context, includeStatus);
         CvsFileNode [] nodes = model.getNodes();
         List files = new ArrayList();
         for (int i = 0; i < nodes.length; i++) {

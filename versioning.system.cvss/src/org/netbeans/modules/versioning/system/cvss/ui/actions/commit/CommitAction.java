@@ -25,6 +25,7 @@ import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.executor.RemoveExecutor;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
 import org.netbeans.modules.versioning.spi.VersioningListener;
@@ -65,7 +66,7 @@ public class CommitAction extends AbstractSystemAction {
     protected File [] getFilesToProcess() {
         CvsModuleConfig config = CvsModuleConfig.getDefault();
         CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(
-                super.getFilesToProcess(), FileInformation.STATUS_LOCAL_CHANGE).getNodes();
+                super.getContext(), FileInformation.STATUS_LOCAL_CHANGE).getNodes();
         Set modifiedFiles = new HashSet();
         for (int i = 0; i < nodes.length; i++) {
             File file = nodes[i].getFile();
@@ -80,9 +81,9 @@ public class CommitAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
-    public static void invokeCommit(String contentTitle, File [] roots) {
+    public static void invokeCommit(String contentTitle, Context context) {
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
-        if (CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE).getNodes().length == 0) {
+        if (CvsVersioningSystem.getInstance().getFileTableModel(context, FileInformation.STATUS_LOCAL_CHANGE).getNodes().length == 0) {
             JOptionPane.showMessageDialog(null, loc.getString("MSG_NoFilesToCommit_Prompt"), 
                                           loc.getString("MSG_NoFilesToCommit_Title"), JOptionPane.INFORMATION_MESSAGE);
             return;   
@@ -113,7 +114,7 @@ public class CommitAction extends AbstractSystemAction {
                 refreshCommitDialog(settings, commit);
             }
         });
-        setupNodes(settings, roots);
+        setupNodes(settings, context);
         settings.putClientProperty("contentTitle", contentTitle);
         settings.putClientProperty("DialogDescriptor", descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -122,12 +123,11 @@ public class CommitAction extends AbstractSystemAction {
 
         settings.updateCommand(cmd);
         copy(commandTemplate, cmd);
-        cmd.setFiles(roots);
         executeCommit(settings);
     }
     
-    private static void setupNodes(CommitSettings settings, File [] roots) {
-        CvsFileNode [] filesToCommit = CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE).getNodes();
+    private static void setupNodes(CommitSettings settings, Context context) {
+        CvsFileNode [] filesToCommit = CvsVersioningSystem.getInstance().getFileTableModel(context, FileInformation.STATUS_LOCAL_CHANGE).getNodes();
         settings.setNodes(filesToCommit);
     }
 
@@ -187,8 +187,7 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(ActionEvent ev) {
-        File [] roots = getFilesToProcess();
-        invokeCommit(getContextDisplayName(), roots);
+        invokeCommit(getContextDisplayName(), getContext());
     }
     
     private static void copy(CommitCommand c1, CommitCommand c2) {

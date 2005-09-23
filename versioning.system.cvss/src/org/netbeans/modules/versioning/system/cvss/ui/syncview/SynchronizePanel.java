@@ -197,7 +197,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(SynchronizePanel.class, "MSG_Refreshing_Versioning_View"));
         try {
             ph.start();
-            final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context.getFiles(), displayStatuses));  // takes long
+            final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context, displayStatuses));  // takes long
             if (nodes == null || Thread.interrupted()) {
                 return;
                 // finally section
@@ -266,7 +266,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
     private void onCommitAction() {
-        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), context.getFiles());
+        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), context);
     }
     
     /**

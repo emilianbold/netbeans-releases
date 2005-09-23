@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
+import org.netbeans.modules.versioning.system.cvss.util.Context;
+
 import java.io.File;
 
 /**
@@ -23,11 +25,11 @@ import java.io.File;
 public class CvsFileTableModel {
     
     private final int includeStatus;
-    private final File [] roots;
+    private final Context context;
     private final FileStatusCache cache;
 
-    CvsFileTableModel(File [] roots, int includeStatus) {
-        this.roots = (File[]) roots.clone();
+    CvsFileTableModel(Context context, int includeStatus) {
+        this.context = context;
         this.includeStatus = includeStatus; 
         this.cache = CvsVersioningSystem.getInstance().getStatusCache();
     }
@@ -37,7 +39,7 @@ public class CvsFileTableModel {
      * @return CvsFileNode [] array of files in this table model
      */
     public CvsFileNode [] getNodes() {
-        File [] files = cache.listFiles(roots, includeStatus);
+        File [] files = cache.listFiles(context, includeStatus);
         CvsFileNode [] nodes = new CvsFileNode[files.length];
         for (int i = 0; i < files.length; i++) {
             nodes[i] = new CvsFileNode(files[i]);
