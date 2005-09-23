@@ -216,9 +216,9 @@ ChangeListener, ActionListener {
         originalAddStar = model.getJavaFormatLeadingStarInComment ();
         originalNewLine = model.getJavaFormatNewlineBeforeBrace ();
         originalSpace = model.getJavaFormatSpaceBeforeParenthesis ();
-        originalStatementIndent = Math.max
-            (model.getJavaFormatStatementContinuationIndent (), 0);
-        originalIndent = Math.max (model.getSpacesPerTab (), 0);
+        originalStatementIndent = 
+            model.getJavaFormatStatementContinuationIndent ();
+        originalIndent = model.getSpacesPerTab ();
         
         // init components
         listen = false;
