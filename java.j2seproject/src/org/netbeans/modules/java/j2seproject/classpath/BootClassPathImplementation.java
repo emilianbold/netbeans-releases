@@ -68,6 +68,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 }
                 resourcesCache = Collections.unmodifiableList (result);
             }
+            else {
+                resourcesCache = Collections.EMPTY_LIST;
+            }
         }
         return this.resourcesCache;
     }
@@ -100,7 +103,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             //Platform not found, return the default platform and listen
             //on broken reference resolution
             this.isActivePlatformValid = false;
-            return this.platformManager.getDefaultPlatform ();
+            return null; //this.platformManager.getDefaultPlatform ();
         } else {
             //Platform not set => default platform
             return this.platformManager.getDefaultPlatform();
