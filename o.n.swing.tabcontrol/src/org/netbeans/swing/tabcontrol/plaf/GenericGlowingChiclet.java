@@ -638,9 +638,15 @@ class GenericGlowingChiclet {
                        bds.x + bds.width - lowerRightArc, bds.y + bds.height);
 
         } else {
-            gp.curveTo(bds.x + bds.width - upperRightArc, bds.y,
+            if (upperRightArc != 0 || lowerRightArc != 0) {
+                gp.curveTo(bds.x + bds.width - upperRightArc, bds.y,
+                       bds.x + bds.width, bds.y, bds.x + bds.width-1,
+                       bds.y + upperRightArc);
+            } else {
+                gp.curveTo(bds.x + bds.width - upperRightArc, bds.y,
                        bds.x + bds.width, bds.y, bds.x + bds.width,
                        bds.y + upperRightArc);
+            }
             if (bds.y + upperRightArc < bds.y + bds.height - lowerRightArc) {
                 gp.lineTo(bds.x + bds.width,
                           bds.y + bds.height - lowerRightArc);
