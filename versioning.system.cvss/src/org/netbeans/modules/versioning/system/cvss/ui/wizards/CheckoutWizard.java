@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
 import org.openide.*;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -173,8 +174,12 @@ public final class CheckoutWizard implements ChangeListener{
         return modulePanel.tagTextField.getText().trim();
     }
 
+    /**
+     * @return normalized file path
+     */
     public String getWorkingDir() {
-        return modulePanel.workTextField.getText();
+        String path = modulePanel.workTextField.getText();
+        return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
     }
 
     /** Password scrambled by standard scramler. */
