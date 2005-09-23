@@ -250,7 +250,6 @@ public class JSPKit extends NbEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 try {
-                    
                     Caret caret = target.getCaret();
                     BaseDocument doc = Utilities.getDocument(target);
                     int dotPos = caret.getDot();

@@ -58,29 +58,26 @@ public abstract class SyntaxElement extends Object {
         return previous;
     }
 
-    public String getImage() throws BadLocationException {
-        return support.getDocument().getText(offset, length);
-    }
-
-
-/*    public SyntaxElement getPrevious() throws BadLocationException {
-        if( previous == null ) {
-            previous = support.getPreviousElement( offset );
-            if ( previous != null ) previous.next = this;
-        }
-        return previous;
-    }
-
     public SyntaxElement getNext() throws BadLocationException {
         if ( next == null ) {
             next = support.getNextElement( offset+length );
             if ( next != null ) next.previous = this;
         }
         return next;
-    }*/
+    }
+
+    public String getImage() throws BadLocationException {
+        return support.getDocument().getText(offset, length);
+    }
 
     public String toString() {
-        return "Element [" + offset + "," + (offset+length-1) + "]";    // NOI18N
+        String content = "???";
+        try {
+            content = support.getDocument().getText(getElementOffset(), getElementLength());
+        }catch(BadLocationException e) {
+            //do not handle
+        }
+        return "Element [" + offset + "," + (offset+length-1) + "] (" + content + ")";    // NOI18N
     }
 
     public static class Comment extends SyntaxElement {

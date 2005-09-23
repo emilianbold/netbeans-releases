@@ -1120,16 +1120,19 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             return null;
         }
         
+        if(id == JspTagTokenContext.COMMENT || id == JspDirectiveTokenContext.COMMENT) {
+            return getCommentChain(item, offset);
+        }
+        
         if (id == JspTagTokenContext.SYMBOL2 || id == JspDirectiveTokenContext.SYMBOL2) {
-//System.out.println("just at symbol");
-            if ((getTokenEnd(item) == offset) && isScriptStartToken(item)) {
-                return getScriptingChain(item.getNext(), offset);
+            if (isScriptStartToken(item)) {
+                return getScriptingChain(item, offset);
             }
             
             if ((getTokenEnd(item) == offset) && isScriptEndToken(item)) {
                 TokenItem nextItem = item.getNext();
                 if (!isTagDirToken(item))
-                    return getContentChain(nextItem, offset);
+                    return getContentChain(item, offset);
             }
             return null;
         }
@@ -1188,7 +1191,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     return getContentChain(elementStart, offset);
                 }
                 elementStart = elementStart.getPrevious(); // now non-null
-                if (!isScriptingOrContentToken(elementStart)) {
+                if (!isScriptingOrContentToken(elementStart)
+                    || elementStart.getTokenID() == JspTagTokenContext.COMMENT 
+                    || elementStart.getTokenID() == JspDirectiveTokenContext.COMMENT) {
                     // something from JSP
                     if (isScriptStartToken(elementStart)) {
                         return getScriptingChain(elementStart.getNext(), offset);
@@ -1330,6 +1335,44 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
         
     // ------- METHODS FOR CONSTRUCTING SEMANTICALLY LIKNKED CHAINS OF TOKENS ------
+    
+    private SyntaxElement getCommentChain(TokenItem token, int offset) {
+        //we are somewhere in a JSP comment - need to find its start and end
+        //backtrace for start
+        TokenItem start = null;
+        TokenItem search = token;
+        do {
+            if(search != null && search.getImage().startsWith("<%--")) { //NOI18N
+                start = search;
+                break;
+            }
+            search = search.getPrevious();
+        } while(search != null);
+        
+        if(start == null) {
+            //didn't find a comment start - strange???
+            return null;
+        }
+        
+        //find comment end
+        TokenItem end = null;
+        TokenItem prevNonNullToken = token;
+        search = token;
+        do {
+            if(search != null && search.getImage().endsWith("--%>")) { //NOI18N
+                end = search;
+                break;
+            }
+            prevNonNullToken = search;
+            search = search.getNext();
+        } while(token != null);
+        if(end == null) {
+            //comment to the end of the file - may happed
+            end = prevNonNullToken; //last non-null token
+        }
+        
+        return new SyntaxElement.Comment(this, start.getOffset(), getTokenEnd(end));
+    }
     
     /** Gets an element representing a tag or directive starting with token item firstToken. */
     private SyntaxElement getTagOrDirectiveChain(boolean tag, TokenItem firstToken, int offset) {
@@ -1486,7 +1529,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 return new SyntaxElement.ContentL(this, 
                     firstToken.getOffset(), getDocument().getLength());
             }
-            if (!isScriptingOrContentToken(nextItem))
+            if (!isScriptingOrContentToken(nextItem) 
+                    || nextItem.getTokenID() == JspTagTokenContext.COMMENT 
+                    || nextItem.getTokenID() == JspDirectiveTokenContext.COMMENT)
                 return new SyntaxElement.ContentL(this, 
                     firstToken.getOffset(), getTokenEnd(item));
             item = nextItem;
@@ -1512,6 +1557,26 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 offset = ti.getOffset() -1 ;
             }
         } while (elem == null && offset >= 0);
+        return elem;
+    }
+    
+    SyntaxElement getNextElement(int offset) throws BadLocationException {
+        int doclen = getDocument().getLength();
+        if(offset >= doclen)
+            return null;
+        
+        SyntaxElement elem = null;
+        offset++;
+        do {
+            elem = getElementChain(offset);
+            if(elem == null) {
+                TokenItem ti = getItemAtOrBefore(offset);
+                if(ti == null)
+                    return null;
+                offset = getTokenEnd(ti) + 1;
+            }
+        } while(elem == null && offset < doclen);
+        
         return elem;
     }
     
