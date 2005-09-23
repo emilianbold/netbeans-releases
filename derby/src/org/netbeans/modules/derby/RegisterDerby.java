@@ -81,7 +81,7 @@ public class RegisterDerby implements DatabaseRuntime {
     /**
      * Whether this runtime accepts this connection string.
      */
-    public boolean acceptDatabaseURL(String url){
+    public boolean acceptsDatabaseURL(String url){
         if (url.startsWith("jdbc:derby://"))
             return true;
         else

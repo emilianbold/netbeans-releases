@@ -554,7 +554,7 @@ public class DatabaseConnection implements DBConnection {
             if (runtime.isRunning()) {
                 continue;
             }
-            if (runtime.canStart() && runtime.acceptsConnectionUrl(db)) {
+            if (runtime.canStart() && runtime.acceptsDatabaseURL(db)) {
                 runtime.start();
             }
         }

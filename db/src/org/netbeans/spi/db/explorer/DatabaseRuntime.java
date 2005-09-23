@@ -46,7 +46,7 @@ public interface DatabaseRuntime {
      * 
      * @return true if the runtime accepts this connection url; false otherwise.
      */
-    boolean acceptDatabaseURL(String url);
+    boolean acceptsDatabaseURL(String url);
     
     /**
      * Returns the state (running/not running) of the represented database server.
