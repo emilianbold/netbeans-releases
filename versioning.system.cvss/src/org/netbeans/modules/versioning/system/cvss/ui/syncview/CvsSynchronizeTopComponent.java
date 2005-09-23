@@ -20,6 +20,7 @@ import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 
 import java.awt.BorderLayout;
 import java.io.*;
@@ -207,8 +208,8 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
             File file = roots[i];
             for (Iterator j = newFiles.iterator(); j.hasNext();) {
                 File includedFile = (File) j.next();
-                if (Utils.isParentOrEqual(includedFile, file)) continue outter;
-                if (Utils.isParentOrEqual(file, includedFile)) {
+                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !(includedFile instanceof FlatFolder))) continue outter;
+                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !(file instanceof FlatFolder))) {
                     j.remove();
                 }
             }
