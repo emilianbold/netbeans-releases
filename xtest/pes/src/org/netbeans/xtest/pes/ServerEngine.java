@@ -439,7 +439,7 @@ public class ServerEngine {
             ZipUtils.unpackZip(zip,tempDir,PEConstants.HTMLRESULTS_DIR);
             ZipUtils.unpackZip(zip,tempDir,PEConstants.INDEX_HTML_FILE);
         } catch (IOException ioe) {
-            PESLogger.logger.log(Level.WARNING,"IOE caught when partialy unpacking zip files",ioe);
+            PESLogger.logger.log(Level.WARNING,"IOE caught when partialy unpacking zip file "+zip.getName(),ioe);
             newReport.setValid(false, "IOE caught when partialy unpacking zip files: "+ioe.getMessage());
             return false;
         }
