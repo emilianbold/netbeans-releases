@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>3</release-version>
+                        <release-version>4</release-version>
 			<!-- temporarily adding implementation dependency, ant tasks will become part of the j2eeserver module soon -->
                         <implementation-version/>
                     </run-dependency>

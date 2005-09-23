@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2eeservertest/1
-OpenIDE-Module-Specification-Version: 2.0
+OpenIDE-Module-Specification-Version: 2.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/tests/j2eeserver/plugin/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/tests/j2eeserver/plugin/Bundle.properties
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3,
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/4,
  org.openide.execution > 1.0,
  org.openide.debugger > 1.0,
  org.netbeans.modules.debugger.core/3,
