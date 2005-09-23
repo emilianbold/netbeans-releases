@@ -15,6 +15,7 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import java.lang.reflect.Field;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -137,7 +138,25 @@ public abstract class AbstractModeContainer implements ModeContainer {
                 if (Utilities.getOperatingSystem() == Utilities.OS_MAC && System.getProperty("java.vm.version").indexOf("1.5") > -1) {//NOI18N
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+                            //#62947 another workaround for macosx 1.5 focus behaviour.
+                            // when maximizing the mode, the old and new focused component is the same, but removed from
+                            // awt hierarchy and added elsewhere.
+                            // the DefautlkeyboardFocusmanager doen't do it's job then and locks the keyboard.
+                            // hack it by make it believe the focus changed.
+                            try {
+                                Field fld = KeyboardFocusManager.class.getDeclaredField("focusOwner");//NOI8N
+                                fld.setAccessible(true);
+                                fld.set(KeyboardFocusManager.getCurrentKeyboardFocusManager(), null);
+                            } catch (IllegalArgumentException ex) {
+                                ex.printStackTrace();
+                            } catch (SecurityException ex) {
+                                ex.printStackTrace();
+                            } catch (NoSuchFieldException ex) {
+                                ex.printStackTrace();
+                            } catch (IllegalAccessException ex) {
+                                ex.printStackTrace();
+                            }
+                            //#62947 hack finished.
                             selectedTopComponent.requestFocus();
                         }
                     });
