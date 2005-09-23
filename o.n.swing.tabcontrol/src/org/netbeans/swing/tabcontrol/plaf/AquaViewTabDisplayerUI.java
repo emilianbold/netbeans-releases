@@ -309,6 +309,9 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         //on the parent class
 
         protected int inCloseIconRect(Point point) {
+            if (!displayer.isShowCloseButton()) {
+                return -1;
+            }
             int index = getLayoutModel().indexOfPoint(point.x, point.y);
             if (index < 0) {
                 return -1;

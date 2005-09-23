@@ -338,7 +338,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 return -1;
             }
             int index = getLayoutModel().indexOfPoint(point.x, point.y);
-            if (index < 0) {
+            if (index < 0 || !isSelected(index)) {
                 return -1;
             }
             return getCloseIconRect(tempRect, index).contains(point) ?
