@@ -30,6 +30,9 @@ core/windows/src/**/*.png
 core/multiview/src/**/Bundle.properties
 core/multiview/src/**/*.gif
 core/multiview/src/**/*.png
+core/progress/src/**/Bundle.properties
+core/progress/src/**/*.gif
+core/progress/src/**/*.png
 core/favorites/src/**/Bundle.properties
 core/favorites/src/**/templatesFile.html
 core/favorites/src/**/*.gif
