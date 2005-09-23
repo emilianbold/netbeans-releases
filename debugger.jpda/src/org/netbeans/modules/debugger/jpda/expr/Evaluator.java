@@ -412,8 +412,16 @@ public class Evaluator implements JavaParserVisitor {
     private Object visitUnaryExpression(SimpleNode node, Object data) {
 
         Object value = node.jjtGetChild(0).jjtAccept(this, data);
+//        System.out.println("In visitUnaryExpression:");
+//        System.out.println("value -> " + value);
+//        System.out.println("value.class -> " + value.getClass());
+//        System.out.println("PrimitiveValue.class -> " + PrimitiveValue.class);
+//        System.out.println("BooleanValue.class -> " + BooleanValue.class);
+//        System.out.println("Assignable ? " + BooleanValue.class.isAssignableFrom(value.getClass()));
         Assert.assertAssignable(value, PrimitiveValue.class, node, "badOperandForUnaryOperator", value);
-        Assert.assertNotAssignable(value, BooleanValue.class, node, "badOperandForUnaryOperator", value);
+        // Assert on next line is probably a mistake:
+        //Assert.assertNotAssignable(value, BooleanValue.class, node, "badOperandForUnaryOperator", value);
+       
 
         Token operator = (Token) node.getAttribute("operator");
         try {
