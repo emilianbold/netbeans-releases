@@ -124,6 +124,9 @@ public class SwingLayoutBuilder {
             GroupLayout.Group verticalGroup = composeGroup(layout, verticalInterval, true, true);
             layout.setVerticalGroup(verticalGroup);
             composeLinks(layout);
+            // Try to create the layout (to be able to reset it in case of some problem)
+            layout.layoutContainer(container);
+            layout.invalidateLayout(container);
             reset = false;
         } finally {
             if (reset) {
