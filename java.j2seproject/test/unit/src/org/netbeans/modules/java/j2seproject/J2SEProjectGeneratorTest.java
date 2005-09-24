@@ -172,6 +172,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         } 
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ArrayList l = new ArrayList(props.keySet());
+        int extFileRefCount = 0;
         for (int i=0; i<createdPropertiesExtSources.length; i++) {
             String propName = createdPropertiesExtSources[i];
             String propValue = props.getProperty(propName);
@@ -181,17 +182,29 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
                 assertEquals("Invalid value of manifest.file property.", "manifest.mf", propValue);
             }
             else if ("src.dir".equals (propName)) {
-                PropertyEvaluator eval = helper.getStandardPropertyEvaluator();                
+                PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
+                //Remove the file.reference to the source.dir, it is implementation detail
+                //depending on the presence of the AlwaysRelativeCollocationQuery
+                assertTrue("Value of the external source dir should be file reference",propValue.startsWith("${file.reference."));
+                if (l.remove (propValue.subSequence(2,propValue.length()-1))) {
+                    extFileRefCount++;
+                }
                 File file = helper.resolveFile(eval.evaluate(propValue));
                 assertEquals("Invalid value of src.dir property.", srcRoot, file);
             }
             else if ("test.test.dir".equals(propName)) {
                 PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
+                //Remove the file.reference to the source.dir, it is implementation detail
+                //depending on the presence of the AlwaysRelativeCollocationQuery
+                assertTrue("Value of the external test dir should be file reference",propValue.startsWith("${file.reference."));
+                if (l.remove (propValue.subSequence(2,propValue.length()-1))) {
+                    extFileRefCount++;
+                }
                 File file = helper.resolveFile(eval.evaluate(propValue));
                 assertEquals("Invalid value of test.src.dir property.", testRoot, file);
             }
         }
-        assertEquals("Found unexpected property: "+l,createdPropertiesExtSources.length, props.keySet().size());
+        assertEquals("Found unexpected property: "+l,createdPropertiesExtSources.length, props.keySet().size() - extFileRefCount);
     }
     
 }
