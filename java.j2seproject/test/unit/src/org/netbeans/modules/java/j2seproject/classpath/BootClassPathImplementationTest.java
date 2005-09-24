@@ -106,8 +106,10 @@ public class BootClassPathImplementationTest extends NbTestCase {
         bootCP = ClassPath.getClassPath(file, ClassPath.BOOT);
         assertNotNull("Boot ClassPath exists",bootCP);
         roots = bootCP.getRoots();
-        assertEquals("Boot classpath size",1, roots.length);        
-        assertEquals("Boot classpath",defaultPlatformBootRoot, roots[0]);
+        //Change of the behavior of the BootClassPathImplementation,
+        // it should not return the default platform in case of broken project's platform
+        // see issue #57641:rt.jar and src.zip are scanned when it's not neccessary
+        assertEquals("Boot classpath size",0, roots.length);
                 
         tp.setExplicitPlatformVisible(true);
         bootCP = ClassPath.getClassPath(file, ClassPath.BOOT);
