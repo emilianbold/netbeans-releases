@@ -996,32 +996,59 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     protected boolean canClose() {
         if (cesEnv().isModified()) {
-            String msg = messageSave();
 
-            ResourceBundle bundle = NbBundle.getBundle(CloneableEditorSupport.class);
-
-            JButton saveOption = new JButton(bundle.getString("CTL_Save")); // NOI18N
-            saveOption.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Save")); // NOI18N
-            saveOption.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CTL_Save")); // NOI18N
-
-            JButton discardOption = new JButton(bundle.getString("CTL_Discard")); // NOI18N
-            discardOption.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Discard")); // NOI18N
-            discardOption.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CTL_Discard")); // NOI18N
-            discardOption.setMnemonic(bundle.getString("CTL_Discard_Mnemonic").charAt(0)); // NOI18N
-
-            NotifyDescriptor nd = new NotifyDescriptor(
-                    msg, bundle.getString("LBL_SaveFile_Title"), NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE,
-                    new Object[] { saveOption, discardOption, NotifyDescriptor.CANCEL_OPTION }, saveOption
-                );
-
-            Object ret = DialogDisplayer.getDefault().notify(nd);
-
-            if (NotifyDescriptor.CANCEL_OPTION.equals(ret) || NotifyDescriptor.CLOSED_OPTION.equals(ret)) {
+			class SafeAWTAccess implements Runnable {
+				boolean running;
+				boolean finished;
+				int ret;
+				
+				public void run() {
+					synchronized (this) {
+						running = true;
+						notifyAll();
+					}
+					
+					try {
+						ret = canCloseImpl();
+					} finally {					
+						synchronized (this) {
+							finished = true;
+							notifyAll();
+						}
+					}
+				}
+				
+				
+				
+				public synchronized void waitForResult() throws InterruptedException {
+					if (!running) {
+						wait(10000);
+					}
+					if (!running) {
+						throw new InterruptedException("Waiting 10s for AWT and nothing! Exiting to prevent deadlock"); // NOI18N
+					}
+					
+					while (!finished) {
+						wait();
+					}
+				}
+			}
+			
+			
+			SafeAWTAccess safe = new SafeAWTAccess();
+			SwingUtilities.invokeLater(safe);
+			try {
+				safe.waitForResult();
+			} catch (InterruptedException ex) {
+				ERR.notify(ex);
+				return false;
+			}
+			
+            if (safe.ret == 0) {
                 return false;
             }
 
-            if (saveOption.equals(ret)) {
+            if (safe.ret == 1) {
                 try {
                     saveDocument();
                 } catch (IOException e) {
@@ -1033,33 +1060,41 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         return true;
-
-        /* old code was:
-                SaveCookie savec = (SaveCookie) entry.getDataObject().getCookie(SaveCookie.class);
-                if (savec != null) {
-                    MessageFormat format = new MessageFormat(NbBundle.getBundle(EditorSupport.class).getString("MSG_SaveFile")); // NOI18N
-                    String msg = format.format(new Object[] { entry.getDataObject().getName()});
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
-                    Object ret = DialogDisplayer.getDefault().notify(nd);
-
-                    if (NotifyDescriptor.CANCEL_OPTION.equals(ret)
-                            || NotifyDescriptor.CLOSED_OPTION.equals(ret)
-                       ) {
-                        return false;
-                    }
-
-                    if (NotifyDescriptor.YES_OPTION.equals(ret)) {
-                        try {
-                            savec.save();
-                        }
-                        catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
-                            return false;
-                        }
-                    }
-                }
-        */
     }
+	
+	/** @return 0 => cannot close, -1 can close and do not save, 1 can close and save */
+	private int canCloseImpl() {
+		String msg = messageSave();
+
+		ResourceBundle bundle = NbBundle.getBundle(CloneableEditorSupport.class);
+
+		JButton saveOption = new JButton(bundle.getString("CTL_Save")); // NOI18N
+		saveOption.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Save")); // NOI18N
+		saveOption.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CTL_Save")); // NOI18N
+
+		JButton discardOption = new JButton(bundle.getString("CTL_Discard")); // NOI18N
+		discardOption.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Discard")); // NOI18N
+		discardOption.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CTL_Discard")); // NOI18N
+		discardOption.setMnemonic(bundle.getString("CTL_Discard_Mnemonic").charAt(0)); // NOI18N
+
+		NotifyDescriptor nd = new NotifyDescriptor(
+				msg, bundle.getString("LBL_SaveFile_Title"), NotifyDescriptor.YES_NO_CANCEL_OPTION,
+				NotifyDescriptor.QUESTION_MESSAGE,
+				new Object[] { saveOption, discardOption, NotifyDescriptor.CANCEL_OPTION }, saveOption
+			);
+
+		Object ret = DialogDisplayer.getDefault().notify(nd);
+
+		if (NotifyDescriptor.CANCEL_OPTION.equals(ret) || NotifyDescriptor.CLOSED_OPTION.equals(ret)) {
+			return 0;
+		}
+
+		if (saveOption.equals(ret)) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
 
     //
     // public methods provided by this class

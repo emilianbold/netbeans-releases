@@ -110,7 +110,7 @@ public abstract class MultiFileLoader extends DataLoader {
             }
             // this primary file is recognized by a different
             // loader. We should not add entries to it
-            return null;
+            return obj;
         }
 
         // mark all secondary entries used

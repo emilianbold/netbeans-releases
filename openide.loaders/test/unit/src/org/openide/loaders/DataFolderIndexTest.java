@@ -48,39 +48,29 @@ public class DataFolderIndexTest extends NbTestCase {
         super(s);
     }
     
-    protected void setUp () {
+    protected void setUp () throws Exception {
         if (!(org.openide.util.Lookup.getDefault() instanceof Lkp)) {
             fail("We need our Lkp: " + org.openide.util.Lookup.getDefault());
         }
+
+		FileObject old = Repository.getDefault ().getDefaultFileSystem ().findResource ("TestTemplates");
+		if (old != null) {
+			old.delete();
+		}
         
-        try {
-            fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder ("TestTemplates");
-            df = DataFolder.findFolder (fo);
-            assertNotNull ("DataFolder found for AA", df);
-            
-            df.getPrimaryFile ().createData ("marie");
-            df.getPrimaryFile ().createData ("jakub");
-            df.getPrimaryFile ().createData ("eva");
-            df.getPrimaryFile ().createData ("adam");
-            
-            assertNotNull ("Folder " + df + " has a children.", df.getChildren ());
-            assertEquals ("Folder " + df + " has 4 childs.", 4, df.getChildren ().length);
-            
-        } catch (Exception x) {
-            fail (x.getMessage ());
-        }
-        
+		fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder ("TestTemplates");
+		df = DataFolder.findFolder (fo);
+		assertNotNull ("DataFolder found for AA", df);
+
+		df.getPrimaryFile ().createData ("marie");
+		df.getPrimaryFile ().createData ("jakub");
+		df.getPrimaryFile ().createData ("eva");
+		df.getPrimaryFile ().createData ("adam");
+
+		assertNotNull ("Folder " + df + " has a children.", df.getChildren ());
+		assertEquals ("Folder " + df + " has 4 childs.", 4, df.getChildren ().length);
+
         ErrManager.resetMessages();
-    }
-    
-    protected void tearDown() {
-        try {
-            FileLock l = fo.lock ();
-            fo.delete (l);
-            l.releaseLock ();
-        } catch (IOException ioe) {
-            fail (ioe.getMessage ());
-        }
     }
     
     public void testIndexWithoutInitialization() throws Exception {
