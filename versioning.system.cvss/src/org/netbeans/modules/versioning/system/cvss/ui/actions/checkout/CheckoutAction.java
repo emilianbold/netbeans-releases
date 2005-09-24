@@ -133,6 +133,7 @@ public final class CheckoutAction extends SystemAction {
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         GlobalOptions gtx = new GlobalOptions();
         gtx.setCVSRoot(cvsRoot);
+        gtx.setCompressionLevel(3);
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
 
         executor.execute();
