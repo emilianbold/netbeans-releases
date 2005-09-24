@@ -117,10 +117,12 @@ public class JarWithModuleAttributes extends Jar {
             // your spec version will also change correspondingly, so e.g. Auto Update will see a new version of your module too.
             String specVersBase = getProject().getProperty("spec.version.base");
             if (specVersBase != null) {
+                boolean edited = false;
                 if (implVers != null) {
                     try {
                         Integer implVersI = new Integer(implVers);
                         specVersBase += "." + implVersI;
+                        edited = true;
                     } catch (NumberFormatException e) {
                         // OK, ignore it, not numeric.
                         // XXX provide explanatory URLs for all these warnings...
@@ -158,8 +160,16 @@ public class JarWithModuleAttributes extends Jar {
                 while (versions.hasNext()) {
                     Integer version = (Integer) versions.next();
                     specVersBase += "." + version;
+                    edited = true;
                 }
-                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Specification-Version", specVersBase));
+                if (!edited) {
+                    getProject().log("Warning: in " + ownCnb + ", using spec.version.base for no reason; could just use OpenIDE-Module-Specification-Version statically in the manifest", Project.MSG_WARN);
+                }
+                if (staticManifest.getMainSection().getAttributeValue("OpenIDE-Module-Specification-Version") != null) {
+                    getProject().log("Warning: in " + ownCnb + ", attempting to use spec.version.base while some OpenIDE-Module-Specification-Version is statically defined in manifest.mf; this cannot work", Project.MSG_WARN);
+                } else {
+                    added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Specification-Version", specVersBase));
+                }
             } else if ((ideDeps != null && ideDeps.indexOf('=') != -1) || (moduleDeps != null && moduleDeps.indexOf('=') != -1)) {
                 getProject().log("Warning: in " + ownCnb + ", not using spec.version.base, yet declaring implementation dependencies; may lead to problems with Auto Update", Project.MSG_WARN);
             } else if (implVers != null) {

@@ -1617,6 +1617,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <fileset dir="${nbroot}" includesfile="${listfile}"/>
     </apply>
   </target>
+  
+  <target name="increment-spec-versions" depends="bootstrap,init-module-list" description="Increment all standard module specification versions. Pass -Dbranch=true if not on the trunk.">
+    <property name="branch" value="false"/>
+    <taskdef name="incrspecvers" classname="org.netbeans.nbbuild.IncrementSpecificationVersions" classpath="nbantext.jar"/>
+    <incrspecvers nbroot=".." modules="${allmodules}" branch="${branch}"/>
+  </target>
 
     <target name="maybe-pre-unscramble"><echo>XXX DO NOT CALL ME ANY MORE PLEASE!</echo></target>
 </project>
