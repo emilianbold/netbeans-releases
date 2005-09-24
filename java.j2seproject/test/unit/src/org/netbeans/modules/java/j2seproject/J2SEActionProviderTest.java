@@ -374,9 +374,11 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_RUN", targets);
         assertEquals("There must be one target for COMMAND_RUN", 1, targets.length);
         assertEquals("Unexpected target name", "run", targets[0]);
-        assertEquals("There must be one target parameter", 1, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo.Main", p.getProperty("main.class"));
-
+        //The project is saved after the main.class property was added into the project's properties,
+        //it is no more needed to pass the main.class in the properties.
+        //See issue #61244: Main class setting not saved for J2SE Project during IDE session
+        assertEquals("There must be no target parameter", 0, p.keySet().size());
+        
         // test COMMAND_DEBUG
 
         p = new Properties();
@@ -390,8 +392,11 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_DEBUG", targets);
         assertEquals("There must be one target for COMMAND_DEBUG", 1, targets.length);
         assertEquals("Unexpected target name", "debug", targets[0]);
-        assertEquals("There must be one target parameter", 2, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo.Main", p.getProperty("main.class"));
+        //The project is saved after the main.class property was added into the project's properties,
+        //it is no more needed to pass it in the properties.
+        //See issue #61244: Main class setting not saved for J2SE Project during IDE session
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo.Main", p.getProperty("debug.class"));
 
         // test COMMAND_DEBUG_STEP_INTO
 
@@ -406,8 +411,11 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_DEBUG_STEP_INTO", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_STEP_INTO", 1, targets.length);
         assertEquals("Unexpected target name", "debug-stepinto", targets[0]);
-        assertEquals("There must be one target parameter", 2, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo.Main", p.getProperty("main.class"));
+        //The project is saved after the main.class property was added into the project's properties,
+        //it is no more needed to pass it in the properties.
+        //See issue #61244: Main class setting not saved for J2SE Project during IDE session
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo.Main", p.getProperty("debug.class"));
     }
 
     public void testIsActionEnabled() throws Exception {
