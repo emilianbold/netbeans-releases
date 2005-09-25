@@ -454,6 +454,8 @@ public abstract class ExecutorSupport implements CVSListener  {
      * @param cmd original command to be executed
      * @return array of commands where each command contains only files that have a common parent and are stored under 
      * the same CVS root
+     *
+     * @see ExecutorGroup
      */ 
     protected static BasicCommand [] prepareBasicCommand(BasicCommand cmd) throws IOException {
         String format = cmd.getDisplayName();
