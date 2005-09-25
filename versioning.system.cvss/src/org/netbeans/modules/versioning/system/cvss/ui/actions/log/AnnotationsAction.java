@@ -98,12 +98,11 @@ public class AnnotationsAction extends AbstractSystemAction {
                     File[] cmdFiles = new File[] {file};
                     annotate.setFiles(cmdFiles);
 
-                    ExecutorGroup group = new ExecutorGroup("Loading Annotations", 2);
+                    ExecutorGroup group = new ExecutorGroup("Loading Annotations");
 
                     AnnotationsExecutor executor = new AnnotationsExecutor(cvss, annotate);
                     executor.addLogOutputListener(ab);
-                    executor.joinGroup(group);
-                    executor.execute();
+                    group.addExecutor(executor);
 
                     // get commit message sfrom log
 
@@ -113,9 +112,8 @@ public class AnnotationsAction extends AbstractSystemAction {
 
                     LogExecutor lexecutor = new LogExecutor(cvss, log);
                     lexecutor.addLogOutputListener(ab);
-                    lexecutor.joinGroup(group);
                     lexecutor.setSilent(true);
-                    lexecutor.execute();
+                    group.addExecutor(lexecutor);
 
                     group.addCancellable(new Cancellable(){
                         public boolean cancel() {
@@ -123,6 +121,8 @@ public class AnnotationsAction extends AbstractSystemAction {
                             return true;
                         }
                     });
+
+                    group.execute();
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
                     err.annotate(e, "Can not load revision of " + file);

@@ -57,6 +57,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
             addUpdateContexts(contexts, project, projects);
         }
 
+        ExecutorGroup group = new ExecutorGroup("Updating with dependencies");
         if (contexts.size() > 0) {
             Iterator it = contexts.iterator();
             while (it.hasNext()) {
@@ -73,21 +74,13 @@ public final class UpdateWithDependenciesAction extends NodeAction {
                 if (execs != null) {
                     for (int i = 0; i < execs.length; i++) {
                         ExecutorSupport exec = execs[i];
-                        executors.add(exec);
+                        group.addExecutor(exec);
                     }
                 }
             }
         }
 
-        if (executors.size() > 0) {
-            ExecutorGroup group = new ExecutorGroup("Updating with dependencies", executors.size());
-            Iterator it = executors.iterator();
-            while (it.hasNext()) {
-                ExecutorSupport executorSupport = (ExecutorSupport) it.next();
-                executorSupport.joinGroup(group);
-                executorSupport.execute();
-            }
-        }
+        group.execute();
     }
 
     protected boolean enable(Node[] nodes) {

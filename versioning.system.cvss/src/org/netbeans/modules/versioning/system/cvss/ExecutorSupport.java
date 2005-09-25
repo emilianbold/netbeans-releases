@@ -23,6 +23,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.CommandDuplicator;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RootWizard;
 import org.netbeans.modules.versioning.system.cvss.ui.UIUtils;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -49,13 +50,14 @@ import org.openide.xml.XMLUtil;
  * <ul>
  *   <li>asynchronously executes command using
  *       one thread per repository thread pool
- *   <li>splits command operating over files
- *       in multiple repositories as necessary
  *   <li>logs server output to console
  *   <li>supports execution retry on I/O or authentification errors
  *   <li>reliably detects command termination
  * </ul>
- * 
+ *
+ * <p>Static method {@link #prepareBasicCommand} splits command
+ * operating over files in multiple repositories as necessary.
+ *
  * @author Maros Sandor
  */
 public abstract class ExecutorSupport implements CVSListener  {
@@ -88,6 +90,12 @@ public abstract class ExecutorSupport implements CVSListener  {
 
     private ExecutorGroup group;
 
+    /**
+     * Creates execution environment for given command.
+     * @param cvs
+     * @param cmd that has undergone {@link #prepareBasicCommand} splitting.
+     * @param options
+     */
     protected ExecutorSupport(CvsVersioningSystem cvs, Command cmd, GlobalOptions options) {
         this.cvs = cvs;
         this.cmd = cmd;
@@ -99,26 +107,33 @@ public abstract class ExecutorSupport implements CVSListener  {
 
     /** Async execution. */
     public void execute() {
+        assert executed == false;
         executed = true;
+        if (group == null) {
+            group = new ExecutorGroup(getDisplayName());
+        }
+
         String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1001", new Date(), getDisplayName());
         String sep = NbBundle.getMessage(ExecutorSupport.class, "BK1000");
-        executeImpl("\n" + sep + "\n" + msg + "\n"); // NOI18N
+        String header = "\n" + sep + "\n" + msg + "\n"; // NOI18N
+        clientRuntime = cvs.getClientRuntime(cmd, options);
+        if (group.start(clientRuntime)) {
+            clientRuntime.log(header);
+        }
+
+        executeImpl();
     }
 
-    private void executeImpl(String header) {
+    private void executeImpl() {
         try {
-            clientRuntime = cvs.getClientRuntime(cmd, options);
-            if (group == null || group.start()) {
-                clientRuntime.log(header);
-            }
             task = cvs.post(cmd, options, this);
         } catch (Throwable e) {
             failure = e;
+            group.finished(clientRuntime);
+
             String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1003", new Date(), getDisplayName());
-            if (clientRuntime != null) {
-                clientRuntime.log(msg + "\n"); // NOI18N
-                clientRuntime.logError(e);
-            }
+            clientRuntime.log(msg + "\n"); // NOI18N
+            clientRuntime.logError(e);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             synchronized(this) {
                 finishedExecution = true;
@@ -162,7 +177,7 @@ public abstract class ExecutorSupport implements CVSListener  {
      *
      * <p> Must be called before {@link #execute}
      */
-    public void joinGroup(ExecutorGroup group) {
+    void joinGroup(ExecutorGroup group) {
         assert executed == false;
         this.group = group;
     }
@@ -238,8 +253,6 @@ public abstract class ExecutorSupport implements CVSListener  {
                     toRefresh.clear();
                     if (result.isAborted()) {
                         failure = result.getError();
-                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1006", new Date(), getDisplayName());
-                        logFinishedCommand(msg);
                         return;
                     }
                     if (error instanceof CommandException) {
@@ -251,16 +264,16 @@ public abstract class ExecutorSupport implements CVSListener  {
                     else if (retryConnection(error)) {
                         terminated = false;
                         String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1004", new Date(), getDisplayName());
-                        executeImpl(msg + "\n"); // NOI18N
+                        clientRuntime = cvs.getClientRuntime(cmd, options);
+                        clientRuntime.log(msg + "\n"); // NOI18N
+                        executeImpl();
                     } else {
                         String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), getDisplayName());
                         clientRuntime.log(msg + "\n");  // NOI18N
                         failure = result.getError();
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, failure);
                     }
-                } else {
-                    String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), getDisplayName());
-                    logFinishedCommand(msg);
+                } else {  // error == null
                     commandFinished((ClientRuntime.Result) e.getSource());
                     if (cmd.hasFailed()) {
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
@@ -286,15 +299,28 @@ public abstract class ExecutorSupport implements CVSListener  {
                     it = new ArrayList(taskListeners).iterator();
                 }
                 while (it.hasNext()) {
-                    TaskListener listener = (TaskListener) it.next();
-                    listener.taskFinished(task);
+                    try {
+                        TaskListener listener = (TaskListener) it.next();
+                        listener.taskFinished(task);
+                    } catch (RuntimeException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
                 }
+
+
+                String msg;
+                if (group.isCancelled()) {
+                    msg = NbBundle.getMessage(ExecutorSupport.class, "BK1006", new Date(), getDisplayName());
+                } else {
+                    msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), getDisplayName());
+                }
+                logFinishedCommand(msg);
             }
         }
     }
 
     private void logFinishedCommand(String msg) {
-        if (group == null || group.finished()) {
+        if (group.finished(clientRuntime)) {
             clientRuntime.log(msg + "\n"); // NOI18N
             clientRuntime.focusLog();
         }
@@ -607,5 +633,12 @@ public abstract class ExecutorSupport implements CVSListener  {
             return group.isCancelled();
         }
         return false;
+    }
+
+    /**
+     * Notify progress in terms of transmitted/received bytes.
+     */
+    public void increaseDataCounter(long bytes) {
+        group.increaseDataCounter(bytes);
     }
 }

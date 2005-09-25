@@ -186,17 +186,15 @@ public class CvsVersioningSystem {
     }
 
     /**
-     *
+     * Schedules given command for execution.
      * @param cmd
      * @param options Global options to use, may be set to null to use default options
      * @param mgr
-     * @throws CommandException
-     * @throws AuthenticationException
-     * @throws NotVersionedException
-     */ 
-    public RequestProcessor.Task post(Command cmd, GlobalOptions options, ExecutorSupport mgr) throws CommandException,
-            AuthenticationException, NotVersionedException, IllegalCommandException,
-            IOException {
+     * @return already scheduled task
+     * @throws IllegalCommandException if the command is not valid, e.g. it contains files that cannot be
+     * processed by a single command (they do not have a common filesystem root OR their CVS Roots differ)
+     */
+    public RequestProcessor.Task post(Command cmd, GlobalOptions options, ExecutorSupport mgr) throws IllegalCommandException {
         ClientRuntime clientRuntime = getClientRuntime(cmd, options);
         RequestProcessor.Task task = clientRuntime.createTask(cmd, options != null ? options : defaultGlobalOptions, mgr);
         task.schedule(0);
@@ -205,7 +203,8 @@ public class CvsVersioningSystem {
 
     /**
      * Gets client runtime (a repository session).
-     * XXX it can split into multiple 
+     *
+     * @return runtime never <code>null</code>
      */
     public ClientRuntime getClientRuntime(Command cmd, GlobalOptions options) {
         String root;

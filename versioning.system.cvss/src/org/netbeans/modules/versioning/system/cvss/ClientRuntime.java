@@ -127,9 +127,6 @@ public class ClientRuntime {
         client.getEventManager().addCVSListener(mgr);
         final CommandRunnable cr = new CommandRunnable(client, globalOptions, cmd, mgr);
         RequestProcessor.Task task = requestProcessor.create(cr);
-        String name = mgr.getDisplayName();  // TODO share handle
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(name, cr);
-        cr.setProgressHandle(handle, name);
         task.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
                 try {

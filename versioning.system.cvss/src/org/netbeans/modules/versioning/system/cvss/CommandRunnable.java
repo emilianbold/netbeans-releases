@@ -36,8 +36,6 @@ class CommandRunnable implements Runnable, Cancellable {
     
     private boolean             finished;
     private boolean             aborted;
-    private ProgressHandle      progressHandle;
-    private String              progressName;
     private Thread              runnableThread;
     private ExecutorSupport     support;
 
@@ -48,11 +46,6 @@ class CommandRunnable implements Runnable, Cancellable {
         this.support = support;
     }
 
-    void setProgressHandle(ProgressHandle handle, String name) {
-        progressHandle = handle;
-        progressName = name;
-    }
-    
     public void run() {
         if (support.isGroupCancelled()) {
             aborted = true;
@@ -60,36 +53,24 @@ class CommandRunnable implements Runnable, Cancellable {
             return;
         }
         runnableThread = Thread.currentThread();
-        try {
-            progressHandle.start();
-            CounterRunnable counterUpdater = new CounterRunnable();
-            RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
-            counterUpdater.initTask(counterTask);
-            try {
-                counterTask.schedule(500);
-                client.executeCommand(cmd, options);
-            } catch (Throwable e) {
-                failure = e;
-            } finally {
-                counterTask.cancel();
-                finished = true;
-                try {
-                    client.getConnection().close();
-                } catch (Throwable e) {
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                }
-            }
-        } finally {
-            progressHandle.finish();
-        }
-    }
 
-    private static String format(long counter) {
-        if (counter < 1024*16) {
-            return "" + counter + " bytes";
+        CounterRunnable counterUpdater = new CounterRunnable();
+        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+        counterUpdater.initTask(counterTask);
+        try {
+            counterTask.schedule(500);
+            client.executeCommand(cmd, options);
+        } catch (Throwable e) {
+            failure = e;
+        } finally {
+            counterTask.cancel();
+            finished = true;
+            try {
+                client.getConnection().close();
+            } catch (Throwable e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
         }
-        counter /= 1024;
-        return "" + counter + " kbytes";
     }
 
     public Throwable getFailure() {
@@ -114,13 +95,18 @@ class CommandRunnable implements Runnable, Cancellable {
         return true;
     }
 
-    /** Periodic task updating progress name. */
+    /** Periodic task updating transmitted/received data counter. */
     private class CounterRunnable implements Runnable {
 
         private RequestProcessor.Task task;
 
+        private long counter;
+
         public void run() {
-            progressHandle.progress("" + progressName + " " + format(client.getCounter()));
+            long current = client.getCounter();
+            long delta = current - counter;
+            counter = current;
+            support.increaseDataCounter(delta);
             task.schedule(500);
         }
 
