@@ -198,6 +198,9 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
                     BaseOptions.COLORING_MAP_PROP,
                     BaseOptions.FONT_SIZE_PROP,
                     BaseOptions.KEY_BINDING_LIST_PROP,
+                    BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
+                    BaseOptions.CARET_COLOR_INSERT_MODE_PROP,
+                    BaseOptions.CARET_COLOR_OVERWRITE_MODE_PROP,
                 } :
                 new String[] {
                     BaseOptions.EXPAND_TABS_PROP,
