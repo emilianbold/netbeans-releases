@@ -136,8 +136,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
 
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
-        //dummy implementation, it MUST be reimplemented
-        return wm.getDocumentBase().getFileObject("welcomeJSF.jsp") == null ? false : true;
+        return JSFConfigUtilities.getActionServlet(wm.getDeploymentDescriptor()) == null ? false : true;
     }
     
     
