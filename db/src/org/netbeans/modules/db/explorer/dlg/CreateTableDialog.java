@@ -81,7 +81,6 @@ public class CreateTableDialog {
             GridBagConstraints constr = new GridBagConstraints();
             pane.setLayout(layout);
             pane.setMinimumSize(new Dimension(200,100));
-            pane.setPreferredSize(new Dimension(502,200));
      
             // Table name field
 
@@ -104,7 +103,7 @@ public class CreateTableDialog {
             constr.gridx = 1;
             constr.gridy = 0;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            dbnamefield = new JTextField(bundle.getString("CreateTableUntitledName"), 50); // NOI18N
+            dbnamefield = new JTextField(bundle.getString("CreateTableUntitledName"), 10); // NOI18N
             dbnamefield.setToolTipText(bundle.getString("ACS_CreateTableNameTextFieldA11yDesc"));
             dbnamefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableNameTextFieldA11yName"));
             label.setLabelFor(dbnamefield);
@@ -164,7 +163,7 @@ public class CreateTableDialog {
             table.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
             JScrollPane scrollpane = new JScrollPane(table);
             scrollpane.setBorder(new BevelBorder(BevelBorder.LOWERED));
-            scrollpane.setPreferredSize(new Dimension(300,150));
+            scrollpane.setPreferredSize(new Dimension(380,150));
             layout.setConstraints(scrollpane, constr);
             pane.add(scrollpane);
 
