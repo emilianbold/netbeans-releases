@@ -49,7 +49,6 @@ public class NbSummaryPanel extends TextDisplayPanel
         try {
             ProductService service = (ProductService) getService(ProductService.NAME);
             if (type == ProductService.POST_INSTALL) {
-                logEvent(this, Log.DBG, "queryEnter exitCode: " + getWizard().getExitCode());
                 //#48305: Method GenericSoftwareObject.getInstallStatus() does not work. It returns
                 //always 0. We must use getWizard().getExitCode() as workaround.
                 //ProductTree pt = service.getSoftwareObjectTree(ProductService.DEFAULT_PRODUCT_SOURCE);
