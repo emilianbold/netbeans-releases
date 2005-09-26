@@ -186,7 +186,7 @@ public class Actions implements ActionsFactory {
     public static synchronized Action deleteProject() {
         Action a = new ProjectAction(
             ActionProvider.COMMAND_DELETE, 
-            NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"), // NO18N
+            NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"),
             null,
             null );
         
@@ -199,7 +199,7 @@ public class Actions implements ActionsFactory {
         if (COPY_PROJECT == null) {
             Action a = new ProjectAction(
                     ActionProvider.COMMAND_COPY,
-                    "Copy Project", // NO18N
+		    NbBundle.getMessage(Actions.class, "LBL_CopyProjectAction_Name"),
                     null, //NOI18N
                     null );
             COPY_PROJECT = a;
@@ -212,7 +212,7 @@ public class Actions implements ActionsFactory {
         if (MOVE_PROJECT == null) {
             Action a = new ProjectAction(
                     ActionProvider.COMMAND_MOVE,
-                    "Move Project", // NO18N
+		    NbBundle.getMessage(Actions.class, "LBL_MoveProjectAction_Name"),
                     null, //NOI18N
                     null );
             MOVE_PROJECT = a;
@@ -225,7 +225,7 @@ public class Actions implements ActionsFactory {
         if (RENAME_PROJECT == null) {
             Action a = new ProjectAction(
                     ActionProvider.COMMAND_RENAME,
-                    "Rename Project", // NO18N
+		    NbBundle.getMessage(Actions.class, "LBL_RenameProjectAction_Name"),
                     null, //NOI18N
                     null );
             RENAME_PROJECT = a;
