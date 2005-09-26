@@ -36,7 +36,7 @@ class CommandRunnable implements Runnable, Cancellable {
     
     private boolean             finished;
     private boolean             aborted;
-    private Thread              runnableThread;
+    private Thread              interruptibleThread;
     private ExecutorSupport     support;
 
     public CommandRunnable(Client client, GlobalOptions options, Command cmd, ExecutorSupport support) {
@@ -47,29 +47,41 @@ class CommandRunnable implements Runnable, Cancellable {
     }
 
     public void run() {
-        if (support.isGroupCancelled()) {
-            aborted = true;
+        if (aborted) {
             finished = true;
             return;
         }
-        runnableThread = Thread.currentThread();
-
-        CounterRunnable counterUpdater = new CounterRunnable();
-        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
-        counterUpdater.initTask(counterTask);
-        try {
-            counterTask.schedule(500);
-            client.executeCommand(cmd, options);
-        } catch (Throwable e) {
-            failure = e;
-        } finally {
-            counterTask.cancel();
-            finished = true;
-            try {
-                client.getConnection().close();
-            } catch (Throwable e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        interruptibleThread = Thread.currentThread();
+        Runnable worker = new Runnable() {
+            public void run() {
+                CounterRunnable counterUpdater = new CounterRunnable();
+                RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+                counterUpdater.initTask(counterTask);
+                try {
+                    counterTask.schedule(500);
+                    client.executeCommand(cmd, options);
+                } catch (Throwable e) {
+                    failure = e;
+                } finally {
+                    counterTask.cancel();
+                    finished = true;
+                    try {
+                        client.getConnection().close();
+                    } catch (Throwable e) {
+                        ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                    }
+                }
             }
+        };
+        Thread workerThread = new Thread(worker, "CVS I/O Worker ");  // NOI18N
+        workerThread.start();
+        try {
+            workerThread.join();
+        } catch (InterruptedException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread + "\nCVS command: " + cmd.getCVSCommand());  // NOI18N
+            workerThread.interrupt(); // sometimes not interuptible e.g. while in Socket.connect()
+            err.notify(ErrorManager.INFORMATIONAL, e);
         }
     }
 
@@ -81,6 +93,9 @@ class CommandRunnable implements Runnable, Cancellable {
         return finished;
     }
 
+    /**
+     * Cancelled?
+     */
     public boolean isAborted() {
         return aborted;
     }
@@ -89,9 +104,7 @@ class CommandRunnable implements Runnable, Cancellable {
         if (finished || aborted) return false;
         aborted = true;
         client.abort();
-        failure = new InterruptedException();
-        runnableThread.interrupt();
-        support.cancelGroup();
+        interruptibleThread.interrupt();  // waiting in join
         return true;
     }
 

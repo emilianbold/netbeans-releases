@@ -31,7 +31,7 @@ import java.util.*;
  *
  * @author Petr Kuzel
  */
-public final class ExecutorGroup {
+public final class ExecutorGroup implements Cancellable {
 
     private final String name;
     private boolean executed;
@@ -59,7 +59,7 @@ public final class ExecutorGroup {
      */
     synchronized boolean start(ClientRuntime queue) {
         if (started.isEmpty()) {
-            progressHandle = ProgressHandleFactory.createHandle(name);
+            progressHandle = ProgressHandleFactory.createHandle(name, this);
             progressHandle.start();
         }
 
@@ -96,7 +96,7 @@ public final class ExecutorGroup {
         return cancelled;
     }
 
-    void cancel() {
+    public boolean cancel() {
         cancelled = true;
         Iterator it;
         synchronized(listeners) {
@@ -110,6 +110,8 @@ public final class ExecutorGroup {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
+
+        return true;
     }
 
     /**

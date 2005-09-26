@@ -201,116 +201,133 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         if (validateCvsRoot() == false) {
             return;
         }
-        CVSRoot root = getCVSRoot();
-        String host = root.getHostName();
-        String userName = root.getUserName();
-        int port = root.getPort();
-        Socket sock = null;
-        Connection connection = null;
-        try {
+        final CVSRoot root = getCVSRoot();
 
-            backgroundValidationThread = Thread.currentThread();
+        backgroundValidationThread = Thread.currentThread();
 
-            if (root.isLocal()) {
-                LocalConnection lconnection = new LocalConnection();
-                lconnection.setRepository(root.getRepository());
-                lconnection.verify();
-            } else {
-                invalid(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
-                SocketFactory factory = SocketFactory.getDefault();
-                if (proxyDescriptor != null && proxyDescriptor.isEffective()) {
-                    ConnectivitySettings connectivitySettings = ClientRuntime.toConnectivitySettings(proxyDescriptor);
-                    factory = new ClientSocketFactory(connectivitySettings);
-                }
+        Runnable worker = new Runnable() {
+            public void run() {
 
-                // check raw network reachability
+                String host = root.getHostName();
+                String userName = root.getUserName();
+                int port = root.getPort();
+                Socket sock = null;
+                Connection connection = null;
 
-                if (CVSRoot.METHOD_PSERVER.equals(root.getMethod())) {
-                    port = port == 0 ? 2401 : port;  // default port
-
-                    SocketAddress target = new InetSocketAddress(host, port);
-                    sock = factory.createSocket();
-                    sock.connect(target, 5000);
-                    sock.close();
-
-                    // try to login
-                    invalid(NbBundle.getMessage(CheckoutWizard.class, "BK2010"));
-                    PServerConnection pconnection = new PServerConnection(root, factory);
-                    String password = getScrambledPassword();
-                    pconnection.setEncodedPassword(password);
-                    pconnection.verify();
-                } else if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
-                    if (repositoryPanel.internalSshRadioButton.isSelected()) {
-                        port = port == 0 ? 22 : port;  // default port
-                        String password = repositoryPanel.extPasswordField.getText();
-                        SSHConnection sshConnection = new SSHConnection(factory, host, port, userName, password);
-                        sshConnection.setRepository(root.getRepository());
-                        sshConnection.verify();
+                try {
+                    if (root.isLocal()) {
+                        LocalConnection lconnection = new LocalConnection();
+                        lconnection.setRepository(root.getRepository());
+                        lconnection.verify();
                     } else {
-                        String command = repositoryPanel.extCommandTextField.getText();
-                        String userOption = ""; // NOI18N
-                        if ( userName != null) {
-                            userOption = " -l " + userName;  // NOI18N
+                        invalid(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
+                        SocketFactory factory = SocketFactory.getDefault();
+                        if (proxyDescriptor != null && proxyDescriptor.isEffective()) {
+                            ConnectivitySettings connectivitySettings = ClientRuntime.toConnectivitySettings(proxyDescriptor);
+                            factory = new ClientSocketFactory(connectivitySettings);
                         }
-                        String cvs_server = System.getProperty("Env-CVS_SERVER", "cvs") + " server";  // NOI18N
-                        command += " " + host + userOption + " " + cvs_server; // NOI18N
-                        ExtConnection econnection = new ExtConnection(command);
-                        econnection.setRepository(root.getRepository());
-                        econnection.verify();
+
+                        // check raw network reachability
+
+                        if (CVSRoot.METHOD_PSERVER.equals(root.getMethod())) {
+                            port = port == 0 ? 2401 : port;  // default port
+
+                            SocketAddress target = new InetSocketAddress(host, port);
+                            sock = factory.createSocket();
+                            sock.connect(target, 5000);
+                            sock.close();
+
+                            // try to login
+                            invalid(NbBundle.getMessage(CheckoutWizard.class, "BK2010"));
+                            PServerConnection pconnection = new PServerConnection(root, factory);
+                            String password = getScrambledPassword();
+                            pconnection.setEncodedPassword(password);
+                            pconnection.verify();
+                        } else if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
+                            if (repositoryPanel.internalSshRadioButton.isSelected()) {
+                                port = port == 0 ? 22 : port;  // default port
+                                String password = repositoryPanel.extPasswordField.getText();
+                                SSHConnection sshConnection = new SSHConnection(factory, host, port, userName, password);
+                                sshConnection.setRepository(root.getRepository());
+                                sshConnection.verify();
+                            } else {
+                                String command = repositoryPanel.extCommandTextField.getText();
+                                String userOption = ""; // NOI18N
+                                if ( userName != null) {
+                                    userOption = " -l " + userName;  // NOI18N
+                                }
+                                String cvs_server = System.getProperty("Env-CVS_SERVER", "cvs") + " server";  // NOI18N
+                                command += " " + host + userOption + " " + cvs_server; // NOI18N
+                                ExtConnection econnection = new ExtConnection(command);
+                                econnection.setRepository(root.getRepository());
+                                econnection.verify();
+                            }
+                        } else {
+                            assert false : "Login check implemented only for pserver";  // NOI18N
+                        }
                     }
-                } else {
-                    assert false : "Login check implemented only for pserver";  // NOI18N
-                }
-            }
 
-            // SUCCESS
-            valid();
-            storeValidValues();
-        } catch (IOException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
-            err.notify(ErrorManager.INFORMATIONAL, e);
-            String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
-            invalid(msg);
-        } catch (AuthenticationException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Connection authentification verification failed.");  // NOI18N
-            err.notify(ErrorManager.INFORMATIONAL, e);
-
-            // enhanced contact, if getLocalizedMessage strts with "<" it contains our approved texts
-            String msg;
-            if (e.getLocalizedMessage() != null && e.getLocalizedMessage().startsWith("<")) {  // NOI18N
-                msg = e.getLocalizedMessage();
-            } else {
-                if (root.isLocal()) {
-                    msg = NbBundle.getMessage(CheckoutWizard.class, "BK1004");
-                } else {
-                    msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
-                }
-            }
-            invalid(msg);
-        } finally {
-            if (sock != null) {
-                try {
-                    sock.close();
+                    // SUCCESS
+                    valid();
+                    storeValidValues();
                 } catch (IOException e) {
-                    // already closed
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (IOException e) {
-                    // already closed
-                }
-            }
+                    ErrorManager err = ErrorManager.getDefault();
+                    err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
+                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
+                    invalid(msg);
+                } catch (AuthenticationException e) {
+                    ErrorManager err = ErrorManager.getDefault();
+                    err.annotate(e, "Connection authentification verification failed.");  // NOI18N
+                    err.notify(ErrorManager.INFORMATIONAL, e);
 
-            backgroundValidationThread = null;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    validationDone();
+                    // enhanced contact, if getLocalizedMessage strts with "<" it contains our approved texts
+                    String msg;
+                    if (e.getLocalizedMessage() != null && e.getLocalizedMessage().startsWith("<")) {  // NOI18N
+                        msg = e.getLocalizedMessage();
+                    } else {
+                        if (root.isLocal()) {
+                            msg = NbBundle.getMessage(CheckoutWizard.class, "BK1004");
+                        } else {
+                            msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
+                        }
+                    }
+                    invalid(msg);
+                } finally {
+                    if (sock != null) {
+                        try {
+                            sock.close();
+                        } catch (IOException e) {
+                            // already closed
+                        }
+                    }
+                    if (connection != null) {
+                        try {
+                            connection.close();
+                        } catch (IOException e) {
+                            // already closed
+                        }
+                    }
+
+                    backgroundValidationThread = null;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            validationDone();
+                        }
+                    });
                 }
-            });
+            }
+        };
+
+        Thread workerThread = new Thread(worker, "CVS I/O Probe ");  // NOI18N
+        workerThread.start();
+        try {
+            workerThread.join();
+        } catch (InterruptedException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);  // NOI18N
+            workerThread.interrupt();
+            err.notify(ErrorManager.INFORMATIONAL, e);
         }
 
     }

@@ -172,6 +172,10 @@ public final class CheckoutAction extends SystemAction {
                 return;
             }
 
+            if (executor.isCancelled()) {
+                return;
+            }
+
             List checkedOutProjects = new LinkedList();
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(workingFolder));
             if (fo != null) {

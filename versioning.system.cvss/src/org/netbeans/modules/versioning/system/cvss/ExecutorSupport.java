@@ -191,6 +191,13 @@ public abstract class ExecutorSupport implements CVSListener  {
         return failure;
     }
 
+    /**
+     * Was the execution cancelled by user?
+     */
+    public boolean isCancelled() {
+        return group.isCancelled();
+    }
+
     /** @return task instance actually used (can change on retry) or null. */
     public RequestProcessor.Task getTask() {
         return task;
@@ -249,12 +256,11 @@ public abstract class ExecutorSupport implements CVSListener  {
                 terminated = true;
                 ClientRuntime.Result result = (ClientRuntime.Result) e.getSource();
                 Throwable error = result.getError();
-                if (error != null) {
+                if (result.isAborted()) {
                     toRefresh.clear();
-                    if (result.isAborted()) {
-                        failure = result.getError();
-                        return;
-                    }
+                    return;
+                } else if (error != null) {
+                    toRefresh.clear();
                     if (error instanceof CommandException) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
@@ -622,25 +628,17 @@ public abstract class ExecutorSupport implements CVSListener  {
     }
 
     /**
-     * Cancels following executor supports in the same group.
-     */
-    public void cancelGroup() {
-        if (group != null) {
-            group.cancel();
-        }
-    }
-
-    public boolean isGroupCancelled() {
-        if (group != null) {
-            return group.isCancelled();
-        }
-        return false;
-    }
-
-    /**
      * Notify progress in terms of transmitted/received bytes.
      */
     public void increaseDataCounter(long bytes) {
         group.increaseDataCounter(bytes);
+    }
+
+    /**
+     * Associates this executor with actual cunnable
+     * (Task createed by ClientRunnable) performing the command.
+     */
+    public void setCommandRunnable(CommandRunnable commandRunnable) {
+        group.addCancellable(commandRunnable);
     }
 }

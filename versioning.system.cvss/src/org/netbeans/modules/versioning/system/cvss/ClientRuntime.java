@@ -126,6 +126,7 @@ public class ClientRuntime {
 
         client.getEventManager().addCVSListener(mgr);
         final CommandRunnable cr = new CommandRunnable(client, globalOptions, cmd, mgr);
+        mgr.setCommandRunnable(cr);
         RequestProcessor.Task task = requestProcessor.create(cr);
         task.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
