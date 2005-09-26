@@ -49,7 +49,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private static final String AS_SETUP_DIR    = "as_setup";
     private static final String STATE_FILE_NAME = "statefile";
     public static final String UNINST_DIRECTORY_NAME = "_uninst";
-    public static final String IMAGE_DIRECTORY_NAME = "SunAppServer8.1";
+    public static final String IMAGE_DIRECTORY_NAME = "AS8.1";
     protected static final String JDK_DIRECTORY_NAME = "java";
     protected static final String POINTBASE_DIRECTORY_NAME = "pointbase";
     
