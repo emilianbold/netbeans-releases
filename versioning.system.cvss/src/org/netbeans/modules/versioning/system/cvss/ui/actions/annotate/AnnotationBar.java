@@ -871,7 +871,9 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
 
     /** Implementation */
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt != null && EditorUI.COMPONENT_PROPERTY.equals(evt.getPropertyName())) {
+        if (evt == null) return;
+        String id = evt.getPropertyName();
+        if (EditorUI.COMPONENT_PROPERTY.equals(id)) {  // NOI18N
             if (evt.getNewValue() == null){
                 // component deinstalled, lets uninstall all isteners
                 release();
@@ -923,6 +925,9 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
 
     /** Implementation */
     public void removeUpdate(DocumentEvent e) {
+        if (e.getDocument().getLength() == 0) { // external reload
+            hideBar();
+        }
         repaint();
     }
 
