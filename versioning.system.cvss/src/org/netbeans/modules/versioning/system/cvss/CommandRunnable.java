@@ -34,7 +34,6 @@ class CommandRunnable implements Runnable, Cancellable {
     private final Command       cmd;
     private Throwable           failure;
     
-    private boolean             finished;
     private boolean             aborted;
     private Thread              interruptibleThread;
     private ExecutorSupport     support;
@@ -48,7 +47,6 @@ class CommandRunnable implements Runnable, Cancellable {
 
     public void run() {
         if (aborted) {
-            finished = true;
             return;
         }
         interruptibleThread = Thread.currentThread();
@@ -64,7 +62,6 @@ class CommandRunnable implements Runnable, Cancellable {
                     failure = e;
                 } finally {
                     counterTask.cancel();
-                    finished = true;
                     try {
                         client.getConnection().close();
                     } catch (Throwable e) {
@@ -89,10 +86,6 @@ class CommandRunnable implements Runnable, Cancellable {
         return failure;
     }
     
-    public boolean isFinished() {
-        return finished;
-    }
-
     /**
      * Cancelled?
      */
@@ -101,10 +94,12 @@ class CommandRunnable implements Runnable, Cancellable {
     }
 
     public boolean cancel() {
-        if (finished || aborted) return false;
+        if (aborted) {
+            return false;
+        }
         aborted = true;
         client.abort();
-        if (interruptibleThread != null) { 
+        if (interruptibleThread != null) {
             interruptibleThread.interrupt();  // waiting in join
         }
         return true;
