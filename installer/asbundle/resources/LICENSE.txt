@@ -556,7 +556,7 @@ Effective Date: Date of delivery of the Software to You.
 ENTITLEMENT 1.
 
 Software: Sun Java System Application Server Platform
-Edition 8.1 2005Q1
+Edition 8.1 2005Q2
 
 Permitted Use: Research and Instructional, Individual, and
 Commercial Uses
