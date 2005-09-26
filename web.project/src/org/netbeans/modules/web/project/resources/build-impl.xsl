@@ -637,19 +637,7 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
-                <xsl:attribute name="if">have.sources</xsl:attribute>
-
-                <webproject2:javac destdir="${{build.classes.dir.real}}"/>
-
-                <copy todir="${{build.classes.dir.real}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                </copy>
-
+            <target name="-copy-webdir">
                 <copy todir="${{build.web.dir.real}}">
                   <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
                    <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
@@ -664,7 +652,20 @@ is divided into following sections:
                       <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
                     </copy>
                  </xsl:if>
+            </target>
 
+            <target name="-do-compile">
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
+
+                <webproject2:javac destdir="${{build.classes.dir.real}}"/>
+
+                <copy todir="${{build.classes.dir.real}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    </xsl:call-template>
+                </copy>
             </target>
 
             <target name="-copy-manifest" if="has.custom.manifest">

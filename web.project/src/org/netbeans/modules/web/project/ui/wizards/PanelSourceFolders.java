@@ -149,9 +149,6 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     static String checkValidity (final File projectLocation, final File[] sources, final File[] tests ) {
         String ploc = projectLocation.getAbsolutePath ();
-        if (sources.length == 0) {
-            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_NoSources"); //NOI18N
-        }
         
         for (int i=0; i<sources.length;i++) {
             if (!sources[i].isDirectory() || !sources[i].canRead()) {
