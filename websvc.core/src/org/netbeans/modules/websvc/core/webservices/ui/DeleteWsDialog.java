@@ -23,33 +23,49 @@ import org.openide.util.NbBundle;
  */
 public class DeleteWsDialog extends javax.swing.JPanel {
     
-    public static final String DELETE_NOTHING = "deleteNothing";
-    public static final String DELETE_EXCEPT_CLASSES = "deleteExceptClasses";
-    public static final String DELETE_ALL = "deleteAll";
+    public static final String DELETE_NOTHING = "deleteNothing"; //NOI18N
+    public static final String DELETE_ALL = "deleteALL"; //NOI18N
+    public static final String DELETE_WS = "deleteWebService"; //NOI18N
+    public static final String DELETE_PACKAGE = "deletePackage"; //NOI18N
+    public static final String DELETE_WSDL = "deleteWsdl"; //NOI18N
     
-    private String wsName, packageName;
+    private String wsName, packageName, wsdlName;
     
-    private DeleteWsDialog(String wsName, String packageName) {
+    private DeleteWsDialog(String wsName, String packageName, String wsdlName) {
         this.wsName = wsName;
         this.packageName=packageName;
+        this.wsdlName=wsdlName;
         initComponents();
+        // display the delete_wsdl checkbox only if wsdl exists
+        if (wsdlName==null) deleteWsdlCheckBox.setVisible(false);
     }
 
-    public static String open(String wsName, String packageName) {
+    public static String open(String wsName, String packageName, String wsdlName) {
         String title = NbBundle.getMessage(DeleteWsDialog.class, "MSG_ConfirmDeleteObjectTitle");
-        DeleteWsDialog delDialog = new DeleteWsDialog(wsName, packageName);
+        DeleteWsDialog delDialog = new DeleteWsDialog(wsName, packageName, wsdlName);
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(delDialog, title, NotifyDescriptor.YES_NO_OPTION);
         Object result = DialogDisplayer.getDefault().notify(desc);
         if (result.equals(NotifyDescriptor.CLOSED_OPTION)) {
             return DELETE_NOTHING;
         } else if (result.equals(NotifyDescriptor.NO_OPTION)) {
             return DELETE_NOTHING;
-        } else if (delDialog.deleteClassesCheckBox.isSelected()) {
+        } else if (delDialog.deletePackage() && delDialog.deleteWsdl()) {
             return DELETE_ALL;
-        } else {
-            return DELETE_EXCEPT_CLASSES;
-        }
+        } else if (delDialog.deletePackage()) {
+            return DELETE_PACKAGE;
+        } else if (delDialog.deleteWsdl()) {
+            return DELETE_WSDL;
+        } else return DELETE_WS;
         
+    }
+    
+    private boolean deletePackage() {
+        return deletePackageCheckBox.isSelected();
+    }
+    
+    private boolean deleteWsdl() {
+        if (wsdlName==null) return false;
+        else return deleteWsdlCheckBox.isSelected();
     }
     
     /** This method is called from within the constructor to
@@ -62,7 +78,8 @@ public class DeleteWsDialog extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
-        deleteClassesCheckBox = new javax.swing.JCheckBox();
+        deletePackageCheckBox = new javax.swing.JCheckBox();
+        deleteWsdlCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -75,21 +92,32 @@ public class DeleteWsDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         add(jLabel1, gridBagConstraints);
 
-        deleteClassesCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(DeleteWsDialog.class, "MSG_DeleteClasses_mnem").charAt(0));
-        deleteClassesCheckBox.setText(org.openide.util.NbBundle.getMessage(DeleteWsDialog.class, "MSG_DeleteClasses", new Object[] {packageName}));
+        deletePackageCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(DeleteWsDialog.class, "MSG_DeletePackage_mnem").charAt(0));
+        deletePackageCheckBox.setText(org.openide.util.NbBundle.getMessage(DeleteWsDialog.class, "MSG_DeletePackage", new Object[] {packageName}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        add(deleteClassesCheckBox, gridBagConstraints);
+        add(deletePackageCheckBox, gridBagConstraints);
+
+        deleteWsdlCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(DeleteWsDialog.class, "MSG_DeleteWsdl_mnem").charAt(0));
+        deleteWsdlCheckBox.setSelected(true);
+        deleteWsdlCheckBox.setText(org.openide.util.NbBundle.getMessage(DeleteWsDialog.class, "MSG_DeleteWsdl", new Object[] {wsdlName}));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(deleteWsdlCheckBox, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox deleteClassesCheckBox;
+    private javax.swing.JCheckBox deletePackageCheckBox;
+    private javax.swing.JCheckBox deleteWsdlCheckBox;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
     
