@@ -365,17 +365,35 @@
             <property name="onDisapprove">1</property>
             <property name="warningMessage">$L(com.installshield.wizardx.i18n.WizardXResources, ApprovalPanel.cantContinueMsg)</property>
         </wizardBean>
-        <wizardBean class="org.netbeans.installer.cluster.NetBeansDirChooserPanel" id="bean3">
-            <property name="displayName">NB Dir Chooser Panel</property>
+        <wizardBean class="org.netbeans.installer.cluster.NbSearchAction" id="beanNbSearchAction">
+            <property name="displayName">Nb Search Action</property>
             <property name="active">True</property>
             <property name="buildCategories"/>
             <property name="comments"/>
             <property name="conditionOperator">AND</property>
             <property name="conditionSet"/>
             <property name="bidirectional">True</property>
-            <property name="navigationOptions">0</property>
-            <property name="description"/>
+            <property name="cancelable">True</property>
+        </wizardBean>
+        <wizardBean class="org.netbeans.installer.cluster.NbSelectionPanel" id="beanNbSelectionPanel">
+            <property name="displayName">Nb Selection Panel</property>
+            <property name="active">True</property>
+            <property name="buildCategories"/>
+            <property name="comments"/>
+            <property name="conditionOperator">AND</property>
+            <property name="conditionSet"/>
+            <property name="bidirectional">True</property>
+            <property name="destinationCaption">$L(com.installshield.wizardx.i18n.WizardXResources,DirectoryInputComponent.DirectoryName)</property>
+            <property name="browseCaption">$L(com.installshield.wizard.i18n.WizardResources,browseWithMn)</property>
+            <property name="consolePrompt"/>
+            <property name="destinationsCaption"/>
+            <property name="consolePromptWithDefault"/>
+            <property name="selectedDestinationIndex">0</property>
+            <property name="destination"/>
             <property name="title"/>
+            <property name="destinationsMessage"/>
+            <property name="description">$L(com.installshield.product.i18n.ProductResources,DestinationPanel.description,$P(displayName))</property>
+            <property name="navigationOptions">0</property>
         </wizardBean>
         <wizardBean class="com.installshield.product.wizardbeans.InstallCheckPanel" id="check">
             <property name="displayName">Install Check</property>
