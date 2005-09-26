@@ -63,7 +63,7 @@ public class PluginProperties  {
     private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     
-    public static String COBUNDLE_DEFAULT_INSTALL_PATH ="SunAppServer8.1";  //NOI18N
+    public static String COBUNDLE_DEFAULT_INSTALL_PATH ="AS8.1";  //NOI18N
     
     /** holds value of com.sun.aas.installRoot */
     private  File platformRoot = null;
