@@ -87,7 +87,11 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private void storeBaseData() {
         data.setClassName(getClassName());
         data.setPackageName(packageName.getEditor().getItem().toString());
-        data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
+        data.setIconPath(getIconPath());
+    }
+    
+    private String getIconPath() {
+        return icon.getText().equals(NONE_LABEL) ? null : icon.getText();
     }
     
     private void checkValidity() {
@@ -97,6 +101,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered")); // NOI18N
         } else if (classAlreadyExists()) {
             setErrorMessage(getMessage("MSG_ClassAlreadyExists")); // NOI18N
+        } else if (data.isToolbarEnabled() && getIconPath() == null) {
+            setErrorMessage(getMessage("MSG_IconRequiredForToolbar")); // NOI18N
         } else {
             setErrorMessage(null);
         }
@@ -313,6 +319,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             icon.setText(file.getAbsolutePath());
+            updateData();
         }
     }//GEN-LAST:event_iconButtonActionPerformed
     

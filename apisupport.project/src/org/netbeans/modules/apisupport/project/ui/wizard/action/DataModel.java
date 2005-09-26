@@ -307,7 +307,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.displayName = displayName;
     }
     
-    void setIcon(String origIconPath) {
+    void setIconPath(String origIconPath) {
         reset();
         this.origIconPath = origIconPath;
     }
@@ -339,6 +339,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     void setToolbarEnabled(boolean toolbarEnabled) {
         this.toolbarEnabled = toolbarEnabled;
+    }
+    
+    boolean isToolbarEnabled() {
+        return toolbarEnabled;
     }
     
     void setToolbar(String toolbar) {
