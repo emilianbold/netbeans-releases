@@ -49,7 +49,6 @@ public final class UpdateWithDependenciesAction extends NodeAction {
 
         Set projects = new HashSet();
         Set contexts = new LinkedHashSet();
-        List executors = new LinkedList();
 
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
@@ -93,6 +92,10 @@ public final class UpdateWithDependenciesAction extends NodeAction {
             }
             return true;
         }
+        return false;
+    }
+
+    protected boolean asynchronous() {
         return false;
     }
 
