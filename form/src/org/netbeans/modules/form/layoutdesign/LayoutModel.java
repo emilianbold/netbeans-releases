@@ -106,12 +106,24 @@ public class LayoutModel implements LayoutConstants {
     // -----
 
     void registerComponent(LayoutComponent comp, boolean recursive) {
-        idToComponents.put(comp.getId(), comp);
+        registerComponentImpl(comp);
         if (recursive && comp.isLayoutContainer()) {
             for (Iterator it=comp.getSubcomponents(); it.hasNext(); ) {
                 registerComponent((LayoutComponent)it.next(), recursive);
             }
         }
+    }
+    
+    void registerComponentImpl(LayoutComponent comp) {
+        Object lc = idToComponents.put(comp.getId(), comp);
+
+        if (lc != comp) {
+            // record undo/redo and fire event
+            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REGISTERED);
+            ev.setComponent(comp);
+            addChange(ev);
+            fireEvent(ev);
+        } // else noop => don't need change event
     }
 
     void unregisterComponent(LayoutComponent comp, boolean recursive) {
@@ -122,13 +134,25 @@ public class LayoutModel implements LayoutConstants {
         }
         removeComponentFromLinkSizedGroup(comp, HORIZONTAL);
         removeComponentFromLinkSizedGroup(comp, VERTICAL);
-        idToComponents.remove(comp.getId());
+        unregisterComponentImpl(comp);
+    }
+
+    void unregisterComponentImpl(LayoutComponent comp) {
+        Object lc = idToComponents.remove(comp.getId());
+
+        if (lc != null) {
+            // record undo/redo and fire event
+            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_UNREGISTERED);
+            ev.setComponent(comp);
+            addChange(ev);
+            fireEvent(ev);
+        } // else noop => don't need change event
     }
 
     Iterator getAllComponents() {
         return idToComponents.values().iterator();
     }
-    
+
     public void addNewComponent(LayoutComponent component, LayoutComponent parent, LayoutComponent prototype) {
         for (int i=0; i<DIM_COUNT; i++) {
             LayoutInterval interval = component.getLayoutInterval(i);
@@ -146,6 +170,11 @@ public class LayoutModel implements LayoutConstants {
     // Note this method does not care about adding the layout intervals of the
     // component, it must be done in advance.
     void addComponent(LayoutComponent component, LayoutComponent parent, int index) {
+        addComponentImpl(component, parent, index);
+        registerComponent(component, true);
+    }
+
+    void addComponentImpl(LayoutComponent component, LayoutComponent parent, int index) {
         assert component.getParent() == null;
 
         if (parent != null) {
@@ -155,7 +184,6 @@ public class LayoutModel implements LayoutConstants {
         else {
             assert component.isLayoutContainer();
         }
-        registerComponent(component, true);
 
         // record undo/redo and fire event
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_ADDED);
@@ -172,25 +200,26 @@ public class LayoutModel implements LayoutConstants {
     // records the change for undo/redo, and fires an event. Does nothing to
     // the layout intervals of the component.
     void removeComponent(LayoutComponent component, boolean fromModel) {
+        removeComponentImpl(component);
+        if (fromModel && (getLayoutComponent(component.getId()) != null)) {
+            unregisterComponent(component, true);
+        }
+    }
+
+    void removeComponentImpl(LayoutComponent component) {
         int index;
         LayoutComponent parent = component.getParent();
         if (parent != null) {
             index = parent.remove(component);
-        }
-        else if (!fromModel || getLayoutComponent(component.getId()) == null) {
+        } else {
             return; // the removal operation is "noop"
-        }
-        else index = -1;
-       
-        if (fromModel) {
-            unregisterComponent(component, true);
         }
 
         // record undo/redo and fire event
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REMOVED);
         ev.setComponent(component, parent, index);
         addChange(ev);
-        fireEvent(ev);
+        fireEvent(ev);        
     }
 
     void removeComponentAndIntervals(LayoutComponent comp, boolean fromModel) {
@@ -903,7 +932,7 @@ public class LayoutModel implements LayoutConstants {
     private Map linkSizeGroupsV = new HashMap();
     
     private int maxLinkGroupId = 0;
-    
+
     void addComponentToLinkSizedGroup(int groupId, String compId, int dimension) {
                 
         if (NOT_EXPLICITLY_DEFINED == groupId) { // 
@@ -912,19 +941,25 @@ public class LayoutModel implements LayoutConstants {
         if (maxLinkGroupId < groupId) {
             maxLinkGroupId=groupId;
         }
-        LayoutComponent lc = getLayoutComponent(compId);        
+        Integer groupIdInt = new Integer(groupId);
+        Map linkSizeGroups = (dimension == HORIZONTAL) ? linkSizeGroupsH : linkSizeGroupsV;
+        List l = (List)linkSizeGroups.get(groupIdInt);
+        if ((l != null) && (l.contains(compId) || !sameContainer(compId, (String)l.get(0)))) {
+            return;
+        }
+        addComponentToLinkSizedGroupImpl(groupId, compId, dimension);
+    }
+
+    void addComponentToLinkSizedGroupImpl(int groupId, String compId, int dimension) {
+        LayoutComponent lc = getLayoutComponent(compId);
         Integer groupIdInt = new Integer(groupId);
         Map linkSizeGroups = (dimension == HORIZONTAL) ? linkSizeGroupsH : linkSizeGroupsV;
         List l = (List)linkSizeGroups.get(groupIdInt);
         if (l != null) {
-            if ((!l.contains(compId)) && (sameContainer(compId, (String)l.get(0)))) {
-                l.add(compId);
-            } else {
-                return;
-            }
+            l.add(lc.getId());
         } else {
             l = new ArrayList();
-            l.add(compId);
+            l.add(lc.getId());
             linkSizeGroups.put(groupIdInt, l);
         }
 
@@ -937,7 +972,7 @@ public class LayoutModel implements LayoutConstants {
         addChange(ev);
         fireEvent(ev);
     }
-    
+
     private boolean sameContainer(String compId1, String compId2) {
         LayoutComponent lc1 = getLayoutComponent(compId1);
         LayoutComponent lc2 = getLayoutComponent(compId2);

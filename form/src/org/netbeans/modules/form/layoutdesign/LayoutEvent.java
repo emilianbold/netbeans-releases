@@ -32,6 +32,8 @@ final class LayoutEvent extends EventObject {
     static final int INTERVAL_ATTRIBUTES_CHANGED = 8;
     static final int INTERVAL_LINKSIZE_CHANGED = 9;
     static final int CONTAINER_ATTR_CHANGED = 10;
+    static final int COMPONENT_REGISTERED = 11;
+    static final int COMPONENT_UNREGISTERED = 12;
 
     private int changeType;
 
@@ -59,6 +61,10 @@ final class LayoutEvent extends EventObject {
     LayoutEvent(LayoutModel source, int changeType) {
         super(source);
         this.changeType = changeType;
+    }
+    
+    void setComponent(LayoutComponent comp) {
+        this.component = comp;
     }
 
     void setComponent(LayoutComponent comp, LayoutComponent parent, int index) {
@@ -178,6 +184,12 @@ final class LayoutEvent extends EventObject {
             case CONTAINER_ATTR_CHANGED:
                 changeContainerAttr();
                 break;
+            case COMPONENT_REGISTERED:
+                undoComponentRegistration();
+                break;
+            case COMPONENT_UNREGISTERED:
+                undoComponentUnregistration();
+                break;
         }
     }
 
@@ -216,22 +228,28 @@ final class LayoutEvent extends EventObject {
             case CONTAINER_ATTR_CHANGED:
                 changeContainerAttr();
                 break;
+            case COMPONENT_REGISTERED:
+                undoComponentUnregistration();
+                break;
+            case COMPONENT_UNREGISTERED:
+                undoComponentRegistration();
+                break;
         }
     }
     
     private void undoLinkSize(int id) {
         getModel().removeComponentFromLinkSizedGroup(component, dimension);
         if (!(id == LayoutConstants.NOT_EXPLICITLY_DEFINED)) {
-            getModel().addComponentToLinkSizedGroup(id, component.getId(), dimension);
+            getModel().addComponentToLinkSizedGroupImpl(id, component.getId(), dimension);
         }
     }
 
     private void undoComponentAddition() {
-        getModel().removeComponent(component);
+        getModel().removeComponentImpl(component);
     }
 
     private void undoComponentRemoval() {
-        getModel().addComponent(component, parentComp, index);
+        getModel().addComponentImpl(component, parentComp, index);
     }
 
     private void undoIntervalAddition() {
@@ -245,4 +263,13 @@ final class LayoutEvent extends EventObject {
     private void changeContainerAttr() {
         component.setLayoutContainer(!component.isLayoutContainer(), layoutRoots);
     }
+    
+    private void undoComponentRegistration() {
+        getModel().unregisterComponentImpl(component);
+    }
+    
+    private void undoComponentUnregistration() {
+        getModel().registerComponentImpl(component);
+    }
+    
 }
