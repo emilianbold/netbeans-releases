@@ -487,10 +487,8 @@ public final class Splash  implements SwingConstants {
         }
         
         public Dimension getPreferredSize() {
-            int width = 520;
-            int height = 316;
-                width = Integer.parseInt(NbBundle.getMessage(Splash.class, "SPLASH_WIDTH"));
-                height = Integer.parseInt(NbBundle.getMessage(Splash.class, "SPLASH_HEIGHT"));
+            int width = Integer.parseInt(NbBundle.getMessage(Splash.class, "SPLASH_WIDTH"));
+            int height = Integer.parseInt(NbBundle.getMessage(Splash.class, "SPLASH_HEIGHT"));
             return new Dimension(width, height);
         }
 
@@ -543,10 +541,8 @@ public final class Splash  implements SwingConstants {
             JPanel splashPanel = new JPanel();
             JTabbedPane tabbedPane = new JTabbedPane();
             setTitle (NbBundle.getMessage(Splash.class, "CTL_About_Title"));
-//            setResizable (false);
             // add splash component
-            splashPanel.setLayout(new java.awt.GridBagLayout());
-            splashPanel.add(splashComponent);
+            splashPanel.add (splashComponent);
             tabbedPane.addTab(NbBundle.getMessage(Splash.class, "CTL_About_Title"), splashPanel);
             tabbedPane.addTab(NbBundle.getMessage(Splash.class, "CTL_About_Detail"), infoPanel);
             getContentPane().add(tabbedPane, BorderLayout.CENTER);
