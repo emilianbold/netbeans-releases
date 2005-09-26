@@ -205,7 +205,13 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
 
         backgroundValidationThread = Thread.currentThread();
 
+        final String invalidMsg[] = new String[1]; // ret value
         Runnable worker = new Runnable() {
+
+            private void fail(String msg) {
+                invalidMsg[0] = msg;
+            }
+
             public void run() {
 
                 String host = root.getHostName();
@@ -267,15 +273,12 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                         }
                     }
 
-                    // SUCCESS
-                    valid();
-                    storeValidValues();
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
                     err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
                     err.notify(ErrorManager.INFORMATIONAL, e);
                     String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
-                    invalid(msg);
+                    fail(msg);
                 } catch (AuthenticationException e) {
                     ErrorManager err = ErrorManager.getDefault();
                     err.annotate(e, "Connection authentification verification failed.");  // NOI18N
@@ -292,7 +295,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                             msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
                         }
                     }
-                    invalid(msg);
+                    fail(msg);
                 } finally {
                     if (sock != null) {
                         try {
@@ -308,13 +311,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                             // already closed
                         }
                     }
-
-                    backgroundValidationThread = null;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            validationDone();
-                        }
-                    });
                 }
             }
         };
@@ -323,11 +319,25 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         workerThread.start();
         try {
             workerThread.join();
+            if (invalidMsg[0] == null) {
+                valid();
+                storeValidValues();
+            } else {
+                invalid(invalidMsg[0]);
+            }
         } catch (InterruptedException e) {
+            invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);  // NOI18N
             workerThread.interrupt();
             err.notify(ErrorManager.INFORMATIONAL, e);
+        } finally {
+            backgroundValidationThread = null;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    validationDone();
+                }
+            });
         }
 
     }
@@ -632,9 +642,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (backgroundValidationThread != null) {
-                    // FIXME socks sockets are interruptible, direct sockets are not
                     backgroundValidationThread.interrupt();
-                    invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));
                 }
             }
         });
