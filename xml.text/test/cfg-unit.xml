@@ -24,8 +24,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     
-    <executor name="ide" antfile="build-unit.xml" target="run_ide_tests"/>
+    <executor name="ide" antfile="build-unit.xml" target="run_ide_tests" default="true"/>
     
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     
 </mconfig>
