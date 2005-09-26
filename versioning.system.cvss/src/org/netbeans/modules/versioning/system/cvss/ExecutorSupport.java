@@ -620,7 +620,7 @@ public abstract class ExecutorSupport implements CVSListener  {
                     }
                 }
             }
-            if (executor.getFailure() != null) {
+            if (executor.getFailure() != null || executor.isCancelled()) {
                 success = false;
             }
         }
