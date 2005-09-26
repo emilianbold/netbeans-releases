@@ -1,9 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * 
- *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- * 
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
 -->
 <html>
 
@@ -22,13 +28,13 @@
         in the Databases node, you can open a connection to the database.</p>     
         <p>Once the initial connection has been made you can do the following:</p>
         <ul>
-            <li>Correct a broken connection</li>
+            
             <li>Disconnect and reconnect to a database</li>
+            <li>Browse the database structure</li>
         </ul>
         
         
         <p><b>To open a new connection:</b></p>
-
         <ol>
             <li>Check to make sure that your database is running.</li>
             <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
@@ -49,28 +55,26 @@
             <li>Provide the user name and password, if required by your database configuration.</li>
             <li>Click the Remember Password checkbox to have the IDE remember your password. 
                 <p> The password is saved only for the current IDE session. After restarting 
-                the IDE, you must type the password again. This feature can be turned on 
-                or off by right-clicking the node for a disconnected database in the Runtime window and
-                selecting or deselecting Remember password in the Properties dialog box. </p>
+                the IDE, you must type the password again.</p>
             </li>
-            <li>Click OK to connect the IDE to the database.
-                <ul class="note"><li>When connecting to the database, the schema with the same name as the user name is 
-                    set as default, but if a schema with that name does not exist, 
-                    you are automatically switched to the Advanced Tab to select a schema. 
-                </li>
-                </ul>
-            </li>
+            <li>Click OK to connect the IDE to the database.</li>
         </ol>
-        <p>If the connection is successful, the database connection node appears on the same level as 
-        Drivers in the Databases node. The database connection node appears whole
+        <ul class="note"><li>When connecting to the database, the schema with the same name as the user name is 
+            set as default, but if a schema with that name does not exist, 
+            you are automatically switched to the Advanced Tab of the Connect dialog box to select a schema. 
+        </li>
+        </ul>
+        <p>If the connection is successful, the database connection node appears as 
+        a subnode of the Databases node. The database connection node appears whole (&nbsp;<img src="images/connection.gif">&nbsp;)
         indicating the database is connected. 
-        Expand the database connection node to see the child folders 
+        When the database is connected, you can expand the database connection node to see the child folders 
         representing lists of tables, views and procedures.
         For more, see <a href="browstruct.html">Browsing Structures</a>.</p>
         <p>If the connection 
         attempt fails, the IDE displays a dialog box indicating the connection 
-        is broken and the database connection node is broken.</p>
-            
+        is broken and the database connection node is broken. 
+        Check the connection information for the database and create a new connection.</p>
+        <!--    
         <p><b>To correct a broken connection:</b></p>
         <ol>
             <li>Right-click the broken database connection node and choose Properties from the 
@@ -79,29 +83,22 @@
             <li>Right-click on the broken database connection node and choose
             Connect from the contextual menu.</li>
         </ol>
-
+-->
         <p><b>To disconnect from the database:</b></p>
         <ol>
             <li>Right-click the database connection node and choose Disconnect from the contextual menu. 
                 <p> You cannot browse the database until you reconnect to the database. </p>
             </li>
         </ol>
-        <table>
-            <tr> 
-                <th colspan=2 align=left><a name="seealso">See Also</a></th>
-            </tr>
-            <tr> 
-                <td width="23"></td>
-                <td> <a href="adddriver.html">Adding a New JDBC Driver</a></td>
-            </tr>
-        </table>
+        <dl>
+                <dt><a name="seealso">See Also</a></dt>
+                <dd> <a href="adddriver.html">Adding a New JDBC Driver</a></dd>
+        </dl>
 
         <hr>
 
         <small><a href="credits.html">Legal Notices</a></small> 
-        <table border="0" cellpadding="20">
-            <tr><td>&nbsp;</td></tr>
-            <tr><td>&nbsp;</td></tr>
+        <table border="0" cellpadding="50">
             <tr><td>&nbsp;</td></tr>
         </table>
 

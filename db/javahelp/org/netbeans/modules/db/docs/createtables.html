@@ -1,140 +1,98 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * 
- *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- * 
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
 -->
 <html>
 
-<head>
+    <head>
 
-<title>Creating Tables</title>
+        <title>Creating Tables</title>
 
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
-</head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+    </head>
 
+    <body>
 
+        <h2>Creating Tables</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>When connected to a database, you can use the IDE to create tables in a database.
+        You create tables in a connected database by right-clicking the Tables node in the Runtime and selecting Create Table.</p>
 
-<body>
+        <p>You can also grab and save a table definition which you can then use to recreate the table.</p>
+  <!--      <ul>
+            <li>Recreate a table and its structure using the table definition contained in a database snapshot</li>
+            <li>Recreate a table in a different database</li>
+        </ul>
+-->
+        <p><b><a name="create_table">To create a new table:</a></b></p>
+        <ol>
+            <li>In the Runtime window, expand the node for a connected database.</li>
+            <li>Right-click the Tables node and choose Create Table.</li>
+            <li>Enter the table name.
+                <p> This name must follow conventions for table names in your database. Case 
+                is usually insignificant and you must not use spaces. </p>
+            </li>
+            <li>Select the owner of the table from the Owner drop-down list.  
+                <p>The dialog box defaults to the name by which you are connected.</p>
+            </li>
+            <li>Modify the table with the Add Column and Remove buttons.
+            <p>Specify the column type (required) and column size. 
+            Column size is optional for some data types.</p></li> 
+            <li>Specify any additional properties (Optional).</li>
+            <li>Click OK to create the table.</li>
+        </ol>
 
-<h2>Creating Tables</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p> You can create a table using the Create Table contextual menu item in the Runtime window .
+        <p><b><a name="table_structure">To grab a table definition:</a></b></p>
 
-<p>You can also recreate a table in one of two ways:
+        <ol>
+            <li>In the Runtime window, expand the node for a connected database.</li>
+            <li>Expand the Tables node, right-click the table you want to re-create and choose Grab Structure.</li>
+            <li>In the Grab Table dialog box, type a name and navigate to where you want to save the file and click Save.
+            <p>When you click Save, a database snapshot of the selected table is saved in the selected location.
+            You can use the snapshot to re-create the table in the current database or in a different database.</p></li>
+        </ol>
+        
+        <p><b>To re-create a table from a table definition:</b></p>
+        <ol>
+            <li>In the Runtime window, expand the node for a connected database.</li>
+            <li>Right-click the Tables node (or the node of any table under the Tables node) and choose Recreate Table.</li>
+            <li>Locate and select the table definition file you want to use to re-create a table.</li>
+            <li>Specify the table name in the dialog box and click OK to re-create 
+            the table. If you want to modify the table definition command, click the Edit 
+            table script button and edit the table definition command.</li>
+        </ol>
 
-<ul>
-  <li>Recreate a table and its structure using a database snapshot</li>
-  <li>Recreate a table in a different database</li>
-</ul>
-
-<p><b><a name="create_table">To create a new table:</a></b></p>
-
-<ol>
-
-  <li>In the Runtime window, expand the node for a connected database.</li>
-  <li>Right-click the Tables node and choose Create Table.</li>
-
-  <li>Enter the table name. 
-
-    <p> This name must follow conventions for table names in your database. Case 
-
-      is usually insignificant and you must not use spaces. </p>
-
-  </li>
-
-  <li>Select the owner of the new table from the possible names of database users. 
-
-    <p> The dialog box defaults to the name by which you are connected. 
-
-  </li>
-
-  <li>Click either Add Column or Remove to add or remove columns from the table. 
-
-  </li>
-
-  <li>Specify the column type and size. You must specify the column type but size 
-
-    is optional for some data types. 
-
-    <p>All other properties are optional. </p>
-
-  </li>
-
-  <li>Click OK to create the table.</li>
-
-</ol>
-
-<p><b><a name=table_structure>To re-create a table and its structure using a database 
-
-  snapshot:</a></b></p>
-
-<ol>
-
-  <li>Right-click a table from the table node.</li>
-
-  <li>Choose Grab Structure. This action stores the definition of a selected table 
-to a file in the file system.</li>
-  <li>Type a file name in which to save the structure of the table (the table 
-    definition).</li>
-  <li>Right-click the Tables node (or the node of any table under the Tables node) 
-and choose Recreate Table.</li>
-  <li>Select the database snapshot file from which you want to re-create a table.</li>
-  <li>In the following dialog box, specify the table name and click OK to re-create 
-the table. If you want to modify the table definition command, click the Edit 
-table script button and edit the table definition command.</li>
-
-</ol>
-
-<p><b>To recreate a table in a different database:</b></p>
-<p>You can recreate a table in a different database from the one from which 
-
-  you saved the structure, even if the SQL syntax to create the second database 
-
-  is different from the syntax of the first. You can thus create database-independent 
-
-  schemas. For example, you can develop a complete 
-
-  application with a database from one vendor and then for deployment, you can transfer the 
-
-  table structures to a different database by a different vendor. You do not need to  
-
-  edit the SQL.</p>
+        <p><b>To recreate a table in a different database:</b></p>
+        <p>You can save the structure of a table from one database and recreate the table in a different database, even if the 
+        two databases have a different SQL syntax. You can thus create database-independent 
+        schemas. For example, you can develop a complete 
+        application with a database from one vendor and then for deployment, you can transfer the 
+        table structures to a different database by a different vendor. You do not need to  
+        edit the SQL.</p>
     
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd>    <a href="browstruct.html">Browsing Structures</a></dd>
+            <dd>    <a href="addcopycols.html">Adding Columns</a> </dd>
+        </dl>
 
+        <hr>
 
-
-<table>
-
-  <tr> 
-
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-
-  </tr>
-
-  <tr> 
-
-    <td width="23"></td>
-
-    <td> <a href="browstruct.html">Browsing Structures</a><br>
-
-      <a href="addcopycols.html">Adding Columns</a> </td>
-
-  </tr>
-
-</table>
-
-<hr>
-
-<small><a href="credits.html">Legal Notices</a></small> 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
 
 </html>
 
