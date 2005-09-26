@@ -734,7 +734,7 @@ public class Patch extends Reader {
                     if (nl < 0) {
                         int r;
                         char c;
-                        while ((c = (char) (r = patchSource.read())) != '\n' && r != -1) {
+                        while ((c = (char) (r = patchSource.read())) != '\n' && r != -1 && r != '\r') {
                             name.append(c);
                         }
                     }
