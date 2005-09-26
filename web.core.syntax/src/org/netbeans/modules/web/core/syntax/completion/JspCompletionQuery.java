@@ -416,7 +416,8 @@ public class JspCompletionQuery implements CompletionQuery {
             return new CompletionData(compItems, 0);
         }
         
-        String tokenPart = item.getImage().substring(0, offset - item.getOffset());
+        String tokenPart = item.getImage().substring(0, 
+                (offset - item.getOffset()) >= item.getImage().length() ? item.getImage().length() : offset - item.getOffset());
         int ltIndex = tokenPart.lastIndexOf('<');
         if (ltIndex != -1) {
             tokenPart = tokenPart.substring(ltIndex + 1);
@@ -461,7 +462,9 @@ public class JspCompletionQuery implements CompletionQuery {
             return result (component, offset, new CompletionData(compItems, 0));
         }
 
-        String tokenPart = item.getImage().substring(0, offset - item.getOffset());
+        String tokenPart = item.getImage().substring(0, 
+                (offset - item.getOffset()) >= item.getImage().length() ? item.getImage().length() : offset - item.getOffset());
+        
         //if (tokenPart.lastIndexOf('<') == -1 || !tokenPart.equals("<")) -- the condition is strange - the some should be !tokenPart.equals("<")
         if(!tokenPart.equals("<") && !tokenPart.equals("<%")) // NOI18N
             //return empty completion result
