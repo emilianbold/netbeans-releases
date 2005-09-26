@@ -111,7 +111,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
 
         jLabelFromView.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_FromView").charAt(0));
         jLabelFromView.setLabelFor(jComboBoxFromView);
-        jLabelFromView.setText(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "LBL_FromView"));
+        jLabelFromView.setText(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "LBL_CaseFromView"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 12);
@@ -197,7 +197,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
 
         jCheckBoxRedirect.setMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_Redirect").charAt(0));
         jCheckBoxRedirect.setText(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "LBL_Redirect"));
-        jCheckBoxRedirect.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBoxRedirect.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxRedirect.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
