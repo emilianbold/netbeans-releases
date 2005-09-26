@@ -296,8 +296,13 @@ public final class ProjectXMLManager {
         Element moduleDependencies = findModuleDependencies(confData);
         confData.removeChild(moduleDependencies);
         moduleDependencies = createModuleElement(doc, ProjectXMLManager.MODULE_DEPENDENCIES);
-        Element publicPackages = findPublicPackagesElement(confData);
-        confData.insertBefore(moduleDependencies, publicPackages);
+        Element before = findPublicPackagesElement(confData);
+        if (before == null) {
+            before = findFriendsElement(confData);
+        }
+        assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
+                + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
+        confData.insertBefore(moduleDependencies, before);
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);

@@ -296,7 +296,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 ModuleEntry me = md.getModuleEntry();
                 newOO = new ModuleDependency(me,
                         "", // will be check if it is not written
-                        me.getSpecificationVersion(),
+                        oldOO.getSpecificationVersion(),
                         md.hasCompileDependency(),
                         md.hasImplementationDepedendency());
                 it.remove();
@@ -313,6 +313,7 @@ public class ProjectXMLManagerTest extends TestBase {
             }
         });
         assertTrue("project successfully saved", result.booleanValue());
+        ProjectManager.getDefault().saveProject(testingProject);
         validate(testingProject);
         
         final ProjectXMLManager newTestingPXM = new ProjectXMLManager(testingProject.getHelper());
