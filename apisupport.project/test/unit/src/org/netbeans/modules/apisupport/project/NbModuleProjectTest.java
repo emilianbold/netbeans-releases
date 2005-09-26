@@ -259,7 +259,7 @@ public class NbModuleProjectTest extends TestBase {
         actionProject.resetEvaluator();
         ModuleList.refresh();
         evaluatorThread.start();
-        evaluatorThread.join(40000);
+        evaluatorThread.join(12000);
         if (evaluatorThread.isAlive() && moduleListThread.isAlive()) {
             System.err.println("Threads haven't finished in 12s. Seems to be a deadlock.");
             fail("Presuambly deadlock reached");
