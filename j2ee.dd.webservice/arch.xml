@@ -62,12 +62,12 @@ based on the Web DD module form the Web area.
         type="export"
         category="friend"
         group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/WebsvcDDAPI/index.html">
+        url="index.html">
 The web services DD API is based on a bunch of interfaces based on the deployment descriptor xml structure. The names of interfaces correspond to the names of deployment descriptor elements in the webservices.xml file.
 The DD API interfaces are organized in  a hierarchic tree structure and are accassible through the root (<b>Webservices</b>) interface.
 The implementation of DD API interfaces is hidden for clients.  It is based on schema2beans infrastructure and is the DD version - specific. 
 (there is always requirement to support at least two successive versions of DD specification). 
-The implementation is located in <b>non-public</b> packages of <a href="http://www.netbeans.org/download/dev/javadoc/WebsvcDDAPI/index.html">websvc/websvcddapi</a> module. 
+The implementation is located in <b>non-public</b> packages of <a href="index.html">websvc/websvcddapi</a> module. 
 It is expected that interfaces will not be implemented by the client.<br/>
 The root of the deployment descriptor is accessible through the <b>DDProvider</b> class. 
     </api>
@@ -139,6 +139,7 @@ No tests. Tests setup from Web DD APIs or J2EE DD API could be reused.
         </question>
 -->
 <answer id="dep-nb">
+<defaultanswer generate='none' />
 It uses these API's:
 
 <ul>
@@ -148,7 +149,7 @@ It uses these API's:
         type="import"
         group="java"
         category="official"
-        url="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/">
+        url="@org-openide-filesystems@/overview-summary.html">
     NetBeans Open APIs / FileSystems
     </api>
 </li>
@@ -158,7 +159,7 @@ It uses these API's:
         type="import"
         category="official"
         group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/LoadersAPI/">
+        url="@org-openide-loaders@/overview-summary.html">
     NetBeans Open APIs / Loaders
     </api>
 </li>
@@ -168,7 +169,7 @@ It uses these API's:
         type="import"
         category="stable"
         group="java"
-        url="http://schema2beans.netbeans.org/">
+        url="">
     Schema2beans infrastructure
     </api>
 <b>Runtime dependency - the implementation part depends on this library. The implementation part is a part of j2ee/ddapis module (org.netbeans.modules.j2ee.dd.impl package).
@@ -180,7 +181,7 @@ It uses these API's:
         type="import"
         group="java"
         category="friend"
-        url="http://www.netbeans.org/download/dev/javadoc/J2EEDDAPI/">
+        url="@org-netbeans-modules-j2ee-dd@/overview-summary.html">
     </api>
 </li>
 </ul>
@@ -200,9 +201,9 @@ It uses these API's:
 <answer id="dep-non-nb">
 <ul>
     <li>
-        <api group="java" name="Xerces" type="import" category="third" url="http://libs.netbeans.org/#xerces">
+        <api group="java" name="Xerces" type="import" category="third" url="">
             for obtaining an xml parser able to validate against the XML schema (Crimson does not).<br/>
-           Used in <a href="http://www.netbeans.org/download/dev/javadoc/DD-API/org/netbeans/api/web/dd/DDProvider.html">DDProvider</a>.
+           Used in <a href="@org-netbeans-modules-j2ee-dd@/org/netbeans/modules/j2ee/dd/api/web/DDProvider.html">DDProvider</a>.
         </api>
     </li>
 </ul>
