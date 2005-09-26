@@ -249,9 +249,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
 
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.versioning.system.cvss</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

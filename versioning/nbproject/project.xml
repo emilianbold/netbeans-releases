@@ -35,7 +35,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.versioning.api</package>
                 <package>org.netbeans.modules.versioning.spi</package>
                 <package>org.netbeans.modules.versioning.util</package>
                 <package>org.netbeans.modules.proxy</package>
