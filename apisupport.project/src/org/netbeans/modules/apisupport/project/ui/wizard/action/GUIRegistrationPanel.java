@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -47,6 +47,8 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -222,35 +224,34 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         loadComboAndPositions("Editors/text", edContentType, edPosition, "Popup"); // NOI18N
     }
     
-    private void loadCombo(final String startFolder,
-            final JComboBox combo) {
+    private void loadCombo(final String startFolder, final JComboBox combo) {
         loadComboAndPositions(startFolder, combo, null, null);
     }
     
     private void loadComboAndPositions(final String startFolder,
             final JComboBox combo,
             final JComboBox comboPositions,
-            final String subFolder) {
+            final String subFolderName) {
         combo.setModel(ComponentFactory.COMBO_WAIT_MODEL);
         SFS_RP.post(new Runnable() {
             public void run() {
                 Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
                 final FileObject parent = getSFS().getRoot().getFileObject(startFolder);
-                if (parent == null) {
+                final DataFolder parentDF = (parent != null ? DataFolder.findFolder(parent) : null);
+                if (parentDF == null) {
                     Util.err.log(ErrorManager.WARNING, "Could not find " + startFolder); // NOI18N
                     setEmptyModel(combo);
                     setEmptyModel(comboPositions);
                     return;
                 }
-                final Enumeration items = subFolder == null
-                        ? parent.getFolders(true) : loadFolders(parent, subFolder);
+                final Enumeration folders = subFolderName == null
+                        ? getFolders(parentDF) : getFoldersByName(parentDF, subFolderName);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        // sort items
-                        Collection sorted = new TreeSet();
-                        while (items.hasMoreElements()) {
-                            FileObject item = (FileObject) items.nextElement();
-                            sorted.add(new LayerItemPresenter(item, parent, subFolder != null));
+                        Collection/*<LayerItemPresenter>*/ sorted = new LinkedHashSet();
+                        while (folders.hasMoreElements()) {
+                            DataFolder folder = (DataFolder) folders.nextElement();
+                            sorted.add(new LayerItemPresenter(folder.getPrimaryFile(), parent, subFolderName != null));
                         }
                         // create model
                         DefaultComboBoxModel model = new DefaultComboBoxModel();
@@ -843,16 +844,28 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         return sfs;
     }
     
-    Enumeration loadFolders(final FileObject startFolder, final String subFolder) {
-        Enumeration en = startFolder.getFolders(true);
-        Vector included = new Vector(); // let's be in sync with o.o.filesystems
-        while (en.hasMoreElements()) {
-            FileObject fo = (FileObject) en.nextElement();
-            if (subFolder.equals(fo.getName())) {
-                included.add(fo);
+    private Enumeration/*<DataFolder>*/ getFoldersByName(final DataFolder startFolder, final String subFoldersName) {
+        Enumeration/*<DataFolder>*/ folders = getFolders(startFolder);
+        Vector result = new Vector();
+        while (folders.hasMoreElements()) {
+            DataFolder dObj = (DataFolder) folders.nextElement();
+            if (dObj instanceof DataFolder && subFoldersName.equals(dObj.getName())) {
+                result.add(dObj);
             }
         }
-        return included.elements();
+        return result.elements();
+    }
+
+    private Enumeration/*<DataFolder>*/ getFolders(final DataFolder folder) {
+        Enumeration folders = folder.children(true);
+        Vector result = new Vector(); // let's be in sync with o.o.loaders
+        while (folders.hasMoreElements()) {
+            DataObject dObj = (DataObject) folders.nextElement();
+            if (dObj instanceof DataFolder) {
+                result.add(dObj);
+            }
+        }
+        return result.elements();
     }
     
     private static class PositionRenderer extends DefaultListCellRenderer {
