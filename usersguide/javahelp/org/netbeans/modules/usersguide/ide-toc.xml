@@ -221,7 +221,6 @@
       <tocitem text="Print Properties" target="editing.printing"/>
       <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
       <tocitem text="Working With Tabs" target="editing.tabs"/>
-      <tocitem text="Key Bindings Property Editor" target="editing.keybindings"/>
     </tocitem>
     <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
   </tocitem>

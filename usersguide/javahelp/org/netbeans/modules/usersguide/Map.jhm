@@ -179,9 +179,7 @@ under Print Settings in the Options window)
 (called from Fonts and Colors properties of the various editors under Editor Settings)
  3. Children nodes of Print Settings, since Fonts and Colors is the only property-->
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
-<!--also CSH for edit keybindings dialog box (called from Key Bindings properties of the various editors in 
-the Options window:-->
-<mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
+
 <mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 
 
