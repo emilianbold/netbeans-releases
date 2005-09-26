@@ -13,5 +13,6 @@
     <fontcolor name="selection" bgColor="lightGray"/>
     <fontcolor name="status-bar" foreColor="black" bgColor="ffece9d8"/>
     <fontcolor name="status-bar-bold" bgColor="red"/>
-    <fontcolor name="caret" foreColor="white" bgColor="white"/>
+    <fontcolor name="caret-color-insert-mode" foreColor="white" bgColor="white"/>
+    <fontcolor name="text-limit-line-color" foreColor="ffffebeb"/>
 </fontscolors>

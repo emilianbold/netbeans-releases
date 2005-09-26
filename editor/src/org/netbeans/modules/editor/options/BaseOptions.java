@@ -858,6 +858,27 @@ public class BaseOptions extends OptionSupport {
         }
         m.put(null, getKitClass().getName() ); // add kit class                               
         setColoringMap (m);
+        
+        Collection other = getEditorSettings().getHighlightings(getEditorSettings().getCurrentFontColorProfile());
+        Iterator i = other.iterator();
+        while (i.hasNext()){
+            AttributeSet set = (AttributeSet) i.next();
+            String name = (String) set.getAttribute(StyleConstants.NameAttribute);
+            Color color = (Color)set.getAttribute(StyleConstants.Foreground);
+            if (SettingsNames.CARET_COLOR_INSERT_MODE.equals(name)){
+                Color current  = getCaretColorInsertMode();
+                if (!current.equals(color) && color!=null){
+                    setCaretColorInsertMode(color);
+                    setCaretColorOverwriteMode(color);
+                }
+            } else if (SettingsNames.TEXT_LIMIT_LINE_COLOR.equals(name)){
+                Color current  = getTextLimitLineColor();
+                if (!current.equals(color) && color!=null){
+                    setTextLimitLineColor(color);
+                }
+            }
+        }
+        
     }
 
     private synchronized KeyBindingSettings getKeybindingSettings(){
