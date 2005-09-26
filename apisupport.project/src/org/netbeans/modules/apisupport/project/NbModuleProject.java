@@ -539,7 +539,7 @@ public final class NbModuleProject implements Project {
     
     public PropertyEvaluator evaluator() {
         if (needNewEvaluator) {
-            ProjectManager.mutex().writeAccess(new Runnable() {
+            ProjectManager.mutex().readAccess(new Runnable() {
                 public void run() {
                     try {
                         eval = createEvaluator(getModuleList());

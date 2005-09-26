@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -189,7 +190,7 @@ public class NbModuleProjectTest extends TestBase {
         ProjectManager.getDefault().findProject(prjFO);
     }
     
-    public void testEvaluatorDeadlock_64582() throws Exception {
+    public void testEvaluatorDeadlock_64582a() throws Exception {
         final NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(extexamples.getFileObject("suite1/action-project"));
         
         // let's simluate deadlock condition of the issue 64582
@@ -220,6 +221,46 @@ public class NbModuleProjectTest extends TestBase {
         resetingThread.start();
         evaluatorThread.join(12000);
         if (evaluatorThread.isAlive() || resetingThread.isAlive()) {
+            System.err.println("Threads haven't finished in 12s. Seems to be a deadlock.");
+            fail("Presuambly deadlock reached");
+        }
+    }
+    
+    public void testEvaluatorDeadlock_64582b() throws Exception {
+        final FileObject actionFO = extexamples.getFileObject("suite1/action-project");
+        final NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(actionFO);
+        
+        final Thread moduleListThread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    // tries to acquire ProjectManager.mutex().readAccess()
+                    ModuleList.getModuleList(FileUtil.toFile(actionFO));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    fail("IOException catched");
+                }
+            }
+        });
+        Thread evaluatorThread = new Thread(new Runnable() {
+            public void run() {
+                moduleListThread.start();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                    fail();
+                }
+                // tries to acquire ProjectManager.mutex().writeAccess() in buggy tested implementation
+                actionProject.resetEvaluator();
+                actionProject.evaluator();
+            }
+        });
+        
+        actionProject.resetEvaluator();
+        ModuleList.refresh();
+        evaluatorThread.start();
+        evaluatorThread.join(40000);
+        if (evaluatorThread.isAlive() && moduleListThread.isAlive()) {
             System.err.println("Threads haven't finished in 12s. Seems to be a deadlock.");
             fail("Presuambly deadlock reached");
         }
