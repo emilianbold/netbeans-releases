@@ -393,9 +393,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
         java.util.List propList = new java.util.ArrayList();
 
+        propList.add(JavaCodeGenerator.createBeanClassNameProperty(this));
+
         if (java.awt.Window.class.isAssignableFrom(getBeanClass())
             || javax.swing.JInternalFrame.class.isAssignableFrom(getBeanClass()))
-        {
+        {            
             propList.add(sizeProperty);
             propList.add(positionProperty);
             propList.add(policyProperty);
@@ -403,7 +405,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             propList.add(genSizeProperty);
             propList.add(genCenterProperty);
         }
-        
+                
         propList.add(designerSizeProperty);
 
         Node.Property[] props = new Node.Property[propList.size()];

@@ -183,6 +183,9 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new GenerateMnemonicsCodeProperty());
             propList.add(new ListenerGenerationStyleProperty());
         } else if (component != formModel.getTopRADComponent()) {
+            
+            propList.add(createBeanClassNameProperty(component));
+            
             propList.add(new PropertySupport.ReadWrite(
                 RADComponent.PROP_NAME,
                 String.class,
@@ -203,7 +206,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public boolean canWrite() {
-                    return JavaCodeGenerator.this.canGenerate;
+                    return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
             });
 
@@ -273,7 +276,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public boolean canWrite() {
-                    return JavaCodeGenerator.this.canGenerate;
+                    return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
 
                 public PropertyEditor getPropertyEditor() {
@@ -366,7 +369,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                     
                 public boolean canWrite() {
-                    return JavaCodeGenerator.this.canGenerate;
+                    return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
             });
 
@@ -394,7 +397,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
 
                     public boolean canWrite() {
-                        return JavaCodeGenerator.this.canGenerate;
+                        return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                     }
 
                     public boolean supportsDefaultValue() {
@@ -444,7 +447,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public boolean canWrite() {
-                    return JavaCodeGenerator.this.canGenerate;
+                    return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
 
                 public PropertyEditor getPropertyEditor() {
@@ -625,7 +628,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public boolean canWrite() {
-                    return JavaCodeGenerator.this.canGenerate;
+                    return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
             });
 
@@ -668,7 +671,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
 
                     public boolean canWrite() {
-                        if (!JavaCodeGenerator.this.canGenerate)
+                        if (!JavaCodeGenerator.this.canGenerate && !component.isReadOnly())
                             return false;
                         Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
                         return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
@@ -712,6 +715,39 @@ class JavaCodeGenerator extends CodeGenerator {
         return props;
     }
 
+    public static PropertySupport createBeanClassNameProperty(final RADComponent component) {
+        final ResourceBundle bundle = FormUtils.getBundle();
+        
+        return new PropertySupport.ReadOnly(
+                RADComponent.PROP_NAME,
+                String.class,
+                bundle.getString("MSG_JC_BeanClass"), // NOI18N
+                bundle.getString("MSG_JC_BeanClassDesc")) // NOI18N
+            {
+		String invalid = null;
+                public Object getValue() {
+                    if(!component.isValid()) {
+			if(invalid==null) {
+			    invalid = bundle.getString("CTL_LB_InvalidComponent");  // NOI18N
+			}
+                        return component.getMissingClassName() + ": [" + invalid + "]";                
+                    }
+                    Class beanClass = component.getBeanClass();
+                    if(beanClass!=null) {
+                        return beanClass.toString();
+                    }
+                    return "";              
+                }
+
+                public boolean canWrite() {
+                    return false;                    
+                }     
+                
+                public PropertyEditor getPropertyEditor() {
+                    return new PropertyEditorSupport(){};
+                }
+            };
+    }    
     //
     // Private Methods
     //
@@ -762,6 +798,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 initCodeWriter.write(foldDescription);
                 initCodeWriter.write("\">\n"); // NOI18N
             }
+
             initCodeWriter.write("private void initComponents() {\n"); // NOI18N
 
             if (addLocalVariables(initCodeWriter))
@@ -841,7 +878,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 initCodeWriter.write(sizeText);
             }
-
+            
             if (constructorProperties != null)
                 constructorProperties.clear();
             if (containerDependentProperties != null)
@@ -907,11 +944,12 @@ class JavaCodeGenerator extends CodeGenerator {
             variablesWriter = variablesBuffer;
         
         try {
+            
             variablesWriter.write(getVariablesHeaderComment());
             variablesWriter.write("\n"); // NOI18N
 
             addVariables(variablesWriter);
-
+            
             variablesWriter.write(getVariablesFooterComment());
             variablesWriter.write("\n"); // NOI18N
             variablesWriter.close();
@@ -920,14 +958,14 @@ class JavaCodeGenerator extends CodeGenerator {
             if (!formSettings.getUseIndentEngine())
                 newText = indentCode(newText, indentEngine);
 
-            variablesSection.setText(newText);
+            variablesSection.setText(newText);        
             clearUndo();
         }
         catch (IOException e) { // should not happen
             e.printStackTrace();
         }
     }
-
+    
     private void regenerateEventHandlers() {
         // only missing handler methods are generated, existing are left intact
         FormEvents formEvents = formModel.getFormEvents();
@@ -1204,7 +1242,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private void generateComponentInit(RADComponent comp,
                                        Writer initCodeWriter)
         throws IOException
-    {
+    {             
         if (comp instanceof RADVisualContainer) {
             LayoutSupportManager layoutSupport =
                 ((RADVisualContainer)comp).getLayoutSupport();
@@ -2928,7 +2966,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         public boolean canWrite() {
-            return JavaCodeGenerator.this.canGenerate;
+            return JavaCodeGenerator.this.canGenerate && !formModel.isReadOnly();
         }
     }
 
@@ -2984,7 +3022,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
         public boolean canWrite() {
-            return JavaCodeGenerator.this.canGenerate;
+            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
         
         public PropertyEditor getPropertyEditor() {
@@ -3058,7 +3096,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
         public boolean canWrite() {
-            return JavaCodeGenerator.this.canGenerate;
+            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
         
     }
@@ -3091,7 +3129,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
         public boolean canWrite() {
-            return JavaCodeGenerator.this.canGenerate;
+            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
         
         public boolean supportsDefaultValue() {
@@ -3150,7 +3188,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
         public boolean canWrite() {
-            return JavaCodeGenerator.this.canGenerate;
+            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
         
         public PropertyEditor getPropertyEditor() {

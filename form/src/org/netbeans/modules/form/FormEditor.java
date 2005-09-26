@@ -18,6 +18,8 @@ import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
@@ -140,7 +142,7 @@ public class FormEditor {
         mainWin.getGlassPane().setCursor(null);
 
         // report errors during loading
-        reportErrors(LOADING);
+        reportErrors(LOADING);              
     }
     
     boolean loadForm() {
@@ -190,8 +192,9 @@ public class FormEditor {
 
         // create and register new FormModel instance
         formModel = new FormModel();
-        formModel.setName(formDataObject.getName());
-        formModel.setReadOnly(formDataObject.isReadOnly());
+        formModel.setName(formDataObject.getName());        
+        formModel.setReadOnly(formDataObject.isReadOnly());         
+        
         openForms.put(formModel, this);
 
         // load the form data (FormModel) and report errors
@@ -219,10 +222,11 @@ public class FormEditor {
                 formModel = null;
                 return;
             }
-        }
-
+        }                                     
+                                
         // form is successfully loaded...
         formLoaded = true;
+        
         getCodeGenerator().initialize(formModel);
         formModel.fireFormLoaded();
 
@@ -231,7 +235,7 @@ public class FormEditor {
         formRootNode.getChildren().getNodes();
         formDataObject.getNodeDelegate().getChildren()
                                           .add(new Node[] { formRootNode });
-
+        
         attachFormListener();
         attachDataObjectListener();
         attachSettingsListener();
@@ -257,7 +261,7 @@ public class FormEditor {
     }
     
     void saveFormData() throws PersistenceException {
-        if (formLoaded && !formDataObject.formFileReadOnly()) {
+        if (formLoaded && !formDataObject.formFileReadOnly() && !formModel.isReadOnly()) {
             formModel.fireFormToBeSaved();
 
             resetPersistenceErrorLog();
@@ -376,23 +380,23 @@ public class FormEditor {
     
     /** Reports errors occurred during loading or saving the form.
      */
-    public void reportErrors(int operation) {
+    public void reportErrors(int operation) {        
         if (!anyPersistenceError())
             return; // no errors or warnings logged
 
-        ErrorManager errorManager = ErrorManager.getDefault();
+        final ErrorManager errorManager = ErrorManager.getDefault();
 
         boolean checkLoadingErrors = operation == LOADING && formLoaded;
         boolean anyNonFatalLoadingError = false; // was there a real error?
-
+                
         for (Iterator it=persistenceErrors.iterator(); it.hasNext(); ) {
-            Throwable t = (Throwable) it.next();
+            Throwable t  = (Throwable) it.next();      
             if (t instanceof PersistenceException) {
                 Throwable th = ((PersistenceException)t).getOriginalException();
                 if (th != null)
                     t = th;
-            }
-
+            }     
+           
             if (checkLoadingErrors && !anyNonFatalLoadingError) {
                 // was there a real loading error (not just warnings) causing
                 // some data not loaded?
@@ -413,10 +417,9 @@ public class FormEditor {
                 if (severity > ErrorManager.WARNING)
                     anyNonFatalLoadingError = true;
             }
-
-            errorManager.notify(t);
+            errorManager.notify(t);              
         }
-
+        
         if (checkLoadingErrors && anyNonFatalLoadingError) {
             // the form was loaded with some non-fatal errors - some data
             // was not loaded - show a warning about possible data loss
@@ -424,18 +427,66 @@ public class FormEditor {
                 public void run() {
                     // for some reason this would be displayed before the
                     // ErrorManager if not invoked later
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                    
+                    JButton viewOnly = new JButton(FormUtils.getBundleString("CTL_ViewOnly"));		// NOI18N
+                    JButton allowEditing = new JButton(FormUtils.getBundleString("CTL_AllowEditing"));	// NOI18N                                        
+                    
+                    Object ret = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
                         FormUtils.getBundleString("MSG_FormLoadedWithErrors"), // NOI18N
                         FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
                         NotifyDescriptor.DEFAULT_OPTION,
                         NotifyDescriptor.WARNING_MESSAGE,
-                        new Object[] { NotifyDescriptor.OK_OPTION },
-                        null));
+                        new Object[] { viewOnly, allowEditing, NotifyDescriptor.CANCEL_OPTION },
+                        viewOnly ));
+                   
+                    if(ret == viewOnly) {
+                        setFormReadOnly();
+                    } else if(ret == allowEditing) {    
+                        destroyInvalidComponents();
+                    } else if(ret == NotifyDescriptor.CANCEL_OPTION) {    
+                        closeForm();                                                                        
+                        // switch to java editor
+                        getFormDataObject().getFormEditorSupport().selectJavaEditor();                        
+                    }                                                      
                 }
             });
         }
 
         resetPersistenceErrorLog();
+    }    
+    
+    /**
+     * Destroys all components from {@link #formModel} taged as invalid
+     */
+    private void destroyInvalidComponents() {
+        List invalidComponents = new ArrayList(formModel.getMetaComponents().size());
+        // collect all invalid components
+        for (Iterator it = formModel.getMetaComponents().iterator(); it.hasNext();) {
+            RADComponent comp = (RADComponent) it.next();
+            if(!comp.isValid()) {
+                invalidComponents.add(comp);
+            }
+        }              
+        // destroy all invalid components
+        for (Iterator it = invalidComponents.iterator(); it.hasNext();) {
+            RADComponent comp = (RADComponent) it.next();
+            try {
+                comp.getNodeReference().destroy();
+            }
+            catch (java.io.IOException ex) { // should not happen
+                ex.printStackTrace();
+            }                    
+        }           
+    }
+    
+    /**
+     * Sets the FormEditor in Read-Only mode
+     */
+    private void setFormReadOnly() {
+        formModel.setReadOnly(true);
+        getFormDesigner().getHandleLayer().setViewOnly(true);                                                
+        detachFormListener();
+        getFormDataObject().getFormEditorSupport().updateMVTCDisplayName();                                
     }
     
     /** @return the last activated FormDesigner for this form */
@@ -509,7 +560,7 @@ public class FormEditor {
     }
     
     private void attachFormListener() {
-        if (formListener != null || formDataObject.isReadOnly())
+        if (formListener != null || formDataObject.isReadOnly() || formModel.isReadOnly())
             return;
 
         // this listener ensures necessary updates of nodes according to
@@ -713,6 +764,9 @@ public class FormEditor {
                     Iterator iter = openForms.keySet().iterator();
                     while (iter.hasNext()) {
                         FormModel formModel = (FormModel)iter.next();
+                        if(formModel.isReadOnly()) {
+                            continue;
+                        }
                         FormDesigner designer = getFormDesigner(formModel);
                         if (designer != null) {
                             // PENDING should be done for all cloned designers

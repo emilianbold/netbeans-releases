@@ -36,6 +36,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.ClassDefinition;
+import org.netbeans.modules.form.RADProperty.FakePropertyDescriptor;
 
 /**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
@@ -147,7 +148,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private String formatVersion; // format version for saving the form file
 
     private boolean newLayout; // whether a new layout support was loaded
-
+    
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
      * @return true if this persistence manager can load the form
@@ -455,9 +456,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             compClass = PersistenceObjectRegistry.loadClass(className, formFile);
         }
         catch (Exception ex) {
+            compClass = InvalidComponent.class;            
             compEx = ex;
         }
         catch (LinkageError ex) {
+            compClass = InvalidComponent.class;            
             compEx = ex;
         }
         if (compEx != null) { // loading the component class failed
@@ -466,18 +469,26 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                                    new Object[] { className }),
                 node);
             ErrorManager.getDefault().annotate(compEx, msg);
-            nonfatalErrors.add(compEx);
-            return null;
+            nonfatalErrors.add(compEx);            
         }
 
+        compEx = null;
         // create a new metacomponent
         RADComponent newComponent;
         String nodeName = node.getNodeName();
-
+                
         if (XML_COMPONENT.equals(nodeName)) {
-            if (java.awt.Component.class.isAssignableFrom(compClass))
-                newComponent = new RADVisualComponent();
-            else newComponent = new RADComponent();
+            if (compClass == InvalidComponent.class) {
+                if(parentComponent instanceof RADVisualContainer) {                    
+                    newComponent = new RADVisualComponent();
+                } else {
+                    newComponent = new RADComponent();
+                }                
+            } else {
+                if (java.awt.Component.class.isAssignableFrom(compClass))
+                    newComponent = new RADVisualComponent();
+                else newComponent = new RADComponent();                
+            }            
         }
         else if (XML_MENU_COMPONENT.equals(nodeName)) {
             newComponent = new RADMenuItemComponent();
@@ -486,9 +497,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             newComponent = new RADMenuComponent();
         }
         else if (XML_CONTAINER.equals(nodeName)) {
-            if (java.awt.Container.class.isAssignableFrom(compClass))
+            if (compClass == InvalidComponent.class) {
                 newComponent = new RADVisualContainer();
-            else newComponent = new RADContainer();
+            } else {
+                if (java.awt.Container.class.isAssignableFrom(compClass))
+                    newComponent = new RADVisualContainer();
+                else newComponent = new RADContainer();
+            }  
         }
         else {
             PersistenceException ex = new PersistenceException(
@@ -507,10 +522,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // initialize the metacomponent
         try {
+            if(compClass==InvalidComponent.class){
+                newComponent.setValid(false);                            
+                newComponent.setMissingClassName(className);
+            }
             newComponent.initialize(formModel);
             newComponent.setStoredName(compName);
             newComponent.initInstance(compClass);
-            newComponent.setInModel(true);
+            newComponent.setInModel(true);            
         }
         catch (Exception ex) {
             compEx = ex;
@@ -1599,27 +1618,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                          String propCategory)
     {
         org.w3c.dom.Node[] propNodes = findSubNodes(node, XML_PROPERTY);
-        String[] propNames = new String[propNodes.length];
-
-        for (int i=0; i < propNodes.length; i++) {
-            org.w3c.dom.Node propNode = propNodes[i];
-            String propName = getAttribute(propNode, ATTR_PROPERTY_NAME);
-            if (propName != null)
-                propNames[i] = propName;
-            else {
-                PersistenceException ex = new PersistenceException(
-                                           "Missing property name"); // NOI18N
-                String msg = createLoadingErrorMessage(
-                    FormUtils.getBundleString("MSG_ERR_MissingPropertyName"), // NOI18N
-                    propNode);
-                ErrorManager.getDefault().annotate(
-                    ex, ErrorManager.ERROR, null, msg, null, null);
-                nonfatalErrors.add(ex);
-                continue;
-            }
+        String[] propNames = getPropertyAttributes(propNodes, ATTR_PROPERTY_NAME);
+        
+        FormProperty[] properties;
+                        
+        if(metacomp.isValid()) {
+            properties = findProperties(propNames, metacomp, propCategory);            
+        } else {                        
+            String[] propTypes = getPropertyAttributes(propNodes, ATTR_PROPERTY_TYPE);            
+            properties = getFakeProperties(propNames, propTypes, propNodes, metacomp, propCategory);            
         }
-
-        FormProperty[] properties = findProperties(propNames, metacomp, propCategory);
 
         for (int i=0; i < propNodes.length; i++) {
             if (propNames[i] == null)
@@ -1868,6 +1876,27 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
+    private String[] getPropertyAttributes(org.w3c.dom.Node[] propNodes, String attribute){
+        String[] ret = new String[propNodes.length];
+        for (int i=0; i < propNodes.length; i++) {
+            org.w3c.dom.Node propNode = propNodes[i];
+            String propAttribute = getAttribute(propNode, attribute);            
+            if (propAttribute != null)
+                ret[i] = propAttribute;
+            else {
+                PersistenceException ex = new PersistenceException(
+                                           "Missing property attribute " + attribute); // NOI18N
+                String msg = FormUtils.getFormattedBundleString("MSG_ERR_MissingPropertyName", // NOI18N
+                                                   new Object[] { attribute });                
+                ErrorManager.getDefault().annotate(
+                    ex, ErrorManager.ERROR, null, msg, null, null);
+                nonfatalErrors.add(ex);
+                continue;
+            }
+        }        
+        return ret;
+    }
+    
     private FormProperty[] findProperties(String[] propertyNames,
                                           RADComponent metacomp,
                                           String propCategory)
@@ -1876,19 +1905,69 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return metacomp.getBeanProperties(propertyNames);
 
         if (XML_A11Y_PROPERTIES.equals(propCategory)) {
-            FormProperty[] properties = new FormProperty[propertyNames.length];
-            for (int i=0; i < propertyNames.length; i++)
-                properties[i] = (FormProperty) metacomp.getPropertyByName(
-                                                          propertyNames[i],
-                                                          FormProperty.class,
-                                                          true);
-
-            return properties;
+            return findPropertiesByName(propertyNames, metacomp);            
         }
 
         return new FormProperty[propertyNames.length]; // error
     }
 
+    private FormProperty[] findPropertiesByName(String[] propertyNames,
+                                                RADComponent metacomp)
+    {   
+        FormProperty[] properties = new FormProperty[propertyNames.length];
+        for (int i=0; i < propertyNames.length; i++)
+            properties[i] = (FormProperty) metacomp.getPropertyByName(
+                                                      propertyNames[i],
+                                                      FormProperty.class,
+                                                      true);
+
+        return properties;
+    }
+    
+    private FormProperty[] getFakeProperties(String[] propertyNames,
+                                             String[] propertyTypes,
+                                             org.w3c.dom.Node[] propNodes,
+                                             RADComponent metacomp,
+                                             String propCategory)
+    {           
+        if (XML_PROPERTIES.equals(propCategory)) { 
+            Class[] propertyClasses = new Class[propertyTypes.length]; 
+            for (int i=0; i < propertyNames.length; i++) {                
+                propertyClasses[i] = getClassByName(propertyTypes[i], propNodes[i]);                                             
+            }            
+            return metacomp.getFakeBeanProperties(propertyNames, propertyClasses);        
+        
+        }        
+        if (XML_A11Y_PROPERTIES.equals(propCategory)) {
+            findPropertiesByName(propertyNames, metacomp);             
+        }
+
+        return new FormProperty[propertyNames.length]; // error
+    }
+
+    private Class getClassByName(String className, org.w3c.dom.Node node) {
+        Class clazz = null;
+        Throwable t = null;
+        try {
+            clazz = PersistenceObjectRegistry.loadClass(className, formFile);
+        }
+        catch (Exception ex) {
+            t = ex;
+        }
+        catch (LinkageError ex) {                    
+            t = ex;
+        }
+        if (t != null) { // loading the component class failed
+            String msg = createLoadingErrorMessage(
+                FormUtils.getFormattedBundleString("FMT_ERR_CannotLoadClass", // NOI18N
+                                                   new Object[] { className }),
+                                                   node);
+            ErrorManager.getDefault().annotate(t, msg);
+            nonfatalErrors.add(t);                 
+        }        
+        return clazz;
+    }
+    
     private void loadSyntheticProperties(org.w3c.dom.Node node,
                                          RADComponent metacomp)
     {
@@ -5121,7 +5200,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         return "org.netbeans.modules.form.forminfo." + shortName; // NOI18N
     }
-
+    
     // --------
     // NB 3.1 compatibility - layout persistence conversion tables
 

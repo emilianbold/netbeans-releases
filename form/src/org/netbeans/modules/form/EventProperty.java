@@ -333,7 +333,7 @@ class EventProperty extends PropertySupport.ReadWrite {
         }
 
         public boolean supportsCustomEditor() {
-            return true;
+            return false;
         }
 
         public java.awt.Component getCustomEditor() {

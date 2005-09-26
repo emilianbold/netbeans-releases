@@ -138,7 +138,12 @@ public class FormEditorSupport extends JavaEditor
         }
         fsToStatusListener.clear();
     }
-
+    
+    void selectJavaEditor(){
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+        handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);        
+    }        
+        
     /** Overriden from JavaEditor - opens editor and ensures it is selected
      * in the multiview.
      */
@@ -174,7 +179,7 @@ public class FormEditorSupport extends JavaEditor
 
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
-
+        
         super.openAt(pos);
     }
     
@@ -296,20 +301,22 @@ public class FormEditorSupport extends JavaEditor
         // after reloading is done, open the form editor again
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+                FormDesigner formDesigner = getFormEditor().getFormDesigner();                                
                 
-                FormDesigner formDesigner = getFormEditor().getFormDesigner();                
-                formDesigner.reset();                
-                
-                // see notifyClosed
+                // close
                 getFormEditor().closeForm();
                 formEditor = null;
                 
-                // reload
-                loadForm();                       
+                // reset the FormDesigner
+                formDesigner.reset(getFormEditor(true));                                                      
                 getFormEditor().setFormDesigner(formDesigner);                                                         
                 
-                formDesigner.reinitialize(formEditor);
-                
+                if(formDesigner.isShowing()) {
+                    // load the form only if its open
+                    loadForm();
+                    getFormEditor().reportErrors(FormEditor.LOADING);                    
+                    formDesigner.initialize();
+                }                            
             }
         });
 
@@ -373,7 +380,7 @@ public class FormEditorSupport extends JavaEditor
         super.notifyUnmodified();
         updateMVTCDisplayName();
     }
-
+    
     private static void attachTopComponentsListener() {
         if (topcompsListener != null)
             return;
@@ -393,7 +400,7 @@ public class FormEditorSupport extends JavaEditor
                                 fes.getFormEditor().setFormDesigner(designer);
                         }
                     }
-                    checkFormGroupVisibility();
+                    checkFormGroupVisibility();                    
                 }
                 else if (TopComponent.Registry.PROP_OPENED.equals(
                                                 ev.getPropertyName()))
@@ -418,6 +425,13 @@ public class FormEditorSupport extends JavaEditor
                         if (fes != null)
                             fes.multiViewClosed(closedTC);
                     }
+                    TopComponent active = TopComponent.getRegistry().getActivated();                    
+                    if (active!=null && getSelectedElementType(active) != -1) { // it is our multiview
+                        FormEditorSupport fes = getFormEditor(active);
+                        if (fes != null) {                                                        
+                            fes.updateMVTCDisplayName();
+                        }
+                    }                    
                 }
             }
         };
@@ -472,8 +486,21 @@ public class FormEditorSupport extends JavaEditor
         return name;
     }
     
-    private static String getMVTCDisplayName(FormDataObject formDataObject) {        
+    private static String getMVTCDisplayName(FormDataObject formDataObject) {  
+        
         boolean readonly = !formDataObject.getPrimaryFile().canWrite();
+        
+        TopComponent active = TopComponent.getRegistry().getActivated();
+        if( active!=null && getSelectedElementType(active) == FORM_ELEMENT_INDEX ) {
+            FormEditorSupport fes = formDataObject.getFormEditor();
+            if(fes!=null) {
+                FormModel fm = fes.getFormModel();
+                if(fm!=null) {
+                    readonly = readonly || fm.isReadOnly();                                    
+                }                
+            }            
+        }        
+        
         int version;
         if (formDataObject.isModified()) {
             version = readonly ? 2 : 1;
@@ -496,7 +523,7 @@ public class FormEditorSupport extends JavaEditor
 
     /** Updates title (display name) of all multiviews for given form. Replans
      * to event queue thread if necessary. */
-    private void updateMVTCDisplayName() {
+    void updateMVTCDisplayName() {
         if (java.awt.EventQueue.isDispatchThread()) {
             if (multiviewTC == null)
                 return;

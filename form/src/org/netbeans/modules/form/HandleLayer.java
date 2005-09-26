@@ -26,6 +26,7 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.NodeTransfer;
@@ -58,6 +59,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     
     private static final int DESIGNER_RESIZING = 256; // flag for resizeType
     private static MessageFormat resizingHintFormat;
+    private static MessageFormat sizeHintFormat;
 
     private FormDesigner formDesigner;
     private boolean viewOnly;
@@ -77,6 +79,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     private SelectionDragger selectionDragger;
     private Image resizeHandle;
 
+    private DropTarget dropTarget;
+    private NewComponentDropListener dropListener;
+    
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
@@ -114,10 +119,24 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             FormUtils.getBundleString("ACSN_HandleLayer")); // NOI18N
         getAccessibleContext().setAccessibleDescription(
             FormUtils.getBundleString("ACSD_HandleLayer")); // NOI18N
-        new DropTarget(this, new NewComponentDropListener());
+        
+        dropListener = new NewComponentDropListener();
+        dropTarget = new DropTarget(this, dropListener);
     }
 
     void setViewOnly(boolean viewOnly) {
+        if(this.viewOnly == viewOnly) {
+            return;
+        }
+        if(viewOnly) {
+            dropTarget.removeDropTargetListener(dropListener);            
+        } else {
+	    try {
+		dropTarget.addDropTargetListener(dropListener);                                        
+	    } catch (TooManyListenersException ex) {
+		ex.printStackTrace();
+	    }
+        }
         this.viewOnly = viewOnly;
     }
 
@@ -914,10 +933,23 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             else if (getToolTipText() == null) {
                 Dimension size = formDesigner.getComponentLayer()
                                                .getDesignerSize();
-                if (resizingHintFormat == null)
-                    resizingHintFormat = new MessageFormat(
-                        FormUtils.getBundleString("FMT_HINT_DesignerResizing")); // NOI18N
-                String hint = resizingHintFormat.format(
+                
+                MessageFormat mf;
+                if(viewOnly) {
+                    if (sizeHintFormat == null){                    
+                        sizeHintFormat = new MessageFormat(
+                            FormUtils.getBundleString("FMT_HINT_DesignerSize")); // NOI18N                                            
+                    }                                           
+                    mf = sizeHintFormat;                    
+                } else {
+                    if (resizingHintFormat == null){                    
+                        resizingHintFormat = new MessageFormat(
+                            FormUtils.getBundleString("FMT_HINT_DesignerResizing")); // NOI18N                                            
+                    } 
+                    mf = resizingHintFormat;                                        
+                }
+                   
+                String hint = mf.format(
                                 new Object[] { new Integer(size.width),
                                                new Integer(size.height) });
                 setToolTipText(hint);
@@ -927,7 +959,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         else if (getToolTipText() != null)
             setToolTipText(null);
 
-        if (resizing != 0)
+        if (resizing != 0 && !viewOnly)
             setResizingCursor(resizing);
         else {
             Cursor cursor = getCursor();
@@ -1291,7 +1323,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
                 if ((resizeType & DESIGNER_RESIZING) != 0
                     && e.getClickCount() == 2
-                    && !modifier)
+                    && !modifier
+                    && !viewOnly)
                 {   // doubleclick on designer's resizing border
                     setUserDesignerSize();
                 } else if (mouseOnNonVisualTray(e.getPoint())) {
@@ -1431,7 +1464,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     public void mouseDragged(MouseEvent e) {
         if (formDesigner.getDesignerMode() != FormDesigner.MODE_SELECT)
             return; // dragging makes sense only selection mode
-
+        
         Point p = e.getPoint();
         if (lastMousePosition != null) {
             lastXPosDiff = p.x - lastMousePosition.x;
@@ -2553,7 +2586,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
                         if (newComponentDrop != null) {
                             PaletteItem item = newComponentDrop.getPaletteItem();
-                            if (item != null) {
+                            if (item != null) {                                
                                 draggedComponent = new NewComponentDrag(item);
                                 draggedComponent.move(dtde.getLocation(), 0);
                                 repaint();                    

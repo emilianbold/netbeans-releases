@@ -152,7 +152,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         formToolBar = new FormToolBar(this);
     }
     
-    private void initialize() {
+    void initialize() {
         initialized = true;
         removeAll();
 
@@ -239,7 +239,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
     }
     
-    void reset() {
+    void reset(FormEditor formEditor) {
         initialized = false;
             
         clearSelection();
@@ -270,12 +270,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
         connectionSource = null;
         connectionTarget = null;        
-    
-    }
-    
-    void reinitialize(FormEditor formEditor) {
         this.formEditor = formEditor;
-        initialize();
     }
     
     private void switchLookup() {
@@ -1183,6 +1178,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // in-place editing
 
     public void startInPlaceEditing(RADComponent metacomp) {
+        
         if (formModel.isReadOnly())
             return;
         if (textEditLayer != null && textEditLayer.isVisible())
@@ -1316,7 +1312,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         ci.attachActions();
         if (textEditLayer == null || !textEditLayer.isVisible())
-            handleLayer.requestFocus();
+            handleLayer.requestFocus();               
     }
 
     public void componentDeactivated() {

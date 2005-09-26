@@ -292,11 +292,10 @@ public class RADVisualComponent extends RADComponent {
                 prop.setPropertyContext(
                     new RADProperty.RADPropertyContext(this));
 
-                if (isReadOnly()) {
+                if (isReadOnly() || !isValid()) {
                     int type = prop.getAccessType() | FormProperty.NO_WRITE;
                     prop.setAccessType(type);
                 }
-
                 nameToProperty.put(prop.getName(), prop);
             }
         }
@@ -618,7 +617,11 @@ public class RADVisualComponent extends RADComponent {
                 }
             };
         }
-        
+
+        public boolean canWrite() {
+            return !isReadOnly();
+        }
+    
     }
     
     /**
@@ -688,7 +691,11 @@ public class RADVisualComponent extends RADComponent {
         public boolean isDefaultValue() {
             return getValue().equals(Boolean.FALSE);
         }
-                
+
+        public boolean canWrite() {
+            return !isReadOnly();
+        }
+
     }
 
 }
