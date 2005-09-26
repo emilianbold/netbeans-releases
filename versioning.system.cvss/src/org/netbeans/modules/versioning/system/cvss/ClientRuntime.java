@@ -286,17 +286,26 @@ public class ClientRuntime {
     public static ConnectivitySettings toConnectivitySettings(ProxyDescriptor pd) {
         ConnectivitySettings cs = new ConnectivitySettings();
         String pasword = pd.getPassword();
+        int port = pd.getPort();
         switch (pd.getType()) {
-        case ProxyDescriptor.TYPE_DIRECT:
-            break;
-        case ProxyDescriptor.TYPE_HTTP:
-            cs.setProxy(ConnectivitySettings.CONNECTION_VIA_HTTPS, pd.getHost(), pd.getPort(), pd.getUserName(), pasword == null ? null : pasword.toCharArray());
-            break;
-        case ProxyDescriptor.TYPE_SOCKS:
-            cs.setProxy(ConnectivitySettings.CONNECTION_VIA_SOCKS, pd.getHost(), pd.getPort(), pd.getUserName(), pasword == null ? null : pasword.toCharArray());
-            break;
-        default:
-            break;
+            case ProxyDescriptor.TYPE_DIRECT:
+                break;
+            case ProxyDescriptor.TYPE_HTTP:
+                if (port <= 0) {
+                    ErrorManager.getDefault().log("Assuming default port 8080 for " + pd.getHost() + " HTTP proxy.");  // NOI18N
+                    port = 8080;  // could be also 3127, 80, anyway user can specify exact value
+                }
+                cs.setProxy(ConnectivitySettings.CONNECTION_VIA_HTTPS, pd.getHost(), port, pd.getUserName(), pasword == null ? null : pasword.toCharArray());
+                break;
+            case ProxyDescriptor.TYPE_SOCKS:
+                if (port <= 0) {
+                    ErrorManager.getDefault().log("Assuming default port 1080 for " + pd.getHost() + " SOCKS proxy.");  // NOI18N
+                    port = 1080;
+                }
+                cs.setProxy(ConnectivitySettings.CONNECTION_VIA_SOCKS, pd.getHost(), port, pd.getUserName(), pasword == null ? null : pasword.toCharArray());
+                break;
+            default:
+                break;
         }
         return cs;
     }
