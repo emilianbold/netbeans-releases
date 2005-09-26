@@ -155,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${s2b_root_app_1_4}"/>
   </target>
   
-  <target name="javadoc" depends="projectized.javadoc, init-javadoc"/>
+  <target name="javadoc" depends="init-javadoc, projectized.javadoc"/>
   
   <target name="init-javadoc">
       <mkdir dir="${netbeans.javadoc.dir}/org-netbeans-modules-j2ee-dd/arch"/>
