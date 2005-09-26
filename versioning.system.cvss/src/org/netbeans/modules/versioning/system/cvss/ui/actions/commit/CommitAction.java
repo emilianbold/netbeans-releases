@@ -23,7 +23,6 @@ import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
 import org.netbeans.lib.cvsclient.command.remove.RemoveCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.executor.RemoveExecutor;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
@@ -56,25 +55,8 @@ public class CommitAction extends AbstractSystemAction {
         return "CTL_MenuItem_Commit";
     }
 
-    /**
-     * Commit action should disabled only if current selection contains only files and these
-     * files are not all locally new/modified. This scenario is not supported by {@link AbstractSystemAction}
-     * so this method is overriden to return custom set of files to process.
-     *
-     * @return File[] all modified/new files in the current context
-     */
-    protected File [] getFilesToProcess() {
-        CvsModuleConfig config = CvsModuleConfig.getDefault();
-        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(
-                super.getContext(), FileInformation.STATUS_LOCAL_CHANGE).getNodes();
-        Set modifiedFiles = new HashSet();
-        for (int i = 0; i < nodes.length; i++) {
-            File file = nodes[i].getFile();
-            if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
-                modifiedFiles.add(file);
-            }
-        }
-        return (File[]) modifiedFiles.toArray(new File[modifiedFiles.size()]);
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_LOCAL_CHANGE;
     }
 
     protected int getDirectoryEnabledStatus() {

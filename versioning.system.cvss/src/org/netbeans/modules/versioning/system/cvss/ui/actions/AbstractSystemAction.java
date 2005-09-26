@@ -202,18 +202,6 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
         return new HelpCtx(this.getClass());
     }
 
-    /**
-     * Determines action working files and its enablement logic
-     * (most subclasses just define {@link #getFileEnabledStatus)
-     * and {@link #getDirectoryEnabledStatus}.
-     * 
-     * @deprecated Use {@link #getContext()} instead
-     * @return files to act on or empty array if this action should be disabled.
-     */
-    protected File [] getFilesToProcess() {
-        return getContext().getFiles();
-    }
-
     protected Context getContext() {
         return Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus());
     }

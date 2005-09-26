@@ -55,7 +55,7 @@ public class TagAction extends AbstractSystemAction {
     }
     
     public void performCvsAction(ActionEvent ev) {
-        File [] roots = getFilesToProcess();
+        File [] roots = getContext().getFiles();
                 
         TagCommand cmd = new TagCommand();
         copy (cmd, commandTemplate);

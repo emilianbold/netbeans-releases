@@ -14,14 +14,9 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
-import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
-import org.netbeans.api.diff.Diff;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -29,19 +24,13 @@ import org.netbeans.spi.diff.DiffProvider;
 import org.openide.windows.WindowManager;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
 import java.io.*;
 import java.awt.event.ActionEvent;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * Exports <b>local</b> differencies between the current working copy and repository
@@ -68,25 +57,8 @@ public class ExportDiffAction extends AbstractSystemAction {
         return "CTL_MenuItem_ExportDiff";
     }
 
-    /**
-     * Diff action should disabled only if current selection contains only files and these
-     * files are not all changed locally. This scenario is not supported by {@link org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction}
-     * so this method is overriden to return custom set of files to process.
-     *
-     * @return File[] all changed files in the current context
-     */
-    protected File [] getFilesToProcess() {
-        CvsModuleConfig config = CvsModuleConfig.getDefault();
-        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(
-                super.getContext(), enabledForStatus).getNodes();
-        Set modifiedFiles = new HashSet();
-        for (int i = 0; i < nodes.length; i++) {
-            File file = nodes[i].getFile();
-            if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
-                modifiedFiles.add(file);
-            }
-        }
-        return (File[]) modifiedFiles.toArray(new File[modifiedFiles.size()]);
+    protected int getFileEnabledStatus() {
+        return enabledForStatus;
     }
 
     public boolean isEnabled() {
