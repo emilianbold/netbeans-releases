@@ -135,7 +135,7 @@ public final class ProgressHandle {
      * <p> Progress bars that are placed in custom dialogs do always appear right away without a delay.
      * @param millis amount of miliseconds that shall pass before the progress appears in status bar.
      */
-    /*public*/ void setInitialDelay(int millis) {
+    public void setInitialDelay(int millis) {
        internal.setInitialDelay(millis); 
     }
     
