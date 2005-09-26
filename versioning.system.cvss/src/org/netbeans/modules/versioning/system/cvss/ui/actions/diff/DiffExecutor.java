@@ -114,6 +114,15 @@ public class DiffExecutor {
                 files.add(file);
             }
         }
+        // ensure that command roots (files that were explicitly selected by user) are included in Diff
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        File [] rootFiles = context.getRootFiles();
+        for (int i = 0; i < rootFiles.length; i++) {
+            File file = rootFiles[i];
+            if (file.isFile() && (cache.getStatus(file).getStatus() & includeStatus) != 0 && !files.contains(file)) {
+                files.add(file);
+            }
+        }
         return (File[]) files.toArray(new File[files.size()]);
     }
 
