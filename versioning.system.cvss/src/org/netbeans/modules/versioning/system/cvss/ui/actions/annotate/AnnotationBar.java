@@ -15,53 +15,34 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.annotate;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.FoldHierarchyListener;
-import org.netbeans.api.editor.fold.FoldHierarchyEvent;
-import org.netbeans.api.diff.Difference;
-import org.netbeans.api.xml.parsers.DocumentInputSource;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogOutputListener;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.lib.cvsclient.command.annotate.AnnotateLine;
-import org.netbeans.spi.diff.DiffProvider;
-import org.openide.ErrorManager;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObject;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.text.Line;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.text.NbDocument;
-import org.openide.xml.XMLUtil;
-import org.openide.text.Annotation;
-import org.xml.sax.InputSource;
+import org.netbeans.api.editor.fold.*;
+import org.netbeans.api.diff.*;
+import org.netbeans.api.xml.parsers.*;
+import org.netbeans.api.project.*;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.*;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.*;
+import org.netbeans.modules.versioning.system.cvss.util.*;
+import org.netbeans.lib.cvsclient.command.annotate.*;
+import org.netbeans.spi.diff.*;
+import org.openide.*;
+import org.openide.cookies.*;
+import org.openide.loaders.*;
+import org.openide.filesystems.*;
+import org.openide.text.*;
+import org.openide.util.*;
+import org.openide.xml.*;
+import org.xml.sax.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
+import javax.swing.event.*;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import java.awt.event.*;
+import java.beans.*;
 import java.util.*;
 import java.util.List;
-import java.io.CharConversionException;
-import java.io.File;
-import java.io.Reader;
-import java.io.IOException;
+import java.io.*;
 import java.text.MessageFormat;
 
 /**
@@ -76,16 +57,31 @@ import java.text.MessageFormat;
  *
  * @author Petr Kuzel
  */
-final class AnnotationBar extends JComponent implements FoldHierarchyListener, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener {
+final class AnnotationBar extends JComponent implements FoldHierarchyListener, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener, Runnable {
 
+    /**
+     * Target text component for which the annotation bar is aiming.
+     */
     private final JTextComponent textComponent;
 
+    /**
+     * User interface related to the target text component.
+     */
     private final EditorUI editorUI;
 
+    /**
+     * Fold hierarchy of the text component user interface.
+     */
     private final FoldHierarchy foldHierarchy;
 
+    /** 
+     * Document related to the target text component.
+     */
     private final BaseDocument doc;
 
+    /**
+     * Caret of the target text component.
+     */
     private final Caret caret;
 
     /**
@@ -114,6 +110,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
     private Map commitMessages;
 
     private final Set errorStripeAnnotations = new HashSet();
+    // controls the performance of the annotation fetching process
     private int annotationsPerfomanceLimit = Integer.MAX_VALUE;
 
     /**
@@ -121,15 +118,30 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
      * visible bar with yet <code>null</code> elementAnnotations.
      */
     private String elementAnnotationsSubstitute;
-
+    
     private Color backgroundColor = Color.WHITE;
     private Color foregroundColor = Color.BLACK;
     private Color selectedColor = Color.BLUE;
 
+    /**
+     * Most recent status message.
+     */
     private String recentStatusMessage;
-
-    /** Revision associted with caret line. */
+    
+    /**
+     * Revision associated with caret line.
+     */
     private String recentRevision;
+    
+    /**
+     * Request processor to create threads that may be cancelled.
+     */
+    RequestProcessor requestProcessor = null;
+    
+    /**
+     * Latest annotation comment fetching task launched.
+     */
+    private RequestProcessor.Task latestAnnotationTask = null;
 
     /**
      * Creates new instance initializing final fields.
@@ -141,7 +153,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
     }
-
+    
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
@@ -153,22 +165,16 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         annotated = true;
         elementAnnotations = null;
         commitMessages = null;
-        elementAnnotationsSubstitute = "Computing...";
+        ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
+        elementAnnotationsSubstitute = loc.getString("CTL_AnnotationSubstitute");
         revalidate();  // resize the component
     }
 
     /**
      * Result computed show it...
-     * Takes AnnoateLines and shows them.
+     * Takes AnnotateLines and shows them.
      */
     public void annotationLines(File file, List annotateLines) {
-
-        // lazy listener registration
-
-        caret.addChangeListener(this);
-        this.caretTimer = new Timer(10, this);
-        caretTimer.setRepeats(false);
-
         List lines = new LinkedList(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
@@ -259,13 +265,21 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         } finally {
             doc.atomicUnlock();
         }
+
+        // lazy listener registration
+        caret.addChangeListener(this);
+        this.caretTimer = new Timer(500, this);
+        caretTimer.setRepeats(false);
+
         onCurrentLine();
         revalidate();
         repaint();
     }
 
     /**
-     * Takes commint messages and shows them as tooltips.
+     * Takes commit messages and shows them as tooltips.
+     *
+     * @param a hashmap containing commit messages
      */
     public void commitMessages(Map messages) {
         this.commitMessages = messages;
@@ -273,14 +287,22 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
 
     // implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    /**
+     * Gets a the file related to the document
+     *
+     * @return the file related to the document, <code>null</code> if none
+     * exists.
+     */
     private File getCurrentFile() {
-        DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        File result = null;
+        
+        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
         if (dobj != null) {
             FileObject fo = dobj.getPrimaryFile();
-            File file = FileUtil.toFile(fo);
-            return file;
+            result = FileUtil.toFile(fo);
         }
-        return null;
+        
+        return result;
     }
     
     /**
@@ -406,25 +428,59 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         release();
     }
 
+    /**
+     * Gets the line number of the caret's current position. The first line
+     * will return a line number of 0 (zero). If it's impossible to determine
+     * the caret's current line number -1 will be returned.
+     *
+     * @return the line number of the caret's current position
+     */
     private int getCurrentLine() {
+        int result = 0;
+        
         int offset = caret.getDot();
         try {
-            return Utilities.getLineOffset(doc, offset);
+            result = Utilities.getLineOffset(doc, offset);
         } catch (BadLocationException ex) {
-            return -1;
+            result = -1;
         }
+        
+        return result;
      }
+    /**
+     * Gets a request processor which is able to cancel tasks.
+     */
+    private RequestProcessor getRequestProcessor() {
+        if (requestProcessor == null) {
+            requestProcessor = new RequestProcessor("AnnotationBarRP", 1, true);
+        }
+        
+        return requestProcessor;
+    }
     
     /**
-     * Shows commit message in status bar
-     * and or revision change repaints side bar
-     * (to highlight same revision).
-     *
+     * Shows commit message in status bar and or revision change repaints side
+     * bar (to highlight same revision). This process is started in a
+     * seperate thread.
      */
     private void onCurrentLine() {
+        if (latestAnnotationTask != null) {
+            latestAnnotationTask.cancel();
+        }
+        
+        latestAnnotationTask = getRequestProcessor().post(this);
+    }
 
+    // latestAnnotationTask business logic
+    public void run() {
+        // get resource bundle
+        ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
+        // give status bar "wait" indication
+        StatusBar statusBar = editorUI.getStatusBar();
+        recentStatusMessage = loc.getString("CTL_StatusBar_WaitFetchAnnotation");
+        statusBar.setText(StatusBar.CELL_MAIN, recentStatusMessage);
+        
         // determine current line
-
         int line = -1;
         int offset = caret.getDot();
         try {
@@ -433,6 +489,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(ex, "Can not get line for caret at offset " + offset); // NOI18N
             err.notify(ex);
+            clearRecentFeedback();
             return;
         }
 
@@ -449,14 +506,12 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         }
 
         // handle unchanged lines
-
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
             recentRevision = revision;
             repaint();
-            
-            // error stripe support
 
+            // error stripe support
             detachStripeAnnotations();
 
             DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
@@ -477,6 +532,11 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                             CvsAnnotation ann = new CvsAnnotation(revision, currentLine);
                             annotations.add(ann);
                         }
+
+                        if (Thread.interrupted()) {
+                            clearRecentFeedback();
+                            return;
+                        }
                     }
 
                     // do not trust annotations implementation scalability
@@ -496,24 +556,33 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                                 ErrorManager.getDefault().log(ErrorManager.WARNING, "#59721 should be reopened: " + counter + " of " + annotations.size() + " annotations attached in " + ms + "ms. Setting performance limit.");  // NOI18N
                                 break;
                             }
+
+                            if (Thread.interrupted()) {
+                                clearRecentFeedback();
+                                return;
+                            }
                         }
                     }
                 }
             }
         }
 
-        if (commitMessages == null) return;
-        String message = (String) commitMessages.get(revision);
-        StatusBar statusBar = editorUI.getStatusBar();
-        if (message != null) {
-            recentStatusMessage = message;
-            statusBar.setText(StatusBar.CELL_MAIN, al.getAuthor() + ": " + recentStatusMessage); // NOI18N
+        if (commitMessages != null) {
+            String message = (String) commitMessages.get(revision);
+            if (message != null) {
+                recentStatusMessage = message;
+                statusBar.setText(StatusBar.CELL_MAIN, al.getAuthor() + ": " + recentStatusMessage); // NOI18N
+            } else {
+                clearRecentFeedback();
+            }
         } else {
             clearRecentFeedback();
-        }
-
+        };
     }
-
+    
+    /**
+     * Detaches all annotations.
+     */
     private void detachStripeAnnotations() {
         Iterator it = errorStripeAnnotations.iterator();
         while (it.hasNext()) {
@@ -523,6 +592,10 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         }
     }
 
+    /**
+     * Clears the status bar if it contains the latest status message
+     * displayed by this annotation bar.
+     */
     private void clearRecentFeedback() {
         StatusBar statusBar = editorUI.getStatusBar();
         if (statusBar.getText(StatusBar.CELL_MAIN) == recentStatusMessage) {
@@ -547,18 +620,20 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         return dim;
     }
 
+    /**
+     * Gets the maximum size of this component.
+     *
+     * @return the maximum size of this component
+     */
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
 
-    public Dimension getSize() {
-        return getPreferredSize();
-    }
-
-    public Dimension getSize(Dimension rv) {
-        return getPreferredSize();
-    }
-
+    /**
+     * Gets the preferred width of this component.
+     *
+     * @return the preferred width of this component
+     */
     private int getBarWidth() {
         String longestString = "";  // NOI18N
         if (elementAnnotations == null) {
@@ -577,6 +652,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         int w = getGraphics().getFontMetrics().charsWidth(data, 0,  data.length);
         return w;
     }
+    
     /**
      * Pair method to {@link #annotate}. It releases
      * all resources.
@@ -591,6 +667,10 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         }
         commitMessages = null;
         elementAnnotations = null;
+        // cancel running annotation task if active
+        if(latestAnnotationTask != null) {
+            latestAnnotationTask.cancel();
+        }
         detachStripeAnnotations();
         annotationsPerfomanceLimit = Integer.MAX_VALUE;
         clearRecentFeedback();
@@ -880,8 +960,6 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
 
         public String getAnnotationType() {
             return "org-netbeans-modules-versioning-system-cvss-Annotation";  // NOI18N
-        }
-        
+        }        
     }
-
 }
