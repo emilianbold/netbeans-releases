@@ -104,7 +104,9 @@ class CommandRunnable implements Runnable, Cancellable {
         if (finished || aborted) return false;
         aborted = true;
         client.abort();
-        interruptibleThread.interrupt();  // waiting in join
+        if (interruptibleThread != null) { 
+            interruptibleThread.interrupt();  // waiting in join
+        }
         return true;
     }
 
