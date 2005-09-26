@@ -230,6 +230,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Beans">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
         </folder>
 
         <attr name="Swing/AWT" boolvalue="true" />
