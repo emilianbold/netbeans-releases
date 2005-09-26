@@ -58,6 +58,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 
     private boolean emptyExistingDirNB   = false;
     
+    private int AS_INSTALL_PATH_MAX_LENGTH;
+    
     public void build(WizardBuilderSupport support) {
         super.build(support);
         try {
@@ -99,6 +101,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     protected void initialize() {
         super.initialize();
+	
+	AS_INSTALL_PATH_MAX_LENGTH = 48 - InstallApplicationServerAction.IMAGE_DIRECTORY_NAME.length() - 1;
         
         GridBagConstraints gridBagConstraints;
         mainPanel = new JPanel();        
@@ -123,7 +127,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	// netbeans install dir components
 	String nbInstallDir;
         nbInstallDir = resolveString("$P(absoluteInstallLocation)");
-        if (Util.isMacOSX()) {
+	if (Util.isMacOSX()) {
             //Replace install dir
             nbInstallDir = nbInstallDir.substring(0,nbInstallDir.lastIndexOf(File.separator))
             + File.separator
@@ -287,12 +291,19 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNotSpecifiedMessage)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
+	} else if (Util.isWindowsOS() && (dir.length() > AS_INSTALL_PATH_MAX_LENGTH)) {
+            //Path is too long
+            dialogMsg = msgPrefix + " "
+            + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryTooLong," + AS_INSTALL_PATH_MAX_LENGTH 
+	    + "," + dir.length() + ")");
+            showErrorMsg(dialogTitle,dialogMsg);
+            return false;
         } else if (st.countTokens() > 1) {
             //Check for spaces in path - it is not supported by AS installer on Linux/Solaris
 	    if (!Util.isWindowsOS()) {
 		dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryHasSpaceMessage)");
-                showErrorMsg(dialogTitle,dialogMsg);
+		showErrorMsg(dialogTitle,dialogMsg);
 		return false;
 	    }
         } else if ((Util.isWindowsOS() && (dir.indexOf("@") != -1 || dir.indexOf("&") != -1 ||
@@ -367,7 +378,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         }
         return true;
     }
-
+    
     /** Create directory. Do not ask user. Report only error when it fails. */
     private boolean createDirectory(String path, String msgPrefix) {
 	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
