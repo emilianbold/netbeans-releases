@@ -24,6 +24,8 @@ import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import junit.framework.*;
@@ -31,7 +33,8 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 
 
-/** Check the behaviour Arch task.
+/** Check the behaviour ModuleDependencies task that prints out info about
+ * module dependencies, etc.
  *
  * @author Jaroslav Tulach
  */
@@ -120,6 +123,86 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("is there too: " + res, res.indexOf ("is.too\n") >= 0);
     }
 
+    public void testPublicPackagesInAModuleThatDeclaresFriendsAreNotCounted() throws Exception {
+        File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module");
+        File withoutPkgs = generateJar (new String[] { "DefaultPkg.class", "just/friend/X.class", "just/friend/MyClass.class", "not/as/it/is/resource/X.xml" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "friend.there.*, friend.recursive.**");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module");
+        File withPkgs = generateJar (new String[] { "friend/there/A.class", "not/there/B.class", "friend/recursive/Root.class", "friend/recursive/sub/Under.class", "not/res/X.jpg"}, m);
+
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.very.public.module/10");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "-");
+        File allPkgs = generateJar (new String[] { "not/very/A.class", "not/very/B.class", "not/very/sub/Root.class", "not/res/X.jpg"}, m);
+        
+        File parent = notAModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
+        assertEquals ("All parents are the same 3", parent, allPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        friendPkg.delete ();
+	assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + notAModule.getName () + "\" />" +
+            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "        <include name=\"" + withPkgs.getName () + "\" />" +
+            "        <include name=\"" + allPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"public-packages\" file=\"" + output + "\" />" +
+            "    <output type=\"friend-packages\" file=\"" + friendPkg + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        
+	if (!res.equals("\n")) {
+	    fail("No public packages:\n" + res);
+	}
+	
+	// now friend packages
+	res = readFile(friendPkg);
+	
+	Matcher match = Pattern.compile("MODULE ([^ ]*)").matcher(res);
+	assertTrue("One MODULE is there: " + res, match.find());
+	int fst = match.start();
+	assertEquals("my.another.module/3", match.group(1));
+	
+	assertTrue("Second MODULE is there: " + res, match.find());
+	int snd = match.start();
+	assertEquals("my.module/3", match.group(1));
+
+	match = Pattern.compile("  FRIEND my.very.public.module/10 \\(ahoj\\)").matcher(res);
+	assertTrue("One FRIEND is there: " + res, match.find());
+	assertTrue("Second FRIEND is there: " + res, match.find());
+	
+	assertTrue("FriendPkg1\n" + res, res.indexOf("just.friend") >= snd);
+	assertTrue("FriendPkg2\n" + res, res.indexOf("friend.there") >= fst);
+	
+    }
     
     public void testMd5CheckSumForExternalBinaries() throws Exception {
         File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());

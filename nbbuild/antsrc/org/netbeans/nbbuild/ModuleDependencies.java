@@ -62,7 +62,11 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 getProject ().log ("Generating " + o.type + " to " + o.file);
                 
                 if ("public-packages".equals (o.type.getValue ())) {
-                    generatePublicPackages (o.file);
+                    generatePublicPackages (o.file, true);
+                    continue;
+                }
+                if ("friend-packages".equals (o.type.getValue ())) {
+                    generatePublicPackages (o.file, false);
                     continue;
                 }
                 if ("shared-packages".equals (o.type.getValue ())) {
@@ -194,6 +198,17 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                  */
                 m.depends = depends;
                 m.provides = provides;
+                {
+                    String friends = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Friends"); 
+                    if (friends != null) {
+			TreeSet set = new TreeSet();
+                        StringTokenizer tok = new StringTokenizer (friends, ", ");
+			while (tok.hasMoreElements()) {
+			    set.add(tok.nextElement());
+			}
+			m.friends = set;
+                    }
+                }
 
                 modules.add (m);
             }
@@ -201,12 +216,18 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     }
     
     
-    private void generatePublicPackages (File output) throws BuildException, IOException {
+    private void generatePublicPackages (File output, boolean justPublic) throws BuildException, IOException {
         TreeSet packages = new TreeSet ();
+	TreeMap friendExports = new TreeMap();
         
         Iterator it = modules.iterator ();
         while (it.hasNext ()) {
             ModuleInfo m = (ModuleInfo)it.next ();
+	    if (justPublic) {
+		if (m.friends != null) {
+		    continue;
+		}
+	    }
 
             String s = m.publicPackages;
             HashMap pkgs = null;
@@ -230,20 +251,59 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                     throw new BuildException ("Unknown package format: " + p + " in " + m.file);
                 }
             }
+	    
+	    if (justPublic) {
+		iterateThruPackages (m.file, pkgs, packages);
+		if (pkgs != null && packages.size () < pkgs.size ()) {
+		    throw new BuildException ("Not enough packages found. The declared packages are: " + s + " but only " + packages + " were found in " + m.file);
+		}
+	    } else {
+		TreeSet modulePkgs = new TreeSet();
+		iterateThruPackages (m.file, pkgs, modulePkgs);
+		friendExports.put(m, modulePkgs);
+	    }
 
-            iterateThruPackages (m.file, pkgs, packages);
-
-            if (pkgs != null && packages.size () < pkgs.size ()) {
-                throw new BuildException ("Not enough packages found. The declared packages are: " + s + " but only " + packages + " were found in " + m.file);
-            }
         }
 
         PrintWriter w = new PrintWriter (new FileWriter (output));
-        it = packages.iterator ();
-        while (it.hasNext ()) {
-            String out = (String)it.next ();
-            w.println (out.replace ('/', '.'));
-        }
+	if (justPublic) {
+	    it = packages.iterator ();
+	    while (it.hasNext ()) {
+		String out = (String)it.next ();
+		w.println (out.replace ('/', '.'));
+	    }
+	} else {
+	    it = friendExports.entrySet().iterator();
+	    while (it.hasNext()) {
+		Map.Entry entry = (Map.Entry)it.next();
+		ModuleInfo info = (ModuleInfo)entry.getKey();
+		if (info.friends == null) {
+		    continue;
+		}
+		log("Friends for " + info.getName(), org.apache.tools.ant.Project.MSG_DEBUG);
+		w.print("MODULE ");
+		w.println(info.getName());
+		Iterator iterFrnd = info.friends.iterator();
+		while(iterFrnd.hasNext()) {
+		    String n = (String)iterFrnd.next();
+		    ModuleInfo friend = findModuleInfo(n);
+		    if (friend != null) {
+			w.print("  FRIEND ");
+			w.println(friend.getName());
+		    } else {
+			w.print("  EXTERNAL ");
+			w.println(n);
+		    }
+		}
+		Set/*<String>*/ pkgs = (Set/*<String>*/)entry.getValue();
+		Iterator iterPkgs = pkgs.iterator();
+		while (iterPkgs.hasNext()) {
+		    String out = (String)iterPkgs.next ();
+		    w.print("  PACKAGE ");
+		    w.println (out.replace ('/', '.'));
+		}
+	    }
+	}
         w.close ();
     }
     
@@ -550,6 +610,19 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         
         throw new BuildException ("Cannot find module that satisfies dependency: " + dep);
     }
+    /** For a given codebasename finds module that we depend on
+     */
+    private ModuleInfo findModuleInfo (String cnb) throws BuildException {
+        Iterator it = modules.iterator ();
+        while (it.hasNext ()) {
+            ModuleInfo info = (ModuleInfo)it.next ();
+            if (info.codebasename.equals(cnb)) {
+                return info;
+            }
+        }
+        
+        return null;
+    }
     
     private static void addDependencies (TreeSet addTo, java.util.jar.Manifest man, int dependencyType, String attrName) throws BuildException {
         String value = man.getMainAttributes ().getValue (attrName);
@@ -610,6 +683,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         public String[] getValues () {
             return new String[] { 
                 "public-packages",
+                "friend-packages",
                 "shared-packages",
                 "modules",
                 "dependencies",
@@ -626,6 +700,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         public final File file;
         public final String codebasename;
         public String publicPackages;
+	public Set/*String*/ friends;
         public int majorVersion;
         public String specificationVersion;
         public String implementationVersion;

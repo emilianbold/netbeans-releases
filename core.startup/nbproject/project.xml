@@ -53,8 +53,8 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core</friend>
-                <friend>org.netbeans.module.autoupdate</friend>
-                <friend>org.netbeans.module.apisupport.ant</friend>
+                <friend>org.netbeans.modules.autoupdate</friend>
+                <friend>org.netbeans.modules.apisupport.ant</friend>
                 <package>org.netbeans.core.startup</package>
             </friend-packages>
         </data>
