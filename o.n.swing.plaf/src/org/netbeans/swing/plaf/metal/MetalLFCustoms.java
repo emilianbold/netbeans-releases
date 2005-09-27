@@ -50,8 +50,10 @@ public final class MetalLFCustoms extends LFCustoms {
             PANELFONT, controlFont,
             SUBFONT, new Font ("Dialog", Font.PLAIN, Math.min(fontsize - 1, 6)),
             //Bug in JDK 1.5 thru b59 - pale blue is incorrectly returned for this
-            "textInactiveText", Color.GRAY,
-        }; //NOI18N
+            "textInactiveText", Color.GRAY, //NOI18N
+            // #61395        
+            SPINNERFONT, controlFont,        
+        }; 
         return result;
     }
 
