@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,10 +16,10 @@ package org.netbeans.beaninfo.editors;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.lang.ref.*;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.beans.*;
 import java.io.File;
-import java.util.Enumeration;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ChangeListener;
@@ -30,13 +30,11 @@ import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
-import org.openide.explorer.view.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.filesystems.*;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
-
 /**
  * A panel for selecting an existing data folder. 
  * @author  Jaroslav Tulach, David Strupl
@@ -89,6 +87,8 @@ class DataFolderPanel extends TopComponent implements
          */
 
         rootNode = createPackagesNode ();
+        
+        beanTreeView.setRootVisible (false);
 
         packagesPanel.getExplorerManager ().setRootContext (rootNode);
         packagesPanel.getExplorerManager ().addPropertyChangeListener (this);
@@ -127,7 +127,10 @@ class DataFolderPanel extends TopComponent implements
     /** Creates node that displays all packages.
     */
     private Node createPackagesNode () {
-        return RepositoryNodeFactory.getDefault().repository(this);
+        Node topNode = RepositoryNodeFactory.getDefault().repository(this);
+        Node [] nodes = topNode.getChildren ().getNodes (true);
+        assert nodes != null && nodes.length == 1 : "Only one subnode " + topNode + " found, but was " + Arrays.asList (nodes);
+        return nodes [0];
     }
 
     /** This method is called from within the constructor to
@@ -464,7 +467,7 @@ class DataFolderPanel extends TopComponent implements
     */
     boolean setTargetFolder (final DataFolder f) {
         boolean exact;
-        Node n;
+        Node n = null;
         String name;
         
         df = f;
@@ -489,13 +492,10 @@ class DataFolderPanel extends TopComponent implements
 
                 system = new WeakReference (fs);
 
-                Enumeration en = org.openide.util.Enumerations.concat (
-                    org.openide.util.Enumerations.singleton (fs.getSystemName()),
-                    st
-                );
+                n = NodeOp.findPath (rootNode, st);
 
-                n = NodeOp.findPath (rootNode, en);
                 exact = true;
+                
             } catch (FileStateInvalidException ex) {
                 // invalid state of file system => back to root
                 n = rootNode;
@@ -586,36 +586,28 @@ class DataFolderPanel extends TopComponent implements
             selected.add( n1 );
         }
 
-        // scan
-        Node[] arr = rootNode.getChildren ().getNodes ();
+        StringTokenizer st = new StringTokenizer (f, PATH_TOKEN_DELIMITER);
 
-        for (int i = 0; i < arr.length; i++) {
-            Node root = arr[i];
+        try {
+            n = NodeOp.findPath (rootNode, st);
+        } catch (NodeNotFoundException ex) {
+            if (!st.hasMoreElements ()) {
+                // a test for !hasMoreElements is here to be sure that
+                // all tokens has been read, so only the last item
+                // has not been found
 
-            StringTokenizer st = new StringTokenizer (f, PATH_TOKEN_DELIMITER);
+                // check whether we can continue from the nod
+                final String sugg = computeSuggestion (
+                                        ex.getClosestNode (),
+                                        ex.getMissingChildName(),
+                                        null
+                                    );
 
-            try {
-                n = NodeOp.findPath (root, st);
-                break;
-            } catch (NodeNotFoundException ex) {
-                if (!st.hasMoreElements ()) {
-                    // a test for !hasMoreElements is here to be sure that
-                    // all tokens has been read, so only the last item
-                    // has not been found
-
-                    // check whether we can continue from the nod
-                    final String sugg = computeSuggestion (
-                                            ex.getClosestNode (),
-                                            ex.getMissingChildName(),
-                                            null
-                                        );
-
-                    if ( ( closest == null || selected.contains (root) ) && sugg != null ) {
-                        // if we can go on and there has been no suggestion o
-                        // this is the current filesystem => go o
-                        closest = ex;
-                    } 
-                }
+                if ( ( closest == null || selected.contains (rootNode) ) && sugg != null ) {
+                    // if we can go on and there has been no suggestion o
+                    // this is the current filesystem => go o
+                    closest = ex;
+                } 
             }
         }
 
