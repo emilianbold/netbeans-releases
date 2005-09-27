@@ -483,6 +483,12 @@ public class PluginProperties  {
         fileColl.add("domains");
     }
     
+    public boolean isGlassFish(File candidate){
+        //now test for AS 9 (J2EE 5.0) which should work for this plugin
+        File as9 = new File(candidate.getAbsolutePath()+"/lib/dtds/sun-web-app_2_5-0.dtd");
+        return as9.exists();
+    }
+    
     public boolean isGoodAppServerLocation(File candidate){
         if (null == candidate || !candidate.exists() || !candidate.canRead() ||
                 !candidate.isDirectory()  || !hasRequiredChildren(candidate, fileColl)) {
@@ -490,8 +496,7 @@ public class PluginProperties  {
             return false;
         }
         //now test for AS 9 (J2EE 5.0) which should work for this plugin
-        File as9 = new File(candidate.getAbsolutePath()+"/lib/dtds/sun-web-app_2_5-0.dtd");
-        if(as9.exists()){
+        if(isGlassFish(candidate)){
             return true;//we are as9
         }
         
