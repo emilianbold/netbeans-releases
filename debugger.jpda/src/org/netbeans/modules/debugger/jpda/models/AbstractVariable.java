@@ -519,7 +519,7 @@ public class AbstractVariable implements ObjectVariable {
                         componentType, 
                         ar, 
                         from + i,
-                        to,
+                        to - 1,
                         parentID
                     );
             }
