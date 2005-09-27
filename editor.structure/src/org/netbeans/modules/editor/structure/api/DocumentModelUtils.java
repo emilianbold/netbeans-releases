@@ -87,5 +87,10 @@ public final class DocumentModelUtils {
         }
     }
     
+    /** Dumps a list of existing elements in the model.
+     *  This method is mainly used for testing purposes.*/
+    public static void dumpModelElements(DocumentModel model) {
+        model.debugElements();
+    }
     
 }

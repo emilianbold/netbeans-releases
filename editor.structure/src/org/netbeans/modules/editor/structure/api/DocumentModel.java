@@ -725,7 +725,7 @@ public final class DocumentModel {
     //-------------------------------------
     // --------- debug methods ------------
     //-------------------------------------
-    private void debugElements() {
+    void debugElements() {
         System.out.println("DEBUG ELEMENTS:");
         Iterator i = getElementsSet().iterator();
         while(i.hasNext()) {
