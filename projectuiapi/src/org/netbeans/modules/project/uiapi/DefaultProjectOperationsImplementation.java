@@ -535,6 +535,10 @@ public final class DefaultProjectOperationsImplementation {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Folder_Exists");
         }
         
+	if (projectNameText.indexOf('/') != -1 || projectNameText.indexOf('\\') != -1) {
+	    return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Not_Valid_Filename", projectNameText);
+	}
+        
         return null;
     }
     
