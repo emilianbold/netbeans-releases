@@ -46,28 +46,52 @@ public class PostInstallWizardAction extends WizardAction {
     private void setWinAddRemoveFolderInfo() {
         try {
             String productSource = ProductService.DEFAULT_PRODUCT_SOURCE;
-            ProductService productService = (ProductService)getService(ProductService.NAME);
-            SoftwareObjectKey key = (SoftwareObjectKey)productService.getProductBeanProperty(productSource,null,"key"); //NOI18N
+            ProductService productService = (ProductService) getService(ProductService.NAME);
+            SoftwareObjectKey key = (SoftwareObjectKey)
+            productService.getProductBeanProperty(productSource, null, "key");
             String uid = key.getUID();
             
-            Win32RegistryService regserv = (Win32RegistryService)getService(Win32RegistryService.NAME);
+            Win32RegistryService regService = (Win32RegistryService) getService(Win32RegistryService.NAME);
             
             int HKEY = Win32RegistryService.HKEY_LOCAL_MACHINE;
             int HKCU = Win32RegistryService.HKEY_CURRENT_USER;
             
-            String HKEY_uninstall = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\" + uid;
-            logEvent(this, Log.DBG,"Key -> " + HKEY_uninstall);
+            String HKEY_uninstall = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+            String [] keyNames = regService.getSubkeyNames(HKEY,HKEY_uninstall);
             
-            if (regserv.keyExists(HKEY, HKEY_uninstall)) {
-                String icon = nbInstallDir + File.separator + "bin" + File.separator + "netbeans.exe";
-                logEvent(this, Log.DBG,"Adding value -> " + HKEY_uninstall + "\\" + icon);
-                regserv.setStringValue(HKEY, HKEY_uninstall, "DisplayIcon", false, icon);
+            logEvent(this, Log.DBG,"uid: " + uid);
+            logEvent(this, Log.DBG,"Key -> " + HKEY_uninstall);
+            logEvent(this, Log.DBG,"nbInstallDir: " + nbInstallDir);
+            
+            for (int i = 0; i < keyNames.length; i++) {
+                if (keyNames[i].startsWith(uid)) {
+                    String nbKey = HKEY_uninstall + "\\" + keyNames[i];
+                    String value = regService.getStringValue(HKEY,nbKey,"UninstallString",false);
+                    logEvent(this, Log.DBG,"First match with UID keyNames[" + i + "]: " + keyNames[i]
+                    + " UninstallString: " + value);
+                    int pos = value.indexOf("\\_uninst");
+                    if (pos == -1) {
+                        logEvent(this, Log.ERROR,"Invalid value of UninstallString."
+                        + " Cannot locate substring \"\\uninst\".");
+                        logEvent(this, Log.ERROR,"Cannot modify values in windows registry.");
+                        break;
+                    }
+                    String strippedValue = value.substring(0,pos);
+                    logEvent(this, Log.DBG,"strippedValue: " + strippedValue);
+                    if (strippedValue.equals(nbInstallDir)) {
+                        logEvent(this, Log.DBG,"Second match with UninstallString. Modify/Add Keys.");
+                        
+                        String icon = nbInstallDir + File.separator + "bin" + File.separator + "netbeans.exe";
+                        logEvent(this, Log.DBG,"Adding value -> " + HKEY_uninstall + "\\" + icon);
+                        regService.setStringValue(HKEY, nbKey, "DisplayIcon", false, icon);
 
-                logEvent(this, Log.DBG,"Adding value -> " + HKEY_uninstall + "\\" + nbInstallDir);
-                regserv.setStringValue(HKEY, HKEY_uninstall, "InstallLocation", false, nbInstallDir);
-            } else {
-                logEvent(this, Log.DBG,"Key does not exist -> " + HKEY_uninstall);
+                        logEvent(this, Log.DBG,"Adding value -> " + HKEY_uninstall + "\\" + nbInstallDir);
+                        regService.setStringValue(HKEY, nbKey, "InstallLocation", false, nbInstallDir);
+                        break;
+                    }
+                }
             }
+            
             //regserv.set32BitValue(HKEY, HKEY_uninstall,"EstimatedSize",83000);
         } catch (ServiceException ex) {
             System.out.println(ex.getLocalizedMessage());
