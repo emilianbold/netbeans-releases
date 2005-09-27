@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Performs diff action by fetching the appropriate file from repository
@@ -126,7 +127,7 @@ public class DiffExecutor {
         return (File[]) files.toArray(new File[files.size()]);
     }
 
-    private static class DiffTopComponent extends TopComponent {
+    private static class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
         public DiffTopComponent() {
         }
@@ -155,6 +156,10 @@ public class DiffExecutor {
             return new HelpCtx(getClass());
         }
 
+        public Collection getSetups() {
+            DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
+            return mainPanel.getSetups();
+        }
     }
     
 }
