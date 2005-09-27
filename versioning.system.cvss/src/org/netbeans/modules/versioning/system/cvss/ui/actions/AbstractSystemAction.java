@@ -19,6 +19,7 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Actions;
@@ -119,6 +120,9 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
                 name = fo.getNameExt();
             } else {
                 DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                if (dao instanceof DataShadow) {
+                    dao = ((DataShadow) dao).getOriginal();
+                }
                 if (dao != null) {
                     name = dao.getPrimaryFile().getNameExt();
                 } else {
@@ -178,6 +182,9 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
                 return fo.getNameExt();
             } else {
                 DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                if (dao instanceof DataShadow) {
+                    dao = ((DataShadow) dao).getOriginal();
+                }
                 if (dao != null) {
                     return dao.getPrimaryFile().getNameExt();
                 } else {
