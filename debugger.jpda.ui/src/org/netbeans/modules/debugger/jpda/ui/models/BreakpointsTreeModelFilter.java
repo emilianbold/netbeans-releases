@@ -14,10 +14,15 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -31,6 +36,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  * @author   Jan Jancura
  */
 public class BreakpointsTreeModelFilter implements TreeModelFilter {
+    
+    static Map MAX_LINES = new WeakHashMap();
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.show_hidden_breakpoints") != null;
@@ -69,6 +76,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         Object[] ch = original.getChildren (parent, 0, 0);
         List l = new ArrayList ();
         int i, k = ch.length, n = to - from;
+        Map maxLines = new HashMap();
         for (i = 0; i < k; i++) {
             if ( (!verbose) &&
                  (ch [i] instanceof JPDABreakpoint) &&
@@ -76,7 +84,25 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
             ) continue;
             if (--from >= 0) continue;
             l.add (ch [i]);
+            if (ch[i] instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) ch[i];
+                String fn = EditorContextBridge.getFileName(lb);
+                int line = lb.getLineNumber();
+                Integer mI = (Integer) maxLines.get(fn);
+                if (mI != null) {
+                    line = Math.max(line, mI.intValue());
+                }
+                mI = new Integer(line);
+                maxLines.put(fn, mI);
+            }
             if (--n == 0) break;
+        }
+        for (i = l.size() - 1; i >= 0; i--) {
+            Object o = l.get(i);
+            if (o instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) o;
+                MAX_LINES.put(lb, maxLines.get(EditorContextBridge.getFileName(lb)));
+            }
         }
         return l.toArray();
     }

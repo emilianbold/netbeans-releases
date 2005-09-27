@@ -28,7 +28,7 @@ package org.netbeans.api.debugger.jpda;
  *
  * @author Jan Jancura
  */
-public final class LineBreakpoint extends JPDABreakpoint {
+public final class LineBreakpoint extends JPDABreakpoint implements Comparable {
 
     /** Property name constant */
     public static final String          PROP_LINE_NUMBER = new String ("lineNumber"); // NOI18N
@@ -238,6 +238,20 @@ public final class LineBreakpoint extends JPDABreakpoint {
             sourcePath = sp;
         }
         firePropertyChange (PROP_SOURCE_PATH, old, sp);
+    }
+    
+    public int compareTo(Object o) {
+        if (o instanceof LineBreakpoint) {
+            LineBreakpoint lb = (LineBreakpoint) o;
+            int uc = url.compareTo(lb.url);
+            if (uc != 0) {
+                return uc;
+            } else {
+                return lineNumber - lb.lineNumber;
+            }
+        } else {
+            return -1;
+        }
     }
     
     /**

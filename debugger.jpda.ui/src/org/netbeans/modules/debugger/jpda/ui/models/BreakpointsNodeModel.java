@@ -49,17 +49,45 @@ public class BreakpointsNodeModel implements NodeModel {
 
     private Vector listeners = new Vector ();
 
+    static int log10(int n) {
+        int l = 1;
+        while ((n = n / 10) > 0) l++;
+        return l;
+    }
+    
+    private static final String ZEROS = "            "; // NOI18N
+    
+    static String zeros(int n) {
+        if (n < ZEROS.length()) {
+            return ZEROS.substring(0, n);
+        } else {
+            String z = ZEROS;
+            while (z.length() < n) z += " "; // NOI18N
+            return z;
+        }
+    }
+
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o instanceof LineBreakpoint) {
             LineBreakpoint b = (LineBreakpoint) o;
+            int lineNum = b.getLineNumber();
+            String line = Integer.toString(lineNum);
+            Integer maxInt = (Integer) BreakpointsTreeModelFilter.MAX_LINES.get(b);
+            if (maxInt != null) {
+                int max = maxInt.intValue();
+                int num0 = log10(max) - log10(lineNum);
+                if (num0 > 0) {
+                    line = zeros(num0) + line;
+                }
+            }
             return bold (
                 b,
                 NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Line_Breakpoint",
                         EditorContextBridge.getFileName (b),
-                        "" + b.getLineNumber ()
+                        line
                     )
             );
         } else

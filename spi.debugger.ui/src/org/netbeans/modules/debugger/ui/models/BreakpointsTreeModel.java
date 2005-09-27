@@ -213,6 +213,10 @@ public class BreakpointsTreeModel implements TreeModel {
         }
         
         public int compare (Object o1, Object o2) {
+            if (o1 instanceof Comparable && o1.getClass() == o2.getClass()) {
+                return ((Comparable) o1).compareTo(o2);
+            }
+            
             if (o1 instanceof String) {
                 if (o2 instanceof String)
                     return ((String) o1).compareTo ((String) o2);
