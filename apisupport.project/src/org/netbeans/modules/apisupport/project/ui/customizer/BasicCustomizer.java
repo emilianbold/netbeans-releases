@@ -80,10 +80,6 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
         return project;
     }
     
-    protected Dialog getDialog() {
-        return dialog;
-    }
-    
     /** Show customizer with the first category selected. */
     public void showCustomizer() {
         showCustomizer(null);
@@ -95,7 +91,6 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     }
     
     public void showCustomizer(String preselectedCategory, String preselectedSubCategory) {
-        Dialog dialog = getDialog();
         if (dialog != null) {
             dialog.setVisible(true);
             return;
