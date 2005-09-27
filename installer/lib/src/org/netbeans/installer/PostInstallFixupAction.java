@@ -189,6 +189,18 @@ public class PostInstallFixupAction extends ProductAction {
         String target = "../Resources/NetBeans/bin/netbeans";
         String linkName = rootInstallDir + sep + "Contents/MacOS/netbeans";
         try {
+            //Create dirs for symbolic link if they do not exist already
+            String dir = rootInstallDir + sep + "Contents";
+            if (!fileService.fileExists(dir)) {
+                logEvent(this, Log.DBG, "Creating directory: " + dir);
+                fileService.createDirectory(dir);
+            }
+            dir = rootInstallDir + sep + "Contents/MacOS";
+            if (!fileService.fileExists(dir)) {
+                logEvent(this, Log.DBG, "Creating directory: " + dir);
+                fileService.createDirectory(dir);
+            }
+            
             String command = null;
             String[] args = { "-s", target, linkName };
             if (fileService.fileExists("/bin/ln")) {
