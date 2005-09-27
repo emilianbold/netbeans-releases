@@ -23,6 +23,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -31,9 +32,12 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -658,6 +662,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                         // add to current combobox
                         moduleSuiteValue.addItem(suiteDir);
                         moduleSuiteValue.setSelectedItem(suiteDir);
+                    } else {
+                        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                                NbBundle.getMessage(BasicInfoVisualPanel.class, "MSG_NotRegularSuite",
+                                ProjectUtils.getInformation(suite).getDisplayName())));
                     }
                 }
             } catch (IOException e) {
