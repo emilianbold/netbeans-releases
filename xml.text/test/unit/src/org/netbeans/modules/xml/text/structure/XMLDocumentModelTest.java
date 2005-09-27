@@ -200,13 +200,8 @@ public class XMLDocumentModelTest extends NbTestCase {
         
         assertEquals(1, aTag.getElementCount()); //has only C children
         
-        DocumentModelUtils.dumpElementStructure(root);
-        
         doc1.remove(30,"<c/>".length());
         Thread.sleep(1000); //wait for the model update (started after 500ms)
-        
-        System.out.println(doc1.getText(0, doc1.getLength()));
-        DocumentModelUtils.dumpElementStructure(root);
         
         assertEquals(1, removedElements.size());
         assertEquals(1, removedElements2.size());
@@ -242,13 +237,8 @@ public class XMLDocumentModelTest extends NbTestCase {
         
         assertEquals(2, rootTag.getElementCount()); //has A and B children
         
-        DocumentModelUtils.dumpElementStructure(root);
-        
         doc1.remove(38,"<b>text</b>".length());
         Thread.sleep(1000); //wait for the model update (started after 500ms)
-        
-        System.out.println(doc1.getText(0, doc1.getLength()));
-        DocumentModelUtils.dumpElementStructure(root);
         
         assertEquals(2, removedElements.size()); //two events - one for B and one for TEXT
         assertEquals(2, removedElements2.size());
@@ -301,20 +291,114 @@ public class XMLDocumentModelTest extends NbTestCase {
         
     }
     
-   
+     public void testRemoveAndAddEntireDocumentContent() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc1();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc1);
+        
+        DocumentElement root = model.getRootElement();
+
+        System.out.println("AFTER INIT:::");
+        DocumentModelUtils.dumpElementStructure(root);
+        DocumentModelUtils.dumpModelElements(model);
+        
+        
+        //listen to model
+        final Vector removedElements = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                removedElements.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector removedElements2 = new Vector();
+        root.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                removedElements2.add(e.getChangedChild());
+            }
+        });
+        
+        //remove entire document content
+        doc1.remove(0,doc1.getLength());
+        Thread.sleep(1000); //wait for the model update (started after 500ms)
+        
+        System.out.println("AFTER REMOVE:::");
+        DocumentModelUtils.dumpElementStructure(root);
+        DocumentModelUtils.dumpModelElements(model);
+        
+        assertEquals(6, removedElements.size()); //all elements removed
+        
+        //XXX probably should be only one element removed, but because of the
+        //elements removal mechanism, when entire document is erased and 
+        //where all empty elements (startoffset == endoffset)
+        //are considered as children of root element the event is fired 6-times.
+        assertEquals(6, removedElements2.size()); //<root> removed
+        
+        assertEquals(0, root.getElementCount()); //has not children
+        
+        //insert the document content back
+        
+        //listen to model
+        final Vector addedElements = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                addedElements.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector addedElements2 = new Vector();
+        root.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                addedElements2.add(e.getChangedChild());
+            }
+        });
+
+        doc1.insertString(0,"<?xml version='1.0'?><root><a><c/></a><b>text</b></root>",null); 
+        Thread.sleep(1000); //wait for the model update (started after 500ms)
+        
+        System.out.println("AFTER ADD:::");
+        DocumentModelUtils.dumpElementStructure(root);
+        DocumentModelUtils.dumpModelElements(model);
+        
+        //check events
+        //#63348 -  [50cat][navigator] Replacing whole document screws up its tree
+        //eval: no events are fired to neither model nor root element
+        //see that the elements order (from debugElements()) has wrong order of
+        //first two elements!!!
+        assertEquals(1, addedElements2.size()); //<root> added
+        assertEquals(6, addedElements.size()); //all elements added
+        
+        assertEquals(1, root.getElementCount()); //has <root> child
+        
+        DocumentElement rootTag = root.getElement(0);
+        assertNotNull(rootTag);
+        
+        assertEquals(2, rootTag.getElementCount()); //has A and B children
+        
+        //check basic properties of the root tag
+        assertEquals("root", rootTag.getName());
+        assertEquals(XMLDocumentModelProvider.XML_TAG, rootTag.getType());
+        
+    }
     
     private void initDoc1() throws BadLocationException {
         /*
           supposed structure:
-            <root>
-               |
-               +--<a>
-               |   |
-               |   +---<c>
-               |
-               +--<b>
+            ROOT
+             |
+             +--<?xml version='1.0'?>
+             +--<root>
                    |
-                   +----text
+                   +--<a>
+                   |   |
+                   |   +---<c>
+                   |
+                   +--<b>
+                       |
+                       +----text
          */
         doc1 = new BaseDocument(XMLKit.class, false);
         doc1.putProperty("mimeType", "text/xml");

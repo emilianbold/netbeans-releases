@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <!-- Adds property to IDE command line: suppress scanning of classpath -->
-    <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
+    <property name="noscan" value="-J-Dnetbeans.javacore.noscan=true"/>
     
     <!-- Creates an empty Java project in IDE -->
     <!-- <property name="xtest.ide.create.project" value="true"/> -->
@@ -55,6 +55,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="run_ide_tests">
         <property name="xtest.ide.use.classloader" value="org.netbeans.modules.xml.text"/>
+        <property name="xtest.ide.commandline.suffix" value="${noscan} -nogui"/>
         <executeTests  pluginName="ide">
             <classpath/>
         </executeTests>
