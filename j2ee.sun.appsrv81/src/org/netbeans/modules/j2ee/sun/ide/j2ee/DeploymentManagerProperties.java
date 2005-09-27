@@ -58,7 +58,12 @@ public class DeploymentManagerProperties {
      * HTTP port property, The port where the instance runs
      */
     public static final String HTTP_PORT_NUMBER_ATTR = "httpportnumber";
-    
+
+    /* AVK Instrumentation on or off
+     *
+     **/
+    public static final String AVK_INSTRUMENTED_ATTR = "AVKTurnedOn";
+
     private InstanceProperties instanceProperties;
     
     /** Creates a new instance of DeploymentManagerProperties */
@@ -248,5 +253,19 @@ public class DeploymentManagerProperties {
     
     public InstanceProperties getInstanceProperties () {
         return instanceProperties;
+    }
+    
+    
+    public boolean getAVKOn() {
+        if (instanceProperties == null)
+            return false;
+        String s = instanceProperties.getProperty(AVK_INSTRUMENTED_ATTR);
+        if (s == null)
+            return false;
+        return Boolean.valueOf(s).booleanValue();
+    }
+    
+    public void setAVKOn(boolean AVKOn) {
+        instanceProperties.setProperty(AVK_INSTRUMENTED_ATTR, Boolean.toString(AVKOn));
     }
 }

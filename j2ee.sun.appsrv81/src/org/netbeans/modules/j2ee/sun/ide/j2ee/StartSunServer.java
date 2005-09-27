@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.rmi.RemoteException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -52,7 +51,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 
 
 import org.openide.util.RequestProcessor;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
@@ -68,6 +66,7 @@ import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 
+import org.netbeans.modules.j2ee.sun.api.InstrumentAVK;
 /**
  * Life Cycle management for an instance
  * @author Ludo
@@ -105,6 +104,10 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         pes = new ProgressEventSupport(this);
 
         java.util.logging.Logger.getLogger("javax.enterprise.system.tools.admin.client").setLevel(java.util.logging.Level.OFF);
+        java.util.logging.Logger.getLogger("javax.enterprise.system.tools.avk.tools.verifier").setLevel(java.util.logging.Level.OFF);
+        java.util.logging.Logger.getLogger("javax.enterprise.system.tools.avk.appverification").setLevel(java.util.logging.Level.OFF);
+        java.util.logging.Logger.getLogger("javax.enterprise.system.tools.avk.appverification.tools").setLevel(java.util.logging.Level.OFF);
+        java.util.logging.Logger.getLogger("javax.enterprise.system.tools.avk.appverification.xml").setLevel(java.util.logging.Level.OFF);
 
     }
            
@@ -181,6 +184,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public void stopDeploymentManagerSilently() {
         shouldStopDeploymentManagerSilently =true;
         stopDeploymentManager();
+        removeAVKSupport();
         //
     }
     
@@ -239,142 +243,122 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction.viewLog(sunDm);
         
     }
-    public synchronized void run () {
-        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
-        String domain = null;
-        String domainDir = null;
-        StateType state = StateType.COMPLETED;
-        int errorCode=-1;
-        
-        File irf = PluginProperties.getDefault().getInstallRoot();
-        if (null == irf || !irf.exists()) {
-            return;
-        }
-        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
-       
-        domain = dmProps.getDomainName();
-        domainDir = dmProps.getLocation();
-        //System.out.println("domain="+domain);
-        if (domain==null){
-            domain="domain1";
-            dmProps.setDomainName(domain);
-        }
-        if (null == domainDir) {
-            domainDir = installRoot+File.separator+"domains";
-            dmProps.setLocation(domainDir);
-        }
-        String asadminCmd = installRoot + File.separator +
-            "bin" +             
-            File.separator +
-            "asadmin";          //NOI18N
-
-        if (File.separator.equals("\\")) { 
-            asadminCmd = asadminCmd + ".bat"; //NOI18N
-        }
-
-        if (state != StateType.FAILED) {        
-            if (cmd == CMD_STOP || cmd == CMD_RESTART) {
-                asadminCmd = domainDir + File.separator + domain  +File.separator + "bin" +   File.separator + "stopserv";
-                if (File.separator.equals("\\")) {
-                    asadminCmd = asadminCmd + ".bat"; //NOI18N
-                }
-                String arr[] = { asadminCmd, " "};
-                
-                errorCode = exec(arr);
-                if (errorCode != 0) {                    
-                    Util.showInformation(
-                    NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStoppingServer"),
-                    NbBundle.getMessage(StartSunServer.class, "LBL_ErrorTitle"));
-                    
-                    state = StateType.FAILED;
-                } 
-            } 
-        } 
-        
-        if (state != StateType.FAILED) {
-            if (cmd == CMD_START || cmd == CMD_RESTART) {
-                
-                //verify is http monitoring is necessary on not for this run
-                try{
-                    HttpMonitorSupport.synchronizeMonitorWithFlag((SunDeploymentManagerInterface) dm);
-                } catch (Exception eee){
-                }
-
-                asadminCmd = domainDir + File.separator + domain + File.separator + "bin" +   File.separator + "startserv";
-                if (File.separator.equals("\\")) {
-                    asadminCmd = asadminCmd + ".bat"; //NOI18N
-                }
-                String arr[] = new String[2];
-                arr[0]= asadminCmd;
-                if (debug) {
-                    arr[1]= "debug";
-
-                } else{
-                    arr[1]= "";
-                }
-
-
-                errorCode = exec(arr);
-                viewLogFile();
-                if (errorCode != 0) {
-                    System.out.println("errorCode"+errorCode);
-                    Util.showInformation(
-                    NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"),
-                    NbBundle.getMessage(StartSunServer.class, "LBL_ErrorTitle"));
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"));
-                    
-                    state = StateType.FAILED;
-                }
-            }
-        }
-        
-        if (state != StateType.FAILED) {
-            if(current_mode==MODE_PROFILE){
-                pes.fireHandleProgressEvent(null,  new Status(ActionType.EXECUTE, ct, "", state));                                
-                cmd = CMD_NONE;
-                pes.clearProgressListener();
-
-                return;
-            }
-            
-            if (cmd != CMD_STOP && !((SunDeploymentManagerInterface)dm).isRunning(true)) {
-                viewLogFile();
-                 Util.showInformation(
-                NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"),
-                NbBundle.getMessage(StartSunServer.class, "LBL_ErrorTitle"));
-                ErrorManager.getDefault().log(ErrorManager.ERROR, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"));
-                state = StateType.FAILED;
-           }
-            else
-            if (cmd != CMD_STOP){// we started sucessfully 
-                try{
-                    if (debug==false){
-                        // in non debug mode. Now double check is the debug options are og for Windows
-                        // see bug 4989322. Next time we'll stat in debug mode, we'll be in sh_mem mode...
-                        SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)dm;
-                        sunDm.fixJVMDebugOptions();
-                    }
-                    //also make sure the correct http port is known by the plugin (useful for web services regsitration
-                    
-                }
-                catch(Exception ex){
-                    Util.showInformation( ex.getLocalizedMessage());
-                }
-                
-            }
-        }  
-        
-        if (state != StateType.FAILED) {
-        pes.fireHandleProgressEvent (null,
-                                     new Status(ActionType.EXECUTE,
-                                     ct, "", state));
-        }
-        else{
-        pes.fireHandleProgressEvent (null,
-                                     new Status(ActionType.EXECUTE,
-                                     ct, "Failure to start. See the server.log file.", state));
-            
-        }
+    public synchronized void run() {
+	DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
+	String domain = null;
+	String domainDir = null;
+	int errorCode=-1;
+	
+	File irf = PluginProperties.getDefault().getInstallRoot();
+	if (null == irf || !irf.exists()) {
+	    return;
+	}
+	String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+	
+	domain = dmProps.getDomainName();
+	domainDir = dmProps.getLocation();
+	//System.out.println("domain="+domain);
+	if (domain==null){
+	    domain="domain1";
+	    dmProps.setDomainName(domain);
+	}
+	if (null == domainDir) {
+	    domainDir = installRoot+File.separator+"domains";
+	    dmProps.setLocation(domainDir);
+	}
+	
+	
+	
+	if (cmd == CMD_STOP || cmd == CMD_RESTART) {
+	    String asadminCmd = domainDir + File.separator + domain  +File.separator + "bin" +   File.separator + "stopserv";
+	    if (File.separator.equals("\\")) {
+		asadminCmd = asadminCmd + ".bat"; //NOI18N
+	    }
+	    String arr[] = { asadminCmd, " "};
+	    
+	    errorCode = exec(arr);
+	    if (errorCode != 0) {
+		pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
+			ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStoppingServer"), StateType.FAILED));
+		
+		cmd = CMD_NONE;
+		pes.clearProgressListener();
+		return; //we failed to stop the server.
+		
+	    }
+	}
+	
+	
+	
+	if (cmd == CMD_START || cmd == CMD_RESTART) {
+	    
+	    //verify is http monitoring is necessary on not for this run
+	    try{
+		HttpMonitorSupport.synchronizeMonitorWithFlag((SunDeploymentManagerInterface) dm);
+	    } catch (Exception eee){
+	    }
+	    
+	    String asadminCmd = domainDir + File.separator + domain + File.separator + "bin" +   File.separator + "startserv";
+	    if (File.separator.equals("\\")) {
+		asadminCmd = asadminCmd + ".bat"; //NOI18N
+	    }
+	    String arr[] = new String[2];
+	    arr[0]= asadminCmd;
+	    if (debug) {
+		arr[1]= "debug";
+		
+	    } else{
+		arr[1]= "";
+	    }
+	    
+	    
+	    errorCode = exec(arr);
+	    viewLogFile();
+	    if (errorCode != 0) {
+		
+		pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
+			ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));
+		cmd = CMD_NONE;
+		pes.clearProgressListener();
+		return; //we failed to start the server.
+	    }
+	}
+	
+	
+	
+	if(current_mode==MODE_PROFILE){
+	    pes.fireHandleProgressEvent(null,  new Status(ActionType.EXECUTE, ct, "", StateType.COMPLETED));
+	    cmd = CMD_NONE;
+	    pes.clearProgressListener();
+	    
+	    return;
+	}
+	
+	if (cmd != CMD_STOP && !((SunDeploymentManagerInterface)dm).isRunning(true)) {
+	    viewLogFile();
+	    pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
+		    ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));
+	    cmd = CMD_NONE;
+	    pes.clearProgressListener();
+	    return; //we failed to start the server.
+	} else
+	    if (cmd != CMD_STOP){// we started sucessfully
+	    try{
+		if (debug==false){
+		    // in non debug mode. Now double check is the debug options are og for Windows
+		    // see bug 4989322. Next time we'll stat in debug mode, we'll be in sh_mem mode...
+		    SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)dm;
+		    sunDm.fixJVMDebugOptions();
+		}
+		//also make sure the correct http port is known by the plugin (useful for web services regsitration
+		
+	    } catch(Exception ex){
+		Util.showInformation( ex.getLocalizedMessage());
+	    }
+	    
+	    }
+                  
+        pes.fireHandleProgressEvent (null, new Status(ActionType.EXECUTE, ct, "", StateType.COMPLETED));
         cmd = CMD_NONE;
         pes.clearProgressListener();
         return;
@@ -781,9 +765,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                             return true;
                         }                        
                     } else {//just test the machine name
-                        if (attCookie.getHostName().equalsIgnoreCase(sunDm.getHost())) {
-                            return true;
-                        }
+			return sameMachine(attCookie.getHostName(), sunDm.getHost());
+
                     }
                 }
             }
@@ -862,7 +845,72 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public boolean needsStartForTargetList() {
         return true;
     }
-    /**
+    /* return true if the 2 host names represent the same machine
+     * deal with localhost, domain name and ips liek 127.0.0.1
+     */
+     public static  boolean sameMachine(String host1, String host2){
+        try {
+            if (host1.equals(host2))
+                return true;
+            if (host1.equals("localhost")){
+                if (host2.equals("127.0.0.1"))
+                    return true;
+                String localCanonicalHostName = java.net.InetAddress.getLocalHost().getCanonicalHostName();
+                String h2 = java.net.InetAddress.getByName(host2).getCanonicalHostName();
+                if (localCanonicalHostName.equals(h2))
+                    return true;
+            }
+            if (host1.equals("127.0.0.1")){
+                if (host2.equals("localhost"))
+                    return true;
+                String localCanonicalHostName = java.net.InetAddress.getLocalHost().getCanonicalHostName();
+                String h2 = java.net.InetAddress.getByName(host2).getCanonicalHostName();
+                    return true;
+            }
+            if (host2.equals("localhost")){
+                if (host1.equals("127.0.0.1"))
+                    return true;
+                String localCanonicalHostName = java.net.InetAddress.getLocalHost().getCanonicalHostName();
+                String h1 = java.net.InetAddress.getByName(host1).getCanonicalHostName();
+                if (localCanonicalHostName.equals(h1))
+                    return true;
+            }
+            if (host2.equals("127.0.0.1")){
+                if (host1.equals("localhost"))
+                    return true;
+                String localCanonicalHostName = java.net.InetAddress.getLocalHost().getCanonicalHostName();
+                String h1 = java.net.InetAddress.getByName(host1).getCanonicalHostName();
+                if (localCanonicalHostName.equals(h1))
+                    return true;
+            }
+            String h1 = java.net.InetAddress.getByName(host1).getCanonicalHostName();
+            String h2 = java.net.InetAddress.getByName(host2).getCanonicalHostName();
+            if (h1.equals(h2))
+                return true;
+        } catch (java.net.UnknownHostException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }     
+    /* if the avk plugin is there (via layer)
+     * this routine will un instrument the AVK instrumentation in the instance at
+     * server stop time, automatically
+     **/
+    
+    private void removeAVKSupport(){
+        InstrumentAVK avkSupport = AVKLayerUtil.getAVKImplemenation();
+        if(avkSupport != null){
+            DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
+           /// if(dmProps.getAVKOn()){
+                avkSupport.setDeploymentManager((SunDeploymentManagerInterface)dm);
+                avkSupport.setAVK(false);
+                avkSupport.generateReport();
+           /// }
+           /// dmProps.setAVKOn(false);
+        }
+    }
+
+/**
      * A class that attaches to the output streams of the executed process and sends the data
      * to the calling processes output streams
      */
