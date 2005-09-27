@@ -90,7 +90,7 @@ public abstract class ExecutionEngine extends Object {
     /**
      * Dummy fallback implementation, useful for unit tests.
      */
-    private static final class Trivial extends ExecutionEngine {
+    static final class Trivial extends ExecutionEngine {
         
         public Trivial() {}
 
@@ -106,35 +106,42 @@ public abstract class ExecutionEngine extends Object {
         }
 
         public ExecutorTask execute(String name, Runnable run, InputOutput io) {
-            int resultValue = 0;
-            try {
-                run.run();
-            } catch (RuntimeException x) {
-                x.printStackTrace();
-                resultValue = 1;
-            }
-            return new ET(run, resultValue, name);
+            return new ET(run, name, io);
         }
         
         private static final class ET extends ExecutorTask {
-            
-            private final int resultValue;
+            private org.openide.util.RequestProcessor.Task task;
+            private int resultValue;
             private final String name;
+			private InputOutput io;
             
-            public ET(Runnable run, int resultValue, String name) {
+            public ET(Runnable run, String name, InputOutput io) {
                 super(run);
                 this.resultValue = resultValue;
                 this.name = name;
+				task = org.openide.util.RequestProcessor.getDefault().post(this);
             }
             
-            public void stop() {}
+            public void stop() {
+				task.cancel();
+			}
             
             public int result() {
+				waitFinished();
                 return resultValue;
             }
             
             public InputOutput getInputOutput() {
-                return IOProvider.getDefault().getIO(name, true);
+                return io;
+            }
+
+            public void run() {
+				try {
+					super.run();
+				} catch (RuntimeException x) {
+					x.printStackTrace();
+					resultValue = 1;
+				}
             }
             
         }

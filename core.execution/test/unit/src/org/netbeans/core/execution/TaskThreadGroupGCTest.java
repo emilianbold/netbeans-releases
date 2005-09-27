@@ -15,6 +15,7 @@ package org.netbeans.core.execution;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.openide.execution.ExecutionEngine;
@@ -30,11 +31,17 @@ public class TaskThreadGroupGCTest extends NbTestCase {
     public TaskThreadGroupGCTest(String name) {
         super(name);
     }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(TaskThreadGroupGCTest.class));
-    }
-    
+
+	protected void setUp() throws Exception {
+		super.setUp();
+		
+		SwingUtilities.invokeAndWait(new Runnable() {
+			public void run() {
+			}
+		});
+	}
+	
+	
     public void testTTGGC() throws Exception {
         final Reference/*<Thread>*/[] t = new Reference[4];
         Runnable r = new Runnable() {

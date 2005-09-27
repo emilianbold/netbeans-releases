@@ -73,7 +73,11 @@ Microsystems, Inc. All Rights Reserved.
         <module name="web/jspparser" testtypes="unit" attributes="stable"/>
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
         <!-- removed (not runnable): html, schema2beans -->
-        <!-- hangs: core/execution -->
+        
+        <!-- these two need depend on each other -->
+        <module name="openide/execution" testtypes="unit" attributes="stable"/>
+        <module name="core/execution" testtypes="unit" attributes="stable"/>
+        
         <!-- does not run: core/multiview -->
         <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util httpserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks web/core web/jspparser xml/api xml/core xml/schema xml/text-edit xml/xsl -->
     </config>
