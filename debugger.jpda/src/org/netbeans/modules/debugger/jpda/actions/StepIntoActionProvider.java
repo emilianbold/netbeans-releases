@@ -182,57 +182,59 @@ implements Executor, PropertyChangeListener {
      * Should be called from Operator only.
      */
     public boolean exec (Event event) {
-        if (stepRequest != null) {
-            stepRequest.disable ();
-        }
-        LocatableEvent le = (LocatableEvent) event;
+        synchronized (getDebuggerImpl ().LOCK) {
+            if (stepRequest != null) {
+                stepRequest.disable ();
+            }
+            LocatableEvent le = (LocatableEvent) event;
 
-        ThreadReference tr = le.thread ();
-        JPDAThread t = getDebuggerImpl ().getThread (tr);
-        
-        try {
-            if (tr.frame(0).location().method().isSynthetic()) {
-                //S ystem.out.println("In synthetic method -> STEP INTO again");
-                setStepRequest (StepRequest.STEP_INTO);
-                return true;
-            }
-        } catch (Exception e) {e.printStackTrace();}
-        
-        boolean stop = getCompoundSmartSteppingListener ().stopHere 
-                           (contextProvider, t, getSmartSteppingFilterImpl ());
-        if (stop) {
-            String stopPosition = t.getClassName () + '.' +
-                                  t.getMethodName () + ':' +
-                                  t.getLineNumber (null);
-            if (position.equals(stopPosition)) {
-                // We are where we started!
-                stop = false;
-                setStepRequest (StepRequest.STEP_INTO);
-                return true;
-            }
-        }
-        if (stop) {
-            removeStepRequests (le.thread ());
-            getDebuggerImpl ().setStoppedState (tr);
-        } else {
-            if (ssverbose)
-                System.out.println("SS:  => do next step!");
-            if (smartSteppingStepOut) {
-                setStepRequest (StepRequest.STEP_OUT);
-            } else if (stepRequest != null) {
-                stepRequest.enable ();
-            } else {
-                setStepRequest (StepRequest.STEP_INTO);
-            }
-        }
+            ThreadReference tr = le.thread ();
+            JPDAThread t = getDebuggerImpl ().getThread (tr);
 
-        if (ssverbose)
+            try {
+                if (tr.frame(0).location().method().isSynthetic()) {
+                    //S ystem.out.println("In synthetic method -> STEP INTO again");
+                    setStepRequest (StepRequest.STEP_INTO);
+                    return true;
+                }
+            } catch (Exception e) {e.printStackTrace();}
+
+            boolean stop = getCompoundSmartSteppingListener ().stopHere 
+                               (contextProvider, t, getSmartSteppingFilterImpl ());
             if (stop) {
-                System.out.println("SS  FINISH IN CLASS " +  
-                    t.getClassName () + " ********\n"
-                );
+                String stopPosition = t.getClassName () + '.' +
+                                      t.getMethodName () + ':' +
+                                      t.getLineNumber (null);
+                if (position.equals(stopPosition)) {
+                    // We are where we started!
+                    stop = false;
+                    setStepRequest (StepRequest.STEP_INTO);
+                    return true;
+                }
             }
-        return !stop;
+            if (stop) {
+                removeStepRequests (le.thread ());
+                getDebuggerImpl ().setStoppedState (tr);
+            } else {
+                if (ssverbose)
+                    System.out.println("SS:  => do next step!");
+                if (smartSteppingStepOut) {
+                    setStepRequest (StepRequest.STEP_OUT);
+                } else if (stepRequest != null) {
+                    stepRequest.enable ();
+                } else {
+                    setStepRequest (StepRequest.STEP_INTO);
+                }
+            }
+
+            if (ssverbose)
+                if (stop) {
+                    System.out.println("SS  FINISH IN CLASS " +  
+                        t.getClassName () + " ********\n"
+                    );
+                }
+            return !stop;
+        }
     }
 
     
@@ -268,6 +270,7 @@ implements Executor, PropertyChangeListener {
             StepRequest.STEP_LINE,
             step
         );
+        stepRequest.addCountFilter(1);
         getDebuggerImpl ().getOperator ().register (stepRequest, this);
         stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
         
