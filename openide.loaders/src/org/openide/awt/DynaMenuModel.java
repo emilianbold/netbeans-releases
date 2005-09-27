@@ -37,7 +37,7 @@ import org.openide.util.actions.Presenter;
  */
 class DynaMenuModel {
     private static final Icon BLANK_ICON = new ImageIcon(
-        Utilities.loadImage("org/openide/resources/empty.gif")); // NOI18N            
+        Utilities.loadImage("org/openide/loaders/empty.gif")); // NOI18N            
     
     private List menuItems;
     private HashMap actionToMenuMap;

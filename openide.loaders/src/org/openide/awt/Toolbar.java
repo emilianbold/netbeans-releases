@@ -317,7 +317,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         private Cursor dragMoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsmovesingle.gif"), "ACTION_MOVE" );
         private Cursor dragNoDropCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsnone.gif"), "NO_ACTION_MOVE" );
-        private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/delete.gif"), "NO_ACTION_MOVE" );
+        private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/loaders/delete.gif"), "NO_ACTION_MOVE" );
         
         public DnDSupport() {
             dragSource.addDragSourceMotionListener(this);
@@ -1407,7 +1407,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private static Icon unknownIcon;
     private static Icon getUnknownIcon() {
         if( null == unknownIcon ) {
-            unknownIcon = new ImageIcon( Utilities.loadImage( "org/openide/resources/unknown.gif") );
+            unknownIcon = new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") );
         }
         return unknownIcon;
     }

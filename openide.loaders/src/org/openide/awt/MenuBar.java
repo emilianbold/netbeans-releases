@@ -67,7 +67,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     private MenuBarFolder menuBarFolder;
 
     private static final Icon BLANK_ICON = new ImageIcon(
-        Utilities.loadImage("org/openide/resources/empty.gif")); // NOI18N            
+        Utilities.loadImage("org/openide/loaders/empty.gif")); // NOI18N            
 
     static final long serialVersionUID =-4721949937356581268L;
 
