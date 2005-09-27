@@ -29,8 +29,6 @@ import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
 import org.netbeans.modules.proxy.ClientSocketFactory;
 import org.netbeans.modules.proxy.ConnectivitySettings;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
 import org.openide.util.Task;
@@ -54,7 +52,7 @@ public class ClientRuntime {
     /**
      * The CVS Root this class manages.
      */ 
-    private final CVSRoot       cvsRoot; 
+    private final String        cvsRoot; 
     
     /**
      * Processor to use when posting commands to given CVSRoot. It has a throughput of 1.
@@ -66,19 +64,18 @@ public class ClientRuntime {
      */
     private InputOutput log;
 
-    ClientRuntime(CVSRoot root) {
+    ClientRuntime(String root) {
         cvsRoot = root;
         requestProcessor = new RequestProcessor("CVS: " + cvsRoot);
-        log = IOProvider.getDefault().getIO(cvsRoot.toString(), false);
+        log = IOProvider.getDefault().getIO(cvsRoot, false);
     }
 
     private void ensureValidCommand(File [] files) throws IllegalCommandException {
-        String myRoot = cvsRoot.toString();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             try {
                 String root = Utils.getCVSRootFor(file);
-                if (!root.equals(myRoot)) throw new IllegalCommandException("#63547 command includes files from different CVS root.\n Expected: " + myRoot + "\nGot:     " + root);
+                if (!root.equals(cvsRoot)) throw new IllegalCommandException("#63547 command includes files from different CVS root.\n Expected: " + cvsRoot + "\nGot:     " + root);
             } catch (IOException e) {
                 throw new IllegalCommandException("Missing or invalid CVS/Root for: " + file);
             }
@@ -106,7 +103,7 @@ public class ClientRuntime {
 
         if (globalOptions.getCVSRoot() == null) {
             globalOptions = (GlobalOptions) globalOptions.clone();
-            globalOptions.setCVSRoot(cvsRoot.toString());
+            globalOptions.setCVSRoot(cvsRoot);
         }
 
         Client client = createClient();
@@ -138,7 +135,7 @@ public class ClientRuntime {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                    
                 } finally {
                     log.getOut().close();
-                    log = IOProvider.getDefault().getIO(cvsRoot.toString(), false);
+                    log = IOProvider.getDefault().getIO(cvsRoot, false);
                 }
             }
         });
@@ -212,7 +209,7 @@ public class ClientRuntime {
      * @return a Client instance
      */ 
     private Client createClient() {
-        Connection connection = setupConnection(cvsRoot, null);
+        Connection connection = setupConnection(CVSRoot.parse(cvsRoot), null);
         Client client = new Client(connection, CvsVersioningSystem.getInstance().getAdminHandler());
         return client;
     }

@@ -14,7 +14,6 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.util.ListenersSupport;
-import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.*;
@@ -132,7 +131,7 @@ public class CvsVersioningSystem {
             synchronized(clientsCache) {
                 clientRuntime = (ClientRuntime) clientsCache.get(cvsRoot);
                 if (clientRuntime == null) {
-                    clientRuntime = new ClientRuntime(CVSRoot.parse(cvsRoot));
+                    clientRuntime = new ClientRuntime(cvsRoot);
                     clientsCache.put(cvsRoot, clientRuntime);
                 }
             }
