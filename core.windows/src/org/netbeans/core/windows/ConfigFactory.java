@@ -66,6 +66,7 @@ abstract class ConfigFactory {
         wmc.activeModeName = "editor"; // NOI18N
         wmc.maximizedModeName = null;
         wmc.toolbarConfiguration = "Standard"; // NOI18N
+        wmc.preferredToolbarIconSize = 24;
         wmc.modes = createDefaultModeConfigs();
         wmc.groups = createDefaultGroupConfigs();
         return wmc;
@@ -87,7 +88,6 @@ abstract class ConfigFactory {
         l.add(createDefaultPropertiesModeConfig());
         l.add(createDefaultEditorModeConfig());
         l.add(createDefaultOutputModeConfig());
-        l.add(createDefaultExecutionConfig());
         l.add(createDefaultFormModeConfig());
         return (ModeConfig[])l.toArray(new ModeConfig[0]);
     }
@@ -233,44 +233,6 @@ abstract class ConfigFactory {
         tcrc.opened = true;
         return tcrc;
     }
-   
-    private static ModeConfig createDefaultExecutionConfig() {
-        ModeConfig mc = new ModeConfig();
-        mc.name = "execution";
-        mc.bounds = null;
-        mc.relativeBounds = null;
-        mc.frameState = -1;
-        mc.state = Constants.MODE_STATE_JOINED;
-        mc.kind = Constants.MODE_KIND_VIEW;
-        mc.constraints = createDefaultExecutionConstraints();
-        mc.selectedTopComponentID = null;
-        mc.permanent = true;
-        mc.tcRefConfigs = createDefaultExecutionTCRefConfigs();
-        return mc;
-    }
-    
-    /** @return list of <code>Item</code>S */
-    private static SplitConstraint[] createDefaultExecutionConstraints() {
-        return new SplitConstraint[] {
-            new SplitConstraint(HORIZONTAL, 1, 0.30D),
-            new SplitConstraint(VERTICAL,   1, 0.20D),
-            new SplitConstraint(HORIZONTAL, 1, 0.20D)
-        };
-    }
-    
-    private static TCRefConfig[] createDefaultExecutionTCRefConfigs() {
-        List tcRefConfigs = new ArrayList();
-        tcRefConfigs.add(createDefaultExecutionTCRefConfig());
-        return (TCRefConfig[])tcRefConfigs.toArray(new TCRefConfig[0]);
-    }
-
-    private static TCRefConfig createDefaultExecutionTCRefConfig() {
-        TCRefConfig tcrc = new TCRefConfig();
-        tcrc.tc_id = "execution"; // NOI18N
-        tcrc.opened = true;
-        return tcrc;
-    }
-
     
     private static ModeConfig createDefaultFormModeConfig() {
         ModeConfig mc = new ModeConfig();
@@ -312,7 +274,7 @@ abstract class ConfigFactory {
 
     private static TCRefConfig createDefaultComponentPaletteTCRefConfig() {
         TCRefConfig tcrc = new TCRefConfig();
-        tcrc.tc_id = "ComponentPalette"; // NOI18N
+        tcrc.tc_id = "CommonPalette"; // NOI18N
         tcrc.opened = true;
         return tcrc;
     }
