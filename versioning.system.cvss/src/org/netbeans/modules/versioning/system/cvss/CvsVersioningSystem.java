@@ -83,7 +83,7 @@ public class CvsVersioningSystem {
     }
 
     private void init() {
-        defaultGlobalOptions = new GlobalOptions();
+        defaultGlobalOptions = CvsVersioningSystem.createGlobalOptions();
         defaultGlobalOptions.setCompressionLevel(3);
         MetadataAttic.cleanUp();
         sah = new CvsLiteAdminHandler();
@@ -506,5 +506,19 @@ public class CvsVersioningSystem {
                 }
             }
         });
+    }
+
+    /**
+     * Creates new GlobalOptions prefilled with default options:
+     * <ul>
+     *   <li>compression level 3 if not enabled logging
+     * </ul>
+     */
+    public static GlobalOptions createGlobalOptions() {
+        GlobalOptions globalOptions = new GlobalOptions();
+        if (System.getProperty("cvsClientLog") == null) {
+            globalOptions.setCompressionLevel(3);
+        }
+        return globalOptions;
     }
 }

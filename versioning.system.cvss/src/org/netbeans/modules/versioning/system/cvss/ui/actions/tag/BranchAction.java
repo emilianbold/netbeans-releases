@@ -108,7 +108,7 @@ public class BranchAction extends AbstractSystemAction {
         private void update(Context context, String revision) {
             UpdateCommand cmd = new UpdateCommand();
 
-            GlobalOptions options = new GlobalOptions();
+            GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
             if (context.getExclusions().size() > 0) {
                 options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }

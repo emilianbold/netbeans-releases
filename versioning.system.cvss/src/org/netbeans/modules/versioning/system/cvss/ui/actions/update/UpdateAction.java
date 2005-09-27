@@ -49,7 +49,7 @@ public class UpdateAction extends AbstractSystemAction {
         Context context = getContext();
         GlobalOptions options = null;
         if (context.getExclusions().size() > 0) {
-            options = new GlobalOptions();
+            options = CvsVersioningSystem.createGlobalOptions();
             options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
         }
         

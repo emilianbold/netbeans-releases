@@ -24,6 +24,7 @@ import org.netbeans.lib.cvsclient.command.CommandException;
 import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
@@ -116,7 +117,7 @@ public final class BranchSelector implements Runnable {
             return;
         }
 
-        GlobalOptions gtx = new GlobalOptions();
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(root.toString());  // XXX why is it needed? Client already knows, who is definitive source of cvs root?
         try {
             CheckoutCommand checkout = new CheckoutCommand();

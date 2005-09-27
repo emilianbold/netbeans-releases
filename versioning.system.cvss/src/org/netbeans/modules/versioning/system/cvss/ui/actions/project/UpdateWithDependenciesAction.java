@@ -67,7 +67,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
                 updateCommand.setPruneDirectories(true);
                 updateCommand.setFiles(ctx.getFiles());
 
-                GlobalOptions gtx = new GlobalOptions();
+                GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
                 gtx.setExclusions((File[]) ctx.getExclusions().toArray(new File[0]));
                 ExecutorSupport[] execs = UpdateExecutor.createExecutors(updateCommand, CvsVersioningSystem.getInstance(), gtx);
                 if (execs != null) {

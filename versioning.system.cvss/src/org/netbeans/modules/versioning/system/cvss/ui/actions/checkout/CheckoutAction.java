@@ -131,9 +131,8 @@ public final class CheckoutAction extends SystemAction {
         cmd.setFiles(files);
 
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
-        GlobalOptions gtx = new GlobalOptions();
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(cvsRoot);
-        gtx.setCompressionLevel(3);
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
 
         executor.execute();

@@ -140,7 +140,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
             cmd.setPruneDirectories(true);
             cmd.setFiles((File[]) others.toArray(new File[others.size()]));
             
-            GlobalOptions options = new GlobalOptions();
+            GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
             if (context.getExclusions().size() > 0) {
                 options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }

@@ -23,6 +23,7 @@ import org.netbeans.lib.cvsclient.command.checkout.ModuleListInformation;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.CommandException;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.*;
 import org.openide.util.UserCancelException;
@@ -132,7 +133,7 @@ public final class ModuleSelector {
     public static List listRepositoryPath(Client client, CVSRoot root, String path) throws CommandException, AuthenticationException {
 
         final List list = new ArrayList();
-        GlobalOptions gtx = new GlobalOptions();
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(root.toString());
         gtx.setDoNoChanges(true);
 
@@ -215,7 +216,7 @@ public final class ModuleSelector {
             }
         });
 
-        GlobalOptions gtx = new GlobalOptions();
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(root.toString());  // XXX why is it needed? Client already knows, who is definitive source of cvs root?
         client.executeCommand(checkout, gtx);
 

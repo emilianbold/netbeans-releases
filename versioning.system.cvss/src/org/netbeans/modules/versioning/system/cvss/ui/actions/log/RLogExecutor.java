@@ -51,7 +51,7 @@ public class RLogExecutor extends ExecutorSupport {
      */ 
     public static RLogExecutor [] executeCommand(RlogCommand cmd, File [] roots, GlobalOptions options) {
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(RLogExecutor.class, "MSG_RLogExecutor_CmdDisplayName"));
-        if (options == null) options = new GlobalOptions();
+        if (options == null) options = CvsVersioningSystem.createGlobalOptions();
         
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         AdminHandler ah = cvs.getAdminHandler();

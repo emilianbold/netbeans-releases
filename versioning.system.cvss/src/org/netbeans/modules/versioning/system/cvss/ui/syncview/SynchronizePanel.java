@@ -320,7 +320,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         } else {
             cmd.setDisplayName(NbBundle.getMessage(SynchronizePanel.class, "BK0002"));
         }
-        GlobalOptions options = new GlobalOptions();
+        GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
         if (context.getExclusions().size() > 0) {
             options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
         }

@@ -56,7 +56,7 @@ public class RTagExecutor extends ExecutorSupport {
             ErrorManager.getDefault().notify(e);
             return null;
         }
-        if (options == null) options = new GlobalOptions();
+        if (options == null) options = CvsVersioningSystem.createGlobalOptions();
         
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         AdminHandler ah = cvs.getAdminHandler();

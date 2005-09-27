@@ -183,7 +183,7 @@ public class VersionsCache {
         if (!revision.equals(REVISION_HEAD)) cmd.setCheckoutByRevision(revision);
         cmd.setDisplayName(NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName()));
         
-        GlobalOptions options = new GlobalOptions();
+        GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
         options.setCVSRoot(getCvsRoot(baseFile.getParentFile()));
         VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd, options);
         executor.execute();

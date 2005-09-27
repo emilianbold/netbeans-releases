@@ -186,7 +186,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                         err.notify(e);
                     }
 
-                    GlobalOptions gtx = new GlobalOptions();
+                    GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
                     gtx.setCVSRoot(selectedRoot);
                     ImportCommand importCommand = new ImportCommand();
                     importCommand.setModule(module);

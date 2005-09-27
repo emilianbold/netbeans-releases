@@ -133,7 +133,7 @@ public class MergeBranchAction extends AbstractSystemAction {
             String branchName = settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName();
             String headTag = temporaryTag != null ? temporaryTag : branchName; 
 
-            GlobalOptions options = new GlobalOptions();
+            GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
             if (context.getExclusions().size() > 0) {
                 options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }
