@@ -1,0 +1,219 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.openide;
+import org.netbeans.junit.NbTestSuite;
+
+import java.awt.Component;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.event.ChangeListener;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.*;
+import org.openide.util.HelpCtx;
+
+/** Test coveres implementation of issue 58530 - Background wizard validation.
+ * @author Jiri Rechtacek
+ */
+public class AsynchronousValidatingPanelTest extends NbTestCase {
+
+    
+    public AsynchronousValidatingPanelTest (String name) {
+        super(name);
+    }
+    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run (new NbTestSuite (AsynchronousValidatingPanelTest.class));
+        System.exit (0);
+    }
+    
+    WizardDescriptor wd;
+    String exceptedValue;
+
+    protected final void setUp () {
+        WizardDescriptor.Panel panels[] = new WizardDescriptor.Panel[2];
+        panels[0] = new Panel("first panel");
+        panels[1] = new Panel("second panel");
+        wd = new WizardDescriptor(panels);
+        wd.addPropertyChangeListener(new Listener());
+        java.awt.Dialog d = DialogDisplayer.getDefault().createDialog (wd);
+        //d.show();
+    }
+    
+    public void testAsynchronousLazyValidation () throws Exception {
+        Panel panels[] = new Panel[3];
+        
+        class MyPanel extends Panel implements WizardDescriptor.AsynchronousValidatingPanel {
+            public String validateMsg;
+            public String failedMsg;
+            public boolean running;
+            
+            public MyPanel () {
+                super ("enhanced panel");
+            }
+            
+            public void prepareValidation () {
+                running = true;
+            }
+            
+            public void validate () throws WizardValidationException {
+                running = false;
+                if (validateMsg != null) {
+                    failedMsg = validateMsg;
+                    throw new WizardValidationException (null, "MyPanel.validate() failed.", validateMsg);
+                }
+                return;
+            }
+        }
+        
+        class MyFinishPanel extends MyPanel implements WizardDescriptor.FinishablePanel {
+            public boolean isFinishPanel () {
+                return true;
+            }
+        }
+        
+        MyPanel mp = new MyPanel ();
+        MyFinishPanel mfp = new MyFinishPanel ();
+        panels[0] = mp;
+        panels[1] = mfp;
+        panels[2] = new Panel ("Last one");
+        wd = new WizardDescriptor(panels);
+        
+        assertNull ("Component has not been yet initialized", panels[1].component);
+        mp.failedMsg = null;
+        mp.validateMsg = "xtest-fail-without-msg";
+        assertTrue ("Next button must be enabled.", wd.isNextEnabled ());
+        wd.doNextClick ();
+        assertTrue ("Validation runs.", mp.running);
+        assertFalse ("Wizard is not valid now.",  wd.isValid ());
+        // let's wait till wizard is valid
+        while (mp.running) {
+            assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+            Thread.sleep (10);
+        }
+        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
+        assertEquals ("The lazy validation failed on Next.", mp.validateMsg, mp.failedMsg);
+        assertNull ("The lazy validation failed, still no initialiaation", panels[1].component);
+        assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
+        mp.failedMsg = null;
+        mp.validateMsg = null;
+        wd.doNextClick ();
+        assertTrue ("Validation runs.", mp.running);
+        while (mp.running) {
+            assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+            Thread.sleep (10);
+        }
+        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
+        assertNull ("Validation on Next passes", mp.failedMsg);
+        assertNotNull ("Now we switched to another panel", panels[1].component);
+        assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
+        
+        // remember previous state
+        Object state = wd.getValue();
+        mfp.validateMsg = "xtest-fail-without-msg";
+        mfp.failedMsg = null;
+        wd.doFinishClick();
+        while (mfp.running) {
+            assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+            Thread.sleep (10);
+        }
+        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
+        assertEquals ("The lazy validation failed on Finish.", mfp.validateMsg, mfp.failedMsg);
+        assertNull ("The validation failed, still no initialiaation", panels[2].component);
+        assertEquals ("State has not changed", state, wd.getValue ());
+        
+        mfp.validateMsg = null;
+        mfp.failedMsg = null;
+        wd.doFinishClick ();
+        while (mfp.running) {
+            assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+            Thread.sleep (10);
+        }
+        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
+        assertNull ("Validation on Finish passes", mfp.failedMsg);        
+        assertNull ("Finish was clicked, no initialization either", panels[2].component);
+        assertEquals ("The state is finish", WizardDescriptor.FINISH_OPTION, wd.getValue ());
+    }
+    
+    public class Panel implements WizardDescriptor.Panel, WizardDescriptor.FinishPanel {
+        private JLabel component;
+        private String text;
+        public Panel(String text) {
+            this.text = text;
+        }
+        
+        public Component getComponent() {
+            if (component == null) {
+                component = new JLabel (text);
+            }
+            return component;
+        }
+        
+        public void addChangeListener(ChangeListener l) {
+        }
+        
+        public HelpCtx getHelp() {
+            return null;
+        }
+        
+        public boolean isValid() {
+            return true;
+        }
+        
+        public void readSettings(Object settings) {
+            log ("readSettings of panel: " + text + " [time: " + System.currentTimeMillis () +
+                    "] with PROP_VALUE: " + handleValue (wd.getValue ()));
+        }
+        
+        public void removeChangeListener(ChangeListener l) {
+        }
+        
+        public void storeSettings(Object settings) {
+            log ("storeSettings of panel: " + text + " [time: " + System.currentTimeMillis () +
+                    "] with PROP_VALUE: " + handleValue (wd.getValue ()));
+            if (exceptedValue != null) {
+                assertEquals ("WD.getValue() returns excepted value.", exceptedValue, handleValue (wd.getValue ()));
+            }
+        }
+        
+    }
+    
+    public class Listener implements java.beans.PropertyChangeListener {
+        
+        public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
+            if (WizardDescriptor.PROP_VALUE.equals(propertyChangeEvent.getPropertyName ())) {
+                log("propertyChange [time: " + System.currentTimeMillis () +
+                                    "] with PROP_VALUE: " + handleValue (wd.getValue ()));
+
+            }
+        }
+        
+    }
+    
+    public String handleValue (Object val) {
+        if (val == null) return "NULL";
+        if (val instanceof String) return (String) val;
+        if (WizardDescriptor.FINISH_OPTION.equals (val)) return "FINISH_OPTION";
+        if (WizardDescriptor.CANCEL_OPTION.equals (val)) return "CANCEL_OPTION";
+        if (WizardDescriptor.CLOSED_OPTION.equals (val)) return "CLOSED_OPTION";
+        if (val instanceof JButton) {
+            JButton butt = (JButton) val;
+            ResourceBundle b = NbBundle.getBundle ("org.openide.Bundle"); // NOI18N
+            if (b.getString ("CTL_NEXT").equals (butt.getText ())) return "NEXT_OPTION";
+            if (b.getString ("CTL_PREVIOUS").equals (butt.getText ())) return "NEXT_PREVIOUS";
+            if (b.getString ("CTL_FINISH").equals (butt.getText ())) return "FINISH_OPTION";
+            if (b.getString ("CTL_CANCEL").equals (butt.getText ())) return "CANCEL_OPTION";
+        }
+        return "UNKNOWN OPTION: " + val;
+    }
+}
