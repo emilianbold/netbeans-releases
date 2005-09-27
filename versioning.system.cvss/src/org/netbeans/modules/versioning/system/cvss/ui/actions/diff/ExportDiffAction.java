@@ -125,6 +125,7 @@ public class ExportDiffAction extends AbstractSystemAction {
     private void async(File destination) {
         boolean success = false;
         OutputStream out = null;
+        int exportedFiles = 0;
         ProgressHandle progress = ProgressHandleFactory.createHandle("Exporting diff");
         try {
 
@@ -184,6 +185,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                 exportDiff(setup, out);
             }
 
+            exportedFiles = i;
             success = true;
         } catch (IOException ex) {
             ErrorManager.getDefault().annotate(ex, "Diff patch export failed!");
@@ -199,7 +201,10 @@ public class ExportDiffAction extends AbstractSystemAction {
                 }
             }
             if (success) {
-                StatusDisplayer.getDefault().setStatusText("Diff patch export done!");
+                StatusDisplayer.getDefault().setStatusText("Diff patch exported " + exportedFiles + " diffs.");
+                if (exportedFiles == 0) {
+                    destination.delete();
+                }
             } else {
                 destination.delete();
             }
