@@ -28,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="openide/masterfs" testtypes="unit" attributes="stable"/>
         <module name="openide/util" testtypes="unit" attributes="stable"/>
         <module name="openide/compat" testtypes="unit" attributes="stable"/>
+        <module name="openide/dialogs" testtypes="unit" attributes="stable"/>
         <module name="openide/nodes" testtypes="unit" attributes="stable"/>
         <module name="openide/loaders" testtypes="unit" attributes="stable"/>
         <module name="openide/options" testtypes="unit" attributes="stable"/>
