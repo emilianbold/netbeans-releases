@@ -58,6 +58,9 @@ import org.openide.NotifyDescriptor;
  */
 public class RegisterDerby implements DatabaseRuntime {
     
+    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(RegisterDerby.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    
     public static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
     public static final String NET_DRIVER_CLASS_NAME = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     
@@ -275,15 +278,18 @@ public class RegisterDerby implements DatabaseRuntime {
             // create the derby.properties file
             createDerbyPropertiesFile();
             
-            // java -Dderby.system.home=<userdir/derby> -classpath  
-            //     <DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar
+            // java -Dderby.system.home="<userdir/derby>" -classpath  
+            //     "<DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar"
             //     org.apache.derby.drda.NetworkServerControl start
             NbProcessDescriptor desc = new NbProcessDescriptor(
               java,
-              "-Dderby.system.home=" + getDerbySystemHome() + " " +
-              "-classpath " + getNetworkServerClasspath() +
+              "-Dderby.system.home=\"" + getDerbySystemHome() + "\" " +
+              "-classpath \"" + getNetworkServerClasspath() + "\"" + 
               " org.apache.derby.drda.NetworkServerControl start"
             );
+            if (LOG) {
+                LOGGER.log(ErrorManager.INFORMATIONAL, "Running " + desc.getProcessName() + " " + desc.getArguments());
+            }
             process = desc.exec (
                 null,
                 getEnvironment(),
@@ -320,15 +326,18 @@ public class RegisterDerby implements DatabaseRuntime {
             String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
             if (java == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
-            // java -Dderby.system.home=<userdir/derby> -classpath  
-            //     <DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar
+            // java -Dderby.system.home="<userdir/derby>" -classpath  
+            //     "<DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar"
             //     org.apache.derby.drda.NetworkServerControl shutdown
             NbProcessDescriptor desc = new NbProcessDescriptor(
               java,
-              "-Dderby.system.home=" + getDerbySystemHome() + " " +
-              "-classpath " + getNetworkServerClasspath() +
+              "-Dderby.system.home=\"" + getDerbySystemHome() + "\" " +
+              "-classpath \"" + getNetworkServerClasspath() + "\"" + 
               " org.apache.derby.drda.NetworkServerControl shutdown"
             );
+            if (LOG) {
+                LOGGER.log(ErrorManager.INFORMATIONAL, "Running " + desc.getProcessName() + " " + desc.getArguments());
+            }
             Process shutwownProcess = desc.exec (
                 null,
                 getEnvironment(),
