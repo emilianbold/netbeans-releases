@@ -27,8 +27,8 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
-import org.netbeans.modules.versioning.spi.VersioningListener;
-import org.netbeans.modules.versioning.spi.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.VersioningEvent;
 
 import javax.swing.*;
 import java.awt.Dialog;

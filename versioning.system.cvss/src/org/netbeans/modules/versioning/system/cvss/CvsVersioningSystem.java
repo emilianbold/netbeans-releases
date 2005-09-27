@@ -14,12 +14,12 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
-import org.netbeans.modules.versioning.spi.VersioningListener;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;

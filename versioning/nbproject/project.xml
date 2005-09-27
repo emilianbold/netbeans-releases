@@ -34,12 +34,12 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.versioning.spi</package>
+            <friend-packages>
+                <friend>org.netbeans.modules.versioning.system.cvss</friend>
                 <package>org.netbeans.modules.versioning.util</package>
                 <package>org.netbeans.modules.proxy</package>
                 <package>org.netbeans.modules.turbo</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

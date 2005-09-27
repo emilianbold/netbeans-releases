@@ -15,8 +15,8 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
-import org.netbeans.modules.versioning.spi.VersioningListener;
-import org.netbeans.modules.versioning.spi.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.CvsCommandsMenuItem;
 import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;

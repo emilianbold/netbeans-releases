@@ -14,7 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.util.ListenersSupport;
-import org.netbeans.modules.versioning.spi.VersioningListener;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;

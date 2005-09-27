@@ -16,7 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
-import org.netbeans.modules.versioning.spi.VersioningListener;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 
 import javax.swing.event.TableModelListener;
