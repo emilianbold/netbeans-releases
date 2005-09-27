@@ -179,7 +179,10 @@ final class BrokenDataShadow extends MultiDataObject {
             return;
         }
         
-
+        synchronized (BrokenDataShadow.class) {
+            if (allDataShadows == null || allDataShadows.isEmpty ()) return;
+		}
+		
         String key;
         try {
             key = file.getURL().toExternalForm();
