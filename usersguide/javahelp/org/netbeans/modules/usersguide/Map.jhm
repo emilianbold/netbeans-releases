@@ -725,7 +725,7 @@ under Print Settings in the Options window)
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices" url="pending.html" />
 
    <!--Write topic to say what you can do with Actions pool?:-->
-   <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
+   <mapID target="org.netbeans.core.ActionsPoolNode" url="configure/workspace/menu_commands.html" />
    
  
 <!--found as ID for subfolders of Actions in Options; probably used in other  places as well:-->
