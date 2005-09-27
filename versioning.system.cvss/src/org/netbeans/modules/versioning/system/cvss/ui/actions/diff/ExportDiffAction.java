@@ -26,6 +26,8 @@ import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
@@ -82,6 +84,25 @@ public class ExportDiffAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(ActionEvent ev) {
+
+        // reevaluate fast enablement logic guess
+
+        boolean noop;
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        if (activated instanceof DiffSetupSource) {
+            noop = ((DiffSetupSource) activated).getSetups().isEmpty();
+        } else {
+            Context context = getContext();
+            File [] files = DiffExecutor.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            noop = files.length == 0;
+        }
+        if (noop) {
+            NotifyDescriptor msg = new NotifyDescriptor.Message("In selected context there is nothing to export!", NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(msg);
+            return;
+        }
+
+
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Export Diff Patch");
         chooser.setMultiSelectionEnabled(false);
