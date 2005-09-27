@@ -34,11 +34,15 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 
 /**
- * Exports <b>local</b> differencies between the current working copy and repository
- * version we started from.
+ * Exports diff to file:
  *
- * <p>For componenst that implements DiffSetupSource interface
- * takes actual parametes from this interface.
+ * <ul>
+ * <li>for components that implements {@link DiffSetupSource} interface
+ * exports actually displayed diff.
+ *
+ * <li>for DataNodes <b>local</b> differencies between the current
+ * working copy and BASE repository version.
+ * </ul>
  *  
  * @author Petr Kuzel
  */
