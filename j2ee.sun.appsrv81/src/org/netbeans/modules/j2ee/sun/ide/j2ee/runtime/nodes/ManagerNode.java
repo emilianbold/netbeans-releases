@@ -91,7 +91,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         FileObject[] ch =null;
         if(dir!=null){
             ch = dir.getChildren();
-            nbextraoptions = ch.length + 1; 
+            nbextraoptions = ch.length; 
         }
         javax.swing.Action[]  newActions = new javax.swing.Action[4 + nbextraoptions] ;// 5 hardcoded number of actionns!!
         int a=0;
@@ -127,6 +127,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         }
     }
     public SunDeploymentManagerInterface getDeploymentManager(){
+        sdm.refreshDeploymentManager();
         return sdm;
     }
    
