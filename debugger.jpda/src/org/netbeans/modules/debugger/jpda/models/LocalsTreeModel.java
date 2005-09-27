@@ -431,15 +431,21 @@ public class LocalsTreeModel implements TreeModel {
         private AbstractVariable var;
         private int from = 0;
         private int length;
+        private int maxIndexLog;
         
         public ArrayChildrenNode(AbstractVariable var) {
-            this(var, 0, var.getFieldsCount());
+            this(var, 0, var.getFieldsCount(), -1);
         }
         
-        private ArrayChildrenNode(AbstractVariable var, int from, int length) {
+        private ArrayChildrenNode(AbstractVariable var, int from, int length,
+                                  int maxIndex) {
             this.var = var;
             this.from = from;
             this.length = length;
+            if (maxIndex < 0) {
+                maxIndex = from + length - 1;
+            }
+            this.maxIndexLog = ArrayFieldVariable.log10(maxIndex);
         }
         
         private static int pow(int a, int b) {
@@ -465,7 +471,7 @@ public class LocalsTreeModel implements TreeModel {
                         chLength = length % n;
                         if (chLength == 0) chLength = n;
                     }
-                    ch[i] = new ArrayChildrenNode(var, from + i*n, chLength);
+                    ch[i] = new ArrayChildrenNode(var, from + i*n, chLength, from + length - 1);
                 }
                 return ch;
             } else {
@@ -491,7 +497,22 @@ public class LocalsTreeModel implements TreeModel {
         }
         
         public String toString() {
-            return "SubArray"+from+"-"+(from + length - 1); // NOI18N
+            int num0 = maxIndexLog - ArrayFieldVariable.log10(from);
+            String froms;
+            if (num0 > 0) {
+                froms = ArrayFieldVariable.zeros(2*num0) + from; // One space is roughly 1/2 of width of a number
+            } else {
+                froms = Integer.toString(from);
+            }
+            int last = from + length - 1;
+            num0 = maxIndexLog - ArrayFieldVariable.log10(last);
+            String lasts;
+            if (num0 > 0) {
+                lasts = ArrayFieldVariable.zeros(2*num0) + last; // One space is roughly 1/2 of width of a number
+            } else {
+                lasts = Integer.toString(last);
+            }
+            return "SubArray"+froms+"-"+lasts; // NOI18N
         }
         
     }

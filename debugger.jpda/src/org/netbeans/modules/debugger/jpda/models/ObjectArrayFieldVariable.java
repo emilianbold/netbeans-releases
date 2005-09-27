@@ -21,7 +21,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 /**
  * @author   Jan Jancura
  */
-public class ObjectArrayFieldVariable extends ArrayFieldVariable 
+class ObjectArrayFieldVariable extends ArrayFieldVariable 
 implements ObjectVariable {
         
     ObjectArrayFieldVariable (
@@ -30,6 +30,7 @@ implements ObjectVariable {
         String declaredType,
         ArrayReference array,
         int index, 
+        int maxIndex,
         String parentID
     ) {
         super (
@@ -38,6 +39,7 @@ implements ObjectVariable {
             declaredType,
             array,
             index,
+            maxIndex,
             parentID
         );
     }

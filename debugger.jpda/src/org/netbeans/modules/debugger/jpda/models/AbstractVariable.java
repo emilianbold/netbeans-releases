@@ -509,7 +509,8 @@ public class AbstractVariable implements ObjectVariable {
                         (ObjectReference) v, 
                         componentType, 
                         ar, 
-                        from + i, 
+                        from + i,
+                        to - 1,
                         parentID
                     ) :
                     new ArrayFieldVariable (
@@ -517,7 +518,8 @@ public class AbstractVariable implements ObjectVariable {
                         v, 
                         componentType, 
                         ar, 
-                        from + i, 
+                        from + i,
+                        to,
                         parentID
                     );
             }

@@ -20,11 +20,12 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 /**
  * @author   Jan Jancura
  */
-public class ArrayFieldVariable extends AbstractVariable implements 
+class ArrayFieldVariable extends AbstractVariable implements 
 org.netbeans.api.debugger.jpda.Field {
 
     private final ArrayReference array;
     private int index;
+    private int maxIndexLog;
     private String declaredType;
 
     ArrayFieldVariable (
@@ -32,7 +33,8 @@ org.netbeans.api.debugger.jpda.Field {
         Value value,
         String declaredType,
         ArrayReference array,
-        int index, 
+        int index,
+        int maxIndex,
         String parentID
     ) {
         super (
@@ -42,6 +44,7 @@ org.netbeans.api.debugger.jpda.Field {
                 (value instanceof ObjectReference ? "^" : "")
         );
         this.index = index;
+        this.maxIndexLog = log10(maxIndex);
         this.declaredType = declaredType;
         this.array = array;
     }
@@ -56,7 +59,31 @@ org.netbeans.api.debugger.jpda.Field {
     * @return string representation of type of this variable.
     */
     public String getName () {
-        return "[" + index + "]";
+        int num0 = maxIndexLog - log10(index);
+        if (num0 > 0) {
+            return "[" + zeros(num0) + index + "]";
+        } else {
+            return "[" + index + "]";
+        }
+    }
+    
+    static int log10(int n) {
+        int l = 1;
+        while ((n = n / 10) > 0) l++;
+        return l;
+    }
+    
+    //private static final String ZEROS = "000000000000"; // NOI18N
+    private static final String ZEROS = "            "; // NOI18N
+    
+    static String zeros(int n) {
+        if (n < ZEROS.length()) {
+            return ZEROS.substring(0, n);
+        } else {
+            String z = ZEROS;
+            while (z.length() < n) z += " "; // NOI18N
+            return z;
+        }
     }
 
     /**
