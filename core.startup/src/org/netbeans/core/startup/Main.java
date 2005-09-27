@@ -510,11 +510,11 @@ public final class Main extends Object {
             
             
             public void run() {
-                Class clazz = getKlass (classname);
-                
                 // This module is included in our distro somewhere... may or may not be turned on.
                 // Whatever - try running some classes from it anyway.
                 try {
+                    Class clazz = getKlass (classname);
+                
                     // Method showMethod = wizardClass.getMethod( "handleUpgrade", new Class[] { Splash.SplashOutput.class } ); // NOI18N
                     Method showMethod = clazz.getMethod( "main", new Class[] { String[].class } ); // NOI18N
                     showMethod.invoke (null, new Object[] {

@@ -108,4 +108,9 @@ public class NonGuiHandleImportOfUserDirTest extends NbTestCase {
         
         assertTrue ("The install is not called anymore 1", Main.handleImportOfUserDir ());
     }
+	
+    public void testExecutionGoesOnWhenThereIsIncorrctClass() {
+        System.setProperty ("netbeans.importclass", "IDoNotExists");
+        assertFalse ("Says no as class does not exists", Main.handleImportOfUserDir ());
+    }
 }
