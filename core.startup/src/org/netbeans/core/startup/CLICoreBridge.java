@@ -48,6 +48,8 @@ public class CLICoreBridge extends CLIHandler {
     }
 
     protected void usage(PrintWriter w) {
-        CoreBridge.getDefault().cliUsage(w);
+        // #65157: Currently this is not needed, when it will be we need
+        // to be more careful and initialize module system first...
+        //CoreBridge.getDefault().cliUsage(w);
     }
 }
