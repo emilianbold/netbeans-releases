@@ -126,7 +126,31 @@ public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase impleme
 			fail("No messages should be reported: " + ErrManager.messages);
 		}
     }
-	
+
+    public void testCallingFromAWTIsOk() throws Exception {
+        StyledDocument doc = support.openDocument ();
+		doc.insertString(0, "Ble", null);
+		
+		assertTrue("Modified", support.isModified());
+			
+		class AWT implements Runnable {
+            boolean success;
+            
+			public synchronized void run () {
+        		success = support.canClose();
+			}
+		}
+		
+		AWT b = new AWT();
+        javax.swing.SwingUtilities.invokeAndWait(b);
+		
+		assertTrue("Ok, we managed to ask the question", b.success);
+		
+		if (ErrManager.messages.length() > 0) {
+			fail("No messages should be reported: " + ErrManager.messages);
+		}
+    }
+    
     //
     // Implementation of the CloneableEditorSupport.Env
     //

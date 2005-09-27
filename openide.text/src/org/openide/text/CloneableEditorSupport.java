@@ -1036,13 +1036,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 			
 			
 			SafeAWTAccess safe = new SafeAWTAccess();
-			SwingUtilities.invokeLater(safe);
-			try {
-				safe.waitForResult();
-			} catch (InterruptedException ex) {
-				ERR.notify(ex);
-				return false;
-			}
+            if (SwingUtilities.isEventDispatchThread()) {
+                safe.run(); 
+            } else {
+                SwingUtilities.invokeLater(safe); 
+                try {
+                    safe.waitForResult();
+                } catch (InterruptedException ex) {
+                    ERR.notify(ex);
+                    return false;
+                }
+            }
 			
             if (safe.ret == 0) {
                 return false;
