@@ -40,6 +40,8 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.DiffProvider;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 
 /**
  * Panel that shows differences between two files. The code here was originally distributed among DiffPanel and
@@ -316,7 +318,15 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
             }
         });
     }
-    
+
+    public void addNotify() {
+        super.addNotify();
+        EditorUI ui1 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1);
+        ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
+        ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+    }
+
     private Hashtable kitActions;
             /** Listener for copy action enabling  */
     private PropertyChangeListener copyL;
