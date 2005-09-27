@@ -2499,13 +2499,21 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                             targetContainer, constraints);
                 }
                 else { // component not precreated ...
+                    RADComponent targetComponent = targetContainer;
+                    if (javax.swing.border.Border.class.isAssignableFrom(paletteItem.getComponentClass())) {
+                        int mode = ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST;
+                        targetComponent = HandleLayer.this.getMetaComponentAt(p, mode);
+                    }
                     addedComponent = getComponentCreator().createComponent(
                             paletteItem.getComponentClassSource(),
-                            targetContainer,
+                            targetComponent,
                             constraints);
+                    if (addedComponent == null) {
+                        repaint();
+                    }
                 }
 
-                if (addedComponent.getBeanInfo().getBeanDescriptor().getValue("customizeOnCreation") != null) { // NOI18N
+                if ((addedComponent != null) && addedComponent.getBeanInfo().getBeanDescriptor().getValue("customizeOnCreation") != null) { // NOI18N
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             RADComponentNode node = addedComponent.getNodeReference();
@@ -2625,12 +2633,14 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     draggedComponent = null;
                     draggingEnded = true;
                 }
-                String id = newComponentDrag.addedComponent.getId();
-                Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
-                if (node != null) {
-                    NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
-                    if (newComponentDrop != null) {
-                        newComponentDrop.componentAdded(getFormModel(), id);
+                if (newComponentDrag.addedComponent != null) {
+                    String id = newComponentDrag.addedComponent.getId();
+                    Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
+                    if (node != null) {
+                        NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
+                        if (newComponentDrop != null) {
+                            newComponentDrop.componentAdded(getFormModel(), id);
+                        }
                     }
                 }
                 formDesigner.toggleSelectionMode();
