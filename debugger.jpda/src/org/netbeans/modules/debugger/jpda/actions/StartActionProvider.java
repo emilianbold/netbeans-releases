@@ -102,7 +102,7 @@ public class StartActionProvider extends ActionsProvider {
     
     public void postAction(Object action, Runnable actionPerformedNotifier) {
         if (startVerbose)
-            System.out.println ("\nS StartActionProvider.doAction ()");
+            System.out.println ("\nS StartActionProvider.postAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
         if ( debugger != null && 
@@ -112,6 +112,17 @@ public class StartActionProvider extends ActionsProvider {
         
         final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
             lookupFirst (null, AbstractDICookie.class);
+        
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider." +
+                "postAction () setStarting"
+            );
+        debuggerImpl.setStarting ();  // JS
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider." +
+                "postAction () setStarting end"
+            );
+        
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 debuggerImpl.setStartingThread(Thread.currentThread());
@@ -123,15 +134,7 @@ public class StartActionProvider extends ActionsProvider {
                 
             }
         });
-        debuggerImpl.setStarting ();
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider." +
-                "doAction () setStarting"
-            );
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider." +
-                "doAction () end"
-            );
+        
     }
     
     private void doStartDebugger(AbstractDICookie cookie) {
