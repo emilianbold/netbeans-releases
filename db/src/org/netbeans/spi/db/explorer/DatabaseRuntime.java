@@ -14,8 +14,8 @@
 package org.netbeans.spi.db.explorer;
 
 /**
- * Represents a database server instance, typically a local installation which can be
- * started when a connection to this server is being made, or stopped upon shutdown.
+ * Represents an instance of a database server, typically a local installation which can be
+ * started when a connection to this server is being made, or stopped upon IDE shutdown.
  *
  * <p>Implementations of this class should be put in the Databases/Runtimes folder
  * in the default filesystem.</p>
@@ -26,40 +26,41 @@ public interface DatabaseRuntime {
     
     /**
      * Returns the JDBC driver class which is used to make connections to the 
-     * represented database server.
+     * represented database server instance.
      *
      * <p>When a connection is being made, only the database runtimes which have
      * the same JDBC driver as the driver used by this connection are considered 
-     * for further usage (e.g., starting the database server).</p>
+     * for further usage (e.g., starting the database server instance).</p>
      * 
      * @return the fully-qualified class name of the driver used to make
-     * connections to the represented database server.
+     * connections to the represented database server instance.
      */
     public String getJDBCDriverClass();
     
     /**
-     * Returns whether this runtime accepts this connection url (the connection url
+     * Returns whether this runtime accepts this database URL (the database URL
      * would cause a connection to be made to the database server instance 
      * represented by this runtime).
      *
-     * @param url the connection url
+     * @param url the database URL
      * 
-     * @return true if the runtime accepts this connection url; false otherwise.
+     * @return true if the runtime accepts this database URL; false otherwise.
      */
     boolean acceptsDatabaseURL(String url);
     
     /**
-     * Returns the state (running/not running) of the represented database server.
+     * Returns the state (running/not running) of the represented database server
+     * instance.
      *
-     * @return true if the database server is running; false otherwise.
+     * @return true if the database server instance is running; false otherwise.
      */
     boolean isRunning();
     
     /**
-     * Returns whether the database server can be started by a call to the 
+     * Returns whether the database server instance can be started by a call to the 
      * {@link #start} method.
      *
-     * @return true if the database server can be started; false
+     * @return true if the database server instance can be started; false
      * otherwise.
      */
     public boolean canStart();
