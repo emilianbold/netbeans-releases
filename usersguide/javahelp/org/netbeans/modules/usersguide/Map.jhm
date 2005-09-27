@@ -668,7 +668,7 @@ under Print Settings in the Options window)
    <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 
 <!--CSH for the Javadoc Index Search window:-->
-      <mapID target="javadoc.search.window" url="javadoc/show_in_editor.html" />
+      <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 
 
    <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="configure/modules/autoupdate.html" />
