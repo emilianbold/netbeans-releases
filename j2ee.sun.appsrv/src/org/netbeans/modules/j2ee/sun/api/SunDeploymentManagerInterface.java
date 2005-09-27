@@ -72,4 +72,10 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
    ResourceConfiguratorInterface getResourceConfigurator();
    
    boolean isSuspended();
+   /*
+    * force a refresh of the internal Deployment manager. 
+    * Sometimes useful to reset a few calculated values.
+    *
+    **/
+   void refreshDeploymentManager();
 }

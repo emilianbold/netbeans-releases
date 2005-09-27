@@ -911,6 +911,15 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
         return retVal;
     }  
+    
+    
+    
+    public void  refreshDeploymentManager(){
+        try{
+            resetInnerDeploymentManager();
+        }catch(Exception ex)   {
+        }
+    }
 
     // VBK hack target objects to support configuration prototyping in
      // J2EE 1.4 RI beta 1 deploytool
