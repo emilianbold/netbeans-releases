@@ -124,9 +124,9 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     
     protected void createCategoryPanel(final String progName,
             final String displayNameKey, final JPanel panel) {
-        ProjectCustomizer.Category cateogry = ProjectCustomizer.Category.create(
+        ProjectCustomizer.Category category = ProjectCustomizer.Category.create(
                 progName, NbBundle.getMessage(getClass(), displayNameKey), null, null);
-        panels.put(cateogry, panel);
+        createPanel(category, panel);
     }
     
     /** Creates a category without subcategories. */
