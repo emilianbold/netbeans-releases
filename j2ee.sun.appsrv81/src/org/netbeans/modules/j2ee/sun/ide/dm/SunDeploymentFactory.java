@@ -19,6 +19,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /** This deploymenmt factory can creates an alternate deployment manager for
  * S1AS8.
@@ -33,6 +34,8 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
     // this whole class should probably be a subclass of the
     // com.sun.enterprise.deployapi.SunDeploymentFactory...
     private DeploymentFactory innerDF = null;
+    
+    private Throwable rootCause = null;
     
     /** resource bundle
      */
@@ -51,12 +54,14 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
             java.util.logging.Logger.getLogger("javax.enterprise.system.tools.deployment").setLevel(java.util.logging.Level.OFF);
         } catch (ClassNotFoundException cnfe) {
             // ignore this, since the plugin's install location property may not be set.
+            rootCause = cnfe;
         } catch (Throwable e){
             //nothin to report there. The node name will indicate the config issue 
             //e.printStackTrace();
             //System.out.println("  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
+            rootCause = e;
         }
         
     }
@@ -73,7 +78,12 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      */
     public DeploymentManager getDeploymentManager(String uri, String userName,String password) throws DeploymentManagerCreationException {
         
-        
+        if (null == innerDF) {
+            DeploymentManagerCreationException foo = 
+                    new DeploymentManagerCreationException(NbBundle.getMessage(SunDeploymentFactory.class,"ERR_CreateInnerDF"));
+            foo.initCause(rootCause);
+            throw foo;
+        }
         try {
             return  new SunDeploymentManager(innerDF, uri, userName, password);
         } catch (NoClassDefFoundError e) {
@@ -90,7 +100,12 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      * @return a deployment manager for doing configuration.
      */
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        
+        if (null == innerDF) {
+            DeploymentManagerCreationException foo = 
+                    new DeploymentManagerCreationException(NbBundle.getMessage(SunDeploymentFactory.class,"ERR_CreateInnerDF"));
+            foo.initCause(rootCause);
+            throw foo;
+        }        
         try {
             return new SunDeploymentManager(innerDF,uri,null,null);
         } catch (NoClassDefFoundError e) {
