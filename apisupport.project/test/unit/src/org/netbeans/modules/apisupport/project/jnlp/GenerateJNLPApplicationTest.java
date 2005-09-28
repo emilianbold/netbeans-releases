@@ -29,9 +29,11 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGeneratorTest;
+import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
@@ -110,14 +112,17 @@ public class GenerateJNLPApplicationTest extends TestBase {
         ep.setProperty("jnlp.servlet.jar", someJar.toString());
         org.netbeans.modules.apisupport.project.Util.storeProperties(x, ep);
         
-        ActionProvider p = (ActionProvider)suite.getLookup().lookup(ActionProvider.class);
+        SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("Provider is here");
         
         List l = Arrays.asList(p.getSupportedActions());
         assertTrue("We support build-jnlp: " + l, l.contains("build-jnlp"));
         
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
-        p.invokeAction("build-jnlp", suite.getLookup());
+        ExecutorTask task = p.invokeActionImpl("build-jnlp", suite.getLookup());
+        
+        assertNotNull("Task was started", task);
+        assertEquals("Finished ok", 0, task.result());
         
         org.openide.filesystems.FileObject[] arr = suite.getProjectDirectory().getChildren();
         List subobj = new ArrayList (Arrays.asList(arr));

@@ -36,6 +36,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.awt.Mnemonics;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -139,6 +140,17 @@ public final class SuiteActions implements ActionProvider {
     }
 
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        try {
+            invokeActionImpl(command, context);
+        } catch (IOException e) {
+            Util.err.notify(e);
+        }
+    }
+    
+    /** Used from tests to start the build script and get task that allows to track its progress.
+     * @return null or task that was started
+     */
+    public ExecutorTask invokeActionImpl(String command, Lookup context) throws IllegalArgumentException, IOException {
         String[] targetNames;
         if (command.equals(ActionProvider.COMMAND_BUILD)) {
             targetNames = new String[] {"build"}; // NOI18N
@@ -154,28 +166,24 @@ public final class SuiteActions implements ActionProvider {
             targetNames = new String[] {"build-zip"}; // NOI18N
         } else if (command.equals("build-jnlp")) { // NOI18N
             if (promptForAppName()) {
-                return;
+                return null;
             }
             targetNames = new String[] {"build-jnlp"}; // NOI18N
         } else if (command.equals("run-jnlp")) { // NOI18N
             if (promptForAppName()) {
-                return;
+                return null;
             }
             targetNames = new String[] {"run-jnlp"}; // NOI18N
         } else if (command.equals("debug-jnlp")) { // NOI18N
             if (promptForAppName()) {
-                return;
+                return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
         }
         
-        try {
-            ActionUtils.runTarget(findBuildXml(project), targetNames, null);
-        } catch (IOException e) {
-            Util.err.notify(e);
-        }
+        return ActionUtils.runTarget(findBuildXml(project), targetNames, null);
     }
     
     private static FileObject findBuildXml(SuiteProject project) {

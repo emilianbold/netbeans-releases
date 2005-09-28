@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
+import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -28,7 +30,7 @@ import org.openide.windows.OutputWriter;
  * @author Jaroslav Tulach
  */
 public class InputOutputProviderImpl extends org.openide.windows.IOProvider {
-	private static NbTestCase running;
+	static NbTestCase running;
 	
 	/** Creates a new instance of InputOutputProviderImpl */
 	public InputOutputProviderImpl() {
@@ -39,31 +41,50 @@ public class InputOutputProviderImpl extends org.openide.windows.IOProvider {
 	}
 
 	public InputOutput getIO(String name, boolean newIO) {
-		Assert.assertNotNull("A test case must be registered", running);
 		return new IO(name);
 	}
 
 	public OutputWriter getStdOut() {
 		Assert.assertNotNull("A test case must be registered", running);
-		return new OW();
+		return new OW("stdout");
 	}
 	
 	private static class OW extends OutputWriter {
-		public OW() {
-			super(new PrintWriter (running.getLog()));
-		}
+        ErrorManager err;
+        
 		public OW(String prefix) {
-			super(new PrintWriter (running.getLog(prefix)));
+			super(new StringWriter());
+            err = ErrorManager.getDefault().getInstance("output[" + prefix + "]");
 		}
 		
 		public void println(String s, OutputListener l) throws IOException {
 			write("println: " + s + " listener: " + l);
+			flush();
 		}
 
 		public void reset() throws IOException {
 			write("Internal reset");
+			flush();
 		}
-		
+
+		public void write(char[] buf, int off, int len) {
+			write(new String(buf, off, len));
+		}
+
+		public void write(int c) {
+			write(String.valueOf((char)c));
+		}
+
+		public void write(char[] buf) {
+			write(buf, 0, buf.length);
+		}
+
+		public void write(String s, int off, int len) {
+			write(s.substring(off, off + len));
+		}
+		public void write(String s) {
+			err.log(s);
+		}
 	}
 	
 	private static class IO implements InputOutput {
@@ -72,6 +93,8 @@ public class InputOutputProviderImpl extends org.openide.windows.IOProvider {
 		
 		public IO(String n) {
 			w = new OW(n);
+			w.write("Created IO named '" + n + "'");
+			w.flush();
 		}
 		
 		
@@ -80,6 +103,7 @@ public class InputOutputProviderImpl extends org.openide.windows.IOProvider {
 		}
 
 		public Reader getIn() {
+            w.write("Creating reader");
 			return new StringReader("");
 		}
 

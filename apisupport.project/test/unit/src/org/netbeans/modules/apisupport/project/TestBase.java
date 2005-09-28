@@ -80,7 +80,7 @@ public abstract class TestBase extends NbTestCase {
         // Need to set up private locations in extexamples, as if they were opened in the IDE.
         clearWorkDir();
 		
-		InputOutputProviderImpl.registerCase(this);
+		ErrorManagerImpl.registerCase(this);
 		
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
@@ -109,7 +109,7 @@ public abstract class TestBase extends NbTestCase {
 	
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		InputOutputProviderImpl.registerCase(null);
+		ErrorManagerImpl.registerCase(null);
 	}
 	
     
