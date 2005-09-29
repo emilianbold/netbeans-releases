@@ -1316,9 +1316,18 @@ public final class ReferenceHelper {
             
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
+	    if (absolutePath.getAbsolutePath().startsWith(originalPath.getAbsolutePath())) {
+		//#65141: in private.properties, a full path into originalPath may be given, fix:
+		String relative = PropertyUtils.relativizeFile(originalPath, absolutePath);
+		
+		absolutePath = new File(projectDir, relative);
+		
+		privRemove.add(key);
+		privAdd.put(key, absolutePath.getAbsolutePath());
+	    }
+	    
             //TODO: extra base dir relativization:
             if (CollocationQuery.areCollocated(absolutePath, projectDir)) {
-// Don't remove it from private properties and add the relative path to project properties   privRemove.add(key);
                 pubAdd.put(key, PropertyUtils.relativizeFile(projectDir, absolutePath));
             }
         }

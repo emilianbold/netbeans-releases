@@ -14,6 +14,7 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.modules.queries.AlwaysRelativeCollocationQuery;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -937,6 +939,74 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("No raw references left", Collections.EMPTY_LIST, Arrays.asList(r.getRawReferences()));
         assertEquals("No shared properties left", Collections.EMPTY_MAP, h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         assertEquals("No private properties left", Collections.EMPTY_MAP, h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+    }
+    
+    private void writeProperties(FileObject prop, String[] keys, String[] values) throws Exception {
+	EditableProperties p = new EditableProperties();
+	
+	for (int cntr = 0; cntr < keys.length; cntr++) {
+	    p.setProperty(keys[cntr], values[cntr]);
+	}
+	
+	FileLock lock = prop.lock();
+	try {
+	    OutputStream os = prop.getOutputStream(lock);
+	    try {
+		p.store(os);
+	    } finally {
+		os.close();
+	    }
+	} finally {
+	    lock.releaseLock();
+	}
+    }
+    
+    public void testFixReferences() throws Exception {
+	FileObject originalProject = scratch.createFolder("orig-proj");
+	FileObject originalSrcDir  = originalProject.createFolder("src");
+	
+	FileObject testProject = scratch.createFolder("test-proj");
+	FileObject nbprojectDir = testProject.createFolder("nbproject");
+	
+	TestUtil.createFileFromContent(ReferenceHelperTest.class.getResource("data/project.xml"), testProject, "nbproject/project.xml");
+	
+	FileObject publicProperties  = nbprojectDir.createData("project.properties");
+	FileObject privateDir        = nbprojectDir.createFolder("private");
+	FileObject privateProperties = privateDir.createData("private.properties");
+	FileObject srcDir            = testProject.createFolder("src");
+	
+	writeProperties(publicProperties, new String[] {
+	    "file.reference.x",
+	}, new String[] {
+	    "src",
+	});
+	
+	writeProperties(privateProperties, new String[] {
+	    "file.reference.x",
+	}, new String[] {
+	    FileUtil.toFile(originalSrcDir).getAbsolutePath(),
+	});
+	
+	Project nue = pm.findProject(testProject);
+	assertNotNull("found project in " + testProject, nue);
+        AntProjectHelper h = (AntProjectHelper) nue.getLookup().lookup(AntProjectHelper.class);
+        assertNotNull("found helper for " + nue, h);
+        ReferenceHelper r = (ReferenceHelper)nue.getLookup().lookup(ReferenceHelper.class);
+        assertNotNull("found ref helper for " + p, r);
+	
+	r.fixReferences(FileUtil.toFile(originalProject));
+	
+	pm.saveProject(nue);
+	
+	String resolvedProperty = h.getStandardPropertyEvaluator().getProperty("file.reference.x");
+	
+	assertNotNull("the property can be resolved", resolvedProperty);
+	
+	File resolvedFile = PropertyUtils.resolveFile(FileUtil.toFile(testProject), resolvedProperty);
+	
+	assertNotNull("the file can be resolved", resolvedFile);
+	
+	assertEquals("referencing correct file", FileUtil.toFile(srcDir).getAbsolutePath(), resolvedFile.getAbsolutePath());
     }
     
 }
