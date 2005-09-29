@@ -160,11 +160,13 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             if (presenterAction == null){
                 if (action != null){
                     presenter.setAction(action);
+                    presenter.setToolTipText(null); /* bugfix #62872 */ 
                     menuInitialized = false;
                 }
             }else{
                 if ((action!=null && !action.equals(presenterAction))){
                     presenter.setAction(action);
+                    presenter.setToolTipText(null); /* bugfix #62872 */
                     menuInitialized = false;
                 }else if (action == null){
                     presenter.setEnabled(false);
