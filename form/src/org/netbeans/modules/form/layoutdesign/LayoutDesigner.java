@@ -57,13 +57,14 @@ public class LayoutDesigner implements LayoutConstants {
     public boolean updateCurrentState() {
         Object changeMark = layoutModel.getChangeMark();
         boolean changeRequired = imposeSize || optimizeStructure;
-        if (changeRequired) {
-            modelListener.deactivate(); // some changes may happen...
-        }
-
-        List updatedContainers;
+        Set updatedContainers = changeRequired ? new HashSet() : null;
         try {
-            updatedContainers = updatePositions();
+            if (changeRequired) {
+                modelListener.deactivate(); // some changes may happen...
+                operations.mergeAdjacentGaps(updatedContainers);
+            }
+
+            updatePositions(updatedContainers);
         } finally {
             if (changeRequired) {
                 modelListener.activate();
@@ -109,9 +110,8 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
-    private List updatePositions() {
+    private void updatePositions(Set updatedContainers) {
         Iterator it = layoutModel.getAllComponents();
-        List updatedContainers = optimizeStructure ? new LinkedList() : null;
         while (it.hasNext()) {
             LayoutComponent comp = (LayoutComponent) it.next();
             if (!comp.isLayoutContainer())
@@ -145,8 +145,6 @@ public class LayoutDesigner implements LayoutConstants {
                 }
             }
         }
-
-        return updatedContainers;
     }
 
     // recursive

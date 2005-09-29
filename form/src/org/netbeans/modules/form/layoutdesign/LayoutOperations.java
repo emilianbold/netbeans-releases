@@ -1183,6 +1183,56 @@ class LayoutOperations implements LayoutConstants {
             layoutModel.removeInterval(eaten);
         }
     }
+    
+    void mergeAdjacentGaps(Set updatedContainers) {
+        Iterator it = layoutModel.getAllComponents();
+        while (it.hasNext()) {
+            LayoutComponent comp = (LayoutComponent) it.next();
+            if (!comp.isLayoutContainer())
+                continue;
+            
+            boolean updated = false;
+            for (int dim=0; dim<DIM_COUNT; dim++) {
+                LayoutInterval interval = comp.getLayoutRoot(dim);
+                updated = updated || mergeAdjacentGaps(interval, dim);
+            }
+            if (updated) {
+                updatedContainers.add(comp);
+            }
+        }
+    }
+    
+    boolean mergeAdjacentGaps(LayoutInterval root, int dimension) {
+        assert root.isGroup();
+        boolean updated = false;
+        if (root.isSequential()) {
+            for (int i=0; i<root.getSubIntervalCount(); i++) {
+                LayoutInterval interval = root.getSubInterval(i);
+                if (interval.isEmptySpace() && ((i+1) < root.getSubIntervalCount())) {
+                    LayoutInterval next = root.getSubInterval(i+1);
+                    if (next.isEmptySpace()) {
+                        if ((i+2) < root.getSubIntervalCount()) {
+                            LayoutInterval nextNext = root.getSubInterval(i+2);
+                            if (nextNext.isEmptySpace()) {
+                                i--; // The merged gap should be merged with nextNext gap
+                            }
+                        }
+                        updated = true;
+                        System.out.println("MERGING!");
+                        eatGap(interval, next, NOT_EXPLICITLY_DEFINED);
+                    }
+                }
+            }
+        }
+        Iterator iter = root.getSubIntervals();
+        while (iter.hasNext()) {
+            LayoutInterval subInterval = (LayoutInterval)iter.next();
+            if (subInterval.isGroup()) {
+                updated = updated || mergeAdjacentGaps(subInterval, dimension);
+            }
+        }
+        return updated;
+    }
 
     void suppressResizingOfSurroundingGaps(LayoutInterval interval) {
         LayoutInterval parent = interval.getParent();
