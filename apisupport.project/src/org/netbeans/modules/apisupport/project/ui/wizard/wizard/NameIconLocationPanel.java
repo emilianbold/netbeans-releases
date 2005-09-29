@@ -15,6 +15,8 @@ package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -35,6 +37,13 @@ import org.openide.util.Utilities;
  * @author Martin Krauskopf
  */
 final class NameIconLocationPanel extends BasicWizardIterator.Panel {
+    
+    private static final Map PURE_TEMPLATES_FILTER = new HashMap(2);
+    
+    static {
+        PURE_TEMPLATES_FILTER.put("template", Boolean.TRUE); // NOI18N
+        PURE_TEMPLATES_FILTER.put("simple", Boolean.FALSE); // NOI18N
+    }
     
     private boolean firstTime = true;
     private DataModel data;
@@ -135,7 +144,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private void loadCategories() {
         category.setModel(UIUtil.createLayerPresenterComboModel(
-                data.getProject(), "Templates")); // NOI18N
+                data.getProject(), "Templates", PURE_TEMPLATES_FILTER)); // NOI18N
     }
     
     protected HelpCtx getHelp() {

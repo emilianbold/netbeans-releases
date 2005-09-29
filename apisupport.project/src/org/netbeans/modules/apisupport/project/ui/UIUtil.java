@@ -20,7 +20,10 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
@@ -167,19 +170,36 @@ public final class UIUtil {
         return sb.toString();
     }
     
-    public static ComboBoxModel createLayerPresenterComboModel(Project project, String sfsRoot) {
+    /**
+     * Calls in turn {@link #createLayerPresenterComboModel(Project, String,
+     * Map)} with {@link Collections#EMPTY_MAP} as a third parameter.
+     */
+    public static ComboBoxModel createLayerPresenterComboModel(
+            final Project project, final String sfsRoot) {
+        return createLayerPresenterComboModel(project, sfsRoot, Collections.EMPTY_MAP);
+    }
+    
+    /**
+     * Returns {@link ComboBoxModel} containing {@link #LayerItemPresenter}s
+     * wrapping all folders under the given <code>sfsRoot</code>.
+     *
+     * @param excludeAttrs {@link Map} of pairs String - Object used to filter
+     *                     out folders which have one or more attribute(key)
+     *                     with a corresponding value.
+     */
+    public static ComboBoxModel createLayerPresenterComboModel(
+            final Project project, final String sfsRoot, final Map/*<Object, String>*/ excludeAttrs) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         try {
             FileSystem sfs = LayerUtils.getEffectiveSystemFilesystem(project);
             FileObject root = sfs.getRoot().getFileObject(sfsRoot);
             if (root != null) {
-                Collection items = new TreeSet();
-                for (Enumeration subFolders = root.getFolders(true); subFolders.hasMoreElements(); ) {
-                    LayerItemPresenter layerFolder = new LayerItemPresenter(
-                            (FileObject) subFolders.nextElement(), root);
-                    items.add(layerFolder);
+                Collection/*<FileObject>*/ subFolders = getFolders(root, excludeAttrs);
+                SortedSet/*<LayerItemPresenter>*/ presenters = new TreeSet();
+                for (Iterator it = subFolders.iterator(); it.hasNext();) {
+                    presenters.add(new LayerItemPresenter((FileObject) it.next(), root));
                 }
-                for (Iterator it = items.iterator(); it.hasNext(); ) {
+                for (Iterator it = presenters.iterator(); it.hasNext();) {
                     model.addElement(it.next());
                 }
             }
@@ -331,6 +351,22 @@ public final class UIUtil {
     
     private static String getSuiteProjectName(Project suiteComp) {
         return Util.getDisplayName(FileUtil.toFileObject(getSuiteDirectory(suiteComp)));
+    }
+    
+    private static Collection/*<FileObject>*/ getFolders(final FileObject root, final Map excludeAttrs) {
+        Collection/*<FileObject>*/ folders = new HashSet();
+        SUBFOLDERS: for (Enumeration subFolders = root.getFolders(false); subFolders.hasMoreElements(); ) {
+            FileObject subFolder = (FileObject) subFolders.nextElement();
+            for (Iterator it = excludeAttrs.entrySet().iterator(); it.hasNext();) {
+                Map.Entry me = (Map.Entry) it.next();
+                if (me.getValue().equals(subFolder.getAttribute((String) me.getKey()))) {
+                    continue SUBFOLDERS;
+                }
+            }
+            folders.add(subFolder);
+            folders.addAll(getFolders(subFolder, excludeAttrs));
+        }
+        return folders;
     }
     
     private static final class IconFilter extends FileFilter {
