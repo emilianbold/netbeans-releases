@@ -1080,13 +1080,17 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
     }
 
-    public synchronized void settingsChange(org.netbeans.editor.SettingsChangeEvent evt) {
+    public void settingsChange(org.netbeans.editor.SettingsChangeEvent evt) {
         if( evt == null) {
             return;
         }
         String settingName = evt.getSettingName();
         if (SettingsNames.KEY_BINDING_LIST.equals(settingName) || settingName == null){
-            installKeybindings();
+            Utilities.runInEventDispatchThread(new Runnable(){
+                public void run(){
+                    installKeybindings();
+                }
+            });
         }
     }
     
