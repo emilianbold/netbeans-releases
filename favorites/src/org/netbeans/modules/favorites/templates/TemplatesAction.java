@@ -31,6 +31,7 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /** 
@@ -134,6 +135,14 @@ public class TemplatesAction extends CallableSystemAction {
                     EditCookie ec = (EditCookie) n.getLookup ().lookup (EditCookie.class);
                     OpenCookie oc = (OpenCookie) n.getLookup ().lookup (OpenCookie.class);
                     res = ec != null || oc != null;
+                    
+                    // 65037: Template Manager should not offer to Open in Editor an empty pseudotemplate
+                    if (res) {
+                        DataObject dobj = (DataObject) n.getLookup ().lookup (DataObject.class);
+                        assert dobj != null : "DataObject for node " + n;
+                        res = dobj.getPrimaryFile ().getSize () > 0;
+                    }
+                    
                     i++;
                 }
                 b.setEnabled (res);
