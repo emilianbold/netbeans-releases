@@ -13,14 +13,22 @@
 
 package org.netbeans.modules.navigator;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.FocusManager;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
@@ -43,7 +51,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Dafe Simonek
  */
-final class NavigatorController implements LookupListener, ActionListener, Lookup.Provider {
+final class NavigatorController implements LookupListener, ActionListener, Lookup.Provider, PropertyChangeListener {
     
     /** Time in ms to wait before propagating current node changes further
      * into navigator UI */
@@ -76,6 +84,10 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
     /** Lookup that wraps lookup of active panel */
     private final Lookup panelLookup; 
     
+    /** A TopComponent which was active in winsys before navigator */
+    private Reference lastActivatedRef;
+    
+    
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorTC navigatorTC) {
         this.navigatorTC = navigatorTC;
@@ -83,25 +95,28 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
         panelLookup = Lookups.proxy(new PanelLookupWrapper());
     }
     
-    /** Starts listening to selected nodes */
+    /** Starts listening to selected nodes and active component */
     public void navigatorTCOpened() {
         curNodes = Utilities.actionsGlobalContext().lookup(CUR_NODES);
         curNodes.addLookupListener(this);
         curHints = Utilities.actionsGlobalContext().lookup(CUR_HINTS);
         curHints.addLookupListener(this);
-        
         navigatorTC.getPanelSelector().addActionListener(this);
+        TopComponent.getRegistry().addPropertyChangeListener(this);
+        
         updateContext();
     }
     
-    /** Stops listening to selected nodes */
+    /** Stops listening to selected nodes and active component */
     public void navigatorTCClosed() {
         curNodes.removeLookupListener(this);
         curHints.removeLookupListener(this);
         navigatorTC.getPanelSelector().removeActionListener(this);
+        TopComponent.getRegistry().removePropertyChangeListener(this);
         curNodes = null;
         curHints = null;
         curNode = null;
+        lastActivatedRef = null;
     }
     
     /** Returns lookup that delegates to lookup of currently active 
@@ -277,6 +292,48 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
         }
         return curNode.getLookup();
     }
+
+    /** Installs user actions handling for NavigatorTC top component */
+    public void installActions () {
+        // ESC key handling - return focus to previous focus owner
+        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
+        //JComponent contentArea = navigatorTC.getContentArea();
+        navigatorTC.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); //NOI18N
+        navigatorTC.getActionMap().put("return", new ESCHandler()); //NOI18N
+    }
+
+    /***** PropertyChangeListener implementation *******/
+    
+    /** Stores last TopComponent activated before NavigatorTC. Used to handle
+     * ESC key functionality */ 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+            TopComponent tc = TopComponent.getRegistry().getActivated();
+            if (tc != null && tc != navigatorTC) {
+                lastActivatedRef = new WeakReference(tc);
+            }
+        }
+    }
+
+    /** Handles ESC key request - returns focus to previously focused top component
+     */
+    private class ESCHandler extends AbstractAction {
+        public void actionPerformed (ActionEvent evt) {
+            Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
+            // move focus away only from navigator AWT children,
+            // but not combo box to preserve its ESC functionality
+            if (lastActivatedRef == null ||
+                focusOwner == null ||
+                !SwingUtilities.isDescendingFrom(focusOwner, navigatorTC) ||
+                focusOwner instanceof JComboBox) {
+                return;
+            }
+            TopComponent prevFocusedTc = (TopComponent) lastActivatedRef.get();
+            if (prevFocusedTc != null) {
+                prevFocusedTc.requestActive();
+            }
+        }
+    } // end of ESCHandler
 
     /** Lookup delegating to lookup of currently selected panel.
      * If no panel is selected or panels' lookup is null, then acts as

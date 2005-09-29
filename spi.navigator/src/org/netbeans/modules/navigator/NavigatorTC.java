@@ -16,12 +16,19 @@ package org.netbeans.modules.navigator;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.FocusManager;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.netbeans.spi.navigator.NavigatorPanel;
@@ -44,8 +51,6 @@ final class NavigatorTC extends TopComponent {
     /** singleton instance */
     private static NavigatorTC instance;
     
-    /** A TopComponent which was active in winsys before navigator */
-    private Reference lastActivatedRef;
     /** Currently active panel in navigator (or null if empty) */
     private NavigatorPanel selectedPanel;
     /** A list of panels currently available (or null if empty) */
@@ -77,6 +82,8 @@ final class NavigatorTC extends TopComponent {
         // to ensure our background color will have effect
         notAvailLbl.setOpaque(true);
         
+        getController().installActions();
+
         // empty initially
         setToEmpty();
     }
@@ -166,6 +173,10 @@ final class NavigatorTC extends TopComponent {
         return panelSelector;
     }
     
+    public JComponent getContentArea () {
+        return contentArea;
+    }
+    
     // Window System related methods >>
 
     public String preferredID () {
@@ -176,17 +187,6 @@ final class NavigatorTC extends TopComponent {
         return PERSISTENCE_ALWAYS;
     }
 
-    /** Overriden to remember top component which was active before Navigator,
-     * to be ale to jump back
-     */
-    public void requestActive () {
-        TopComponent tc = TopComponent.getRegistry().getActivated();
-        if(tc != null && tc != this) {
-            lastActivatedRef = new WeakReference(tc);
-        }
-        super.requestActive();
-    }
-    
     /** Overriden to pass focus directly into content panel */
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow();
