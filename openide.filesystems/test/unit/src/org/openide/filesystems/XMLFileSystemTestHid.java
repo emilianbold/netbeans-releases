@@ -129,6 +129,42 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         fileChangedAssert ("Change in the content", 1);
     }
     
+    public void testChangesAreFiredOnSetXMLUrlsWithAttributesIssue21204() throws Exception {
+        File f = writeFile ("layer1.xml", 
+"<filesystem>\n" +
+    "<folder name='TestModule'>\n" +
+        "<file name='sample.txt' >\n" +
+        "  <attr name='value' stringvalue='old' />\n" +
+        "</file>\n" +
+    "</folder>\n" +
+"</filesystem>\n"
+        );
+        
+        File f2 = writeFile ("layer2.xml", 
+"<filesystem>\n" +
+    "<folder name='TestModule'>\n" +
+        "<file name='sample.txt' >\n" +
+        "  <attr name='value' stringvalue='new' />\n" +
+        "</file>\n" +
+    "</folder>\n" +
+"</filesystem>\n"
+        );
+
+        
+        
+        
+        xfs = new XMLFileSystem (f.toURL());
+        
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertEquals("Old value is in the attribute", "old", fo.getAttribute("value"));
+        registerDefaultListener (fo);
+        
+        xfs.setXmlUrl (f2.toURL ());
+
+        assertEquals("New value is in the attribute", "new", fo.getAttribute("value"));
+        fileAttributeChangedAssert("Change in the content", 1);
+    }
+    
     public void testChangesAreFiredOnSetXMLUrlsEvenWhenRemoved() throws Exception {
         File u1 = writeFile("u1.txt", "Ahoj");
         

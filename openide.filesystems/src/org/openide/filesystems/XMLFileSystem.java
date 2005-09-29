@@ -487,14 +487,18 @@ public final class XMLFileSystem extends AbstractFileSystem {
         for (int i = 0; i < children.length; i++) {
             AbstractFolder fo2 = (AbstractFolder) fo.getFileObject(names[i]);
             FileObjRef currentRef = (FileObjRef) findReference(fo2.getPath());
-            boolean diff = initializeReference(currentRef, children[i]);
+            int diff = initializeReference(currentRef, children[i]);
             fo2.lastModified();
 
             if (fo2.isFolder()) {
                 refreshChildren(fo2, children[i]);
             } else {
-                if (diff) {
+                if ((diff & 0x01) != 0) {
                     fo2.fileChanged0(new FileEvent(fo2));
+                } else {
+                    if ((diff & 0x02) != 0) {
+                        fo2.fileAttributeChanged0(new FileAttributeEvent(fo2, null, null, null));
+                    }
                 }
             }
         }
@@ -503,14 +507,14 @@ public final class XMLFileSystem extends AbstractFileSystem {
     /** Initialize a reference with parsed element.
      * @param currentRef the reference
      * @param resElem the new element
-     * @return true if there was a modification - e.g. previous instance existed and it changed content.
+     * @return ret&0x01 if content changed, ret&0x02 if attributes changed.
      */
-    private boolean initializeReference(FileObjRef currentRef, ResourceElem resElem) {
+    private int initializeReference(FileObjRef currentRef, ResourceElem resElem) {
         if (!currentRef.isInitialized()) {
             currentRef.initialize(resElem);
-            return false;
+            return 0x00;
         } else {
-            currentRef.attacheAttrs(resElem.getAttr(false));
+            boolean attrDiff = currentRef.attacheAttrs(resElem.getAttr(false));
             currentRef.setUrlContext(resElem.getUrlContext());
 
             boolean diff = false;
@@ -522,7 +526,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 currentRef.content = resElem.getURI();
             }
             
-            return diff;
+            return (diff ? 0x01 : 0x00) + (attrDiff ? 0x02 : 0x00);
         }
     }
     
@@ -916,9 +920,10 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return (isFolder == 1);
         }
 
-        public void attacheAttrs(XMLMapAttr attrs) {
+        /** @return true if at lest one attribute changed */
+        public boolean attacheAttrs(XMLMapAttr attrs) {
             if ((attrs == null) || attrs.isEmpty()) {
-                return;
+                return false;
             }
 
             if (foAttrs == null) {
@@ -926,11 +931,15 @@ public final class XMLFileSystem extends AbstractFileSystem {
             }
 
             Iterator it = attrs.entrySet().iterator();
-
+            boolean ch = false;
             while (it.hasNext()) {
                 Map.Entry attrEntry = (Map.Entry) it.next();
-                foAttrs.put(attrEntry.getKey(), attrEntry.getValue());
+                Object prev = foAttrs.put(attrEntry.getKey(), attrEntry.getValue());
+                
+                ch |= (prev == null && attrEntry.getValue() != null) || !prev.equals(attrEntry.getValue());
             }
+            
+            return ch;
         }
 
         public void setUrlContext(URL[] ctx) {
