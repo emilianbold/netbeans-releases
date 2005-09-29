@@ -647,7 +647,9 @@ public final class SingleModuleProperties extends ModuleProperties {
                 SortedSet/*<ModuleDependency>*/ allDependencies = new TreeSet();
                 for (Iterator it = getModuleList().getAllEntries().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
-                    allDependencies.add(new ModuleDependency(me));
+                    if (!me.getCodeNameBase().equals(getCodeNameBase())) {
+                        allDependencies.add(new ModuleDependency(me));
+                    }
                     String cat = me.getCategory();
                     if (cat != null) {
                         allCategories.add(cat);
@@ -677,7 +679,6 @@ public final class SingleModuleProperties extends ModuleProperties {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
-        
     }
     
     /**
