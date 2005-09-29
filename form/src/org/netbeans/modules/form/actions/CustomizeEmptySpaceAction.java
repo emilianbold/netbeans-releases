@@ -18,6 +18,7 @@ import javax.swing.*;
 import java.util.ResourceBundle;
 
 import org.openide.*;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
@@ -88,6 +89,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
             new HelpCtx(getClass().getName()),
             null); 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizeEmptySpaceAction.class, "ACSD_EmptySpace")); // NOI18N
         dialog.show();
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             Object layoutUndoMark = model.getChangeMark();
@@ -198,10 +200,10 @@ class EmptySpaceCustomizer extends JPanel {
         ResourceBundle bundle = NbBundle.getBundle(EmptySpaceCustomizer.class);
         setLayout(new GridBagLayout());
         setBorder(new javax.swing.border.TitledBorder(bundle.getString("TITLE_EmptySpace"))); // NOI18N
-        JLabel leftLabel = new JLabel(bundle.getString("NAME_LeftSpace")); // NOI18N
-        JLabel rightLabel = new JLabel(bundle.getString("NAME_RightSpace")); // NOI18N
-        JLabel topLabel = new JLabel(bundle.getString("NAME_TopSpace")); // NOI18N
-        JLabel bottomLabel = new JLabel(bundle.getString("NAME_BottomSpace")); // NOI18N
+        JLabel leftLabel = new JLabel(); 
+        JLabel rightLabel = new JLabel();
+        JLabel topLabel = new JLabel();
+        JLabel bottomLabel = new JLabel();
         JLabel sizeLabel = new JLabel(bundle.getString("NAME_SpaceSize")); // NOI18N
         JLabel resizableLabel = new JLabel(bundle.getString("NAME_SpaceResizable")); // NOI18N
 
@@ -247,16 +249,31 @@ class EmptySpaceCustomizer extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 3, 0);
         add(bottomResizable, gridBagConstraints);
 
+        leftLabel.setLabelFor(leftSize);
+        rightLabel.setLabelFor(rightSize);
+        topLabel.setLabelFor(topSize);
+        bottomLabel.setLabelFor(bottomSize);
+
+        Mnemonics.setLocalizedText(leftLabel, bundle.getString("NAME_LeftSpace")); // NOI18N
+        Mnemonics.setLocalizedText(rightLabel, bundle.getString("NAME_RightSpace")); // NOI18N
+        Mnemonics.setLocalizedText(topLabel, bundle.getString("NAME_TopSpace")); // NOI18N
+        Mnemonics.setLocalizedText(bottomLabel, bundle.getString("NAME_BottomSpace")); // NOI18N
+
         leftSize.setEditable(true);
         rightSize.setEditable(true);
         topSize.setEditable(true);
         bottomSize.setEditable(true);
-        
+
         padding = bundle.getString("VALUE_DefaultPadding"); // NOI18N
         leftSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
         rightSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
         topSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
         bottomSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
+
+        leftResizable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LeftResizable")); // NOI18N
+        rightResizable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RightResizable")); // NOI18N
+        topResizable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TopResizable")); // NOI18N
+        bottomResizable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BottomResizable")); // NOI18N
 
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
