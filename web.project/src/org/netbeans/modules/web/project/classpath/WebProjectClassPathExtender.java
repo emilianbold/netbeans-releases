@@ -244,7 +244,8 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender, Pr
                 String javacCp = props.getProperty(WebProjectProperties.JAVAC_CLASSPATH);
                 if (javacCp != null) {
                     registerLibraryListeners();
-                    storeLibLocations();
+		    if (ProjectManager.getDefault().isValid(project))
+			storeLibLocations();
                 }
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
             storeLibLocations();

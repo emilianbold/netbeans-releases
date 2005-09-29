@@ -1054,14 +1054,16 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 evt.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL)) {
             ProjectManager.mutex().postWriteRequest(new Runnable () {
                 public void run() {
-                    EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                    //update lib references in private properties
-                    EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ArrayList l = new ArrayList ();
-                    l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
-                    l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                    WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+		    if (ProjectManager.getDefault().isValid(((ProjectInformation) getLookup().lookup(ProjectInformation.class)).getProject())) {
+			EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+			//update lib references in private properties
+			EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+			ArrayList l = new ArrayList ();
+			l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+			l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+			WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
+			helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+		    }
                 }
             });
         }
