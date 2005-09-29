@@ -40,7 +40,7 @@ import java.awt.event.ActionEvent;
  * 
  * @author Maros Sandor
  */
-public abstract class AbstractSystemAction extends SystemAction implements DynamicMenuContent {
+public abstract class AbstractSystemAction extends SystemAction {
 
     /**
      * @return bundle key base name
@@ -65,13 +65,6 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
 
     protected abstract void performCvsAction(ActionEvent e);
 
-    public JComponent[] getMenuPresenters() {
-        return new JComponent[] { new Actions.MenuItem(this, true) };
-    }
-
-    public JComponent[] synchMenuPresenters(JComponent[] items) {
-        return new JComponent[] { new Actions.MenuItem(this, true) };
-    }
 
     /**
      * Display name, it seeks action class bundle for:
