@@ -55,7 +55,7 @@ class MultiSplitCell {
     void maybeResetToInitialSize( int newSize ) {
         if( -1 == requiredSize ) {
             requiredSize = getSize();
-            if( requiredSize <= 0 ) {
+            if( requiredSize <= 0 || requiredSize >= newSize ) {
                 requiredSize = (int)(newSize * initialSplitWeight + 0.5);
             }
             dirty = true;
