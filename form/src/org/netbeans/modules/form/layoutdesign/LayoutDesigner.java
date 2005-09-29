@@ -56,15 +56,22 @@ public class LayoutDesigner implements LayoutConstants {
 
     public boolean updateCurrentState() {
         Object changeMark = layoutModel.getChangeMark();
-        if (imposeSize || optimizeStructure) {
+        boolean changeRequired = imposeSize || optimizeStructure;
+        if (changeRequired) {
             modelListener.deactivate(); // some changes may happen...
         }
 
-        List updatedContainers = updatePositions();
+        List updatedContainers;
+        try {
+            updatedContainers = updatePositions();
+        } finally {
+            if (changeRequired) {
+                modelListener.activate();
+            }
+        }
 
-        if (imposeSize || optimizeStructure) {
+        if (changeRequired) {
             imposeSize = optimizeStructure = false;
-            modelListener.activate();
 
             if (updatedContainers != null) {
                 Iterator it = updatedContainers.iterator();
@@ -503,10 +510,10 @@ public class LayoutDesigner implements LayoutConstants {
             if (dragger.isResizing() && components[0].isLayoutContainer())
                 updateDesignModifications(components[0]);
 
-            modelListener.activate();
             visualStateUpToDate = false;
         }
         } finally {
+            modelListener.activate();
             dragger = null;
         }
     }
@@ -1624,8 +1631,11 @@ public class LayoutDesigner implements LayoutConstants {
             intervals[counter++] = component.getLayoutInterval(dimension);            
         }
         modelListener.deactivate();
-        alignIntervals(intervals, closed, dimension, alignment);
-        modelListener.activate();
+        try {
+            alignIntervals(intervals, closed, dimension, alignment);
+        } finally {
+            modelListener.activate();
+        }
         requireStructureOptimization();
     }
 
