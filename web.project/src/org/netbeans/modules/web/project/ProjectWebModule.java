@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -122,7 +123,19 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 return;
             }
         }
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        // DialogDisplayer waits for the AWT thread, blocking the calling
+        // thread -- deadlock-prone, see issue #64888. therefore invoking
+        // only in the AWT thread
+        Runnable r = new Runnable() {
+            public void run() {
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeLater(this);
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        };
+        r.run();
     }
     
     public FileObject getDocumentBase () {
@@ -444,7 +457,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     private boolean isProjectOpened() {
         // XXX workaround: OpenProjects.getDefault() can be null 
-        // when called from ProjectOpenedHook.projectOpened()
+        // when called from ProjectOpenedHook.projectOpened() upon IDE startup
         if (OpenProjects.getDefault() == null)
             return true;
         

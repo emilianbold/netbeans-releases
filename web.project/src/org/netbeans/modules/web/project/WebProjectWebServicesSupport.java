@@ -664,6 +664,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     }
     
     private boolean isProjectOpened() {
+        // XXX workaround: OpenProjects.getDefault() can be null 
+        // when called from ProjectOpenedHook.projectOpened() upon IDE startup
+        if (OpenProjects.getDefault() == null)
+            return true;
+        
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {
             if (projects[i].equals(project))
