@@ -1655,6 +1655,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <exclude name="netbeans.css"/>
     </checkcontent>
   </target>
+  
+  <target name="check-module-configs" depends="bootstrap" description="Sanity-check build.properties and cluster.properties.">
+    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="nbantext.jar"/>
+    <checkmoduleconfigs nbroot=".."/>
+  </target>
 
   <target name="display-l10n-list-matches" description="Show which files are actually matched by an l10n.list in some module.">
     <property name="nbroot" location=".."/>
@@ -1674,5 +1679,4 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <incrspecvers nbroot=".." modules="${allmodules}" branch="${branch}"/>
   </target>
 
-    <target name="maybe-pre-unscramble"><echo>XXX DO NOT CALL ME ANY MORE PLEASE!</echo></target>
 </project>
