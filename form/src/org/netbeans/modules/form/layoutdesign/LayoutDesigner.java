@@ -136,7 +136,7 @@ public class LayoutDesigner implements LayoutConstants {
                     while (it2.hasNext()) {
                         LayoutComponent subComp = (LayoutComponent) it2.next();
                         bounds = visualMapper.getComponentBounds(subComp.getId());
-                        int baseline = visualMapper.getBaselinePosition(subComp.getId());
+                        int baseline = visualMapper.getBaselinePosition(subComp.getId(), bounds.width, bounds.height);
                         subComp.setCurrentBounds(bounds, baseline);
                     }
                     for (int i=0; i < DIM_COUNT; i++) {
@@ -349,7 +349,7 @@ public class LayoutDesigner implements LayoutConstants {
 
         LayoutRegion[] movingFormation = new LayoutRegion[bounds.length];
         for (int i=0; i < bounds.length; i++) {
-            int baseline = visualMapper.getBaselinePosition(comps[i].getId());
+            int baseline = visualMapper.getBaselinePosition(comps[i].getId(), bounds[i].width, bounds[i].height);
             int baselinePos = baseline > 0 ? bounds[i].y + baseline : LayoutRegion.UNKNOWN;
             movingFormation[i] = new LayoutRegion();
             movingFormation[i].set(bounds[i], baselinePos);
@@ -2894,13 +2894,15 @@ public class LayoutDesigner implements LayoutConstants {
         component.setCurrentInterior(interior);
 
         if (component.getParent() != null) {
-            component.setCurrentBounds(visualMapper.getComponentBounds(component.getId()),
-                visualMapper.getBaselinePosition(component.getId()));
+            Rectangle bounds = visualMapper.getComponentBounds(component.getId());
+            component.setCurrentBounds(bounds,
+                visualMapper.getBaselinePosition(component.getId(), bounds.width, bounds.height));
         }
         for (Iterator it=component.getSubcomponents(); it.hasNext(); ) {
             LayoutComponent subComp = (LayoutComponent) it.next();
-            subComp.setCurrentBounds(visualMapper.getComponentBounds(subComp.getId()),
-                                     visualMapper.getBaselinePosition(subComp.getId()));
+            Rectangle bounds = visualMapper.getComponentBounds(subComp.getId());
+            subComp.setCurrentBounds(bounds,
+                                     visualMapper.getBaselinePosition(subComp.getId(), bounds.width, bounds.height));
             if (subComp.isLayoutContainer()) {
                 if (recursive)
                     imposeCurrentContainerSize(subComp, null, true);

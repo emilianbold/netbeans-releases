@@ -85,7 +85,7 @@ public interface VisualMapper {
                                     int dimension,
                                     int compAlignment);
 
-    int getBaselinePosition(String componentId);
+    int getBaselinePosition(String componentId, int width, int height);
 
     boolean[] getComponentResizability(String compId, boolean[] resizability);
 

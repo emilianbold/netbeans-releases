@@ -1476,7 +1476,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return visual != null ? visual.isPreferredSizeSet() : false;
         }
 
-        public int getBaselinePosition(String componentId) {
+        public int getBaselinePosition(String componentId, int width, int height) {
             JComponent comp = (JComponent) getVisualComponent(componentId, true, true);
             // [hack - vertically resizable components cannot be baseline aligned]
             // [this should be either solved or filtered in LayoutDragger according to vertical resizability of the component]
@@ -1485,8 +1485,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 //                    || comp instanceof JTree || comp instanceof JTable || comp instanceof JList
                 return 0;
             }
-                
-            return comp != null ? Baseline.getBaseline(comp) : 0;
+
+            return comp != null ? Baseline.getBaseline(comp, width, height) : 0;
         }
 
         public int getPreferredPadding(String comp1Id,
