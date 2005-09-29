@@ -291,7 +291,7 @@ public class XMLDocumentModelTest extends NbTestCase {
         
     }
     
-     public void testRemoveAndAddEntireDocumentContent() throws DocumentModelException, BadLocationException, InterruptedException {
+    public void testRemoveAndAddEntireDocumentContent() throws DocumentModelException, BadLocationException, InterruptedException {
         //initialize documents used in tests
         initDoc1();
         //set the document content
@@ -383,6 +383,100 @@ public class XMLDocumentModelTest extends NbTestCase {
         assertEquals(XMLDocumentModelProvider.XML_TAG, rootTag.getType());
         
     }
+    
+    //inserts a character into <root> tag element (e.g. <roXot>) so the element is not valid
+    //the ROOT element should be destroyed and its children (A, B) should be moved to its parent (document root element)
+    public void testInvalidateTagElement() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc1();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc1);
+        
+        DocumentElement root = model.getRootElement();
+        DocumentElement rootTag = root.getElement(1); //get <root> element
+        DocumentElement aTag = rootTag.getElement(0);
+        DocumentElement bTag = rootTag.getElement(1);
+        
+        //add-listen to model
+        final Vector addedElements = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementAdded(DocumentElement de) {
+                addedElements.add(de);
+            }
+        });
+        
+        //add-listen to element
+        final Vector addedElements2 = new Vector();
+        root.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementAdded(DocumentElementEvent e) {
+                addedElements2.add(e.getChangedChild());
+            }
+        });
+        
+        //remove-listen to model
+        final Vector removedElements = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                removedElements.add(de);
+            }
+        });
+        
+        //remove-listen to element
+        final Vector removedElements2 = new Vector();
+        rootTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                System.out.println("removed " + e.getChangedChild());
+                removedElements2.add(e.getChangedChild());
+            }
+        });
+        
+        assertEquals(2, root.getElementCount()); //has PI and ROOT child
+        
+        //DocumentModelUtils.dumpElementStructure(root);
+        
+        doc1.insertString(24,"X",null);
+        Thread.sleep(1000); //wait for the model update (started after 500ms)
+        
+        //System.out.println(doc1.getText(0, doc1.getLength()));
+        //DocumentModelUtils.dumpElementStructure(root);
+        
+        assertEquals(3, root.getElementCount()); //has PI, A, B children
+        
+        //check events
+        assertEquals(0, addedElements.size());
+        assertEquals(2, addedElements2.size());
+        
+        assertEquals(1, removedElements.size()); 
+        assertEquals(2, removedElements2.size());//A,B from ROOT
+        
+        //test children
+        assertEquals("b", bTag.getName());
+        assertEquals(XMLDocumentModelProvider.XML_TAG, bTag.getType());
+        assertEquals(1, bTag.getElementCount());
+        assertEquals(root, bTag.getParentElement());
+        
+        assertEquals("a", aTag.getName());
+        assertEquals(XMLDocumentModelProvider.XML_TAG, aTag.getType());
+        assertEquals(1, aTag.getElementCount());
+        assertEquals(root, aTag.getParentElement());
+        
+        //check content and offsets
+        assertEquals(28, aTag.getStartOffset());
+        assertEquals(38, aTag.getEndOffset());
+        
+        //check if the ROOT element has been really removed
+        try {
+            rootTag.getParentElement(); //should throw the IAE
+            assertTrue("The removed element still can obtain its parent!?!?!", false);
+        } catch(IllegalArgumentException iae) {
+            //OK
+        }
+        
+        assertEquals(0, rootTag.getChildren().size()); //has not children
+    }
+    
+    
+    
     
     private void initDoc1() throws BadLocationException {
         /*
