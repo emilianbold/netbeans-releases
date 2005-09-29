@@ -925,7 +925,7 @@ public final class HtmlRenderer {
                     chWidth = dotWidth;
                 } else {
                     //calculate an average character width
-                    chWidth = r.getWidth() / (nextTag - pos);
+                    chWidth = r.getWidth() / (nextTag+1 - pos);
 
                     //can return this sometimes, so handle it
                     if ((chWidth == Double.POSITIVE_INFINITY) || (chWidth == Double.NEGATIVE_INFINITY)) {
