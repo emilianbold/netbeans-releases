@@ -122,8 +122,6 @@ is divided into following sections:
                         <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
                     </condition>
                     <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
-                    <property file="${{file.tmp}}"/>
-                    <delete file="${{file.tmp}}"/>
                     <fail unless="platform.home">Must set platform.home</fail>
                     <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                     <fail unless="platform.java">Must set platform.java</fail>
