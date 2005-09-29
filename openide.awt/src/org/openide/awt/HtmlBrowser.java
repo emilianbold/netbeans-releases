@@ -897,7 +897,17 @@ public class HtmlBrowser extends JPanel {
             return dflt;
         }
 
-        /** Display a URL to the user somehow.
+        /** 
+         * API clients usage: Call this method to display your URL in browser which is currently
+         * selected in IDE. Typically for external browsers this method is 
+         * non-blocking, doesn't wait until page gets displayed. Also, failures
+         * are reported using dialog. However note that as there are other
+         * implementations of this method, actual behaviour may be different.
+         *
+         * <p>
+         * SPI clients usage: Implement this method to display given URL to the user.
+         * </p>
+         * 
          * @param u the URL to show
          */
         public abstract void showURL(URL u);
