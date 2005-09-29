@@ -326,14 +326,15 @@ public final class DefaultProjectOperationsImplementation {
         boolean originalOK = true;
         Project main    = OpenProjects.getDefault().getMainProject();
         boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
-        Project nue = null;
+	FileObject target = null;
         
         try {
             ProjectOperations.notifyMoving(project);
             
             close(project);
             
-            FileObject target = newTarget.createFolder(nueName);
+            target = newTarget.createFolder(nueName);
+	    
             FileObject projectDirectory = project.getProjectDirectory();
             List/*<FileObject>*/ toMoveList = Arrays.asList(projectDirectory.getChildren());
             
@@ -342,12 +343,6 @@ public final class DefaultProjectOperationsImplementation {
                 
                 doCopy(project, toCopy, target);
             }
-            
-            //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
-            ProjectManager.getDefault().clearNonProjectCache();
-            nue = ProjectManager.getDefault().findProject(target);
-            
-            assert nue != null;
             
             originalOK = false;
             
@@ -361,7 +356,12 @@ public final class DefaultProjectOperationsImplementation {
             if (projectDirectory.getChildren().length == 0) {
                 projectDirectory.delete();
             }
-                
+            
+            //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
+            ProjectManager.getDefault().clearNonProjectCache();
+            Project nue = ProjectManager.getDefault().findProject(target);
+            
+            assert nue != null;
             
             ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueName);
             
@@ -372,7 +372,14 @@ public final class DefaultProjectOperationsImplementation {
             if (originalOK) {
                 open(project, wasMain);
             } else {
-                assert nue != null;
+		assert target != null;
+		
+		//#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
+		ProjectManager.getDefault().clearNonProjectCache();
+		Project nue = ProjectManager.getDefault().findProject(target);
+		
+		assert nue != null;
+		
                 open(nue, wasMain);
             }
             ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, new Object[]{e.getLocalizedMessage()}));
