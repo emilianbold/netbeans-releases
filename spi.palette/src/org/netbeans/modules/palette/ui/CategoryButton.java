@@ -34,6 +34,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     private static final Icon openedIcon = (Icon)UIManager.get("Tree.expandedIcon"); // NOI18N
     private static final Icon closedIcon = (Icon)UIManager.get("Tree.collapsedIcon"); // NOI18N
     private static final Color GTK_BK_COLOR = new Color( 184,207,229 );
+    private static final Color AQUA_BK_COLOR = new Color(225, 235, 240);
     
     private static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
     private static final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
@@ -79,23 +80,23 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     
     private void initActions() {
         InputMap inputMap = getInputMap( WHEN_FOCUSED );
-        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, 0, false ), "moveFocusDown" );
-        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, 0, false ), "moveFocusUp" );
-        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0, false ), "collapse" );
-        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0, false ), "expand" );
-        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK, false ), "popup" );
-        inputMap.put( KeyStroke.getKeyStroke( "ctrl V" ), "paste" );
-        inputMap.put( KeyStroke.getKeyStroke( "PASTE" ), "paste" );
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, 0, false ), "moveFocusDown" ); //NOI18N
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, 0, false ), "moveFocusUp" ); //NOI18N
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0, false ), "collapse" ); //NOI18N
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0, false ), "expand" ); //NOI18N
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK, false ), "popup" ); //NOI18N
+        inputMap.put( KeyStroke.getKeyStroke( "ctrl V" ), "paste" ); //NOI18N //NOI18N
+        inputMap.put( KeyStroke.getKeyStroke( "PASTE" ), "paste" ); //NOI18N //NOI18N
         
         ActionMap actionMap = getActionMap();
-        actionMap.put( "moveFocusDown", new MoveFocusAction( true ) );
-        actionMap.put( "moveFocusUp", new MoveFocusAction( false ) );
-        actionMap.put( "collapse", new ExpandAction( false ) );
-        actionMap.put( "expand", new ExpandAction( true ) );
-        actionMap.put( "popup", new PopupAction() );
+        actionMap.put( "moveFocusDown", new MoveFocusAction( true ) ); //NOI18N
+        actionMap.put( "moveFocusUp", new MoveFocusAction( false ) ); //NOI18N
+        actionMap.put( "collapse", new ExpandAction( false ) ); //NOI18N
+        actionMap.put( "expand", new ExpandAction( true ) ); //NOI18N
+        actionMap.put( "popup", new PopupAction() ); //NOI18N
         Node categoryNode = (Node)category.getLookup().lookup( Node.class );
         if( null != categoryNode )
-            actionMap.put( "paste", new Utils.PasteItemAction( categoryNode ) );
+            actionMap.put( "paste", new Utils.PasteItemAction( categoryNode ) ); //NOI18N
     }
     
     void updateProperties() {
@@ -146,21 +147,25 @@ class CategoryButton extends JCheckBox implements Autoscroll {
 
     public Color getBackground() {
         if( isFocusOwner() ) {
-            return UIManager.getColor( "PropSheet.selectedSetBackground" );
+            if( isAqua )
+                return UIManager.getColor("Table.selectionBackground"); //NOI18N
+            return UIManager.getColor( "PropSheet.selectedSetBackground" ); //NOI18N
         } else {
             if( isGTK ) {
                 return GTK_BK_COLOR;
             } else if( isAqua ) {
-                return UIManager.getColor( "Table.selectionBackground" );
+                return AQUA_BK_COLOR;
             } else {
-                return UIManager.getColor( "PropSheet.setBackground" );
+                return UIManager.getColor( "PropSheet.setBackground" ); //NOI18N
             }
         }
     }
 
     public Color getForeground() {
         if( isFocusOwner() ) {
-            return UIManager.getColor( "PropSheet.selectedSetForeground" );
+            if( isAqua )
+                return UIManager.getColor( "Table.selectionForeground" ); //NOI18N
+            return UIManager.getColor( "PropSheet.selectedSetForeground" ); //NOI18N
         } else {
             return super.getForeground();
         }
