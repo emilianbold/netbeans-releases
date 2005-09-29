@@ -28,7 +28,7 @@ package org.netbeans.api.debugger.jpda;
  *
  * @author Jan Jancura
  */
-public final class LineBreakpoint extends JPDABreakpoint implements Comparable {
+public class LineBreakpoint extends JPDABreakpoint {
 
     /** Property name constant */
     public static final String          PROP_LINE_NUMBER = new String ("lineNumber"); // NOI18N
@@ -65,7 +65,7 @@ public final class LineBreakpoint extends JPDABreakpoint implements Comparable {
         String url,
         int lineNumber
     ) {
-        LineBreakpoint b = new LineBreakpoint ();
+        LineBreakpoint b = new LineBreakpointImpl ();
         b.setURL (url);
         b.setLineNumber (lineNumber);
         return b;
@@ -240,20 +240,6 @@ public final class LineBreakpoint extends JPDABreakpoint implements Comparable {
         firePropertyChange (PROP_SOURCE_PATH, old, sp);
     }
     
-    public int compareTo(Object o) {
-        if (o instanceof LineBreakpoint) {
-            LineBreakpoint lb = (LineBreakpoint) o;
-            int uc = url.compareTo(lb.url);
-            if (uc != 0) {
-                return uc;
-            } else {
-                return lineNumber - lb.lineNumber;
-            }
-        } else {
-            return -1;
-        }
-    }
-    
     /**
      * Returns a string representation of this object.
      *
@@ -261,5 +247,27 @@ public final class LineBreakpoint extends JPDABreakpoint implements Comparable {
      */
     public String toString () {
         return "LineBreakpoint " + url + " : " + lineNumber;
+    }
+    
+    private static class LineBreakpointImpl extends LineBreakpoint implements Comparable {
+        
+        public LineBreakpointImpl() {
+        }
+        
+        public int compareTo(Object o) {
+            if (o instanceof LineBreakpointImpl) {
+                LineBreakpoint lbthis = this;
+                LineBreakpoint lb = (LineBreakpoint) o;
+                int uc = lbthis.url.compareTo(lb.url);
+                if (uc != 0) {
+                    return uc;
+                } else {
+                    return lbthis.lineNumber - lb.lineNumber;
+                }
+            } else {
+                return -1;
+            }
+        }
+    
     }
 }
