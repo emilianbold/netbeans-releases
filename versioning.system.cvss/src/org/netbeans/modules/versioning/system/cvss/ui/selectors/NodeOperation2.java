@@ -63,9 +63,10 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
 
         setPopupAllowed (false);
         setDefaultActionAllowed (false);
+        setBorder(BorderFactory.createEtchedBorder());
 
         JLabel label = new JLabel(subtitle);
-        label.setLabelFor(this);
+        label.setLabelFor(this);        
         ExplorerParent pane = new ExplorerParent(this);
         pane.add(label, BorderLayout.NORTH);
         pane.setBorder(BorderFactory.createEmptyBorder(12,12,0,12));
