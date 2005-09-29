@@ -902,6 +902,7 @@ is divided into following sections:
                     <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
                     <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
                     <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
+                    <xsl:attribute name="useexternalfile">true</xsl:attribute> <!-- #57375, requires Ant >=1.6.5 -->
                     <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                         <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
                     </xsl:if>
