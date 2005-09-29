@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -52,21 +52,34 @@ public class Main extends Object {
     private static boolean ideInterrupted = false;
     
     
-    private static void captureIDEScreen(String fileName) {
-        try {
-            System.out.println("capturing screenshot:"+fileName);
-            String userdirName = System.getProperty("netbeans.user");            
-            // capture the screenshot
-            PNGEncoder.captureScreenToIdeUserdir(userdirName,fileName);
-  
-        } catch (Exception e) {
-            if (errMan != null) {
-                errMan.log(ErrorManager.USER, "Exception thrown when capturing IDE screenshot");
-                errMan.notify(ErrorManager.USER,e);
-            } else {
-                System.err.println("Exception thrown when capturing IDE screenshot and ErrorManager not found!");
-                e.printStackTrace(System.err);
+    private static void captureIDEScreen(final String fileName) {
+        Thread captureThread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    System.out.println("capturing screenshot:"+fileName);
+                    String userdirName = System.getProperty("netbeans.user");
+                    // capture the screenshot
+                    PNGEncoder.captureScreenToIdeUserdir(userdirName, fileName);
+                } catch (Exception e) {
+                    if (errMan != null) {
+                        errMan.log(ErrorManager.USER, "Exception thrown when capturing IDE screenshot");
+                        errMan.notify(ErrorManager.USER,e);
+                    } else {
+                        System.err.println("Exception thrown when capturing IDE screenshot and ErrorManager not found!");
+                        e.printStackTrace(System.err);
+                    }
+                }
             }
+        });
+        captureThread.start();
+        try {
+            captureThread.join(60000L);  // wait 1 minute at the most
+        } catch (InterruptedException iex) {
+            errMan.notify(ErrorManager.EXCEPTION, iex);
+        } finally {
+        }
+        if(captureThread.isAlive()) {
+            captureThread.interrupt();
         }
     }
 
