@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,7 +59,8 @@ public class UpdateHelper {
     private Boolean isCurrent;
     private Element cachedElement;
 
-    private static final String INCLUDED_LIBRARY = "included-library"; //NOI18N
+    private static final String INCLUDED_LIBRARY_ELEMENT = "included-library"; //NOI18N
+    private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version"; // NOI18N
     private static final String ATTR_FILES = "files"; //NOI18N
     private static final String ATTR_DIRS = "dirs"; //NOI18N
 
@@ -285,7 +287,7 @@ public class UpdateHelper {
                 }
                 if(version == 1 || version == 2) {
                     //2=>3 upgrade
-                    NodeList libList = newRoot.getElementsByTagNameNS(ns, INCLUDED_LIBRARY);
+                    NodeList libList = newRoot.getElementsByTagNameNS(ns, INCLUDED_LIBRARY_ELEMENT);
                     for (int i = 0; i < libList.getLength(); i++) {
                         if (libList.item(i).getNodeType() == Node.ELEMENT_NODE) {
                             Element library = (Element) libList.item(i);
@@ -320,7 +322,7 @@ public class UpdateHelper {
                     }
                 }
                 
-                cachedElement = newRoot;
+                cachedElement = updateMinAntVersion(newRoot, doc);
             }
         }
         return cachedElement;
@@ -358,6 +360,20 @@ public class UpdateHelper {
                 to.appendChild (newNode);
             }
         }
+    }
+    
+    private static Element updateMinAntVersion (final Element root, final Document doc) {
+        NodeList list = root.getElementsByTagNameNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,MINIMUM_ANT_VERSION_ELEMENT);
+        if (list.getLength() == 1) {
+            Element me = (Element) list.item(0);
+            list = me.getChildNodes();
+            if (list.getLength() == 1) {
+                me.replaceChild (doc.createTextNode(EjbJarProjectGenerator.MINIMUM_ANT_VERSION), list.item(0));
+                return root;
+            }
+        }
+        assert false : "Invalid project file"; //NOI18N
+        return root;
     }
 
     /**

@@ -117,6 +117,11 @@ is divided into following sections:
                         <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
                     </condition>
                     <property name="platform.java" value="${{platform.java.tmp}}"/>
+                    <webproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
+                    <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
+                        <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
+                    </condition>
+                    <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
                     <property file="${{file.tmp}}"/>
                     <delete file="${{file.tmp}}"/>
                     <fail unless="platform.home">Must set platform.home</fail>
@@ -1151,109 +1156,35 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
-                <xsl:choose>
-                    <xsl:when test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
-                        <!-- XXX #46901: <javadoc> does not support an explicit executable -->
-                        <webproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
-                        <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
-                            <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
-                        </condition>
-                        <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
-                        <condition property="javadoc.notree.opt" value="-notree">
-                            <istrue value="${{javadoc.notree}}"/>
-                        </condition>
-                        <property name="javadoc.notree.opt" value=""/>
-                        <condition property="javadoc.use.opt" value="-use">
-                            <istrue value="${{javadoc.use}}"/>
-                        </condition>
-                        <property name="javadoc.use.opt" value=""/>
-                        <condition property="javadoc.nonavbar.opt" value="-nonavbar">
-                            <istrue value="${{javadoc.nonavbar}}"/>
-                        </condition>
-                        <property name="javadoc.nonavbar.opt" value=""/>
-                        <condition property="javadoc.noindex.opt" value="-noindex">
-                            <istrue value="${{javadoc.noindex}}"/>
-                        </condition>
-                        <property name="javadoc.noindex.opt" value=""/>
-                        <condition property="javadoc.splitindex.opt" value="-splitindex">
-                            <istrue value="${{javadoc.splitindex}}"/>
-                        </condition>
-                        <property name="javadoc.splitindex.opt" value=""/>
-                        <condition property="javadoc.author.opt" value="-author">
-                            <istrue value="${{javadoc.author}}"/>
-                        </condition>
-                        <property name="javadoc.author.opt" value=""/>
-                        <condition property="javadoc.version.opt" value="-version">
-                            <istrue value="${{javadoc.version}}"/>
-                        </condition>
-                        <property name="javadoc.version.opt" value=""/>
-                        <condition property="javadoc.private.opt" value="-private">
-                            <istrue value="${{javadoc.private}}"/>
-                        </condition>
-                        <property name="javadoc.private.opt" value=""/>
-                        <!-- For weird space-in-path behaviors on Windows, see #46901 and #50548 and #54387 -->
-                        <condition property="javadoc.classpath.opt" value='""'>
-                            <equals arg1="${{javac.classpath}}" arg2=""/>
-                        </condition>
-                        <path id="javadoc.classpath.temp">
-                            <pathelement path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
-                        </path>
-                        <property name="javadoc.classpath.opt" refid="javadoc.classpath.temp"/>
-                        <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
-                            <arg value="-d"/>
-                            <arg file="${{dist.javadoc.dir}}"/>
-                            <xsl:if test ="not(/p:project/p:configuration/webproject3:data/webproject3:explicit-platform/@explicit-source-supported ='false')">
-                                <arg value="-source"/>
-                                <arg value="${{javac.source}}"/>
-                            </xsl:if>
-                            <arg value="-windowtitle"/>
-                            <arg value="${{javadoc.windowtitle}}"/>
-                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.additionalparam}}"/>
-                            <arg value="-classpath"/>
-                            <arg value="${{javadoc.classpath.opt}}"/>
-                            <arg value="-sourcepath"/>
-                            <xsl:element name="arg">
-                                <xsl:attribute name="path">
-                                    <xsl:call-template name="createPath">
-                                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                                    </xsl:call-template>
-                                </xsl:attribute>
-                            </xsl:element>
-                            <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                                    <xsl:with-param name="includes">**/*.java</xsl:with-param>
-                           </xsl:call-template>
-                        </apply>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <javadoc>
-                            <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
-                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
-                            <xsl:attribute name="notree">${javadoc.notree}</xsl:attribute>
-                            <xsl:attribute name="use">${javadoc.use}</xsl:attribute>
-                            <xsl:attribute name="nonavbar">${javadoc.nonavbar}</xsl:attribute>
-                            <xsl:attribute name="noindex">${javadoc.noindex}</xsl:attribute>
-                            <xsl:attribute name="splitindex">${javadoc.splitindex}</xsl:attribute>
-                            <xsl:attribute name="author">${javadoc.author}</xsl:attribute>
-                            <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
-                            <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
-                            <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
-                            <xsl:attribute name="additionalparam">${javadoc.additionalparam}</xsl:attribute>
-                            <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
-                            <classpath>
-                                <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
-                            </classpath>
-                            <sourcepath>
-                                <xsl:call-template name="createPathElements">
-                                    <xsl:with-param name="locations" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                                </xsl:call-template>
-                            </sourcepath>
-                            <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                            </xsl:call-template>
-                        </javadoc>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <javadoc>
+                    <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
+                    <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                    <xsl:attribute name="notree">${javadoc.notree}</xsl:attribute>
+                    <xsl:attribute name="use">${javadoc.use}</xsl:attribute>
+                    <xsl:attribute name="nonavbar">${javadoc.nonavbar}</xsl:attribute>
+                    <xsl:attribute name="noindex">${javadoc.noindex}</xsl:attribute>
+                    <xsl:attribute name="splitindex">${javadoc.splitindex}</xsl:attribute>
+                    <xsl:attribute name="author">${javadoc.author}</xsl:attribute>
+                    <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
+                    <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
+                    <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                    <xsl:attribute name="additionalparam">${javadoc.additionalparam}</xsl:attribute>
+                    <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
+                    <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
+                        <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
+                    </xsl:if>
+                    <classpath>
+                        <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
+                    </classpath>
+                    <sourcepath>
+                        <xsl:call-template name="createPathElements">
+                            <xsl:with-param name="locations" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
+                        </xsl:call-template>
+                    </sourcepath>
+                    <xsl:call-template name="createFilesets">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
+                    </xsl:call-template>
+                </javadoc>
             </target>
 
             <target name="javadoc-browse">

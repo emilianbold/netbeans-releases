@@ -72,6 +72,8 @@ public class WebProjectUtilities {
     
     private static final String WEB_INF = "WEB-INF"; //NOI18N
     private static final String SOURCE_ROOT_REF = "${" + WebProjectProperties.SOURCE_ROOT + "}"; //NOI18N
+    
+    public static final String MINIMUM_ANT_VERSION = "1.6.3";
 
     private WebProjectUtilities() {}
     
@@ -329,7 +331,7 @@ public class WebProjectUtilities {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         Element minant = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-        minant.appendChild(doc.createTextNode("1.6")); // NOI18N
+        minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION)); // NOI18N
         data.appendChild(minant);
         
         Element wmLibs = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries"); //NOI18N        

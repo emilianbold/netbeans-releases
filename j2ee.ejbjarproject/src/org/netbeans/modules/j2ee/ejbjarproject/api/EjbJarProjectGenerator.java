@@ -65,6 +65,8 @@ public class EjbJarProjectGenerator {
     private static final String DEFAULT_JAVA_FOLDER = "java"; //NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; //NOI18N
     
+    public static final String MINIMUM_ANT_VERSION = "1.6.3";
+    
     private EjbJarProjectGenerator() {}
 
     /**
@@ -217,7 +219,7 @@ public class EjbJarProjectGenerator {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         Element minant = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-        minant.appendChild(doc.createTextNode("1.6")); // NOI18N
+        minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION));
         data.appendChild(minant);
 
         // TODO: ma154696: not sure if needed

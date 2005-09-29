@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -69,6 +70,7 @@ public class UpdateHelper {
     private Boolean isCurrent;
     private EditableProperties cachedProperties;
     private Element cachedElement;
+    private static final String TAG_MINIMUM_ANT_VERSION = "minimum-ant-version"; // NOI18N
     private static final String TAG_FILE = "file"; //NOI18N
     private static final String TAG_LIBRARY = "library"; //NOI18N
     private static final String ATTR_FILES = "files"; //NOI18N
@@ -412,7 +414,7 @@ public class UpdateHelper {
                         }
                     }
                 }
-                cachedElement = newRoot;
+                cachedElement = updateMinAntVersion(newRoot, doc);
             }
         }
         return cachedElement;
@@ -460,6 +462,20 @@ public class UpdateHelper {
                 to.appendChild (newNode);
             }
         }
+    }
+    
+    private static Element updateMinAntVersion (final Element root, final Document doc) {
+        NodeList list = root.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,TAG_MINIMUM_ANT_VERSION);
+        if (list.getLength() == 1) {
+            Element me = (Element) list.item(0);
+            list = me.getChildNodes();
+            if (list.getLength() == 1) {
+                me.replaceChild (doc.createTextNode(WebProjectUtilities.MINIMUM_ANT_VERSION), list.item(0));
+                return root;
+            }
+        }
+        assert false : "Invalid project file"; //NOI18N
+        return root;
     }
 
     /**
