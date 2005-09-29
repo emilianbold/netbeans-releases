@@ -330,9 +330,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     public final void paint(Graphics g, JComponent c) {
         assert c == displayer;
         
-        if (isAntialiased()) {
-            ColorUtil.setupAntialiasing(g);
-        }
+        ColorUtil.setupAntialiasing(g);
         
         boolean showClose = displayer.isShowCloseButton();
         

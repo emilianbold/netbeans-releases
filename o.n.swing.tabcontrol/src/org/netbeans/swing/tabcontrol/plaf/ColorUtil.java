@@ -29,7 +29,7 @@ import java.util.Map;
  */
 final class ColorUtil {
     private static Map gpCache = null;
-    private static HashMap hintsMap = null;
+    private static Map hintsMap = null;
     private static final boolean noGpCache = Boolean.getBoolean(
             "netbeans.winsys.nogpcache");  //NOI18N
     private static final boolean noAntialias = 
@@ -161,17 +161,27 @@ final class ColorUtil {
 
     private static Map getHints() {
         if (hintsMap == null) {
-            hintsMap = new HashMap();
-            hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
-                         RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            hintsMap.put(RenderingHints.KEY_ANTIALIASING,
+            //Thanks to Phil Race for making this possible
+            hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+            if (hintsMap == null) {
+                hintsMap = new HashMap();
+                if (shouldAntialias()) {
+                    hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
+            }
+            if (shouldAntialias()) {
+                hintsMap.put(RenderingHints.KEY_ANTIALIASING,
                          RenderingHints.VALUE_ANTIALIAS_ON);
+            }
         }
         return hintsMap;
+        
     }
 
     public static final void setupAntialiasing(Graphics g) {
         if (noAntialias) return;
+        
         ((Graphics2D) g).addRenderingHints(getHints());
     }
     

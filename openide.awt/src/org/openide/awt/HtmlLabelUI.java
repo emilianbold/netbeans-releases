@@ -136,13 +136,7 @@ class HtmlLabelUI extends LabelUI {
         //Antialiasing affects the text metrics, so use it if needed when
         //calculating preferred size or the result here will be narrower
         //than the space actually needed
-        if (antialias) {
-            //For L&Fs such as Aqua and SmoothMetal, we will need to manually apply
-            //rendering hints to get antialiasing, since we're doing our
-            //own painting logic - they don't do this for things they don't
-            //know about
-            ((Graphics2D) g).addRenderingHints(getHints());
-        }
+        ((Graphics2D) g).addRenderingHints(getHints());
 
         int textwidth = textWidth(text, g, r.getFont(), r.isHtml()) + 4;
 
@@ -166,7 +160,8 @@ class HtmlLabelUI extends LabelUI {
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
                 hintsMap = new HashMap();
-                hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                if (antialias)
+                    hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
         }
         return hintsMap;
@@ -201,13 +196,8 @@ class HtmlLabelUI extends LabelUI {
     }
 
     public void paint(Graphics g, JComponent c) {
-        if (antialias) {
-            //For L&Fs such as Aqua and SmoothMetal, we will need to manually apply
-            //rendering hints to get antialiasing, since we're doing our
-            //own painting logic - they don't do this for things they don't
-            //know about
-            ((Graphics2D) g).addRenderingHints(getHints());
-        }
+
+        ((Graphics2D) g).addRenderingHints(getHints());
 
         HtmlRendererImpl r = (HtmlRendererImpl) c;
 

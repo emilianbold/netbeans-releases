@@ -80,9 +80,7 @@ public class GtkSlidingButtonUI extends SlidingButtonUI {
     }   
     
     public void paint(Graphics g, JComponent c) {
-        if (ColorUtil.shouldAntialias()) {
-            ColorUtil.setupAntialiasing(g);
-        }
+        ColorUtil.setupAntialiasing(g);
         
         AbstractButton button = (AbstractButton)c;
         hiddenToggle.setBorderPainted(true);

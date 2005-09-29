@@ -45,9 +45,13 @@ class ExtPlainView extends PlainView {
     
     static final Map getHints() {
         if (hintsMap == null) {
-            hintsMap = new HashMap();
-            hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            //Thanks to Phil Race for making this possible
+            hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+            if (hintsMap == null) {
+                hintsMap = new HashMap();
+                if (antialias)
+                    hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
         }
         return hintsMap;
     }
@@ -58,10 +62,7 @@ class ExtPlainView extends PlainView {
     }
 
     public void paint(Graphics g, Shape allocation) {
-        
-        if (antialias) {
-            ((Graphics2D)g).addRenderingHints(getHints());
-        }
+        ((Graphics2D)g).addRenderingHints(getHints());
         super.paint(g, allocation);
     }
     
