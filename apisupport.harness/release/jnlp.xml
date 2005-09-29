@@ -221,7 +221,7 @@ $${jnlp.resources}
         <echo file="${jnlp.master.dir}/resources.xml"><![CDATA[
     <j2se version="1.4+"/>
     <jar href="startup.jar"/>
-    <property name="netbeans.user" value="$${user.home}/.${app.name}"/>
+    <property name="netbeans.user" value="$${user.home}/.nbapp-${app.name}"/>
     ${jnlp.branding.jars}
 ]]></echo>
         <concat append="true" destfile="${jnlp.master.dir}/resources.xml">
@@ -277,7 +277,7 @@ $${jnlp.resources}
     </target>
 
     <target name="-check-for-jnlp-userdir">
-        <property name="jnlp.userdir" location="${user.home}/.${app.name}"/>
+        <property name="jnlp.userdir" location="${user.home}/.nbapp-${app.name}"/>
         <condition property="have.jnlp.userdir">
             <and>
                 <isset property="app.name"/>
