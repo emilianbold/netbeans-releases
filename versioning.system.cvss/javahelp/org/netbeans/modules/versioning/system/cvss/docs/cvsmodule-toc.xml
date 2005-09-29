@@ -8,11 +8,11 @@
 
 <toc version="2.0">
       <tocitem text="IDE Basics">
-          <tocitem text="Working with CVS-Lite">
-              <tocitem text="About CVS-Lite" target="cvs-lite_about" />
-              <tocitem text="CVS-Lite Workflow Overview" target="cvs-lite_overview" /> 
-              <tocitem text="Working with CVS-Lite in the IDE" target="cvs-lite_working" /> 
-              <tocitem text="Using CVS-Lite with IDE Projects" target="cvs-lite_projects" /> 
+          <tocitem text="Working with Version Control">
+              <tocitem text="About CVS" target="cvs-lite_about" />
+              <tocitem text="CVS Workflow Overview" target="cvs-lite_overview" /> 
+              <tocitem text="Working with CVS in the IDE" target="cvs-lite_working" /> 
+              <tocitem text="Using CVS with IDE Projects" target="cvs-lite_projects" /> 
               <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
               
               <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" /> 
@@ -27,8 +27,8 @@
               <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
               <tocitem text="Working with Branches" target="cvs-lite_branches" />  
                 
-              <tocitem text="Setting Up CVS-Lite" target="cvs-lite_setup" />                  
-              <tocitem text="CVS-Lite Tasks: Quick Reference" target="cvs-lite_quickref" /> 
+              <tocitem text="Setting Up CVS" target="cvs-lite_setup" />                  
+              <tocitem text="CVS Tasks: Quick Reference" target="cvs-lite_quickref" /> 
               </tocitem>
       </tocitem>
 </toc>
