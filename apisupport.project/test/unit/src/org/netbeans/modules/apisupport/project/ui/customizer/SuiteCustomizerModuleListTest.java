@@ -38,7 +38,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     private FileObject suite1FO;
     private FileObject suite2FO;
     
-    private SuiteCustomizerModuleList customizer;
+    private SuiteCustomizerLibraries customizer;
     
     public SuiteCustomizerModuleListTest(String testName) {
         super(testName);
@@ -56,7 +56,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         this.suite1Props = new SuiteProperties(suite1Prj, suite1Prj.getHelper(),
                 suite1Prj.getEvaluator(), suite1subModules);
         
-        customizer = new SuiteCustomizerModuleList(this.suite1Props);
+        customizer = new SuiteCustomizerLibraries(this.suite1Props);
     }
 
     public void testDisableCluster() throws Exception {
