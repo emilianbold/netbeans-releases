@@ -10,25 +10,23 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.util.lookup;
 
-import org.openide.util.Lookup;
+package org.openide.util.lookup;
 
 import java.util.Arrays;
 import java.util.Collections;
-
+import org.openide.util.Lookup;
 
 /**
- * A convinience class with couple of static factory methods. It is impossible
- * to create an instance of this class.
+ * Static factory methods for creating common lookup implementations.
  *
  * @author David Strupl
  * @since 2.21
  */
 public class Lookups {
-    /** Noone should ever create intstances of this class. */
-    private Lookups() {
-    }
+    
+    /** static methods only */
+    private Lookups() {}
 
     /**
      * Creates a singleton lookup. It means lookup that contains only
@@ -122,7 +120,7 @@ public class Lookups {
     /** Returns a lookup that implements the JDK1.3 JAR services mechanism and delegates
      * to META-INF/services/name.of.class files.
      * <p>Note: It is not dynamic - so if you need to change the classloader or JARs,
-     * wrap it in a ProxyLookup and change the delegate when necessary.
+     * wrap it in a {@link ProxyLookup} and change the delegate when necessary.
      * Existing instances will be kept if the implementation classes are unchanged,
      * so there is "stability" in doing this provided some parent loaders are the same
      * as the previous ones.

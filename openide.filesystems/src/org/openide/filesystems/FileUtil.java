@@ -7,14 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.filesystems;
 
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+package org.openide.filesystems;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -23,16 +20,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
-
 import java.util.Arrays;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -40,11 +37,13 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
-
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /** Common utilities for handling files.
  * This is a dummy class; all methods are static.
@@ -74,7 +73,7 @@ public final class FileUtil extends Object {
     }
 
     /* mapping of file extensions to content-types */
-    private static java.util.Dictionary map = new java.util.Hashtable();
+    private static Dictionary map = new Hashtable();
 
     static {
         // Set up at least this one statically, because it is so basic;
@@ -365,7 +364,7 @@ public final class FileUtil extends Object {
      * @return java.io.File or null if no corresponding File exists.
      * @since 1.29
      */
-    public static java.io.File toFile(FileObject fo) {
+    public static File toFile(FileObject fo) {
         File retVal = (File) fo.getAttribute("java.io.File"); // NOI18N;        
 
         if (retVal == null) {
@@ -969,7 +968,7 @@ public final class FileUtil extends Object {
      * @since 4.10
      */
     public static FileChangeListener weakFileChangeListener(FileChangeListener l, Object source) {
-        return (FileChangeListener) org.openide.util.WeakListeners.create(FileChangeListener.class, l, source);
+        return (FileChangeListener) WeakListeners.create(FileChangeListener.class, l, source);
     }
 
     /** Creates a weak implementation of FileStatusListener.
@@ -981,7 +980,7 @@ public final class FileUtil extends Object {
      * @since 4.10
      */
     public static FileStatusListener weakFileStatusListener(FileStatusListener l, Object source) {
-        return (FileStatusListener) org.openide.util.WeakListeners.create(FileStatusListener.class, l, source);
+        return (FileStatusListener) WeakListeners.create(FileStatusListener.class, l, source);
     }
 
     /**
@@ -1051,10 +1050,15 @@ public final class FileUtil extends Object {
     /**
      * Normalize a file path to a clean form.
      * This method may for example make sure that the returned file uses
-     * the correct case on Windows; that old Windows 8.3 filenames are changed to the long form;
+     * the natural case on Windows; that old Windows 8.3 filenames are changed to the long form;
      * that relative paths are changed to be
-     * absolute; etc.
+     * absolute; that <code>.</code> and <code>..</code> sequences are removed; etc.
      * Unlike {@link File#getCanonicalFile} this method will not traverse symbolic links on Unix.
+     * <p>This method involves some overhead and should not be called frivolously.
+     * Generally it should be called on <em>incoming</em> pathnames that are gotten from user input
+     * (including filechoosers), configuration files, Ant properties, etc. <em>Internal</em>
+     * calculations should not need to renormalize paths since {@link File#listFiles},
+     * {@link File#getParentFile}, etc. will not produce nonnormal variants.
      * @param file file to normalize
      * @return normalized file
      * @since 4.48
