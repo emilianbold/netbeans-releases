@@ -825,6 +825,14 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
 
     // helper methods ------------------
     private void examineSelections() {
+        // This method is called before action that changes the table model
+        // (no. of rows or columns) => stop editing of cells (see issue 64441).
+        if (settingsTable.isEditing()) {
+            settingsTable.removeEditor();
+        }
+        if (defaultValuesTable.isEditing()) {
+            defaultValuesTable.removeEditor();
+        }
         stSelectedRow = settingsTable.getSelectedRow();
         stSelectedColumn = settingsTable.getSelectedColumn();
         defSelectedRow = defaultValuesTable.getSelectedRow();
