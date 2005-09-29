@@ -1218,7 +1218,6 @@ class LayoutOperations implements LayoutConstants {
                             }
                         }
                         updated = true;
-                        System.out.println("MERGING!");
                         eatGap(interval, next, NOT_EXPLICITLY_DEFINED);
                     }
                 }
