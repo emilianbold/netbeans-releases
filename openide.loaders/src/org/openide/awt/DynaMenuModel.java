@@ -16,6 +16,7 @@ package org.openide.awt;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -95,10 +96,10 @@ class DynaMenuModel {
                     addSeparator = false;
                 }
                 Action a = (Action)obj;
-                JMenuItem item = new JMenuItem();
-                Actions.connect(item, a, false);
+                Actions.MenuItem item = new Actions.MenuItem(a, true);
                 // check icon
                 isWithIcons = checkIcon(item, isWithIcons);
+                actionToMenuMap.put(item, new JComponent[] {item});
                 menuItems.add(item);
             }
         }
@@ -130,7 +131,7 @@ class DynaMenuModel {
             return isWithIconsAlready;
         }
         if (obj instanceof JMenuItem) {
-            if (((JMenuItem)obj).getIcon() != null) {
+            if (((JMenuItem)obj).getIcon() != null && !BLANK_ICON.equals(((JMenuItem)obj).getIcon())) {
                 return true;
             }
         }
@@ -157,6 +158,7 @@ class DynaMenuModel {
                     for (int i = 0; i < old.length; i++) {
                         if (old[i] != null) {
                             menu.getPopupMenu().remove(old[i]);
+                            menuItems.remove(old[i]);
                         }
                     }
                 }
@@ -164,13 +166,33 @@ class DynaMenuModel {
                     ///TODO now what to do with icon alignments..
                     JComponent one = newones[i];
                     menu.getPopupMenu().add(one, i + menuIndex);
+                    menuItems.add(one);
+                    boolean thisOneHasIcon = checkIcon(one, false);
+                    if (!thisOneHasIcon && isWithIcons) {
+                        alignVertically(Collections.singletonList(one));
+                    }
+                    if (thisOneHasIcon && !isWithIcons) {
+                        isWithIcons = true;
+                    }
                 }
                 entry.setValue(newones);
             }
             
         }
-        
-        if (isWithIcons != oldisWithIcons) {
+        boolean hasAnyIcons = false;
+        Component[] menuones = menu.getPopupMenu().getComponents();
+        for (int i = 0; i < menuones.length; i++) {
+            if (menuones[i] != null) {
+                hasAnyIcons = checkIcon(menuones[i], hasAnyIcons);
+                if (hasAnyIcons) {
+                    break;
+                }
+            }
+        }
+        if (!hasAnyIcons && isWithIcons) {
+            isWithIcons = false;
+        }
+        if (oldisWithIcons != isWithIcons) {
             menuItems = alignVertically(menuItems);
         }
         
@@ -221,8 +243,10 @@ class DynaMenuModel {
             Object obj = iter.next();
             if (obj instanceof JMenuItem) {
                 curItem = (JMenuItem)obj;
-                if (curItem != null && curItem.getIcon() == null) {
+                if (isWithIcons && curItem != null && curItem.getIcon() == null) {
                     curItem.setIcon(BLANK_ICON);
+                } else if (!isWithIcons && curItem != null) {
+                    curItem.setIcon(null);
                 }
             }
             result.add(obj);
