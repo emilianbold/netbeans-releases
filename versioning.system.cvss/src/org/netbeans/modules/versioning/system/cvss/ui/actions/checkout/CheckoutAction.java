@@ -162,16 +162,8 @@ public final class CheckoutAction extends SystemAction {
 
         public void taskFinished(Task task) {
 
-            // XXX does it catch user errors such as incorrect module name spec?
-            Throwable t = executor.getFailure();
             executor.removeTaskListener(this);
-            if (t != null) {
-                ErrorManager.getDefault().notify(ErrorManager.USER, t); // show dialog without stack trace
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);  // log to console, too
-                return;
-            }
-
-            if (executor.isCancelled()) {
+            if (executor.isSuccessful() == false) {
                 return;
             }
 

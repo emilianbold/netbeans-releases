@@ -87,13 +87,8 @@ final class ImportExecutor extends ExecutorSupport implements TaskListener {
      */
     public void taskFinished(Task task) {
         checkoutExecutor.removeTaskListener(this);
-        Throwable t = checkoutExecutor.getFailure();
-        if (t == null) {
+        if (checkoutExecutor.isSuccessful()) {
             copyMetadata();
-        } else {
-            ErrorManager.getDefault().annotate(t, "After Import checkout failed!");
-            ErrorManager.getDefault().notify(ErrorManager.USER, t);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
         }
     }
 

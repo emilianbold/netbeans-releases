@@ -77,8 +77,9 @@ public abstract class ExecutorSupport implements CVSListener  {
     private final GlobalOptions         options;
     private RequestProcessor.Task       task;
     private List taskListeners = new ArrayList(2);
-    private Throwable                   failure;
+    private Throwable                   internalError;
     private boolean                     terminated;
+    private boolean                     commandFailed;
 
     private boolean                     finishedExecution;
     private boolean executed;
@@ -128,7 +129,7 @@ public abstract class ExecutorSupport implements CVSListener  {
         try {
             task = cvs.post(cmd, options, this);
         } catch (Throwable e) {
-            failure = e;
+            internalError = e;
             group.finished(clientRuntime);
 
             String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1003", new Date(), getDisplayName());
@@ -183,12 +184,11 @@ public abstract class ExecutorSupport implements CVSListener  {
     }
 
     /**
-     * Return internal errors
-     *
-     * <p>XXX Temporary returns CommandException on cmd.hasFailed. 
+     * Return internal errors.
+     * @see #isSuccessful
      */
     public Throwable getFailure() {
-        return failure;
+        return internalError;
     }
 
     /**
@@ -196,6 +196,13 @@ public abstract class ExecutorSupport implements CVSListener  {
      */
     public boolean isCancelled() {
         return group.isCancelled();
+    }
+
+    /**
+     * @return true on no internal error, user cancel nor command fail ("server erroe:")
+     */
+    public boolean isSuccessful() {
+        return internalError == null && group.isCancelled() == false && commandFailed == false;
     }
 
     /** @return task instance actually used (can change on retry) or null. */
@@ -276,12 +283,13 @@ public abstract class ExecutorSupport implements CVSListener  {
                     } else {
                         String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), getDisplayName());
                         clientRuntime.log(msg + "\n");  // NOI18N
-                        failure = result.getError();
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, failure);
+                        internalError = result.getError();
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, internalError);
                     }
                 } else {  // error == null
                     commandFinished((ClientRuntime.Result) e.getSource());
                     if (cmd.hasFailed()) {
+                        commandFailed = true;
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
                                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"), 
                                errorMessages, NotifyDescriptor.ERROR_MESSAGE);
@@ -620,7 +628,7 @@ public abstract class ExecutorSupport implements CVSListener  {
                     }
                 }
             }
-            if (executor.getFailure() != null || executor.isCancelled()) {
+            if (executor.isSuccessful() == false) {
                 success = false;
             }
         }
