@@ -127,7 +127,7 @@ final class AddModulePanel extends JPanel {
         moduleList.setModel(ComponentFactory.LIST_WAIT_MODEL);
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
-                final SortedSet universeDeps = props.getUniverseDependencies();
+                final SortedSet universeDeps = props.getUniverseDependencies(true);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         universeModules = ComponentFactory.createDependencyListModel(universeDeps);

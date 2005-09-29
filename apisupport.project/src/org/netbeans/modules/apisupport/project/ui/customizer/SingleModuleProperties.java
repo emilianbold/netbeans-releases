@@ -32,12 +32,14 @@ import java.util.TreeSet;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.DependencyListModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
@@ -126,7 +128,11 @@ public final class SingleModuleProperties extends ModuleProperties {
     private SortedSet/*<String>*/ availablePublicPackages;
     
     private String[] allTokens;
+    
+    /** Unmodifiable sorted set of all categories in the module's universe. */
     private SortedSet/*<String>*/ modCategories;
+    
+    /** Unmodifiable sorted set of all dependencies in the module's universe. */
     private SortedSet/*<ModuleDependency>*/ universeDependencies;
     
     // models
@@ -164,7 +170,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         projectXMLManager = null;
         if (moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
             assert getSuiteDirectory() != null;
-            ModuleList.refreshSuiteModuleList(new File(getSuiteDirectory()));
+            ModuleList.refreshSuiteModuleList(getSuiteDirectory());
         }
         ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         majorReleaseVersion = manifestManager.getReleaseVersion();
@@ -209,9 +215,12 @@ public final class SingleModuleProperties extends ModuleProperties {
         return getHelper().resolveFile(getEvaluator().evaluate("${cluster}/${module.jar}")).getAbsolutePath(); // NOI18N
     }
     
-    String getSuiteDirectory() {
-        return (suiteProvider != null && suiteProvider.getSuiteDirectory() != null) ?
-            suiteProvider.getSuiteDirectory().getPath() : null;
+    String getSuiteDirectoryPath() {
+        return getSuiteDirectory() != null ? getSuiteDirectory().getPath() : null;
+    }
+    
+    File getSuiteDirectory() {
+        return suiteProvider != null ? suiteProvider.getSuiteDirectory() : null;
     }
     
     // ---- READ ONLY end
@@ -352,20 +361,55 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     /**
-     * Returns a set of all available modules dependencies ({@link
+     * Returns a set of available modules dependencies ({@link
      * ModuleDependency}) in the module's universe according to the currently
-     * selected platform ({@link #getActivePlatform()})<p>
+     * selected platform ({@link #getActivePlatform()}). If the
+     * <code>filterExcludedModules</code> is set to <code>true</code> and this
+     * module is a suite component, modules exclude from the suite's module
+     * list will be excluded from the returned set.<p>
      * <strong>Note:</strong> Don't call this method from EDT, since it may be
      * really slow. The {@link AssertionError} will be thrown if you try to do
      * so.
      */
-    SortedSet/*<ModuleDependency>*/ getUniverseDependencies() {
+    SortedSet/*<ModuleDependency>*/ getUniverseDependencies(final boolean filterExcludedModules) {
         assert !SwingUtilities.isEventDispatchThread() :
             "SingleModuleProperties.getUniverseDependencies() cannot be called from EDT"; // NOI18N
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
-        return universeDependencies;
+        SortedSet/*<ModuleDependency>*/ result = null;
+        if (filterExcludedModules && getSuiteDirectory() != null) {
+            try {
+                SuiteProject suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getSuiteDirectory()));
+                if (suite != null) {
+                    String[] disableModules = SuiteProperties.getArrayProperty(
+                            suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
+                    String[] disableClusters = SuiteProperties.getArrayProperty(
+                            suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
+                    SortedSet/*<ModuleDependency>*/ filtered = new TreeSet(universeDependencies);
+                    for (Iterator it = filtered.iterator(); it.hasNext();) {
+                        ModuleDependency dep = (ModuleDependency) it.next();
+                        if (isExcluded(dep.getModuleEntry(), disableModules, disableClusters)) {
+                            it.remove();
+                        }
+                    }
+                    result = Collections.unmodifiableSortedSet(filtered);
+                }
+            } catch (IOException e) {
+                // module will be included
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        if (result == null) {
+            result = universeDependencies;
+        }
+        return result;
+    }
+    
+    private static boolean isExcluded(final ModuleEntry me,
+            final String[] disableModules, final String[] disableClusters) {
+        return Arrays.binarySearch(disableModules, me.getCodeNameBase()) >= 0 ||
+                Arrays.binarySearch(disableClusters, me.getClusterDirectory().getName()) >= 0;
     }
     
     FriendListModel getFriendListModel() {

@@ -30,11 +30,11 @@ final class CustomizerSources extends NbPropertyPanel.Single {
     }
     
     void refresh() {
-        if (getProperties().getSuiteDirectory() == null) {
+        if (getProperties().getSuiteDirectoryPath() == null) {
             moduleSuite.setVisible(false);
             moduleSuiteValue.setVisible(false);
         } else {
-            UIUtil.setText(moduleSuiteValue, getProperties().getSuiteDirectory());
+            UIUtil.setText(moduleSuiteValue, getProperties().getSuiteDirectoryPath());
         }
         srcLevelValue.removeAllItems();
         for (int i = 0; i < SingleModuleProperties.SOURCE_LEVELS.length; i++) {
