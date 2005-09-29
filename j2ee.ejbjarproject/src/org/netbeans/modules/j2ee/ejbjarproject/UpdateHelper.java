@@ -59,6 +59,7 @@ public class UpdateHelper {
     private Boolean isCurrent;
     private Element cachedElement;
 
+    private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
     private static final String INCLUDED_LIBRARY_ELEMENT = "included-library"; //NOI18N
     private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version"; // NOI18N
     private static final String ATTR_FILES = "files"; //NOI18N
@@ -266,7 +267,7 @@ public class UpdateHelper {
                 version = 2;
                 oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/2",true);    //NOI18N
             }
-            final String ns = version == 1 ? "http://www.netbeans.org/ns/web-project/1" : "http://www.netbeans.org/ns/web-project/2"; //NOI18N 
+            final String ns = version == 1 ? "http://www.netbeans.org/ns/j2ee-ejbjarproject/1" : "http://www.netbeans.org/ns/j2ee-ejbjarproject/2"; //NOI18N 
             
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
@@ -384,7 +385,7 @@ public class UpdateHelper {
         return new Notifier() {
             public boolean canUpdate() {
                 return DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate"),
+                    new NotifyDescriptor.Confirmation (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate",BUILD_NUMBER),
                         NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdateTitle"),
                         NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION;
             }

@@ -84,26 +84,36 @@ is divided into following sections:
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
-                    <!--Setting java and javac default location -->
-                    <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
-                    <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
-                    <property name="platforms.${{platform.active}}.javadoc" value="${{platform.home}}/bin/javadoc"/>
-                    <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
-                    <tempfile property="file.tmp" prefix="platform" suffix=".properties"/>
-                    <echo file="${{file.tmp}}">
-                        platform.home=$${platforms.${platform.active}.home}
-                        platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
-                        build.compiler=$${platforms.${platform.active}.compiler}
-                        platform.java=$${platforms.${platform.active}.java}
-                        platform.javac=$${platforms.${platform.active}.javac}
-                        platform.javadoc=$${platforms.${platform.active}.javadoc}
-                    </echo>
-                    <property file="${{file.tmp}}"/>
-                    <delete file="${{file.tmp}}"/>
+                    <ejbjarproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
+                    <ejbjarproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
+                    <ejbjarproject1:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
+                    <ejbjarproject1:property name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
+                    <condition property="platform.javac" value="${{platform.home}}/bin/javac">
+                        <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.active}}.javac}}"/>
+                    </condition>
+                    <property name="platform.javac" value="${{platform.javac.tmp}}"/>
+                    <ejbjarproject1:property name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
+                    <condition property="platform.java" value="${{platform.home}}/bin/java">
+                        <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
+                    </condition>
+                    <property name="platform.java" value="${{platform.java.tmp}}"/>
+                    <ejbjarproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
+                    <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
+                        <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
+                    </condition>
+                    <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
+                    <condition property="platform.invalid" value="true">
+                        <or>
+                            <contains string="${{platform.javac}}" substring="$${{platforms."/>
+                            <contains string="${{platform.java}}" substring="$${{platforms."/>
+                            <contains string="${{platform.javadoc}}" substring="$${{platforms."/>
+                        </or>
+                    </condition>
                     <fail unless="platform.home">Must set platform.home</fail>
-                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
+                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
+                    <fail if="platform.invalid">Platform is not correctly set up</fail>
                 </xsl:if>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
