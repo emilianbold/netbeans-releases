@@ -266,12 +266,14 @@ public class AnalyzeResultsTask extends Task {
                     TestCaseResults refResult = (TestCaseResults)o;
                     ow.write("<difference value=\""+f.format(oneCase.getAverage()/refResult.getAverage()*100-100)+"\"/>\n");
                     
+		    /*
             	TestCaseResults.TTestValue tt = oneCase.getTTest();
             	if (tt != null) {
             	    ow.write ("<ttest p=\""+f2.format(tt.getP())+"\" tvalue=\""+f.format(tt.getT())+"\" df=\""+f.format(tt.getDF())+"\">\n");
             	    ow.write (tt.getComment()+"\n");
             	    ow.write ("</ttest>\n");
             	}
+		    */
                 }
             }
             ow.write("</testcase>\n");
@@ -281,6 +283,8 @@ public class AnalyzeResultsTask extends Task {
     private class ResultsHandler extends DefaultHandler {
         
         private Map cases;
+        
+        private String currSuite;
         
         public ResultsHandler () {
             cases = new TreeMap (); // TestCaseResults
@@ -304,7 +308,7 @@ public class AnalyzeResultsTask extends Task {
                     String unit = atts.getValue("unit");
                     int value = Integer.parseInt(atts.getValue("value"));
                     
-                    TestCaseResults oneCase = new TestCaseResults (name, threshold, unit, order);
+                    TestCaseResults oneCase = new TestCaseResults (name, threshold, unit, order, currSuite);
                     TestCaseResults theCase = (TestCaseResults)cases.get(oneCase);
                     if (theCase == null) {
                         cases.put(oneCase, oneCase);
@@ -316,9 +320,18 @@ public class AnalyzeResultsTask extends Task {
                     
                 }
             }
+            else if ("UnitTestSuite".equals(qName)) {
+                currSuite = atts.getValue("name");
+            }
         }
         
         public void endDocument() throws SAXException {
+        }
+
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if ("UnitTestSuite".equals(qName)) {
+                currSuite = null;
+            }
         }
         
     }

@@ -30,7 +30,7 @@ public class TestCaseResults implements Comparable {
     
     
     public static void main (String [] av) {
-        TestCaseResults r = new TestCaseResults("aa", 100, "ms", ORDER_FIRST);
+        TestCaseResults r = new TestCaseResults("aa", 100, "ms", ORDER_FIRST, "ref suite");
         r.addValue(7);
         r.addValue(7);
         r.addValue(8);
@@ -43,7 +43,7 @@ public class TestCaseResults implements Comparable {
         System.out.println("count "+r.getCount());
         System.out.println("stddev "+r.getStdDev());
         System.out.println("variance "+r.getVariance());
-        TestCaseResults r2 = new TestCaseResults("aa", 100, "ms", ORDER_FIRST);
+        TestCaseResults r2 = new TestCaseResults("aa", 100, "ms", ORDER_FIRST, "dummy suite");
         r2.addValue(9);
         r2.addValue(7);
         r2.addValue(11);
@@ -178,6 +178,8 @@ public class TestCaseResults implements Comparable {
     /** Order of test case in measured suite. */
     int order;
     
+    private String suite;
+    
     Collection values;
 
     /** flag whether computed values are valid */
@@ -199,7 +201,7 @@ public class TestCaseResults implements Comparable {
     private TTestValue tt;
 
     /** Creates a new instance of TestCaseResults */
-    public TestCaseResults(String name, int threshold, String unit, int order) {
+    public TestCaseResults(String name, int threshold, String unit, int order, String suite) {
         if (name == null || unit == null)
             throw new IllegalArgumentException();
         
@@ -207,6 +209,7 @@ public class TestCaseResults implements Comparable {
         this.unit = unit;
         this.threshold = threshold;
         this.order = order;
+        this.suite = suite;
         values = new ArrayList ();
     }
     
