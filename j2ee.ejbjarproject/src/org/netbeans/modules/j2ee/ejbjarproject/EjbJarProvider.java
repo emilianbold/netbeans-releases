@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
@@ -312,23 +313,44 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         return (FileObject[])roots.toArray(rootArray);        
     }
     
-    private void showErrorMessage(String message) {
-        // only display the messages if the project is opened
-        if(new Date().getTime() > notificationTimeout && isProjectOpened()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+    private void showErrorMessage(final String message) {
+        // only display the messages if the project is open
+        if(new Date().getTime() > notificationTimeout && isProjectOpen()) {
+            // DialogDisplayer waits for the AWT thread, blocking the calling
+            // thread -- deadlock-prone, see issue #64888. therefore invoking
+            // only in the AWT thread
+            Runnable r = new Runnable() {
+                public void run() {
+                    if (!SwingUtilities.isEventDispatchThread()) {
+                        SwingUtilities.invokeLater(this);
+                    } else {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    }
+                }
+            };
+            r.run();
+            
             // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
             // using more suitable value)
             notificationTimeout = new Date().getTime() + 20000;
         }
     }
     
-    private boolean isProjectOpened() {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            if (projects[i].equals(project)) 
-                return true;
+    private boolean isProjectOpen() {
+        // OpenProjects.getDefault() is null when this method is called upon
+        // IDE startup from the project's impl of ProjectOpenHook
+        if (OpenProjects.getDefault() != null) {
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
+            for (int i = 0; i < projects.length; i++) {
+                if (projects[i].equals(project)) 
+                    return true;
+            }
+            return false;
+        } else {
+            // be conservative -- don't know anything about the project
+            // so consider it open
+            return true;
         }
-        return false;
     }
     
     private static class IT implements Iterator {
