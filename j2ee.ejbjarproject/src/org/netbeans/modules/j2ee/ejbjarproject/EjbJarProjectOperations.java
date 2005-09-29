@@ -154,49 +154,7 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         }
         
         project.setName(nueName);
-        fixExternalSources(originalPath, project.getSourceRoots());
-        fixExternalSources(originalPath, project.getTestSourceRoots());
-    }
-    
-    private void fixExternalSources(final File originalPath, final SourceRoots sr) {
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
-                    File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
-                    String[] srcProps = sr.getRootProperties();
-                    String[] names = sr.getRootNames();
-                    List/*<URL>*/ roots = new ArrayList();
-                    List/*<String>*/ displayNames = new ArrayList();
-                    for (int i = 0; i < srcProps.length; i++) {
-                        String prop = project.evaluator().getProperty(srcProps[i]);
-                        if (prop != null) {
-                            FileObject nueFile = null;
-                            File originalFile = PropertyUtils.resolveFile(originalPath, prop);
-                            
-                            if (isParent(originalPath, originalFile)) {
-                                nueFile = FileUtil.toFileObject(PropertyUtils.resolveFile(projectDirectory, prop));
-                            } else {
-                                nueFile = FileUtil.toFileObject(originalFile);
-                            }
-                            
-                            if (nueFile == null) {
-                                continue;
-                            }
-                            if (FileUtil.isArchiveFile(nueFile)) {
-                                nueFile = FileUtil.getArchiveRoot(nueFile);
-                            }
-                            roots.add(nueFile.getURL());
-                            displayNames.add(sr.getRootDisplayName(names[i], srcProps[i]));
-                        }
-                    }
-                    
-                    sr.putRoots((URL[] ) roots.toArray(new URL[0]), (String[] ) displayNames.toArray(new String[0])); //XXX
-                    return null;
-                }
-            });
-        } catch (MutexException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+        project.getReferenceHelper().fixReferences(originalPath);        
     }
     
     private static boolean isParent(File folder, File fo) {
