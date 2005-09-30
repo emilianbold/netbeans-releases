@@ -264,13 +264,12 @@ public final class UIUtil {
         }
         
         private String computeDisplayName() {
-            FileObject displayRoot = contentType ? root.getParent() : root;
             FileObject displayItem = contentType ? item.getParent() : item;
             String displaySeparator = contentType ? "/" : " | "; // NOI18N
             Stack s = new Stack();
             s.push(getFileObjectName(displayItem));
             FileObject parent = displayItem.getParent();
-            while (!displayRoot.getPath().equals(parent.getPath())) {
+            while (!root.getPath().equals(parent.getPath())) {
                 s.push(getFileObjectName(parent));
                 parent = parent.getParent();
             }

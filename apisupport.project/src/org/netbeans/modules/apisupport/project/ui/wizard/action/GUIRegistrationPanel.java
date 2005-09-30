@@ -220,14 +220,15 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         loadCombo("Actions", category); // NOI18N
         loadComboAndPositions("Menu", menu, menuPosition, null); // NOI18N
         loadComboAndPositions("Toolbars", toolbar, toolbarPosition, null); // NOI18N
-        loadComboAndPositions("Loaders/text", ftContentType, ftPosition, "Actions"); // NOI18N
-        loadComboAndPositions("Editors/text", edContentType, edPosition, "Popup"); // NOI18N
+        loadComboAndPositions("Loaders", ftContentType, ftPosition, "Actions"); // NOI18N
+        loadComboAndPositions("Editors", edContentType, edPosition, "Popup"); // NOI18N
     }
     
     private void loadCombo(final String startFolder, final JComboBox combo) {
         loadComboAndPositions(startFolder, combo, null, null);
     }
     
+    /** See {@link #getFoldersByName(DataFolder, String)} for subFolderName explanation . */
     private void loadComboAndPositions(final String startFolder,
             final JComboBox combo,
             final JComboBox comboPositions,
@@ -843,13 +844,18 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         }
         return sfs;
     }
-    
+
+    /**
+     * Actually really dedicated for Loader&hellip;Actions and
+     * Editors&hellip;Popup.
+     */
     private Enumeration/*<DataFolder>*/ getFoldersByName(final DataFolder startFolder, final String subFoldersName) {
         Enumeration/*<DataFolder>*/ folders = getFolders(startFolder);
         Vector result = new Vector();
         while (folders.hasMoreElements()) {
             DataFolder dObj = (DataFolder) folders.nextElement();
-            if (dObj instanceof DataFolder && subFoldersName.equals(dObj.getName())) {
+            if (dObj instanceof DataFolder && subFoldersName.equals(dObj.getName()) &&
+                    dObj.getPrimaryFile().getParent() != startFolder.getPrimaryFile()) {
                 result.add(dObj);
             }
         }
