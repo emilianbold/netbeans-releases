@@ -301,7 +301,7 @@ public class FormEditorSupport extends JavaEditor
         // after reloading is done, open the form editor again
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                FormDesigner formDesigner = getFormEditor().getFormDesigner();                                
+                FormDesigner formDesigner = getFormEditor(true).getFormDesigner();                                
                 
                 // close
                 getFormEditor().closeForm();
