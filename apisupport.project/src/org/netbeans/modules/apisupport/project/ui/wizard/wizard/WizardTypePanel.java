@@ -28,7 +28,8 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     
     private DataModel data;
     private boolean firstTime = true;
-    
+	private boolean lastStaticValue = true;
+	    
     public WizardTypePanel(final WizardDescriptor setting, final DataModel data) {
         super(setting);
         this.data = data;
@@ -45,7 +46,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     }
     
     protected void storeToDataModel() {
-        data.setBranching(branching.isSelected());
+        data.setBranching(dynamic.isSelected());
         data.setFileTemplateType(newFile.isSelected());
         data.setNumberOfSteps(getNumberOfSteps());
     }
@@ -98,11 +99,10 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         custom = new javax.swing.JRadioButton();
         newFile = new javax.swing.JRadioButton();
         wizardStepsTxt = new javax.swing.JLabel();
-        simple = new javax.swing.JRadioButton();
-        branching = new javax.swing.JRadioButton();
+        statik = new javax.swing.JRadioButton();
+        dynamic = new javax.swing.JRadioButton();
         numberOfStepsTxt = new javax.swing.JLabel();
         numberOfSteps = new javax.swing.JTextField();
-        numberOfStepsDescription = new javax.swing.JLabel();
         filler = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -118,8 +118,14 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         registrationType.add(custom);
         custom.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(custom, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Custom"));
-        custom.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        custom.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         custom.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        custom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -130,8 +136,14 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
 
         registrationType.add(newFile);
         org.openide.awt.Mnemonics.setLocalizedText(newFile, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_NewFile"));
-        newFile.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        newFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         newFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        newFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -149,30 +161,30 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(wizardStepsTxt, gridBagConstraints);
 
-        wizardSteps.add(simple);
-        simple.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(simple, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Simple"));
-        simple.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        simple.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        wizardSteps.add(statik);
+        statik.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(statik, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Simple"));
+        statik.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        statik.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 0);
-        add(simple, gridBagConstraints);
+        add(statik, gridBagConstraints);
 
-        wizardSteps.add(branching);
-        org.openide.awt.Mnemonics.setLocalizedText(branching, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Variable"));
-        branching.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        branching.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        wizardSteps.add(dynamic);
+        org.openide.awt.Mnemonics.setLocalizedText(dynamic, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Variable"));
+        dynamic.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        dynamic.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 24, 0);
-        add(branching, gridBagConstraints);
+        add(dynamic, gridBagConstraints);
 
         numberOfStepsTxt.setLabelFor(numberOfSteps);
         org.openide.awt.Mnemonics.setLocalizedText(numberOfStepsTxt, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "LBL_NumberOfSteps"));
@@ -192,18 +204,9 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 6, 3, 0);
         add(numberOfSteps, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(numberOfStepsDescription, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "MSG_NumberOfStepsDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
-        add(numberOfStepsDescription, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weightx = 1.0;
@@ -212,18 +215,29 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
+	
+	private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
+        boolean isCustom = custom.isSelected();
+        statik.setEnabled(isCustom);
+        dynamic.setEnabled(isCustom);
+        if (isCustom) {
+            statik.setSelected(lastStaticValue);
+        } else {
+            lastStaticValue = statik.isSelected();
+            dynamic.setSelected(true);
+        }
+	}//GEN-LAST:event_typeChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton branching;
     private javax.swing.JRadioButton custom;
+    private javax.swing.JRadioButton dynamic;
     private javax.swing.JLabel filler;
     private javax.swing.JRadioButton newFile;
     private javax.swing.JTextField numberOfSteps;
-    private javax.swing.JLabel numberOfStepsDescription;
     private javax.swing.JLabel numberOfStepsTxt;
     private javax.swing.ButtonGroup registrationType;
     private javax.swing.JLabel registrationTypeTxt;
-    private javax.swing.JRadioButton simple;
+    private javax.swing.JRadioButton statik;
     private javax.swing.ButtonGroup wizardSteps;
     private javax.swing.JLabel wizardStepsTxt;
     // End of variables declaration//GEN-END:variables
