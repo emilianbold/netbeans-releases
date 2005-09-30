@@ -660,7 +660,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 token.getTokenID() == XMLTokenIDs.TAG &&
                 token.getImage().endsWith(">")) token = token.getPrevious();
 
-                if(tokenOnOffset == null) return null;
+        if(tokenOnOffset == null) return null;
         
         //declaration matching e.g. (<!DOCTYPE tutorial SYSTEM "newXMLWizard.dtd">)
         if(tokenOnOffset.getTokenID() == XMLTokenIDs.DECLARATION) {
@@ -691,7 +691,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     return new int[] {start, end};
                 }
             }
-            super.findMatchingBlock(offset, simpleSearch);
+            return null;
         }
         
         //PI matching e.g. <?xml vertion="1.0"?> will match <?xml (PI-START + PI-TARGET) and ?> (PI-END)
@@ -738,7 +738,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 int end = toki.getOffset() + CDATA_START.length(); //NOI18N
                 return new int[] {start, end};
             }
-            return super.findMatchingBlock(offset, simpleSearch);
+            return null;
         }
         
         //match xml comments
@@ -773,7 +773,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     toki = toki.getPrevious();
                 }
             }
-            return super.findMatchingBlock(offset, simpleSearch);
+            return null;
         } //eof match xml comments
         
         
@@ -864,8 +864,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             }
         }
 
-        //for the rest of the situations use default impl from ancestor
-        return super.findMatchingBlock(offset, simpleSearch);
+        return null;
     }
     
     /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
