@@ -525,8 +525,16 @@ else System.err.println( "Inside token " + item.getTokenID() );
             BaseDocument doc = (BaseDocument)component.getDocument();
             doc.atomicLock();
             try {
-                doc.remove( offset, length );
-                doc.insertString( offset, text, null);
+                //test whether we are trying to insert sg. what is already present in the text
+                String currentText = doc.getText(offset, text.length() - 1);
+                if(!text.substring(0, text.length() - 1).equals(currentText)) {
+                    //remove common part
+                    doc.remove( offset, length );
+                    doc.insertString( offset, text, null);
+                } else {
+                    component.setCaretPosition(component.getCaret().getDot() + text.length() - length);
+                }
+                
                 //format the inserted text
                 ExtFormatter f = (ExtFormatter)doc.getFormatter();
                 int[] fmtBlk = f.getReformatBlock(component, text);

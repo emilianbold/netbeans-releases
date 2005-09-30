@@ -119,8 +119,16 @@ public class JspCompletionItem {
             try {
                 doc.atomicLock();
                 try {
-                    doc.remove( offset, len );
-                    doc.insertString( offset, fill, null);
+                    //test whether we are trying to insert sg. what is already present in the text
+                    String currentText = doc.getText(offset, fill.length() - 1);
+                    if(!fill.substring(0, fill.length() - 1).equals(currentText)) {
+                        //remove common part
+                        doc.remove( offset, len );
+                        doc.insertString( offset, fill, null);
+                    } else {
+                        c.setCaretPosition(c.getCaret().getDot() + fill.length() - len);
+                    }
+                    
                     //format the inserted text
                     ExtFormatter f = (ExtFormatter)doc.getFormatter();
                     int[] fmtBlk = f.getReformatBlock(c, fill);
