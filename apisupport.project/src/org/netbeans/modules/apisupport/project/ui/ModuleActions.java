@@ -31,8 +31,12 @@ import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -41,6 +45,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
@@ -130,6 +135,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(null);
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_reload"), null));
+        actions.add(createReloadInIDEAction(project, new String[] {"reload-in-ide"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload_in_ide")));
         actions.add(createGlobalAction(project, new String[] {"nbm"}, NbBundle.getMessage(ModuleActions.class, "ACTION_nbm")));
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
@@ -525,4 +531,53 @@ public final class ModuleActions implements ActionProvider {
         };
     }
 
+    private static Action createReloadInIDEAction(final NbModuleProject project, final String[] targetNames, String displayName) {
+        return new AbstractAction(displayName) {
+            public boolean isEnabled() {
+                if (findBuildXml(project) == null) {
+                    return false;
+                }
+                NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
+                if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+                    return true;
+                } else if (type == NbModuleTypeProvider.STANDALONE) {
+                    return project.getPlatform().isDefault();
+                } else {
+                    assert type == NbModuleTypeProvider.SUITE_COMPONENT : type;
+                    try {
+                        SuiteProject suite = SuiteUtils.findSuite(project);
+                        if (suite == null) {
+                            return false;
+                        }
+                        if (!suite.getActivePlatform().isDefault()) {
+                            return false;
+                        }
+                        return SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY).length == 0 &&
+                            SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY).length == 0;
+                    } catch (IOException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        return false;
+                    }
+                }
+            }
+            public void actionPerformed(ActionEvent ignore) {
+                if (ModuleUISettings.getDefault().getConfirmReloadInIDE()) {
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(ModuleActions.class, "LBL_reload_in_ide_confirm"),
+                            NbBundle.getMessage(ModuleActions.class, "LBL_reload_in_ide_confirm_title"),
+                            NotifyDescriptor.OK_CANCEL_OPTION);
+                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+                        return;
+                    }
+                    ModuleUISettings.getDefault().setConfirmReloadInIDE(false); // do not ask again
+                }
+                try {
+                    ActionUtils.runTarget(findBuildXml(project), targetNames, null);
+                } catch (IOException e) {
+                    Util.err.notify(e);
+                }
+            }
+        };
+    }
+    
 }

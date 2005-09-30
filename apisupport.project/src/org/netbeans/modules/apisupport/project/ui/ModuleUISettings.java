@@ -27,6 +27,7 @@ public class ModuleUISettings extends SystemOption {
     private static final String LAST_USED_MODULE_LOCATION = "lastUsedModuleLocation"; // NOI18N
     private static final String NEW_MODULE_COUNTER = "newModuleCounter";  //NOI18N
     private static final String NEW_SUITE_COUNTER = "newSuiteCounter";  //NOI18N
+    private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
 
     public static ModuleUISettings getDefault() {
         return (ModuleUISettings) SystemOption.findObject(ModuleUISettings.class, true);
@@ -65,6 +66,15 @@ public class ModuleUISettings extends SystemOption {
     public void setLastUsedModuleLocation(String location) {
         assert location != null : "Location can not be null"; // NOI18N
         putProperty(LAST_USED_MODULE_LOCATION, location, true);
+    }
+    
+    public boolean getConfirmReloadInIDE() {
+        Boolean b = (Boolean) getProperty(CONFIRM_RELOAD_IN_IDE);
+        return b != null ? b.booleanValue() : true;
+    }
+    
+    public void setConfirmReloadInIDE(boolean b) {
+        putProperty(CONFIRM_RELOAD_IN_IDE, Boolean.valueOf(b), true);
     }
     
 }
