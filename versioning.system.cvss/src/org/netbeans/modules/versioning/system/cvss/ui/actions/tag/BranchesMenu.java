@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
+import javax.swing.event.ChangeListener;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -28,7 +29,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Maros Sandor
  */
-public class BranchesMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup, PopupMenuListener {
+public class BranchesMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
 
     public BranchesMenu() {
         super(NbBundle.getMessage(BranchesMenu.class, "CTL_MenuItem_BranchesMenu"));
@@ -52,27 +53,32 @@ public class BranchesMenu extends AbstractAction implements Presenter.Menu, Pres
 
     private JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        menu.getPopupMenu().addPopupMenuListener(this);
+	// change listener seems to be the only thing to work correctly on macosx.
+	// popup listener is not..
+        menu.getModel().addChangeListener(new Change(menu));
+	
         menu.setMnemonic(NbBundle.getMessage(BranchesMenu.class, "MNE_MenuItem_BranchesMenu").charAt(0));
         return menu;
     }
 
-    private void fillMenu(JPopupMenu menu) {
+    private static void fillMenu(JPopupMenu menu) {
         menu.removeAll();
         menu.add(new Actions.MenuItem(SystemAction.get(BranchAction.class), true));
         menu.add(new Actions.MenuItem(SystemAction.get(SwitchBranchAction.class), true));
         menu.add(new Actions.MenuItem(SystemAction.get(MergeBranchAction.class), true));
     }
 
-    public void popupMenuCanceled(PopupMenuEvent e) {
-    }
 
-    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    private static class Change implements ChangeListener {
+	private JMenu menu;
+	
+	public Change(JMenu menu) {
+	    this.menu = menu;
+	}
+        public void stateChanged(javax.swing.event.ChangeEvent e) {
+	    fillMenu(menu.getPopupMenu());
+        }
     }
-
-    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        JPopupMenu menu = (JPopupMenu) e.getSource();
-        fillMenu(menu);
-    }
+    
 }
 
