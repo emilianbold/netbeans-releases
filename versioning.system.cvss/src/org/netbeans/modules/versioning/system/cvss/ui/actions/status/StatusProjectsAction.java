@@ -22,8 +22,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
-import org.openide.filesystems.FileUtil;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -66,11 +66,10 @@ public class StatusProjectsAction extends SystemAction {
     }
 
     private void performAction() {
-        CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
         Project [] projects = OpenProjects.getDefault().getOpenProjects();
 
-        Context ctx = Utils.getProjectsContext(projects);
-        String title;
+        final Context ctx = Utils.getProjectsContext(projects);
+        final String title;
         if (projects.length == 1) {
             Project project = projects[0];
             ProjectInformation pinfo = ProjectUtils.getInformation(project);
@@ -78,13 +77,18 @@ public class StatusProjectsAction extends SystemAction {
         } else {
             title = NbBundle.getMessage(StatusProjectsAction.class, "CTL_StatusProjects_WindowTitle", Integer.toString(projects.length));
         }
-        stc.setContentTitle(title);
-        stc.setContext(ctx);
-        stc.open(); 
-        stc.requestActive();
-        if (shouldPostRefresh()) {
-            stc.performRefreshAction();
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
+                stc.setContentTitle(title);
+                stc.setContext(ctx);
+                stc.open(); 
+                stc.requestActive();
+                if (shouldPostRefresh()) {
+                    stc.performRefreshAction();
+                }
+            }
+        });
     }
 
     protected boolean shouldPostRefresh() {
