@@ -16,6 +16,8 @@ import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -40,7 +42,7 @@ import javax.xml.transform.stream.StreamResult;
  * Task to process Arch questions & answers document.
  * @author Jaroslav Tulach, Jesse Glick
  */
-public class Arch extends Task implements ErrorHandler {
+public class Arch extends Task implements ErrorHandler, EntityResolver, URIResolver {
 
     /** map from String ids -> Elements */
     private Map answers;
@@ -130,13 +132,14 @@ public class Arch extends Task implements ErrorHandler {
             
             builder = factory.newDocumentBuilder();
             builder.setErrorHandler(this);
+            builder.setEntityResolver(this);
 
             if (generateTemplate) {
                 q = builder.parse(getClass().getResourceAsStream("Arch-api-questions.xml"));
                 qSource = new DOMSource (q);
             } else {
                 q = builder.parse (questionsFile);
-                qSource = new javax.xml.transform.stream.StreamSource (questionsFile);
+				qSource = new DOMSource (q);
             }
             
             if (parseException != null) {
@@ -266,6 +269,7 @@ public class Arch extends Task implements ErrorHandler {
             
             
             qSource = new DOMSource(q);
+            qSource.setSystemId(questionsFile.toURI().toString());
         }
 
         
@@ -423,6 +427,7 @@ public class Arch extends Task implements ErrorHandler {
             
             
             qSource = new DOMSource(q);
+            qSource.setSystemId(questionsFile.toURI().toString());
         }
         
         // apply the transform operation
@@ -440,8 +445,11 @@ public class Arch extends Task implements ErrorHandler {
             }
             
             log("Transforming " + questionsFile + " into " + output);
-            
-            javax.xml.transform.Transformer t = javax.xml.transform.TransformerFactory.newInstance().newTransformer(ss);
+
+            javax.xml.transform.TransformerFactory trans;
+            trans = javax.xml.transform.TransformerFactory.newInstance();
+            trans.setURIResolver(this);
+            javax.xml.transform.Transformer t = trans.newTransformer(ss);
             OutputStream os = new BufferedOutputStream (new FileOutputStream (output));
             javax.xml.transform.stream.StreamResult r = new javax.xml.transform.stream.StreamResult (os);
             if (stylesheet == null) {
@@ -550,8 +558,7 @@ public class Arch extends Task implements ErrorHandler {
             result.append("../"); // URI, so pathsep is /
             f = f.getParentFile();
         }
-        throw new BuildException("No nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd found for any parent dir of file: " + f);
-        //return "${nbroot}/";
+        return "${nbroot}/";
     }
     
     private void generateTemplateFile (String versionOfQuestions, Set missing) throws IOException {
@@ -653,6 +660,52 @@ public class Arch extends Task implements ErrorHandler {
                 return found;
             }
         }
+        return null;
+    }
+    
+    private static Map publicIds;
+    static {
+        publicIds = new HashMap();
+        publicIds.put("xhtml1-strict.dtd", "Arch-fake-xhtml.dtd");
+        publicIds.put("Arch.dtd", "Arch.dtd");
+        publicIds.put("Arch-api-questions.xml", "Arch-api-questions.xml");
+        
+    }
+
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        log("publicId: " + publicId + " systemId: " + systemId, Project.MSG_VERBOSE);
+        
+        int idx = systemId.lastIndexOf('/');
+        String last = systemId.substring(idx + 1);
+        
+        String replace = (String)publicIds.get(last);
+        if (replace == null) {
+            log("Not replacing id", Project.MSG_VERBOSE);
+            return null;
+        }
+        
+        try {
+            java.net.URL u = new java.net.URL(systemId);
+            u.openStream();
+            log("systemId " + systemId + " exists, leaving", Project.MSG_VERBOSE);
+            return null;
+        } catch (IOException ex) {
+            // ok
+        }
+        
+        InputSource is;
+        log("Replacing entity " + publicId + " at " + systemId + " with " + replace);
+        if (replace.startsWith("http://")) {
+            is = new InputSource(new java.net.URL(replace).openStream());
+            is.setSystemId(replace);
+        } else {
+            is = new InputSource(getClass().getResourceAsStream(replace));
+            is.setSystemId(replace);
+        }
+        return is;
+    }
+
+    public Source resolve(String href, String base) throws TransformerException {
         return null;
     }
 }

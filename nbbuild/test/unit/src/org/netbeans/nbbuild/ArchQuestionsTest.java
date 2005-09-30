@@ -771,6 +771,49 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             fail ("reference to CVS location should be in output: " + txt[0]);
         }
     }
+	
+    public void testGenerateArchInExternalDir () throws Exception {
+        java.io.File answers = java.io.File.createTempFile("arch", ".xml", new java.io.File (System.getProperty("user.home")));
+        answers.delete();
+		assertFalse("Does not exists", answers.exists());
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <arch answers=\"" + answers + "\" output='" + "x.html" + "' />" +
+            "</target>" +
+            "</project>"
+
+        );
+		PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-Darch.generate=true" });
+
+		answers.deleteOnExit();
+        assertTrue ("File is generated", answers.exists ());
+    }
+    
+    public void testGenerateProfilerArch () throws Exception {
+        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractResource("arch-profiler.xml");
+        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        output.delete();
+
+
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <arch answers=\"" + answers + "\" output='" + output + "' />" +
+            "</target>" +
+            "</project>"
+
+        );
+		PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+
+        assertTrue ("File is generated", output.exists ());
+    }
 
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         msg.add("publicId: " + publicId + " systemId: " + systemId);
