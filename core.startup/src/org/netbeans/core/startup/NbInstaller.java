@@ -220,7 +220,10 @@ final class NbInstaller extends ModuleInstaller {
         
         // we need to update the classloader as otherwise we might not find
         // all the needed classes
-        MainLookup.systemClassLoaderChanged(Thread.currentThread().getContextClassLoader());
+        ClassLoader l;
+        if (mgr != null) { // could be null during tests
+            MainLookup.systemClassLoaderChanged(/* #61107: do not use Thread.cCL here! */mgr.getClassLoader());
+        }
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
         
         Iterator it = modules.iterator();
