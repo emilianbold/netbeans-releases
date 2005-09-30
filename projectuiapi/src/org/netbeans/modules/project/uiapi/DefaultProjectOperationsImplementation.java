@@ -76,7 +76,7 @@ public final class DefaultProjectOperationsImplementation {
     /**
      * @return true if success
      */
-    private static boolean performDelete(Project project, List/*FileObject>*/ toDelete, ProgressHandle handle) throws IOException {
+    private static boolean performDelete(Project project, List/*FileObject>*/ toDelete, ProgressHandle handle) throws Exception {
         try {
             handle.start(toDelete.size() + 1 /*clean*/);
             
@@ -110,7 +110,7 @@ public final class DefaultProjectOperationsImplementation {
             
             ProjectOperations.notifyDeleted(project);
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             String displayName = getDisplayName(project);
             String message     = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Project_cannot_be_deleted.", new Object[] {displayName});
             
@@ -153,7 +153,7 @@ public final class DefaultProjectOperationsImplementation {
         String caption = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption");
         
         handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, new Executor() { // NOI18N
-            public void execute() throws IOException {
+            public void execute() throws Exception {
                 close(project);
                 
                 if (deletePanel.isDeleteSources()) {
@@ -188,7 +188,7 @@ public final class DefaultProjectOperationsImplementation {
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, false);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
-            public void execute() throws IOException {
+            public void execute() throws Exception {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
@@ -198,7 +198,7 @@ public final class DefaultProjectOperationsImplementation {
         });
     }
     
-    /*package private for tests*/ static void doCopyProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) throws IOException {
+    /*package private for tests*/ static void doCopyProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) throws Exception {
         try {
             ProjectOperations.notifyCopying(project);
             
@@ -231,7 +231,7 @@ public final class DefaultProjectOperationsImplementation {
             open(nue, false);
             
             handle.finish();
-        } catch (IOException e) {
+        } catch (Exception e) {
             ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Move", new Object[]{e.getLocalizedMessage()}));
             throw e;
         }
@@ -244,7 +244,7 @@ public final class DefaultProjectOperationsImplementation {
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, true);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
-            public void execute() throws IOException {
+            public void execute() throws Exception {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
@@ -263,7 +263,7 @@ public final class DefaultProjectOperationsImplementation {
         final DefaultProjectRenamePanel panel = new DefaultProjectRenamePanel(handle, project, nueName);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
-            public void execute() throws IOException {
+            public void execute() throws Exception {
                 String nueName = panel.getNewName();
                 
                 if (panel.getRenameProjectFolder()) {
@@ -307,7 +307,7 @@ public final class DefaultProjectOperationsImplementation {
                         ProjectManager.getDefault().saveProject(nue);
                         
                         open(nue, wasMain);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         if (originalOK) {
                             open(project, wasMain);
                         } else {
@@ -322,7 +322,7 @@ public final class DefaultProjectOperationsImplementation {
         });
     }
     
-    /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget, String errorKey) throws IOException {
+    /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget, String errorKey) throws Exception {
         boolean originalOK = true;
         Project main    = OpenProjects.getDefault().getMainProject();
         boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
@@ -368,7 +368,7 @@ public final class DefaultProjectOperationsImplementation {
             ProjectManager.getDefault().saveProject(nue);
             
             open(nue, wasMain);
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (originalOK) {
                 open(project, wasMain);
             } else {
@@ -484,15 +484,15 @@ public final class DefaultProjectOperationsImplementation {
                     
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            IOException e = null;
+                            Exception e = null;
                             
                             try {
                                 executor.execute();
-                            } catch (IOException ex) {
+                            } catch (Exception ex) {
                                 e = ex;
                             }
                             
-                            final IOException ex = e;
+                            final Exception ex = e;
                             
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
@@ -581,7 +581,7 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     static interface Executor {
-        public void execute() throws IOException;
+        public void execute() throws Exception;
     }
     
     public static interface InvalidablePanel {
