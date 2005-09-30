@@ -14,8 +14,10 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collections;
@@ -32,6 +34,12 @@ import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Property;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Analyzes build.properties and cluster.properties and tries to diagnose any problems.
@@ -55,15 +63,28 @@ public final class CheckModuleConfigs extends Task {
         File buildPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "build.properties");
         File clusterPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
         File goldenFile = new File(nbroot, "ide" + File.separatorChar + "golden" + File.separatorChar + "moduleconfigs.txt");
+        File masterProjectXml = new File(nbroot, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar + "project.xml");
         Map/*<String,String>*/ buildProperties = loadPropertiesFile(buildPropertiesFile);
         Map/*<String,String>*/ clusterProperties = loadPropertiesFile(clusterPropertiesFile);
         Map/*<String,Set<String>>*/ configs = loadModuleConfigs(buildProperties, buildPropertiesFile);
+        Map/*<String,Set<String>>*/ clusters = loadModuleClusters(clusterProperties, clusterPropertiesFile);
+        Set/*<String>*/ allClusterModules = new TreeSet();
+        Iterator it = clusters.values().iterator();
+        while (it.hasNext()) {
+            allClusterModules.addAll((Set) it.next());
+        }
         try {
             writeModuleConfigs(goldenFile, configs, buildPropertiesFile);
         } catch (IOException e) {
             throw new BuildException("Could not write to " + goldenFile, e, getLocation());
         }
-        Map/*<String,Set<String>>*/ clusters = loadModuleClusters(clusterProperties, clusterPropertiesFile);
+        try {
+            writeMasterProjectXml(masterProjectXml, allClusterModules);
+        } catch (SAXException e) {
+            throw new BuildException("Could not write to " + masterProjectXml, e, getLocation());
+        } catch (IOException e) {
+            throw new BuildException("Could not write to " + masterProjectXml, e, getLocation());
+        }
         // Check that stable != daily-alpha-nbms:
         Set/*<String>*/ s = new TreeSet((Set) configs.get("stable"));
         s.retainAll((Set) configs.get("daily-alpha-nbms"));
@@ -112,11 +133,6 @@ public final class CheckModuleConfigs extends Task {
             log(buildPropertiesFile + ": warning: platform-javadoc config not equal to javadoc config restricted to platform cluster modules: " + s);
         }
         // Check that stable = modules in enumerated clusters:
-        Set/*<String>*/ allClusterModules = new TreeSet();
-        Iterator it = clusters.values().iterator();
-        while (it.hasNext()) {
-            allClusterModules.addAll((Set) it.next());
-        }
         Set/*<String>*/ stable = (Set) configs.get("stable");
         s = new TreeSet(stable);
         s.removeAll(allClusterModules);
@@ -186,6 +202,7 @@ public final class CheckModuleConfigs extends Task {
         Writer w = new FileWriter(goldenFile); // default encoding OK
         try {
             PrintWriter pw = new PrintWriter(w);
+            pw.println("# To update, run: ant -f nbbuild/build.xml check-module-configs");
             Iterator it = configs.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry) it.next();
@@ -221,6 +238,38 @@ public final class CheckModuleConfigs extends Task {
             clusters.put(cluster, new TreeSet(split(l)));
         }
         return clusters;
+    }
+
+    private void writeMasterProjectXml(File masterProjectXml, Set/*<String>*/ allClusterModules) throws IOException, SAXException {
+        log("Writing module list  to " + masterProjectXml);
+        Document doc = XMLUtil.parse(new InputSource(masterProjectXml.toURI().toString()), false, true, null, null);
+        NodeList nl = doc.getElementsByTagName("subprojects");
+        if (nl.getLength() != 1) {
+            throw new IOException("No or multiple <subprojects>");
+        }
+        Element sp  = (Element) nl.item(0);
+        nl = sp.getChildNodes();
+        while (nl.getLength() > 0) {
+            sp.removeChild(nl.item(0));
+        }
+        sp.appendChild(doc.createComment(" To update, run: ant -f nbbuild/build.xml check-module-configs "));
+        Iterator it = allClusterModules.iterator();
+        while (it.hasNext()) {
+            String module = (String) it.next();
+            if (new File(nbroot, (module + "/nbproject/project.xml").replace('/', File.separatorChar)).isFile()) {
+                Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/1", "project");
+                e.appendChild(doc.createTextNode("../" + module));
+                sp.appendChild(e);
+            } else {
+                sp.appendChild(doc.createComment(" Unprojectized: " + module + " "));
+            }
+        }
+        OutputStream os = new FileOutputStream(masterProjectXml);
+        try {
+            XMLUtil.write(doc, os);
+        } finally {
+            os.close();
+        }
     }
     
 }

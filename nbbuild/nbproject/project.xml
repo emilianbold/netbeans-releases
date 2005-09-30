@@ -163,8 +163,7 @@ Microsystems, Inc. All Rights Reserved.
                 </context-menu>
             </view>
             <subprojects>
-                <!-- Generated with: -->
-                <!-- ant -f nbbuild/build.xml print-selected-modules | perl -n -e 'if (/modules=(.+)/) {for (sort split /, ?/, $1) {if (-f "$_/nbproject/project.xml") {print "                <project>../$_</project>\n"} else {print "                <!-" . "- Unprojectized: $_ -" . "->\n"}}}' | uniq -->
+                <!-- To update, run: ant -f nbbuild/build.xml check-module-configs -->
                 <project>../ant</project>
                 <project>../ant/browsetask</project>
                 <project>../ant/debugger</project>
