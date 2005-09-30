@@ -16,6 +16,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Keymaps">
         <folder name="Emacs">
+            <file name="C-F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+            </file>
             <file name="S-F11.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
             </file>
