@@ -20,6 +20,7 @@ import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -144,7 +145,14 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
         filtersPanel.setCursor(cursor);
         content.setCursor(cursor);
     }
-    
+
+    /** Called after new content is fully loaded. Keeps inner JList content
+     * manageable ky keyboard */
+    public void newContentReady () {
+        if (content.isFocusOwner()) {
+            content.assureSelection();
+        }
+    }
 
     /** Calculates row height based on font size */
     private void configureRowHeight (Graphics g) {
@@ -154,4 +162,5 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
         content.setFixedCellHeight(height);
         firstPaint = false;
     }
+
 }

@@ -23,8 +23,24 @@ package org.netbeans.modules.java.navigation.base;
  */
 public interface ModelBusyListener {
     
+    /** Computation started.
+     * Threading: Can be called on any thread
+     */
     public void busyStart ();
     
+    /** Computation finished.
+     * Threading: Can be called on any thread
+     */
     public void busyEnd ();
+
+    /** Called when new content was loaded and is ready. It means that 
+     * list data change events was already fired and so the Swing component
+     * which contains the model already knows about new data.
+     * Currently used only to keep selection in swing components after 
+     * load of new data.
+     *
+     * Threading: Always called from EQT 
+     */ 
+    public void newContentReady ();
     
 }

@@ -134,6 +134,10 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener, M
         }
     }
     
+    public void newContentReady () {
+        getPanelUI().newContentReady();
+    }
+    
     // end of ModelBusyListener implementation
     
     // RelatedItemListener impl, for selecting method currently edited in editor
@@ -205,6 +209,7 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener, M
         }
         return panelUI;
     }
+
 
 
     
