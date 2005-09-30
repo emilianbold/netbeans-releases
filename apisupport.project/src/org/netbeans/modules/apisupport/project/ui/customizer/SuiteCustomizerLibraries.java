@@ -161,7 +161,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         platformPanel.add(platform, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_ManagePlatform"));
+        org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_ManagePlatform_a"));
         managePlafsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 managePlatforms(evt);
