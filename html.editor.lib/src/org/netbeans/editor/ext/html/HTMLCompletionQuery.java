@@ -427,6 +427,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
         String helpID;
         
+        boolean shift = false;
+        
         private HTMLCompletionResultItemPaintComponent component;
         
         private static final int HTML_ITEMS_SORT_PRIORITY = 20;
@@ -506,16 +508,17 @@ else System.err.println( "Inside token " + item.getTokenID() );
             return 0;
         }
         
-        public void processKeyEvent(KeyEvent evt) {
+        public void processKeyEvent(KeyEvent e) {
+            shift = (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED && e.isShiftDown());
         }
         
         public void defaultAction(JTextComponent component) {
             int substOffset = getSubstituteOffset();
             if (substOffset == -1)
                 substOffset = component.getCaretPosition();
-            //ResultItem.toAdd = e.getActionCommand();
-            Completion.get().hideAll();
-            substituteText(component, substOffset, component.getCaretPosition() - substOffset, false);
+            
+            if(!shift) Completion.get().hideAll();
+            substituteText(component, substOffset, component.getCaretPosition() - substOffset, shift);
         }
         
         boolean replaceText( JTextComponent component, String text ) {
@@ -658,10 +661,9 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
             replaceText( c, baseText + "=\"\"" ); //NOI18N
-            if( shift ) {
-                Caret caret = c.getCaret();
-                caret.setDot( caret.getDot() - 1 );
-            }
+            Caret caret = c.getCaret();
+            caret.setDot( caret.getDot() - 1 );
+            
             return false; // always refresh
         }
     }
@@ -707,10 +709,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
             replaceText( c, baseText + "=\"\"" ); //NOI18N
-            if( shift ) {
-                Caret caret = c.getCaret();
-                caret.setDot( caret.getDot() - 1 );
-            }
+            Caret caret = c.getCaret();
+            caret.setDot( caret.getDot() - 1 );
             return false; // always refresh
         }
     }

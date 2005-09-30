@@ -45,6 +45,8 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
     protected int selectionEndOffset = -1;
     private int offset = -1; //stores the substituteOffset
     
+    protected boolean shift = false;
+    
     public int getSubstituteOffset() {
         return offset;
     }
@@ -63,8 +65,8 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
         return getItemText();
     }
     
-    public void processKeyEvent(KeyEvent evt) {
-        // No special handling
+    public void processKeyEvent(KeyEvent e) {
+        shift = (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED && e.isShiftDown());
     }
     
     public boolean substituteCommonText(JTextComponent c, int offset, int len, int subLen) {
@@ -165,9 +167,9 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
         int substOffset = getSubstituteOffset();
         if (substOffset == -1)
             substOffset = component.getCaret().getDot();
-        ResultItem.toAdd = "\n";
-        Completion.get().hideAll();
-        substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false);
+
+        if(!shift) Completion.get().hideAll();
+        substituteText(component, substOffset, component.getCaret().getDot() - substOffset, shift);
     }
     
 }
