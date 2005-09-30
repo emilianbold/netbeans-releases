@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
@@ -54,6 +55,7 @@ public class UpdateAction extends AbstractSystemAction {
         }
         
         File [][] flatRecursive = Utils.splitFlatOthers(context.getRootFiles());
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(UpdateAction.class, "BK0001"));
         if (flatRecursive[0].length > 0) {
             UpdateCommand cmd = new UpdateCommand();
             cmd.setDisplayName(NbBundle.getMessage(UpdateAction.class, "BK0001"));
@@ -61,7 +63,7 @@ public class UpdateAction extends AbstractSystemAction {
             cmd.setPruneDirectories(false);
             cmd.setRecursive(false);
             cmd.setFiles(flatRecursive[0]);
-            UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
+            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
         }
         if (flatRecursive[1].length > 0) {
             UpdateCommand cmd = new UpdateCommand();
@@ -69,7 +71,8 @@ public class UpdateAction extends AbstractSystemAction {
             cmd.setBuildDirectories(true);
             cmd.setPruneDirectories(true);
             cmd.setFiles(flatRecursive[1]);
-            UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
+            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
         }
+        group.execute();
     }
 }

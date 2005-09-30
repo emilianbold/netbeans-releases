@@ -18,6 +18,7 @@ import org.openide.ErrorManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 
+import javax.swing.*;
 import java.util.*;
 
 /**
@@ -29,6 +30,8 @@ import java.util.*;
  * <p>Implements shared progress, logging support
  * and cancelling.
  *
+ * TODO add consolidated error reporting, nowadays, multiple errors from backgroud thread can popup
+ *
  * @author Petr Kuzel
  */
 public final class ExecutorGroup implements Cancellable {
@@ -38,10 +41,24 @@ public final class ExecutorGroup implements Cancellable {
     private boolean cancelled;
     private List listeners = new ArrayList(2);
     private List executors = new ArrayList(2);
+    private List cleanups = new ArrayList(2);
     private Map started = new HashMap();
     private ProgressHandle progressHandle;
     private long dataCounter;
+    private boolean hasBarrier;
+    private boolean failed;
+    private boolean executingCleanup;
 
+    /**
+     * Creates new group.
+     *
+     * @param displayName
+     * Defines prefered display name - localized string that should highlight
+     * group purpose (i.e. in English use verb in gerund).
+     * E.g. <code>UpdateCommand</code> used to refresh statuses should
+     * be named "Refreshing Status" rather than "cvs -N update",
+     * "Updating" or "Status Refresh".
+     */
     public ExecutorGroup(String displayName) {
         name = displayName;
     }
@@ -96,8 +113,21 @@ public final class ExecutorGroup implements Cancellable {
         return cancelled;
     }
 
+    /**
+     * User cancel comming from Progress UI.
+     * Must not be called by internals.
+     */
     public boolean cancel() {
         cancelled = true;
+        fail();
+        return true;
+    }
+
+    /**
+     * A command in group failed. Stop all pending commands.
+     */
+    public void fail() {
+        failed = true;
         Iterator it;
         synchronized(listeners) {
             it = new ArrayList(listeners).iterator();
@@ -110,8 +140,6 @@ public final class ExecutorGroup implements Cancellable {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
-
-        return true;
     }
 
     /**
@@ -134,8 +162,61 @@ public final class ExecutorGroup implements Cancellable {
      */
     public synchronized void addExecutor(ExecutorSupport executor) {
         assert executed == false;
-        executor.joinGroup(this);
+        executor.joinGroup(this);  // XXX third party code executed under lock
         executors.add(executor);
+    }
+
+    /**
+     * Add executors into this group.
+     * @param executors groupable or <code>null</code>
+     */
+    public final synchronized void addExecutors(ExecutorSupport[] executors) {
+        if (executors == null) {
+            return;
+        } else {
+            for (int i = 0; i < executors.length; i++) {
+                ExecutorSupport support = executors[i];
+                addExecutor(support);
+            }
+        }
+    }
+
+    /**
+     * Group execution blocks on this barier until
+     * all previously added Groupable finishes (succesfuly or with fail).
+     *
+     * <p>Warning: Groups with barries have blocking {@link #execute},
+     * there is assert banning to execute such group from UI thread.
+     */
+    public synchronized void addBarrier(Runnable action) {
+        assert executed == false;
+        ExecutorGroupBar bar = new ExecutorGroupBar(executors, action);
+        bar.joinGroup(this);
+        executors.add(bar);
+        hasBarrier = true;
+    }
+
+    /**
+     * Can be added only from barrier action!
+     */
+    public synchronized void addCleanups(ExecutorSupport[] executors) {
+        if (executors == null) {
+            return;
+        } else {
+            for (int i = 0; i < executors.length; i++) {
+                ExecutorSupport support = executors[i];
+                addCleanup(support);
+            }
+        }
+    }
+
+    /**
+     * Can be added only from barrier action!
+     */
+    public synchronized void addCleanup(ExecutorSupport executor) {
+        assert executingCleanup == false;
+        executor.joinGroup(this);
+        cleanups.add(executor);
     }
 
     /**
@@ -143,20 +224,38 @@ public final class ExecutorGroup implements Cancellable {
      * are grouped according to CVSRoot and serialized in
      * particular ClientRuntime (thread) queue.
      *
-     * <p>Do not call {@link ExecutorSupport#execute} if you
+     * <p>Warning:
+     * <ul>
+     * <li>It becomes blocking if group contains barriers (there is UI thread assert).
+     * <li>Do not call {@link ExecutorSupport#execute} if you
      * use grouping.
+     * </ul>
      */
     public void execute() {
+        assert (SwingUtilities.isEventDispatchThread() && hasBarrier) == false;
+
         synchronized(this) {
             executed = true;
         }
         Iterator it = executors.iterator();
         while (it.hasNext()) {
-            ExecutorSupport support = (ExecutorSupport) it.next();
+            Groupable support = (Groupable) it.next();
+            support.execute();
+            if (failed) break;
+        }
+
+        // cleanup actions
+
+        synchronized(this) {
+            executingCleanup = true;
+        }
+        it = cleanups.iterator();
+        while (it.hasNext()) {
+            Groupable support = (Groupable) it.next();
             support.execute();
         }
-    }
 
+    }
 
     void increaseDataCounter(long bytes) {
         dataCounter += bytes;
@@ -176,4 +275,17 @@ public final class ExecutorGroup implements Cancellable {
     }
 
 
+    public static interface Groupable {
+
+        /**
+         * Notifies the Groupable that it is a part of
+         * given execution chain.
+         *
+         * <p> Must be called before {@link #execute}
+         */
+        void joinGroup(ExecutorGroup group);
+
+        /** Execute custom code. */
+        void execute();
+    }
 }

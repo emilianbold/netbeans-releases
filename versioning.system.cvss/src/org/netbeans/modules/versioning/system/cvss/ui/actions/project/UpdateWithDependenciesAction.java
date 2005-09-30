@@ -56,7 +56,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
             addUpdateContexts(contexts, project, projects);
         }
 
-        ExecutorGroup group = new ExecutorGroup("Updating with dependencies");
+        ExecutorGroup group = new ExecutorGroup("Updating with Dependencies");
         if (contexts.size() > 0) {
             Iterator it = contexts.iterator();
             while (it.hasNext()) {
@@ -69,13 +69,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
 
                 GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
                 gtx.setExclusions((File[]) ctx.getExclusions().toArray(new File[0]));
-                ExecutorSupport[] execs = UpdateExecutor.createExecutors(updateCommand, CvsVersioningSystem.getInstance(), gtx);
-                if (execs != null) {
-                    for (int i = 0; i < execs.length; i++) {
-                        ExecutorSupport exec = execs[i];
-                        group.addExecutor(exec);
-                    }
-                }
+                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx));
             }
         }
 

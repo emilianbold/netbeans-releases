@@ -40,16 +40,17 @@ public class RLogExecutor extends ExecutorSupport {
     private final File localRoot;
 
     /**
-     * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
-     * executed in the background. This method may split the original command into more commands if the original
+     * Splits the original command into more commands if the original
      * command would execute on incompatible files.
-     * 
+     * See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)}
+     * for more information.
+     *
      * @param cmd command o execute
      * @param roots folders that represent remote repositories to operate on
      * @param options global option for the command
      * @return array of executors that will execute the command (or array of splitted commands)
      */ 
-    public static RLogExecutor [] executeCommand(RlogCommand cmd, File [] roots, GlobalOptions options) {
+    public static RLogExecutor [] splitCommand(RlogCommand cmd, File [] roots, GlobalOptions options) {
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(RLogExecutor.class, "MSG_RLogExecutor_CmdDisplayName"));
         if (options == null) options = CvsVersioningSystem.createGlobalOptions();
         
@@ -88,7 +89,6 @@ public class RLogExecutor extends ExecutorSupport {
                 command.setModule(remoteRepository);
                 command.setDisplayName(NbBundle.getMessage(RLogExecutor.class, "MSG_RLogExecutor_CmdContext", remoteRepository));
                 RLogExecutor executor = new RLogExecutor(cvs, command, directory, currentOptions);
-                executor.execute();
                 executors.add(executor);
             }
         } catch (IOException e) {

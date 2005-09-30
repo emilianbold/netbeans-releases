@@ -39,9 +39,9 @@ public class RemoveExecutor extends ExecutorSupport {
     private Set refreshedFiles;
 
     /**
-     * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
-     * executed in the background. This method may split the original command into more commands if the original
-     * command would execute on incompatible files. See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)}
+     * Splits the original command into more commands if the original
+     * command would execute on incompatible files.
+     * See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)}
      * for more information.
      *
      * @param cmd command o execute
@@ -49,7 +49,7 @@ public class RemoveExecutor extends ExecutorSupport {
      * @param options global option for the command
      * @return array of executors that will execute the command (or array of splitted commands)
      */
-    public static RemoveExecutor [] executeCommand(RemoveCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
+    public static RemoveExecutor [] splitCommand(RemoveCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(RemoveExecutor.class, "MSG_RemoveExecutor_CmdDisplayName"));
         try {
@@ -62,7 +62,6 @@ public class RemoveExecutor extends ExecutorSupport {
         for (int i = 0; i < cmds.length; i++) {
             Command command = cmds[i];
             executors[i] = new RemoveExecutor(cvs, (RemoveCommand) command, options);
-            executors[i].execute();
         }
         return executors;
     }

@@ -214,40 +214,47 @@ public class CommitAction extends AbstractSystemAction {
             }
             commitBucket.add(file.getNode().getFile());
         }
-        executeAdd(addDefaultBucket, null);
-        executeAdd(addKkvBucket, KeywordSubstitutionOptions.DEFAULT);
-        executeAdd(addKkvlBucket, KeywordSubstitutionOptions.DEFAULT_LOCKER);
-        executeAdd(addKkBucket, KeywordSubstitutionOptions.ONLY_KEYWORDS);
-        executeAdd(addKoBucket, KeywordSubstitutionOptions.OLD_VALUES);
-        executeAdd(addKbBucket, KeywordSubstitutionOptions.BINARY);
-        executeAdd(addKvBucket, KeywordSubstitutionOptions.ONLY_VALUES);
-        executeRemove(removeBucket);
-        executeCommit(commitBucket, settings.getCommitMessage());
+
+        // perform
+        ExecutorGroup group = new ExecutorGroup("Commiting");
+
+        group.addExecutors(createAdd(addDefaultBucket, null));
+        group.addExecutors(createAdd(addKkvBucket, KeywordSubstitutionOptions.DEFAULT));
+        group.addExecutors(createAdd(addKkvlBucket, KeywordSubstitutionOptions.DEFAULT_LOCKER));
+        group.addExecutors(createAdd(addKkBucket, KeywordSubstitutionOptions.ONLY_KEYWORDS));
+        group.addExecutors(createAdd(addKoBucket, KeywordSubstitutionOptions.OLD_VALUES));
+        group.addExecutors(createAdd(addKbBucket, KeywordSubstitutionOptions.BINARY));
+        group.addExecutors(createAdd(addKvBucket, KeywordSubstitutionOptions.ONLY_VALUES));
+        group.addExecutors(createRemove(removeBucket));
+        group.addExecutors(createCommit(commitBucket, settings.getCommitMessage()));
+
+        group.execute();
     }
 
-    private static void executeCommit(List bucket, String message) {
-        if (bucket.size() == 0) return;
+    private static void addExecutors(Collection target, ExecutorSupport[] src) {
+    }
+
+    private static ExecutorSupport[] createCommit(List bucket, String message) {
+        if (bucket.size() == 0) return null;
         CommitCommand cmd = new CommitCommand();
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
         cmd.setMessage(message);
-        CommitExecutor [] executors = CommitExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
-        ExecutorSupport.notifyError(executors);
+        return CommitExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
     }
 
-    private static void executeRemove(List bucket) {
-        if (bucket.size() == 0) return;
+    private static ExecutorSupport[] createRemove(List bucket) {
+        if (bucket.size() == 0) return null;
         RemoveCommand cmd = new RemoveCommand();
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
-        RemoveExecutor [] executors = RemoveExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
-        ExecutorSupport.notifyError(executors);
+        return RemoveExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
     }
 
-    private static void executeAdd(List bucket, KeywordSubstitutionOptions option) {
-        if (bucket.size() == 0) return;
+    private static ExecutorSupport[] createAdd(List bucket, KeywordSubstitutionOptions option) {
+        if (bucket.size() == 0) return null;
         AddCommand cmd = new AddCommand();
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
         cmd.setKeywordSubst(option);
-        AddExecutor [] executors = AddExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
-        ExecutorSupport.notifyError(executors);
+        return AddExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
+
     }
 }

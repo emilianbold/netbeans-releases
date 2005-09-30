@@ -37,16 +37,16 @@ import java.text.MessageFormat;
 public class RTagExecutor extends ExecutorSupport {
     
     /**
-     * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
-     * executed in the background. This method may split the original command into more commands if the original
+     * Splits the original command into more commands if the original
      * command would execute on incompatible files.
-     * 
-     * @param cmd command o execute
-     * @param roots folders that represent remote repositories to operate on
+     * See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)}
+     * for more information.
+     *
+     * @param cmd command to execute
      * @param options global option for the command
      * @return array of executors that will execute the command (or array of splitted commands)
-     */ 
-    public static RTagExecutor [] executeCommand(RtagCommand cmd, File [] roots, GlobalOptions options) {
+     */
+    public static RTagExecutor [] splitCommand(RtagCommand cmd, File [] roots, GlobalOptions options) {
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(RTagExecutor.class, "MSG_RTagExecutor_CmdDisplayName"));
         
         File [][] splitRoots;
@@ -90,7 +90,6 @@ public class RTagExecutor extends ExecutorSupport {
             String commandContext = NbBundle.getMessage(RTagExecutor.class, "MSG_RTagExecutor_CmdContext", Integer.toString(files.length));
             command.setDisplayName(MessageFormat.format(cmd.getDisplayName(), new Object [] { commandContext }));
             executors[i] = new RTagExecutor(cvs, command, currentOptions);
-            executors[i].execute();
         }
         return executors;
     }

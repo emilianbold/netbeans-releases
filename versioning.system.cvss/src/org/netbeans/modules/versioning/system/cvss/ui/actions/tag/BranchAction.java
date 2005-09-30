@@ -18,6 +18,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecu
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
@@ -96,16 +97,20 @@ public class BranchAction extends AbstractSystemAction {
         }
 
         public void run() {
+            ExecutorGroup group = new ExecutorGroup("Creating Branch");
             if (settings.isTaggingBase()) {
-                if (!tag(context.getFiles(), settings.computeBaseTagName())) return;
+                group.addExecutors(tag(context.getFiles(), settings.computeBaseTagName()));
+                group.addBarrier(null);
             }
-            if (!branch(context.getFiles(), settings.getBranchName())) return;
+            group.addExecutors(branch(context.getFiles(), settings.getBranchName()));
+            group.addBarrier(null);
             if (settings.isCheckingOutBranch()) {
-                update(context, settings.getBranchName());
+                group.addExecutors(update(context, settings.getBranchName()));
             }
+            group.execute();
         }
 
-        private void update(Context context, String revision) {
+        private UpdateExecutor[] update(Context context, String revision) {
             UpdateCommand cmd = new UpdateCommand();
 
             GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
@@ -115,29 +120,26 @@ public class BranchAction extends AbstractSystemAction {
             cmd.setUpdateByRevision(revision);
             cmd.setFiles(context.getRootFiles());
         
-            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
-            ExecutorSupport.notifyError(executors);
+            return UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options);
         }
 
-        private boolean branch(File[] roots, String branchName) {
+        private ExecutorSupport[] branch(File[] roots, String branchName) {
             TagCommand cmd = new TagCommand();
 
             cmd.setMakeBranchTag(true);
             cmd.setFiles(roots);
             cmd.setTag(branchName);
         
-            TagExecutor [] executors = TagExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
-            return ExecutorSupport.wait(executors);
+            return TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
         }
 
-        private boolean tag(File[] roots, String tagName) {
+        private ExecutorSupport[] tag(File[] roots, String tagName) {
             TagCommand cmd = new TagCommand();
         
             cmd.setFiles(roots);
             cmd.setTag(tagName);
         
-            TagExecutor [] executors = TagExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
-            return ExecutorSupport.wait(executors);
+            return TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
         }
     }
 }

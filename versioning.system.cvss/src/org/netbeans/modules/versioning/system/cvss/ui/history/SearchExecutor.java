@@ -19,6 +19,7 @@ import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.RLogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 
 import javax.swing.*;
 import java.io.File;
@@ -106,30 +107,40 @@ class SearchExecutor implements Runnable {
         rcmd.setNoTags(true);
         rcmd.setUserFilter(criteria.getUsername());
         lcmd.setUserFilter(criteria.getUsername());
-        
+
+        ExecutorGroup group = new ExecutorGroup("Searching History");
         RLogExecutor [] rexecutors;
         if (folders.length > 0) {
-            rexecutors = RLogExecutor.executeCommand(rcmd, folders, null);
-            ExecutorSupport.wait(rexecutors);
+            rexecutors = RLogExecutor.splitCommand(rcmd, folders, null);
         } else {
             rexecutors = new RLogExecutor[0];
         }
-        
+        group.addExecutors(rexecutors);
+
         LogExecutor [] lexecutors;
         if (files.length > 0) {
             lcmd.setFiles(files);
-            lexecutors = LogExecutor.executeCommand(lcmd, null);
-            ExecutorSupport.wait(lexecutors);
+            lexecutors = LogExecutor.splitCommand(lcmd, null);
         } else {
             lexecutors = new LogExecutor[0];
         }
-        
-        results = processResults(rexecutors, lexecutors);
-        SwingUtilities.invokeLater(new Runnable() {
+        group.addExecutors(lexecutors);
+
+        final RLogExecutor [] frexecutors = rexecutors;
+        final LogExecutor [] flexecutors = lexecutors;
+        Runnable action = new Runnable() {
             public void run() {
-                master.setResults(results);
+                results = processResults(frexecutors, flexecutors);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        master.setResults(results);
+                    }
+                });
             }
-        });
+        };
+        group.addBarrier(action);
+        group.execute();
+
     }
 
     private List processResults(RLogExecutor[] rexecutors, LogExecutor[] lexecutors) {

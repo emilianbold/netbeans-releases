@@ -36,17 +36,17 @@ import java.io.IOException;
 public class TagExecutor extends ExecutorSupport {
     
     /**
-     * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
-     * executed in the background. This method may split the original command into more commands if the original
-     * command would execute on incompatible files. See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)} 
+     * Splits the original command into more commands if the original
+     * command would execute on incompatible files.
+     * See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)}
      * for more information.
-     * 
-     * @param cmd command o execute
+     *
+     * @param cmd command to execute
      * @param cvs CVS engine to use
      * @param options global option for the command
      * @return array of executors that will execute the command (or array of splitted commands)
-     */ 
-    public static TagExecutor [] executeCommand(TagCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
+     */
+    public static TagExecutor [] splitCommand(TagCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(TagExecutor.class, "MSG_TagExecutor_CmdDisplayName"));
         try {
@@ -55,15 +55,14 @@ public class TagExecutor extends ExecutorSupport {
             ErrorManager.getDefault().notify(e);
             return null;
         }
-        TagExecutor [] executors = new TagExecutor[cmds.length]; 
+        TagExecutor [] executors = new TagExecutor[cmds.length];
         for (int i = 0; i < cmds.length; i++) {
             Command command = cmds[i];
             executors[i] = new TagExecutor(cvs, (TagCommand) command, options);
-            executors[i].execute();
         }
         return executors;
     }
-    
+
     private TagExecutor(CvsVersioningSystem cvs, TagCommand cmd, GlobalOptions options) {
         super(cvs, cmd, options);
     }

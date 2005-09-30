@@ -315,11 +315,13 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private void executeUpdateCommand(boolean doNoChanges) {
         if (context == null || context.getRoots().size() == 0) return;
         UpdateCommand cmd = new UpdateCommand();
+        String msg;
         if (doNoChanges) {
-            cmd.setDisplayName(NbBundle.getMessage(SynchronizePanel.class, "BK0001"));
+            msg = NbBundle.getMessage(SynchronizePanel.class, "BK0001");
         } else {
-            cmd.setDisplayName(NbBundle.getMessage(SynchronizePanel.class, "BK0002"));
+            msg = NbBundle.getMessage(SynchronizePanel.class, "BK0002");
         }
+        cmd.setDisplayName(msg);
         GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
         if (context.getExclusions().size() > 0) {
             options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
@@ -330,8 +332,10 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         options.setDoNoChanges(doNoChanges);
         // TODO: javacvs library fails to obey the -P flag when -q is specified
 //        options.setModeratelyQuiet(true);
-        UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, cvs, options);
-        ExecutorSupport.notifyError(executors);
+        ExecutorGroup group = new ExecutorGroup(msg);
+        group.addExecutors(UpdateExecutor.splitCommand(cmd, cvs, options));
+        group.execute();
+        // XXX should not be there barrier?
         parentTopComponent.contentRefreshed();
     }
 

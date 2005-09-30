@@ -42,28 +42,17 @@ public class UpdateExecutor extends ExecutorSupport {
     private boolean rwUpdate;
 
     /**
-     * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
-     * executed in the background. This method may split the original command into more commands if the original
-     * command would execute on incompatible files. See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)} 
+     * Splits the original command into more commands if the original
+     * command would execute on incompatible files.
+     * See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)}
      * for more information.
-     * 
-     * @param cmd command o execute
+     *
+     * @param cmd command to execute
      * @param cvs CVS engine to use
      * @param options global option for the command
      * @return array of executors that will execute the command (or array of splitted commands)
-     */ 
-    public static UpdateExecutor [] executeCommand(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
-
-        UpdateExecutor [] executors = createExecutors(cmd, cvs, options);
-        if (executors != null) {
-            for (int i = 0; i < executors.length; i++) {
-                executors[i].execute();
-            }
-        }
-        return executors;
-    }
-
-    public static UpdateExecutor [] createExecutors(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
+     */
+    public static UpdateExecutor [] splitCommand(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateExecutor_CmdDisplayName"));
         try {

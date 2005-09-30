@@ -16,10 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
-import org.netbeans.modules.versioning.system.cvss.FileInformation;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
@@ -72,11 +69,10 @@ public class SwitchBranchAction extends AbstractSystemAction {
     private void switchBranch() {
         Context context = getContext();
 
-        UpdateCommand cmd = new UpdateCommand();
         String title = MessageFormat.format(NbBundle.getBundle(SwitchBranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
                                          new Object[] { getContextDisplayName() });
         
-        SwitchBranchPanel settings = new SwitchBranchPanel(context.getFiles());
+        final SwitchBranchPanel settings = new SwitchBranchPanel(context.getFiles());
 
         JButton swich = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Switch"));
         JButton cancel = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Cancel"));
@@ -116,20 +112,26 @@ public class SwitchBranchAction extends AbstractSystemAction {
 
         // Special treatment for Locally New folders. Ww cannot switch them to branch with the Update command.
         // Workaround: add the folder to CVS, then manually create CVS/Tag inside
+        ExecutorGroup group = new ExecutorGroup("Switching to Branch");
         if (newFolders.size() > 0) {
             AddCommand acmd = new AddCommand();
-            File [] files = (File[]) newFolders.toArray(new File[newFolders.size()]);
+            final File [] files = (File[]) newFolders.toArray(new File[newFolders.size()]);
             acmd.setFiles(files);
-            AddExecutor [] aexecutors = AddExecutor.executeCommand(acmd, CvsVersioningSystem.getInstance(), null);
-            ExecutorSupport.wait(aexecutors);
-            if (settings.isSwitchToTrunk()) {
-                setSticky(files, null);
-            } else {
-                setSticky(files, settings.getBranchName());
-            }
+            group.addExecutors(AddExecutor.splitCommand(acmd, CvsVersioningSystem.getInstance(), null));
+            Runnable action = new Runnable() {
+                public void run() {
+                    if (settings.isSwitchToTrunk()) {
+                        setSticky(files, null);
+                    } else {
+                        setSticky(files, settings.getBranchName());
+                    }
+                }
+            };
+            group.addBarrier(action);
         }
-        
+
         if (others.size() > 0) {
+            UpdateCommand cmd = new UpdateCommand();
             if (settings.isSwitchToTrunk()) {
                 cmd.setResetStickyOnes(true);
             } else {
@@ -145,9 +147,9 @@ public class SwitchBranchAction extends AbstractSystemAction {
                 options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }
             
-            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), options);
-            ExecutorSupport.notifyError(executors);
+            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
         }
+        group.execute();
     }
 
     private void setSticky(File[] files, String sticky) {

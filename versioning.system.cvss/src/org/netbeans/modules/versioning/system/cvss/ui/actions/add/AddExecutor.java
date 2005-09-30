@@ -32,17 +32,17 @@ import java.io.IOException;
 public class AddExecutor extends ExecutorSupport {
 
     /**
-     * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
-     * executed in the background. This method may split the original command into more commands if the original
-     * command would execute on incompatible files. See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)} 
+     * Splits the original command into more commands if the original
+     * command would execute on incompatible files.
+     * See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)}
      * for more information.
-     * 
-     * @param cmd command o execute
+     *
+     * @param cmd command to execute
      * @param cvs CVS engine to use
      * @param options global option for the command
      * @return array of executors that will execute the command (or array of splitted commands)
-     */ 
-    public static AddExecutor [] executeCommand(AddCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
+     */
+    public static AddExecutor[] splitCommand(AddCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
 
         List fileSets = new ArrayList();
         
@@ -84,7 +84,6 @@ public class AddExecutor extends ExecutorSupport {
                     NbBundle.getMessage(AddExecutor.class, "MSG_AddExecutor_CmdDisplayXfiles", Integer.toString(len));
             command.setDisplayName(NbBundle.getMessage(AddExecutor.class, "MSG_AddExecutor_CmdDisplayName", param));
             executors[i] = new AddExecutor(cvs, command, options);
-            executors[i].execute();
         }
         return executors;
     }

@@ -60,7 +60,7 @@ import org.openide.xml.XMLUtil;
  *
  * @author Maros Sandor
  */
-public abstract class ExecutorSupport implements CVSListener  {
+public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Groupable  {
     
     protected final FileStatusCache       cache;
 
@@ -106,7 +106,11 @@ public abstract class ExecutorSupport implements CVSListener  {
 
 
 
-    /** Async execution. */
+    /**
+     * Async execution.
+     * Returns after enqueing into execution queue i.e.
+     * after {@link #notifyEnqueued} call.
+     */
     public void execute() {
         assert executed == false;
         executed = true;
@@ -172,13 +176,7 @@ public abstract class ExecutorSupport implements CVSListener  {
         return true;
     }
 
-    /**
-     * Notifies the executor that it is a part of
-     * given execution chain.
-     *
-     * <p> Must be called before {@link #execute}
-     */
-    void joinGroup(ExecutorGroup group) {
+    public void joinGroup(ExecutorGroup group) {
         assert executed == false;
         this.group = group;
     }
@@ -269,6 +267,8 @@ public abstract class ExecutorSupport implements CVSListener  {
                 } else if (error != null) {
                     toRefresh.clear();
                     if (error instanceof CommandException) {
+                        // TODO internalError = result.getError();?
+                        // TODO group.fail();?
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
                                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"), 
@@ -284,12 +284,15 @@ public abstract class ExecutorSupport implements CVSListener  {
                         String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), getDisplayName());
                         clientRuntime.log(msg + "\n");  // NOI18N
                         internalError = result.getError();
+                        group.fail();
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, internalError);
+                        // TODO ErrorManager.getDefault().notify(ErrorManager.USER, internalError);?
                     }
                 } else {  // error == null
                     commandFinished((ClientRuntime.Result) e.getSource());
                     if (cmd.hasFailed()) {
                         commandFailed = true;
+                        group.fail();
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
                                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"), 
                                errorMessages, NotifyDescriptor.ERROR_MESSAGE);
@@ -643,10 +646,12 @@ public abstract class ExecutorSupport implements CVSListener  {
     }
 
     /**
-     * Associates this executor with actual cunnable
-     * (Task createed by ClientRunnable) performing the command.
+     * Associates this executor with actualy enqueued runnable
+     * (ClientRunnable created by ClientRuntime) performing the command.
+     *
+     * <p>Adds the runnable into group cancelable chain.
      */
-    public void setCommandRunnable(CommandRunnable commandRunnable) {
+    public void notifyEnqueued(CommandRunnable commandRunnable) {
         group.addCancellable(commandRunnable);
     }
 }

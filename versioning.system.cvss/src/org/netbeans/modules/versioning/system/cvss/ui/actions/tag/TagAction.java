@@ -19,6 +19,7 @@ import org.openide.DialogDescriptor;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 
@@ -73,9 +74,10 @@ public class TagAction extends AbstractSystemAction {
         settings.updateCommand(cmd);
         copy(commandTemplate, cmd);
         cmd.setFiles(roots);
-        
-        TagExecutor [] executors = TagExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
-        ExecutorSupport.notifyError(executors);
+
+        ExecutorGroup group = new ExecutorGroup("Tagging");
+        group.addExecutors(TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
+        group.execute();
     }
     
     private void copy(TagCommand c1, TagCommand c2) {
