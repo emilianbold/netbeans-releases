@@ -27,6 +27,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.project.Project;
@@ -46,14 +48,14 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
-public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener, PopupMenuListener {
+public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener {
     
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_URL_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.Project_URL"; // NOI18N
     private final ProjectDirListener prjDirListener = new ProjectDirListener(); 
     
-    private JMenu subMenu;
+    private UpdatingMenu subMenu;
     
     private boolean recreate;
     
@@ -86,8 +88,8 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         return menu;
     }
     
-    private JMenu createSubMenu() {
-        JMenu menu = new UpdatingMenu(this);
+    private UpdatingMenu createSubMenu() {
+        UpdatingMenu menu = new UpdatingMenu(this);
         menu.setMnemonic(NbBundle.getMessage(RecentProjects.class, "MNE_RecentProjectsAction_Name").charAt(0));
         return menu;
     }
@@ -95,7 +97,9 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private void createMainSubMenu() {
         if ( subMenu == null ) {
             subMenu = createSubMenu();
-            subMenu.getPopupMenu().addPopupMenuListener( this );
+            // model listening is the only lazy menu procedure that works on macosx
+            subMenu.getModel().addChangeListener(subMenu);
+
         }
     }
         
@@ -149,22 +153,6 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     }
     
     
-    // Implementation of PopupMenuListener -------------------------------------
-    
-    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        if ( recreate ) {
-            createMainSubMenu();
-            fillSubMenu(subMenu);
-            recreate = false;
-        }
-    }
-    
-    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-    }
-
-    public void popupMenuCanceled(PopupMenuEvent e) {
-    }
-
     
     // Innerclasses ------------------------------------------------------------
     
@@ -214,21 +202,27 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         }
     }
     
-    private class UpdatingMenu extends JMenu implements DynamicMenuContent {
+    private class UpdatingMenu extends JMenu implements /*DynamicMenuContent,*/ ChangeListener {
         
         public UpdatingMenu(Action action) {
             super(action);
         }
         
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
-            fillSubMenu(this);
-            recreate = false;
-            return getMenuPresenters();
+//        public JComponent[] synchMenuPresenters(JComponent[] items) {
+//            return getMenuPresenters();
+//        }
+//        
+//        public JComponent[] getMenuPresenters() {
+//            return new JComponent[] { this };
+//        }
+        
+        public void stateChanged(ChangeEvent e) {
+            if (recreate && getModel().isSelected()) {
+                fillSubMenu(this);
+                recreate = false;
+            }
         }
         
-        public JComponent[] getMenuPresenters() {
-            return new JComponent[] { this };
-        }
     }
     
 }
