@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,19 +15,22 @@ package org.apache.tools.ant.module.nodes;
 
 import java.io.IOException;
 import java.text.Collator;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.swing.event.*;
-import org.openide.nodes.*;
-import org.openide.util.NbBundle;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.ErrorManager;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ implements ChangeListener, Comparator/*<TargetLister.Target>*/ {
     
@@ -59,6 +62,7 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
     private void refreshKeys(boolean createKeys) {
         try {
             Set/*<TargetLister.Target>*/ _allTargets = TargetLister.getTargets(cookie);
+            Collection keys;
             synchronized (this) {
                 if (allTargets == null && !createKeys) {
                     // Aynch refresh after removeNotify; ignore. (#44428)
@@ -74,8 +78,11 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
                         it.remove();
                     }
                 }
+                keys = allTargets;
             }
-            setKeys(allTargets);
+            if (keys != null) { // #65235
+                setKeys(keys);
+            }
         } catch (IOException e) {
             // XXX should mark the project node as being somehow in error
             AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
