@@ -337,9 +337,12 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
                  try {	 
                      configDO.setModified (false);
                      configDO.resetAllChanged();
-                     getConfigStorage().load ();	 
-                 } catch (java.lang.Exception e) {	 
-                     DialogDisplayer.getDefault().notify(new Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));	 
+                     getConfigStorage().load();
+                 } catch (java.lang.Exception ex) {	 
+                     // Added log message here because we were getting a ConcurrentModificationException
+                     // (caused by coding bug) but the message box was empty.
+                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                     DialogDisplayer.getDefault().notify(new Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                  }	 
              } else {  // user pressed Cancel - don't close	 
                      return false;	 
