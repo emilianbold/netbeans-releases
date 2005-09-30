@@ -173,6 +173,10 @@ public class DriverListUtil {
         drivers.add("com.microsoft.jdbc.sqlserver.SQLServerDriver");
         urls.add("jdbc:microsoft:sqlserver://<HOST>:<PORT>[;DatabaseName=<DB>]");
         
+        names.add("MySQL (Connector/J driver)");
+        drivers.add("com.mysql.jdbc.Driver");
+        urls.add("jdbc:mysql://<HOST>:<PORT>/<DB>");
+        
         names.add("MySQL (MM.MySQL driver)");
         drivers.add("org.gjt.mm.mysql.Driver");
         urls.add("jdbc:mysql://<HOST>:<PORT>/<DB>");
