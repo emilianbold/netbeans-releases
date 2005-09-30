@@ -184,6 +184,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 boolean first = true;
                 while (metacomps.hasNext()) {
                     RADComponent metacomp = (RADComponent)metacomps.next();
+                    RADVisualComponent layoutMetacomp = formDesigner.componentToLayoutComponent(metacomp);
+                    if (layoutMetacomp != null) metacomp = layoutMetacomp;
                     paintSelection(g2, metacomp, first || !isInNewLayout(metacomp));
                     first = false;
                 }
@@ -213,6 +215,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             Rectangle selRect = component.getBounds();
             RADComponent metacont = metacomp.getParentComponent();
             convertRectangleFromComponent(selRect, parent);
+            Rectangle visible = new Rectangle(0, 0, parent.getWidth(), parent.getHeight());
+            visible = convertVisibleRectangleFromComponent(visible, parent);
 
             if ((metacont instanceof RADVisualContainer)
                 && (((RADVisualContainer)metacont).getLayoutSupport() == null)) {
@@ -223,7 +227,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 Color oldColor = g.getColor();
                 g.setColor(formSettings.getGuidingLineColor());
                 Shape clip = g.getClip();
-                Area area = new Area(new Rectangle(0, 0, topCont.getWidth(), topCont.getHeight()));
+                visible.translate(-convertPoint.x, -convertPoint.y);
+                Area area = new Area(visible);
                 if (clip != null) {
                     area.intersect(new Area(clip));
                 }
@@ -231,9 +236,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 layoutDesigner.paintSelection(g, metacomp.getId());
                 g.setClip(clip);
                 g.setColor(oldColor);
+                visible.translate(convertPoint.x, convertPoint.y);
                 g.translate(-convertPoint.x, -convertPoint.y);
             }
-
+            int resizable = 0;
+            if (resizeHandles && (metacomp instanceof RADVisualComponent)) {
+                resizable = getComponentResizable((RADVisualComponent)metacomp);
+            }
+            if (resizable == 0) {
+                selRect = selRect.intersection(visible);
+            }
             int correction = formSettings.getSelectionBorderSize() % 2;
             int x = selRect.x - correction;
             int y = selRect.y - correction;
@@ -241,7 +253,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             int height = selRect.height + correction;
             g.drawRect(x, y, width, height);
             if (resizeHandles && (metacomp instanceof RADVisualComponent)) {
-                int resizable = getComponentResizable((RADVisualComponent)metacomp);
                 Image resizeHandle = resizeHandle();
                 int iconHeight = resizeHandle.getHeight(null);
                 int iconWidth = resizeHandle.getWidth(null);
@@ -1298,6 +1309,24 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         return rect;
     }
 
+    Rectangle convertVisibleRectangleFromComponent(Rectangle rect, Component comp) {
+        Component parent;
+        while (!formDesigner.isCoordinatesRoot(comp)) {
+            parent = comp.getParent();
+            Rectangle size = new Rectangle(0, 0, parent.getWidth(), parent.getHeight());
+            rect.translate(comp.getX(), comp.getY());
+            rect = rect.intersection(size);
+            comp = parent;
+        }
+        comp = this;
+        while (!formDesigner.isCoordinatesRoot(comp)) {
+            rect.translate(-comp.getX(), -comp.getY());
+            comp = comp.getParent();
+        }
+        return rect;
+    }
+    
+    
     // ---------
     // MouseListener implementation
 

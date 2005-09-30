@@ -473,6 +473,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
         return p;
     }
+    
+    boolean isCoordinatesRoot(Component comp) {
+        return (layeredPane == comp);
+    }
 
     private Rectangle componentBoundsToTop(Component component) {
         if (component == null)
@@ -723,23 +727,31 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     void addComponentToSelectionImpl(RADComponent metacomp) {
         if (metacomp != null) {
             selectedComponents.add(metacomp);
-            if (metacomp instanceof RADVisualComponent) {
-                RADComponent metacont = metacomp.getParentComponent();
-                if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())) {
-                    metacomp = metacont;
-                }
-                RADComponent root = metacomp;
-                while (root.getParentComponent() != null) {
-                    root = root.getParentComponent();
-                }
-                // Avoid visual components in others components
-                if (root == formModel.getTopRADComponent()) {
-                    selectedLayoutComponents.add(metacomp);
-                }
+            RADVisualComponent layoutComponent = componentToLayoutComponent(metacomp);
+            if (layoutComponent != null) {
+                selectedLayoutComponents.add(metacomp);
                 ensureComponentIsShown((RADVisualComponent)metacomp);
                 selectionChanged();
             }
         }
+    }
+    
+    RADVisualComponent componentToLayoutComponent(RADComponent metacomp) {
+        if (metacomp instanceof RADVisualComponent) {
+            RADComponent metacont = metacomp.getParentComponent();
+            if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())) {
+                metacomp = metacont;
+            }
+            RADComponent root = metacomp;
+            while (root.getParentComponent() != null) {
+                root = root.getParentComponent();
+            }
+            // Avoid visual components in others components
+            if (root == formModel.getTopRADComponent()) {
+                return (RADVisualComponent)metacomp;
+            }
+        }
+        return null;
     }
 
     void removeComponentFromSelectionImpl(RADComponent metacomp) {
