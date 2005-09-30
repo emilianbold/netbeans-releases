@@ -49,6 +49,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         "org.netbeans.modules.vcs.profiles.cvsprofiles",
         "org.netbeans.modules.vcs.profiles.vss",
         "org.netbeans.modules.vcs.profiles.pvcs",
+        "org.netbeans.modules.vcs.profiles.subversion",
         "org.netbeans.modules.vcs.profiles.teamware"
     };
     
