@@ -207,6 +207,9 @@ public class BinaryFS extends FileSystem {
             if (!(o instanceof BFSBase)) return false;
             if (o == this) return true;
             BFSBase f = (BFSBase)o;
+            if (f.getFileSystem() != getFileSystem()) {
+                return false;
+            }
             return f.getPath().equals(getPath()) && specificEquals(f);
         }
         
@@ -248,7 +251,7 @@ public class BinaryFS extends FileSystem {
         // simple common implementations:
 
         /** Get the filesystem containing this file. */
-        public FileSystem getFileSystem() throws FileStateInvalidException {
+        public FileSystem getFileSystem() {
             return BinaryFS.this;
         }
 

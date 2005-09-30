@@ -101,7 +101,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         assertEquals(2, baz.getChildren().length);
         assertTrue(thingy.isValid());
         assertEquals(0, l.ac);
-        assertEquals(0, l.c);
+        assertEquals(1, l.c);
         assertEquals(0, l.dc);
         assertEquals(0, l.d);
         assertEquals(0, l.fc);
@@ -117,7 +117,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         assertEquals(1, baz.getChildren().length);
         assertFalse(thingy.isValid());
         assertEquals(0, l.ac);
-        assertEquals(0, l.c);
+        assertEquals(1, l.c);
         assertEquals(0, l.dc);
         assertEquals(1, l.d);
         assertEquals(0, l.fc);

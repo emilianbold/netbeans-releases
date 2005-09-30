@@ -90,7 +90,7 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
         String v2 = (String) file.getAttribute("value");
         assertEquals("The second value is button", "java.awt.Button", v2);
         
-        assertEquals("One change", 1, l.events.size());
+        assertEquals("One change: " + l.events, 1, l.events.size());
         
         if (!(l.events.get(0) instanceof FileAttributeEvent)) {
             fail("Wrong event: " + l.events);
@@ -116,6 +116,7 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
     
     private static class FSListener extends FileChangeAdapter {
         public List events = new ArrayList();
+        public List change = new ArrayList();
         
         
         public void fileRenamed(FileRenameEvent fe) {
@@ -139,7 +140,7 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
         }
 
         public void fileChanged(FileEvent fe) {
-            events.add(fe);
+            change.add(fe);
         }
         
     }
