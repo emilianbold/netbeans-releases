@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.*;
 import java.util.*;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.*;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -25,11 +26,6 @@ public class ChildrenKeysTest extends NbTestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite (ChildrenKeysTest.class));
-    }
-    
-
     protected Node createNode (Children ch) {
         return new AbstractNode (ch);
     }
@@ -38,6 +34,16 @@ public class ChildrenKeysTest extends NbTestCase {
         System.setProperty("org.openide.util.Lookup", "org.openide.nodes.ChildrenKeysTest$Lkp");
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
         ErrManager.messages.delete (0, ErrManager.messages.length ());
+    }    
+
+    protected void runTest () throws Throwable {
+        try {
+            super.runTest();
+        } catch (Error err) {
+            AssertionFailedError newErr = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
+            newErr.initCause (err);
+            throw newErr;
+        }
     }
 
     public void testGetNodesFromTwoThreads57769() throws Exception {
