@@ -1849,13 +1849,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 					start = token.getOffset();
 					token = token.getNext();
                                         end = token.getOffset()+token.getImage().length();
-//
-//					while (token != null && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID
-//						&& (token.getImage().charAt(0)== '>' || token.getImage().charAt(0)== '<'))){
-//					    token = token.getNext();
-//					}
-//					if (token != null)
-//					    end = token.getOffset()+1;
+
+                                        //add ending > or /> into the selection
+                                        TokenItem next = token.getNext();
+                                        if(next != null && next.getTokenID() == JspTagTokenContext.SYMBOL && next.getImage().endsWith(">"))
+                                            end += next.getImage().length();
+                                        
 					return new int[] {start, end};
 				    }
 				    else {
