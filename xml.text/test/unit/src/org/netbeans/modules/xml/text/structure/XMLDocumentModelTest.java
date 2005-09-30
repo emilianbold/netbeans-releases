@@ -476,8 +476,6 @@ public class XMLDocumentModelTest extends NbTestCase {
     }
     
     
-    
-    
     private void initDoc1() throws BadLocationException {
         /*
           supposed structure:
