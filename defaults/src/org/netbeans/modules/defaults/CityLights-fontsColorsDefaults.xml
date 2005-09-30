@@ -1,9 +1,7 @@
 <?xml version="1.0"?>
 
 <fontscolors>
-    <fontcolor name="default" foreColor="green" bgColor="black">
-        <font name="Monospaced" size="16" style="bold"/>
-    </fontcolor>
+    <fontcolor name="default" foreColor="green" bgColor="black"/>
     <fontcolor name="char" foreColor="yellow"/>
     <fontcolor name="comment" foreColor="red"/>
     <fontcolor name="error" foreColor="white" bgColor="red"/>
