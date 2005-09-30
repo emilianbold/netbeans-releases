@@ -14,6 +14,7 @@
 package org.apache.tools.ant.module.spi;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -63,7 +64,10 @@ public class AntLoggerTest extends NbTestCase {
     }
 
     private static void run(FileObject script) throws Exception {
-        AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), null);
+        int res = AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), null).result();
+        if (res != 0) {
+            throw new IOException("Nonzero exit code: " + res);
+        }
     }
 
     public void testRunningAnt() throws Exception {
