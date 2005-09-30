@@ -270,7 +270,6 @@ implements Executor, PropertyChangeListener {
             StepRequest.STEP_LINE,
             step
         );
-        stepRequest.addCountFilter(1);
         getDebuggerImpl ().getOperator ().register (stepRequest, this);
         stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
         
