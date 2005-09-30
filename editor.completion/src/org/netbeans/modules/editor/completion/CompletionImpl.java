@@ -135,6 +135,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private Timer pleaseWaitTimer;
     /** Whether it's initial or refreshed query. Changed in AWT only. */
     private boolean refreshedQuery = false;
+    
+    /** Ending offset of the recent insertion or removal. */
+    private int modEndOffset;
 
     private CompletionImpl() {
         Registry.addChangeListener(this);
@@ -178,8 +181,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
         if (activeProviders != null) {
             try {
-                if (activeComponent.getCaretPosition() != e.getOffset() + e.getLength())
+                modEndOffset = e.getOffset() + e.getLength();
+                if (activeComponent.getCaretPosition() != modEndOffset)
                     return;
+
                 String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
                 for (int i = 0; i < activeProviders.length; i++) {
                     int type = activeProviders[i].getAutoQueryTypes(activeComponent, typedText);
@@ -207,7 +212,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
     
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
+        // Ignore insertions done outside of the AWT (various content generation)
+        if (!SwingUtilities.isEventDispatchThread()) {
+            return;
+        }
         // Removals covered by caretUpdate()
+        modEndOffset = e.getOffset();
     }
     
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
@@ -217,6 +227,20 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         assert (SwingUtilities.isEventDispatchThread());
 
         if (activeProviders != null) {
+            // Check whether there is an active result being computed but not yet displayed
+            // Caret update should be notified AFTER document modifications
+            // thank to document listener priorities
+            Result localCompletionResult;
+            synchronized (this) {
+                localCompletionResult = completionResult;
+            }
+            if ((completionAutoPopupTimer.isRunning() || localCompletionResult != null)
+                && !layout.isCompletionVisible()
+                && e.getDot() != modEndOffset
+            ) {
+                hideCompletion();
+            }
+
             completionRefresh();
             toolTipRefresh();
         }
