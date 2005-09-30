@@ -16,6 +16,7 @@ package org.netbeans.editor.ext.html;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -415,7 +416,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
      * creation of lot of string instances per completion result.
      */
     public static abstract class HTMLResultItem implements CompletionQuery.ResultItem,
-    CompletionItem {
+            CompletionItem {
         
         /** The String on which is this ResultItem defined */
         String baseText;
@@ -467,7 +468,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         
         public void render(Graphics g, Font defaultFont, Color defaultColor,
-        Color backgroundColor, int width, int height, boolean selected) {
+                Color backgroundColor, int width, int height, boolean selected) {
             Component renderComponent = getPaintComponent(selected);
             renderComponent.setFont(defaultFont);
             renderComponent.setForeground(defaultColor);
@@ -523,7 +524,17 @@ else System.err.println( "Inside token " + item.getTokenID() );
             try {
                 doc.remove( offset, length );
                 doc.insertString( offset, text, null);
+                //format the inserted text
+                ExtFormatter f = (ExtFormatter)doc.getFormatter();
+                int[] fmtBlk = f.getReformatBlock(component, text);
+                if (fmtBlk != null) {
+                    fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
+                    fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
+                    f.reformat(doc, fmtBlk[0], fmtBlk[1], true);
+                }
             } catch( BadLocationException exc ) {
+                return false;    //not sucessfull
+            } catch (IOException e) {
                 return false;    //not sucessfull
             } finally {
                 doc.atomicUnlock();
@@ -754,10 +765,10 @@ else System.err.println( "Inside token " + item.getTokenID() );
             String anchor = HelpManager.getDefault().getAnchorText(url);
             if(anchor != null)
                 return HelpManager.getDefault().getHelpText(url, anchor);
-            else 
+            else
                 return HelpManager.getDefault().getHelpText(url);
         }
-         
+        
         public URL getURL() {
             return url;
         }

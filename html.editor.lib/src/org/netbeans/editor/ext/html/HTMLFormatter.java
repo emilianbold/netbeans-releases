@@ -217,12 +217,13 @@ public class HTMLFormatter extends ExtFormatter {
     public int[] getReformatBlock(JTextComponent target, String typedText) {
         int [] i = super.getReformatBlock(target, typedText);
         //System.out.println("getReformatBlock: |" + typedText + "|"); // NOI18N
+        char lastChar = typedText.charAt(typedText.length() - 1);
         try{
             BaseDocument doc = Utilities.getDocument(target);
             int dotPos = target.getCaret().getDot();
             HTMLSyntaxSupport sup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
             
-            if (typedText.charAt(0) == '>') {
+            if (lastChar == '>') {
                 
                 TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
                 TokenItem origToken = token;
@@ -307,7 +308,7 @@ public class HTMLFormatter extends ExtFormatter {
              </tag>
              
              **/
-            if(typedText.charAt(0) == '\n') {
+            if(lastChar == '\n') {
                 //enter pressed
                 //check following situation:
             /*

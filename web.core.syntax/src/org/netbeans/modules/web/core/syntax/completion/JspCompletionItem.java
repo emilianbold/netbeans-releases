@@ -15,6 +15,7 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 
 import java.awt.Graphics;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.text.*;
 import java.awt.Color;
@@ -27,6 +28,8 @@ import java.net.URL;
 import javax.servlet.jsp.tagext.*;
 
 import org.netbeans.editor.*;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtFormatter;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
 
@@ -118,6 +121,14 @@ public class JspCompletionItem {
                 try {
                     doc.remove( offset, len );
                     doc.insertString( offset, fill, null);
+                    //format the inserted text
+                    ExtFormatter f = (ExtFormatter)doc.getFormatter();
+                    int[] fmtBlk = f.getReformatBlock(c, fill);
+                    if (fmtBlk != null) {
+                        fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
+                        fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
+                        f.reformat(doc, fmtBlk[0], fmtBlk[1], true);
+                    }
                 } finally {
                     doc.atomicUnlock();
                 }
@@ -127,6 +138,8 @@ public class JspCompletionItem {
                     caret.setDot(dot - moveBack);
                 }
             } catch( BadLocationException exc ) {
+                return false;    //not sucessfull
+            } catch( IOException exc ) {
                 return false;    //not sucessfull
             }
             return true;
