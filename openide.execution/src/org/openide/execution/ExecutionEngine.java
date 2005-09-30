@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -110,38 +111,38 @@ public abstract class ExecutionEngine extends Object {
         }
         
         private static final class ET extends ExecutorTask {
-            private org.openide.util.RequestProcessor.Task task;
+            private RequestProcessor.Task task;
             private int resultValue;
             private final String name;
-			private InputOutput io;
+            private InputOutput io;
             
             public ET(Runnable run, String name, InputOutput io) {
                 super(run);
                 this.resultValue = resultValue;
                 this.name = name;
-				task = org.openide.util.RequestProcessor.getDefault().post(this);
+                task = RequestProcessor.getDefault().post(this);
             }
             
             public void stop() {
-				task.cancel();
-			}
+                task.cancel();
+            }
             
             public int result() {
-				waitFinished();
+                waitFinished();
                 return resultValue;
             }
             
             public InputOutput getInputOutput() {
                 return io;
             }
-
+            
             public void run() {
-				try {
-					super.run();
-				} catch (RuntimeException x) {
-					x.printStackTrace();
-					resultValue = 1;
-				}
+                try {
+                    super.run();
+                } catch (RuntimeException x) {
+                    x.printStackTrace();
+                    resultValue = 1;
+                }
             }
             
         }
