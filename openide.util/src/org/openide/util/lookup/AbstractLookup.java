@@ -223,6 +223,25 @@ public class AbstractLookup extends Lookup implements Serializable {
     protected final void setPairs(Collection collection) {
         notifyCollectedListeners(setPairsAndCollectListeners(collection));
     }
+    
+    /** Getter for set of pairs. Package private contract with MetaInfServicesLookup.
+     * @return a LinkedHashSet that can be modified
+     */
+    final LinkedHashSet getPairsAsLHS() {
+        AbstractLookup.Storage t = enterStorage();
+
+        try {
+            Enumeration en = t.lookup(Object.class);
+			LinkedHashSet arr = new LinkedHashSet();
+            while (en.hasMoreElements()) {
+                Pair item = (Pair) en.nextElement();
+				arr.add(item);
+            }
+			return arr;
+        } finally {
+            exitStorage();
+        }
+    }
 
     /** Collects listeners without notification. Needed in MetaInfServicesLookup
      * right now, but maybe will become an API later.

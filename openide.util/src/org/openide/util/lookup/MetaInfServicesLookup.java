@@ -81,7 +81,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
         synchronized (this) {
             if (classes.add(c)) {
                 // Added new class, search for it.
-                Collection arr = new LinkedHashSet(lookup(new Template(Object.class)).allItems());
+                Collection arr = getPairsAsLHS();
                 search(c, arr);
 
                 // listeners are notified under while holding lock on class c, 
