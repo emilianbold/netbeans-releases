@@ -95,7 +95,13 @@ implements ChangeListener {
         FIND.set (previous);
         if (l != TOKEN) getPOOL ().notifyCreationAll(l);
     }
-    
+	
+    /** Method to check whether the constructor is allowed.
+     */
+    final static boolean isConstructorAllowed() {
+        return FIND.get() != null;
+    }
+
     /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
      * to succeed.
      */
@@ -438,6 +444,7 @@ implements ChangeListener {
             notifyCreation (i);
         }
     }
+	
     /** Wait till the data object will be notified. But wait limited amount
      * of time so we will not deadlock
      *

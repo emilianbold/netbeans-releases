@@ -351,8 +351,12 @@ public class FolderLookup extends FolderInstance {
             }
             
             // do not wait in folder recognizer, but in all other cases
-            if (!FolderList.isFolderRecognizerThread () && ICItem.DANGEROUS.get () == null) {
-                fl.instanceFinished ();
+            if (
+                !FolderList.isFolderRecognizerThread() &&
+                ICItem.DANGEROUS.get() == null &&
+                !DataObjectPool.isConstructorAllowed()
+            ) {
+                fl.waitFinished();
             }
         }
         
