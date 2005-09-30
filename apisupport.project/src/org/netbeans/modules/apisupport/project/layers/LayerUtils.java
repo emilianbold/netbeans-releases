@@ -41,10 +41,10 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -535,15 +535,9 @@ public class LayerUtils {
                 ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
                 return mergeFilesystems(projectLayer, new FileSystem[] {platformLayers}, cp);
             } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
-                SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
-                assert suiteProv != null : p;
-                File suiteDir = suiteProv.getSuiteDirectory();
-                if (suiteDir == null || !suiteDir.isDirectory()) {
-                    throw new IOException("Could not locate suite for " + p); // NOI18N
-                }
-                SuiteProject suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
+                SuiteProject suite = SuiteUtils.findSuite(p);
                 if (suite == null) {
-                    throw new IOException("Could not load suite for " + p + " from " + suiteDir); // NOI18N
+                    throw new IOException("Could not load suite for " + p); // NOI18N
                 }
                 List/*<FileSystem>*/ readOnlyLayers = new ArrayList();
                 Set/*<Project>*/ modules = ((SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class)).getSubprojects();

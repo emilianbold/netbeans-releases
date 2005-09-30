@@ -15,19 +15,17 @@ package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.Image;
 import java.io.CharConversionException;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -241,15 +239,9 @@ public final class LayerNode extends FilterNode {
         if (type == NbModuleTypeProvider.STANDALONE) {
             return LayerUtils.createLayerClasspath(Collections.singleton(p), LayerUtils.getPlatformJarsForStandaloneProject(p));
         } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
-            SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
-            assert suiteProv != null : p;
-            File suiteDir = suiteProv.getSuiteDirectory();
-            if (suiteDir == null || !suiteDir.isDirectory()) {
-                throw new IOException("Could not locate suite for " + p); // NOI18N
-            }
-            SuiteProject suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
+            SuiteProject suite = SuiteUtils.findSuite(p);
             if (suite == null) {
-                throw new IOException("Could not load suite for " + p + " from " + suiteDir); // NOI18N
+                throw new IOException("Could not load suite for " + p); // NOI18N
             }
             Set/*<Project>*/ modules = ((SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class)).getSubprojects();
             return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));

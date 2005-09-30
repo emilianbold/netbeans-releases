@@ -296,7 +296,7 @@ public final class SuiteUtils {
     }
     
     /** Returns suite for the given suite component. */
-    private static SuiteProject findSuite(Project suiteComponent) throws IOException {
+    public static SuiteProject findSuite(Project suiteComponent) throws IOException {
         SuiteProvider sp = (SuiteProvider) suiteComponent.getLookup().lookup(SuiteProvider.class);
         Project suite = null;
         if (sp != null && sp.getSuiteDirectory() != null) {
