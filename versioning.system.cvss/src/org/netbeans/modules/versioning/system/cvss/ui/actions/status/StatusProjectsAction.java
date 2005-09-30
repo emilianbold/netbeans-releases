@@ -20,6 +20,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.*;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileUtil;
 
@@ -57,6 +58,14 @@ public class StatusProjectsAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                performAction();
+            }
+        });
+    }
+
+    private void performAction() {
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
         Project [] projects = OpenProjects.getDefault().getOpenProjects();
 

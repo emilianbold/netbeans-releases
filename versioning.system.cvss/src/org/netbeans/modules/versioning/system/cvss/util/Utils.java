@@ -229,6 +229,12 @@ public class Utils {
         }
     }
 
+    /**
+     * May take a long time for many projects, consider making the call from worker threads.
+     * 
+     * @param projects projects to examine
+     * @return Context context that defines list of supplied projects
+     */ 
     public static Context getProjectsContext(Project [] projects) {
         List filtered = new ArrayList(); 
         List roots = new ArrayList();
