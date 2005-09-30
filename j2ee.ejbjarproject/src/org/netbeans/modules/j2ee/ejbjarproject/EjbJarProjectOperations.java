@@ -27,6 +27,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -139,6 +141,7 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         }
         
         project.getReferenceHelper().fixReferences(originalPath);
+        fixOtherReferences(originalPath);
         
         project.setName(nueName);
     }
@@ -155,6 +158,29 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         
         project.setName(nueName);
         project.getReferenceHelper().fixReferences(originalPath);        
+        fixOtherReferences(originalPath);
+    }
+    
+    private void fixOtherReferences(final File originalPath) {
+        final String property = EjbJarProjectProperties.META_INF;
+        final File projectDir = FileUtil.toFile(project.getProjectDirectory());
+                
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                EditableProperties props = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String path = props.getProperty(property);
+                if (path == null) {
+                    return;
+                }
+
+                if (path.startsWith(originalPath.getAbsolutePath())) {
+                    String relative = PropertyUtils.relativizeFile(originalPath, new File(path));
+                    String fixedPath = new File(projectDir, relative).getAbsolutePath();
+                    props.setProperty(property, fixedPath);
+                    project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                }
+            }
+        });
     }
     
     private static boolean isParent(File folder, File fo) {
