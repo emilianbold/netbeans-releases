@@ -68,6 +68,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
@@ -347,10 +348,36 @@ public final class NbModuleProject implements Project {
                 providers.add(PropertyUtils.globalPropertyProvider());
             }
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-            String platformS = baseEval.getProperty("nbplatform.active"); // NOI18N
-            if (platformS != null) {
-                providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
+            class DestDirProvider implements PropertyProvider, PropertyChangeListener {
+                private final PropertyEvaluator eval;
+                private final List/*<ChangeListener>*/ listeners = new ArrayList();
+                public DestDirProvider(PropertyEvaluator eval) {
+                    this.eval = eval;
+                    eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+                }
+                public Map getProperties() {
+                    String platformS = eval.getProperty("nbplatform.active"); // NOI18N
+                    if (platformS != null) {
+                        return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
+                    } else {
+                        return Collections.EMPTY_MAP;
+                    }
+                }
+                public void addChangeListener(ChangeListener l) {
+                    listeners.add(l);
+                }
+                public void removeChangeListener(ChangeListener l) {
+                    listeners.remove(l);
+                }
+                public void propertyChange(PropertyChangeEvent evt) {
+                    ChangeEvent ev = new ChangeEvent(this);
+                    Iterator it = listeners.iterator();
+                    while (it.hasNext()) {
+                        ((ChangeListener) it.next()).stateChanged(ev);
+                    }
+                }
             }
+            providers.add(new DestDirProvider(baseEval));
         }
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
