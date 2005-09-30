@@ -24,6 +24,8 @@ import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
@@ -82,6 +84,14 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         public IndexMenu() {
             Mnemonics.setLocalizedText(this, IndexOverviewAction.this.getName());
             //setIcon(IndexOverviewAction.this.getIcon());
+            // model listening is the only lazy menu procedure that works on macosx
+            getModel().addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    if (getModel().isSelected()) {
+                        getPopupMenu2();
+                    }
+                }
+            });
         }
         
         public HelpCtx getHelpCtx() {
@@ -89,12 +99,10 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         }
         
         public JComponent[] getMenuPresenters() {
-            getPopupMenu2();
             return new JComponent[] {this};
         }
         
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            getPopupMenu2();
             return items;
         }
         
