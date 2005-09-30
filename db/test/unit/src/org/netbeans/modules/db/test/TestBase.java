@@ -14,6 +14,7 @@
 package org.netbeans.modules.db.test;
 
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -29,6 +30,7 @@ public class TestBase extends NbTestCase {
         // set the lookup which will be returned by Lookup.getDefault()
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         assertEquals("Unable to set the default lookup!", Lkp.class, Lookup.getDefault().getClass());
+        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
     }
     
     public TestBase(String name) {
