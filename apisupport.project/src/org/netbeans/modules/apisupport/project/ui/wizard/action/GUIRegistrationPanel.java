@@ -254,16 +254,21 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                             DataFolder folder = (DataFolder) folders.nextElement();
                             sorted.add(new LayerItemPresenter(folder.getPrimaryFile(), parent, subFolderName != null));
                         }
-                        // create model
-                        DefaultComboBoxModel model = new DefaultComboBoxModel();
-                        for (Iterator it = sorted.iterator(); it.hasNext(); ) {
-                            model.addElement(it.next());
-                        }
-                        combo.setModel(model);
-                        // load positions combo
-                        if (comboPositions != null) {
-                            loadPositionsCombo((LayerItemPresenter) combo.getSelectedItem(),
-                                    comboPositions);
+                        if (sorted.size() == 0) {
+                            setEmptyModel(combo);
+                            setEmptyModel(comboPositions);
+                        } else {
+                            // create model
+                            DefaultComboBoxModel model = new DefaultComboBoxModel();
+                            for (Iterator it = sorted.iterator(); it.hasNext(); ) {
+                                model.addElement(it.next());
+                            }
+                            combo.setModel(model);
+                            // load positions combo
+                            if (comboPositions != null) {
+                                loadPositionsCombo((LayerItemPresenter) combo.getSelectedItem(),
+                                        comboPositions);
+                            }
                         }
                     }
                 });
