@@ -227,9 +227,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         tokens = new javax.swing.JLabel();
         tokensValue = new javax.swing.JTextField();
         appendImpl = new javax.swing.JCheckBox();
-        regularMod = new javax.swing.JRadioButton();
-        autoloadMod = new javax.swing.JRadioButton();
-        eagerMod = new javax.swing.JRadioButton();
         publicPkgs = new javax.swing.JLabel();
         publicPkgsSP = new javax.swing.JScrollPane();
         publicPkgsTable = new javax.swing.JTable();
@@ -241,6 +238,11 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         friendsSP = new javax.swing.JScrollPane();
         friendsList = new javax.swing.JList();
         exportOnlyToFriend = new javax.swing.JCheckBox();
+        typePanel = new javax.swing.JPanel();
+        regularMod = new javax.swing.JRadioButton();
+        autoloadMod = new javax.swing.JRadioButton();
+        eagerMod = new javax.swing.JRadioButton();
+        typeTxt = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -334,7 +336,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         add(tokensValue, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(appendImpl, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AppendImplementation"));
-        appendImpl.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        appendImpl.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         appendImpl.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -343,42 +345,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(appendImpl, gridBagConstraints);
-
-        moduleTypeGroup.add(regularMod);
-        regularMod.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(regularMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_RegularModule"));
-        regularMod.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        regularMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
-        add(regularMod, gridBagConstraints);
-
-        moduleTypeGroup.add(autoloadMod);
-        org.openide.awt.Mnemonics.setLocalizedText(autoloadMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AutoloadModule"));
-        autoloadMod.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        autoloadMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
-        add(autoloadMod, gridBagConstraints);
-
-        moduleTypeGroup.add(eagerMod);
-        org.openide.awt.Mnemonics.setLocalizedText(eagerMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_EagerModule"));
-        eagerMod.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        eagerMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(eagerMod, gridBagConstraints);
 
         publicPkgs.setLabelFor(publicPkgsTable);
         org.openide.awt.Mnemonics.setLocalizedText(publicPkgs, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_PublicPackages"));
@@ -462,7 +428,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         add(bottomPanel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(exportOnlyToFriend, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_ExportOnlyToFriends"));
-        exportOnlyToFriend.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        exportOnlyToFriend.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         exportOnlyToFriend.setEnabled(false);
         exportOnlyToFriend.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -472,6 +438,60 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
         add(exportOnlyToFriend, gridBagConstraints);
+
+        typePanel.setLayout(new java.awt.GridBagLayout());
+
+        moduleTypeGroup.add(regularMod);
+        regularMod.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(regularMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_RegularModule"));
+        regularMod.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        regularMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        typePanel.add(regularMod, gridBagConstraints);
+
+        moduleTypeGroup.add(autoloadMod);
+        org.openide.awt.Mnemonics.setLocalizedText(autoloadMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AutoloadModule"));
+        autoloadMod.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        autoloadMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        typePanel.add(autoloadMod, gridBagConstraints);
+
+        moduleTypeGroup.add(eagerMod);
+        org.openide.awt.Mnemonics.setLocalizedText(eagerMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_EagerModule"));
+        eagerMod.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        eagerMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        typePanel.add(eagerMod, gridBagConstraints);
+
+        typeTxt.setLabelFor(implVerValue);
+        org.openide.awt.Mnemonics.setLocalizedText(typeTxt, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_ModuleType"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        typePanel.add(typeTxt, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
+        add(typePanel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -546,6 +566,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     private javax.swing.JTextField specificationVerValue;
     private javax.swing.JLabel tokens;
     private javax.swing.JTextField tokensValue;
+    private javax.swing.JPanel typePanel;
+    private javax.swing.JLabel typeTxt;
     // End of variables declaration//GEN-END:variables
     
 }
