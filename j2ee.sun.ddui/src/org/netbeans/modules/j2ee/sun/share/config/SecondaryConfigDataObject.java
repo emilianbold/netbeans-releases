@@ -15,8 +15,6 @@ package org.netbeans.modules.j2ee.sun.share.config;
 
 import java.util.Collections;
 import java.util.Set;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -28,8 +26,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiFileLoader;
 
 import org.netbeans.modules.j2ee.sun.share.config.ui.ConfigBeanTopComponent;
-import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -46,15 +42,6 @@ public class SecondaryConfigDataObject extends ConfigDataObject {
     
     public boolean isSecondaryOf(ConfigDataObject primary) {
         return getPrimaryDataObject() == primary;
-    }
-    
-    public SunONEDeploymentConfiguration getDeploymentConfiguration() throws ConfigurationException {
-        // Request deployment configuration for SJSAS from j2eeserver module
-        ConfigDataObject p = getPrimaryDataObject();
-        FileObject fo = p.getPrimaryFile();
-        String serverId = getProvider().getServerID();
-        ConfigurationSupport.requestCreateConfiguration(fo, serverId);
-        return SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(fo));
     }
     
     private ConfigDataObject getPrimaryDataObject() {
@@ -99,7 +86,7 @@ public class SecondaryConfigDataObject extends ConfigDataObject {
 
     private OpenCookie _getOpenCookie() {
         ConfigDataObject cdo = getPrimaryDataObject();
-        return cdo == null ? null : (OpenCookie) cdo.getCookie(OpenCookie.class);
+        return cdo == null ? null : cdo.getOpenCookie();
     }
 
     public org.openide.nodes.Node.Cookie getCookie(Class c) {
