@@ -113,7 +113,7 @@ public class BuildZipDistributionTest extends TestBase {
         org.netbeans.modules.apisupport.project.Util.storeProperties(x, ep);
         
         SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
-        assertNotNull("Provider is here");
+        assertNotNull("Provider is here", p);
         
         List l = Arrays.asList(p.getSupportedActions());
         assertTrue("We support build-zip: " + l, l.contains("build-zip"));
