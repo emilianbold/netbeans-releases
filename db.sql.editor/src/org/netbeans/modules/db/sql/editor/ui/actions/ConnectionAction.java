@@ -14,7 +14,10 @@
 package org.netbeans.modules.db.sql.editor.ui.actions;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -173,9 +176,14 @@ public class ConnectionAction extends CookieAction {
             initComponents();
         }
         
+        public Dimension getMinimumSize() {
+            Dimension dim = super.getMinimumSize();
+            return new Dimension(0, dim.height);
+        }
+        
         private void initComponents() {
             JLabel comboLabel;
-            JComboBox combo;
+            final JComboBox combo;
             
             setLayout(new BorderLayout(4, 0));
             setBorder(new EmptyBorder(0, 2, 0, 8));
@@ -184,6 +192,12 @@ public class ConnectionAction extends CookieAction {
             combo = new JComboBox();
             ConnectionModel model = ConnectionAction.getConnectionModelForCookie(sqlCookie);
             combo.setModel(model);
+            combo.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    Object selectedItem = combo.getSelectedItem();
+                    combo.setToolTipText(selectedItem != null ? selectedItem.toString() : null);
+                }
+            });
             add(combo, BorderLayout.CENTER);
             
             comboLabel = new JLabel();
@@ -192,7 +206,6 @@ public class ConnectionAction extends CookieAction {
             // comboLabel.setToolTipText(NbBundle.getMessage(ConnectionAction.class, "HINT_ConnectionAction"));
             comboLabel.setOpaque(false);
             comboLabel.setLabelFor(combo);
-            
             add(comboLabel, BorderLayout.WEST);
         }
     }
