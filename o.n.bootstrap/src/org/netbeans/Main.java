@@ -39,7 +39,7 @@ public class Main extends Object {
         int res = execute (args, System.in, System.err, m);
         if (res == -1) {
             // Connected to another running NB instance and succeeded in making a call.
-            System.exit(0);
+            return;
         } else if (res != 0) {
             // Some CLIHandler refused the invocation
             System.exit(res);
