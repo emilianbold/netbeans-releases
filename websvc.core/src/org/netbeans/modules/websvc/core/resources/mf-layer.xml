@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle"
                     stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl.gif"/>
+                    urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl.png"/>
                 <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
             <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
