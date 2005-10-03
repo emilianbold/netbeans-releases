@@ -233,6 +233,7 @@ public class ConnectionAction extends CookieAction {
         
         public void setSelectedItem(Object object) {
             selectedItem = object;
+            connectionsChanged();
         }
         
         public Object getSelectedItem() {
