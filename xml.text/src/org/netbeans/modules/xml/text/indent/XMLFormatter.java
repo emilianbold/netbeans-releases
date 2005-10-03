@@ -211,7 +211,7 @@ public class XMLFormatter extends ExtFormatter {
                 TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
                 TokenItem origToken = token;
                 int start = token.getOffset();
-                if (token.getTokenContextPath().contains(XMLDefaultTokenContext.contextPath) &&
+                if (token.getTokenID() == XMLDefaultTokenContext.TAG &&
                         !token.getImage().endsWith("/>")) {
                     // > is a xml token which interests us
                     
