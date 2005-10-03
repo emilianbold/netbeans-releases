@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Shortcuts">
-        <file name="A-E.shadow">
+        <file name="O-E.shadow">
             <attr name="originalFile" stringvalue="Actions/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
         </file>
     </folder>
