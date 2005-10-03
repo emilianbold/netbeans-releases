@@ -133,7 +133,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
     <locjar 
       basedir="autoupdate/libsrc"
-      jarfile="${cluster}/core/updater.jar"
+      jarfile="${cluster}/modules/ext/updater.jar"
     />
 
   </target>
