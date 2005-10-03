@@ -466,30 +466,35 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if( null == dobj )
             return false;
         //check if the dropped button (action) already exists in this toolbar
-        InstanceCookie ic = (InstanceCookie)dobj.getCookie( InstanceCookie.class );
-        if( null != ic ) {
-            String instanceName = ic.instanceName();
-            DataObject[] children = backingFolder.getChildren();
-            for( int i=0; i<children.length; i++ ) {
-                if( null == children[i].getCookie( InstanceCookie.class ) )
-                    continue;
-                ic = (InstanceCookie)children[i].getCookie( InstanceCookie.class );
-                //TODO is comparing instance names ok?
-                if( instanceName.equals( ic.instanceName() ) ) {
-                    //user dropped to toolbat a new button that already exists in this toolbar
-                    //just move the existing button to a new position
-                    isDragSourceToolbar = true;
-                    return moveButton( children[i], dropIndex, dropBefore );
-                }
-            } 
+        String objName = dobj.getName();
+        DataObject[] children = backingFolder.getChildren();
+        for( int i=0; i<children.length; i++ ) {
+            //TODO is comparing DataObject names ok?
+            if( objName.equals( children[i].getName() ) ) {
+                //user dropped to toolbat a new button that already exists in this toolbar
+                //just move the existing button to a new position
+                isDragSourceToolbar = true;
+                return moveButton( children[i], dropIndex, dropBefore );
+            }
         }
 
         DataObject objUnderCursor = getDataObjectUnderDropCursor( dropIndex, dropBefore );
 
-        Node folderNode = backingFolder.getNodeDelegate();
-        DataObject copy = dobj.copy( backingFolder );
+        DataShadow shadow = DataShadow.create( backingFolder, dobj );
         
-        reorderButtons( copy, objUnderCursor );
+        //find the added object
+        DataObject newObj = null;
+        children = backingFolder.getChildren();
+        for( int i=0; i<children.length; i++ ) {
+            if( objName.equals( children[i].getName() ) ) {
+                newObj = children[i];
+                break;
+            }
+        }
+        
+        if( null != newObj )
+            reorderButtons( newObj, objUnderCursor ); //put the button to its proper position
+        
         return true;
     }
     
