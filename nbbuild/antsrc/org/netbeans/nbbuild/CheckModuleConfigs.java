@@ -144,6 +144,19 @@ public final class CheckModuleConfigs extends Task {
         if (!s.isEmpty()) {
             log(buildPropertiesFile + ": warning: stable config not equal to listed cluster modules: " + s);
         }
+        // Check that platform = modules in platform cluster:
+        Set/*<String>*/ platform = (Set) configs.get("platform");
+        Set/*<String>*/ platformCluster = (Set) clusters.get("nb.cluster.platform");
+        s = new TreeSet(platform);
+        s.removeAll(platformCluster);
+        if (!s.isEmpty()) {
+            log(buildPropertiesFile + ": warning: platform config not equal to platform cluster modules: " + s);
+        }
+        s = new TreeSet(platformCluster);
+        s.removeAll(platform);
+        if (!s.isEmpty()) {
+            log(buildPropertiesFile + ": warning: platform config not equal to platform cluster modules: " + s);
+        }
     }
     
     private Map/*<String,String>*/ loadPropertiesFile(File f) throws BuildException {
