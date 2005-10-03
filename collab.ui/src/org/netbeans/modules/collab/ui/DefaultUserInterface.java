@@ -91,7 +91,6 @@ public class DefaultUserInterface extends UserInterface {
     public void initialize(CollabManager manager) throws CollabException {
         IdleDetectionListener.attach();
         NotificationBar.install();
-        OnlineStatusIndicator.install();
     }
 
     /**
@@ -101,8 +100,6 @@ public class DefaultUserInterface extends UserInterface {
     public void deinitialize() {
         conversationNodes.clear();
 
-        //		dialogWRef=new WeakReference(null);
-        OnlineStatusIndicator.uninstall();
         NotificationBar.uninstall();
         IdleDetectionListener.detatch();
         NotificationRegistry.deinitialize();

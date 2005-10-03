@@ -1,0 +1,4 @@
+1.0.3:	fixed memory leak #63910
+
+1.0.4:	fixed memory leak #63911
+	Proper way of providing status component, fixes #64110
