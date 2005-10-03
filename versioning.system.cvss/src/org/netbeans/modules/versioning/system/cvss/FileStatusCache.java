@@ -544,7 +544,12 @@ public class FileStatusCache {
                 return new FileInformation(FileInformation.STATUS_UNKNOWN, false);
             }                    
         } else if (repositoryStatus == REPOSITORY_STATUS_UPDATED) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, isDirectory);
+            if (file.exists()) {
+                // the file should be fetched from server but it already exists locally, this will create a conflict
+                return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, isDirectory);
+            } else {
+                return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, isDirectory);
+            }
         } else if (repositoryStatus == REPOSITORY_STATUS_UPTODATE) {
             if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);

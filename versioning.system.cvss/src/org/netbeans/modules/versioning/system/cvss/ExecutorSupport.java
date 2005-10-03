@@ -15,15 +15,11 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.event.*;
-import org.netbeans.lib.cvsclient.command.GlobalOptions;
-import org.netbeans.lib.cvsclient.command.Command;
-import org.netbeans.lib.cvsclient.command.BasicCommand;
-import org.netbeans.lib.cvsclient.command.CommandException;
+import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.CommandDuplicator;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RootWizard;
 import org.netbeans.modules.versioning.system.cvss.ui.UIUtils;
-import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -251,7 +247,26 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
 
     public void fileInfoGenerated(FileInfoEvent e) {
         assert !terminated;
+        FileInfoContainer fic = e.getInfoContainer();
+        if (fic instanceof DefaultFileInfoContainer) {
+            // filter out duplicate events, see org.netbeans.lib.cvsclient.response.UpdatedResponse.process()
+            // ? file.txt, U file.txt and C file.txt can all be fired for a single file in any order 
+            for (Iterator i = toRefresh.iterator(); i.hasNext();) {
+                FileInfoContainer existing = (FileInfoContainer) i.next();
+                if (existing.getFile().equals(fic.getFile())) {
+                    String existingType = ((DefaultFileInfoContainer) existing).getType();
+                    String newType = ((DefaultFileInfoContainer) fic).getType();
+                    if (importance(newType) <= importance(existingType)) return;
+                    i.remove();
+                    break;
+                }
+            }
+        }
         toRefresh.add(e.getInfoContainer());
+    }
+
+    private int importance(String type) {
+        return "UC".indexOf(type);
     }
 
     public void commandTerminated(TerminationEvent e) {
