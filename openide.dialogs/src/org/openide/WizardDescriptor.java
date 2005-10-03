@@ -2056,7 +2056,8 @@ public class WizardDescriptor extends DialogDescriptor {
             JSeparator sep = new JSeparator();
             sep.setForeground(Color.darkGray);
 
-            add(new JScrollPane (fullRightPanel), BorderLayout.CENTER);
+            // #65506: the wizard panel should fit into window w/o scrollbar
+            add(fullRightPanel, BorderLayout.CENTER);
             add(sep, BorderLayout.SOUTH);
         }
 
