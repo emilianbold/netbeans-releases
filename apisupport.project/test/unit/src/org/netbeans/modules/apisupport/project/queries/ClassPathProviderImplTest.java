@@ -248,7 +248,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/core.jar"));
         // cp.extra:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/updater.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/ext/updater.jar"));
         // module JAR:
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-modules-autoupdate.jar"));
         expectedRoots.add(urlForJar("xtest/lib/junit.jar")); // note: in running IDE this is different! modules/ext/junit-3.8.1.jar
