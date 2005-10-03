@@ -241,6 +241,10 @@ public class CvsVersioningSystem {
      * @return true, if the file is ignored by CVS, false otherwise.
      */
     boolean isIgnored(File file) {
+        if (file.isDirectory()) {
+            File cvsRepository = new File(file, FILENAME_CVS_REPOSITORY);
+            if (cvsRepository.canRead()) return false;
+        }
         String name = file.getName();
         Set patterns = new HashSet(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
         addUserPatterns(patterns);
