@@ -71,14 +71,28 @@ public final class ExecutorGroup implements Cancellable {
     }
 
     /**
+     * Starts associated progress if not yet started. Allows to share
+     * progress with execution preparation phase (cache ops).
+     *
+     * @param details progress detail messag eor null
+     */
+    public void progress(String details) {
+        if (progressHandle == null) {
+            progressHandle = ProgressHandleFactory.createHandle(name, this);
+            progressHandle.start();
+        }
+
+        if (details != null) {
+            progressHandle.progress(details);
+        }
+    }
+
+    /**
      * Called by ExecutorSupport on enqueue.
      * @return true for the first command in given queue
      */
     synchronized boolean start(ClientRuntime queue) {
-        if (started.isEmpty()) {
-            progressHandle = ProgressHandleFactory.createHandle(name, this);
-            progressHandle.start();
-        }
+        progress(null);
 
         int i = 1;
         Integer counter = (Integer) started.get(queue);

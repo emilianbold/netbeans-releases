@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
@@ -45,7 +46,18 @@ public final class UpdateWithDependenciesAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    protected void performAction(Node[] nodes) {
+    protected void performAction(final Node[] nodes) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                async(nodes);
+            }
+        });
+    }
+
+    private void async(Node[] nodes) {
+
+        ExecutorGroup group = new ExecutorGroup("Updating with Dependencies");
+        group.progress("Preparing Update");
 
         Set projects = new HashSet();
         Set contexts = new LinkedHashSet();
@@ -56,7 +68,6 @@ public final class UpdateWithDependenciesAction extends NodeAction {
             addUpdateContexts(contexts, project, projects);
         }
 
-        ExecutorGroup group = new ExecutorGroup("Updating with Dependencies");
         if (contexts.size() > 0) {
             Iterator it = contexts.iterator();
             while (it.hasNext()) {
