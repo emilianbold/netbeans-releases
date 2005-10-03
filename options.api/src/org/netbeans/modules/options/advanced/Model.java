@@ -46,9 +46,10 @@ import org.openide.util.Lookup;
  */
 public final class Model extends TabbedPanelModel {
     
-    private Map categoryToOption = new HashMap ();
-    private Map categoryToPanel = new HashMap ();
-    private Map categoryToController = new HashMap ();
+    private Map         categoryToOption = new HashMap ();
+    private Map         categoryToPanel = new HashMap ();
+    private Map         categoryToController = new HashMap ();
+    private Lookup      masterLookup;
 
     
     public List getCategories () {
@@ -65,7 +66,7 @@ public final class Model extends TabbedPanelModel {
         AdvancedOption option = (AdvancedOption) categoryToOption.get (category);
         PanelController controller = option.create ();
         categoryToController.put (category, controller);
-        panel = controller.getComponent ();
+        panel = controller.getComponent (masterLookup);
         categoryToPanel.put (category, panel);
         Border b = panel.getBorder ();
         if (b != null)
@@ -147,6 +148,10 @@ public final class Model extends TabbedPanelModel {
             AdvancedOption option = (AdvancedOption) it.next ();
             categoryToOption.put (option.getDisplayName (), option);
         }
+    }
+    
+    void setLoookup (Lookup masterLookup) {
+        this.masterLookup = masterLookup;
     }
 }
 

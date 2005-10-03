@@ -47,6 +47,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.options.*;
 
@@ -140,5 +141,9 @@ public final class AdvancedPanel extends JPanel {
     
     public boolean isChanged () {
         return model.isValid ();
+    }
+    
+    void setLoookup (Lookup masterLookup) {
+        model.setLoookup (masterLookup);
     }
 }

@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
   
 /**
@@ -49,7 +50,7 @@ public final class FontAndColorsPanelController extends PanelController {
         return fontAndColorsPanel.isChanged ();
     }
     
-    public JComponent getComponent () {
+    public JComponent getComponent (Lookup masterLookup) {
         return fontAndColorsPanel;
     }
     

@@ -39,6 +39,9 @@ import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.NewAction;
@@ -115,6 +118,8 @@ public class OptionsWindowAction extends AbstractAction {
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
         dialog.setVisible (true);
+        
+        descriptor = null;
     }
     
     private static String loc (String key) {
@@ -169,18 +174,35 @@ public class OptionsWindowAction extends AbstractAction {
         
         public void actionPerformed (ActionEvent e) {
             if (e.getSource () == bOK) {
-                optionsPanel.save ();
                 dialog.setVisible (false);
+                optionsPanel.save ();
                 dialog = null;
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION) {
-                optionsPanel.cancel ();
                 dialog.setVisible (false);
+                optionsPanel.cancel ();
                 dialog = null;
             } else
             if (e.getSource () == bClassic) {
-                optionsPanel.cancel ();
-                dialog.setVisible (false);
+                if (optionsPanel.isChanged ()) {
+                    Confirmation descriptor = new Confirmation (
+                        "CTL_Some_values_changed", 
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE
+                    );
+                    if (DialogDisplayer.getDefault ().notify (descriptor) ==
+                        NotifyDescriptor.OK_OPTION
+                    ) {
+                        dialog.setVisible (false);
+                        optionsPanel.save ();
+                    } else {
+                        dialog.setVisible (false);
+                        optionsPanel.cancel ();
+                    }
+                } else {
+                    dialog.setVisible (false);
+                    optionsPanel.cancel ();
+                }
                 dialog = null;
                 try {
                     ClassLoader cl = (ClassLoader) Lookup.getDefault ().

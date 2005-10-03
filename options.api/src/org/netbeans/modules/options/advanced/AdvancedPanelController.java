@@ -19,6 +19,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
   
 /**
@@ -51,7 +52,8 @@ public final class AdvancedPanelController extends PanelController {
         return advancedPanel.isChanged ();
     }
     
-    public JComponent getComponent () {
+    public JComponent getComponent (Lookup masterLookup) {
+        advancedPanel.setLoookup (masterLookup);
         return advancedPanel;
     }
     

@@ -89,6 +89,8 @@ import org.openide.util.RequestProcessor;
 
 import org.openide.util.Utilities;
 import org.netbeans.modules.options.ui.ShadowBorder;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -154,18 +156,29 @@ public class OptionsPanel extends JPanel {
         
         // size of options panel shoud be max of all nested panels
         int maxW = 0, maxH = 0;
+        List lookups = new ArrayList ();
         int i, k = optionCategories.size ();
         for (i = 0; i < k; i++) {
-            OptionsCategory ocp = (OptionsCategory) optionCategories.
+            OptionsCategory category = (OptionsCategory) optionCategories.
                 get (i);
-            PanelController controller = ocp.create ();
-            categoryToController.put (ocp, controller);
+            PanelController controller = category.create ();
+            lookups.add (controller.getLookup ());
+            categoryToController.put (category, controller);
             controller.addPropertyChangeListener (coltrollerListener);
-            JComponent component = controller.getComponent ();
-            categoryToPanel.put (ocp, component);
+        }
+        Lookup masterLookup = new ProxyLookup 
+            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
+        k = optionCategories.size ();
+        for (i = 0; i < k; i++) {
+            OptionsCategory category = (OptionsCategory) optionCategories.
+                get (i);
+            PanelController controller = (PanelController) 
+                categoryToController.get (category);
+            JComponent component = controller.getComponent (masterLookup);
+            categoryToPanel.put (category, component);
             maxW = Math.max (maxW, component.getPreferredSize ().width);
             maxH = Math.max (maxH, component.getPreferredSize ().height);
-            //S ystem.out.println (ocp.getCategoryName () + " : " + component.getPreferredSize ());
+            //S ystem.out.println (category.getCategoryName () + " : " + component.getPreferredSize ());
         }
         pOptions.setPreferredSize (new Dimension (maxW, maxH));
 
@@ -224,9 +237,9 @@ public class OptionsPanel extends JPanel {
         );
         getActionMap ().put ("DOWN", new DownAction ());
         for (i = 0; i < k; i++) {
-            final OptionsCategory ocp = (OptionsCategory) 
+            final OptionsCategory category = (OptionsCategory) 
                 optionCategories.get (i);
-            Button b = new Button (ocp, i);
+            Button b = new Button (category, i);
             buttons [i] = b;
             int mnemonic = b.getDisplayedMnemonic ();
             KeyStroke keyStroke = KeyStroke.getKeyStroke 
@@ -289,21 +302,21 @@ public class OptionsPanel extends JPanel {
         if (i != -1)
             buttons [i].setSelected ();
         currentCategory = i;
-        OptionsCategory ocp = (OptionsCategory) 
+        OptionsCategory category = (OptionsCategory) 
             optionCategories.get (i);
         pOptions.removeAll ();
-        if (updatedCategories.contains (ocp))
+        if (updatedCategories.contains (category))
             pOptions.add (
                 "Center",
-                (JComponent) categoryToPanel.get (ocp)
+                (JComponent) categoryToPanel.get (category)
             );
         else {
             JLabel label = new JLabel ("Loading Settings ...");
             label.setHorizontalAlignment (label.CENTER);
             pOptions.add ("Center", label);
         }
-        lTitle.setIcon (new ImageIcon (Utilities.loadImage (ocp.getIconBase () + ".png")));
-        lTitle.setText (ocp.getTitle ());
+        lTitle.setIcon (new ImageIcon (Utilities.loadImage (category.getIconBase () + ".png")));
+        lTitle.setText (category.getTitle ());
         invalidate ();
         validate ();
         repaint ();
@@ -311,10 +324,10 @@ public class OptionsPanel extends JPanel {
     }
     
     HelpCtx getHelpCtx () {
-        OptionsCategory ocp = (OptionsCategory) 
+        OptionsCategory category = (OptionsCategory) 
             optionCategories.get (getCurrentIndex ());
         PanelController controller = (PanelController) categoryToController.
-            get (ocp);
+            get (category);
         return controller.getHelpCtx ();
     }
     
@@ -397,12 +410,12 @@ public class OptionsPanel extends JPanel {
         
         private int index;
         
-        Button (OptionsCategory ocp, int index) {
+        Button (OptionsCategory category, int index) {
             super (
-                new ImageIcon (Utilities.loadImage (ocp.getIconBase () + ".png"))
+                new ImageIcon (Utilities.loadImage (category.getIconBase () + ".png"))
             );
             this.index = index;
-            Mnemonics.setLocalizedText (this, ocp.getCategoryName ());
+            Mnemonics.setLocalizedText (this, category.getCategoryName ());
             setOpaque (true);
             setVerticalTextPosition (BOTTOM);
             setHorizontalTextPosition (CENTER);

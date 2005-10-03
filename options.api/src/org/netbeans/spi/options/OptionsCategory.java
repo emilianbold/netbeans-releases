@@ -16,6 +16,7 @@ package org.netbeans.spi.options;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 
 /**
@@ -123,11 +124,24 @@ public abstract class OptionsCategory {
         public abstract boolean isChanged ();
         
         /**
+         * Each option category can provide some lookup. Options Dialog master
+         * lookup is composed from these individual lookups. Master lookup
+         * can be obtained from {@link #getComponent} call. This lookup is design
+         * to support communication anong individual panels in one Options
+         * Dialog.
+         *
+         * @return lookup provided by this Options Dialog panel
+         */
+        public Lookup getLookup () {
+            return Lookup.EMPTY;
+        }
+        
+        /**
          * Returns visual component representing this options category.
          *
          * @return visual component representing this options category
          */
-        public abstract JComponent getComponent ();
+        public abstract JComponent getComponent (Lookup masterLookup);
 
         /** 
          * Get current help context asociated with this panel.

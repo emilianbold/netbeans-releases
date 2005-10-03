@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
   
 /**
@@ -53,7 +54,7 @@ public final class IndentationPanelController extends PanelController {
         return new HelpCtx ("netbeans.optionsDialog.editor.identation");
     }
     
-    public JComponent getComponent () {
+    public JComponent getComponent (Lookup masterLookup) {
         return indentationPanel;
     }
 
