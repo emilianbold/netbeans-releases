@@ -311,7 +311,7 @@ public class OptionsPanel extends JPanel {
                 (JComponent) categoryToPanel.get (category)
             );
         else {
-            JLabel label = new JLabel ("Loading Settings ...");
+            JLabel label = new JLabel (loc ("CTL_Loading_Options"));
             label.setHorizontalAlignment (label.CENTER);
             pOptions.add ("Center", label);
         }

@@ -186,7 +186,7 @@ public class OptionsWindowAction extends AbstractAction {
             if (e.getSource () == bClassic) {
                 if (optionsPanel.isChanged ()) {
                     Confirmation descriptor = new Confirmation (
-                        "CTL_Some_values_changed", 
+                        loc ("CTL_Some_values_changed"), 
                         NotifyDescriptor.OK_CANCEL_OPTION,
                         NotifyDescriptor.QUESTION_MESSAGE
                     );
