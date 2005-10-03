@@ -437,13 +437,13 @@ public final class Models {
             if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
                 if (ns.length != 1) return false;
                 return performer.isEnabled (
-                    ((TreeModelNode) ns [0]).getObject ()
+                    ns[0].getLookup().lookup(Object.class)
                 );
             }
             int i, k = ns.length;
             for (i = 0; i < k; i++)
                 if (!performer.isEnabled (
-                    ((TreeModelNode) ns [i]).getObject ()
+                    ns[0].getLookup().lookup(Object.class)
                  )) return false;
             return true;
         }
@@ -453,7 +453,7 @@ public final class Models {
             int i, k = ns.length;
             IdentityHashMap h = new IdentityHashMap ();
             for (i = 0; i < k; i++) {
-                Object node = ((TreeModelNode) ns [i]).getObject ();
+                Object node = ns[0].getLookup().lookup(Object.class);
                 Action[] as = ns [i].getActions (false);
                 int j, jj = as.length;
                 for (j = 0; j < jj; j++)
