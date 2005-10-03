@@ -40,18 +40,60 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 public class ClassPathUtils {
 
+    private static Map loaders = new WeakHashMap();
+
+    // class loading type - desired scope of classloader
+    static final int UNSPECIFIED_CLASS = 0; // external class from user project's classpath only
+    static final int SYSTEM_CLASS = 1; // class to be loaded by IDE system classloader (e.g. from a module)
+    static final int SYSTEM_CLASS_WITH_PROJECT = 2; // class to be loaded from a module by classloader including also project classpath
+
     /** Loads class from project classpath. Project is specified by arbitrary
      * file contained in the project.
      */
     public static Class loadClass(String name, FileObject fileInProject)
         throws ClassNotFoundException
     {
-        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
-        if (classPath == null) {
+        FormClassLoader fcl = getFormClassLoader(fileInProject);
+        if (fcl == null)
             throw new ClassNotFoundException(getBundleString("MSG_NullClassPath")); // NOI18N
-        }
-        return classPath.getClassLoader(true).loadClass(name);
+
+        return fcl.loadClass(name);
         // LinkageError left uncaught
+    }
+
+    public static boolean checkUserClass(String name, FileObject fileInProject) {
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+        if (classPath == null)
+            return false;
+
+        String fileName = name.replace('.', '/').concat(".class"); // NOI18N
+        return classPath.findResource(fileName) != null;
+    }
+
+    private static FormClassLoader getFormClassLoader(FileObject fileInProject) {
+        Project p = FileOwnerQuery.getOwner(fileInProject);
+        FormClassLoader fcl = (FormClassLoader) loaders.get(p);
+        
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+        if (classPath == null)
+            return null;
+        ClassLoader projectClassLoader = classPath.getClassLoader(true);
+        if (fcl == null || fcl.getProjectClassLoader() != projectClassLoader) {
+            fcl = new FormClassLoader(projectClassLoader);
+            loaders.put(p, fcl);
+        }
+        return fcl;
+    }
+
+    static int getClassLoadingType(String className) {
+        int i = className.lastIndexOf("[L");
+        if (i != -1)
+            className = className.substring(i+2, className.length()-1);
+        if (isClassLoaderType(className, SYSTEM_CLASS))
+            return SYSTEM_CLASS;
+        if (isClassLoaderType(className, SYSTEM_CLASS_WITH_PROJECT))
+            return SYSTEM_CLASS_WITH_PROJECT;
+        return UNSPECIFIED_CLASS;
     }
 
     /** Loads class from classpath described by ClassSource object.
@@ -289,5 +331,179 @@ public class ClassPathUtils {
 
     static String getBundleString(String key) {
         return NbBundle.getBundle(ClassPathUtils.class).getString(key);
+    }
+
+    // -----
+    // Registered class patterns for class loader type
+
+    private static FileObject patternSystemFolder;
+    private static FileObject patternSystemWithProjectFolder;
+
+    private static List patternsSystem;
+    private static List patternsSystemWithProject;
+
+    private static final String CL_LAYER_BASE = "org-netbeans-modules-form/classloader/"; // NOI18N
+    private static final String CL_SYSTEM_CLASS = "system"; // NOI18N
+    private static final String CL_SYSTEM_CLASS_WITH_PROJECT = "system_with_project"; // NOI18N
+
+    private static boolean isClassLoaderType(String className, int clType) {
+        List list = getClassPatterns(clType);
+        if (list == null)
+            return false;
+
+        Iterator it = list.iterator();
+        while (it.hasNext()) {
+            ClassPattern cp = (ClassPattern) it.next();
+            switch (cp.type) {
+                case (ClassPattern.CLASS):
+                    if (className.equals(cp.name))
+                        return true;
+                    break;
+                case (ClassPattern.PACKAGE):
+                    if (className.startsWith(cp.name) && (className.lastIndexOf('.') <= cp.name.length()))
+                        return true;
+                    break;
+                case (ClassPattern.PACKAGE_AND_SUBPACKAGES):
+                    if (className.startsWith(cp.name))
+                        return true;
+                    break;
+            }
+        }
+        return false;
+    }
+
+    private static List getClassPatterns(int clType) {
+        List list = null;
+        switch (clType) {
+            case SYSTEM_CLASS:
+                list = patternsSystem;
+                if (list == null) {
+                    list = loadClassPatterns(getClassPatternsFolder(clType));
+                    patternsSystem = list;
+                }
+                break;
+            case SYSTEM_CLASS_WITH_PROJECT:
+                list = patternsSystemWithProject;
+                if (list == null) {
+                    list = loadClassPatterns(getClassPatternsFolder(clType));
+                    patternsSystemWithProject = list;
+                }
+                break;
+        }
+        return list;
+    }
+
+    private static FileObject getClassPatternsFolder(int clType) {
+        FileObject folder = null;
+        switch (clType) {
+            case SYSTEM_CLASS:
+                folder = patternSystemFolder;
+                if (folder == null) {
+                    folder = getClassPatternsFolder(CL_SYSTEM_CLASS);
+                    if (folder == null)
+                        return null;
+                    // in case of any change in files make all the patterns reload
+                    folder.addFileChangeListener(new FileChangeAdapter() {
+                        public void fileDataCreated(FileEvent ev) {
+                            patternsSystem = null;
+                        }
+                        public void fileDeleted(FileEvent ev) {
+                            patternsSystem = null;
+                            if (ev.getFile() == patternSystemFolder) {
+                                patternSystemFolder.removeFileChangeListener(this);
+                                patternSystemFolder = null;
+                            }
+                        }
+                    });
+                    patternSystemFolder = folder;
+                }
+                break;
+            case SYSTEM_CLASS_WITH_PROJECT:
+                folder = patternSystemWithProjectFolder;
+                if (folder == null) {
+                    folder = getClassPatternsFolder(CL_SYSTEM_CLASS_WITH_PROJECT);
+                    if (folder == null)
+                        return null;
+                    // in case of any change in files make all the patterns reload
+                    folder.addFileChangeListener(new FileChangeAdapter() {
+                        public void fileDataCreated(FileEvent ev) {
+                            patternsSystemWithProject = null;
+                        }
+                        public void fileDeleted(FileEvent ev) {
+                            patternsSystemWithProject = null;
+                            if (ev.getFile() == patternSystemFolder) {
+                                patternSystemWithProjectFolder.removeFileChangeListener(this);
+                                patternSystemWithProjectFolder = null;
+                            }
+                        }
+                    });
+                    patternSystemWithProjectFolder = folder;
+                }
+                break;
+        }
+        return folder;
+    }
+
+    private static FileObject getClassPatternsFolder(String folderName) {
+        FileObject folder = null;
+        if (folderName != null) {
+            try {
+                folder = Repository.getDefault().getDefaultFileSystem()
+                             .findResource(CL_LAYER_BASE + folderName); // NOI18N
+            }
+            catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        return folder;
+    }
+
+    private static List loadClassPatterns(FileObject folder) {
+        List list = new ArrayList();
+        if (folder == null)
+            return list;
+
+        FileObject[] files = folder.getChildren();
+        for (int i=0; i < files.length; i++) {
+            try {
+                BufferedReader r = new BufferedReader(new InputStreamReader(files[i].getInputStream()));
+                String line = r.readLine();
+                while (line != null) {
+                    if (!line.equals("")) { // NOI18N
+                        ClassPattern cp;
+                        if (line.endsWith("**")) { // NOI18N
+                            cp = new ClassPattern(line.substring(0, line.length()-2),
+                                                  ClassPattern.PACKAGE_AND_SUBPACKAGES);
+                        }
+                        else if (line.endsWith("*")) { // NOI18N
+                            cp = new ClassPattern(line.substring(0, line.length()-1),
+                                                  ClassPattern.PACKAGE);
+                        }
+                        else {
+                            cp = new ClassPattern(line, ClassPattern.CLASS);
+                        }
+                        list.add(cp);
+                    }
+                    line = r.readLine();
+                }
+            }
+            catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        return list;
+    }
+
+    private static class ClassPattern {
+        static final int CLASS = 0;
+        static final int PACKAGE = 1;
+        static final int PACKAGE_AND_SUBPACKAGES = 2;
+        String name;
+        int type;
+        
+        ClassPattern(String name, int type) {
+            this.name = name;
+            this.type = type;
+        }
     }
 }

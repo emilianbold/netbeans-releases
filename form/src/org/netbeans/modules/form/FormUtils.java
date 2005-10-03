@@ -358,12 +358,6 @@ public class FormUtils
         "javax.swing.JFileChooser", // NOI18N
     };
     
-    private static ClassPattern[] designTimeClasses = new ClassPattern[] {
-        new ClassPattern("org.netbeans.modules.form.", ClassPattern.PACKAGE_AND_SUBPACKAGES), // NOI18N
-        new ClassPattern("org.netbeans.beaninfo.editors.", ClassPattern.PACKAGE), // NOI18N
-        new ClassPattern("org.netbeans.modules.i18n.form.", ClassPattern.PACKAGE) // NOI18N
-    };
-
     // -----------------------------------------------------------------------------
     // Utility methods
 
@@ -997,50 +991,15 @@ public class FormUtils
 
     /** Loads a class of a component to be used (instantiated) in the form
      * editor. The class might be either a support class being part of the IDE,
-     * or a user class defined externally (by a project classpath). This methods
-     * tries both ways. There are also separate loadSystemClass and
-     * loadUserClass methods available.
+     * or a user class defined externally (by a project classpath).
+     * There are also separate loadSystemClass for loading a module class only.
      * @param name String name of the class
      * @param formFile FileObject representing the form file as part of a project
      */
     public static Class loadClass(String name, FileObject formFile)
         throws ClassNotFoundException
     {
-        if (isDesignTimeClass(name)) {
-            // first try the system classloader (for IDE and module stuff
-            // like property editors, form support classes, etc)
-            try {
-                return loadSystemClass(name);
-            }
-            catch (ClassNotFoundException ex) {
-            // ignore, likely this is not the right classloader
-            }
-            catch (LinkageError ex) {
-                // some problem during loading [should not be left uncaught here?]
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-            if (formFile != null) { // fall back to project class loader
-                return loadUserClass(name, formFile);
-            }
-        }
-        else { // first try the project class loader (for user classes)
-            if (formFile != null) {
-                try {
-                    return loadUserClass(name, formFile);
-                }
-                catch (ClassNotFoundException ex) {
-                // ignore, likely this is not the right classloader
-                }
-                catch (LinkageError ex) {
-                    // some problem during loading [should not be left uncaught here?]
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
-            }
-            // fall back to system class loader (for IDE classes)
-            return loadSystemClass(name);
-        }
-
-        throw new ClassNotFoundException(); // classpath unknown
+        return ClassPathUtils.loadClass(name, formFile);
     }
 
     public static Class loadClass(String name, FormModel form)
@@ -1059,72 +1018,6 @@ public class FormUtils
             throw new ClassNotFoundException();
 
         return loader.loadClass(name);
-    }
-
-    /** Loads a class from a class path of a user project specified by given
-     * form file placed somewhere in the project.
-     */
-    public static Class loadUserClass(String name, FileObject formFile)
-        throws ClassNotFoundException
-    {
-        return ClassPathUtils.loadClass(name, formFile);
-    }
-
-//    public static Class loadUserClass(String name, FormModel form)
-//        throws ClassNotFoundException
-//    {
-//        return loadUserClass(name, FormEditorSupport.getFormDataObject(form).getFormFile());
-//    }
-    
-    public static synchronized void registerDesignTimeClass(String pattern) {
-        ClassPattern[] patterns = new ClassPattern[designTimeClasses.length + 1];
-        System.arraycopy(designTimeClasses, 0, patterns, 0, designTimeClasses.length);
-        ClassPattern classPattern;
-        if (pattern.endsWith("**")) { // NOI18N
-            classPattern = new ClassPattern(
-                pattern.substring(0, pattern.length()-2),
-                ClassPattern.PACKAGE_AND_SUBPACKAGES);
-        } else if (pattern.endsWith("*")) { // NOI18N
-            classPattern = new ClassPattern(
-                pattern.substring(0, pattern.length()-1),
-                ClassPattern.PACKAGE);
-        } else {
-            classPattern = new ClassPattern(pattern, ClassPattern.CLASS);
-        }
-        patterns[designTimeClasses.length] = classPattern;
-        designTimeClasses = patterns;
-    }
-
-    static boolean isDesignTimeClass(String className) {
-        for (int i=0; i<designTimeClasses.length; i++) {
-            ClassPattern pattern = designTimeClasses[i];
-            switch (pattern.type) {
-                case (ClassPattern.CLASS):
-                    if (className.equals(pattern.name)) return true;
-                    break;
-                case (ClassPattern.PACKAGE):
-                    if (className.startsWith(pattern.name)
-                        && (className.lastIndexOf('.') <= pattern.name.length())) return true;
-                    break;
-                case (ClassPattern.PACKAGE_AND_SUBPACKAGES):
-                    if (className.startsWith(pattern.name)) return true;
-                    break;
-            }
-        }
-        return false;
-    }
-    
-    private static class ClassPattern {
-        static final int CLASS = 0;
-        static final int PACKAGE = 1;
-        static final int PACKAGE_AND_SUBPACKAGES = 2;
-        String name;
-        int type;
-        
-        ClassPattern(String name, int type) {
-            this.name = name;
-            this.type = type;
-        }
     }
 
     // ---------

@@ -480,4 +480,14 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder>
 
+    <!-- form class loader type registration -->
+    <folder name="org-netbeans-modules-form">
+        <folder name="classloader">
+            <folder name="system">
+                <file name="SystemClasses.txt" url="SystemClasses.txt" />
+            </folder>
+            <folder name="system_with_project"/>
+        </folder>
+    </folder>
+
 </filesystem>

@@ -1,0 +1,4 @@
+org.netbeans.modules.form.**
+org.netbeans.beaninfo.editors.*
+org.netbeans.modules.i18n.form.*
+org.openide.explorer.propertysheet.editors.*

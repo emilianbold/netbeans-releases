@@ -1139,32 +1139,11 @@ public class MetaComponentCreator {
         FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
         String className = classSource.getClassName();
         Class loadedClass = null;
-        boolean canReplace = false;
         try {
-            try {
-                loadedClass = ClassPathUtils.loadClass(className, formFile);
-                canReplace = true;
+            if (!ClassPathUtils.checkUserClass(className, formFile)) {
+                ClassPathUtils.updateProject(formFile, classSource);
             }
-            catch (ClassNotFoundException ex) {
-                error = ex;
-            }
-
-            if (loadedClass == null) {
-                // class loading failed - try to add necessary classpath resources
-                // to the project's classpath
-                if (ClassPathUtils.updateProject(formFile, classSource)) {
-                    // try again to load the class
-                    try {
-                        loadedClass = ClassPathUtils.loadClass(className, formFile);
-                        canReplace = true;
-                    }
-                    catch (ClassNotFoundException ex) {
-                        error = ex;
-                    }
-                } else {
-                    loadedClass = FormUtils.loadSystemClass(className);
-                }
-            }
+            loadedClass = ClassPathUtils.loadClass(className, formFile);
         }
         catch (Exception ex) {
             error = ex;
@@ -1175,11 +1154,6 @@ public class MetaComponentCreator {
 
         if (loadedClass == null) {
             showClassLoadingErrorMessage(error, classSource);
-        }
-        else if (canReplace && FormUtils.isDesignTimeClass(className)) {
-            try {
-                loadedClass = FormUtils.loadSystemClass(className);
-            } catch (ClassNotFoundException cnfex) {}
         }
         
         return loadedClass;
