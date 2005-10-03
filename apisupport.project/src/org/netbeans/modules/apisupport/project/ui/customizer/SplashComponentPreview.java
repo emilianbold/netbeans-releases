@@ -60,12 +60,19 @@ class SplashComponentPreview extends JLabel {
     private int barStart = 0;
     private int barLength = 0;
     
+    private DragManager dragManager;
+    private DragManager.DragItem textDragItem;    
+    private DragManager.DragItem progressDragItem;
+    
     
     /**
      * Creates a new splash screen component.
      */
     public SplashComponentPreview() {                
         setBorder(new TitledBorder(NbBundle.getMessage(getClass(),"LBL_SplashPreview")));
+        dragManager = new DragManager(this);
+        textDragItem = dragManager.createNewItem();
+        progressDragItem = dragManager.createNewItem();
     }
     
     void setFontSize(final String fontSize) throws NumberFormatException {
@@ -85,6 +92,13 @@ class SplashComponentPreview extends JLabel {
         //this.image = image.getScaledInstance(398, 299, Image.SCALE_DEFAULT);
     }
     
+    void setDropHandletForProgress (DragManager.DropHandler dHandler) {
+        this.progressDragItem.setDropHandler(dHandler);
+    }
+
+    void setDropHandletForText (DragManager.DropHandler dHandler) {
+        this.textDragItem.setDropHandler(dHandler);
+    }
     
     void setFontSize(final int size) throws NumberFormatException {
         Font font = new Font("Dialog", Font.PLAIN, size); // NOI18N
@@ -105,6 +119,7 @@ class SplashComponentPreview extends JLabel {
     
     void setProgressBarBounds(final Rectangle bounds) throws NumberFormatException {
         bar = bounds;
+        progressDragItem.setRectangle(bar);
     }
     
     void setColorCorner(final Color color) throws NumberFormatException {
@@ -145,6 +160,7 @@ class SplashComponentPreview extends JLabel {
                 SwingUtilities.layoutCompoundLabel(fm, text, null,
                         SwingConstants.BOTTOM, SwingConstants.LEFT, SwingConstants.BOTTOM, SwingConstants.LEFT,
                         SplashComponentPreview.this.view, new Rectangle(), rect, 0);
+                textDragItem.setRectangle(rect);
                 dirty = dirty.union(rect);
                 // update screen (assume repaint manager optimizes unions;)
 //                repaint(dirty);
@@ -253,11 +269,11 @@ class SplashComponentPreview extends JLabel {
         
         
         tx.translate(x, y);
-        
-        //tx.scale(((double)width)/((double)image.getWidth(null)),((double)height)/((double)image.getHeight(null)));
+        dragManager.setTranslate(x,y);
         g2d.setTransform(tx);
         
         originalPaint(g);
+        dragManager.paint(g);
     }
     
     public void originalPaint(Graphics graphics) {

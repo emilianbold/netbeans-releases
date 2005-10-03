@@ -67,6 +67,20 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         barColor = SplashUISupport.getColorComboBox();
         edgeColor = SplashUISupport.getColorComboBox();
         cornerColor = SplashUISupport.getColorComboBox();
+        splashImage.setDropHandletForProgress(new DragManager.DropHandler(){
+            public void dragAccepted(Rectangle original, Rectangle afterDrag) {
+                progressBarBounds.setValue(afterDrag);
+            }            
+        });
+        
+        splashImage.setDropHandletForText(new DragManager.DropHandler(){
+            public void dragAccepted(Rectangle original, Rectangle afterDrag) {
+                runningTextBounds.setValue(afterDrag);
+                double ratio = ((double)afterDrag.height)/original.height;
+                int size = (int)((((Number)fontSize.getValue()).intValue()*ratio));
+                fontSize.setValue(new Integer(size));
+            }
+        });
         
         initComponents();
         refresh();
@@ -86,7 +100,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         
         fontSize.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             
-            public void insertUpdate(DocumentEvent e) {                
+            public void insertUpdate(DocumentEvent e) {
                 if (e != null || fontSize.isFocusOwner()) {
                     try {
                         fontSize.commitEdit();
@@ -98,12 +112,12 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                         setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidFontSize"));
                     }
                 }
-            }            
+            }
         });
         
         runningTextBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                if (e != null || runningTextBounds.isFocusOwner()) {                
+                if (e != null || runningTextBounds.isFocusOwner()) {
                     try {
                         runningTextBounds.commitEdit();
                         setErrorMessage(null);
@@ -113,12 +127,12 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                         setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidTextBounds"));
                     }
                 }
-            }            
+            }
         });
         
-        progressBarBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {            
+        progressBarBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                if (e != null || progressBarBounds.isFocusOwner()) {                
+                if (e != null || progressBarBounds.isFocusOwner()) {
                     try {
                         progressBarBounds.commitEdit();
                         setErrorMessage(null);
@@ -151,7 +165,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         branding.getSplash().setBrandingSource(splashSource);
         
         branding.getSplashWidth().setValue(Integer.toString(splashImage.image.getWidth(null),10));
-        branding.getSplashHeight().setValue(Integer.toString(splashImage.image.getHeight(null),10));        
+        branding.getSplashHeight().setValue(Integer.toString(splashImage.image.getHeight(null),10));
     }
     
     
@@ -213,8 +227,8 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         splashImage.setRunningTextBounds((Rectangle)runningTextBounds.getValue());
         splashImage.setProgressBarBounds((Rectangle)progressBarBounds.getValue());
         splashImage.setProgressBarEnabled(progressBarEnabled.isSelected());
-        splashImage.resetSteps();        
-        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));        
+        splashImage.resetSteps();
+        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));
     }
     
     /** This method is called from within the constructor to
