@@ -134,7 +134,7 @@ public class Deadlock60917Test extends NbTestCase {
 		assertEquals("Still remains the same old object: ", our, awt.arr[0]);
     }
     
-    public void XtestWhatHappenUnderLock () throws Exception {
+    public void testWhatHappenUnderLock () throws Exception {
         org.openide.nodes.Children.MUTEX.readAccess (new org.openide.util.Mutex.ExceptionAction () {
             public Object run () throws Exception {
                 testWhatHappensWhenALoaderBecomesInvalidAndFileIsOpened();

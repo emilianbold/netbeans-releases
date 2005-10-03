@@ -128,6 +128,13 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         InstanceCookie ic = (InstanceCookie)instance.getCookie(InstanceCookie.class);
         assertNotNull("InstanceCookie is there", ic);
         assertEquals("Is the same as from instance", v, ic.instanceCreate());
+        
+        if (DataFolderIndexTest.ErrManager.messages.indexOf("Preventing deadlock") == -1) {
+            fail("There should be a warning in the log: " + DataFolderIndexTest.ErrManager.messages);
+        }
+        if (DataFolderIndexTest.ErrManager.messages.indexOf("65543") == -1) {
+            fail("There should be a warning in the log: " + DataFolderIndexTest.ErrManager.messages);
+        }
     }
     
     
@@ -139,6 +146,7 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         private Lkp(InstanceContent ic) {
             super(ic);
             ic.add(new Pool());
+            ic.add(new DataFolderIndexTest.ErrManager ());
         }
     }
     

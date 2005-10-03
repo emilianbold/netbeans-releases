@@ -181,7 +181,7 @@ public class DataFolderIndexTest extends NbTestCase {
         }
     }
 
-    private static final class ErrManager extends org.openide.ErrorManager {
+    static final class ErrManager extends org.openide.ErrorManager {
         static final StringBuffer messages = new StringBuffer();
         static int nOfMessages;
         static final String DELIMITER = ": ";

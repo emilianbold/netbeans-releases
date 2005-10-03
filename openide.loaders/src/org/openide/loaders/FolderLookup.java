@@ -353,10 +353,20 @@ public class FolderLookup extends FolderInstance {
             // do not wait in folder recognizer, but in all other cases
             if (
                 !FolderList.isFolderRecognizerThread() &&
-                ICItem.DANGEROUS.get() == null &&
-                !DataObjectPool.isConstructorAllowed()
+                ICItem.DANGEROUS.get() == null
             ) {
-                fl.waitFinished();
+                if (!DataObjectPool.isConstructorAllowed()) {
+                    fl.waitFinished();
+                } else {
+                    try {
+                        // try a bit but prevent deadlock from CanYouQueryFolderLookupFromHandleFindTest
+                        if (!fl.waitFinished(10000)) {
+                            fl.err().notify(ErrorManager.WARNING, new InterruptedException("Preventing deadlock #65543: Do not call FolderLookup from inside DataObject operations!")); // NOI18N
+                        }
+                    } catch (InterruptedException ex) {
+                        fl.err().notify(ex);
+                    }
+                }
             }
         }
         
