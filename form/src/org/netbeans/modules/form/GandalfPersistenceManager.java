@@ -4918,22 +4918,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (text == null)
             return ""; // NOI18N
 
-        if (text.indexOf('&') != -1)
-            text = Utilities.replaceString(text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes // NOI18N
-        if (text.indexOf('<') != -1)
-            text = Utilities.replaceString(text, "<", "&lt;"); // NOI18N
-        if (text.indexOf('>') != -1)
-            text = Utilities.replaceString(text, ">", "&gt;"); // NOI18N
-        if (text.indexOf('\'') != -1)
-            text = Utilities.replaceString(text, "\'", "&apos;"); // NOI18N
-        if (text.indexOf('\"') != -1)
-            text = Utilities.replaceString(text, "\"", "&quot;"); // NOI18N
-        if (text.indexOf('\n') != -1)
-            text = Utilities.replaceString(text, "\n", "&#xa;"); // NOI18N
-        if (text.indexOf('\t') != -1)
-            text = Utilities.replaceString(text, "\t", "&#x9;"); // NOI18N
+        StringBuffer sb = new StringBuffer(text.length());
+        for (int i=0; i<text.length(); i++) {
+            char c = text.charAt(i);
+            if (c >= 0x0020 && c <= 0x007f) {
+                switch (c) {
+                    case '&': sb.append("&amp;"); break; // NOI18N
+                    case '<': sb.append("&lt;"); break; // NOI18N
+                    case '>': sb.append("&gt;"); break; // NOI18N
+                    case '\'': sb.append("&apos;"); break; // NOI18N
+                    case '\"': sb.append("&quot;"); break; // NOI18N
+                    default: sb.append(c); break;
+                }
+            } else {
+                sb.append("&#x" + Integer.toHexString(c) + ";"); // NOI18N
+            }
+        }
 
-        return text;
+        return sb.toString();
     }
 
     /** Finds first subnode of given node with specified name.
