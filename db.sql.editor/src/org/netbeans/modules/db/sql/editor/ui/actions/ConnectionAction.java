@@ -203,7 +203,6 @@ public class ConnectionAction extends CookieAction {
             comboLabel = new JLabel();
             comboLabel.setText(NbBundle.getMessage(ConnectionAction.class, "LBL_ConnectionAction"));
             comboLabel.setDisplayedMnemonic(NbBundle.getMessage(ConnectionAction.class, "MNE_ConnectionAction").charAt(0));
-            // comboLabel.setToolTipText(NbBundle.getMessage(ConnectionAction.class, "HINT_ConnectionAction"));
             comboLabel.setOpaque(false);
             comboLabel.setLabelFor(combo);
             add(comboLabel, BorderLayout.WEST);
