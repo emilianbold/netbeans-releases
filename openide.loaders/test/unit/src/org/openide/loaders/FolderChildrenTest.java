@@ -43,14 +43,18 @@ public class FolderChildrenTest extends NbTestCase {
         prop.put(key, value);
     }
     
-    private void setupSystemProperties() throws IOException {
-//        clearWorkDir();
+    protected void setUp() throws Exception {
+	super.setUp();
+	clearWorkDir();
         setSystemProp("netbeans.security.nocheck","true");
+	
+	FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
+	for (int i = 0; i < arr.length; i++) {
+	    arr[i].delete();
+	}
     }
     
     public void testSimulateADeadlockThatWillBeFixedByIssue49459 () throws Exception {
-        setupSystemProperties();
-        
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileObject a = FileUtil.createData (fs.getRoot (), "XYZ49459/org-openide-loaders-FolderChildrenTest$N1.instance");
         FileObject bb = fs.findResource("/XYZ49459");
@@ -98,8 +102,6 @@ public class FolderChildrenTest extends NbTestCase {
     
     public void testAdditionOfNewFileDoesNotInfluenceAlreadyExistingLoaders () 
     throws Exception {
-        setupSystemProperties();
-        
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileUtil.createData (fs.getRoot (), "AA/org-openide-loaders-FolderChildrenTest$N1.instance");
         FileUtil.createData (fs.getRoot (), "AA/org-openide-loaders-FolderChildrenTest$N2.instance");
@@ -128,8 +130,6 @@ public class FolderChildrenTest extends NbTestCase {
     }
     
     public void testChangeableDataFilter() throws Exception {
-        setupSystemProperties();
-        
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileUtil.createData (fs.getRoot (), "BB/A.txt");
         FileUtil.createData (fs.getRoot (), "BB/B.txt");
@@ -152,21 +152,47 @@ public class FolderChildrenTest extends NbTestCase {
         
     }
     
-    public void testChildrenCanGC () {
+    public void testChildrenCanGC () throws Exception {
         Filter filter = new Filter ();
         
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject bb = fs.findResource("/BB");
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+	bb.createData("Ahoj.txt");
+	bb.createData("Hi.txt");
         DataFolder folder = DataFolder.findFolder (bb);
            
         Children ch = folder.createNodeChildren( filter );        
         Node[] arr = ch.getNodes (true);
+	assertEquals("Accepts only Ahoj", 1, arr.length);
         
         WeakReference ref = new WeakReference (ch);
         ch = null;
         arr = null;
         
         assertGC ("Children can disappear even we hold the filter", ref);
+    }
+    
+    public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+	bb.createData("Ahoj.txt");
+	bb.createData("Hi.txt");
+	
+        DataFolder folder = DataFolder.findFolder (bb);
+	
+	Node n = folder.getNodeDelegate();
+	Node[] arr = n.getChildren().getNodes(true);
+	assertEquals("Both are visible", 2, arr.length);
+	
+	WeakReference ref = new WeakReference(arr[0]);
+	arr = null;
+	assertGC("Nodes can disappear", ref);
+	
+	
+	bb.createData("Third.3rd");
+	
+	arr = n.getChildren().getNodes(true);
+	assertEquals("All are visbile ", 3, arr.length);
     }
 
     
@@ -279,9 +305,6 @@ public class FolderChildrenTest extends NbTestCase {
         MyFileChangeListener fcl = new MyFileChangeListener();
         
         
-        
-        setupSystemProperties();
-        clearWorkDir();
         
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(getWorkDir());

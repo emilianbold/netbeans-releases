@@ -68,6 +68,8 @@ implements PropertyChangeListener, ChangeListener {
     public FolderChildren (DataFolder f, DataFilter filter) {
         this.folder = f;
         this.filter = filter;
+	this.refreshRunnable = new ChildrenRefreshRunnable();
+	this.refreshTask = refRP.create(refreshRunnable);
         this.listener = org.openide.util.WeakListeners.propertyChange (this, folder);
         err = ErrorManager.getDefault().getInstance("org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.')); // NOI18N
         if (!err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -123,10 +125,7 @@ implements PropertyChangeListener, ChangeListener {
     
     /** Refreshes the children.
     */
-    synchronized RequestProcessor.Task refreshChildren() {
-        if (refreshTask == null) {
-            refreshTask = refRP.post(refreshRunnable = new ChildrenRefreshRunnable());
-        }
+    RequestProcessor.Task refreshChildren() {
         return refreshTask;    
     }
 
@@ -155,7 +154,8 @@ implements PropertyChangeListener, ChangeListener {
             if (checkChildrenMutex()) {
                 active = true;
                 FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
-                Task task = refreshChildren();
+                RequestProcessor.Task task = refreshChildren();
+		task.schedule(0);
                 task.waitFinished();
             } else {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
@@ -198,7 +198,7 @@ implements PropertyChangeListener, ChangeListener {
         // 
         active = true;
         // start the refresh task to compute the children
-        refreshChildren();
+        refreshChildren().schedule(0);
     }
 
     /** Deinitializes the children.
@@ -215,7 +215,7 @@ implements PropertyChangeListener, ChangeListener {
         // we don't call the setKeys directly here because
         // there can be a task spawned by refreshChildren - so
         // we want to clear the children after that task is finished
-        refreshChildren();
+        refreshChildren().schedule(0);
     }
 
     /** Display name */
