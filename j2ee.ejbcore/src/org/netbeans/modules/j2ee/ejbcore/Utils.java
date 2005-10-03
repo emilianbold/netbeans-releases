@@ -181,6 +181,8 @@ public class Utils {
     public static boolean canExposeInLocal(Method me) {
         boolean signatureOk = 
             Modifier.isPublic(me.getModifiers()) &&
+	    !Modifier.isProtected(me.getModifiers()) &&
+	    !Modifier.isPrivate(me.getModifiers()) &&
             !Modifier.isStatic(me.getModifiers());
         if (signatureOk) {
             ClassDefinition clzDef = me.getDeclaringClass();
