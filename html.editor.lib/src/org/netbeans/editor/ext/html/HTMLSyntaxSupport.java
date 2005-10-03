@@ -331,8 +331,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             if( item.getTokenID() == HTMLTokenContext.TAG_OPEN || 
                     item.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL)  return getNextElement( item.getOffset() );  // TAGO/ETAGO // NOI18N
             else {
+                TokenItem prev = null;
                 do { 
-                    item = item.getPrevious();
+                    prev = item.getPrevious();
+                    if(prev == null) return getNextElement(item.getOffset());
+                    item = prev;
                     id = item.getTokenID();
                 } while( !isTag(item) );
                 return getNextElement( item.getOffset() );       // TAGC

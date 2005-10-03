@@ -233,7 +233,8 @@ public class HTMLFormatter extends ExtFormatter {
                     do {
                         token = token.getPrevious();
                     } while (token != null && !sup.isTag(token));
-                    if (token != null && token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID){
+                    if(token == null) return i;
+                    if (token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID){
                         String tag = token.getImage().trim();
                         int poss = -1;
                         
@@ -292,6 +293,7 @@ public class HTMLFormatter extends ExtFormatter {
                             }
                         }
                     }
+                    //}
                 }
                 
                 
