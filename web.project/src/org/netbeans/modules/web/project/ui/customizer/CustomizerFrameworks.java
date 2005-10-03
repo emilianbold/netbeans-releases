@@ -12,7 +12,6 @@
  */
 
 package org.netbeans.modules.web.project.ui.customizer;
-import java.awt.Component;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +29,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworksVisual;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 
 public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.Provider, ListSelectionListener {
@@ -156,10 +154,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     // </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
-        PanelSupportedFrameworksVisual panel = new PanelSupportedFrameworksVisual(null, project, PanelSupportedFrameworksVisual.UNUSED_FRAMEWORKS, usedFrameworks);
-        Component[] components = panel.getConfigComponents();
-        for (int i = 0; i < components.length; i++)
-            components[i].setVisible(false);
+        AddFrameworkPanel panel = new AddFrameworkPanel(project);
         javax.swing.JPanel inner = new javax.swing.JPanel();
         inner.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
