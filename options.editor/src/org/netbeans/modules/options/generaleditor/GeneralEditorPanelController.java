@@ -11,13 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.options.indentation;
+package org.netbeans.modules.options.generaleditor;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-
 import org.netbeans.spi.options.OptionsCategory.PanelController;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -27,44 +25,44 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
-public final class IndentationPanelController extends PanelController {
+public final class GeneralEditorPanelController extends PanelController {
 
-    private IndentationPanel indentationPanel = new IndentationPanel ();
+    private GeneralEditorPanel generalEditorPanel = new GeneralEditorPanel ();
     
     
     public void update () {
-        indentationPanel.update ();
+        generalEditorPanel.update ();
     }
     
     public void applyChanges () {
-        indentationPanel.applyChanges ();
+        generalEditorPanel.applyChanges ();
     }
     
     public void cancel () {
-        indentationPanel.cancel ();
+        generalEditorPanel.cancel ();
     }
     
     public boolean isValid () {
-        return indentationPanel.dataValid ();
+        return generalEditorPanel.dataValid ();
     }
     
     public boolean isChanged () {
-        return indentationPanel.isChanged ();
+        return generalEditorPanel.isChanged ();
     }
     
     public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.editor.identation");
+        return new HelpCtx ("netbeans.optionsDialog.editor.general");
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        return indentationPanel;
+        return generalEditorPanel;
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        indentationPanel.addPropertyChangeListener (l);
+        generalEditorPanel.addPropertyChangeListener (l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        indentationPanel.removePropertyChangeListener (l);
+        generalEditorPanel.removePropertyChangeListener (l);
     }
 }

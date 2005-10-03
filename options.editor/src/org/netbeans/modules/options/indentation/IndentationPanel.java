@@ -54,9 +54,9 @@ import javax.swing.text.BadLocationException;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.editor.BaseDocument;
-
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -191,7 +191,7 @@ ChangeListener, ActionListener {
 
     public void update () {
 	if (model == null) 
-            model = Model.getDefault ();
+            model = new Model ();
         
         if (originalText == null) {
             // add text to preview

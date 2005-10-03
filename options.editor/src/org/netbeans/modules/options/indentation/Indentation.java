@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 
 import org.netbeans.spi.options.OptionsCategory;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.options.*;
 
 
 /**
