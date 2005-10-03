@@ -304,10 +304,17 @@ class GenericGlowingChiclet {
 
         r = getBounds();
         g.setStroke(new BasicStroke(0.70f));
-        g.drawLine(Math.max(r.x, r.x + getLowerLeftArc() - 3),
-            r.y + r.height - 1, Math.min(r.x + r.width - getLowerRightArc() + 3,
-            r.x + r.width),
-            r.y + r.height- 1);
+	if (getLowerRightArc() != 0) {
+	    g.drawLine(Math.max(r.x, r.x + getLowerLeftArc() - 3),
+		r.y + r.height - 1, 
+		Math.min(r.x + r.width - getLowerRightArc() + 3, r.x + r.width) - 1,
+		r.y + r.height- 1);
+	} else {
+	    g.drawLine(Math.max(r.x, r.x + getLowerLeftArc() - 3),
+		r.y + r.height - 1, 
+		Math.min(r.x + r.width - getLowerRightArc() + 3, r.x + r.width),
+		r.y + r.height- 1);
+	}
         g.setClip(clip);
     }
     
@@ -638,11 +645,11 @@ class GenericGlowingChiclet {
                        bds.x + bds.width - lowerRightArc, bds.y + bds.height);
 
         } else {
-            if (upperRightArc != 0 || lowerRightArc != 0) {
-                gp.curveTo(bds.x + bds.width - upperRightArc, bds.y,
-                       bds.x + bds.width, bds.y, bds.x + bds.width-1,
-                       bds.y + upperRightArc);
-            } else {
+            if (upperRightArc != 0) {
+                gp.curveTo(bds.x + bds.width - upperRightArc - 1, bds.y,
+                       bds.x + bds.width - 1, bds.y,
+		       bds.x + bds.width - 1, bds.y + upperRightArc);
+	    } else {
                 gp.curveTo(bds.x + bds.width - upperRightArc, bds.y,
                        bds.x + bds.width, bds.y, bds.x + bds.width,
                        bds.y + upperRightArc);
@@ -651,9 +658,15 @@ class GenericGlowingChiclet {
                 gp.lineTo(bds.x + bds.width,
                           bds.y + bds.height - lowerRightArc);
             }
-            gp.curveTo(bds.x + bds.width, bds.y + bds.height - lowerRightArc,
+            if (lowerRightArc != 0) {
+		gp.curveTo(bds.x + bds.width - 1, bds.y + bds.height - lowerRightArc,
+                       bds.x + bds.width - 1, bds.y + bds.height,
+                       bds.x + bds.width - lowerRightArc - 1, bds.y + bds.height);
+	    } else {
+		gp.curveTo(bds.x + bds.width, bds.y + bds.height - lowerRightArc,
                        bds.x + bds.width, bds.y + bds.height,
                        bds.x + bds.width - lowerRightArc, bds.y + bds.height);
+	    }
         }
         if (bds.x + bds.width - lowerRightArc > bds.x + lowerLeftArc) {
             gp.lineTo(bds.x + lowerLeftArc, bds.y + bds.height);

@@ -74,7 +74,7 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
 
         chic.setState(((SlidingButton) b).isBlinkState() ? GenericGlowingChiclet.STATE_ATTENTION : 0);
         chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
-        chic.setBounds(0, 1, b.getWidth() - 2, b.getHeight() - 2);
+        chic.setBounds(0, 1, b.getWidth(), b.getHeight() - 2);
         chic.setAllowVertical(true);
         chic.draw(graph);
         chic.setAllowVertical(false);
@@ -89,7 +89,7 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
         state |= ((SlidingButton) b).isBlinkState() ? GenericGlowingChiclet.STATE_ATTENTION : 0;
         chic.setState(state);
         chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
-        chic.setBounds(0, 1, b.getWidth() - 2, b.getHeight() - 2);
+        chic.setBounds(0, 1, b.getWidth(), b.getHeight() - 2);
         chic.setAllowVertical(true);
         chic.draw((Graphics2D)graph);
         chic.setAllowVertical(false);
@@ -101,8 +101,7 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
     public Dimension getPreferredSize(JComponent c) {
 	Dimension d = super.getPreferredSize(c);
 
-        AbstractButton b = (AbstractButton)c;
-        d.width += 9;
+        d.width += 11;
 	d.height += 7; 
 	return d;
     } 

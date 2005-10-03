@@ -189,7 +189,11 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
         int textHeight = fm.getHeight();
         int textY;
-        int textX = x + 5;
+        int textX;
+	if (index == 0)
+	    textX = x + 10;
+	else
+	    textX = x + 5;
         textW = textW -  5;
 
         if (textHeight > height) {
