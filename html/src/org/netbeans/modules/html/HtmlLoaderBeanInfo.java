@@ -41,7 +41,7 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-	    return Utilities.loadImage("org/netbeans/modules/html/htmlObject.gif"); // NOI18N
+	    return Utilities.loadImage("org/netbeans/modules/html/htmlObject.png"); // NOI18N
         } else {
 	    return Utilities.loadImage ("org/netbeans/modules/html/htmlObject32.gif"); // NOI18N
         }

@@ -47,7 +47,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
     protected org.openide.nodes.Node createNodeDelegate () {
         DataNode n = new HtmlDataNode (this, Children.LEAF);
-        n.setIconBaseWithExtension("org/netbeans/modules/html/htmlObject.gif"); // NOI18N
+        n.setIconBaseWithExtension("org/netbeans/modules/html/htmlObject.png"); // NOI18N
         return n;
     }
     
