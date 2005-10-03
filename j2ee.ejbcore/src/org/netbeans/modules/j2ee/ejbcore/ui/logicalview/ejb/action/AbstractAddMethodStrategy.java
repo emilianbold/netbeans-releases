@@ -16,7 +16,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import org.netbeans.jmi.javamodel.Element;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Type;
@@ -30,7 +31,6 @@ import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  * Strategy for visual support for adding various methods into an EJB.
@@ -106,24 +106,31 @@ public abstract class AbstractAddMethodStrategy {
                                    Method prototypeMethod, 
                                    EjbMethodController c, JavaClass jc)
     throws IOException {
+	ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
+	handle.start(100);
         boolean isComponent = pType instanceof MethodType.BusinessMethodType;
         boolean isOneReturn = mc.finderReturnIsSingle();
+	handle.progress(10);
         if (mc.publishToLocal()) {
             Type localReturn =
                     localReturnType(c, prototypeMethod.getType(), isOneReturn);
             prototypeMethod.setType(localReturn);
             c.createAndAdd(JMIUtils.duplicate(prototypeMethod),true, isComponent);
         }
+	handle.progress(60);
         if (mc.publishToRemote()) {
             Type remoteReturn =
                     remoteReturnType(c, prototypeMethod.getType(), isOneReturn);
             prototypeMethod.setType(remoteReturn);
             c.createAndAdd(JMIUtils.duplicate(prototypeMethod),false, isComponent);
         }
+	handle.progress(80);
         String ejbql = mc.getEjbQL();
         if (ejbql != null && ejbql.length() > 0) {
             c.addEjbQl(JMIUtils.duplicate(prototypeMethod), ejbql, getDDFile(jc));
         }
+	handle.progress(99);
+	handle.finish();
     }
     
     protected FileObject getDDFile(JavaClass jc) {

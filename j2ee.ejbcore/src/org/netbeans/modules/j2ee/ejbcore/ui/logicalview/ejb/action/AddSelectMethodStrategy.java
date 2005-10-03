@@ -14,6 +14,8 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.lang.reflect.Modifier;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.common.JMIUtils;
@@ -22,9 +24,7 @@ import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.util.NbBundle;
-
 
 /**
  * @author Pavel Buzek
@@ -53,8 +53,12 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
     }
 
     protected void okButtonPressed(MethodType pType, MethodCustomizer mc, Method prototypeMethod, EjbMethodController c, JavaClass jc) throws java.io.IOException {
+	ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
+	handle.start(100);
         EntityMethodController emc = (EntityMethodController) c;
         emc.addSelectMethod(prototypeMethod,mc.getEjbQL(), getDDFile(jc));
+	handle.progress(99);
+	handle.finish();
     }
     
     public int prototypeMethod() {
