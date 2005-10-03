@@ -252,6 +252,14 @@ public class VisualReplicator { //implements VisualMapper
             laysup.arrangeContainer(cont, contDelegate);
         }
         else { // new layout support
+            // Re-attach fake peers
+            contDelegate.removeAll();
+            for (int i=0; i<comps.length; i++) {
+                FakePeerSupport.attachFakePeer(comps[i]);
+                if (comps[i] instanceof Container)
+                    FakePeerSupport.attachFakePeerRecursively((Container)comps[i]);
+            }
+
             layoutBuilder.setupContainerLayout(comps, compIds);
         }
     }
@@ -403,6 +411,16 @@ public class VisualReplicator { //implements VisualMapper
                     }
                 }
                 else { // new layout support
+                    // Re-attach fake peers
+                    contDelegate.removeAll();
+                    RADVisualComponent[] metacomps = parentCont.getSubComponents();
+                    for (int i=0; i<metacomps.length; i++) {
+                        Component component = (Component)getClonedComponent(metacomps[i]);
+                        FakePeerSupport.attachFakePeer(component);
+                        if (component instanceof Container)
+                            FakePeerSupport.attachFakePeerRecursively((Container)component);
+                    }
+
                     getLayoutBuilder(parentCont.getId()).removeComponentsFromContainer(
                         new Component[] { comp },
                         new String[] { metacomp.getId() } );
