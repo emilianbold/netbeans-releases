@@ -1492,7 +1492,7 @@ final class ModuleList {
                 DiskStatus status = (DiskStatus)statuses.get(cnb);
                 if (status == null || status.dirty) {
                     FileObject xmlfile = (FileObject)entry.getValue();
-                    if (xmlfile == null || /* XXX this is evil, why is it needed? ask jrechtacek */ !FileUtil.toFile(xmlfile).exists()) {
+                    if (xmlfile == null || ! xmlfile.canRead ()) {
                         continue;
                     }
                     InputStream is = xmlfile.getInputStream();
