@@ -46,6 +46,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     public LibraryStartVisualPanel(WizardDescriptor setting) {
         super(setting);
         initComponents();
+        initAccessibility();
         data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         libraryDL = new UIUtil.DocumentAdapter() {
@@ -60,6 +61,15 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         };
         
     }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LibraryStartVisualPanel"));        
+        jButton1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLibraries"));
+        jButton2.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLicense"));
+        txtLibrary.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Library"));        
+        txtLicense.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_License"));        
+    }    
+    
     
     private void checkLibraryAndLicense() {
         String text = txtLibrary.getText().trim();

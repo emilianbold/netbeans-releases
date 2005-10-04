@@ -72,6 +72,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         super(setting, wizType);
         wizardType = wizType;
         initComponents();
+        initAccessibility();
         
         data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
@@ -115,6 +116,23 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         attachDocumentListeners();
         updateEnabled();
     }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicInfoVisualPanel"));        
+        browseButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseButton"));
+        browseSuiteButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseSuiteButton"));
+        folderValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_FolderValue"));
+        locationValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_LocationValue"));
+        mainProject.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_MainProject"));
+        managePlatform.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ManagePlatform"));
+        manageSuitePlatform.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ManageSuitePlatform"));
+        moduleSuiteValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModuleSuiteValue"));
+        nameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_NameValue"));
+        platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PlatformValue"));
+        standAloneModule.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_StandAloneModule"));
+        suiteModule.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_SuiteModule"));
+        suitePlatformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_SuitePlatformValue"));
+    }     
     
     private void setComponentsVisibility() {
         boolean isSuiteWizard = wizardType == NewNbModuleWizardIterator.TYPE_SUITE;

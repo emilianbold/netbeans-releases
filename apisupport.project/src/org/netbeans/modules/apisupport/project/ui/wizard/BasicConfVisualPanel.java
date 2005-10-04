@@ -57,6 +57,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         super(setting);
         libraryModule = isLibraryModule;
         initComponents();
+        initAccessibility();
         data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         cnbDL = new UIUtil.DocumentAdapter() {
@@ -76,6 +77,14 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         };
         
     }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicConfVisualPanel"));        
+        bundleValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BundleValue"));
+        codeNameBaseValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CodeNameBaseValue"));
+        displayNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayNameValue"));        
+        layerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_LayerValue"));        
+    }    
     
     private void checkCodeNameBase() {
         if (!isValidCodeNameBase(getCodeNameBaseValue())) {
