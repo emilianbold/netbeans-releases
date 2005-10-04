@@ -156,7 +156,7 @@ ActionListener {
         annotationsPanel.update ();
         
         if (colorModel == null) {
-            colorModel = ColorModel.getDefault ();
+            colorModel = new ColorModel ();
             currentProfile = colorModel.getCurrentProfile ();
 
             // init schemes

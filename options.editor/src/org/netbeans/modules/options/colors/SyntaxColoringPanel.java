@@ -275,7 +275,7 @@ PropertyChangeListener {
     void update () {
 	if (colorModel == null) {
             // first update
-            colorModel = ColorModel.getDefault ();
+            colorModel = new ColorModel ();
             currentProfile = colorModel.getCurrentProfile ();
             currentLanguage = (String) colorModel.getLanguages ().
                 iterator ().next ();

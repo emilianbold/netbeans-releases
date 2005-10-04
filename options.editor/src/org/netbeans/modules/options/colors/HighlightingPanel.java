@@ -74,7 +74,6 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.options.colors.ColorComboBox.Value;
-import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -216,7 +215,7 @@ PropertyChangeListener {
     
     void update () {
         if (colorModel == null) {
-            colorModel = ColorModel.getDefault ();
+            colorModel = new ColorModel ();
             currentProfile = colorModel.getCurrentProfile ();
             Component component = colorModel.getEditorPreviewComponent  ();
 //            preview = (Preview) component;

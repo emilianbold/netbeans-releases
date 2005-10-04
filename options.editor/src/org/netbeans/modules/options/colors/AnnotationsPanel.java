@@ -150,7 +150,7 @@ PropertyChangeListener {
         if (colorModel == null) {
             // first update
             listen = false;
-            colorModel = ColorModel.getDefault ();
+            colorModel = new ColorModel ();
             currentScheme = colorModel.getCurrentProfile ();
             lCategories.setListData (getAnnotations (currentScheme));
             refreshUI ();
