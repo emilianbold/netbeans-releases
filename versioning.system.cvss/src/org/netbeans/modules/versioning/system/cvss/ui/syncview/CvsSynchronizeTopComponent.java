@@ -22,9 +22,10 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Top component of the Versioning view.
@@ -192,14 +193,27 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     }
 
     /**
-     * Sets files/folders the user wants to synchronize. They are typically activated (selected) nodes.
+     * Sets files/folders the user wants to synchronize.
+     * They are typically activated (selected) nodes.
+     * It cancels refresh task serving previous context.
      * 
-     * @param ctx new context of the Versioning view
+     * @param ctx new context of the Versioning view.
+     * <code>null</code> for preparation phase then it must
+     * be followed by real context on preparation phase termination.
      */
     public void setContext(Context ctx) {
-        context = removeDuplicates(ctx);
-        setBranchTitle(null);
-        refreshContent();
+        syncPanel.cancelRefresh();
+        if (ctx == null) {
+            setName("Preparing...");
+            setEnabled(false);
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        } else {
+            setEnabled(true);
+            setCursor(Cursor.getDefaultCursor());
+            context = removeDuplicates(ctx);
+            setBranchTitle(null);
+            refreshContent();
+        }
     }
 
     private List removeDuplicates(File [] roots) {

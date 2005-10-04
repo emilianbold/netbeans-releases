@@ -25,14 +25,17 @@ import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.*;
 
 /**
- * Open the Versioning status view for all projects
- * 
+ * Open the Versioning status view for all projects.
+ *
  * @author Maros Sandor
  */
 public class StatusProjectsAction extends SystemAction {
-    
+
+    private static boolean inProgress;
+
     public StatusProjectsAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N        
@@ -46,12 +49,17 @@ public class StatusProjectsAction extends SystemAction {
         return new HelpCtx(StatusProjectsAction.class);
     }
 
+    /**
+     * Enabled for opened project and if no Versining view refresh in progress.
+     */
     public boolean isEnabled() {
-        Project projects[] = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            Project project = projects[i];
-            if (Utils.isVersionedProject(project)) {
-                return true;
+        if (inProgress == false) {
+            Project projects[] = OpenProjects.getDefault().getOpenProjects();
+            for (int i = 0; i < projects.length; i++) {
+                Project project = projects[i];
+                if (Utils.isVersionedProject(project)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -66,32 +74,48 @@ public class StatusProjectsAction extends SystemAction {
     }
 
     private void performAction() {
-        Project [] projects = OpenProjects.getDefault().getOpenProjects();
-
-        final Context ctx = Utils.getProjectsContext(projects);
-        final String title;
-        if (projects.length == 1) {
-            Project project = projects[0];
-            ProjectInformation pinfo = ProjectUtils.getInformation(project);
-            title = pinfo.getDisplayName();
-        } else {
-            title = NbBundle.getMessage(StatusProjectsAction.class, "CTL_StatusProjects_WindowTitle", Integer.toString(projects.length));
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
-                stc.setContentTitle(title);
-                stc.setContext(ctx);
-                stc.open(); 
-                stc.requestActive();
-                if (shouldPostRefresh()) {
-                    stc.performRefreshAction();
+        try {
+            inProgress = true;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
+                    stc.setContext(null);
+                    stc.open();
                 }
+            });
+
+            Project [] projects = OpenProjects.getDefault().getOpenProjects();
+
+            final Context ctx = Utils.getProjectsContext(projects);
+            final String title;
+            if (projects.length == 1) {
+                Project project = projects[0];
+                ProjectInformation pinfo = ProjectUtils.getInformation(project);
+                title = pinfo.getDisplayName();
+            } else {
+                title = NbBundle.getMessage(StatusProjectsAction.class, "CTL_StatusProjects_WindowTitle", Integer.toString(projects.length));
             }
-        });
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
+                    stc.setContentTitle(title);
+                    stc.setContext(ctx);
+                    stc.open();
+                    stc.requestActive();
+                    if (shouldPostRefresh()) {
+                        stc.performRefreshAction();
+                    }
+                }
+            });
+
+        } finally {
+            inProgress = false;
+        }
+
     }
 
     protected boolean shouldPostRefresh() {
         return true;
     }
 }
+

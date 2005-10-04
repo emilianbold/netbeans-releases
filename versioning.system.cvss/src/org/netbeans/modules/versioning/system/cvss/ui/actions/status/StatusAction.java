@@ -20,6 +20,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 
 import java.awt.event.ActionEvent;
+import java.awt.*;
 
 /**
  * Opens the Versioning window.
@@ -39,11 +40,14 @@ public class StatusAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(ActionEvent ev) {
-        Context ctx = Utils.getCurrentContext();
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
+        stc.setContext(null);
+        stc.open();
+
+        Context ctx = Utils.getCurrentContext();
+
         stc.setContentTitle(getContextDisplayName());
         stc.setContext(ctx);
-        stc.open(); 
         stc.requestActive();
         stc.performRefreshAction();
     }

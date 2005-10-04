@@ -63,7 +63,9 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private boolean                     pendingRefresh;
     
     private SyncTable                   syncTable;
-    private RequestProcessor.Task       refreshTask;
+    private RequestProcessor.Task       refreshViewTask;
+    private Thread                      refreshViewThread;
+    private ExecutorGroup               refreshCommandGroup;
 
     private long lastEventTimestamp;
     private long flatModelTimestamp;
@@ -80,7 +82,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     public SynchronizePanel(CvsSynchronizeTopComponent parent) {
         this.parentTopComponent = parent;
         this.cvs = CvsVersioningSystem.getInstance();
-        refreshTask = rp.create(new RefreshViewTask());
+        refreshViewTask = rp.create(new RefreshViewTask());
         explorerManager = new ExplorerManager ();
         displayStatuses = FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE;
         noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_All"));
@@ -197,6 +199,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(SynchronizePanel.class, "MSG_Refreshing_Versioning_View"));
         try {
             ph.start();
+            refreshViewThread = Thread.currentThread();
             final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context, displayStatuses));  // takes long
             if (nodes == null || Thread.interrupted()) {
                 return;
@@ -209,6 +212,10 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 boolean stickyCommon = true;
                 String currentSticky = nodes[0].getSticky();
                 for (int i = 1; i < nodes.length; i++) {
+                    if (Thread.interrupted()) {
+                        // TODO fast clean model
+                        return;
+                    }
                     String sticky = nodes[i].getSticky();
                     if (sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
                         stickyCommon = false;
@@ -246,6 +253,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ph.finish();
+                    refreshViewThread = null;
                 }
             });
         }
@@ -332,9 +340,9 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         options.setDoNoChanges(doNoChanges);
         // TODO: javacvs library fails to obey the -P flag when -q is specified
 //        options.setModeratelyQuiet(true);
-        ExecutorGroup group = new ExecutorGroup(msg);
-        group.addExecutors(UpdateExecutor.splitCommand(cmd, cvs, options));
-        group.execute();
+        refreshCommandGroup = new ExecutorGroup(msg);
+        refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, cvs, options));
+        refreshCommandGroup.execute();
         // XXX should not be there barrier?
         parentTopComponent.contentRefreshed();
     }
@@ -379,8 +387,9 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         }
     }
 
+    /** Reloads data from cache */
     private void reScheduleRefresh(int delayMillis) {
-        refreshTask.schedule(delayMillis);
+        refreshViewTask.schedule(delayMillis);
     }
 
     // TODO: HACK, replace by save/restore of column width/position
@@ -396,6 +405,23 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
 
     void focus() {
         syncTable.focus();
+    }
+
+    /**
+     * Cancels both:
+     * <ul>
+     * <li>cache data fetching
+     * <li>background cvs -N update
+     * </ul>
+     */
+    public void cancelRefresh() {
+        if (refreshCommandGroup != null) {
+            refreshCommandGroup.cancel();
+        }
+        refreshViewTask.cancel();
+        if (refreshViewThread != null) {
+            refreshViewThread.interrupt();
+        }
     }
 
     private class RefreshViewTask implements Runnable {
