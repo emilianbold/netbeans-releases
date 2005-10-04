@@ -76,8 +76,11 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
 
     public javax.swing.Action[] getActions(boolean context) {
         java.util.List actions = new LinkedList();
-        actions.add(null);
-        actions.add(SystemAction.get(TerminateAction.class));
+        // terminate does not work on Windows, see issue #63157
+        if (!Utilities.isWindows()) {
+            actions.add(null);
+            actions.add(SystemAction.get(TerminateAction.class));
+        }
         actions.add(null);
         actions.add(SystemAction.get(EditServerXmlAction.class));
         if (tm != null && tm.isTomcat50()) {
