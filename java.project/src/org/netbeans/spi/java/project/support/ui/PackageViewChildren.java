@@ -302,7 +302,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         FileObject fo = fe.getFile();        
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             cleanEmptyKeys( fo );                
-            add( fo, false );
+//            add( fo, false);
             findNonExcludedPackages( fo );
             refreshKeys();
         }
