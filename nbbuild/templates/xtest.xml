@@ -99,9 +99,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Checks nbantext.jar is up to date -->
     <target name="check-bootstrap">
-        <uptodate targetfile="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready">
-            <srcfiles dir= "${nb_all}/nbbuild/antsrc"/>
-        </uptodate>
+        <condition property="bootstrap-ready">
+            <or>
+                <isset property="xtest.distexec"/>
+                <uptodate targetfile="${nb_all}/nbbuild/nbantext.jar">
+                    <srcfiles dir= "${nb_all}/nbbuild/antsrc"/>
+                </uptodate>
+            </or>
+        </condition>
     </target>
     
     <target name="show-results-nb" if="netbeans.home">
