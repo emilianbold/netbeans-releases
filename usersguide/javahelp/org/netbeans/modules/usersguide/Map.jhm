@@ -470,6 +470,8 @@ under Print Settings in the Options window)
 
 <mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/CSH/old_stack_call.html"/>
 
+<!--evaluate expression dialog box-->	
+<mapID target="org.netbeans.modules.debugger.jpda.ui.Evaluator" url="debug/CSH/evaluate_expression.html"/>
 
 <!--debug actions - usually associated with menu items-->	
 <mapID target="NetbeansDebuggerFixAction" url="debug/debug_fix.html"/>
@@ -680,10 +682,14 @@ under Print Settings in the Options window)
    <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.AutoupdateType" url="configure/modules/autoupdate.html" />
+
     <!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
     <mapID target="org.netbeans.modules.junit.JUnitSettings" url="configure/options_junit_settings.html" />
-<!--Create Tests dialog box-->
-    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_creatingtests.html" />  
+    <!--Create Tests dialog box-->
+    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_csh_creatingtests.html" />  
+    <!--JUnit Test Results Window -->
+    <mapID target="org.netbeans.modules.junit.output.ResultWindow" url="junit/junit_resultswindow.html" /> 
+ 
         <!--TODO - help topic for Actions dialog; if topic is written, close 39369: -->   
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
    
