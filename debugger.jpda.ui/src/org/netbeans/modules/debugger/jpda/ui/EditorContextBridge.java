@@ -243,6 +243,7 @@ public class EditorContextBridge {
         getContext ().removePropertyChangeListener (l);
     }
 
+    /*
     public static void addPropertyChangeListener (
         String propertyName, 
         PropertyChangeListener l
@@ -256,6 +257,7 @@ public class EditorContextBridge {
     ) {
         getContext ().removePropertyChangeListener (propertyName, l);
     }
+     */
     
     
     // utility methods .........................................................
