@@ -527,7 +527,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
             try {
                 //test whether we are trying to insert sg. what is already present in the text
                 String currentText = doc.getText(offset, text.length());
-                if(!text.substring(0, text.length()).equals(currentText)) {
+                if(!text.equals(currentText)) {
                     //remove common part
                     doc.remove( offset, length );
                     doc.insertString( offset, text, null);
@@ -744,8 +744,17 @@ else System.err.println( "Inside token " + item.getTokenID() );
         Color getPaintColor() { return Color.magenta; }
         
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
-            String quotedText = ((quotationChar == null) ? baseText : quotationChar + baseText + quotationChar);
-            replaceText( c, shift ? quotedText + " " : quotedText ); // NOI18N
+            //check whether there is already a " char after the CC offset
+            BaseDocument doc = (BaseDocument)c.getDocument();
+            boolean hasQuote = false;
+            try {
+                String currentText = doc.getText(c.getCaretPosition(), 1);
+                hasQuote = "\"".equals(currentText);
+            }catch(BadLocationException ble) {
+                //do nothing
+            }
+            String quotedText = ((quotationChar == null) ? baseText : quotationChar + baseText + (hasQuote ? "" : quotationChar));
+            replaceText( c, quotedText );
             return !shift;
         }
     }
