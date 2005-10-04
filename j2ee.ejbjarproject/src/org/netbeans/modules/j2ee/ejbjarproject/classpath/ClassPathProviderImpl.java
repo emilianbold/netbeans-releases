@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.ejbjarproject.classpath;
 
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -37,9 +39,24 @@ import org.openide.filesystems.FileUtil;
 public final class ClassPathProviderImpl implements ClassPathProvider, AntProjectListener {
     
     private final AntProjectHelper helper;
+    private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
+    
+    /**
+     * Cache for classpaths:
+     * <dl>
+     *     <dt>0</dt> <dd>sources classpath</dd>
+     *     <dt>1</dt> <dd>test sources classpath</dd>
+     *     <dt>2</dt> <dd>sources compile classpath</dd>
+     *     <dt>3</dt> <dd>test sources compile classpath</dd>
+     *     <dt>4</dt> <dd>sources and built sources run classpath</dd>
+     *     <dt>5</dt> <dd>test sources and built test sources run classpath</dd>
+     *     <dt>6</dt> <dd>XXX: todo</dd>
+     *     <dt>7</dt> <dd>boot classpath</dd>
+     * </dl>
+     */
     private final ClassPath[] cache = new ClassPath[8];
 
     private final Map dirCache = new HashMap ();
@@ -47,6 +64,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, 
             SourceRoots sourceRoots, SourceRoots testSourceRoots) {
         this.helper = helper;
+        this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+        assert this.projectDirectory != null;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
@@ -81,10 +100,22 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return getDir("dist.jar");            //NOI18N
     }
     
-    private FileObject getDocumentBaseDir() {
-        return getDir("web.docbase.dir");
+    private FileObject getBuildTestClassesDir() {
+        return getDir("build.test.classes.dir"); // NOI18N
     }
     
+    /**
+     * Find what a given file represents.
+     * @param file a file in the project
+     * @return one of: <dl>
+     *         <dt>0</dt> <dd>normal source</dd>
+     *         <dt>1</dt> <dd>test source</dd>
+     *         <dt>2</dt> <dd>built class (unpacked)</dd>
+     *         <dt>3</dt> <dd>built test class</dd>
+     *         <dt>4</dt> <dd>built class (in dist JAR)</dd>
+     *         <dt>-1</dt> <dd>something else</dd>
+     *         </dl>
+     */
     private int getType(FileObject file) {
         FileObject[] srcPath = getPrimarySrcPath();
         for (int i=0; i < srcPath.length; i++) {
@@ -100,16 +131,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
                 return 1;
             }
         }
-        FileObject dir = getDocumentBaseDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return 2;
-        }
-        dir = getBuildClassesDir();
+        FileObject dir = getBuildClassesDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return 3;
+            return 2;
         }
         dir = getBuildJar();
         if (dir != null && (dir.equals(file))) {     //TODO: When MasterFs check also isParentOf
+            return 4;
+        }
+        dir = getBuildTestClassesDir();
+        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
             return 3;
         }
         return -1;
@@ -125,7 +156,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
             // Not a source file.
             return null;
         }
-        ClassPath cp = cache[3+type];
+        ClassPath cp = cache[2+type];
         if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
@@ -139,7 +170,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
                         + EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH
                         + "}", evaluator, false)); // NOI18N
             }
-            cache[3+type] = cp;
+            cache[2+type] = cp;
         }
         return cp;
     }
@@ -148,26 +179,33 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         int type = getType(file);
         if (type < 0 || type > 4) {
             return null;
-        } 
-        switch (type){
-            case 2: type = 0; break;
-            case 3:
-            case 4: type -=3; break;
+        } else if (type > 1) {
+            type -= 2;
         }
         
-        ClassPath cp = cache[6+type];
+        ClassPath cp = cache[4+type];
         if (cp == null) {
             if (type == 0) {
-                //XXX : It should return a classpath for run.classpath property, but
-                // the run.classpath property was removed from the webproject in the past
-                // and I'm a little lazy to return it back in the code:)). In this moment
-                // the run classpath equals to the debug classpath. If the debug classpath
-                // will be different from the run classpath, then the run classpath should
-                // be returned back. 
+                // XXX: should return run.classpath, but since there's no run classpath,
+                // in and EJB project, using debug.classpath instead
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "debug.classpath", evaluator)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"debug.classpath"})); // NOI18N
             }
-            cache[6+type] = cp;
+            else if (type == 1) {
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"run.test.classpath"})); // NOI18N
+            }
+            else if (type == 2) {
+                //Only to make the CompiledDataNode hapy
+                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"dist.jar"})); // NOI18N
+            }
+            
+            cache[4+type] = cp;
         }
         return cp;
     }
@@ -189,10 +227,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
                     break;
                 case 1:
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
-                    break;
-                case 2:
-                    cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, "web.docbase.dir", evaluator)); // NOI18N
                     break;
             }
         }
