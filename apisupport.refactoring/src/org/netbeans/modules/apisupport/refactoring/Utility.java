@@ -75,6 +75,9 @@ public class Utility {
     }
     
     static void writeFileFromString(FileObject fileObject, String content) {
+        if (content == null) {
+            return;
+        }
         FileLock lock = null;
         PrintWriter writer = null;
         try {

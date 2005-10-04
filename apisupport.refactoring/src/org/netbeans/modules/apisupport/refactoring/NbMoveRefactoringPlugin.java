@@ -146,10 +146,16 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
                     //check services for this one
                     for (int i = 0; i < cachedServices.length; i++) {
                         serviceName = serviceName.replaceAll("[.]", "\\."); //NOI18N
-                        if (cachedServices[i].matches("^" + serviceName + "[ \\\n]?")) { //NOI18N
-                            RefactoringElementImplementation elem =
-                                    new ServicesMoveRefactoringElement(clazz, cachedServicesFiles[i], cachedProject);
-                            refactoringElements.add(refactoring, elem);
+			// #65343 somehow the reading of individual services files can happen.
+                        if (cachedServices[i] != null) {
+                            if (cachedServices[i].matches("^" + serviceName + "[ \\\n]?")) { //NOI18N
+                                RefactoringElementImplementation elem =
+                                        new ServicesMoveRefactoringElement(clazz, cachedServicesFiles[i], cachedProject);
+                                refactoringElements.add(refactoring, elem);
+                            }
+                        } else {
+                            //huh? reading the service file failed for some reason, report or silently ignore?
+			    ErrorManager.getDefault().log(ErrorManager.WARNING, "Error loading one of the files in folder " + cachedServices);
                         }
                     }
                     // check main attributes..
