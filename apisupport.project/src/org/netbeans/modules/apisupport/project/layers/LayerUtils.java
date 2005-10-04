@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -456,7 +457,11 @@ public class LayerUtils {
          * @return the layer, or null
          */
         public FileObject getLayerFile() {
-            String path = ManifestManager.getInstance(project.getManifest(), false).getLayer();
+            Manifest mf = project.getManifest();
+            if (mf == null) {
+                return null;
+            }
+            String path = ManifestManager.getInstance(mf, false).getLayer();
             if (path == null) {
                 return null;
             }
