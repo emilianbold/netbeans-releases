@@ -81,7 +81,7 @@ public class passwordEditor extends PropertyEditorSupport implements EnhancedPro
                 JPasswordField cb = (JPasswordField)evt.getSource();
                 String enteredPwd = new String(cb.getPassword());
                 curValue = enteredPwd;
-                cb.setText(curValue);
+                // CR 5055478/6199209 cb.setText(curValue);
                 firePropertyChange();
                 if(evt.getKeyCode() == KeyEvent.VK_ENTER){
                     KeyEvent esc = new KeyEvent(evt.getComponent(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_ESCAPE, KeyEvent.CHAR_UNDEFINED); 
