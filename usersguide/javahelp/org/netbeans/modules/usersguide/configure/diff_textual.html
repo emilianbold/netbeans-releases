@@ -1,0 +1,80 @@
+<html>
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <!--
+    * Copyright © 2005 Sun Microsystems, Inc.
+    * All rights reserved. 
+    * Use is subject to license terms.
+    -->
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Configuring the Diff Viewer</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body> 
+
+        <h1>Configuring the Diff Viewer</h1>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You can change the default Diff settings in the Options window. 
+        You can modify how the Textual Diff Viewer and the Graphical Diff Viewer display results when comparing file versions using the diff command.
+        You can also modify the display properties of the Graphical Merge Conflicts Resolver. </p>
+        <p>You can access this node by choosing Tools &gt; Options and then clicking Classic View in the Options window.
+        In the left pane of the Options window, expand IDE Configuration &gt; Server and External Tool Settings &gt; Diff and Merge Types.
+        You can modify the Diff Viewer and Merge Visualizer properties using the following nodes in the left pane.</p>
+        <ul>
+            <li><b>Diff Engines.</b> Enables you to specify diff command options.</li>
+            <li><b>Diff Visualizers.</b> Enables you to set properties for the Diff viewers, which display the results when comparing different versions of files using the Diff command in the IDE.</li>
+            <li><b>Diff Services.</b> Enables you to enable or disable the service selector.</li>
+            <li><b>Merge Visualizers.</b> Enables you to set the display properties for the Graphical Merge Conflicts Resolver.</li>
+        </ul>
+
+        <p><b>To change diff viewer settings:</b> </p>
+        <ol>
+            <li>Choose Tools &gt; Options and click Classic View at the bottom of the Options window.</li>
+            <li>Expand IDE Configuration &gt; Server and External Tools Settings &gt; Diff and Merge Types.</li>
+            <li>Expand the Diff Engines node to set properties for the following:
+                <ul>
+                    <li><b>Command-line Diff.</b> Click the ellipsis (...) button to specify any diff command options (for example, <tt>diff -b</tt>) to be used when running the diff command from the command line in the IDE.</li>
+                    <li><b>Built-in Diff Engine.</b> No properties are available.</li>
+                </ul>
+            </li>
+            <li>
+            <li>Expand the Diff Visualizers node to set properties for the following: 
+                <ul>
+                    <li><b>Textual Diff Viewer.</b> You can enable or disable Context Mode. If Context Mode is selected, lines of context are displayed around differences in the textual diff.
+                    You can specify the number of lines of context to display.</li> 
+                    <li><b>Graphical Diff Viewer.</b> You can modify the default background highlight colors for changed text in the graphical diff viewer.
+                    Click the ellipsis (...) button to specify the color.</li>
+                </ul>
+            </li>
+            <li>Expand the Diff Services node to set properties for the following:
+                <ul>
+                    <li><b>Built-in Diff Service.</b> If Show Diff Service Selector is selected, the drop-down list to toggle between diff services is visible in the toolbar of the diff results window.</li>
+                </ul>
+            </li>
+            <li>Expand the Merge Visualizers node to set properties for the following:
+                <ul>
+                    <li><b>Graphical Merge Conflicts Resolver.</b> You can modify the default background highlight colors for changed text in the Graphical Merge Conflicts Resolver.
+                    Click the ellipsis (...) button to specify the color.</li>
+                </ul>
+            </li>
+        </ol>
+        <ul class="note">
+            <li>Before you can use the command-line diff engine on a Microsoft Windows system, you must have a command-line diff executable (for example, from a Cygwin distribution) installed on your system. 
+            For the UNIX® environment, there is a diff executable installed and available to you by default.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="#">Comparing File Revisions</a></dd><!-- TODO need link here -->
+            <dd><a href="../files/files_diff.html">Comparing Two Files in the IDE</a></dd>
+            <dd><a href="options_window.html">Options Window</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table> 
+    </body>
+</html>
