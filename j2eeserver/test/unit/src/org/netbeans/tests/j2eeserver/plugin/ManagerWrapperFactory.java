@@ -15,7 +15,7 @@
 package org.netbeans.tests.j2eeserver.plugin;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 
 /**
  *

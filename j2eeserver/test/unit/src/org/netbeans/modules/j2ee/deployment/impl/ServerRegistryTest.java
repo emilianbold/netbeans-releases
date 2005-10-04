@@ -14,19 +14,12 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import javax.enterprise.deploy.shared.ModuleType;
-import junit.framework.*;
-import org.netbeans.junit.*;
-import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
 import javax.enterprise.deploy.spi.*;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
-import org.openide.filesystems.*;
-import org.openide.*;
-import java.util.*;
-import java.io.*;
-import java.util.logging.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 /**
  *
  * @author nn136682
@@ -59,17 +52,19 @@ public class ServerRegistryTest extends ServerRegistryTestBase {
         OptionalDeploymentManagerFactory optionalFactory = testPlugin.getOptionalFactory();
         assertNotNull ("No OptionalDeploymentManagerFactory for test plugin", optionalFactory);
         
-        DeploymentManager manager = testPlugin.getDisconnectedDeploymentManager();
-        assertNotNull ("No DeploymentManager for test plugin", manager);
+        DeploymentManager manager = null;
+        try {
+            manager = testPlugin.getDisconnectedDeploymentManager();
+            assertNotNull ("No DeploymentManager for test plugin", manager);
+        } catch (DeploymentManagerCreationException dce) {
+            fail(dce.getLocalizedMessage());
+        }
         
         IncrementalDeployment incrementalDepl = optionalFactory.getIncrementalDeployment(manager);
         assertNotNull ("No IncrementalDeployment for test plugin", incrementalDepl);
         
         StartServer start = optionalFactory.getStartServer(manager);
         assertNotNull ("No StartServer for test plugin", start);
-        
-        DeploymentPlanSplitter splitter = testPlugin.getDeploymentPlanSplitter();
-        assertNotNull ("No DeploymentPlanSplitter for test plugin", splitter);
         
         String url = "fooservice";
         ServerInstance instance = registry.getServerInstance(url);
