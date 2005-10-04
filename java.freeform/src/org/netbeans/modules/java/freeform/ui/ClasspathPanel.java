@@ -109,9 +109,6 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     
     static List/*<String>*/ createComboContent(List/*<ProjectModel.CompilationUnitKey>*/ compilationUnitKeys, PropertyEvaluator evaluator, File nbProjectFolder) {
         List l = new ArrayList();
-        if (ProjectModel.isSingleCompilationUnit(compilationUnitKeys)) {
-            return l;
-        }
         Iterator it = compilationUnitKeys.iterator();
         while (it.hasNext()) {
             ProjectModel.CompilationUnitKey cul = (ProjectModel.CompilationUnitKey)it.next();
