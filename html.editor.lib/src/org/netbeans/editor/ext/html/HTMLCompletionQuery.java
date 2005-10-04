@@ -621,6 +621,11 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
         Color getPaintColor() { return Color.red.darker(); }
         
+        public CharSequence getSortText() {
+            String itext = getItemText();
+            return itext.endsWith(";") ? itext.substring(0, itext.length() - 1) : itext;
+        }
+        
         public String getItemText() { return "&" + baseText + ";"; } // NOI18N
     }
     
