@@ -174,7 +174,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
             } else if( id == HTMLTokenContext.CHARACTER ) {
                 if( inside || !preText.endsWith( ";" ) ) { // NOI18N
                     len = offset - itemOffset;
-                    l = translateCharRefs( offset-len, len, dtd.getCharRefList( preText ) );
+                    l = translateCharRefs( offset-len, len, dtd.getCharRefList( preText.substring(1) ) );
                 }
                 /* Tag finder */
             } else if( id == HTMLTokenContext.TAG_OPEN) { // NOI18N
@@ -526,8 +526,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
             doc.atomicLock();
             try {
                 //test whether we are trying to insert sg. what is already present in the text
-                String currentText = doc.getText(offset, text.length() - 1);
-                if(!text.substring(0, text.length() - 1).equals(currentText)) {
+                String currentText = doc.getText(offset, text.length());
+                if(!text.substring(0, text.length()).equals(currentText)) {
                     //remove common part
                     doc.remove( offset, length );
                     doc.insertString( offset, text, null);
