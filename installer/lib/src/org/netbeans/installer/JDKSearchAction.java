@@ -40,6 +40,7 @@ public class JDKSearchAction extends CancelableWizardAction  {
             support.putClass(RunCommand.class.getName());
             support.putClass("org.netbeans.installer.RunCommand$StreamAccumulator");
             support.putClass(JDKInfo.class.getName());
+            support.putClass(JDKInfoAux.class.getName());
             support.putClass(SolarisRoutines.class.getName());
             support.putRequiredService(Win32RegistryService.NAME);
         } 
@@ -281,8 +282,9 @@ public class JDKSearchAction extends CancelableWizardAction  {
          * capitilization or additional path separators in the end of the path. */
         boolean found = false;
         logEvent(this, Log.DBG, "Searching " + jdkHomeFile + " in " + jdkHomeList);
-        if(jdkHomeList.contains(jdkHomeFile)) 
+        if (jdkHomeList.contains(jdkHomeFile)) {
             found = true;
+        }
         
         if (!found) {
             logEvent(this, Log.DBG,"Found Valid JDK Home ... " + jdkHomeFile);
@@ -294,10 +296,10 @@ public class JDKSearchAction extends CancelableWizardAction  {
         return getLatestVersionIndex(Util.getJdkHomeList());
     }
     
-    
     public static int getLatestVersionIndex(Vector jdkHomeList) {
-        if (jdkHomeList == null)
+        if (jdkHomeList == null) {
             return -1;
+        }
         int latestVersionIndex = 0;
         if (jdkHomeList.size() > 1) {
             JDKVersion latestVersion = new JDKVersion(JDKVersion.getVersionString(((File)jdkHomeList.firstElement()).getAbsolutePath()));
@@ -311,15 +313,17 @@ public class JDKSearchAction extends CancelableWizardAction  {
         }
         return latestVersionIndex;
     }
-                                                                                                                                                                    
+    
+    /** Returns Vector of JDKInfoAux instances */
     public static Vector getJdkList() {
         Vector jdkHomeList = Util.getJdkHomeList();
         Vector jdkHomeList1 = new Vector();
-        if (jdkHomeList == null)
+        if (jdkHomeList == null) {
             return jdkHomeList1;
+        }
         
         String jvm = Util.getJVMName();
-        for(int i=0; i< jdkHomeList.size(); i++) {
+        for (int i = 0; i < jdkHomeList.size(); i++) {
             String jdkPath = ((File) jdkHomeList.get(i)).getPath();
             File jvmFile = new File(jdkPath+File.separator+"bin"+File.separator+jvm);
             RunCommand runCommand = new RunCommand();
@@ -330,17 +334,19 @@ public class JDKSearchAction extends CancelableWizardAction  {
             runCommand.waitFor();
             String line = runCommand.getErrorLine();
             StringTokenizer st = new StringTokenizer(line.trim());
-            String version="";
-            while(st.hasMoreTokens()) 
-                version=st.nextToken();
-            StringBuffer stringBuffer = new StringBuffer();
-            for (int j=0; j<version.length(); j++) {
-                if (version.charAt(j) != '\"') 
-                    stringBuffer.append(version.charAt(j));
+            String version = "";
+            while (st.hasMoreTokens()) {
+                version = st.nextToken();
             }
-            jdkPath = jdkPath + "    (v. " + stringBuffer.toString() + ")";
-            jdkHomeList1.add(jdkPath);
+            StringBuffer stringBuffer = new StringBuffer();
+            for (int j = 0; j < version.length(); j++) {
+                if (version.charAt(j) != '\"') {
+                    stringBuffer.append(version.charAt(j));
+                }
+            }
+            String jdkVersion = stringBuffer.toString();
+            jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
         }
         return jdkHomeList1;
     }
- }
+}

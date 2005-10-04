@@ -60,9 +60,9 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
         destinations = new Vector(jdkHomeList.size());
         for (int i = 0; i < jdkHomeList.size(); i++) {
             DestinationItem item = new DestinationItem();
-            String desc = (String) jdkHomeList.elementAt(i);
-            item.setValue(trimVersion(desc));
-            item.setDescription(desc);
+            JDKInfoAux desc = (JDKInfoAux) jdkHomeList.elementAt(i);
+            item.setValue(desc.getHome());
+            item.setDescription(desc.getHome() + "    (v. " + desc.getVersion() + ")");
             destinations.add(item);
         }
         setSelectedDestinationIndex(""+JDKSearchAction.getLatestVersionIndex());
@@ -124,11 +124,6 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
             return false;
         }
         return true;
-    }
-    
-    private String trimVersion(String jdkPath){
-        StringTokenizer st = new StringTokenizer(jdkPath,"(");
-        return st.nextToken().trim();
     }
     
     protected void showErrorMsg(String title, String msg) {
