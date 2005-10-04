@@ -172,7 +172,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }
 
     public int getSortPriority() {
-        return 50;
+        return 800;
     }        
     
     public CharSequence getSortText() {
