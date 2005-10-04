@@ -100,6 +100,10 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
             if (preselectedCategory == null) {
                 preselectedCategory = findLastSelectedCategory();
             }
+            if (categories == null) {
+                // Error interrupted some previous call to prepareData() -> init()?
+                return;
+            }
             dialog = ProjectCustomizer.createCustomizerDialog(categories,
                     getPanelProvider(), preselectedCategory, listener,
                     null);
