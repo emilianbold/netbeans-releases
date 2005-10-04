@@ -14,6 +14,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
@@ -204,7 +205,9 @@ implements Executor {
                     stepRequest.enable ();
                     return true;
                 }
-            } catch (Exception e) {e.printStackTrace();}
+            } catch (IncompatibleThreadStateException e) {
+                ErrorManager.getDefault().notify(e);
+            }
             
             // Not synthetic
             boolean fsh = getSmartSteppingFilterImpl ().stopHere (className);
