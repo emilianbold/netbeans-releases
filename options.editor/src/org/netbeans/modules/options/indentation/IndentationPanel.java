@@ -57,6 +57,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -69,24 +70,18 @@ import org.openide.util.NbBundle;
 public final class IndentationPanel extends JPanel implements 
 ChangeListener, ActionListener {
 
-    private JCheckBox       cbExpandTabs = new JCheckBox ();
-    private JCheckBox       cbAddStar = new JCheckBox ();
-    private JCheckBox       cbNewLine = new JCheckBox ();
-    private JCheckBox       cbSpace = new JCheckBox ();
-    private JSpinner        tfStatementIndent = new JSpinner ();
-    private JSpinner        tfIndent = new JSpinner ();
-    private JEditorPane     epPreview = new JEditorPane ();
+    private JCheckBox           cbExpandTabs = new JCheckBox ();
+    private JCheckBox           cbAddStar = new JCheckBox ();
+    private JCheckBox           cbNewLine = new JCheckBox ();
+    private JCheckBox           cbSpace = new JCheckBox ();
+    private JSpinner            tfStatementIndent = new JSpinner ();
+    private JSpinner            tfIndent = new JSpinner ();
+    private JEditorPane         epPreview = new JEditorPane ();
     
-    private Model           model;
-    private String          originalText;
-    private boolean         originalExpandedTabs;
-    private boolean         originalAddStar;
-    private boolean         originalNewLine;
-    private boolean         originalSpace;
-    private int             originalStatementIndent = 0;
-    private int             originalIndent = 0;
-    private boolean         listen = false;
-    private boolean         changed = false;
+    private IndentationModel    model;
+    private String              originalText;
+    private boolean             listen = false;
+    private boolean             changed = false;
 
 	
     public IndentationPanel () {
@@ -150,10 +145,10 @@ ChangeListener, ActionListener {
         model.setJavaFormatSpaceBeforeParenthesis (cbSpace.isSelected ());
         model.setExpandTabs (cbExpandTabs.isSelected ());
         model.setJavaFormatStatementContinuationIndent (
-            ((Integer) tfStatementIndent.getValue ()).intValue ()
+            (Integer) tfStatementIndent.getValue ()
         );
         model.setSpacesPerTab (
-            ((Integer) (tfIndent.getValue ())).intValue ()
+            (Integer) tfIndent.getValue ()
         );
         
         // start formatter
@@ -180,18 +175,29 @@ ChangeListener, ActionListener {
     public void stateChanged (ChangeEvent e) {
         if (!listen) return;
         updatePreview ();
-        changed = true;
+        if (changed != model.isChanged ())
+            firePropertyChange (
+                PanelController.PROP_CHANGED,
+                Boolean.valueOf (changed),
+                Boolean.valueOf (model.isChanged ())
+            );
+        changed = model.isChanged ();
     }
     
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
         updatePreview ();
-        changed = true;
+        if (changed != model.isChanged ())
+            firePropertyChange (
+                PanelController.PROP_CHANGED,
+                Boolean.valueOf (changed),
+                Boolean.valueOf (model.isChanged ())
+            );
+        changed = model.isChanged ();
     }
 
     public void update () {
-	if (model == null) 
-            model = new Model ();
+        model = new IndentationModel ();
         
         if (originalText == null) {
             // add text to preview
@@ -211,49 +217,34 @@ ChangeListener, ActionListener {
             }
         }
         
-        // save original values
-        originalExpandedTabs = model.isExpandTabs ();
-        originalAddStar = model.getJavaFormatLeadingStarInComment ();
-        originalNewLine = model.getJavaFormatNewlineBeforeBrace ();
-        originalSpace = model.getJavaFormatSpaceBeforeParenthesis ();
-        originalStatementIndent = 
-            model.getJavaFormatStatementContinuationIndent ();
-        originalIndent = model.getSpacesPerTab ();
-        
         // init components
         listen = false;
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 epPreview.setContentType ("text/x-java");
-                cbExpandTabs.setSelected (originalExpandedTabs);
-                cbAddStar.setSelected (originalAddStar);
-                cbNewLine.setSelected (originalNewLine);
-                cbSpace.setSelected (originalSpace);
-                tfIndent.setValue (new Integer (originalIndent));
-                tfStatementIndent.setValue (new Integer (originalStatementIndent));
+                cbExpandTabs.setSelected (model.isExpandTabs ());
+                cbAddStar.setSelected 
+                        (model.getJavaFormatLeadingStarInComment ());
+                cbNewLine.setSelected 
+                        (model.getJavaFormatNewlineBeforeBrace ());
+                cbSpace.setSelected 
+                        (model.getJavaFormatSpaceBeforeParenthesis ());
+                tfIndent.setValue (model.getSpacesPerTab ());
+                tfStatementIndent.setValue 
+                        (model.getJavaFormatStatementContinuationIndent ());
                 listen = true;
             }
         });
         
         // update preview
         updatePreview ();
-        changed = false;
     }
     
     public void applyChanges () {
     }
     
     public void cancel () {
-        if (!changed) return; // not initialized yet...
-        model.setJavaFormatLeadingStarInComment (originalAddStar);
-        model.setJavaFormatNewlineBeforeBrace (originalNewLine);
-        model.setJavaFormatSpaceBeforeParenthesis (originalSpace);
-        model.setExpandTabs (originalExpandedTabs);
-        if (originalStatementIndent >= 0)
-            model.setJavaFormatStatementContinuationIndent 
-                (originalStatementIndent);
-        if (originalIndent >= 0)
-            model.setSpacesPerTab (originalIndent);
+        model.revertChanges ();
     }
     
     public boolean dataValid () {
@@ -261,6 +252,6 @@ ChangeListener, ActionListener {
     }
     
     public boolean isChanged () {
-        return changed;
+        return model.isChanged ();
     }
 }
