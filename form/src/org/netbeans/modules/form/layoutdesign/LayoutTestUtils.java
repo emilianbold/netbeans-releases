@@ -30,15 +30,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
-
 
 /**
  * This class collects various static methods for examining the layout.

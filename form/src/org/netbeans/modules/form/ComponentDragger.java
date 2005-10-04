@@ -39,7 +39,6 @@ class ComponentDragger
     private int resizeType;
 
     private RADVisualContainer targetMetaContainer;
-    private boolean fixedTarget;
 
     private Container targetContainer;
     private Container targetContainerDel;
@@ -78,7 +77,6 @@ class ComponentDragger
 
         if (fixedTargetMetaContainer != null) {
             targetMetaContainer = fixedTargetMetaContainer;
-            fixedTarget = true;
         }
     }
 
@@ -425,13 +423,8 @@ class ComponentDragger
         if (selectedComponents == null || selectedComponents.length == 0)
             return false;
 
-//        if (!fixedTarget) {
-//            targetMetaContainer = resizeType == 0 ?
-//                handleLayer.getMetaContainerAt(p, HandleLayer.COMP_DEEPEST) :
-//                selectedComponents[0].getParentContainer();
-            if (targetMetaContainer == null)
-                return false; // unknown meta-container
-//        }
+        if (targetMetaContainer == null)
+            return false; // unknown meta-container
 
         RADVisualContainer fixTargetContainer = null;
         do {

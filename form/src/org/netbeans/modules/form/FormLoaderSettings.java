@@ -153,8 +153,6 @@ public class FormLoaderSettings extends SystemOption {
     private static String [][] registeredEditors = new String [][] {{}};
 
     private static boolean toolBarPalette = false;
-    private static boolean showComponentsNames = true;
-    private static int paletteIconSize = BeanInfo.ICON_COLOR_16x16;
 
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;

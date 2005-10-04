@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.ListPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakeListPeer extends FakeComponentPeer 
 {
     FakeListPeer(List target) {

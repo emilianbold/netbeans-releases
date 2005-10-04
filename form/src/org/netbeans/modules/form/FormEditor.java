@@ -18,8 +18,6 @@ import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
-import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 

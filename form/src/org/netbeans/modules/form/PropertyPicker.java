@@ -32,7 +32,6 @@ public class PropertyPicker extends javax.swing.JPanel {
     static final long serialVersionUID =5689122601606238081L;
     /** Initializes the Form */
     public PropertyPicker(FormModel formModel, RADComponent componentToSelect, Class requiredType) {
-        this.formModel = formModel;
         this.requiredType = requiredType;
         initComponents();
 
@@ -221,10 +220,6 @@ public class PropertyPicker extends javax.swing.JPanel {
 
 
     private void propertyListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_propertyListValueChanged
-        if (propertyList.getSelectedIndex() == -1)
-            selectedProperty = null;
-        else
-            selectedProperty = descriptors[propertyList.getSelectedIndex()];
         updateState();
     }//GEN-LAST:event_propertyListValueChanged
 
@@ -249,13 +244,11 @@ public class PropertyPicker extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    private FormModel formModel;
     private boolean pickerValid = false;
 
     private RADComponent[] components;
     private Class requiredType;
     private PropertyDescriptor[] descriptors;
     private RADComponent selectedComponent;
-    private PropertyDescriptor selectedProperty;
 
 }

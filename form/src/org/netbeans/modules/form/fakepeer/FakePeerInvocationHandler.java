@@ -9,9 +9,7 @@
 
 package org.netbeans.modules.form.fakepeer;
 
-import java.awt.Component;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.openide.ErrorManager;
 

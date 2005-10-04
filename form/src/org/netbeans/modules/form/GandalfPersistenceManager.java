@@ -37,7 +37,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.modules.form.RADProperty.FakePropertyDescriptor;
 
 /**
  * XML persistence manager - responsible for saving/loading forms to/from XML.

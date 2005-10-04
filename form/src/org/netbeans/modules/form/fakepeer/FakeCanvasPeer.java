@@ -15,7 +15,6 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.CanvasPeer;
 
 /**
  *

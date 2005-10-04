@@ -34,7 +34,6 @@ import org.openide.util.NbBundle;
 */
 public class CustomTableModelEditor extends JPanel implements EnhancedCustomPropertyEditor {
 
-    private boolean isCreated = false;
     private boolean isChangingTableModel = false;
 
     private ChangeListener changeListener = new TabChangeListener();
@@ -488,7 +487,6 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
 
         updateSettingsTable();
         enableButtons();
-        isCreated = true;
 
         // listen to changes in the settings table - update the default-values table
         titleModel.addTableModelListener(new TableModelListener() {
@@ -900,9 +898,7 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         isChangingTableModel = true;
         int cols = model.getColumnCount();
         if (cols != titleModel.getRowCount()) {
-            isCreated = false;
             titleModel.setRowCount(cols);
-            isCreated = true;
         }
 
         for (int i=0; i < cols; i++) {

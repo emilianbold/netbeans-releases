@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.ChoicePeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakeChoicePeer extends FakeComponentPeer 
 {
     FakeChoicePeer(Choice target) {

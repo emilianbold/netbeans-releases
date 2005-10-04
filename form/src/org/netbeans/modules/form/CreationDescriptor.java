@@ -350,7 +350,6 @@ public class CreationDescriptor {
         private Class factoryClass;
         private Class describedClass;
         private Method method;
-        private String methodName;
         private CreationFactory.Property2ParametersMapper[] properties;
         private String[] propertyNames;
         
@@ -372,7 +371,6 @@ public class CreationDescriptor {
 
             method = factoryClass.getMethod(methodName, paramTypes);  
                 
-            this.methodName = methodName;
             this.factoryClass = factoryClass;                   
             this.describedClass = describedClass;
             this.properties = properties; 

@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.PanelPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakePanelPeer extends FakeContainerPeer 
 {
     FakePanelPeer(Panel target) {

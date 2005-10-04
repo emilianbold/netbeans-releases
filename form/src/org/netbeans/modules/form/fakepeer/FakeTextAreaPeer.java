@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.TextAreaPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakeTextAreaPeer extends FakeTextComponentPeer
 {
     FakeTextAreaPeer(TextArea target) {

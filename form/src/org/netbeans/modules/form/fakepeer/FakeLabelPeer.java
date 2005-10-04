@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.LabelPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakeLabelPeer extends FakeComponentPeer 
 {
     FakeLabelPeer(Label target) {

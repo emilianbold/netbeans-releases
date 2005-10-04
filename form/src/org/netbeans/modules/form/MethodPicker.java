@@ -29,7 +29,6 @@ public class MethodPicker extends javax.swing.JPanel {
     static final long serialVersionUID =7355140527892160804L;
     /** Initializes the Form */
     public MethodPicker(FormModel formModel, RADComponent componentToSelect, Class requiredType) {
-        this.formModel = formModel;
         this.requiredType = requiredType;
         initComponents();
 
@@ -225,10 +224,6 @@ public class MethodPicker extends javax.swing.JPanel {
     }//GEN-END:initComponents
 
     private void methodListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_methodListValueChanged
-        if (methodList.getSelectedIndex() == -1)
-            selectedMethod = null;
-        else
-            selectedMethod = descriptors[methodList.getSelectedIndex()];
         updateState();
     }//GEN-LAST:event_methodListValueChanged
 
@@ -253,13 +248,11 @@ public class MethodPicker extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    private FormModel formModel;
     private boolean pickerValid = false;
 
     private RADComponent[] components;
     private Class requiredType;
     private MethodDescriptor[] descriptors;
     private RADComponent selectedComponent;
-    private MethodDescriptor selectedMethod;
 
 }

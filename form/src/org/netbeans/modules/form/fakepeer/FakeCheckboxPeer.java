@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.CheckboxPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakeCheckboxPeer extends FakeComponentPeer 
 {
     FakeCheckboxPeer(Checkbox target) {

@@ -15,15 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.ButtonPeer;
-
-
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakeButtonPeer extends FakeComponentPeer 
 {
     FakeButtonPeer(Button target) {

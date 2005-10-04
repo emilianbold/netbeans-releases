@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.ContainerPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 abstract class FakeContainerPeer extends FakeComponentPeer 
 {
     private Insets _insets;

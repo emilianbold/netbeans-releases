@@ -15,13 +15,11 @@
 package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
-import java.awt.peer.ScrollbarPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
-
 class FakeScrollbarPeer extends FakeComponentPeer 
 {
     FakeScrollbarPeer(Scrollbar target) {

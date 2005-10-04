@@ -116,8 +116,6 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         updateParameterTypes();
             
-        currentFilledState = isFilled();
-
         HelpCtx.setHelpIDString(this, "gui.source.modifying.property"); // NOI18N
         
         valueButton.getAccessibleContext().setAccessibleDescription(
@@ -678,7 +676,6 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     private PropertyPicker propertyPicker;
 
     private ArrayList listeners;
-    private boolean currentFilledState;
     private RADComponent selectedComponent;
     private PropertyDescriptor selectedProperty;
     private MethodDescriptor selectedMethod;

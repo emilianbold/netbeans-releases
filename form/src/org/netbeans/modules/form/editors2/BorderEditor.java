@@ -57,7 +57,6 @@ public final class BorderEditor extends PropertyEditorSupport
 
     private Object current;
 
-    private FormModel formModel;
     private FormPropertyContext propertyContext;
     private BorderDesignSupport borderSupport;
 
@@ -74,7 +73,6 @@ public final class BorderEditor extends PropertyEditorSupport
 
     // FormAwareEditor implementation
     public void setFormModel(FormModel model) {
-        formModel = model;
         propertyContext = new FormPropertyContext.DefaultImpl(model);
     }
 
