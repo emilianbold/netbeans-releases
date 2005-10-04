@@ -146,11 +146,11 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                 return getInstanceLabel(fo);
             }
             if (fo.hasExt("shadow")) { // NOI18N
-                String originalFile = (String) fo.getAttribute("originalFile"); // NOI18N
-                if (originalFile != null) {
+                Object originalFile = fo.getAttribute("originalFile"); // NOI18N
+                if (originalFile != null && originalFile instanceof String) {
                     FileObject orig;
                     try {
-                        orig = fo.getFileSystem().findResource(originalFile);
+                        orig = fo.getFileSystem().findResource((String) originalFile);
                     } catch (FileStateInvalidException e) {
                         orig = null;
                     }

@@ -216,6 +216,9 @@ public class LayerUtilsTest extends LayerTestBase {
         cmf.add(cmf.createLayerEntry("sep-42.instance", null, null, null, Collections.singletonMap("instanceClass", "javax.swing.JSeparator")));
         cmf.add(cmf.createLayerEntry("link-to-standard.shadow", null, null, null, Collections.singletonMap("originalFile", "Actions/System/org-openide-actions-OpenAction.instance")));
         cmf.add(cmf.createLayerEntry("link-to-custom.shadow", null, null, null, Collections.singletonMap("originalFile", "test-module2-MyAction.instance")));
+        File dummyDir = new File(getWorkDir(), "dummy");
+        dummyDir.mkdir();
+        cmf.add(cmf.createLayerEntry("link-to-url.shadow", null, null, null, Collections.singletonMap("originalFile", dummyDir.toURI().toURL())));
         cmf.run();
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module2);
         assertDisplayName(fs, "right display name for platform file", "Menu/RunProject", "Run");
@@ -229,6 +232,7 @@ public class LayerUtilsTest extends LayerTestBase {
         assertDisplayName(fs, "label for menu separator", "sep-42.instance", "<separator>");
         assertDisplayName(fs, "link to standard menu item", "link-to-standard.shadow", "Open");
         assertDisplayName(fs, "link to custom menu item", "link-to-custom.shadow", "<instance of MyAction>");
+        DataObject.find(fs.findResource("link-to-url.shadow")).getNodeDelegate().getDisplayName(); // #65665
         /* XXX too hard to unit test in practice, since we will get a CNFE trying to load a class from editor here:
         //System.err.println("items in Menu/Edit: " + java.util.Arrays.asList(fs.findResource("Menu/Edit").getChildren()));
         assertDisplayName(fs, "right display name for non-action with only menu presenter", "Menu/Edit/org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance", "Find Selection");
