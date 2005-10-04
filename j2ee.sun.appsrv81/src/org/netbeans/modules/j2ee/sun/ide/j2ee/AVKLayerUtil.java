@@ -1,26 +1,22 @@
 /*
- *                 Sun Public License Notice
+ * AVKLayerUtil.java
  *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
+ * Created on September 19, 2005, 9:53 AM
  *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * To change this template, choose Tools | Options and locate the template under
+ * the Source Creation and Management node. Right-click the template and choose
+ * Open. You can then make changes to the template in the Source Editor.
  */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
-import org.netbeans.modules.j2ee.sun.api.InstrumentAVK;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.*;
+import org.openide.*;
 import org.openide.util.Lookup;
+import org.openide.loaders.*;
+import org.openide.cookies.InstanceCookie;
 
-
+import org.netbeans.modules.j2ee.sun.api.InstrumentAVK;
 
 /**
  *

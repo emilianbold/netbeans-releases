@@ -69,7 +69,8 @@ public class PluginProperties  {
     private  File platformRoot = null;
     
     static private PluginProperties thePluginProperties=null;
-    
+    static final private String IDEHOME = "${ide.home}";
+    private String ideHomeLocation;
     public static PluginProperties getDefault(){
         if (thePluginProperties==null)
             thePluginProperties= new PluginProperties();
@@ -79,6 +80,9 @@ public class PluginProperties  {
     
     
     private  PluginProperties(){
+	ideHomeLocation = System.getProperty("netbeans.home");
+	ideHomeLocation = new File(ideHomeLocation).getParentFile().getAbsolutePath();
+
         java.io.InputStream inStream = null;
         try {
             try {
@@ -132,10 +136,11 @@ public class PluginProperties  {
         String b= inProps.getProperty(INCREMENTAL,"false");//true by default
         incrementalDeployPossible = b.equals("true");
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
+
         if (loc==null){// try to get the default value
-            platformRoot = new File(getDefaultInstallRoot());
+	    platformRoot = new File(getDefaultInstallRoot());
             if (isGoodAppServerLocation(platformRoot)){
-                System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());
+		System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());	
                 javax.swing.SwingUtilities.invokeLater(new Runnable(){
                     public void run(){
                         registerDefaultDomain();
@@ -148,10 +153,13 @@ public class PluginProperties  {
             }
         }
 	else{
-            platformRoot = new File(loc);
+	    if (loc.startsWith(IDEHOME)){
+		loc = ideHomeLocation + loc.substring(IDEHOME.length(),loc.length());
+	    }
+	    platformRoot = new File(loc);
             if (!isGoodAppServerLocation(platformRoot)){
+                System.out.println(platformRoot.getAbsolutePath()+ ":" +NbBundle.getMessage(PluginProperties.class, "MSG_WrongInstallDir"));
                 platformRoot = null;
-                System.out.println(NbBundle.getMessage(PluginProperties.class, "MSG_WrongInstallDir"));
                 //remove storage for old defined instances: they would cause errors furthers down, and should not be known.
                 File store = new File(System.getProperty("netbeans.user")+"/config/J2EE/InstalledServers/.nbattrs");
                 
@@ -161,7 +169,7 @@ public class PluginProperties  {
                 
                 
             } else{
-                System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());
+		System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());	
                 
             }
             
@@ -367,8 +375,14 @@ public class PluginProperties  {
             outProp.setProperty(LOG_LEVEL_KEY, logLevel);
         if (!getCharsetDisplayPreferenceStatic().equals(CharsetDisplayPreferenceEditor.DEFAULT_PREF_VAL))
             outProp.setProperty(CHARSET_DISP_PREF_KEY, getCharsetDisplayPreferenceStatic().toString());
-        if (platformRoot != null)
-            outProp.setProperty(INSTALL_ROOT_KEY, platformRoot.getAbsolutePath());
+	if (platformRoot != null){
+	    String dirloc=platformRoot.getAbsolutePath();
+	    if (dirloc.startsWith(ideHomeLocation)){
+		dirloc = IDEHOME + dirloc.substring(ideHomeLocation.length(),dirloc.length());
+		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
+		
+	    }
+	}
         FileLock l = null;
         java.io.OutputStream outStream = null;
         try {
@@ -414,7 +428,9 @@ public class PluginProperties  {
     public File getPlatformRoot() {
         return platformRoot;
     }
-    
+
+
+
     
     /** set the plugin's install root
      *
@@ -428,8 +444,8 @@ public class PluginProperties  {
         File oldInstallRoot = platformRoot;
         if (this.isGoodAppServerLocation(fo)){
             platformRoot = fo;
-            System.setProperty(INSTALL_ROOT_PROP_NAME, fo.getAbsolutePath());
-            saveProperties();
+            System.setProperty(INSTALL_ROOT_PROP_NAME, fo.getAbsolutePath());	
+	    saveProperties();
             Installer.resetClassLoader();//TODO do  better for next release: separate options to this PluginProperties stuff.
             RunTimeDDCatalog.getRunTimeDDCatalog().fireCatalogListeners();
         } 
@@ -438,6 +454,7 @@ public class PluginProperties  {
     private  String getDefaultInstallRoot() {
         String candidate = System.getProperty(INSTALL_ROOT_PROP_NAME); //NOI18N
         if (null != candidate){
+
             File f = new File(candidate);
             if (f.exists()){
                 return candidate;
@@ -480,7 +497,6 @@ public class PluginProperties  {
         fileColl.add("bin");
         fileColl.add("lib");
         fileColl.add("config");
-        fileColl.add("domains");
     }
     
     public boolean isGlassFish(File candidate){

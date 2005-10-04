@@ -67,6 +67,8 @@ public class RegisterPointbase implements DatabaseRuntime {
     /** pointbase server process */
     protected static Process process  =null;
     
+    private File AppServerinstallationDirectory = null;
+    
     
     /** Creates a new instance of RegisterPointbase */
     private RegisterPointbase() {
@@ -109,11 +111,8 @@ public class RegisterPointbase implements DatabaseRuntime {
         }
     }
     private void createLocalInstallation(){
-        File irf = PluginProperties.getDefault().getInstallRoot();
-        if (null == irf || !irf.exists()) {
-            return;
-        }
-        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+
+        String installRoot = AppServerinstallationDirectory.getAbsolutePath(); 
         String dest = System.getProperty("netbeans.user");
         try{
             unzip(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/j2ee/sun/ide/j2ee/db/pointbasescripts.zip") , new File(dest));
@@ -166,12 +165,11 @@ public class RegisterPointbase implements DatabaseRuntime {
         }
         
     }
-    public void   register(){
-        File irf = PluginProperties.getDefault().getInstallRoot();
+    public void   register(File irf){
         if (null == irf || !irf.exists()) {
             return;
         }
-        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        String installRoot = irf.getAbsolutePath(); 
         if (installRoot==null){
             return;
         }
@@ -179,11 +177,13 @@ public class RegisterPointbase implements DatabaseRuntime {
         if (!localInstall.exists()){
             return ;  
 	}      
-        
         JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(DRIVER);
+	//now it is a good one.
+        AppServerinstallationDirectory =irf;
         
         if (drvs.length>0)
             return; //already there
+	
         
         // Go to the conf dir
         File dbFile = new File(installRoot+"/pointbase/databases/sample.dbn");//NOI18N
@@ -235,8 +235,7 @@ public class RegisterPointbase implements DatabaseRuntime {
     }
     
     public boolean isRegisterable() {
-        File irf = PluginProperties.getDefault().getInstallRoot();
-        if (null == irf || !irf.exists()) {
+        if (null == AppServerinstallationDirectory || !AppServerinstallationDirectory.exists()) {
             return false;
         }
         return true;
@@ -280,11 +279,11 @@ public class RegisterPointbase implements DatabaseRuntime {
      *
      **/
     public File getScriptsLocation(){
-        File irf = PluginProperties.getDefault().getInstallRoot();
+        File irf = AppServerinstallationDirectory;
         if (null == irf || !irf.exists()) {
             return null;
         }
-        String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        String installRoot = irf.getAbsolutePath(); 
         if (installRoot == null) {
             Util.showInformation(NbBundle.getMessage(StartAction.class, "ERR_NotThere"));
             return null;

@@ -18,7 +18,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 
 /**
  *
@@ -34,29 +33,21 @@ public class FindJSPServletImpl implements FindJSPServlet {
     }
     
     public File getServletTempDirectory(String moduleContextPath) {
-        File baseDir = findBaseDir();
-        if ((baseDir == null) || !baseDir.exists()) {
-            return null;
-        }
+
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties(tm);
         String domain = dmProps.getDomainName();
         if (domain==null){
             domain="domain1";
             dmProps.setDomainName(domain);
         }
-        File hostBase = new File(baseDir, "domains/"+domain+"/generated/jsp/j2ee-modules".replace('/', File.separatorChar));
+	String domainDir = dmProps.getLocation();
+        File hostBase = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-modules".replace('/', File.separatorChar));
         File workDir = new File(hostBase, getContextRootString(moduleContextPath));
       //  System.out.println("returning servlet root " + workDir);
         return workDir;
     }
     
-    private File findBaseDir() {
-        File irf = PluginProperties.getDefault().getInstallRoot();
-        if (null == irf || !irf.exists()) {
-            return null;
-        }
-        return irf;
-    }
+
     
     private String getContextRootString(String moduleContextPath) {
         String contextRootPath = moduleContextPath;

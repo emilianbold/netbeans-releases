@@ -87,7 +87,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
     private String displayName;
     
     /** Creates a new instance of PlatformImpl */
-    public PlatformImpl(File rootLocation, String aDisplayName, InstanceProperties instanceProperties) {
+    public PlatformImpl(final File rootLocation, String aDisplayName, InstanceProperties instanceProperties) {
         displayName = aDisplayName;
         init (rootLocation);
         if (instanceProperties != null) {
@@ -95,7 +95,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                RegisterPointbase.getDefault().register();
+                RegisterPointbase.getDefault().register(rootLocation);
             }
         });
     }
@@ -119,10 +119,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                 //} //else {
                         // passed all tests
                 //}
-		testF = new File(platformRoot, "domains"); // NOI18N
-                if(!testF.exists()) {
-                        result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
-		}
+
 		testF = new File(platformRoot, "lib"); // NOI18N
                 if(!testF.exists()) {
                         result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
