@@ -82,6 +82,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates" >
         <folder name="Other" >
+            <folder name="Folder">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/templatesFolder.html" />
+            </folder>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
             <file name="file">
                 <![CDATA[]]>
@@ -92,6 +97,12 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </file>
         </folder>
+        <!-- folder for all privileged templates -->
+        <folder name="Privileged">
+	    <file name="Folder.shadow">
+                <attr name="originalFile" stringvalue="Templates/Other/Folder"/>
+            </file>
+	</folder>
     </folder>
  
 </filesystem>

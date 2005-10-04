@@ -156,8 +156,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>        
 
-        <folder name="Folder_hidden"/>
-
         <attr name="XML/Ant" boolvalue="true"/>
         <attr name="JUnit/XML" boolvalue="true"/>
         <attr name="Beans/JUnit" boolvalue="true"/>
