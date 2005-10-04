@@ -631,15 +631,19 @@ under Print Settings in the Options window)
    <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
    <!--nodes for Diff Settings and Diff and Merge Types:-->
-   <mapID target="org.netbeans.modules.diff.DiffSettings" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.types" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.providers" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.visualizers" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="files/files_diff.html" />
+   <mapID target="org.netbeans.modules.diff.DiffSettings" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.types" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.providers" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.visualizers" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.diff.Diff.services" url="configure/diff_textual.html" />
+<!-- are these merge visualizers still used? -->   
+   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="configure/diff_textual.html" />
+   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="configure/diff_textual.html" />
 <!--possibly remap the following target to configure_options.html :-->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
