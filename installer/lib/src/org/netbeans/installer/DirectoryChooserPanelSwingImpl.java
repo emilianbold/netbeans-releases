@@ -228,9 +228,13 @@ extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener {
         }
     }
     
-    public void valueChanged(ListSelectionEvent listSelectionEvent) {
-        inputTextField.setText(getDirectoryChooserPanel().getDestinationValue(listList.getSelectedIndex()));
-        inputTextField.selectAll();
+    public void valueChanged (ListSelectionEvent listSelectionEvent) {
+        if (listList.getSelectedIndex() != -1) {
+            inputTextField.setText(getDirectoryChooserPanel().getDestinationValue(listList.getSelectedIndex()));
+            inputTextField.selectAll();
+        } else {
+            inputTextField.setText("");
+        }
     }
     
     private DirectoryChooserPanel getDirectoryChooserPanel() {
