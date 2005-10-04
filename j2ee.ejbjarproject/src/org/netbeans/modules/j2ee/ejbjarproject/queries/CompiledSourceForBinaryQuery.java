@@ -14,6 +14,7 @@ package org.netbeans.modules.j2ee.ejbjarproject.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.event.ChangeEvent;
@@ -102,7 +103,13 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             }
             String outDir = helper.getStandardPropertyEvaluator ().getProperty (binaryProperty);
             if (outDir != null) {
-                URL url = helper.resolveFile (outDir).toURI().toURL();
+                File f = helper.resolveFile (outDir);
+                URL url = f.toURI().toURL();
+                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) { // NOI18N
+                    // non-existing 
+                    assert !url.toExternalForm().endsWith("/") : f; // NOI18N
+                    url = new URL(url.toExternalForm() + "/"); // NOI18N
+                }
                 if (url.equals (binaryRoot)) {
                     return true;
                 }
