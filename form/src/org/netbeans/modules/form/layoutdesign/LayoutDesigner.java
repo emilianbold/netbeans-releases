@@ -23,10 +23,24 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.*;
+import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
 
 public class LayoutDesigner implements LayoutConstants {
 
+    public ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
+    
+    /* stores test code lines */
+    public List testCode = new ArrayList();
+    
+    // these below are used for removing unwanted move entries, otherwise the code can exceed 10000 lines in a few seconds of form editor work ;O)
+    private List testCode0 = new ArrayList();
+    private List beforeMove = new ArrayList();
+    private List move1 = new ArrayList();
+    private List move2 = new ArrayList();
+    private boolean isMoving = false;
+    
     private LayoutModel layoutModel;
 
     private VisualMapper visualMapper;
@@ -55,6 +69,9 @@ public class LayoutDesigner implements LayoutConstants {
     // updates of the current visual state stored in the model
 
     public boolean updateCurrentState() {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            testCode.add("// > UPDATE CURRENT STATE"); //NOI18N
+	}
         Object changeMark = layoutModel.getChangeMark();
         boolean changeRequired = imposeSize || optimizeStructure;
         Set updatedContainers = changeRequired ? new HashSet() : null;
@@ -86,6 +103,12 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
 
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("updateCurrentState"); //NOI18N            
+            testCode.add("ld.updateCurrentState();"); //NOI18N
+            testCode.add("// < UPDATE CURRENT STATE"); //NOI18N
+        }
+        
         visualStateUpToDate = true;
         return !changeMark.equals(layoutModel.getChangeMark());
     }
@@ -295,6 +318,10 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
+    public void dumpTestcode(DataObject form, Map idToNameMap) {
+        LayoutTestUtils.dumpTestcode(testCode, form, idToNameMap);
+    }
+    
     // -----
     // adding, moving, resizing
 
@@ -303,12 +330,42 @@ public class LayoutDesigner implements LayoutConstants {
                             Point hotspot,
                             String defaultContId)
     {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            testCode.add("// > START ADDING"); //NOI18N
+	}
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("startAdding: " + comps + ", " + bounds + ", " + hotspot + ", " + defaultContId);      //NOI18N       
+            testCode.add("{");
+	    // lc should be already filled in the MetaComponentCreator.getPrecreatedComponent
+            LayoutTestUtils.writeLayoutComponentArray(testCode, "comps", "lc");				    //NOI18N
+            LayoutTestUtils.writeRectangleArray(testCode, "bounds", bounds);				    //NOI18N
+            LayoutTestUtils.writeString(testCode, "defaultContId", defaultContId);			    //NOI18N         
+            testCode.add("Point hotspot = new Point(" + new Double(hotspot.getX()).intValue() + "," +	    //NOI18N
+			    new Double(hotspot.getY()).intValue() + ");");				    //NOI18N
+            testCode.add("ld.startAdding(comps, bounds, hotspot, defaultContId);");			    //NOI18N
+            testCode.add("}");										    //NOI18N
+        }
         if (defaultContId != null)
             dragger.setTargetContainer(layoutModel.getLayoutComponent(defaultContId));
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            testCode.add("// < START ADDING"); //NOI18N
+	}
     }
-
+    
     public void startMoving(String[] compIds, Rectangle[] bounds, Point hotspot) {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("startMoving: " + compIds + ", " + bounds + ", " + hotspot); //NOI18N
+            testCode.add("// > START MOVING"); //NOI18N
+            testCode.add("{"); //NOI18N
+            LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
+            LayoutTestUtils.writeRectangleArray(testCode, "bounds", bounds); //NOI18N
+            testCode.add("Point hotspot = new Point(" + new Double(hotspot.getX()).intValue() + "," +  //NOI18N
+		    new Double(hotspot.getY()).intValue() + ");"); //NOI18N
+            testCode.add("ld.startMoving(compIds, bounds, hotspot);"); //NOI18N
+            testCode.add("}"); //NOI18N
+        }
+        
         LayoutComponent[] comps = new LayoutComponent[compIds.length];
         for (int i=0; i < compIds.length; i++) {
             comps[i] = layoutModel.getLayoutComponent(compIds[i]);
@@ -316,6 +373,9 @@ public class LayoutDesigner implements LayoutConstants {
 
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
         dragger.setTargetContainer(comps[0].getParent());
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            testCode.add("// < START MOVING"); //NOI18N
+	}
     }
 
     // [change to one component only?]
@@ -324,11 +384,24 @@ public class LayoutDesigner implements LayoutConstants {
                               Point hotspot,
                               int[] resizeEdges)
     {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("startResizing: " + compIds + ", " + bounds + ", " + hotspot + ", " + resizeEdges); //NOI18N
+            testCode.add("// > START RESIZING"); //NOI18N
+            testCode.add("{"); //NOI18N
+            LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
+            LayoutTestUtils.writeRectangleArray(testCode, "bounds", bounds); //NOI18N
+            testCode.add("Point hotspot = new Point(" + new Double(hotspot.getX()).intValue() + "," +  //NOI18N
+		    new Double(hotspot.getY()).intValue() + ");"); //NOI18N
+            LayoutTestUtils.writeIntArray(testCode, "resizeEdges", resizeEdges); //NOI18N
+            testCode.add("ld.startResizing(compIds, bounds, hotspot, resizeEdges);"); //NOI18N
+            testCode.add("}"); //NOI18N
+        }
+
         LayoutComponent[] comps = new LayoutComponent[compIds.length];
         for (int i=0; i < compIds.length; i++) {
             comps[i] = layoutModel.getLayoutComponent(compIds[i]);
         }
-
+        
         int[] edges = new int[DIM_COUNT];
         for (int i=0; i < DIM_COUNT; i++) {
             edges[i] = resizeEdges[i] == LEADING || resizeEdges[i] == TRAILING ?
@@ -337,6 +410,9 @@ public class LayoutDesigner implements LayoutConstants {
 
         prepareDragger(comps, bounds, hotspot, edges);
         dragger.setTargetContainer(comps[0].getParent());
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            testCode.add("// < START RESIZING"); //NOI18N
+	}
     }
 
     private void prepareDragger(LayoutComponent[] comps,
@@ -382,7 +458,24 @@ public class LayoutDesigner implements LayoutConstants {
                      boolean lockDimension,
                      Rectangle[] bounds)
     {
-        if (!visualStateUpToDate || (dragger == null)) {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            // this terrible code here is to store only two last move() calls
+            if (!isMoving) {
+                isMoving = true;
+                // backup all current entries and clear the testcode list
+                beforeMove = new ArrayList();
+                beforeMove.addAll(testCode);
+                testCode = new ArrayList();
+            }
+
+            move1 = move2;
+            testCode0 = testCode;
+
+            move2 = new ArrayList();
+            move2.add("// > MOVE");
+            testCode = new ArrayList();
+        }
+        if ((!visualStateUpToDate) || (dragger == null)) {
             return; // visual state of layout structure not updated yet (from last operation)
         }
 
@@ -394,7 +487,7 @@ public class LayoutDesigner implements LayoutConstants {
         cursorPos[VERTICAL] = p.y;
 
         dragger.move(cursorPos, autoPositioning, lockDimension);
-
+        
         p.x = cursorPos[HORIZONTAL];
         p.y = cursorPos[VERTICAL];
 
@@ -404,115 +497,146 @@ public class LayoutDesigner implements LayoutConstants {
                 current[i].toRectangle(bounds[i]);
             }
         }
+
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("move: " + p + ", " + containerId + ", " + autoPositioning + ", " + lockDimension + ", " + bounds); //NOI18N
+            move2.add("{"); //NOI18N
+            move2.add("Point p = new Point(" + new Double(p.getX()).intValue() + "," +  //NOI18N
+		    new Double(p.getY()).intValue() + ");"); //NOI18N
+            LayoutTestUtils.writeString(move2, "containerId", containerId); //NOI18N
+            move2.add("boolean autoPositioning = " + autoPositioning + ";"); //NOI18N
+            move2.add("boolean lockDimension = " + lockDimension + ";"); //NOI18N
+            LayoutTestUtils.writeRectangleArray(move2, "bounds", bounds); //NOI18N
+            move2.add("ld.move(p, containerId, autoPositioning, lockDimension, bounds);"); //NOI18N
+            move2.add("}"); //NOI18N
+            move2.add("// < MOVE"); //NOI18N
+        }
     }
 
     public void endMoving(boolean committed) {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (committed) {
+                em.log("writing move code"); //NOI18N
+                beforeMove.addAll(testCode0);
+                beforeMove.addAll(move1);
+                beforeMove.addAll(testCode);
+                beforeMove.addAll(move2);
+                testCode = beforeMove;
+            }
+            testCode.add("// > END MOVING"); //NOI18N
+            isMoving = false;
+        }
         try {
-        if (committed) {
-            LayoutComponent[] components = dragger.getMovingComponents();
-            LayoutComponent targetContainer = dragger.getTargetContainer();
+            if (committed) {
+                LayoutComponent[] components = dragger.getMovingComponents();
+                LayoutComponent targetContainer = dragger.getTargetContainer();
 
-            if (targetContainer != null) {
-                boolean newComponent = components[0].getParent() == null;
-                // Determine intervals that should be added
-                LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
-                LayoutRegion origSpace = null;
-                for (int dim=0; dim < DIM_COUNT; dim++) {
-                    if (components.length > 1) {
-                        if (origSpace == null) {
-                            origSpace = new LayoutRegion();
-                            // Calculate original space
-                            for (int i=0; i < components.length; i++) {
-                                origSpace.expand(components[i].getLayoutInterval(0).getCurrentSpace());
+                if (targetContainer != null) {
+                    boolean newComponent = components[0].getParent() == null;
+                    // Determine intervals that should be added
+                    LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
+                    LayoutRegion origSpace = null;
+                    for (int dim=0; dim < DIM_COUNT; dim++) {
+                        if (components.length > 1) {
+                            if (origSpace == null) {
+                                origSpace = new LayoutRegion();
+                                // Calculate original space
+                                for (int i=0; i < components.length; i++) {
+                                    origSpace.expand(components[i].getLayoutInterval(0).getCurrentSpace());
+                                }
                             }
-                        }
-                        LayoutInterval[] children = new LayoutInterval[components.length];
-                        for (int i=0; i<components.length; i++) {
-                            children[i] = components[i].getLayoutInterval(dim);
-                        }
-                        LayoutInterval parent = LayoutInterval.getCommonParent(children);
-                        // Restriction of the layout model of the common parent
-                        // in the original layout (this also removes the original intervals)
-                        addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
-                    } else {
-                        addingInts[dim] = components[0].getLayoutInterval(dim);
-                        if (newComponent) { // Ensure correct size when the component comes from old layout
-                            Dimension preferred = visualMapper.getComponentPreferredSize(components[0].getId());
-                            int size = dragger.getMovingBounds()[0].size(dim);
-                            if (size != ((dim == HORIZONTAL) ? preferred.width : preferred.height)) {
-                                LayoutInterval intr = addingInts[dim];
-                                layoutModel.setIntervalSize(intr, intr.getMinimumSize(), size, intr.getMaximumSize());
+                            LayoutInterval[] children = new LayoutInterval[components.length];
+                            for (int i=0; i<components.length; i++) {
+                                children[i] = components[i].getLayoutInterval(dim);
+                            }
+                            LayoutInterval parent = LayoutInterval.getCommonParent(children);
+                            // Restriction of the layout model of the common parent
+                            // in the original layout (this also removes the original intervals)
+                            addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
+                        } else {
+                            addingInts[dim] = components[0].getLayoutInterval(dim);
+                            if (newComponent) { // Ensure correct size when the component comes from old layout
+                                Dimension preferred = visualMapper.getComponentPreferredSize(components[0].getId());
+                                int size = dragger.getMovingBounds()[0].size(dim);
+                                if (size != ((dim == HORIZONTAL) ? preferred.width : preferred.height)) {
+                                    LayoutInterval intr = addingInts[dim];
+                                    layoutModel.setIntervalSize(intr, intr.getMinimumSize(), size, intr.getMaximumSize());
+                                }
                             }
                         }
                     }
-                }
 
-                LayoutFeeder layoutFeeder = new LayoutFeeder(operations, dragger, addingInts);
+                    LayoutFeeder layoutFeeder = new LayoutFeeder(operations, dragger, addingInts);
 
-                // Remove components from original location
-                for (int i=0; i<components.length; i++) {
-                    if (components[i].getParent() != null) {
-                        LayoutComponent comp = components[i];
+                    // Remove components from original location
+                    for (int i=0; i<components.length; i++) {
                         if (components[i].getParent() != null) {
-                            if (dragger.isResizing(HORIZONTAL)) {
-                                layoutModel.removeComponentFromLinkSizedGroup(components[i], HORIZONTAL);
+                            LayoutComponent comp = components[i];
+                            if (components[i].getParent() != null) {
+                                if (dragger.isResizing(HORIZONTAL)) {
+                                    layoutModel.removeComponentFromLinkSizedGroup(components[i], HORIZONTAL);
+                                }
+                                if (dragger.isResizing(VERTICAL)) {
+                                    layoutModel.removeComponentFromLinkSizedGroup(components[i], VERTICAL);
+                                }
                             }
-                            if (dragger.isResizing(VERTICAL)) {
-                                layoutModel.removeComponentFromLinkSizedGroup(components[i], VERTICAL);
+                            if (components.length == 1) { // remove also the intervals
+                                layoutModel.removeComponentAndIntervals(comp, false);
                             }
-                        }
-                        if (components.length == 1) { // remove also the intervals
-                            layoutModel.removeComponentAndIntervals(comp, false);
-                        }
-                        else { // Don't remove layout intervals of components if
-                            // moving multiple components - the intervals are placed
-                            // in the adding group already (by restrictedCopy)
-                            layoutModel.removeComponent(comp, false);
+                            else { // Don't remove layout intervals of components if
+                                // moving multiple components - the intervals are placed
+                                // in the adding group already (by restrictedCopy)
+                                layoutModel.removeComponent(comp, false);
+                            }
                         }
                     }
+
+                    modelListener.deactivate(); // from now do not react on model changes
+
+                    // Add components to the target container
+                    for (int i=0; i<components.length; i++) {
+                        layoutModel.addComponent(components[i], targetContainer, -1);
+                    }
+
+                    // add the intervals
+                    layoutFeeder.add();
+
+                    for (int dim=0; dim < DIM_COUNT; dim++) {
+                        destroyGroupIfRedundant(addingInts[dim], addingInts[dim].getParent());
+                    }
+
+                    if (components[0].isLayoutContainer() && (dragger.isResizing() || newComponent)) {
+                        // container size needs to be defined from inside in advance
+                        imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
+                    }
+
+                    updateDesignModifications(targetContainer);
                 }
+                else { // resizing root container
+                    assert dragger.isResizing();
 
-                modelListener.deactivate(); // from now do not react on model changes
+                    modelListener.deactivate(); // do not react on model changes
 
-                // Add components to the target container
-                for (int i=0; i<components.length; i++) {
-                    layoutModel.addComponent(components[i], targetContainer, -1);
-                }
-
-                // add the intervals
-                layoutFeeder.add();
-
-                for (int dim=0; dim < DIM_COUNT; dim++) {
-                    destroyGroupIfRedundant(addingInts[dim], addingInts[dim].getParent());
-                }
-
-                if (components[0].isLayoutContainer() && (dragger.isResizing() || newComponent)) {
-                    // container size needs to be defined from inside in advance
+                    LayoutRegion space = dragger.getMovingBounds()[0];
+                    for (int dim=0; dim < DIM_COUNT; dim++) {
+                        components[0].getLayoutInterval(dim).setCurrentSpace(space);
+                    }
                     imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
                 }
 
-                updateDesignModifications(targetContainer);
+                if (dragger.isResizing() && components[0].isLayoutContainer())
+                    updateDesignModifications(components[0]);
+
+                visualStateUpToDate = false;
             }
-            else { // resizing root container
-                assert dragger.isResizing();
-
-                modelListener.deactivate(); // do not react on model changes
-
-                LayoutRegion space = dragger.getMovingBounds()[0];
-                for (int dim=0; dim < DIM_COUNT; dim++) {
-                    components[0].getLayoutInterval(dim).setCurrentSpace(space);
-                }
-                imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
-            }
-
-            if (dragger.isResizing() && components[0].isLayoutContainer())
-                updateDesignModifications(components[0]);
-
-            visualStateUpToDate = false;
-        }
         } finally {
             modelListener.activate();
             dragger = null;
+            if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                em.log("endMoving: " + committed); //NOI18N
+                testCode.add("ld.endMoving(" + committed + ");"); //NOI18N
+                testCode.add("// < END MOVING"); //NOI18N
+            }
         }
     }
 
@@ -1155,6 +1279,16 @@ public class LayoutDesigner implements LayoutConstants {
      * @param alignment desired alignment.
      */
     public void adjustComponentAlignment(LayoutComponent comp, int dimension, int alignment) {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("adjustComponentAlignment: " + comp + ", " + dimension + ", " + alignment); //NOI18N
+            testCode.add("// > ADJUST COMPONENT ALIGNMENT"); //NOI18N
+            testCode.add("{"); //NOI18N
+            testCode.add("LayoutComponent comp = model.getLayoutComponent(\"" + comp.getId() + "\");"); //NOI18N
+            testCode.add("int dimension = " + dimension);	    //NOI18N
+            testCode.add("int alignment = " + alignment);          //NOI18N 
+            testCode.add("ld.adjustComponentAlignment(comp, dimension, alignment);"); //NOI18N
+            testCode.add("}"); //NOI18N
+        }
         modelListener.deactivate();
         LayoutInterval interval = comp.getLayoutInterval(dimension);
         
@@ -1259,6 +1393,9 @@ public class LayoutDesigner implements LayoutConstants {
         updateDesignModifications(interval, dimension);
         modelListener.activate();
         visualStateUpToDate = false;
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            testCode.add("// < ADJUST COMPONENT ALIGNMENT"); //NOI18N
+	}
     }
 
     /**
@@ -1414,6 +1551,16 @@ public class LayoutDesigner implements LayoutConstants {
      * resizable in the given dimension.
      */
     public void setComponentResizing(LayoutComponent comp, int dimension, boolean resizing) {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("setComponentResizing: " + comp + ", " + dimension + ", " + resizing); //NOI18N
+            testCode.add("// > SET COMPONENT RESIZING"); //NOI18N
+            testCode.add("{"); //NOI18N
+            testCode.add("LayoutComponent comp = model.getLayoutComponent(\"${" + comp.getId() + "}\");"); //NOI18N
+            testCode.add("int dimension = " + dimension);	   //NOI18N
+            testCode.add("boolean resizing = " + resizing);        //NOI18N   
+            testCode.add("ld.setComponentResizing(comp, dimension, resizing);"); //NOI18N
+            testCode.add("}"); //NOI18N
+        }
         modelListener.deactivate();
         LayoutInterval interval = comp.getLayoutInterval(dimension);
         LayoutInterval parent = interval.getParent();
@@ -1589,6 +1736,9 @@ public class LayoutDesigner implements LayoutConstants {
 
         updateDesignModifications(comp.getParent());
         visualStateUpToDate = false;
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+	    testCode.add("// < SET COMPONENT RESIZING"); //NOI18N
+	}
     }
     
     private boolean fillResizable(LayoutInterval interval) {
@@ -1620,6 +1770,17 @@ public class LayoutDesigner implements LayoutConstants {
      * @param alignment requested alignment.
      */
     public void align(Collection componentIds, boolean closed, int dimension, int alignment) {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("align: " + componentIds + ", " + closed + ", " + dimension + ", " + alignment); //NOI18N
+            testCode.add("// > ALIGN"); //NOI18N
+            testCode.add("{"); //NOI18N
+	    LayoutTestUtils.writeCollection(testCode, "componentIds", componentIds); //NOI18N
+            testCode.add("boolean closed = " + closed); //NOI18N
+            testCode.add("int dimension = " + dimension);        //NOI18N   
+            testCode.add("int alignment = " + alignment);         //NOI18N  
+            testCode.add("ld.align(componentIds, closed, dimension, alignment);"); //NOI18N
+            testCode.add("}"); //NOI18N
+        }
         LayoutInterval[] intervals = new LayoutInterval[componentIds.size()];
         int counter = 0;
         Iterator iter = componentIds.iterator();        
@@ -1635,6 +1796,9 @@ public class LayoutDesigner implements LayoutConstants {
             modelListener.activate();
         }
         requireStructureOptimization();
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+	    testCode.add("// < ALIGN"); //NOI18N
+	}
     }
 
     /**
@@ -2689,9 +2853,20 @@ public class LayoutDesigner implements LayoutConstants {
     // -----
 
     public void setDefaultSize(String compId) {
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            em.log("setDefaultSize: " + compId); //NOI18N
+            testCode.add("// > SET DEFAULT SIZE"); //NOI18N
+            testCode.add("{"); //NOI18N
+            testCode.add("String compId = \"${" + compId + "}\";"); //NOI18N
+            testCode.add("ld.setDefaultSize(compId);"); //NOI18N
+            testCode.add("}"); //NOI18N
+        }        
         LayoutComponent component = layoutModel.getLayoutComponent(compId);
         if (component != null)
             setDefaultSize(component);
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            testCode.add("// < SET DEFAULT SIZE"); //NOI18N
+	}
     }
 
     private void setDefaultSize(LayoutComponent component) {

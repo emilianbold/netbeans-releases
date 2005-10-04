@@ -21,6 +21,7 @@ import java.lang.reflect.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.*;
@@ -191,12 +192,56 @@ public class GandalfPersistenceManager extends PersistenceManager {
                          List nonfatalErrors)
         throws PersistenceException
     {
-        FileObject formFile = formObject.getFormEntry().getFile();
+        loadForm(formObject.getFormEntry().getFile(), 
+              formObject.getPrimaryFile(),
+              formModel,
+              nonfatalErrors);
+    }
+    
+    /** This method loads the form from given data object.
+     * @param formFile form file corresponding to java file
+     * @param javafile java file
+     * @param formModel FormModel to be filled with loaded data
+     * @param nonfatalErrors List to be filled with errors occurred during
+     *        loading which are not fatal (but should be reported)
+     * @exception PersistenceException if some fatal problem occurred which
+     *            prevents loading the form
+     */
+    public void loadForm(FileObject formFile, FileObject javaFile,
+                         FormModel formModel,
+                         List nonfatalErrors)
+        throws PersistenceException
+    {
+        this.formFile = formFile;
+        loadForm(FileUtil.toFile(formFile), 
+              FileUtil.toFile(javaFile),
+              formModel,
+              nonfatalErrors);
+    }    
 
+    /** This method loads the form from given data object.
+     * @param formFile form file corresponding to java file
+     * @param javaFile java file
+     * @param formModel FormModel to be filled with loaded data
+     * @param nonfatalErrors List to be filled with errors occurred during
+     *        loading which are not fatal (but should be reported)
+     * @exception PersistenceException if some fatal problem occurred which
+     *            prevents loading the form
+     */
+    public FormModel loadForm(File formFile, File javaFile,
+                         FormModel formModel,
+                         List nonfatalErrors)
+        throws PersistenceException
+    {
+        boolean underTest = ((javaFile == null) || (javaFile.equals(formFile)));
+                
+        if (formModel == null) {
+            formModel = new FormModel();
+        }
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
             mainElement = XMLUtil.parse(new org.xml.sax.InputSource(
-                                            formFile.getURL().toExternalForm()),
+                                            formFile.getPath()),
                                         false, false, null, null)
                           .getDocumentElement();
         }
@@ -259,11 +304,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             formInfoName = null; // not available
 
         try { // try declared superclass from java source first
-            FileObject javaFile = formObject.getPrimaryFile();
-            ClassPath classPath = ClassPath.getClassPath(javaFile, ClassPath.SOURCE);
-            Resource resource = JavaModel.getResource(classPath.findOwnerRoot(javaFile),
-                classPath.getResourceName(javaFile));
-            List classifiers = resource.getClassifiers();
+            FileObject jFO = FileUtil.toFileObject(javaFile);
+            ClassPath classPath;
+            Resource resource;
+            List classifiers = Collections.EMPTY_LIST;
+            if (!underTest) {
+                classPath = ClassPath.getClassPath(jFO, ClassPath.SOURCE);
+                resource = JavaModel.getResource(classPath.findOwnerRoot(jFO),
+                    classPath.getResourceName(jFO));
+                classifiers = resource.getClassifiers();
+            }
             Iterator classIter = classifiers.iterator();
             
             while (classIter.hasNext()) {
@@ -271,20 +321,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 String className = javaClass.getName();
                 int dotIndex = className.lastIndexOf('.');
                 className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
-                if (className.equals(formObject.getName())) {
+                if (className.equals(javaFile.getName())) {
                     declaredSuperclassName = javaClass.getSuperClass().getName();
                     break;
                 }
             }
             
             Class superclass = (declaredSuperclassName != null) ?
-                FormUtils.loadClass(declaredSuperclassName, formFile) : Object.class;
+                FormUtils.loadClass(declaredSuperclassName, 
+                    FileUtil.toFileObject(formFile)) : Object.class;
             formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
 
             if (formBaseClass != superclass)
                 System.err.println(FormUtils.getFormattedBundleString(
                     "FMT_IncompatibleFormTypeWarning", // NOI18N
-                    new Object[] { formObject.getName() }));
+                    new Object[] { javaFile.getName() }));
 
             formModel.setFormBaseClass(formBaseClass);
         }
@@ -313,7 +364,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     // print a warning about using fallback type
                     String msg = FormUtils.getFormattedBundleString(
                         "FMT_FormTypeWarning", // NOI18N
-                        new Object[] { formObject.getName(),
+                        new Object[] { javaFile.getName(),
                                        substClass.getName(),
                                        declaredSuperclassName != null ?
                                          declaredSuperclassName : "<unknown class>" }); // NOI18N
@@ -370,10 +421,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             expressions.clear();
         containerDependentProperties = null;
 
-        this.formFile = formFile;
         this.formModel = formModel;
         this.nonfatalErrors = nonfatalErrors;
         this.newLayout = false;
+
+        formModel.setName(javaFile.getName());
 
         // load "Other Components" first
         loadNonVisuals(mainElement);
@@ -382,7 +434,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (topComp != null) // load the main form component
             loadComponent(mainElement, topComp, null);
 
-        if (newLayout) { // for sure update project classpath with layout extensions library
+        if ((newLayout) && (!underTest)) { // for sure update project classpath with layout extensions library
             FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
         }
 
@@ -393,6 +445,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (loadedComponents != null)
             loadedComponents.clear();
         this.formModel = null;
+        return formModel;
     }
 
     private void loadNonVisuals(org.w3c.dom.Node node) throws PersistenceException {

@@ -212,9 +212,20 @@ public class MetaComponentCreator {
         if (preMetaComp != null) {
             if (preLayoutComp == null) {
                 boolean isContainer = shouldBeLayoutContainer(preMetaComp);
+                
                 Dimension initialSize = prepareDefaultLayoutSize(
                         (Component)preMetaComp.getBeanInstance(), isContainer);
-
+                
+                LayoutDesigner ld = FormEditor.getFormDesigner(formModel).getLayoutDesigner();
+                if (ld.em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    if (initialSize == null || isContainer) {
+                        ld.testCode.add("lc = new LayoutComponent(${" + preMetaComp.getId() + "}, " + isContainer + ");"); //NOI18N
+                    } else {
+                        ld.testCode.add("lc = new LayoutComponent(${" + preMetaComp.getId() + "}, " + isContainer + ", " + //NOI18N 
+                                                                    initialSize.width + ", " + initialSize.height + ");"); //NOI18N
+                    } 
+                }
+                
                 preLayoutComp = initialSize == null || isContainer ?
                     new LayoutComponent(preMetaComp.getId(), isContainer) :
                     new LayoutComponent(preMetaComp.getId(), isContainer,

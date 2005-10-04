@@ -1,0 +1,43 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.form.layoutdesign;
+
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+
+public class ${CLASS_NAME} extends TestCase {
+        
+    public ${CLASS_NAME}(String name) {
+        super(name);
+        try {
+            // classloader points to form/build/test/unit/classes/
+            // golden file is in form/test/unit/data/goldenfiles/
+            String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
+            startingFormFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-StartingForm.form").getCanonicalFile();
+            expectedLayoutFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-ExpectedEndModel.txt").getCanonicalFile();
+        } catch (IOException ioe) {
+            fail(ioe.toString());
+        }
+    }
+    
+    private void doChanges(LayoutModel model) {
+        
+        ${CODE_GOES_HERE}
+        
+    }
+}

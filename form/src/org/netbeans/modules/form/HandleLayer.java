@@ -18,6 +18,7 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
+import java.io.IOException;
 import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
@@ -26,9 +27,10 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.NodeTransfer;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
@@ -376,8 +378,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 e.consume();
                 return;
             }
-        }
-        else if ((keyCode == 525) // PENDING replace by KeyEvent.VK_CONTEXT_MENU on JDK 5
+        } else if ((keyCode == 525) // PENDING replace by KeyEvent.VK_CONTEXT_MENU on JDK 5
                 || ((keyCode == KeyEvent.VK_F10) && e.isShiftDown())) { // Shift F10 invokes context menu
             Point p = null;
             java.util.List selected = formDesigner.getSelectedComponents();
@@ -393,7 +394,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 showContextMenu(p);
                 e.consume();
                 return;
-        }
+            }
         } else if (((keyCode == KeyEvent.VK_D) || (keyCode == KeyEvent.VK_E)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             FormModel formModel = formDesigner.getFormModel();
             LayoutModel layoutModel = formModel.getLayoutModel();
@@ -409,6 +410,33 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
                 System.out.println(layoutModel.dump(idToNameMap));
+            }
+        } else if (((keyCode == KeyEvent.VK_W)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
+            FormModel formModel = formDesigner.getFormModel();
+            LayoutModel layoutModel = formModel.getLayoutModel();
+            if (layoutModel != null) {
+                Iterator iter = formModel.getMetaComponents().iterator();
+                Map idToNameMap = new HashMap();
+                while (iter.hasNext()) {
+                    RADComponent comp = (RADComponent)iter.next();
+                    org.netbeans.modules.form.codestructure.CodeVariable var =
+                        comp.getCodeExpression().getVariable();
+                    if (var != null) {
+                        idToNameMap.put(comp.getId(), var.getName());
+                    }
+                }
+		FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
+		LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel);
+            }
+        } else if (((keyCode == KeyEvent.VK_S)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
+            FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
+            FileObject formFile = formDO.getFormFile();
+            SaveCookie saveCookie = (SaveCookie)formDO.getCookie(SaveCookie.class);
+            try {
+                if (saveCookie != null) saveCookie.save();
+                formFile.copy(formFile.getParent(), formFile.getName() + "Test-StartingForm", formFile.getExt()); //NOI18N
+            } catch (IOException ioe) {
+                //TODO
             }
         }
 
@@ -2430,9 +2458,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     movingComponents = new RADVisualComponent[1];
                 }
                 movingComponents[0] = precreated;
-                LayoutComponent[] layoutComponents = new LayoutComponent[] {
-                        getComponentCreator().getPrecreatedLayoutComponent() };
-
+                LayoutComponent precreatedLC = getComponentCreator().getPrecreatedLayoutComponent();
+                LayoutComponent[] layoutComponents = new LayoutComponent[] { precreatedLC };
+                 
                 showingComponents[0] = (Component) precreated.getBeanInstance();
                 // Force creation of peer - AWT components don't have preferred size otherwise
                 if (!(showingComponents[0] instanceof JComponent)) {
