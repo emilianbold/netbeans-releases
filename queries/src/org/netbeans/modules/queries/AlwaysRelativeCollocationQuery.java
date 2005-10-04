@@ -15,6 +15,8 @@ package org.netbeans.modules.queries;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 
 /**
@@ -33,7 +35,7 @@ public class AlwaysRelativeCollocationQuery implements CollocationQueryImplement
     }
 
     public File findRoot(File file) {
-        File[] roots = getFileSystemRoots ();
+        final File[] roots = getFileSystemRoots ();
         if (roots.length == 0) {
             assert false : "Cannot find filesystem roots";
             return null;
@@ -42,16 +44,9 @@ public class AlwaysRelativeCollocationQuery implements CollocationQueryImplement
             //On UNIX always relative
             return roots[0];
         }
-        else {            
-            while (!isRoot(file)) {
-                file = file.getParentFile();
-            }
-            for (int i = 0; i < roots.length; i++) {
-                if (file.equals(roots[i])) {
-                    return roots[i];
-                }
-            }
-            return null;
+        else {
+            final Set rootsSet = new HashSet (Arrays.asList(this.roots != null ? this.roots : roots));
+            return getRoot (file, rootsSet);
         }
     }
 
@@ -72,15 +67,15 @@ public class AlwaysRelativeCollocationQuery implements CollocationQueryImplement
         }
     }
     
-    private boolean isRoot (File f) {
-        if (this.roots == null) {
-            return f.getParentFile() == null;
+    private File getRoot (File f, final Set/*<File>*/ roots) {
+        //We have to compare the file to File.listRoots(),
+        //the test file.getParent() == null does not work on Windows
+        //when the file was selected from the JFileChooser and user browsed
+        //through the "This Computer" node
+        while (f != null && !roots.contains(f)) {
+            f = f.getParentFile();
         }
-        else {
-            //In unit test the roots are not necessary the real fs roots
-            //we have to compare them
-            return Arrays.asList(this.roots).contains(f);
-        }
+        return f;
     }
     
     final void setFileSystemRoots (File[] roots) {
