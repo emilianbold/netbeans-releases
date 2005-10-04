@@ -179,12 +179,13 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(CONNECTIONS_PATH);
         DataFolder df = DataFolder.findFolder(fo);
 
-        // TODO: this is not correct!
-        String fileName = java.net.URLEncoder.encode(dbconn.getName(), "UTF-8");
-        
-        AtomicWriter writer = new AtomicWriter(dbconn, df, fileName);
+        AtomicWriter writer = new AtomicWriter(dbconn, df, convertToFileName(dbconn.getName()));
         df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
         return writer.holder;
+    }
+    
+    private static String convertToFileName(String databaseURL) {
+        return databaseURL.substring(0, Math.max(32, databaseURL.length())).replaceAll("[^\\p{Alnum}]", "_"); // NOI18N
     }
     
     /**
