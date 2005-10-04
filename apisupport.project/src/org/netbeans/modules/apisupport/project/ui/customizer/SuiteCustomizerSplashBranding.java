@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -219,13 +220,15 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     
     private void resetSplashPreview() throws NumberFormatException {
         splashImage.setSplashImageIcon(splashSource);
+        Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();;
+        Rectangle pRectangle = (Rectangle)progressBarBounds.getValue();
         splashImage.setTextColor(textColor.getColor());
         splashImage.setColorBar(barColor.getColor());
         splashImage.setColorEdge(edgeColor.getColor());
         splashImage.setColorEdge(cornerColor.getColor());
         splashImage.setFontSize(((Number)fontSize.getValue()).intValue());
-        splashImage.setRunningTextBounds((Rectangle)runningTextBounds.getValue());
-        splashImage.setProgressBarBounds((Rectangle)progressBarBounds.getValue());
+        splashImage.setRunningTextBounds(tRectangle);
+        splashImage.setProgressBarBounds(pRectangle);
         splashImage.setProgressBarEnabled(progressBarEnabled.isSelected());
         splashImage.resetSteps();
         splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));
@@ -429,10 +432,44 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
             File file =  chooser.getSelectedFile();
             try {
                 splashSource = file.toURI().toURL();
+                Image oldImage = splashImage.image;
+                splashImage.setSplashImageIcon(splashSource);
+                Image newImage = splashImage.image;
+                double xRatio = newImage.getWidth(null)/((double)oldImage.getWidth(null));
+                double yRatio = newImage.getHeight(null)/((double)oldImage.getHeight(null));
+                if (xRatio != 1.0 || yRatio != 1.0) {
+                    Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();;
+                    Rectangle pRectangle = (Rectangle)progressBarBounds.getValue();
+                    
+                    int x = ((int)(tRectangle.x*xRatio));
+                    int y = ((int)(tRectangle.y*yRatio));
+                    int width = ((int)(tRectangle.width*xRatio));
+                    int height = ((int)(tRectangle.height*xRatio));
+                    width = (width <= 0) ? 2 : width;
+                    height = (height <= 0) ? 2 : height;
+                    tRectangle.setBounds(x,y,width,height);
+                    
+                    x = ((int)(pRectangle.x*xRatio));
+                    y = ((int)(pRectangle.y*yRatio));
+                    width = ((int)(pRectangle.width*xRatio));
+                    height = ((int)(pRectangle.height*xRatio));
+                    width = (width <= 6) ? 6 : width;
+                    height = (height <= 6) ? 6 : height;                    
+                    pRectangle.setBounds(x,y,width,height);
+
+                    runningTextBounds.setValue(tRectangle);
+                    progressBarBounds.setValue(pRectangle);
+                    int size = (int)((((Number)fontSize.getValue()).intValue()*yRatio));
+                    size = (size <= 6) ? 6 : size;                    
+                    fontSize.setValue(new Integer(size));                    
+                } else {
+                    resetSplashPreview();
+                }
+                
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
-            resetSplashPreview();
+            
         }
         
     }//GEN-LAST:event_browseActionPerformed

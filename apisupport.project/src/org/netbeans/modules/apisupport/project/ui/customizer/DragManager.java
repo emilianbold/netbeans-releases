@@ -276,11 +276,13 @@ final class DragManager implements DragGestureListener, DragSourceListener,
                 Rectangle oldtDragRect = new Rectangle();
                 oldtDragRect.setBounds(currentDragRect);
                 dragMode.recalculateSize(p);
-                if (currentDragRect.width <=0 || currentDragRect.height <=0) {
-                    currentDragRect.setBounds(oldtDragRect);
-                } else if (bounds != null && !bounds.contains(currentDragRect)) {
+                if (bounds != null && !bounds.contains(currentDragRect)) {
                     currentDragRect.setBounds(currentDragRect.intersection(bounds));
                 }
+                
+                if (currentDragRect.width <=0 || currentDragRect.height <=0) {
+                    currentDragRect.setBounds(oldtDragRect);
+                } 
             }
             
         }
