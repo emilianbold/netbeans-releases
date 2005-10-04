@@ -376,8 +376,7 @@ property editor are immediately propagated to the value of the property
     </change>
 <change>
       <api name="explorer"/>
-      <summary>
-<code>PropertyEnv</code> can control validation state</summary>
+      <summary><code>PropertyEnv</code> can control validation state</summary>
       <date day="9" month="7" year="2001"/>
       <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
       <description>
@@ -418,8 +417,7 @@ public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
     </change>
 <change>
       <api name="explorer"/>
-      <summary>
-<code>ExPropertyEditor</code> added and used</summary>
+      <summary><code>ExPropertyEditor</code> added and used</summary>
       <date day="25" month="10" year="2000"/>
       <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
       <description>
@@ -461,10 +459,9 @@ public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
         If omited filesystems repository root node is used instead.
       </description>
     </change>
-<change>
+<change id="PropertyDialogManager-removed">
       <api name="explorer"/>
-      <summary>
-<code>PropertyDialogManager</code> removed</summary>
+      <summary><code>PropertyDialogManager</code> removed</summary>
       <date day="31" month="5" year="2000"/>
       <compatibility deletion="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" modification="no">
         First broken, later restored binary compatibility in trunk and
@@ -478,10 +475,9 @@ public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
       </description>
       <class link="no" package="org.openide.explorer.propertysheet" name="PropertyDialogManager"/>
     </change>
-<change>
+<change id="SetDefaultValueAction-removed">
       <api name="explorer"/>
-      <summary>
-<code>SetDefaultValueAction</code> removed</summary>
+      <summary><code>SetDefaultValueAction</code> removed</summary>
       <date day="30" month="11" year="2000"/>
       <author login="jglick"/>
       <compatibility deletion="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" modification="no"/>
@@ -492,8 +488,7 @@ public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
     </change>
 <change>
       <api name="explorer"/>
-      <summary>
-<code>BeanTreeView.selectionChanged</code> made protected, not public</summary>
+      <summary><code>BeanTreeView.selectionChanged</code> made protected, not public</summary>
       <date day="6" month="11" year="2000"/>
       <compatibility modification="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
       <description>
@@ -521,8 +516,7 @@ public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
     </change>
 <change>
       <api name="explorer"/>
-      <summary>
-<code>MenuView.Acceptor</code> deprecated and not used</summary>
+      <summary><code>MenuView.Acceptor</code> deprecated and not used</summary>
       <date day="5" month="9" year="2000"/>
       <compatibility deprecation="yes" binary="incompatible" source="incompatible" semantic="compatible" addition="no" deletion="no" modification="no">
         Subclasses accessing the <code>action</code> field will be broken.
