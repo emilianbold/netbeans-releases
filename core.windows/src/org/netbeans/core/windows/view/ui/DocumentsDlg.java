@@ -487,10 +487,13 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
                                    implements Comparable, Action, PropertyChangeListener {
         
         private TopComponent tc;
+        /** Node asociated to top component, to obtain name from */
+        private Node node;
         
         public TopComponentNode (TopComponent tc) {
             super(Children.LEAF);
             this.tc = tc;
+            this.node = (Node) tc.getLookup().lookup(Node.class);            
             tc.addPropertyChangeListener(WeakListeners.propertyChange(this, tc));
         }
         
@@ -500,10 +503,16 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         }
         public String getDisplayName() {
             // Also #60263. Forms do not have a tc.name??
+            if (node != null) {
+                return node.getDisplayName();
+            }
             return tc.getDisplayName();
         }
 
         public String getHtmlDisplayName() {
+            if (node != null) {
+                return node.getHtmlDisplayName();
+            }
             return WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
         }
         
@@ -532,9 +541,8 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             
             TopComponentNode tcn = (TopComponentNode)o;
 
-            String displayName1 = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
-            String displayName2 = WindowManagerImpl.getInstance().getTopComponentDisplayName(tcn.tc);
-            // XXX should also strip any HTML tags, so comparisons work properly
+            String displayName1 = getDisplayName();
+            String displayName2 = tcn.getDisplayName();
             
             if(displayName1 == null) {
                 return displayName2 == null ? 0 : -1;
