@@ -67,9 +67,9 @@ public class WebProjectModule extends ModuleInstall {
                             // Ant is needed in classpath if we are forking JspC into another process
                             sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false))
                             .append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}:") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-compiler-5.5.7.jar", null, false))
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-compiler-5.5.9.jar", null, false))
                             .append(":") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-runtime-5.5.7.jar", null, false))
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-runtime-5.5.9.jar", null, false))
                             .append(":") // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-el.jar", null, false))
                             .append(":") // NOI18N
