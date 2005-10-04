@@ -407,8 +407,7 @@ Microsystems, Inc. All Rights Reserved.
     </change>
 <change>
       <api name="text"/>
-      <summary>
-<code>IndentEngine</code> a service type</summary>
+      <summary><code>IndentEngine</code> a service type</summary>
       <date day="23" month="6" year="2000"/>
       <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no">
         Until <date day="27" month="9" year="2000"/>, was incompatible
@@ -422,8 +421,7 @@ Microsystems, Inc. All Rights Reserved.
     </change>
 <change>
       <api name="text"/>
-      <summary>
-<code>PrintSettings.getPageFormat</code> requires a printer job</summary>
+      <summary><code>PrintSettings.getPageFormat</code> requires a printer job</summary>
       <date day="24" month="2" year="2000"/>
       <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no">
         First removed, later re-added but deprecated in trunk and
