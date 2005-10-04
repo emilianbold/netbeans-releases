@@ -23,9 +23,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.project.Utils;
 
@@ -45,7 +42,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.ui.*;
-import org.openide.modules.SpecificationVersion;
 
 /**
  *
@@ -197,7 +193,8 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         }
         File f = new File (sourceLocationPath);
         if (!f.isDirectory() || !f.canRead()) {
-            setErrorMessage("MSG_IllegalSources"); //NOI18N
+	    String format = NbBundle.getMessage(ImportLocationVisual.class, "MSG_IllegalSources"); //NOI18N
+	    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {sourceLocationPath})); //NOI18N
             return false;
         }
 
@@ -244,9 +241,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 else if ("dist".equals(childName)) {   //NOI18N
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_DistFolder");
                 }
-//                else if ("build.xml".equals(childName)) {   //NOI18N
-//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
-//                }
                 else if ("manifest.mf".equals(childName)) { //NOI18N
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_Manifest");
                 }
@@ -648,7 +642,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                     return;
                 }
 
-                if (fo != null && !locationComputed)
+                if (fo != null)
                     if (!FileSearchUtility.containsWebInf(fo) && !locationModified)
                         projectLocationTextField.setText(moduleFolder);
                     else
@@ -672,13 +666,8 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     private void computeLocation() {
         if (locationModified) //modified by the user, don't compute the location
             return;
-        
-        File projectLocation = ProjectChooser.getProjectsFolder();
-        StringBuffer folder = new StringBuffer(projectLocation.getAbsolutePath());
-        if (!folder.toString().endsWith(File.separator))
-            folder.append(File.separatorChar);
-        folder.append(projectNameTextField.getText().trim());
-        projectLocationTextField.setText(folder.toString());
+	
+        projectLocationTextField.setText(moduleLocationTextField.getText().trim());
         locationComputed = true;
     }
     
