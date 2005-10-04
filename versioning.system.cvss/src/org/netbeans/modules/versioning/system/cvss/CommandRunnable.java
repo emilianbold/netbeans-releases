@@ -49,6 +49,7 @@ class CommandRunnable implements Runnable, Cancellable {
         if (aborted) {
             return;
         }
+        support.commandStarted(this);
         interruptibleThread = Thread.currentThread();
         Runnable worker = new Runnable() {
             public void run() {

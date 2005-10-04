@@ -42,7 +42,10 @@ public final class ExecutorGroup implements Cancellable {
     private List listeners = new ArrayList(2);
     private List executors = new ArrayList(2);
     private List cleanups = new ArrayList(2);
-    private Map started = new HashMap();
+    /** ClientRuntime => CommandRunnale*/
+    private Map queues = new HashMap();
+    /** ClientRuntimes*/
+    private Set started = new HashSet();
     private ProgressHandle progressHandle;
     private long dataCounter;
     private boolean hasBarrier;
@@ -87,41 +90,43 @@ public final class ExecutorGroup implements Cancellable {
         }
     }
 
+
     /**
      * Called by ExecutorSupport on enqueue.
+     */
+    synchronized void enqueued(ClientRuntime queue, CommandRunnable run) {
+        progress(null);
+        Set commands = (Set) queues.get(queue);
+        if (commands == null) {
+            commands = new HashSet();
+        }
+        commands.add(run);
+        queues.put(queue, commands);
+    }
+
+    /**
+     * Called by ExecutorSupport on start.
      * @return true for the first command in given queue
      */
-    synchronized boolean start(ClientRuntime queue) {
-        progress(null);
-
-        int i = 1;
-        Integer counter = (Integer) started.get(queue);
-        if (counter != null) {
-            i = counter.intValue() + 1;
-        }
-        counter = new Integer(i);
-        started.put(queue, counter);
-        return i == 1;
+    synchronized boolean started(ClientRuntime queue) {
+        return started.add(queue);
     }
 
     /**
      * Called by ExecutorSupport after processing.
      * @return true for last command in given queue
      */
-    synchronized boolean finished(ClientRuntime queue) {
-        Integer counter = (Integer) started.get(queue);
-        int i = counter.intValue() - 1;
-        counter = new Integer(i);
-        if (i == 0) {
-            started.remove(queue);
-            if (started.isEmpty() && progressHandle != null) {
+    synchronized boolean finished(ClientRuntime queue, CommandRunnable command) {
+        Set commands = (Set) queues.get(queue);
+        commands.remove(command);
+        if (commands.isEmpty()) {
+            queues.remove(queue);
+            if (queues.isEmpty() && progressHandle != null) {
                 progressHandle.finish();
                 progressHandle = null;
             }
-        } else {
-            started.put(queue, counter);
         }
-        return i == 0;
+        return commands.isEmpty();
     }
 
     boolean isCancelled() {

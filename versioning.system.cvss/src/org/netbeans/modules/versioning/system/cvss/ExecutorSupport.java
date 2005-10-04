@@ -79,6 +79,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
 
     private boolean                     finishedExecution;
     private boolean executed;
+    private CommandRunnable             commandRunnable;
 
     private StringBuffer message = new StringBuffer();
     private ClientRuntime clientRuntime;
@@ -105,21 +106,13 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
     /**
      * Async execution.
      * Returns after enqueing into execution queue i.e.
-     * after {@link #notifyEnqueued} call.
+     * after {@link #commandEnqueued} call.
      */
     public void execute() {
         assert executed == false;
         executed = true;
         if (group == null) {
             group = new ExecutorGroup(getDisplayName());
-        }
-
-        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1001", new Date(), getDisplayName());
-        String sep = NbBundle.getMessage(ExecutorSupport.class, "BK1000");
-        String header = "\n" + sep + "\n" + msg + "\n"; // NOI18N
-        clientRuntime = cvs.getClientRuntime(cmd, options);
-        if (group.start(clientRuntime)) {
-            clientRuntime.log(header);
         }
 
         executeImpl();
@@ -130,7 +123,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             task = cvs.post(cmd, options, this);
         } catch (Throwable e) {
             internalError = e;
-            group.finished(clientRuntime);
+            group.fail();
 
             String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1003", new Date(), getDisplayName());
             clientRuntime.log(msg + "\n"); // NOI18N
@@ -269,6 +262,31 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         return "UC".indexOf(type);
     }
 
+    /**
+     * Associates this executor with actualy enqueued runnable
+     * (ClientRunnable created by ClientRuntime) performing the command.
+     *
+     * <p>Adds the runnable into group cancelable chain.
+     */
+    public void commandEnqueued(CommandRunnable commandRunnable) {
+        this.commandRunnable = commandRunnable;
+        group.enqueued(cvs.getClientRuntime(cmd, options), commandRunnable);
+        group.addCancellable(commandRunnable);
+    }
+
+    /**
+     * It (re)runs...
+     */
+    public void commandStarted(CommandRunnable commandRunnable) {
+        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1001", new Date(), getDisplayName());
+        String sep = NbBundle.getMessage(ExecutorSupport.class, "BK1000");
+        String header = "\n" + sep + "\n" + msg + "\n"; // NOI18N
+        clientRuntime = cvs.getClientRuntime(cmd, options);
+        if (group.started(clientRuntime)) {
+            clientRuntime.log(header);
+        }
+    }
+
     public void commandTerminated(TerminationEvent e) {
         try {
             if (e.getSource() instanceof ClientRuntime.Result) {
@@ -352,7 +370,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
     }
 
     private void logFinishedCommand(String msg) {
-        if (group.finished(clientRuntime)) {
+        if (group.finished(clientRuntime, commandRunnable)) {
             clientRuntime.log(msg + "\n"); // NOI18N
             clientRuntime.focusLog();
         }
@@ -660,13 +678,4 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         group.increaseDataCounter(bytes);
     }
 
-    /**
-     * Associates this executor with actualy enqueued runnable
-     * (ClientRunnable created by ClientRuntime) performing the command.
-     *
-     * <p>Adds the runnable into group cancelable chain.
-     */
-    public void notifyEnqueued(CommandRunnable commandRunnable) {
-        group.addCancellable(commandRunnable);
-    }
 }
