@@ -94,7 +94,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
-         assert false : "Should never be called: ";
+        // do nothing -- should never be called
     }
     
     public boolean isEjbProject() { 
