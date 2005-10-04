@@ -54,15 +54,15 @@ public abstract class LayoutTestCase extends TestCase {
     
     public LayoutTestCase(String name) {
         super(name);
-        try {
-            // classloader points to form/build/test/unit/classes/
-            // golden file is in form/test/unit/data/goldenfiles/
-            String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
-            startingFormFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-StartingForm.form").getCanonicalFile();
-            expectedLayoutFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-ExpectedEndModel.txt").getCanonicalFile();
-        } catch (IOException ioe) {
-            fail(ioe.toString());
-        }
+//        try {
+//            // classloader points to form/build/test/unit/classes/
+//            // golden file is in form/test/unit/data/goldenfiles/
+//            String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
+//            startingFormFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-StartingForm.form").getCanonicalFile();
+//            expectedLayoutFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-ExpectedEndModel.txt").getCanonicalFile();
+//        } catch (IOException ioe) {
+//            fail(ioe.toString());
+//        }
     }
     
     /**
