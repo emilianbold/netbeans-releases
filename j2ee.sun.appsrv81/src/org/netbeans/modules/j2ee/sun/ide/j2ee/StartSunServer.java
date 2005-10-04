@@ -249,7 +249,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	String domainDir = null;
 	int errorCode=-1;
 	
-	File irf = PluginProperties.getDefault().getInstallRoot();
+	File irf = PluginProperties.getDefault().getPlatformRoot();
 	if (null == irf || !irf.exists()) {
 	    return;
 	}
@@ -499,7 +499,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
         String domain ;
         String domainDir ;
-        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath();
+        String installRoot = PluginProperties.getDefault().getPlatformRoot().getAbsolutePath();
         
         domain = dmProps.getDomainName();
         domainDir = dmProps.getLocation();

@@ -374,13 +374,15 @@ public class PluginProperties  {
         if (!logLevel.equals(Level.OFF.toString()))
             outProp.setProperty(LOG_LEVEL_KEY, logLevel);
         if (!getCharsetDisplayPreferenceStatic().equals(CharsetDisplayPreferenceEditor.DEFAULT_PREF_VAL))
-            outProp.setProperty(CHARSET_DISP_PREF_KEY, getCharsetDisplayPreferenceStatic().toString());
+	    outProp.setProperty(CHARSET_DISP_PREF_KEY, getCharsetDisplayPreferenceStatic().toString());
 	if (platformRoot != null){
 	    String dirloc=platformRoot.getAbsolutePath();
 	    if (dirloc.startsWith(ideHomeLocation)){
 		dirloc = IDEHOME + dirloc.substring(ideHomeLocation.length(),dirloc.length());
 		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
 		
+	    } else{
+		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
 	    }
 	}
         FileLock l = null;
@@ -413,17 +415,7 @@ public class PluginProperties  {
         
     }
     
-    /** @deprecated use getPlatformRoot
-     */
-    public File getInstallRoot() {
-        return getPlatformRoot();
-    }
-    
-    /** @deprecated use setPlatformRoot
-     */
-    public void setInstallRoot(File fo) {
-        setPlatformRoot(fo);
-    }
+
     
     public File getPlatformRoot() {
         return platformRoot;

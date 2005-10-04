@@ -53,7 +53,7 @@ public class ConfigureProfiler {
     public static boolean modifyAsEnvScriptFile( String targetJavaHomePath) {
         
             String ext = (isUnix() ? "conf" : "bat");
-        File irf = PluginProperties.getDefault().getInstallRoot();
+        File irf = PluginProperties.getDefault().getPlatformRoot();
         if (null == irf || !irf.exists()) {
             return false;
         }

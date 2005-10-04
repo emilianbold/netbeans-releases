@@ -108,7 +108,7 @@ public class VerifierSupport extends TopComponent{
         final File dir = f.getParentFile();
         final VerifierSupport verifierSupport=new VerifierSupport(fileName);
         
-        File irf = PluginProperties.getDefault().getInstallRoot();
+        File irf = PluginProperties.getDefault().getPlatformRoot();
         if (null == irf || !irf.exists()) {
             //ErrorManager.getDefault().log(NbBundle.getMessage (VerifierSupport.class, "ERR_CannotFind"));
             org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util.showWarning(NbBundle.getMessage (VerifierSupport.class, "ERR_CannotFind"));

@@ -73,7 +73,7 @@ public class PluginOptions extends SystemOption {
         PluginProperties.getDefault().setIncrementalDeploy(b);
     }
     public File getInstallRoot(){
-        File irf = PluginProperties.getDefault().getInstallRoot();
+        File irf = PluginProperties.getDefault().getPlatformRoot();
         if (null == irf || !irf.exists()) {
             return null;
         }
@@ -84,7 +84,7 @@ public class PluginOptions extends SystemOption {
         File current= getInstallRoot();
         
         if ((current==null)||(!f.getAbsolutePath().equals(current.getAbsolutePath()))){
-            PluginProperties.getDefault().setInstallRoot(f);
+            PluginProperties.getDefault().setPlatformRoot(f);
             
         }
         

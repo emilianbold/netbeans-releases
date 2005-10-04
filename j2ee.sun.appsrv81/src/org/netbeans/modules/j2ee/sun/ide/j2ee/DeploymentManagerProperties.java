@@ -123,7 +123,7 @@ public class DeploymentManagerProperties {
      * @return Value of property location.
      */
     public java.lang.String getLocation() {
-        java.io.File irf = PluginProperties.getDefault().getInstallRoot();
+        java.io.File irf = PluginProperties.getDefault().getPlatformRoot();
         String installRoot = null;
         if (null != irf && irf.exists())
             installRoot = irf.getAbsolutePath(); // System.getProperty("com.sun.aas.installRoot");
