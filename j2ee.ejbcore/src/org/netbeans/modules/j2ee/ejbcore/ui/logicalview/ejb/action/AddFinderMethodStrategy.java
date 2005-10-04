@@ -22,7 +22,7 @@ import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.util.NbBundle;
 
 
@@ -56,7 +56,10 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
     public static MethodCustomizer createFinderDialog(EjbMethodController c, MethodType pType) {
         boolean javaImpl = c.hasJavaImplementation(pType);
         Method[] methodElements = Utils.getMethods(c, true, false);
-        return MethodCollectorFactory.finderCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), !javaImpl, methodElements);
+	MethodsNode methodsNode = getMethodsNode();
+	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
+	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
+        return MethodCollectorFactory.finderCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), !javaImpl, methodElements, remote, local);
     }
 
     protected Type remoteReturnType(EjbMethodController c, Type t, boolean isOneReturn) {

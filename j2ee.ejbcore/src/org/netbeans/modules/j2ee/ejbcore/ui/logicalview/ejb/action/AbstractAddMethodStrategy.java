@@ -26,11 +26,15 @@ import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Strategy for visual support for adding various methods into an EJB.
@@ -137,4 +141,17 @@ public abstract class AbstractAddMethodStrategy {
         FileObject fo = JavaModel.getFileObject(jc.getResource());
         return EjbJar.getEjbJar(fo).getDeploymentDescriptor();
     }
+    
+    protected static MethodsNode getMethodsNode() {
+        Node[] nodes = (Node[])Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
+	if (nodes.length != 1) {
+	    return null;
+	}
+	Object o = nodes[0].getLookup().lookup(MethodsNode.class);
+	if (o instanceof MethodsNode) {
+	    return (MethodsNode) o;
+	}
+	return null;
+    }
+    
 }

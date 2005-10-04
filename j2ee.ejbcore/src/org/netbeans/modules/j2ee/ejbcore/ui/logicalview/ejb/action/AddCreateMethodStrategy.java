@@ -20,7 +20,7 @@ import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.util.NbBundle;
 
 
@@ -46,7 +46,10 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
     
     protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
         Method[] methodElements = org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils.getMethods(c, true, false);
-        return MethodCollectorFactory.createCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), methodElements);
+	MethodsNode methodsNode = getMethodsNode();
+	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
+	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
+        return MethodCollectorFactory.createCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), methodElements, remote, local);
     }
 
     protected Type remoteReturnType(EjbMethodController c, Type t, boolean isOneReturn) {

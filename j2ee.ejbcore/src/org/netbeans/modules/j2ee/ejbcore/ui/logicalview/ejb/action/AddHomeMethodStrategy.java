@@ -20,6 +20,7 @@ import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.util.NbBundle;
 
 
@@ -44,7 +45,10 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
 
     protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
         Method[] methodElements = Utils.getMethods(c, true, false);
-        return MethodCollectorFactory.homeCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), methodElements);
+	MethodsNode methodsNode = getMethodsNode();
+	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
+	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
+        return MethodCollectorFactory.homeCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), methodElements, remote, local);
     }
     
     public int prototypeMethod() {

@@ -79,4 +79,8 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
             }
         }
     }
+    
+    public boolean isLocal() {
+	return local;
+    }
 }

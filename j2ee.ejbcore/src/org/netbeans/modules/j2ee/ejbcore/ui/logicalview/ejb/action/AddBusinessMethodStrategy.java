@@ -19,6 +19,7 @@ import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -41,7 +42,10 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
     }
 
     protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
-        return MethodCollectorFactory.businessCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), JMIUtils.getMethods(c.getBeanClass()));
+	MethodsNode methodsNode = getMethodsNode();
+	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
+	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
+        return MethodCollectorFactory.businessCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), JMIUtils.getMethods(c.getBeanClass()), remote, local);
     }
 
     public int prototypeMethod() {
