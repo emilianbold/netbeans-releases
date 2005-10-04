@@ -1198,7 +1198,7 @@ public class MetaComponentCreator {
             new Object[] { classSource.getClassName(),
                            ClassPathUtils.getClassSourceDescription(classSource) });
         em.annotate(ex, msg);
-        em.notify(ex);
+        em.notify(ErrorManager.USER, ex);
     }
 
     private boolean initComponentInstance(RADComponent metacomp,
