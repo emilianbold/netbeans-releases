@@ -712,6 +712,14 @@ overrides.
 
 branding.token - optional token defining an application branding.
 
+disabled.clusters - comma-separated list of cluster names in the target platform
+(e.g. "ide6") which should be completely excluded from the application.
+
+disabled.modules - comma-separated list of code name bases of modules in the
+target platform (e.g. "org.netbeans.modules.autoupdate") which should be
+excluded from the application. There is no need to specify modules already
+excluded by ${disabled.clusters}.
+
 modules - list of contained modules. Path format; entries resolved against the
 suite directory as needed.
 
