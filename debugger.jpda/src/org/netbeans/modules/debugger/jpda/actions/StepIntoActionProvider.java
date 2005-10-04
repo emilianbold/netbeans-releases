@@ -14,6 +14,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.StepRequest;
@@ -197,7 +198,9 @@ implements Executor, PropertyChangeListener {
                     setStepRequest (StepRequest.STEP_INTO);
                     return true;
                 }
-            } catch (Exception e) {e.printStackTrace();}
+            } catch (IncompatibleThreadStateException e) {
+                ErrorManager.getDefault().notify(e);
+            }
 
             boolean stop = getCompoundSmartSteppingListener ().stopHere 
                                (contextProvider, t, getSmartSteppingFilterImpl ());
@@ -270,6 +273,7 @@ implements Executor, PropertyChangeListener {
             StepRequest.STEP_LINE,
             step
         );
+
         getDebuggerImpl ().getOperator ().register (stepRequest, this);
         stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
         
