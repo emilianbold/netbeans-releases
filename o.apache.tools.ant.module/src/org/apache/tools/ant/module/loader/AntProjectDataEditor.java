@@ -27,6 +27,10 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -60,7 +64,7 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
     
     protected String messageName() {
         String name = super.messageName();
-        AntProjectDataObject d = ((AntEnv)env).getAntProjectDataObject();
+        DataObject d = getDataObject();
         if (d.getPrimaryFile().getNameExt().equals("build.xml")) { // NOI18N
             // #25793: show project name in case the script name does not suffice
             AntProjectCookie cookie = (AntProjectCookie)d.getCookie(AntProjectCookie.class);
@@ -78,6 +82,21 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
             }
         }
         return name;
+    }
+    
+    /**
+     * Overridden to ensure that the displayName of the node in the editor has
+     * the right annotation for build.xml files, so that the Navigator will display it.
+     */
+    protected void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
+        editor.setActivatedNodes(new Node[] {
+            new FilterNode(getDataObject().getNodeDelegate()) {
+                public String getDisplayName() {
+                    return messageName();
+                }
+            }
+        });
     }
 
     public void stateChanged(ChangeEvent e) {
