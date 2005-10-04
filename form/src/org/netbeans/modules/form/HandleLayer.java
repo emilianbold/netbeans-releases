@@ -1922,7 +1922,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         final void paintFeedback(Graphics2D g) {
-            if (movingBounds[0].x == Integer.MIN_VALUE)
+            if ((movingBounds.length < 1) || (movingBounds[0].x == Integer.MIN_VALUE))
                 return;
 
             for (int i=0; i<showingComponents.length; i++) {
@@ -2498,20 +2498,32 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
                 newDrag = oldDrag = true;
             }
-            else { // non-visual component - present it as icon
-                showingComponents[0] = new JLabel(
-                    new ImageIcon(paletteItem.getNode().getIcon(
-                        java.beans.BeanInfo.ICON_COLOR_16x16)));
-                Dimension dim = showingComponents[0].getPreferredSize();
-                hotSpot = new Point(dim.width/2, dim.height/2);
-                if (hotSpot.x < 0) {
-                    hotSpot.x = 0;
-                }
-                originalBounds = new Rectangle[] { new Rectangle(convertPoint.x, convertPoint.y, dim.width, dim.height) };
-                showingComponents[0].setBounds(originalBounds[0]);
-                movingBounds = new Rectangle[] { showingComponents[0].getBounds() };
+            else {
+                if (paletteItem.getComponentClass() != null) {
+                    // non-visual component - present it as icon
+                    showingComponents[0] = new JLabel(
+                        new ImageIcon(paletteItem.getNode().getIcon(
+                            java.beans.BeanInfo.ICON_COLOR_16x16)));
+                    Dimension dim = showingComponents[0].getPreferredSize();
+                    hotSpot = new Point(dim.width/2, dim.height/2);
+                    if (hotSpot.x < 0) {
+                        hotSpot.x = 0;
+                    }
+                    originalBounds = new Rectangle[] { new Rectangle(convertPoint.x, convertPoint.y, dim.width, dim.height) };
+                    showingComponents[0].setBounds(originalBounds[0]);
+                    movingBounds = new Rectangle[] { showingComponents[0].getBounds() };
 
-                newDrag = oldDrag = false;
+                    newDrag = oldDrag = false;
+                } else {
+                    // The corresponding class cannot be loaded - cancel the drag.
+                    showingComponents = null;
+                    movingBounds = new Rectangle[0];
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            endDragging(null);
+                        }
+                    });
+                }
             }
 
             super.init();
