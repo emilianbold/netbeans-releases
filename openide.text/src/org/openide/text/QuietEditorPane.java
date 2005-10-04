@@ -17,10 +17,14 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DropTarget;
 import java.awt.event.InputEvent;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Rectangle;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.TransferHandler;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.*;
 
@@ -42,6 +46,46 @@ final class QuietEditorPane extends JEditorPane {
     /** is firing of events enabled? */
     int working = FIRE; // [Mila] firing since begining, otherwise doesn't work well
     
+    /** determines scroll unit */
+    private int fontHeight;
+    private int charWidth;
+
+    /**
+     * consturctor sets the initial values for horizontal
+     * and vertical scroll units.
+     * also listenes for font changes.
+     */
+    public QuietEditorPane() {
+        setFontHeightWidth(getFont());
+    }
+    
+    public void setFont(Font font) {
+        super.setFont(font);
+        setFontHeightWidth(getFont());
+    }
+
+
+    private void setFontHeightWidth(Font font) {
+        FontMetrics metrics=getFontMetrics(font);
+        fontHeight=metrics.getHeight();
+        charWidth=metrics.charWidth('m');
+    }
+
+    /**
+     * fix for #38139. 
+     * returns height of a line for vertical scroll unit
+     * or width of a widest char for a horizontal scroll unit
+     */
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        switch (orientation) {
+            case SwingConstants.VERTICAL:
+                return fontHeight;
+            case SwingConstants.HORIZONTAL:
+                return charWidth;
+            default:
+                throw new IllegalArgumentException("Invalid orientation: " +orientation);
+        }
+    }
     
     public void setDocument(Document doc) {
         super.setDocument(doc);
