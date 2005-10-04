@@ -16,11 +16,14 @@ package org.netbeans.modules.favorites;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
-
+import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 public class RootsTest extends NbTestCase {
     private File userDir, platformDir, clusterDir;
@@ -29,19 +32,17 @@ public class RootsTest extends NbTestCase {
         super (name);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(RootsTest.class));
+    public static void main(String[] args) {
+        TestRunner.run(new NbTestSuite(RootsTest.class));
     }    
     
     
     protected void setUp () throws Exception {
-        Favorites.ensureShadowsWork (null);
-        
         super.setUp ();
         
         // initialize module system with all modules
-        org.openide.util.Lookup.getDefault().lookup (
-            org.openide.modules.ModuleInfo.class
+        Lookup.getDefault().lookup (
+            ModuleInfo.class
         );
         
 /*
@@ -101,7 +102,7 @@ public class RootsTest extends NbTestCase {
             
             folders.add (f);
             
-            File file = org.openide.filesystems.FileUtil.toFile (
+            File file = FileUtil.toFile (
                 f.getPrimaryFile()
             );
             assertNotNull ("All folders have files", file);

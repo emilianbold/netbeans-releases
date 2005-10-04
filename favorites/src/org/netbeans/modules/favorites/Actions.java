@@ -7,35 +7,40 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.favorites;
 
-import java.awt.*;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -185,7 +190,7 @@ public final class Actions extends Object {
         * @return the name of the action
         */
         public String getName() {
-            return org.openide.util.NbBundle.getMessage (
+            return NbBundle.getMessage (
                     Actions.class, "ACT_Remove"); // NOI18N
         }
 
@@ -207,7 +212,7 @@ public final class Actions extends Object {
                 if (shad != null && shad.getFolder() == Favorites.getFolder()) {
                     try {
                         shad.delete();
-                    } catch (java.io.IOException ex) {
+                    } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
                 }
@@ -303,7 +308,7 @@ public final class Actions extends Object {
         * @return the name of the action
         */
         public String getName() {
-            return org.openide.util.NbBundle.getMessage (
+            return NbBundle.getMessage (
                     Actions.class, "ACT_Add"); // NOI18N
         }
 
@@ -426,7 +431,6 @@ public final class Actions extends Object {
                 DataObject obj = (DataObject)activatedNodes[i].getCookie (DataObject.class);
                 if (obj != null) {
                     try {
-                        Favorites.ensureShadowsWork (obj.getPrimaryFile());
                         if (createdDO == null) {
                             //Select only first node in array added to favorites
                             createdDO = obj.createShadow(favourities);
@@ -434,7 +438,7 @@ public final class Actions extends Object {
                         } else {
                             listAdd.add(obj.createShadow(favourities));
                         }
-                    } catch (java.io.IOException ex) {
+                    } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
                 }
@@ -473,7 +477,7 @@ public final class Actions extends Object {
                 DataObject [] newOrder = (DataObject []) listDest.toArray(new DataObject[listDest.size()]);
                 try {
                     favourities.setOrder(newOrder);
-                } catch (java.io.IOException ex) {
+                } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
@@ -503,7 +507,7 @@ public final class Actions extends Object {
         * @return the name of the action
         */
         public String getName() {
-            return org.openide.util.NbBundle.getMessage (
+            return NbBundle.getMessage (
                     Actions.class, "ACT_AddOnFavoritesNode"); // NOI18N
         }
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,17 +15,24 @@ package org.netbeans.modules.favorites;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-
+import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataShadow;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -66,18 +73,18 @@ final class Favorites extends FilterNode {
         return false;
     }
     
-    public static org.openide.loaders.DataFolder getFolder () {
+    public static DataFolder getFolder () {
         try {
-            org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil.createFolder (
-                org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().getRoot(), 
+            FileObject fo = FileUtil.createFolder (
+                Repository.getDefault().getDefaultFileSystem().getRoot(), 
                 "Favorites" // NOI18N
             );
-            org.openide.loaders.DataFolder folder = org.openide.loaders.DataFolder.findFolder(fo);
+            DataFolder folder = DataFolder.findFolder(fo);
             return folder;
-        } catch (java.io.IOException ex) {
-            org.openide.ErrorManager.getDefault().notify (ex);
-            return org.openide.loaders.DataFolder.findFolder (
-                org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().getRoot()
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify (ex);
+            return DataFolder.findFolder (
+                Repository.getDefault().getDefaultFileSystem().getRoot()
             );
         }
         
@@ -92,42 +99,16 @@ final class Favorites extends FilterNode {
         return node;
     }
     
-    /** Getter root node.
-     */
-    public static synchronized Node getRoot () {
-        if (root == null) {
-            root = org.openide.loaders.RepositoryNodeFactory.getDefault().repository (
-                org.openide.loaders.DataFilter.ALL
-            );
-        }
-        return root;
-    }
-    
     /** Get name of home directory. Used from layer.
      */
-    public static java.net.URL getHome () 
-    throws org.openide.filesystems.FileStateInvalidException, java.net.MalformedURLException {
-        ensureShadowsWork (null);
-        
+    public static URL getHome () 
+    throws FileStateInvalidException, MalformedURLException {
         String s = System.getProperty("user.home"); // NOI18N
         
         File home = new File (s);
         home = FileUtil.normalizeFile (home);
         
         return home.toURI ().toURL ();
-    }
-    
-    static void ensureShadowsWork (FileObject fo) throws org.openide.filesystems.FileStateInvalidException {
-        /*
-        if (fo == null) {
-            File r = new File (System.getProperty("user.home"));
-            fo = FileUtil.fromFile (r)[0];
-        }
-        
-        // make sure the filesystem is in repository otherwise
-        // the shadows will not work, workaround for issue 42690
-        org.openide.filesystems.Repository.getDefault().addFileSystem(fo.getFileSystem());
-         */
     }
 
     /** Finds file for a given node 
@@ -136,7 +117,7 @@ final class Favorites extends FilterNode {
         DataObject obj = (DataObject)n.getCookie (DataObject.class);
         if (obj == null) return null;
         
-        return org.openide.filesystems.FileUtil.toFile (
+        return FileUtil.toFile (
             obj.getPrimaryFile()
         );
     }
@@ -145,7 +126,7 @@ final class Favorites extends FilterNode {
         return new RootHandle ();
     }
     
-    public javax.swing.Action[] getActions(boolean context) {
+    public Action[] getActions(boolean context) {
         return new Action[] {Actions.addOnFavoritesNode()};
     }
     
@@ -169,7 +150,7 @@ final class Favorites extends FilterNode {
             Node node = (Node)key;
             return new Node[] { new ProjectFilterNode (
                 node,
-                (node.isLeaf ()) ? org.openide.nodes.Children.LEAF : new Chldrn (node)
+                (node.isLeaf ()) ? Children.LEAF : new Chldrn (node)
             )};
         }
         
@@ -227,7 +208,7 @@ final class Favorites extends FilterNode {
             return canDestroy;
         }
 
-        public void destroy () throws java.io.IOException {
+        public void destroy () throws IOException {
             if (canDestroy ()) {
                 DataShadow link = (DataShadow) getCookie (DataShadow.class);
                 DataObject original = isDeleteOriginal (link) ? link.getOriginal () : null;

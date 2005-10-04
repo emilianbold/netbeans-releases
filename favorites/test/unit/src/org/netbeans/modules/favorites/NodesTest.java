@@ -17,10 +17,12 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.Action;
-
+import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 public class NodesTest extends NbTestCase {
     private File userDir, platformDir, clusterDir;
@@ -29,19 +31,17 @@ public class NodesTest extends NbTestCase {
         super (name);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(NodesTest.class));
+    public static void main(String[] args) {
+        TestRunner.run(new NbTestSuite(NodesTest.class));
     }    
     
     
     protected void setUp () throws Exception {
-        Favorites.ensureShadowsWork (null);
-        
         super.setUp ();
         
         // initialize module system with all modules
-        org.openide.util.Lookup.getDefault().lookup (
-            org.openide.modules.ModuleInfo.class
+        Lookup.getDefault().lookup (
+            ModuleInfo.class
         );
     }
     
