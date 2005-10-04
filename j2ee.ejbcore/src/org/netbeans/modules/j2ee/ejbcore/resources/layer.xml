@@ -110,16 +110,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder> 
     
-    <folder name="NodeFactories">
-       <folder name="java">
-          <folder name="explorer">
-             <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview.ejb.session.BeanClassFactory.instance">
-             <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session.BeanClassFactory.getDefault"/>
-             </file>
-          </folder>
-       </folder>
-    </folder> 
-
     <folder name="Services">
         <file name="org-netbeans-modules-j2ee-ejbcore-ui-FoldersList.settings" url="foldersList.settings"/>
     </folder>
