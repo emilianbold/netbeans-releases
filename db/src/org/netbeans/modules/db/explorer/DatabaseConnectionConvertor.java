@@ -185,7 +185,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     }
     
     private static String convertToFileName(String databaseURL) {
-        return databaseURL.substring(0, Math.max(32, databaseURL.length())).replaceAll("[^\\p{Alnum}]", "_"); // NOI18N
+        return databaseURL.substring(0, Math.min(32, databaseURL.length())).replaceAll("[^\\p{Alnum}]", "_"); // NOI18N
     }
     
     /**
