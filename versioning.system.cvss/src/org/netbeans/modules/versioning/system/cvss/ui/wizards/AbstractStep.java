@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 
 import javax.swing.*;
@@ -68,7 +69,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
                     panel.setPreferredSize(template.getPreferredSize());
                 }
             } catch (RuntimeException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ex);
             } finally {
                 assert panel != null;
                 underConstruction = false;

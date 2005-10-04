@@ -14,10 +14,12 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
+import org.openide.windows.WindowManager;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
@@ -31,6 +33,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 
 import java.io.File;
 import java.util.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Updates given project and all sources of
@@ -39,56 +42,64 @@ import java.util.*;
  *
  * @author Petr Kuzel
  */
-public final class UpdateWithDependenciesAction extends NodeAction {
+public final class UpdateWithDependenciesAction extends SystemAction {
 
     public UpdateWithDependenciesAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    protected void performAction(final Node[] nodes) {
+    public void actionPerformed(ActionEvent ev) {
+        setEnabled(false);
+        final Node nodes[] = WindowManager.getDefault().getRegistry().getActivatedNodes();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 async(nodes);
             }
         });
+
     }
 
     private void async(Node[] nodes) {
 
         ExecutorGroup group = new ExecutorGroup("Updating with Dependencies");
-        group.progress("Preparing Update");
+        try {
+            group.progress("Preparing Update");
 
-        Set projects = new HashSet();
-        Set contexts = new LinkedHashSet();
+            Set projects = new HashSet();
+            Set contexts = new LinkedHashSet();
 
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            Project project =  (Project) node.getLookup().lookup(Project.class);
-            addUpdateContexts(contexts, project, projects);
-        }
-
-        if (contexts.size() > 0) {
-            Iterator it = contexts.iterator();
-            while (it.hasNext()) {
-                Context ctx = (Context) it.next();
-
-                UpdateCommand updateCommand = new UpdateCommand();
-                updateCommand.setBuildDirectories(true);
-                updateCommand.setPruneDirectories(true);
-                updateCommand.setFiles(ctx.getFiles());
-
-                GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
-                gtx.setExclusions((File[]) ctx.getExclusions().toArray(new File[0]));
-                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx));
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                Project project =  (Project) node.getLookup().lookup(Project.class);
+                addUpdateContexts(contexts, project, projects);
             }
-        }
 
-        group.execute();
+            if (contexts.size() > 0) {
+                Iterator it = contexts.iterator();
+                while (it.hasNext()) {
+                    Context ctx = (Context) it.next();
+
+                    UpdateCommand updateCommand = new UpdateCommand();
+                    updateCommand.setBuildDirectories(true);
+                    updateCommand.setPruneDirectories(true);
+                    updateCommand.setFiles(ctx.getFiles());
+
+                    GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
+                    gtx.setExclusions((File[]) ctx.getExclusions().toArray(new File[0]));
+                    group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx));
+                }
+            }
+
+            group.execute();
+        } finally {
+            setEnabled(true);
+            group.executed();
+        }
     }
 
     protected boolean enable(Node[] nodes) {
-        if (nodes.length > 0) {
+        if (super.isEnabled() && nodes.length > 0) {
             for (int i = 0; i < nodes.length; i++) {
                 Node node = nodes[i];
                 if (Utils.isVersionedProject(node) == false) {
@@ -111,6 +122,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return null;
     }
+
 
     private static void addUpdateContexts(Collection contexts, Project project, Set updatedProjects) {
         if (updatedProjects.contains(project)) {

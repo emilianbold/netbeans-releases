@@ -34,8 +34,6 @@ import java.awt.*;
  */
 public class StatusProjectsAction extends SystemAction {
 
-    private static boolean inProgress;
-
     public StatusProjectsAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N        
@@ -53,7 +51,7 @@ public class StatusProjectsAction extends SystemAction {
      * Enabled for opened project and if no Versining view refresh in progress.
      */
     public boolean isEnabled() {
-        if (inProgress == false) {
+        if (super.isEnabled()) {
             Project projects[] = OpenProjects.getDefault().getOpenProjects();
             for (int i = 0; i < projects.length; i++) {
                 Project project = projects[i];
@@ -68,14 +66,14 @@ public class StatusProjectsAction extends SystemAction {
     public void actionPerformed(ActionEvent e) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                performAction();
+                async();
             }
         });
     }
 
-    private void performAction() {
+    private void async() {
         try {
-            inProgress = true;
+            setEnabled(false);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
@@ -109,7 +107,7 @@ public class StatusProjectsAction extends SystemAction {
             });
 
         } finally {
-            inProgress = false;
+            setEnabled(true);
         }
 
     }

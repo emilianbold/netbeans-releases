@@ -37,7 +37,7 @@ import java.util.*;
 public final class ExecutorGroup implements Cancellable {
 
     private final String name;
-    private boolean executed;
+    public boolean executed;
     private boolean cancelled;
     private List listeners = new ArrayList(2);
     private List executors = new ArrayList(2);
@@ -114,8 +114,9 @@ public final class ExecutorGroup implements Cancellable {
         counter = new Integer(i);
         if (i == 0) {
             started.remove(queue);
-            if (started.isEmpty()) {
+            if (started.isEmpty() && progressHandle != null) {
                 progressHandle.finish();
+                progressHandle = null;
             }
         } else {
             started.put(queue, counter);
@@ -152,6 +153,12 @@ public final class ExecutorGroup implements Cancellable {
                 cancellable.cancel();
             } catch (RuntimeException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        synchronized(this) {
+            if (progressHandle != null) {
+                progressHandle.finish();
+                progressHandle = null;
             }
         }
     }
@@ -271,6 +278,20 @@ public final class ExecutorGroup implements Cancellable {
 
     }
 
+    /**
+     * Allows client to communicate it's assumtion that
+     * group was executed. If it's not something went wrong,
+     * it's time for cleanup.  
+     */
+    public synchronized void executed() {
+        if (executed == false) {
+            if (progressHandle != null) {
+                progressHandle.finish();
+                progressHandle = null;
+            }
+        }
+    }
+
     void increaseDataCounter(long bytes) {
         dataCounter += bytes;
         progressHandle.progress("" + name + " " + format(dataCounter));
@@ -287,6 +308,7 @@ public final class ExecutorGroup implements Cancellable {
         // it can be solved by average speed in last 5sec, as it drops to zero
         // something is wrong
     }
+
 
 
     public static interface Groupable {
