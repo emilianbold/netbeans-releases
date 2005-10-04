@@ -33,9 +33,10 @@ import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 
 public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.Provider, ListSelectionListener {
     
-    List usedFrameworks = new LinkedList();
     private WebProject project;
     private WebProjectProperties uiProperties;
+    private List usedFrameworks = new LinkedList();
+    private List newFrameworks = new LinkedList();
     
     /** Creates new form CustomizerFrameworks */
     public CustomizerFrameworks(WebProjectProperties uiProperties) {
@@ -154,7 +155,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     // </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
-        AddFrameworkPanel panel = new AddFrameworkPanel(project);
+        AddFrameworkPanel panel = new AddFrameworkPanel(usedFrameworks);
         javax.swing.JPanel inner = new javax.swing.JPanel();
         inner.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -171,13 +172,23 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(CustomizerFrameworks.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {
-            List newFrameworks = panel.getSelectedFrameworks();
+            newFrameworks.addAll(panel.getSelectedFrameworks());
             if (newFrameworks != null) {
                 uiProperties.setNewFrameworks(newFrameworks);
                 for(int i = 0; i < newFrameworks.size(); i++) {
                     WebFrameworkProvider framework = (WebFrameworkProvider) newFrameworks.get(i);
-                    ((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
-                    usedFrameworks.add(framework);
+		    if (!((DefaultListModel) jListFrameworks.getModel()).contains(framework.getName()))
+			((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
+		    
+		    if (usedFrameworks.size() == 0)
+			usedFrameworks.add(framework);
+		    else
+			for (int j = 0; j < usedFrameworks.size(); j++)
+			    if (!((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
+				usedFrameworks.add(framework);
+				break;
+			    }
+		    
                     jListFrameworks.setSelectedValue(framework.getName(), true);
                 }
             }

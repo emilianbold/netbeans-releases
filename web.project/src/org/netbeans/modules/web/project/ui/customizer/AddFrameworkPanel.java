@@ -22,32 +22,40 @@ import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 
 import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
-import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
+
 /**
  *
- * @author  radko
+ * @author  Radko Najman
  */
 public class AddFrameworkPanel extends javax.swing.JPanel {
     
     /** Creates new form AddFrameworkPanel */
-    public AddFrameworkPanel(WebProject project) {
+    public AddFrameworkPanel(List usedFrameworks) {
 	initComponents();
         jListFrameworks.setCellRenderer(new FrameworksListCellRenderer());
-	createFrameworksList(project);
+	createFrameworksList(usedFrameworks);
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     }
     
-    private void createFrameworksList(WebProject project) {
+    private void createFrameworksList(List usedFrameworks) {
         List frameworks = WebFrameworkSupport.getFrameworkProviders();
 	DefaultListModel model = new DefaultListModel();
 	jListFrameworks.setModel(model);
         
 	for (int i = 0; i < frameworks.size(); i++) {
 	    WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
-	    if (!framework.isInWebModule(project.getAPIWebModule()))
+	    if (usedFrameworks.size() == 0)
 		model.addElement(framework);
+	    else
+		for (int j = 0; j < usedFrameworks.size(); j++)
+		    if (!((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
+			model.addElement(framework);
+			break;
+		    }
 	}
+
+	
     }
 
     
