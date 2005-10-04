@@ -24,6 +24,19 @@ Microsystems, Inc. All Rights Reserved.
         <!-- In case run from a suite module, to get app.name and/or branding.token: -->
         <property file="${suite.dir}/nbproject/private/private.properties"/>
         <property file="${suite.dir}/nbproject/project.properties"/>
+         <!-- #63976: if disabling things, better to treat as a platform-based app -->
+        <condition property="app.name" value="test">
+            <or>
+                <and>
+                    <isset property="disabled.modules"/>
+                    <length string="${disabled.modules}" when="greater" length="0"/>
+                </and>
+                <and>
+                    <isset property="disabled.clusters"/>
+                    <length string="${disabled.clusters}" when="greater" length="0"/>
+                </and>
+            </or>
+        </condition>
     </target>
 
     <target name="-prepare-as-app" depends="-init" unless="app.name">
