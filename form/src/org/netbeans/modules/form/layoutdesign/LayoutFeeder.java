@@ -211,11 +211,13 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc found = (IncludeDesc) inclusions.get(0);
             inclusions.clear();
             if (preserveOriginal) { // resized in this dimension only
-                if (found.parent == originalPos1.parent && found.newSubGroup)
-                    originalPos1.newSubGroup = true;
                 inclusion1 = originalPos1;
-                if (newPos != null)
-                    inclusion2 = found;
+                if (found != originalPos1) {
+                    if (newPos != null)
+                        inclusion2 = found;
+                    if (found.parent == originalPos1.parent && found.newSubGroup)
+                        originalPos1.newSubGroup = true;
+                }
             }
             else {
                 inclusion1 = found;
@@ -2059,6 +2061,13 @@ class LayoutFeeder implements LayoutConstants {
                     bestOriginal = original != null && !preserveOriginal && iDesc.parent == original.parent;
                 }
             }
+        }
+
+        if (best == null) { // nothing compatible with original position
+            assert preserveOriginal;
+            inclusions.clear();
+            inclusions.add(original);
+            return;
         }
 
         // 2nd remove incompatible inclusions, move compatible ones to same level
