@@ -98,7 +98,6 @@ PropertyChangeListener {
         synchronized (lock) {
             if (event.getDebugger () != debugger) return;
         }
-        if (event.getConditionResult () == event.CONDITION_FAILED) return;
         if (event.getConditionResult () == event.CONDITION_FALSE) return;
         JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
         getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
@@ -110,11 +109,7 @@ PropertyChangeListener {
         }
         String printText = breakpoint.getPrintText ();
         if (printText == null || printText.length  () == 0) return;
-        try {
-            printText = substitute(printText, event);
-        } catch (Throwable e) {
-            e.printStackTrace ();
-        }
+        printText = substitute(printText, event);
         synchronized (lock) {
             if (ioManager != null) {
                 ioManager.println (printText, null);
@@ -245,6 +240,10 @@ PropertyChangeListener {
                 }
             }
             printText = m.replaceFirst (value);
+        }
+        Throwable thr = event.getConditionException();
+        if (thr != null) {
+            printText = printText + "\n***\n"+ thr.getLocalizedMessage()+"\n***\n";
         }
         return printText;
     }
