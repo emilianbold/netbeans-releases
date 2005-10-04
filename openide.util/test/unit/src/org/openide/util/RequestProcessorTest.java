@@ -110,6 +110,49 @@ public class RequestProcessorTest extends NbTestCase {
         }
             
     }
+    
+    public void testScheduleAndIsFinished() throws InterruptedException {
+        class Run implements Runnable {
+            public boolean run;
+            public boolean second;
+            
+            public synchronized void run() {
+                if (run) {
+                    second = true;
+                    return;
+                }
+                
+                try {
+                    notifyAll();
+                    wait();
+                } catch (InterruptedException ex) {
+                    fail(ex.getMessage());
+                }
+                run = true;
+            }
+        }
+        
+        
+        Run r = new Run();
+        RequestProcessor.Task task;
+        synchronized (r) {
+            task = new RequestProcessor(getName()).post(r);
+            r.wait();
+            task.schedule(200);
+            r.notifyAll();
+        }
+
+        Thread.sleep(100);
+        assertTrue("Run successfully", r.run);
+        assertFalse("Not for the second time1", r.second);
+        assertFalse("Not finished as it is scheduled", task.isFinished());
+        assertFalse("Not for the second time2", r.second);
+        
+        task.waitFinished();
+        assertTrue("Finished now", task.isFinished());
+        assertTrue("Run again", r.second);
+        
+    }
 
     /**
      * A test that check that priorities are handled well.

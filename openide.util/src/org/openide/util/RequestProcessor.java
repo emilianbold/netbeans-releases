@@ -349,7 +349,7 @@ public final class RequestProcessor {
 
     /** Logger for the error manager.
      */
-    private static ErrorManager logger() {
+    static ErrorManager logger() {
         synchronized (starterThread) {
             if (logger == null) {
                 logger = ErrorManager.getDefault().getInstance("org.openide.util.RequestProcessor"); // NOI18N
@@ -465,9 +465,19 @@ public final class RequestProcessor {
         }
 
         public void run() {
-            lastThread = Thread.currentThread();
-            super.run();
-            lastThread = null;
+            try {
+                notifyRunning();
+                lastThread = Thread.currentThread();
+                run.run();
+            } finally {
+                Item scheduled = this.item;
+                if (scheduled != null && scheduled.getTask() == this) {
+                    // do not mark as finished, we are scheduled for future
+                } else {
+                    notifyFinished();
+                }
+                lastThread = null;
+            }
         }
 
         /** Getter for amount of millis till this task
@@ -602,21 +612,42 @@ public final class RequestProcessor {
         * to prevent deadlocks.
         */
         public void waitFinished() {
-            if (isRequestProcessorThread()) { //System.err.println("Task.waitFinished on " + this + " from other task in RP: " + Thread.currentThread().getName());
+            if (isRequestProcessorThread()) { //System.err.println(
                 boolean toRun;
+                
+                ErrorManager em = logger();
+                boolean loggable = em.isLoggable(ErrorManager.INFORMATIONAL);
+                
+                if (loggable) {
+                    em.log("Task.waitFinished on " + this + " from other task in RP: " + Thread.currentThread().getName()); // NOI18N
+                }
+                
 
                 synchronized (processorLock) {
                     // correct line:    toRun = (item == null) ? !isFinished (): (item.clear() && !isFinished ());
                     // the same:        toRun = !isFinished () && (item == null ? true : item.clear ());
                     toRun = !isFinished() && ((item == null) || item.clear(null));
+                    if (loggable) {
+                        em.log("    ## finished: " + isFinished()); // NOI18N
+                        em.log("    ## item: " + item); // NOI18N
+                    }
                 }
 
-                if (toRun) { //System.err.println("    ## running it synchronously");
+                if (toRun) { 
+                    if (loggable) {
+                        em.log("    ## running it synchronously"); // NOI18N
+                    }
                     Processor processor = (Processor)Thread.currentThread();
                     processor.doEvaluate (this, processorLock, RequestProcessor.this);
                 } else { // it is already running in other thread of this RP
+                    if (loggable) {
+                        em.log("    ## not running it synchronously"); // NOI18N
+                    }
 
                     if (lastThread != Thread.currentThread()) {
+                        if (loggable) {
+                            em.log("    ## waiting for it to be finished"); // NOI18N
+                        }
                         super.waitFinished();
                     }
 
@@ -624,6 +655,9 @@ public final class RequestProcessor {
                     //System.err.println("Thread waiting for itself!!!!! - semantics broken!!!");
                     //Thread.dumpStack();
                     //                    }
+                }
+                if (loggable) {
+                    em.log("    ## exiting waitFinished"); // NOI18N
                 }
             } else {
                 super.waitFinished();

@@ -54,7 +54,7 @@ public class Task extends Object implements Runnable {
     private static RequestProcessor RP;
 
     /** what to run */
-    private Runnable run;
+    final Runnable run;
 
     /** flag if we have finished */
     private boolean finished;
@@ -80,13 +80,16 @@ public class Task extends Object implements Runnable {
     * @since 1.5
     */
     protected Task() {
+        this.run = null;
     }
 
     /** Test whether the task has finished running.
     * @return <code>true</code> if so
     */
     public final boolean isFinished() {
-        return finished;
+        synchronized (this) {
+            return finished;
+        }
     }
 
     /** Wait until the task is finished.
@@ -162,6 +165,9 @@ public class Task extends Object implements Runnable {
     */
     protected final void notifyRunning() {
         synchronized (this) {
+            if (RequestProcessor.logger().isLoggable(org.openide.ErrorManager.INFORMATIONAL)) {
+                RequestProcessor.logger().log("notifyRunning: " + this); // NOI18N
+            }
             this.finished = false;
             notifyAll();
         }
@@ -175,6 +181,9 @@ public class Task extends Object implements Runnable {
 
         synchronized (this) {
             finished = true;
+            if (RequestProcessor.logger().isLoggable(org.openide.ErrorManager.INFORMATIONAL)) {
+                RequestProcessor.logger().log("notifyFinished: " + this); // NOI18N
+            }
             notifyAll();
 
             // fire the listeners
