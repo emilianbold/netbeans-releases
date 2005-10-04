@@ -20,13 +20,11 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.ListView;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -118,11 +116,8 @@ public final class AntNavigatorPanel implements NavigatorPanel {
         // Show list of targets for selected file:
         if (selectedFiles.size() == 1) {
             DataObject d = (DataObject) selectedFiles.iterator().next();
-            AntProjectCookie cookie = (AntProjectCookie) d.getCookie(AntProjectCookie.class);
-            if (cookie != null) {
-                manager.setRootContext(new AbstractNode(new AntProjectChildren(cookie)));
-                return;
-            }
+            manager.setRootContext(d.getNodeDelegate());
+            return;
         }
         // Fallback:
         manager.setRootContext(Node.EMPTY);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Mutex;
@@ -35,8 +34,11 @@ import org.w3c.dom.Element;
 public final class AntProjectNode extends DataNode implements ChangeListener {
     
     public AntProjectNode (DataObject obj) {
-        super(obj, Children.LEAF);
-        AntProjectCookie cookie = (AntProjectCookie) obj.getCookie(AntProjectCookie.class);
+        this(obj, (AntProjectCookie) obj.getCookie(AntProjectCookie.class));
+    }
+    
+    private AntProjectNode(DataObject obj, AntProjectCookie cookie) {
+        super(obj, new AntProjectChildren(cookie));
         cookie.addChangeListener(WeakListeners.change(this, cookie));
     }
     
