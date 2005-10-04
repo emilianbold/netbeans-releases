@@ -94,7 +94,6 @@ final class FormClassLoader extends ClassLoader {
                         data = temp;
                     }
                 }
-                System.out.println("define: "+name);
                 c = defineClass(name, data, 0, data.length);
             }
             catch (Exception ex) {
