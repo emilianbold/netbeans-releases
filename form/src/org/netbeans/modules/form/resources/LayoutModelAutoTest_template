@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class ${CLASS_NAME} extends TestCase {
+public class ${CLASS_NAME} extends LayoutTestCase {
         
     public ${CLASS_NAME}(String name) {
         super(name);
@@ -35,7 +35,7 @@ public class ${CLASS_NAME} extends TestCase {
         }
     }
     
-    private void doChanges(LayoutModel model) {
+    protected void doChanges(LayoutModel model) {
         
         ${CODE_GOES_HERE}
         
