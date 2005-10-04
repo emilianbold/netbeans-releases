@@ -568,8 +568,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
     </change>
 <change>
       <api name="nodes"/>
-      <summary>
-<code>Children.Keys.createNodes</code> can be <code>null</code>
+      <summary><code>Children.Keys.createNodes</code> can be <code>null</code>
 </summary>
       <date day="15" month="3" year="2001"/>
       <author login="jtulach"/>
@@ -600,8 +599,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
     </change>
 <change>
       <api name="nodes"/>
-      <summary>
-<code>Index.KeyChildren.createIndex</code> protected</summary>
+      <summary><code>Index.KeyChildren.createIndex</code> protected</summary>
       <date day="13" month="3" year="2001"/>
       <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
       <description>
@@ -667,8 +665,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
     </change>
 <change>
       <api name="nodes"/>
-      <summary>
-<code>NodeOp.setDefaultActions</code> removed</summary>
+      <summary><code>NodeOp.setDefaultActions</code> removed</summary>
       <date day="2" month="5" year="2000"/>
       <compatibility deletion="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" modification="no">
         First removed, later re-added but deprecated in trunk and
@@ -682,8 +679,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
     </change>
 <change>
       <api name="nodes"/>
-      <summary>
-<code>BeanChildren</code> changed superclass</summary>
+      <summary><code>BeanChildren</code> changed superclass</summary>
       <date day="23" month="6" year="2000"/>
       <compatibility modification="yes" source="incompatible" binary="incompatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
         Any subclasses which used the following methods will be broken:
