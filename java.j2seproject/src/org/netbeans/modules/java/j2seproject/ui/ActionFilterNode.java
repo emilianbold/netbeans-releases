@@ -22,6 +22,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
+import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
 import org.openide.actions.OpenAction;
@@ -108,7 +109,7 @@ class ActionFilterNode extends FilterNode {
     public Action getPreferredAction() {
         if (mode == MODE_FILE) {
             Action[] actions = initActions();
-            if (actions.length > 0 && (actions[0] instanceof OpenAction)) {
+            if (actions.length > 0 && (actions[0] instanceof OpenAction || actions[0] instanceof EditAction )) {
                 return actions[0];
             }
         }
@@ -121,7 +122,7 @@ class ActionFilterNode extends FilterNode {
             if (mode == MODE_FILE) {
                 Action[] superActions = super.getActions(false);
                 for (int i=0; i<superActions.length; i++) {
-                    if (superActions[i] instanceof OpenAction) {
+                    if (superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction) {
                         result.add (superActions[i]);
                     }
                 }
