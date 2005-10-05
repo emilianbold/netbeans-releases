@@ -39,7 +39,7 @@ public class IndexNodeInfo extends TableNodeInfo {
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(table, false, false);
+            drvSpec.getIndexInfo(table, false, true);
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
                 HashMap rset = new HashMap();

@@ -61,7 +61,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
             // Indexes
             Hashtable ixhash = new Hashtable();
-            drvSpec.getIndexInfo(table, true, false);
+            drvSpec.getIndexInfo(table, true, true);
             rs = drvSpec.getResultSet();
             if (rs != null) {
                 HashMap rset = new HashMap();

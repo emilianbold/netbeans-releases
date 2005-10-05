@@ -61,7 +61,7 @@ public class AddToIndexAction extends DatabaseAction {
             // List columns used in current index (do not show)
             HashSet ixrm = new HashSet();
 
-            drvSpec.getIndexInfo(tablename, false, false);
+            drvSpec.getIndexInfo(tablename, false, true);
             ResultSet rs = drvSpec.getResultSet();
             HashMap rset = new HashMap();
             boolean isUQ = false;

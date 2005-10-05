@@ -352,7 +352,7 @@ public class AddTableColumnDialog {
                 String table = (String)nfo.get(DatabaseNode.TABLE);
                 DriverSpecification drvSpec = nfo.getDriverSpecification();
 
-                drvSpec.getIndexInfo(table, false, false);
+                drvSpec.getIndexInfo(table, false, true);
                 ResultSet rs = drvSpec.getResultSet();
                 HashMap rset = new HashMap();
                 

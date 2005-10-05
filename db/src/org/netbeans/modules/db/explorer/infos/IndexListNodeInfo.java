@@ -38,7 +38,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
             DriverSpecification drvSpec = getDriverSpecification();
             Connection con = getConnection();
             DatabaseMetaData dmd = con.getMetaData();
-            ResultSet rs = dmd.getIndexInfo(drvSpec.getCatalog(), drvSpec.getSchema(), table, false, false);            
+            ResultSet rs = dmd.getIndexInfo(drvSpec.getCatalog(), drvSpec.getSchema(), table, false, true);
             if (rs != null) {
                 Set ixmap = new HashSet();
                 IndexNodeInfo info;
@@ -96,7 +96,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(table, false, false);
+            drvSpec.getIndexInfo(table, false, true);
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
                 HashMap rset = new HashMap();

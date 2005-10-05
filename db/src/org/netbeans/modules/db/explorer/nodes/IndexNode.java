@@ -93,7 +93,7 @@ public class IndexNode extends DatabaseNode {
                 try {
                     spec = (Specification)info.getSpecification();
                     DriverSpecification drvSpec = info.getDriverSpecification();
-                    drvSpec.getIndexInfo(info.getTable(), false, false);
+                    drvSpec.getIndexInfo(info.getTable(), false, true);
                     ResultSet rs = drvSpec.getResultSet();
                     if (rs != null) {
                         String index = destinfo.getName();
@@ -129,7 +129,7 @@ public class IndexNode extends DatabaseNode {
                         icmd.setObjectOwner((String)destinfo.get(DatabaseNodeInfo.SCHEMA));
                         icmd.execute();
 
-                        drvSpec.getIndexInfo(destinfo.getTable(), false, false);
+                        drvSpec.getIndexInfo(destinfo.getTable(), false, true);
                         rs = drvSpec.getResultSet();
                         if (rs != null) {
                             IndexNodeInfo ixinfo;
