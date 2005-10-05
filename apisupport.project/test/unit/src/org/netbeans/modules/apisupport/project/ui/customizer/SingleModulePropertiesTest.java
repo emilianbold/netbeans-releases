@@ -146,7 +146,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("display name from LocalizedBundleInfo", "Testing Module",
                 props.getBundleInfo().getDisplayName());
 
-        FileObject bundleFO = FileUtil.toFileObject(new File(props.getBundleInfo().getPath()));
+        FileObject bundleFO = FileUtil.toFileObject(props.getBundleInfo().getPath());
         EditableProperties bundleEP = Util.loadProperties(bundleFO);
         bundleEP.setProperty(LocalizedBundleInfo.NAME, "Miscellaneous");
         // let's fire a change

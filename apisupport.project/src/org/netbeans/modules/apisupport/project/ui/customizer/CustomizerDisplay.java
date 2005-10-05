@@ -97,7 +97,8 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     }
     
     private String getCategory() {
-        String category = getBundle().getCategory();
+        LocalizedBundleInfo bundle = getBundle();
+        String category = bundle != null ? bundle.getCategory() : null;
         return category != null ? category : ""; // NOI18N
     }
     

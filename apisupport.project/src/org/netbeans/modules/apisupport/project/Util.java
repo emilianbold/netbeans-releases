@@ -272,7 +272,7 @@ public class Util {
                         LocalizedBundleInfo supposedLI;
                         supposedLI = LocalizedBundleInfo.load(bundleFO);
                         if (supposedLI.getDisplayName() != null) {
-                            supposedLI.setPath(FileUtil.toFile(bundleFO).getAbsolutePath());
+                            supposedLI.setPath(FileUtil.toFile(bundleFO));
                             locInfo = supposedLI;
                             break;
                         }

@@ -53,7 +53,7 @@ public final class LocalizedBundleInfo {
     static final LocalizedBundleInfo EMPTY = new LocalizedBundleInfo(new EditableProperties(true));
     
     private EditableProperties props;
-    private String path;
+    private File path;
     
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
@@ -104,7 +104,7 @@ public final class LocalizedBundleInfo {
             
             File f = FileUtil.toFile(bundleFO);
             if (f != null) {
-                this.setPath(f.getAbsolutePath());
+                this.setPath(f);
                 bundleFO.addFileChangeListener(new FileChangeAdapter() {
                     public void fileChanged(FileEvent fe) {
                         try {
@@ -132,9 +132,9 @@ public final class LocalizedBundleInfo {
             throw new IllegalStateException("First you must call " // NOI18N
                     + getClass().getName() + ".setPath()"); // NOI18N
         }
-        FileObject bundleFO = FileUtil.toFileObject(new File(getPath()));
+        FileObject bundleFO = FileUtil.toFileObject(getPath());
         String oldDisplayName = getDisplayName();
-        this.props = Util.loadProperties(bundleFO);
+        this.props = bundleFO != null ? Util.loadProperties(bundleFO) : new EditableProperties();
         firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, getDisplayName());
     }
     
@@ -148,7 +148,10 @@ public final class LocalizedBundleInfo {
             throw new IllegalStateException("First you must call " // NOI18N
                     + getClass().getName() + ".setPath()"); // NOI18N
         }
-        FileObject bundleFO = FileUtil.toFileObject(new File(getPath()));
+        FileObject bundleFO = FileUtil.toFileObject(getPath());
+        if (bundleFO == null) {
+            return;
+        }
         FileLock lock = bundleFO.lock();
         try {
             OutputStream os = bundleFO.getOutputStream(lock);
@@ -204,7 +207,7 @@ public final class LocalizedBundleInfo {
         this.setProperty(LONG_DESCRIPTION, longDescription, true);
     }
     
-    public String getPath() {
+    public File getPath() {
         return path;
     }
     
@@ -212,7 +215,7 @@ public final class LocalizedBundleInfo {
      * After calling this methods instance become <em>storable</em>. So methods
      * {@link #store} and {@link #reload} can be called.
      */
-    public void setPath(String path) {
+    public void setPath(File path) {
         this.path = path;
     }
     
