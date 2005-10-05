@@ -21,11 +21,9 @@ import javax.swing.SwingUtilities;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
-import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
 import org.openide.*;
 import org.openide.NotifyDescriptor.Confirmation;
-import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -35,9 +33,6 @@ import org.xml.sax.SAXException;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-
-import org.netbeans.modules.j2ee.sun.share.config.ModuleDDSupport;
 import org.netbeans.modules.j2ee.sun.share.config.ui.ConfigBeanTopComponent;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
@@ -49,7 +44,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfigurat
 public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurationProvider,*/ /*ModuleListener,*/ Node.Cookie {
     
     public static final String ROOT = "/"; // NOI18N
-    private DeploymentConfiguration config;
+    private SunONEDeploymentConfiguration config;
     // Map of url -> ModuleDeploymentSupport
     Map moduleMap = new HashMap();
     final Map versionListeners = new HashMap();
@@ -61,7 +56,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     private boolean saveInProgress;
     private boolean saveFailedDialogDisplayed;
     
-    public ConfigurationStorage(J2eeModuleProvider module, DeploymentConfiguration config) throws ConfigurationException, InvalidModuleException, IOException, SAXException {
+    public ConfigurationStorage(J2eeModuleProvider module, SunONEDeploymentConfiguration config) throws ConfigurationException, InvalidModuleException, IOException, SAXException {
         this.module = module;
         this.config = config;
         
@@ -205,12 +200,12 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                                 try {
                                     // if config files are modified, ask whether to rewrite them
                                     if (configDO.areModified()) {
-// !PW FIXME                              File files[] = getSaveFiles(module);
+                                        File files[] = ConfigurationStorage.this.config.getConfigFiles();
+                                        String serverName = ConfigurationStorage.this.config.getAppServerVersion().toString();
                                         String msg = NbBundle.getMessage(ConfigurationStorage.class, 
                                                 "MSG_SaveGeneratedChanges", 
-                                                "!PW FIXME Unknown SJSAS server", 
-// !PW FIXME                                      filesToString(files)
-                                                "(!PW FIXME unknown files)");
+                                                serverName, 
+                                                filesToString(files));
                                         Confirmation cf = new Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
                                         dialogIsDisplayed = true;
                                         DialogDisplayer.getDefault().notify(cf);
@@ -236,12 +231,12 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
         autoSaveTask.schedule(100);
     }
     
-    void setChanged() {
+    public void setChanged() {
         needsSave = true;
         autoSave();
     }
     
-    DeploymentConfiguration getDeploymentConfiguration() {
+    public DeploymentConfiguration getDeploymentConfiguration() {
         return config;
     }
     
@@ -343,23 +338,21 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
         try {
             saveInProgress = true;
             
-            if(config instanceof SunONEDeploymentConfiguration) {
-                SunONEDeploymentConfiguration s1dc = (SunONEDeploymentConfiguration) config;
-                s1dc.writeDeploymentPlanFiles(this);
+            if(config != null) {
+                config.writeDeploymentPlanFiles(this);
                 
                 needsSave = false;
                 if(saver != null) {
                     saver.resetChanged();
                 }
             } else {
-                throw new IllegalArgumentException("Invalid DeploymentConfiguration: " + config);
+                throw new IllegalStateException("Attempted to save configuration when DeploymentConfiguration is null.");
             }
         } catch (ConfigurationException ce) {
             if(!saveFailedDialogDisplayed) { // do not display multiple instances
                 saveFailedDialogDisplayed = true;
                 String msg = NbBundle.getMessage(ConfigurationStorage.class, "MSG_ConfigurationSaveFailed", 
-                        // !PW FIXME where to server name for this??? Do we still need it?
-                        "!PW FIXME server display name", "!PW FIXME file list???");
+                    config.getAppServerVersion().toString(), filesToString(config.getConfigFiles()));
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
                 saveFailedDialogDisplayed = false;
             }

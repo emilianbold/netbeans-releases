@@ -361,7 +361,6 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				// Cache snippet is retrieved below and added to the snippet list
 				// for WebAppRoot.
 				
-                                swa.setVersion(getAppServerVersion().getNumericWebAppVersion());
 				return swa;
 			}
 		};
@@ -372,10 +371,10 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		return snippets;
 	}
    
-	private class WebAppRootParser implements ConfigParser {
-		public Object parse(java.io.InputStream stream) {
+    private class WebAppRootParser implements ConfigParser {
+        public Object parse(java.io.InputStream stream) {
             DDProvider provider = DDProvider.getDefault();
-			SunWebApp result = null;
+            SunWebApp result = null;
             
             if(null != stream) {
                 try {
@@ -390,11 +389,15 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             if(result == null) {
                 result = (SunWebApp) provider.newGraph(SunWebApp.class);
             }
+
+            // First set our version to match that of this deployment descriptor.
+            getConfig().internalSetAppServerVersion(ASDDVersion.getASDDVersionFromServletVersion(result.getVersion()));
             
+            // Now map graph to that of 8.1.
             result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericWebAppVersion());
             return result;
-		}
-	}
+        }
+    }
 	
 	private class WebAppRootFinder implements ConfigFinder {
 		public Object find(Object obj) {
@@ -631,29 +634,42 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	 *
 	 */
 	public void setContextRoot(String newContextRoot) throws java.beans.PropertyVetoException {
-                if (newContextRoot!=null){
-                    newContextRoot = newContextRoot.replace (' ', '_'); //NOI18N
-                }
-                if (newContextRoot!=null){ //see bug 56280
-                    try{
-                        String result="";
-                        String s[] = newContextRoot.split("/");
-                        for (int i=0;i<s.length;i++){
-                            result=result+java.net.URLEncoder.encode(s[i], "UTF-8");
-                            if (i!=s.length -1)
-                                result=result+"/";
-                        }
-                        newContextRoot= result;
-                    }
-                    catch (Exception e){
-                        
-                    }
-                }
+        newContextRoot = encodeUrlField(newContextRoot);
 		String oldContextRoot = contextRoot;
 		getVCS().fireVetoableChange("contextRoot", oldContextRoot, newContextRoot);
 		contextRoot = newContextRoot;
 		getPCS().firePropertyChange("contextRoot", oldContextRoot, contextRoot);
 	}
+    
+    private String encodeUrlField(String url) {
+        String encodedUrl = url;
+        
+        // Change spaces to underscores - this step might be redundant now, considering
+        // the UTF8 encoding being done now.
+        if(encodedUrl != null) {
+            encodedUrl = encodedUrl.replace (' ', '_'); //NOI18N
+        }
+        
+        // For each url element, do UTF encoding of that element.
+        if(encodedUrl != null) { // see bug 56280
+            try {
+                String result = ""; // NOI18N
+                String s[] = encodedUrl.split("/"); // NOI18N
+                for(int i = 0; i < s.length; i++) {
+                    result = result + java.net.URLEncoder.encode(s[i], "UTF-8"); // NOI18N
+                    if(i != s.length - 1) {
+                        result = result + "/"; // NOI18N
+                    }
+                }
+                encodedUrl = result;
+            } catch (Exception ex){
+                // log this
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        
+        return encodedUrl;
+    }
 	
     /** Getter for property errorUrl.
      * @return Value of property errorUrl.
@@ -670,6 +686,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
      *
      */
     public void setErrorUrl(String newErrorUrl) throws java.beans.PropertyVetoException {
+        newErrorUrl = encodeUrlField(newErrorUrl);
         String oldErrorUrl = errorUrl;
         getVCS().fireVetoableChange("errorUrl", oldErrorUrl, newErrorUrl);
         errorUrl = newErrorUrl;

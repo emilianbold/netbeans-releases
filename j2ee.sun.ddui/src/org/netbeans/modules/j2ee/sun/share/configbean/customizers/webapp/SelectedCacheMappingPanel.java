@@ -32,6 +32,7 @@ import java.awt.Container;
 import javax.swing.JPanel;
 import javax.swing.DefaultComboBoxModel;
 
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.CacheMapping;
 import org.netbeans.modules.j2ee.sun.dd.api.web.CacheHelper;
 import org.netbeans.modules.j2ee.sun.dd.api.web.ConstraintField;
@@ -40,8 +41,6 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.ServletRef;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppCache;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
-
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMapping;
 
 /**
  *
@@ -295,6 +294,11 @@ public class SelectedCacheMappingPanel extends javax.swing.JPanel {
 			selectedCacheMapping.setTimeout(null);
 			selectedCacheMapping.setRefreshField(false);
 			selectedCacheMapping.setHttpMethod(null);
+            try {
+                selectedCacheMapping.setDispatcher(null);
+            } catch(VersionNotSupportedException ex) {
+                // suppress and ignore
+            }
 			selectedCacheMapping.setKeyField(null);
 			selectedCacheMapping.setConstraintField(null);
 			enableHelperPolicyFields();
@@ -329,7 +333,7 @@ public class SelectedCacheMappingPanel extends javax.swing.JPanel {
 
 	private void jBtnEditPolicyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnEditPolicyActionPerformed
 		// Add your handling code here:
-		if(CachePolicyPanel.invokeAsPopup((JPanel) getParent(), selectedCacheMapping)) {
+		if(CachePolicyPanel.invokeAsPopup((JPanel) getParent(), masterPanel.getBean().getAppServerVersion(), selectedCacheMapping)) {
 			masterPanel.getBean().setDirty();
 		}
 	}//GEN-LAST:event_jBtnEditPolicyActionPerformed
@@ -572,6 +576,7 @@ public class SelectedCacheMappingPanel extends javax.swing.JPanel {
 		private String refreshFieldName;
 		private String refreshFieldScope;
 		private List httpMethods;    // of String
+        private List dispatchers;    // of String
 		private List keyFieldNames;  // of String
 		private List keyFieldScopes; // of String
 		private List constraints;    // of ConstraintField
@@ -603,6 +608,21 @@ public class SelectedCacheMappingPanel extends javax.swing.JPanel {
 					httpMethods.add(methods[i]);
 				}
 			}
+            
+            // Dispatchers
+            try {
+                String[] dsps;
+                dsps = mapping.getDispatcher();
+                if(dsps != null) {
+                    dispatchers = new ArrayList(dsps.length);
+                    for(int i = 0; i < dsps.length; i++) {
+                        dispatchers.add(dsps[i]);
+                    }
+                }
+            } catch(VersionNotSupportedException ex) {
+                // suppress and do nothing.
+                dispatchers = null;
+            }
 			
 			// Key Fields
 			int numFields = mapping.sizeKeyField();
@@ -655,6 +675,15 @@ public class SelectedCacheMappingPanel extends javax.swing.JPanel {
 			if(httpMethods != null) {
 				mapping.setHttpMethod((String []) httpMethods.toArray(new String [0]));
 			}
+            
+            // Dispatcher
+            if(dispatchers != null) {
+                try {
+                    mapping.setDispatcher((String []) dispatchers.toArray(new String [0]));
+                } catch (VersionNotSupportedException ex) {
+                    // suppress and do nothing.
+                }
+            }
 			
 			// Key Fields
 			if(keyFieldNames != null) {

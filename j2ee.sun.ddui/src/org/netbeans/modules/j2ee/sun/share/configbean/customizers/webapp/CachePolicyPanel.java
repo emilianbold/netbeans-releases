@@ -47,8 +47,10 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.CacheMapping;
 import org.netbeans.modules.j2ee.sun.dd.api.web.ConstraintField;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMapping;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
@@ -87,8 +89,8 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	private List httpMethods;
 	private List constraints;
 	
-        // Table for editing dispatcher entries
-        private GenericTableModel dispatcherModel;
+	// Table for editing dispatcher entries
+	private GenericTableModel dispatcherModel;
 	private GenericTablePanel dispatcherPanel;
 	
 	// Table for editing key fields
@@ -99,8 +101,11 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	private GenericTableModel constraintFieldsModel;
 	private GenericTablePanel constraintFieldsPanel;
 
+    // true if AS 8.1+ fields are visible.
+    private boolean as81FeaturesVisible;
+    
 	/** Creates new form CachePolicyPanel */
-	public CachePolicyPanel(CacheMapping mapping) {
+	public CachePolicyPanel(ASDDVersion asVersion, CacheMapping mapping) {
 		theCacheMapping = mapping;
 		newCacheMapping = (CacheMapping) mapping.clone();
 		
@@ -116,7 +121,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 		
 		initComponents();
 		initUserComponents();
-		initFields();
+		initFields(asVersion);
 		addListeners();
 	}
 	
@@ -422,6 +427,8 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
     // End of variables declaration//GEN-END:variables
 	
 	private void initUserComponents() {
+		as81FeaturesVisible = true;
+        
 		// Setup timeout scope combobox
 		timeoutScopeModel = new DefaultComboBoxModel();
 		for(int i = 0; i < scopeTypes.length; i++) {
@@ -436,7 +443,6 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 		}
 		jCbxRefreshScope.setModel(refreshFieldScopeModel);
 
-                        
         /** Add dispatcher panel :
          *  TableEntry list has one property, Dispatcher.
          */
@@ -519,7 +525,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	/** Initialization of all the fields in this panel from the bean that
 	 *  was passed in.
 	 */
-	public void initFields() {
+	public void initFields(ASDDVersion asVersion) {
 		jTxtTimeoutName.setText(newCacheMapping.getTimeoutName());
 		enableTimeout(Utils.notEmpty(newCacheMapping.getTimeoutName()));
 
@@ -529,11 +535,45 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 		jChkHttpGet.setSelected(httpMethods.contains("GET"));	// NOI18N
 		jChkHttpPost.setSelected(httpMethods.contains("POST"));	// NOI18N
 		
-		dispatcherPanel.setModelBaseBean(newCacheMapping);
 		keyFieldsPanel.setModelBaseBean(newCacheMapping);
 		constraintFieldsPanel.setModel(constraints);
+        
+        if(ASDDVersion.SUN_APPSERVER_8_1.compareTo(asVersion) <= 0) {
+            showAS81Fields();
+    		dispatcherPanel.setModelBaseBean(newCacheMapping);
+        } else {
+            hideAS81Fields();
+        }
 	}
-	
+    
+    // TODO after 5.0, generalize version based field display for multiple (> 2)
+    // appserver versions.
+    private void showAS81Fields() {
+        if(!as81FeaturesVisible) {
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+            
+            int keyFieldsIndex = BaseCustomizer.getComponentIndex(this, keyFieldsPanel);
+            if(keyFieldsIndex != -1) {
+                add(dispatcherPanel, gridBagConstraints, keyFieldsIndex);
+            } else {
+                add(dispatcherPanel, gridBagConstraints);
+            }
+            as81FeaturesVisible = true;
+        }
+    }
+    
+    private void hideAS81Fields() {
+        if(as81FeaturesVisible) {
+            remove(dispatcherPanel);
+            as81FeaturesVisible = false;
+        }
+    }
+    
 	public void addListeners() {
 		dispatcherModel.addTableModelListener(this);
 		keyFieldsModel.addTableModelListener(this);
@@ -681,8 +721,8 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 		return errorList;
 	}
 	
-	public static boolean invokeAsPopup(JPanel parent, CacheMapping mapping) {
-		CachePolicyPanel policyPanel = new CachePolicyPanel(mapping);
+	public static boolean invokeAsPopup(JPanel parent, ASDDVersion asVersion, CacheMapping mapping) {
+		CachePolicyPanel policyPanel = new CachePolicyPanel(asVersion, mapping);
 		policyPanel.displayDialog(parent);
 		return policyPanel.isDataChanged();
 	}

@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import java.util.SortedMap;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 
 /**
@@ -52,6 +53,9 @@ public class ParameterEncodingPanel extends javax.swing.JPanel {
     
     // Listens for changes to the default list of charsets
     private PropertyChangeListener charsetChangeListener;
+
+    // true if AS 8.1+ fields are visible.
+    private boolean as81FeaturesVisible;
     
     /** Creates new form ParameterEncodingPanel */
     public ParameterEncodingPanel() {
@@ -196,18 +200,47 @@ public class ParameterEncodingPanel extends javax.swing.JPanel {
         CharsetMapping.removePropertyChangeListener(charsetChangeListener);
     }
     
-    public void initFields(String defaultCharset, String formHintField, boolean enabled) {
+    public void initFields(ASDDVersion asVersion, String defaultCharset, String formHintField, boolean enabled) {
+        if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(asVersion) >= 0) {
+            showAS81Fields();
+        } else {
+            hideAS81Fields();
+        }
+        
         enableFields(enabled);
+        
         if(enabled) {
             // init parameter encoding fields
             this.defaultCharset = defaultCharset;
             this.formHintField = formHintField;
-            
-            defaultCharsetCbxModel.setSelectedItem(CharsetMapping.getCharsetMapping(defaultCharset));
+
+            if(as81FeaturesVisible) {
+                defaultCharsetCbxModel.setSelectedItem(CharsetMapping.getCharsetMapping(defaultCharset));
+            }
             jTxtFormHintField.setText(formHintField);
         } else {
-            jCbxDefaultCharset.setSelectedItem(null);
+            if(as81FeaturesVisible) {
+                jCbxDefaultCharset.setSelectedItem(null);
+            }
             jTxtFormHintField.setText("");
+        }
+    }
+        
+    // TODO after 5.0, generalize version based field display for multiple (> 2)
+    // appserver versions.
+    private void showAS81Fields() {
+        if(!as81FeaturesVisible) {
+            jLblDefaultCharset.setVisible(true);
+            jCbxDefaultCharset.setVisible(true);
+            as81FeaturesVisible = true;
+        }
+    }
+    
+    private void hideAS81Fields() {
+        if(as81FeaturesVisible) {
+            jLblDefaultCharset.setVisible(false);
+            jCbxDefaultCharset.setVisible(false);
+            as81FeaturesVisible = false;
         }
     }
     

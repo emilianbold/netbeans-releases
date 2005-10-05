@@ -253,7 +253,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				}
 				sej.setEnterpriseBeans(eb);
                                 
-                                sej.setVersion(getAppServerVersion().getNumericEjbJarVersion());
 				return sej;
 			}
 		};
@@ -281,8 +280,16 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					((MappingClassElement)iterator.next()).setModified(false);
 					// TODO - need to do PCEs too?
 				}
-
-				// TODO: decide if it's empty or skeleton and possibly return null in that case?
+                
+                // Set version.  This is done differently for CMP than the other snippets
+                // because there is no CMP DD API yet.
+//                ASDDVersion asVersion = getConfig().getAppServerVersion();
+                // Use 8.1 because that is the tree we are using here.  Need to downgrade the tree
+                // if targetting 8.0 or 7.0/1.
+                ASDDVersion asVersion = ASDDVersion.SUN_APPSERVER_8_1;
+                sunCmpMappings.graphManager().setDoctype(
+                    asVersion.getSunCmpMappingsPublicId(), asVersion.getSunCmpMappingsSystemId());
+                
 				return sunCmpMappings;
 			}
 			public boolean hasDDSnippet() {
@@ -336,11 +343,11 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		super.removeDConfigBean(dConfigBean);
 	}
 
-	// methods used to read a DConfigBean from a deployment plan
-	public class SunEjbJarParser implements ConfigParser {
-		public Object parse(java.io.InputStream stream) {
+    // methods used to read a DConfigBean from a deployment plan
+    public class SunEjbJarParser implements ConfigParser {
+        public Object parse(java.io.InputStream stream) {
             DDProvider provider = DDProvider.getDefault();
-			SunEjbJar result = null;
+            SunEjbJar result = null;
             
             if(null != stream) {
                 try {
@@ -356,10 +363,13 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 result = (SunEjbJar) provider.newGraph(SunEjbJar.class);
             }
             
+            // First set our version to match that of this deployment descriptor.
+            getConfig().internalSetAppServerVersion(ASDDVersion.getASDDVersionFromEjbVersion(result.getVersion()));
+            // Now map graph to that of 8.1.
             result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericEjbJarVersion());
             return result;
-		}
-	}
+        }
+    }
 
 
 	public class EjbJarRootFinder implements ConfigFinder {

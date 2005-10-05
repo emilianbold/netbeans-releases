@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.xml.sax.InputSource;
@@ -103,8 +102,8 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         }
         return newDo;
     }
-    
-    public DeploymentConfiguration getDeploymentConfiguration() throws ConfigurationException {
+
+    public SunONEDeploymentConfiguration getDeploymentConfiguration() throws ConfigurationException {
         // Request deployment configuration for SJSAS from j2eeserver module
         FileObject fo = getPrimaryFile();
         String serverId = getProvider().getServerID();

@@ -182,7 +182,6 @@ public class AppRoot extends BaseRoot {
 					sa.setRealm(realm);
 				}
 				
-                                sa.setVersion(getAppServerVersion().getNumericApplicationVersion());
 				return sa;
 			}
 		};
@@ -191,10 +190,10 @@ public class AppRoot extends BaseRoot {
 		return snippets;
 	}
 	
-	public class AppRootParser implements ConfigParser {
-		public Object parse(java.io.InputStream stream) {
+    public class AppRootParser implements ConfigParser {
+        public Object parse(java.io.InputStream stream) {
             DDProvider provider = DDProvider.getDefault();
-			SunApplication result = null;
+            SunApplication result = null;
             
             if(null != stream) {
                 try {
@@ -210,11 +209,14 @@ public class AppRoot extends BaseRoot {
                 result = (SunApplication) provider.newGraph(SunApplication.class);
             }
             
+            // First set our version to match that of this deployment descriptor.
+            getConfig().internalSetAppServerVersion(ASDDVersion.getASDDVersionFromAppVersion(result.getVersion()));
+            
+            // Now map graph to that of 8.1.
             result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericApplicationVersion());
             return result;
-            
-		}
-	}
+        }
+    }
 	
 	public class AppRootFinder implements ConfigFinder {
 		public Object find(Object obj) {

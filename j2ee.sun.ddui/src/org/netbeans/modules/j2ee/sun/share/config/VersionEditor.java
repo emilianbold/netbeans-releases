@@ -18,14 +18,19 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 
-/**
- * Custom Editor for version of server specific Deployment Descriptor
+/** Custom Editor for version of server specific Deployment Descriptor
+ *
+ * This class badly needs to be merged/refactored into/with ASDDVersion.  Too
+ * much duplication and maintenance.  In particular, a VersionEditor that directly
+ * used ASDDVersion objects instead of converting them to/from strings would be 
+ * infinitely better, but no time to research how to write such a beast right now.
  *
  * @author Peter Williams
  */
@@ -38,18 +43,10 @@ public class VersionEditor extends PropertyEditorSupport implements ExPropertyEd
      *  on disk that is loaded is 9.0, it should be downgraded w/ warning.)
      */
     public static final int APP_SERVER_7_0 = 0;
-    public static final int APP_SERVER_7_1 = 1;
-    public static final int APP_SERVER_8_0 = 2;
-    public static final int APP_SERVER_8_1 = 3;
-    public static final int APP_SERVER_9_0 = 4;
-    
-    public static final String[] availableChoices = {
-        "SunONE Application Server 7.0", // NOI18N
-        "SunONE Application Server 7.1", // NOI18N
-        "Sun Java System Application Server 8.0", // NOI18N
-        "Sun Java System Application Server 8.1", // NOI18N
-        "Sun Java System Application Server 9.0", // NOI18N
-    };
+//    public static final int APP_SERVER_7_1 = 1;
+    public static final int APP_SERVER_8_0 = 1;
+    public static final int APP_SERVER_8_1 = 2;
+    public static final int APP_SERVER_9_0 = 3;
     
     private String curr_Sel;
     private String [] choices;
@@ -60,10 +57,10 @@ public class VersionEditor extends PropertyEditorSupport implements ExPropertyEd
         assert minVersion <= maxVersion;
         
         int numChoices = maxVersion - minVersion + 1;
-        curr_Sel = availableChoices[APP_SERVER_8_1];
+        curr_Sel = ASDDVersion.asDDVersions[APP_SERVER_8_1].toString();
         choices = new String[numChoices];
         for(int i = 0; i < numChoices; i++) {
-            choices[i] = availableChoices[minVersion + i];
+            choices[i] = ASDDVersion.asDDVersions[minVersion + i].toString();
         }
     }
     
@@ -113,5 +110,27 @@ public class VersionEditor extends PropertyEditorSupport implements ExPropertyEd
      */
     public InplaceEditor getInplaceEditor() {
         return null;
+    }
+
+    /** Convert ASDDVersion into one of the int types in this editor.
+     */
+    static int fromASDDVersion(ASDDVersion asDDVersion) {
+        int result = APP_SERVER_8_1;
+        
+        if(ASDDVersion.SUN_APPSERVER_7_0.equals(asDDVersion)) {
+            result = APP_SERVER_7_0;
+//        } else if(ASDDVersion.SUN_APPSERVER_7_1.equals(asDDVersion)) {
+//            result = APP_SERVER_7_1;
+        } else if(ASDDVersion.SUN_APPSERVER_8_0.equals(asDDVersion)) {
+            result = APP_SERVER_8_0;
+        } else if(ASDDVersion.SUN_APPSERVER_8_1.equals(asDDVersion)) {
+            result = APP_SERVER_8_1;
+        } else if(ASDDVersion.SUN_APPSERVER_9_0.equals(asDDVersion)) {
+            result = APP_SERVER_9_0;
+        } else {
+            throw new IllegalArgumentException("Unrecognized appserver version: " + asDDVersion);
+        }
+        
+        return result;
     }
 }

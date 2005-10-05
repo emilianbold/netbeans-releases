@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -323,7 +324,30 @@ public abstract class BaseCustomizer extends JPanel implements Customizer,
 	public HelpCtx getHelpCtx() {
 		return new HelpCtx(getHelpId());
 	}
-	
+    
+	/** ----------------------------------------------------------------------- 
+	 *  Helper method to determine the index of a component within a container
+     *  (!PW Why isn't this in java.awt.Container?  Did I miss it?)
+     *
+     * @param container The container to search.
+     * @param target The component to search for.
+     * @return integer index of the component within the container or -1 if not found.
+	 */
+	public static int getComponentIndex(Container container, Component target) {
+        int result = -1;
+        
+        Component [] components = container.getComponents();
+        if(components != null) {
+            for(int i = 0; i < components.length; i++) {
+                if(components[i] == target) {
+                    result = i;
+                    break;
+                }
+            }
+        }
+        
+        return result;
+	}
 	
 	/** ----------------------------------------------------------------------- 
 	 *  Implementation of CustomizerErrorPanel.ErrorClient interface

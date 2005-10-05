@@ -15,11 +15,19 @@ package org.netbeans.modules.j2ee.sun.share.config;
 
 import java.lang.reflect.InvocationTargetException;
 
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+
+import org.openide.ErrorManager;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.EditCookie;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
 
 /** Simple node to represent a deployment plan file.
@@ -36,7 +44,7 @@ public class ConfigDataNode extends DataNode {
 
     public ConfigDataNode (ConfigDataObject obj, Children ch) {
         super (obj, ch);
-        setIconBase ("org/netbeans/modules/j2ee/sun/share/config/ui/resources/ConfigFile");
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/share/config/ui/resources/ConfigFile.gif"); // NOI18N
     }
 
 
@@ -62,33 +70,68 @@ public class ConfigDataNode extends DataNode {
     /** Property to allow editing of the version of the deployment descriptor file.
      *  e.g. from 2.4.0 to 2.4.1 (SJSAS 8.0 -> SJSAS 8.1), etc.
      */
-    private final class VersionProperty extends PropertySupport.ReadWrite {
+    private final class VersionProperty extends PropertySupport {
         
         public VersionProperty() {
             super("DDVersion" /*NOI18N*/, VersionEditor.class,
                 NbBundle.getBundle(ConfigDataNode.class).getString("LBL_ConfigVersionPropertyName"), // NOI18N
-                NbBundle.getBundle(ConfigDataNode.class).getString("LBL_ConfigVersionPropertyDescription")); // NOI18N
+                NbBundle.getBundle(ConfigDataNode.class).getString("LBL_ConfigVersionPropertyDescription"), // NOI18N
+                true, false);
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-//            return dataObject.getServicePackageName();
-            return VersionEditor.availableChoices[VersionEditor.APP_SERVER_8_1];
+            String result = ASDDVersion.SUN_APPSERVER_8_1.toString();
+            
+            try {
+                SunONEDeploymentConfiguration config = dataObject.getDeploymentConfiguration();
+                result = config.getAppServerVersion().toString();
+            } catch(ConfigurationException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+            
+            return result;
         }
 
         public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             if(val instanceof String) {
-//                dataObject.setServicePackageName((String) val);
+                try {
+                    ASDDVersion asDDVersion = ASDDVersion.getASDDVersion((String) val);
+                    SunONEDeploymentConfiguration config = dataObject.getDeploymentConfiguration();
+                    config.setAppServerVersion(asDDVersion);
+                } catch(ConfigurationException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             } else {
-                throw new IllegalArgumentException("value must be non null and type String");
+                throw new IllegalArgumentException("value must be non null and type String"); // NOI18N
             }
         }
 
         public java.beans.PropertyEditor getPropertyEditor() {
-            // !PW FIXME
-            //   1. get dd version.
-            //   2. get connected server version
-            //   3. calculate min/max version for editor.
-            return new VersionEditor(VersionEditor.APP_SERVER_8_1, VersionEditor.APP_SERVER_8_1);
+            VersionEditor result = null;
+            
+            try {
+                SunONEDeploymentConfiguration config = dataObject.getDeploymentConfiguration();
+                int minAS = VersionEditor.fromASDDVersion(config.getMinASVersion());
+                int maxAS = VersionEditor.fromASDDVersion(config.getMaxASVersion());
+                result = new VersionEditor(minAS, maxAS);
+            } catch (ConfigurationException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        
+            return result;
         }
+
+        public boolean canWrite() {
+            // If we can open either the configuration editor or the XML text editor
+            // then neither editor is open (they are exclusive).  If neither editor
+            // is open, then this field is editable.
+            return dataObject.getCookie(OpenCookie.class) != null && 
+                dataObject.getCookie(EditCookie.class) != null;
+        }
+
+        public boolean canRead() {
+            return true;
+        }
+
     }
 }
