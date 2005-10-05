@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.StringReader;
+import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -277,6 +278,43 @@ public class XMLUtilTest extends NbTestCase {
         XMLUtil.write(doc, baos, "UTF-8");
         String data = baos.toString()/*#62680*/.replaceAll("\r\n", "\n");
         assertTrue("had reasonable indentation in\n" + data, data.indexOf("<root>\n    <child/>\n</root>\n") != -1);
+    }
+    
+    /** cf. #62006 */
+    public void testIndentation2() throws Exception {
+        String data =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<p>\n" +
+                "    <t/>\n" +
+                "    <c>\n" +
+                "        <d>\n" +
+                "            <s/>\n" +
+                "        </d>\n" +
+                "    </c>\n" +
+                "</p>\n";
+        Document doc = XMLUtil.parse(new InputSource(new StringReader(data)), false, false, null, null);
+        Element d = (Element) doc.getElementsByTagName("d").item(0);
+        Element c = (Element) d.getParentNode();
+        Element d2 = (Element) DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument().importNode(d, true);
+        c.removeChild(d);
+        c.appendChild(doc.importNode(d2, true));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+        String data2 = baos.toString().replaceAll("\r\n", "\n");
+        assertEquals("identity replacement should not mess up indentation", data, data2);
+    }
+    
+    public void testSignificantWhitespace() throws Exception {
+        String data =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<r>\n" +
+                "    <p>This is <em>not</em> a test!</p>\n" +
+                "</r>\n";
+        Document doc = XMLUtil.parse(new InputSource(new StringReader(data)), false, false, null, null);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+        String data2 = baos.toString().replaceAll("\r\n", "\n");
+        assertEquals("identity replacement should not mess up significant whitespace", data, data2);
     }
     
 }

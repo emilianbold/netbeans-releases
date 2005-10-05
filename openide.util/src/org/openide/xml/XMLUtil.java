@@ -35,6 +35,10 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -357,11 +361,12 @@ public final class XMLUtil extends Object {
         if (enc == null) {
             throw new NullPointerException("You must set an encoding; use \"UTF-8\" unless you have a good reason not to!"); // NOI18N
         }
+        Document doc2 = normalize(doc);
         if (System.getProperty("java.specification.version").startsWith("1.4")) { // NOI18N
             // Hack for JDK 1.4. Using JAXP won't work; e.g. JDK bug #6308026.
             // Try using Xerces instead - let's hope it's loadable...
             try {
-                writeXerces(doc, out, enc);
+                writeXerces(doc2, out, enc);
                 return;
             } catch (ClassNotFoundException e) {
                 throw (IOException) new IOException("You need to have xerces.jar available to use XMLUtil.write under JDK 1.4: " + e).initCause(e); // NOI18N
@@ -373,7 +378,7 @@ public final class XMLUtil extends Object {
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
-            DocumentType dt = doc.getDoctype();
+            DocumentType dt = doc2.getDoctype();
             if (dt != null) {
                 String pub = dt.getPublicId();
                 if (pub != null) {
@@ -382,7 +387,7 @@ public final class XMLUtil extends Object {
                 t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
             }
             t.setOutputProperty(OutputKeys.ENCODING, enc);
-            Source source = new DOMSource(doc);
+            Source source = new DOMSource(doc2);
             Result result = new StreamResult(out);
             t.transform(source, result);
         } catch (Exception e) {
@@ -694,5 +699,44 @@ public final class XMLUtil extends Object {
         }
 
         return SAXParserFactory.newInstance();
+    }
+
+    /**
+     * Try to normalize a document by removing nonsignificant whitespace.
+     * @see "#62006"
+     */
+    private static Document normalize(Document orig) throws IOException {
+        if (orig.getChildNodes().getLength() != 1) {
+            // Don't mess around with it.
+            return orig;
+        }
+        DocumentBuilder builder = (DocumentBuilder) builderTL[0].get();
+        if (builder == null) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(false);
+            factory.setNamespaceAware(false);
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                throw (IOException) new IOException("Cannot create parser satisfying configuration parameters: " + e).initCause(e); //NOI18N
+            }
+            builderTL[0].set(builder);
+        }
+        Document doc = builder.newDocument();
+        doc.appendChild(doc.importNode(orig.getDocumentElement(), true));
+        doc.normalize();
+        NodeList nl = doc.getElementsByTagName("*"); // NOI18N
+        for (int i = 0; i < nl.getLength(); i++) {
+            Element e = (Element) nl.item(i);
+            NodeList nl2 = e.getChildNodes();
+            for (int j = 0; j < nl2.getLength(); j++) {
+                Node n = nl2.item(j);
+                if (n instanceof Text && ((Text) n).getNodeValue().trim().length() == 0) {
+                    e.removeChild(n);
+                    j--; // since list is dynamic
+                }
+            }
+        }
+        return doc;
     }
 }
