@@ -38,6 +38,8 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.JCExtension;
+import org.netbeans.modules.web.core.syntax.completion.JspCompletionQuery;
+import org.netbeans.modules.web.core.syntax.completion.JspCompletionSupport;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
 import org.openide.ErrorManager;
 import org.openide.cookies.*;
@@ -77,8 +79,6 @@ public class JSPKit extends NbEditorKit {
     //scripting folds
     public static final String collapseAllScriptingAction = "collapse-all-scripting-folds"; //NOI18N
     public static final String expandAllScriptingAction = "expand-all-scripting-folds"; //NOI18N
-    
-    public static final String javaDocShowAction = "javadoc-show-action"; // NOI18N
     
     /** serialVersionUID */
     private static final long serialVersionUID = 8933974837050367142L;
@@ -124,7 +124,6 @@ public class JSPKit extends NbEditorKit {
                     new JavaKit.JavaJMIGotoSourceAction(),
                     new JavaKit.JavaJMIGotoDeclarationAction(),
                     new JavaKit.JavaGotoSuperImplementation(),
-                    new JavaDocShowAction(),
                     // the jsp editor has own action for switching beetween matching blocks
                     new MatchBraceAction(ExtKit.matchBraceAction, false),
                     new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
@@ -294,88 +293,6 @@ public class JSPKit extends NbEditorKit {
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
                 }
-            }
-        }
-    }
-    
-    public static class JavaDocShowAction extends BaseAction {
-        
-        public JavaDocShowAction() {
-            super(javaDocShowAction);
-            putValue("helpID", JavaDocShowAction.class.getName()); // NOI18N
-        }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                ExtEditorUI eeui = (ExtEditorUI)Utilities.getEditorUI(target);
-                JSPKit kit = ((JSPKit)JSPKit.getKit(JSPKit.class));
-                Completion compl = kit.createCompletion(eeui);
-                JspSyntaxSupport support = (JspSyntaxSupport)Utilities.getSyntaxSupport(target);
-                
-                //get cursor possition in document
-                int poss = target.getCaretPosition();
-                try {
-                    //parse the document on the cursor poss
-                    TokenItem ti = support.getItemAtOrBefore(poss);
-                    if(ti == null) return ;
-                    
-                    if(ti.getTokenContextPath().contains(JspJavaFakeTokenContext.JavaDeclarationTokenContext.contextPath)
-                    || ti.getTokenContextPath().contains(JspJavaFakeTokenContext.JavaExpressionTokenContext.contextPath)
-                    || ti.getTokenContextPath().contains(JspJavaFakeTokenContext.JavaScriptletTokenContext.contextPath)) {
-                        //java code on cursor => use java code to determine what javadoc to show up
-                        Object obj = JCExtension.findItemAtCaretPos(target);
-                        CompletionJavaDoc javadoc = ExtUtilities.getCompletionJavaDoc(target);
-                        if (javadoc!=null){
-                            //show the javadoc if found
-                            javadoc.setContent(obj);
-                            javadoc.addToHistory(obj);
-                        }
-                        return ;
-                    } else {
-                        //html tag, jsp tag, directive - not java code
-                        
-                        //tune the query completion offset - if the CC is called for example
-                        // on <h|ead/> position, I have to look ahead and call it on <head|/>
-                        TokenID tid = ti.getTokenID();
-                        if(tid == HTMLTokenContext.TAG_OPEN_SYMBOL
-                                || tid == HTMLTokenContext.WS
-                                || tid == JspTagTokenContext.SYMBOL
-                                || tid == JspTagTokenContext.WHITESPACE
-                                || tid == JspDirectiveTokenContext.SYMBOL
-                                || tid == JspDirectiveTokenContext.WHITESPACE) {
-                            //jump to next token
-                            ti = ti.getNext();
-                            if(ti == null) return ;
-                        }
-                        //set the CC poss on the end of the current token
-                        poss = ti.getOffset() + ti.getImage().length();
-                        
-                        //check for unclosed tag
-                        //for example if the help is invoken on
-                        //<table |
-                        // <tr> ...
-                        //the help for <%@include is displayed (first CC item)
-                        if(ti.getImage().startsWith("<")) return ;
-                        
-                        //hack for Issue #57172 - [Code completion] do not work at the end of jsp directives
-                        if(ti.getTokenID() == JspDirectiveTokenContext.TAG) poss--;
-                        
-                        //query completion
-                        CompletionQuery.Result res = compl.getQuery().query(target, poss, support);
-                        if(res == null) return ;
-                        
-                        List items = res.getData();
-                        if(items.size() > 0) {
-                            //get first CC item and show javadoc for it.
-                            CompletionQuery.ResultItem item = (CompletionQuery.ResultItem)items.get(0);
-                            CompletionJavaDoc javadoc = ExtUtilities.getCompletionJavaDoc(target);
-                            if (javadoc!=null){
-                                javadoc.setContent(item);
-                                javadoc.addToHistory(item);
-                            }
-                        }
-                    }
-                } catch(BadLocationException ble) { /* just swallow */ }
             }
         }
     }

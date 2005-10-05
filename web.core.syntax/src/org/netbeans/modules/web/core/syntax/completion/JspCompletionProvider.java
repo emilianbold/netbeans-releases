@@ -59,8 +59,8 @@ public class JspCompletionProvider implements CompletionProvider {
     public CompletionTask createTask(int type, JTextComponent component) {
         if (type == COMPLETION_QUERY_TYPE)
             return new AsyncCompletionTask(new Query(), component);
-        /*else if (type == DOCUMENTATION_QUERY_TYPE)
-            return new DocTaskProvider(component);*/
+        else if (type == DOCUMENTATION_QUERY_TYPE)
+            return new AsyncCompletionTask(new DocQuery(null), component);
         return null;
     }
     
@@ -82,19 +82,29 @@ public class JspCompletionProvider implements CompletionProvider {
     
     static class DocQuery extends AsyncCompletionQuery {
         
+        private JTextComponent component;
         private ResultItem item;
         
-        DocQuery(ResultItem item) {
+        public  DocQuery(ResultItem item) {
             this.item = item;
         }
         
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if (item != null) {
-                resultSet.setDocumentation(new DocItem(item));
-            }
-            resultSet.finish();
+        protected void prepareQuery(JTextComponent component) {
+            this.component = component;
         }
         
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            if(item == null) {
+                List result = queryImpl(component, caretOffset);
+                if(result != null && result.size() > 0) {
+                    Object resultObj = result.get(0);
+                    if(resultObj instanceof ResultItem)
+                        item = (ResultItem)resultObj;
+                }
+            }
+            if(item != null) resultSet.setDocumentation(new DocItem(item));
+            resultSet.finish();
+        }
     }
     
     static class DocItem implements CompletionDocumentation {
