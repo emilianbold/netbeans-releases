@@ -19,7 +19,11 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Date;
+import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -32,6 +36,9 @@ import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.TransferListener;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Test NbClipboard, in "native" mode (e.g. Windows).
  * @author Jesse Glick
@@ -46,6 +53,11 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     }
     
     protected void setUp() throws Exception {
+        ErrManager.log = getLog();
+        
+        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
+        assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
+        
         super.setUp();
         //System.setProperty("org.netbeans.core.NbClipboard", "-5");
         System.setProperty("netbeans.slow.system.clipboard.hack", String.valueOf(slowClipboardHack()));
@@ -117,40 +129,27 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     }
     
     public void testClipboard() throws Exception {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject f = sfs.findResource("Services");
-        if (f == null) f = sfs.getRoot().createFolder("Services");
-        Lookup.getDefault().lookup(ModuleInfo.class);
-        // XXX crude but the easiest thing to do here:
-        org.netbeans.core.startup.MainLookup.modulesClassPathInitialized();
-        DataFolder d = DataFolder.findFolder(f);
-        InstanceDataObject.create(d, null, Cnv.class);
-        /*
-        List cnvs = new ArrayList(Lookup.getDefault().lookup(new Lookup.Template(Cnv.class)).allInstances());
-        assertEquals("one Cnv registered in " + Lookup.getDefault(), 1, cnvs.size());
-        cnvs = new ArrayList(Lookup.getDefault().lookup(new Lookup.Template(ExClipboard.Convertor.class)).allInstances());
-        assertEquals("one convertor registered", 1, cnvs.size());
-        assertEquals("right convertor type", Cnv.class, cnvs.get(0).getClass());
-         */
-        Clipboard c = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
-        /*
-        assertEquals("found right Clipboard", NbClipboard.class, c.getClass());
-         */
-        ExClipboard ec = (ExClipboard)Lookup.getDefault().lookup(ExClipboard.class);
-        /*
-        assertEquals("found right ExClipboard", NbClipboard.class, c.getClass());
-         */
-        assertEquals("Clipboard == ExClipboard", c, ec);
-        c.setContents(new ExTransferable.Single(DataFlavor.stringFlavor) {
-            protected Object getData() throws IOException, UnsupportedFlavorException {
-                return "17";
-            }
-        }, null);
-        Transferable t = c.getContents(null);
-        assertTrue("still supports stringFlavor", t.isDataFlavorSupported(DataFlavor.stringFlavor));
-        assertEquals("correct string in clipboard", "17", t.getTransferData(DataFlavor.stringFlavor));
-        assertTrue("support Integer too", t.isDataFlavorSupported(MYFLAV));
-        assertEquals("correct Integer", new Integer(17), t.getTransferData(MYFLAV));
+        Lkp lkp = (Lkp)Lookup.getDefault();
+        Object ins = new Cnv();
+        lkp.ic.add(ins);
+
+        try {
+            Clipboard c = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
+            ExClipboard ec = (ExClipboard)Lookup.getDefault().lookup(ExClipboard.class);
+            assertEquals("Clipboard == ExClipboard", c, ec);
+            c.setContents(new ExTransferable.Single(DataFlavor.stringFlavor) {
+                protected Object getData() throws IOException, UnsupportedFlavorException {
+                    return "17";
+                }
+            }, null);
+            Transferable t = c.getContents(null);
+            assertTrue("still supports stringFlavor", t.isDataFlavorSupported(DataFlavor.stringFlavor));
+            assertEquals("correct string in clipboard", "17", t.getTransferData(DataFlavor.stringFlavor));
+            assertTrue("support Integer too", t.isDataFlavorSupported(MYFLAV));
+            assertEquals("correct Integer", new Integer(17), t.getTransferData(MYFLAV));
+        } finally {
+            lkp.ic.remove(ins);
+        }
     }
     
     private static final DataFlavor MYFLAV = new DataFlavor("text/x-integer", "Integer"); // data: java.lang.Integer
@@ -205,4 +204,94 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     public void clipboardChanged(ClipboardEvent ev) {
         listenerCalls++;
     }
+    
+    //
+    // Fake Lookup
+    //
+    
+    public static final class Lkp extends ProxyLookup {
+        public InstanceContent ic;
+        
+        public Lkp() {
+            super(new Lookup[0]);
+            ic = new InstanceContent();
+            AbstractLookup al = new AbstractLookup(ic);
+            ic.add(new ErrManager());
+            Lookup ml = org.openide.util.lookup.Lookups.metaInfServices(getClass().getClassLoader());
+            
+            setLookups(new Lookup[] { al, ml });
+        }
+        
+    }
+    //
+    // Logging support
+    //
+    public static final class ErrManager extends ErrorManager {
+        public static final StringBuffer messages = new StringBuffer ();
+        
+        private String prefix;
+
+        private static PrintStream log;
+        
+        public ErrManager () {
+            this (null);
+        }
+        public ErrManager (String prefix) {
+            this.prefix = prefix;
+        }
+        
+        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, Date date) {
+            return t;
+        }
+        
+        public Throwable attachAnnotations (Throwable t, ErrorManager.Annotation[] arr) {
+            return t;
+        }
+        
+        public ErrorManager.Annotation[] findAnnotations (Throwable t) {
+            return null;
+        }
+        
+        public ErrorManager getInstance (String name) {
+            if (
+                true
+//                name.startsWith ("org.openide.loaders.FolderList")
+//              || name.startsWith ("org.openide.loaders.FolderInstance")
+            ) {
+                return new ErrManager ('[' + name + ']');
+            } else {
+                // either new non-logging or myself if I am non-logging
+                return new ErrManager ();
+            }
+        }
+        
+        public void log (int severity, String s) {
+            if (prefix != null) {
+                messages.append (prefix);
+                messages.append (s);
+                messages.append ('\n');
+                
+                if (messages.length() > 30000) {
+                    messages.delete(0, 15000);
+                }
+                
+                log.print(prefix);
+                log.println(s);
+            }
+        }
+        
+        public void notify (int severity, Throwable t) {
+            log (severity, t.getMessage ());
+        }
+        
+        public boolean isNotifiable (int severity) {
+            return prefix != null;
+        }
+        
+        public boolean isLoggable (int severity) {
+            return prefix != null;
+        }
+        
+    } // end of ErrManager
+    
 }
