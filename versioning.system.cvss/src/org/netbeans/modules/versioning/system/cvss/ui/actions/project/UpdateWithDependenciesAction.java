@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
-import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -25,7 +24,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
-import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.api.project.Project;
@@ -98,17 +96,15 @@ public final class UpdateWithDependenciesAction extends SystemAction {
         }
     }
 
-    protected boolean enable(Node[] nodes) {
-        if (super.isEnabled() && nodes.length > 0) {
-            for (int i = 0; i < nodes.length; i++) {
-                Node node = nodes[i];
-                if (Utils.isVersionedProject(node) == false) {
-                    return false;
-                }
+    public boolean isEnabled() {
+        Node [] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        for (int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+            if (Utils.isVersionedProject(node) == false) {
+                return false;
             }
-            return true;
         }
-        return false;
+        return nodes.length > 0;
     }
 
     protected boolean asynchronous() {
