@@ -140,7 +140,7 @@ public final class AdvancedPanel extends JPanel {
     }
     
     public boolean isChanged () {
-        return model.isValid ();
+        return model.isChanged ();
     }
     
     void setLoookup (Lookup masterLookup) {

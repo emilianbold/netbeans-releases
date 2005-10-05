@@ -113,6 +113,7 @@ PropertyChangeListener {
     /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
     private Map                 toBeSaved = new HashMap ();
     private boolean		listen = false;
+    private boolean             changed = false;
 
     
     /** Creates new form FontAndColorsPanel */
@@ -189,6 +190,7 @@ PropertyChangeListener {
         if (!listen) return;
 	if (evt.getSource () == cbEffects) {
 	    effectsColorChooser.setEnabled (cbEffects.getSelectedIndex () > 0);
+            changed = true;
 	} else
 	if (evt.getSource () == cbLanguages) {
 	    setCurrentLanguage ((String) cbLanguages.getSelectedItem ());
@@ -262,6 +264,7 @@ PropertyChangeListener {
                 replaceCurrrentCategory (c);
                 setToBeSaved (currentProfile, currentLanguage);
                 refreshUI (); // refresh font viewer
+                changed = true;
             }
         }
     }
@@ -270,6 +273,7 @@ PropertyChangeListener {
         if (!listen) return;
         if (evt.getPropertyName () != ColorComboBox.PROP_COLOR) return;
         updateData ();
+        changed = true;
     }
     
     void update () {
@@ -294,6 +298,7 @@ PropertyChangeListener {
             cbLanguages.setSelectedIndex (0);
             lCategories.setSelectedIndex (0);
         }
+        changed = false;
     }
     
     void applyChanges () {
@@ -315,6 +320,10 @@ PropertyChangeListener {
 	}
         toBeSaved = new HashMap ();
         profiles = new HashMap ();
+    }
+    
+    boolean isChanged () {
+        return changed;
     }
     
     public void setCurrentProfile (String currentProfile) {

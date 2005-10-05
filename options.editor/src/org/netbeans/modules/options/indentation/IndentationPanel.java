@@ -253,6 +253,7 @@ ChangeListener, ActionListener {
     }
     
     public boolean isChanged () {
+        if (model == null) return false;
         return model.isChanged ();
     }
 }

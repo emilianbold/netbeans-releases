@@ -107,6 +107,7 @@ PropertyChangeListener {
     private Map                 profileToCategories = new HashMap ();
     /** Set (String (profile name)) of changed profile names. */
     private Set                 toBeSaved = new HashSet ();
+    private boolean             changed = false;
 
     
     /** Creates new form FontAndColorsPanel */
@@ -205,12 +206,14 @@ PropertyChangeListener {
 //        }
         if (!listen) return;
         updateData ();
+        changed = true;
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
         if (!listen) return;
         if (evt.getPropertyName () != ColorComboBox.PROP_COLOR) return;
         updateData ();
+        changed = true;
     }
     
     void update () {
@@ -226,6 +229,7 @@ PropertyChangeListener {
             refreshUI ();	
             listen = true;
         }
+        changed = false;
     }
     
     public void applyChanges () {
@@ -237,6 +241,10 @@ PropertyChangeListener {
         }
         toBeSaved = new HashSet ();
         profileToCategories = new HashMap ();
+    }
+    
+    boolean isChanged () {
+        return changed;
     }
     
     void setCurrentProfile (String currentProfile) {

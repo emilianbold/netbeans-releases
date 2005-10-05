@@ -66,7 +66,8 @@ public class OptionsWindowAction extends AbstractAction {
     /** Link to dialog, if its opened. */
     private Dialog              dialog;
     /** weak link to options dialog DialogDescriptor. */
-    private WeakReference       optionsDialogDescriptor;
+    private WeakReference       optionsDialogDescriptor = 
+                                    new WeakReference (null);
     
     
     public OptionsWindowAction () {
@@ -84,9 +85,8 @@ public class OptionsWindowAction extends AbstractAction {
             return;
         }
         
-        DialogDescriptor descriptor = optionsDialogDescriptor == null ?
-            null : 
-            (DialogDescriptor) optionsDialogDescriptor.get ();
+        DialogDescriptor descriptor = (DialogDescriptor) 
+            optionsDialogDescriptor.get ();
         
         if (descriptor == null) {
             // create new DialogDescriptor for options dialog
@@ -111,6 +111,7 @@ public class OptionsWindowAction extends AbstractAction {
                 (descriptor, optionsPanel, bOK, bClassic);
             descriptor.setButtonListener (listener);
             optionsPanel.addPropertyChangeListener (listener);
+            optionsDialogDescriptor = new WeakReference (descriptor);
         } else {
             OptionsPanel optionsPanel = (OptionsPanel) descriptor.getMessage ();
             optionsPanel.update ();

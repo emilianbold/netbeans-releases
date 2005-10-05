@@ -192,6 +192,7 @@ ActionListener {
         cbAlwaysShowOutput.setSelected (settings.getAlwaysShowOutput ());
         cbVerbosity.setSelectedIndex (settings.getVerbosity () - 1);
         lAntVersion.setText ("(" + settings.getAntVersion () + ")");
+        changed = false;
     }
     
     void applyChanges () {
@@ -217,7 +218,7 @@ ActionListener {
     }
     
     boolean isChanged () {
-        return true;
+        return changed;
     }
     
     public void actionPerformed (ActionEvent e) {

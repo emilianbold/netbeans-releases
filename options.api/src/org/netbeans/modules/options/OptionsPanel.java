@@ -334,7 +334,11 @@ public class OptionsPanel extends JPanel {
     void update () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((PanelController) it.next ()).update ();
+            try {
+                ((PanelController) it.next ()).update ();
+            } catch (Throwable t) {
+                ErrorManager.getDefault ().notify (t);
+            }
     }
     
     void save () {
@@ -357,6 +361,12 @@ public class OptionsPanel extends JPanel {
     }
     
     boolean isChanged () {
+//        System.out.println("\nChanged panels: ");
+//        Iterator it = categoryToController.values ().iterator ();
+//        while (it.hasNext ()) {
+//            PanelController p = (PanelController) it.next ();
+//            if (p.isChanged ()) System.out.println("  " + p);
+//        }
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
             if (((PanelController) it.next ()).isChanged ()) return true;

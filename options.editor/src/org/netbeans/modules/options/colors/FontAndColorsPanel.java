@@ -75,7 +75,7 @@ ActionListener {
     private JButton		    bClone;
     private JTabbedPane		    tabbedPane;
     private SyntaxColoringPanel	    syntaxColoringPanel;
-    private HighlightingPanel		    editorPanel;
+    private HighlightingPanel       highlightingPanel;
     private AnnotationsPanel	    annotationsPanel;
 
     private ColorModel		    colorModel;
@@ -88,7 +88,7 @@ ActionListener {
         
         // init components
         syntaxColoringPanel = new SyntaxColoringPanel (this);
-        editorPanel = new HighlightingPanel (this);
+        highlightingPanel = new HighlightingPanel (this);
         annotationsPanel = new AnnotationsPanel (this);
         cbProfiles = new JComboBox ();
         cbProfiles.addItemListener (new ItemListener () {
@@ -118,7 +118,7 @@ ActionListener {
         builder.add (          pButtons,                      cc.xy (5, 1, "l,d"));
         builder.add (          tabbedPane,                    cc.xyw (1, 3, 5));
 	tabbedPane.addTab (loc ("Syntax_coloring_tab"), syntaxColoringPanel);
-	tabbedPane.addTab (loc ("Editor_tab"), editorPanel);
+	tabbedPane.addTab (loc ("Editor_tab"), highlightingPanel);
 	tabbedPane.addTab (loc ("Annotations_tab"), annotationsPanel);
         tabbedPane.setMnemonicAt (0, loc ("Syntax_coloring_tab_mnemonic").charAt (0));
         tabbedPane.setMnemonicAt (1, loc ("Editor_tab_mnemonic").charAt (0));
@@ -131,14 +131,14 @@ ActionListener {
         else
             loc (bDelete, "CTL_Restore");                             // NOI18N
         currentProfile = profile;
-        editorPanel.setCurrentProfile (currentProfile);
+        highlightingPanel.setCurrentProfile (currentProfile);
         syntaxColoringPanel.setCurrentProfile (currentProfile);
         annotationsPanel.setCurrentProfile (currentProfile);
     }
     
     private void deleteCurrentProfile () {
         String currentProfile = (String) cbProfiles.getSelectedItem ();
-        editorPanel.deleteProfile (currentProfile);
+        highlightingPanel.deleteProfile (currentProfile);
         syntaxColoringPanel.deleteProfile (currentProfile);
         annotationsPanel.deleteProfile (currentProfile);
         if (colorModel.isCustomProfile (currentProfile)) {
@@ -151,7 +151,7 @@ ActionListener {
     // other methods ...........................................................
     
     void update () {
-        editorPanel.update ();
+        highlightingPanel.update ();
         syntaxColoringPanel.update ();
         annotationsPanel.update ();
         
@@ -172,7 +172,7 @@ ActionListener {
     
     
     void applyChanges () {
-        editorPanel.applyChanges ();
+        highlightingPanel.applyChanges ();
         syntaxColoringPanel.applyChanges ();
         annotationsPanel.applyChanges ();
         if (colorModel == null) return;
@@ -187,7 +187,14 @@ ActionListener {
     }
     
     boolean isChanged () {
-        return true;
+        if (currentProfile != null &&
+            colorModel != null &&
+            !currentProfile.equals (colorModel.getCurrentProfile ())
+        ) return true;
+        if (highlightingPanel.isChanged ()) return true;
+        if (syntaxColoringPanel.isChanged ()) return true;
+        if (annotationsPanel.isChanged ()) return true;
+        return false;
     }
    
     public void actionPerformed (ActionEvent e) {
@@ -230,7 +237,7 @@ ActionListener {
     }
     
     Collection getHighlights () {
-        return editorPanel.getHighlightings ();
+        return highlightingPanel.getHighlightings ();
     }
     
     Collection getSyntaxColorings () {

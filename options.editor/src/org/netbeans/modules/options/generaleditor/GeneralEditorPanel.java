@@ -54,9 +54,12 @@ ActionListener {
     private JCheckBox       cbShowDeprecated = new JCheckBox ();
     private JCheckBox       cbPairCharacterCompletion = new JCheckBox ();
 
+    private boolean         changed = false;
+    private boolean         listen = false;
+    
     
     public GeneralEditorPanel () {
-        cbShowCodeFolding.addActionListener (this);
+        
         loc (cbShowCodeFolding, "Use_Folding");
         loc (cbFoldMethods, "Fold_Methods");
         loc (cbFoldInnerClasses, "Fold_Classes");
@@ -119,7 +122,21 @@ ActionListener {
     private Model model;
     
     void update () {
-        if (model == null) model = new Model ();
+        listen = false;
+        if (model == null) {
+            model = new Model ();
+            cbShowCodeFolding.addActionListener (this);
+            cbFoldMethods.addActionListener (this);
+            cbFoldInnerClasses.addActionListener (this);
+            cbFoldImports.addActionListener (this);
+            cbFoldJavaDocComments.addActionListener (this);
+            cbFoldInitialComment.addActionListener (this);
+            cbAutoPopup.addActionListener (this);
+            cbInsertSingleProposals.addActionListener (this);
+            cbCaseSensitive.addActionListener (this);
+            cbShowDeprecated.addActionListener (this);
+            cbPairCharacterCompletion.addActionListener (this);
+        }
         
         // init code folding
         cbShowCodeFolding.setSelected (model.isShowCodeFolding ());
@@ -141,6 +158,8 @@ ActionListener {
             (model.isCompletionInstantSubstitution ());
         cbCaseSensitive.setSelected
             (model.isCompletionCaseSensitive ());
+        
+        listen = true;
     }
     
     void applyChanges () {
@@ -173,12 +192,14 @@ ActionListener {
     }
     
     boolean isChanged () {
-        return true;
+        return changed;
     }
     
     public void actionPerformed (ActionEvent e) {
+        if (!listen) return;
         if (e.getSource () == cbShowCodeFolding)
             updateEnabledState ();
+        changed = true;
     }
     
     

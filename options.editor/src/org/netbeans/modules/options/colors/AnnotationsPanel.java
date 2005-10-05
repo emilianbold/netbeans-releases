@@ -97,7 +97,8 @@ PropertyChangeListener {
     private String              currentScheme;
     private Map                 schemes = new HashMap ();
     private Set                 toBeSaved = new HashSet ();
-
+    private boolean             changed = false;
+    
     
     /** Creates new form FontAndColorsPanel */
     public AnnotationsPanel (FontAndColorsPanel fontAndColorsPanel) {
@@ -138,6 +139,7 @@ PropertyChangeListener {
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
         updateData ();
+        changed = true;
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
@@ -156,6 +158,7 @@ PropertyChangeListener {
             refreshUI ();
             listen = true;
         }
+        changed = false;
     }
     
     void applyChanges () {
@@ -167,6 +170,10 @@ PropertyChangeListener {
         }
         toBeSaved = new HashSet ();
         schemes = new HashMap ();
+    }
+    
+    boolean isChanged () {
+        return changed;
     }
     
     public void setCurrentProfile (String currentScheme) {
