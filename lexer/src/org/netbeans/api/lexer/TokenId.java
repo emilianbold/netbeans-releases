@@ -78,7 +78,7 @@ public final class TokenId {
      *  It can be retrieved by {@link #getName()}.
      * @param intId integer identification unique among the tokenIDs
      *  in the language where this TokenId is defined. It can
-     *  It can be retrieved by {@link #getID()}.
+     *  It can be retrieved by {@link #getIntId()}.
      * @param categoryNames names of categories into which this TokenId belongs.
      *  It can be retrieved by {@link #getCategoryNames()}. It can be null
      *  to indicate that tokenId does not belong to any token category.
