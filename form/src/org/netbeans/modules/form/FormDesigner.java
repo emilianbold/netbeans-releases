@@ -729,7 +729,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             selectedComponents.add(metacomp);
             RADVisualComponent layoutComponent = componentToLayoutComponent(metacomp);
             if (layoutComponent != null) {
-                selectedLayoutComponents.add(metacomp);
+                selectedLayoutComponents.add(layoutComponent);
                 ensureComponentIsShown((RADVisualComponent)metacomp);
                 selectionChanged();
             }
