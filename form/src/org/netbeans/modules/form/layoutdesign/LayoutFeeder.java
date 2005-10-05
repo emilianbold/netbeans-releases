@@ -2011,7 +2011,9 @@ class LayoutFeeder implements LayoutConstants {
         }
         if (!compatibleFound) {
             IncludeDesc iDesc = new IncludeDesc();
-            iDesc.parent = LayoutInterval.getFirstParent(aSnappedParallel, PARALLEL);
+            iDesc.parent = aSnappedParallel.getParent() != null ?
+                           LayoutInterval.getFirstParent(aSnappedParallel, PARALLEL) :
+                           aSnappedParallel;
             iDesc.snappedParallel = aSnappedParallel;
             iDesc.alignment = aEdge;
             inclusions.add(0, iDesc);
