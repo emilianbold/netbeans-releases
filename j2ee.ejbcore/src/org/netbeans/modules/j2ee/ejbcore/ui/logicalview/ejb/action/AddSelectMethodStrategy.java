@@ -54,11 +54,14 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
 
     protected void okButtonPressed(MethodType pType, MethodCustomizer mc, Method prototypeMethod, EjbMethodController c, JavaClass jc) throws java.io.IOException {
 	ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
-	handle.start(100);
-        EntityMethodController emc = (EntityMethodController) c;
-        emc.addSelectMethod(prototypeMethod,mc.getEjbQL(), getDDFile(jc));
-	handle.progress(99);
-	handle.finish();
+	try {
+	    handle.start(100);
+	    EntityMethodController emc = (EntityMethodController) c;
+	    emc.addSelectMethod(prototypeMethod,mc.getEjbQL(), getDDFile(jc));
+	    handle.progress(99);
+	} finally {
+	    handle.finish();
+	}
     }
     
     public int prototypeMethod() {

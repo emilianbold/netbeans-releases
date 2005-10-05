@@ -111,30 +111,33 @@ public abstract class AbstractAddMethodStrategy {
                                    EjbMethodController c, JavaClass jc)
     throws IOException {
 	ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
-	handle.start(100);
-        boolean isComponent = pType instanceof MethodType.BusinessMethodType;
-        boolean isOneReturn = mc.finderReturnIsSingle();
-	handle.progress(10);
-        if (mc.publishToLocal()) {
-            Type localReturn =
-                    localReturnType(c, prototypeMethod.getType(), isOneReturn);
-            prototypeMethod.setType(localReturn);
-            c.createAndAdd(JMIUtils.duplicate(prototypeMethod),true, isComponent);
-        }
-	handle.progress(60);
-        if (mc.publishToRemote()) {
-            Type remoteReturn =
-                    remoteReturnType(c, prototypeMethod.getType(), isOneReturn);
-            prototypeMethod.setType(remoteReturn);
-            c.createAndAdd(JMIUtils.duplicate(prototypeMethod),false, isComponent);
-        }
-	handle.progress(80);
-        String ejbql = mc.getEjbQL();
-        if (ejbql != null && ejbql.length() > 0) {
-            c.addEjbQl(JMIUtils.duplicate(prototypeMethod), ejbql, getDDFile(jc));
-        }
-	handle.progress(99);
-	handle.finish();
+	try {
+	    handle.start(100);
+	    boolean isComponent = pType instanceof MethodType.BusinessMethodType;
+	    boolean isOneReturn = mc.finderReturnIsSingle();
+	    handle.progress(10);
+	    if (mc.publishToLocal()) {
+		Type localReturn =
+			localReturnType(c, prototypeMethod.getType(), isOneReturn);
+		prototypeMethod.setType(localReturn);
+		c.createAndAdd(JMIUtils.duplicate(prototypeMethod),true, isComponent);
+	    }
+	    handle.progress(60);
+	    if (mc.publishToRemote()) {
+		Type remoteReturn =
+			remoteReturnType(c, prototypeMethod.getType(), isOneReturn);
+		prototypeMethod.setType(remoteReturn);
+		c.createAndAdd(JMIUtils.duplicate(prototypeMethod),false, isComponent);
+	    }
+	    handle.progress(80);
+	    String ejbql = mc.getEjbQL();
+	    if (ejbql != null && ejbql.length() > 0) {
+		c.addEjbQl(JMIUtils.duplicate(prototypeMethod), ejbql, getDDFile(jc));
+	    }
+	    handle.progress(99);
+	} finally {
+	    handle.finish();
+	}
     }
     
     protected FileObject getDDFile(JavaClass jc) {
