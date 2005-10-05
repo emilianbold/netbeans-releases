@@ -328,8 +328,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         
         // Size of area which indicates creation of new split.
 //        int delta = Constants.DROP_AREA_SIZE;
-        
-        Rectangle top = new Rectangle(0, 0, bounds.width, TOP_HEIGHT);
+        Rectangle top = new Rectangle(0, 0, bounds.width, BOTTOM_HEIGHT);
         if(top.contains(location)) {
             return Constants.TOP;
         }
