@@ -307,6 +307,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <attr name="View/BuildProject" boolvalue="true" />
+        <attr name="Refactoring/BuildProject" boolvalue="true" />
         
         <folder name="BuildProject">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />

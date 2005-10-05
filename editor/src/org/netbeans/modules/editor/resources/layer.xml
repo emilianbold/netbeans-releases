@@ -114,6 +114,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance"/>
         </folder>
+        <attr name="Source/Refactoring" boolvalue="true" />
         <attr name="Source/BuildProject" boolvalue="true" />
         <attr name="Source/Tools" boolvalue="true" />
                 
