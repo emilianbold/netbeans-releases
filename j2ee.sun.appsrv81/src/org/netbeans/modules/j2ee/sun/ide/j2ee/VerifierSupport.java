@@ -448,9 +448,21 @@ public class VerifierSupport extends TopComponent{
     
     class RadioListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (verifierIsStillRunning==true){
-                return; // we need to wait!
-            }
+	    if (verifierIsStillRunning==true){
+		if(e.getSource() == allButton){
+		    statusLeveltoDisplay = ALL;
+		}
+		if(e.getSource() == failButton){
+		    statusLeveltoDisplay = FAIL;
+		    
+		}
+		
+		if(e.getSource() == warnButton){
+		    statusLeveltoDisplay = WARN;
+		}
+		
+		return; // we need to wait!
+	    }
             if(e.getSource() == allButton){
                 statusLeveltoDisplay = ALL;
                 if ((getPassResultsForDisplay().size() > 0) ||
