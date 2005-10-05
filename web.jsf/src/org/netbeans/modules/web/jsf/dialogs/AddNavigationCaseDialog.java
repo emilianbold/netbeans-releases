@@ -109,6 +109,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_AddNavigationCaseDialog"));
         jLabelFromView.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_FromView").charAt(0));
         jLabelFromView.setLabelFor(jComboBoxFromView);
         jLabelFromView.setText(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "LBL_CaseFromView"));
@@ -122,6 +123,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 5, 0);
         add(jComboBoxFromView, gridBagConstraints);
+        jComboBoxFromView.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_FromView"));
 
         jButtonFromView.setMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_Browse").charAt(0));
         jButtonFromView.setText(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "LBL_Browse"));
@@ -135,6 +137,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 11);
         add(jButtonFromView, gridBagConstraints);
+        jButtonFromView.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_BrowseFromView"));
 
         jLabelFromAction.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_FromAction").charAt(0));
         jLabelFromAction.setLabelFor(jTextFieldFromAction);
@@ -152,6 +155,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jTextFieldFromAction, gridBagConstraints);
+        jTextFieldFromAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_FromAction"));
 
         jLabelFromOutcome.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_FromOutcome").charAt(0));
         jLabelFromOutcome.setLabelFor(jTextFieldFromOutcome);
@@ -169,6 +173,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jTextFieldFromOutcome, gridBagConstraints);
+        jTextFieldFromOutcome.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_FromOutcome"));
 
         jLabelToView.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_ToView").charAt(0));
         jLabelToView.setLabelFor(jComboBoxToView);
@@ -194,6 +199,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 11);
         add(jButtonToView, gridBagConstraints);
+        jButtonToView.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_BrowseToView"));
 
         jCheckBoxRedirect.setMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_Redirect").charAt(0));
         jCheckBoxRedirect.setText(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "LBL_Redirect"));
@@ -205,6 +211,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jCheckBoxRedirect, gridBagConstraints);
+        jCheckBoxRedirect.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_Redirect"));
 
         jLabelDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationCaseDialog.class, "MNE_BeanDescription").charAt(0));
         jLabelDesc.setLabelFor(jTextAreaDesc);
@@ -220,6 +227,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         jTextAreaDesc.setColumns(20);
         jTextAreaDesc.setRows(5);
         jScrollPaneDesc.setViewportView(jTextAreaDesc);
+        jTextAreaDesc.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_CaseDescription"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -245,6 +253,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jComboBoxToView, gridBagConstraints);
+        jComboBoxToView.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_ToViewSelect"));
 
     }
     // </editor-fold>//GEN-END:initComponents
