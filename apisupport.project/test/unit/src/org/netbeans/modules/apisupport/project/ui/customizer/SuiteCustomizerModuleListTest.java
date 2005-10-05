@@ -97,9 +97,8 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         }
 
         setNodeEnabled(clusters[index], false);
-        modules = clusters[index].getChildren().getNodes();
-        assertEquals("No modules in disabled clusters", 0, modules.length);
-        assertEquals("Leaf nodes", Children.LEAF, clusters[index].getChildren());
+        assertEquals("No modules in disabled clusters", 
+                clusters[index].getChildren().getNodes().length, modules.length);
         
         customizer.store();
         suite1Props.storeProperties();

@@ -44,7 +44,6 @@ import org.openide.nodes.Sheet;
  */
 final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 implements Comparator, ExplorerManager.Provider, ChangeListener {
-
     private ExplorerManager manager;
     
     /**
@@ -353,7 +352,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         private Children standard;
         
         public Enabled(Children ch, boolean enabled) {
-            super(enabled ? ch : Children.LEAF);
+            super(ch);
             this.standard = ch;
             this.enabled = enabled;
             
@@ -368,13 +367,20 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
                 return;
             }
             enabled = s;
-            
-            firePropertySetsChange(null, null);
-            setChildren(s ? standard : Children.LEAF);
+            //refresh childern
+            Node[] all = standard.getNodes();
+            for (int i = 0; i < all.length; i++) {
+                Node nn = all[i];
+                if (nn instanceof Enabled) {
+                    Enabled en = (Enabled)nn;
+                    en.firePropertyChange(null, null, null);
+                }
+            }
+            //refresh parent
             Node n = getParentNode();
             if (n instanceof Enabled) {
                 Enabled en = (Enabled)n;
-                en.firePropertySetsChange(null, null);
+                en.firePropertyChange(null, null, null);
             }
         }
         
@@ -414,12 +420,12 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
                         off = true;
                     }
                     
-                    if (on && off) {
+                    if (on && off && node.isEnabled()) {
                         return null;
                     }
                 }
                 
-                return Boolean.valueOf(on);
+                return Boolean.valueOf(on && node.isEnabled());
             }
         }
         
