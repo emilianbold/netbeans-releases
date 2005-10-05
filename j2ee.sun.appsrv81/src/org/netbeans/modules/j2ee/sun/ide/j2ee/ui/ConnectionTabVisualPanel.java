@@ -360,7 +360,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
 //            }
 //        }
 //        
-        msgLabel.setText(""); //NOI18N
+//        msgLabel.setText(""); //NOI18N
         return true;
     }
     
