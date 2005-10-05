@@ -32,7 +32,6 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Petr Kuzel
  * @version 1.0
- * @deprecated To be eliminated once a API CheckXMLAction will be intorduces
  */
 public class CheckAction extends CookieAction implements CollectXMLAction.XMLAction {
 

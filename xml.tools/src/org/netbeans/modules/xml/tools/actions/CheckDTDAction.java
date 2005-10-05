@@ -33,7 +33,6 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Petr Kuzel
  * @version 1.0
- * @deprecated To be eliminated once a API CheckXMLAction will be introduced
  */
 public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTDAction {
 
