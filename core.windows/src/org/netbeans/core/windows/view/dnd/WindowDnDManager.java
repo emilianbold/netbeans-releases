@@ -570,9 +570,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         Point p = new Point(location);
         SwingUtilities.convertPointFromScreen(p, desktop);
         Rectangle centerBounds = desktop.getBounds();
+        centerBounds.y -= 20;
+        centerBounds.height += 20;
         Rectangle shrinked = desktop.getBounds();
-        shrinked.grow(-10,-10);
-        shrinked.y = shrinked.y + 10;
+        shrinked.grow(-10,0);
+        shrinked.height -= 10;
         Component dr = viewAccessor.getSlidingModeComponent(Constants.LEFT);
         if (dr != null) {
             shrinked.x = shrinked.x + dr.getBounds().width;
@@ -941,10 +943,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             Component leftSlide = viewAccessor.getSlidingModeComponent(Constants.LEFT);
             Component rightSlide = viewAccessor.getSlidingModeComponent(Constants.RIGHT);
             Component bottomSlide = viewAccessor.getSlidingModeComponent(Constants.BOTTOM);
-                    
             if(null != leftSlide && p.x <  leftSlide.getBounds().width + 10) {
                 return javax.swing.JSplitPane.LEFT;
-            } else if(p.y < 0) {
+            } else if(p.y < bounds.y) {
                 return javax.swing.JSplitPane.TOP;
             } else if(null !=rightSlide && null != leftSlide 
                       && p.x > bounds.width - 10 - rightSlide.getBounds().width - leftSlide.getBounds().width) {
