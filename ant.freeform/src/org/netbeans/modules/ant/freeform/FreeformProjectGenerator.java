@@ -92,7 +92,7 @@ public class FreeformProjectGenerator {
                     Element data = h[0].getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
 
-                    Node comment = doc.createComment(NbBundle.getMessage(FreeformProjectGenerator.class, "LBL_Manual_Editing_Warning"));
+                    Node comment = doc.createComment(" " + NbBundle.getMessage(FreeformProjectGenerator.class, "LBL_Manual_Editing_Warning") + " ");
                     data.appendChild(comment);
                     
                     Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
