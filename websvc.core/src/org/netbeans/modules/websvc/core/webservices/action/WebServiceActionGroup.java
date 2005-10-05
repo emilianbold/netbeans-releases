@@ -78,7 +78,11 @@ public class WebServiceActionGroup extends NodeAction implements Presenter.Popup
         return false;
     }
 
-
+    public Action createContextAwareInstance(Lookup actionContext) {
+        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? this : null;
+    }
+    
     /**
      * Avoids constructing submenu until it will be needed.
      */

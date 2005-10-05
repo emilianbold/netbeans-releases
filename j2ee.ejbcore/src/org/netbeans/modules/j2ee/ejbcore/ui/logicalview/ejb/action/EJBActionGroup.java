@@ -118,7 +118,8 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     /** Implements <code>ContextAwareAction</code> interface method. */
     public Action createContextAwareInstance(Lookup actionContext) {
         this.actionContext = actionContext;
-        return super.createContextAwareInstance(actionContext);
+        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? super.createContextAwareInstance(actionContext) : null;
     }
     
 
