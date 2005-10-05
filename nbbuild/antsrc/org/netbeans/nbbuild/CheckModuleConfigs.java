@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,11 +29,8 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Property;
-import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -64,10 +60,9 @@ public final class CheckModuleConfigs extends Task {
         File clusterPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
         File goldenFile = new File(nbroot, "ide" + File.separatorChar + "golden" + File.separatorChar + "moduleconfigs.txt");
         File masterProjectXml = new File(nbroot, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar + "project.xml");
-        Map/*<String,String>*/ buildProperties = loadPropertiesFile(buildPropertiesFile);
-        Map/*<String,String>*/ clusterProperties = loadPropertiesFile(clusterPropertiesFile);
-        Map/*<String,Set<String>>*/ configs = loadModuleConfigs(buildProperties, buildPropertiesFile);
-        Map/*<String,Set<String>>*/ clusters = loadModuleClusters(clusterProperties, clusterPropertiesFile);
+        Map/*<String,String>*/ properties = getProject().getProperties();
+        Map/*<String,Set<String>>*/ configs = loadModuleConfigs(properties, buildPropertiesFile);
+        Map/*<String,Set<String>>*/ clusters = loadModuleClusters(properties, clusterPropertiesFile);
         Set/*<String>*/ allClusterModules = new TreeSet();
         Iterator it = clusters.values().iterator();
         while (it.hasNext()) {
@@ -157,30 +152,6 @@ public final class CheckModuleConfigs extends Task {
         if (!s.isEmpty()) {
             log(buildPropertiesFile + ": warning: platform config not equal to platform cluster modules: " + s);
         }
-    }
-    
-    private Map/*<String,String>*/ loadPropertiesFile(File f) throws BuildException {
-        Project fakeproj = new Project();
-        Iterator it = getProject().getBuildListeners().iterator();
-        while (it.hasNext()) {
-            fakeproj.addBuildListener((BuildListener) it.next());
-        }
-        Set/*<String>*/ origProps = new HashSet(fakeproj.getProperties().keySet());
-        Property temptask = new Property();
-        temptask.setProject(fakeproj);
-        if (!f.isFile()) {
-            throw new BuildException("No such file " + f, getLocation());
-        }
-        temptask.setFile(f);
-        temptask.execute();
-        Map/*<String,String>*/ props = new HashMap(fakeproj.getProperties());
-        it = origProps.iterator();
-        while (it.hasNext()) {
-            String k = (String) it.next();
-            boolean removed = props.remove(k) != null;
-            assert removed : "had no " + k + " in " + props + " after loading " + f;
-        }
-        return props;
     }
     
     private Set/*<String>*/ split(String list) {
