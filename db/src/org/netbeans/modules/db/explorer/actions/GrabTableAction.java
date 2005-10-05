@@ -13,16 +13,26 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
+import java.awt.Dialog;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.explorer.dlg.GrabTableProgressPanel;
+import org.openide.DialogDescriptor;
 
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -32,6 +42,10 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.windows.WindowManager;
 
 public class GrabTableAction extends DatabaseAction {
@@ -61,7 +75,10 @@ public class GrabTableAction extends DatabaseAction {
             // Get command
 
             CreateTable cmd = (CreateTable)spec.createCommandCreateTable(tablename);
-            Enumeration enu = nfo.getChildren().elements();
+            
+            GrabTableWorker run = new GrabTableWorker(nfo);
+            Enumeration enu = run.execute();
+            
             while (enu.hasMoreElements()) {
                 Object element = enu.nextElement();
                 if (element instanceof ColumnNodeInfo) {
@@ -125,6 +142,66 @@ public class GrabTableAction extends DatabaseAction {
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle().getString("ERR_UnableToGrabTable"), new String[] {exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
+    
+    private static final class GrabTableWorker {
+
+        private DatabaseNodeInfo nfo;
+        private Task task;
+        private Dialog dialog;
+        private ProgressHandle progressHandle;
+        //private boolean finished;
+        
+        private Enumeration enumeration;
+        private DatabaseException exception;
+        
+        public GrabTableWorker(DatabaseNodeInfo nfo) {
+            this.nfo = nfo;
+        }
+        
+        public Enumeration execute() throws DatabaseException {
+            progressHandle = ProgressHandleFactory.createHandle(null);
+            GrabTableProgressPanel progressPanel = new GrabTableProgressPanel();
+            progressPanel.setProgressComponent(ProgressHandleFactory.createProgressComponent(progressHandle));
+            String dialogTitle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("GrabTableProgressDialogTitle"); // NOI18N
+            DialogDescriptor desc = new DialogDescriptor(progressPanel, dialogTitle, true, new Object[0], DialogDescriptor.NO_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+            dialog = DialogDisplayer.getDefault().createDialog(desc);
+            dialog.setResizable(false);
+            if (dialog instanceof JDialog) {
+                ((JDialog)dialog).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+            }
+            progressHandle.start();
+            
+            task = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        enumeration = nfo.getChildren().elements();
+                    } catch (DatabaseException e) {
+                        exception = e;
+                    }
+                }
+            });
+            
+            task.addTaskListener(new TaskListener() {
+                public void taskFinished(Task t) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            dialog.setVisible(false);
+                        }
+                    });
+                }
+            });
+            
+            if (!task.isFinished()) {
+                dialog.setVisible(true);
+            }
+            dialog.dispose();
+            progressHandle.finish();
+            if (exception != null) {
+                throw exception;
+            }
+            return enumeration;
         }
     }
 }
