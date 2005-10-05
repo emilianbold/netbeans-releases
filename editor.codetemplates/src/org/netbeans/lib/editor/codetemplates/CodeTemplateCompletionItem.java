@@ -123,7 +123,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         // Remove the typed part
         Document doc = component.getDocument();
         int caretOffset = component.getCaretPosition();
-        int initMatchLen = getInitialMatchLength(doc, caretOffset, codeTemplate.getAbbreviation());
+        int initMatchLen = getInitialMatchLength(doc, caretOffset, codeTemplate.getParametrizedText());
         if (initMatchLen > 0) {
             // Select the typed prefix so that it gets removed
             //   by code template insertion
