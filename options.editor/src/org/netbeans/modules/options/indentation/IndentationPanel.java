@@ -244,7 +244,8 @@ ChangeListener, ActionListener {
     }
     
     public void cancel () {
-        model.revertChanges ();
+        if (model != null)
+            model.revertChanges ();
     }
     
     public boolean dataValid () {
