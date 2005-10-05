@@ -22,8 +22,6 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
-import org.netbeans.modules.form.layoutdesign.LayoutConstants;
-import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -33,6 +31,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.layoutdesign.*;
 
 /**
  * Action class providing popup menu presenter for setthesamesize submenu.
@@ -210,6 +209,16 @@ public class ChooseSameSizeAction extends NodeAction {
                 List compIds = getComponentIds(mi.getRADComponents());
                 int dimension = mi.getDimension();
                 if (mi.isSelected()) {
+                    FormDesigner designer = FormEditor.getFormDesigner(formModel);
+                    LayoutDesigner lDesigner = designer.getLayoutDesigner();
+                    Iterator iter = compIds.iterator();
+                    while (iter.hasNext()) {
+                        String compId = (String)iter.next();
+                        LayoutComponent lc = layoutModel.getLayoutComponent(compId);
+                        if (lDesigner.isComponentResizing(lc, dimension)) {
+                            lDesigner.setComponentResizing(lc, dimension, false);
+                        }
+                    }
                     layoutModel.setSameSize(compIds, dimension);
                 } else {
                     layoutModel.unsetSameSize(compIds, dimension);
