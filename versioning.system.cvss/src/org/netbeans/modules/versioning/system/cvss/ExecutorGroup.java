@@ -299,7 +299,9 @@ public final class ExecutorGroup implements Cancellable {
 
     void increaseDataCounter(long bytes) {
         dataCounter += bytes;
-        progressHandle.progress("" + name + " " + format(dataCounter));
+        if (progressHandle != null) {  // dangling event from zombie worker thread
+            progressHandle.progress("" + name + " " + format(dataCounter));
+        }
     }
 
     private static String format(long counter) {
