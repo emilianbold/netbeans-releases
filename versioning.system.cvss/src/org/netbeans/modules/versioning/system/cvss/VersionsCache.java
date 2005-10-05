@@ -148,7 +148,7 @@ public class VersionsCache {
     }
 
     private String cachedName(File baseFile, String revision) {
-        return "#" + revision + "#" + baseFile.getName();        
+        return baseFile.getName() + "#" + revision;        
     }
 
     private String getRepositoryForDirectory(File directory) {

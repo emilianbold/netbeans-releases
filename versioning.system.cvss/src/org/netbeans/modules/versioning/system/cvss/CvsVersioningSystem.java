@@ -28,6 +28,9 @@ import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTop
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.*;
 
@@ -388,10 +391,16 @@ public class CvsVersioningSystem {
         }
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) return false;
+        try {
+            DataObject dao = DataObject.find(fo);
+            return dao.getCookie(EditorCookie.class) != null;
+        } catch (DataObjectNotFoundException e) {
+            // not found, continue
+        }
         if (fo.getMIMEType().startsWith("text")) {
             return true;            
         }
-        // TODO: HACKS begin
+        // TODO: HACKS begin, still needed?
         return textExtensions.contains(fo.getExt());
     }
     
