@@ -19,31 +19,10 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.text.MessageFormat;
-import java.awt.Dimension;
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.beans.PropertyVetoException;
-import javax.swing.JPanel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import org.netbeans.modules.j2ee.sun.common.dd.webapp.CacheMapping;
-import org.netbeans.modules.j2ee.sun.common.dd.webapp.ConstraintField;
-import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTablePanel;
 import junit.framework.*;
+
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 
 /**
  *
@@ -52,8 +31,11 @@ import junit.framework.*;
 public class CachePolicyPanelTest extends TestCase {
     
     public void testCreate() {
-        CachePolicyPanel foo =
-            new CachePolicyPanel(new CacheMapping());
+        CachePolicyPanel foo70 =
+            new CachePolicyPanel(ASDDVersion.SUN_APPSERVER_7_0, StorageBeanFactory.getDefault().createCacheMapping());
+        
+        CachePolicyPanel foo81 =
+            new CachePolicyPanel(ASDDVersion.SUN_APPSERVER_8_1, StorageBeanFactory.getDefault().createCacheMapping());
     }
     
     public CachePolicyPanelTest(java.lang.String testName) {
