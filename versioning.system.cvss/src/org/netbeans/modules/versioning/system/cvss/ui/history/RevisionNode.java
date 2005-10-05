@@ -221,7 +221,7 @@ class RevisionNode extends AbstractNode {
                     JOptionPane.WARNING_MESSAGE);
             if (res != JOptionPane.YES_OPTION) return;
 
-            GetCleanAction.rollback(file, revision.getNumber());
+            GetCleanAction.rollback(file, revision.getNumber(), null);
         }
     }
 

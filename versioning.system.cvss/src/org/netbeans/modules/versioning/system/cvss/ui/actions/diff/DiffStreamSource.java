@@ -17,6 +17,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -42,6 +43,8 @@ public class DiffStreamSource extends StreamSource {
     private File            remoteFile;
     private boolean         binary;
 
+    private ExecutorGroup   group;
+
     /**
      * Creates a new StreamSource implementation for Diff engine.
      * 
@@ -63,9 +66,13 @@ public class DiffStreamSource extends StreamSource {
         return title;
     }
 
+    public void setGroup(ExecutorGroup group) {
+        this.group = group;
+    }
+
     public String getMIMEType() {
         try {
-            init();
+            init(null);
         } catch (IOException e) {
             return null;
         }
@@ -73,7 +80,7 @@ public class DiffStreamSource extends StreamSource {
     }
 
     public Reader createReader() throws IOException {
-        init();        
+        init(null);
         if (revision == null || remoteFile == null) return null;
         if (binary) {
             return new StringReader("[Binary File " + getTitle() + "]");
@@ -88,12 +95,14 @@ public class DiffStreamSource extends StreamSource {
 
     /**
      * Loads data over network.
+     *
+     * @param group combines multiple loads or <code>null</code>
      */
-    synchronized void init() throws IOException {
+    synchronized void init(ExecutorGroup group) throws IOException {
         if (remoteFile != null || revision == null) return;
         binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
-            remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision);
+            remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision, group);
             if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
                 binary = !CvsVersioningSystem.getInstance().isText(remoteFile);
             }

@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 
@@ -49,6 +50,8 @@ public class DiffAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(ActionEvent ev) {
+        ExecutorGroup group = new ExecutorGroup("Diffing");
+        group.progress("Preparing");
         Context context = getContext();
         DiffExecutor executor = new DiffExecutor(context, getContextDisplayName());
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
@@ -56,10 +59,10 @@ public class DiffAction extends AbstractSystemAction {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_REMOTE_CHANGE) == 0) {
-                executor.showLocalDiff();
+                executor.showLocalDiff(group);
                 return;
             }
         }
-        executor.showRemoteDiff();
+        executor.showRemoteDiff(group);
     }
 }

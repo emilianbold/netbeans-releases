@@ -109,7 +109,7 @@ public final class ExecutorGroup implements Cancellable {
      * @return true for the first command in given queue
      */
     synchronized boolean started(ClientRuntime queue) {
-        return started.add(queue);
+        return executed && started.add(queue);
     }
 
     /**
@@ -121,12 +121,12 @@ public final class ExecutorGroup implements Cancellable {
         commands.remove(command);
         if (commands.isEmpty()) {
             queues.remove(queue);
-            if (queues.isEmpty() && progressHandle != null) {
+            if (executed && queues.isEmpty() && progressHandle != null) {
                 progressHandle.finish();
                 progressHandle = null;
             }
         }
-        return commands.isEmpty();
+        return executed && commands.isEmpty();   // TODO how to tip true for non-executed?
     }
 
     boolean isCancelled() {

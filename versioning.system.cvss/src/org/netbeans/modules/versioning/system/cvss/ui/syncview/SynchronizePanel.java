@@ -310,13 +310,15 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
     private void onDiffAction() {
+        ExecutorGroup group = new ExecutorGroup("Diffing");
+        group.progress("Preparing");
         DiffExecutor exec = new DiffExecutor(context, parentTopComponent.getContentTitle());
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
-            exec.showLocalDiff();
+            exec.showLocalDiff(group);
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
-            exec.showRemoteDiff();
+            exec.showRemoteDiff(group);
         } else {
-            exec.showAllDiff();
+            exec.showAllDiff(group);
         }
     }
     

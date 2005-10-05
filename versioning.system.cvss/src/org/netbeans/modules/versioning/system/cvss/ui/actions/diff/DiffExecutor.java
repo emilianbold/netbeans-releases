@@ -54,44 +54,45 @@ public class DiffExecutor {
      * Opens GUI component that shows differences between current base revisions
      * and HEAD revisions.
      */ 
-    public void showRemoteDiff() {
-        showDiff(Setup.DIFFTYPE_REMOTE);
+    public void showRemoteDiff(ExecutorGroup group) {
+        showDiff(Setup.DIFFTYPE_REMOTE, group);
     }
     
     /**
      * Opens GUI component that shows differences between current working files
      * and HEAD revisions.
      */ 
-    public void showAllDiff() {
-        showDiff(Setup.DIFFTYPE_ALL);
+    public void showAllDiff(ExecutorGroup group) {
+        showDiff(Setup.DIFFTYPE_ALL, group);
     }
     
     /**
      * Opens GUI component that shows differences between current working files
      * and repository versions they are based on.
      */ 
-    public void showLocalDiff() {
-        showDiff(Setup.DIFFTYPE_LOCAL);
+    public void showLocalDiff(ExecutorGroup group) {
+        showDiff(Setup.DIFFTYPE_LOCAL, group);
     }
 
     public void showDiff(File file, String rev1, String rev2) {
         DiffMainPanel panel = new DiffMainPanel(file, rev1, rev2);
-        openDiff(panel);
+        openDiff(panel, null);
     }
 
-    private void showDiff(int type) {
+    private void showDiff(int type, ExecutorGroup group) {
         VersionsCache.getInstance().purgeVolatileRevisions();
-        DiffMainPanel panel = new DiffMainPanel(context, type, contextName);
-        openDiff(panel);        
+        DiffMainPanel panel = new DiffMainPanel(context, type, contextName, group);
+        openDiff(panel, group);
     }
     
-    private void openDiff(final Component c) {
+    private void openDiff(final Component c, final ExecutorGroup group) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DiffTopComponent tc = new DiffTopComponent(c);
                 tc.setName(NbBundle.getMessage(DiffExecutor.class, "CTL_DiffPanel_Title", contextName));
                 tc.open();
                 tc.requestActive();
+                tc.setGroup(group);
             }
         });
     }
@@ -159,6 +160,11 @@ public class DiffExecutor {
         public Collection getSetups() {
             DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
             return mainPanel.getSetups();
+        }
+
+        public void setGroup(ExecutorGroup group) {
+            DiffMainPanel mainPanel = ((DiffMainPanel) getComponent(0));
+            mainPanel.setGroup(group);
         }
     }
     

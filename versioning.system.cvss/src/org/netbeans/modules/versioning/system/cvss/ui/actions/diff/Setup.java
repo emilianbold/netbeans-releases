@@ -149,8 +149,8 @@ class Setup {
     }
 
     /** Loads data over network */
-    void initSources() throws IOException {
-        if (firstSource != null) firstSource.init();
-        if (secondSource != null) secondSource.init();
+    void initSources(ExecutorGroup group) throws IOException {
+        if (firstSource != null) firstSource.init(group);
+        if (secondSource != null) secondSource.init(group);
     }
 }

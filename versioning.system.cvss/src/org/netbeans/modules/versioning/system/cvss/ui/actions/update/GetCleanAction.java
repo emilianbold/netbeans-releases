@@ -66,12 +66,19 @@ public class GetCleanAction extends AbstractSystemAction {
     }
 
     private void revertModifications() {
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = cache.listFiles(getContext(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            rollback(file, VersionsCache.REVISION_BASE);
+        ExecutorGroup group = new ExecutorGroup("Reverting");
+        try {
+            group.progress("Preparing");
+            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+            File [] files = cache.listFiles(getContext(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                rollback(file, VersionsCache.REVISION_BASE, group);
+            }
+        } finally {
+            group.executed();
         }
+
     }
     
     /**
@@ -81,7 +88,7 @@ public class GetCleanAction extends AbstractSystemAction {
      * @param file the file to overwrite
      * @param revision revision to get
      */ 
-    public static void rollback(File file, String revision) {
+    public static void rollback(File file, String revision, ExecutorGroup group) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
         Entry entry = null;
@@ -91,7 +98,7 @@ public class GetCleanAction extends AbstractSystemAction {
             // non-fatal, we have no entry for this file
         }
         try {
-            File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision);
+            File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision, group);
             if (cleanFile != null) {
                 FileUtils.copyFile(cleanFile, file);
                 if (entry != null && entry.isUserFileToBeRemoved()) {

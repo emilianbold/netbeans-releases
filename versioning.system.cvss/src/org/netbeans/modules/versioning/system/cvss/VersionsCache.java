@@ -74,14 +74,14 @@ public class VersionsCache {
      * @throws org.netbeans.lib.cvsclient.connection.AuthenticationException
      * @throws org.netbeans.modules.versioning.system.cvss.NotVersionedException
      */ 
-    public synchronized File getRemoteFile(File baseFile, String revision) throws IOException, 
+    public synchronized File getRemoteFile(File baseFile, String revision, ExecutorGroup group) throws IOException,
                 IllegalCommandException, CommandException, AuthenticationException, NotVersionedException {
         if (revision == REVISION_BASE) {
             revision = getBaseRevision(baseFile);
         }
         File file = getCachedRevision(baseFile, revision);
         if (file != null) return file;
-        file = checkoutRemoteFile(baseFile, revision);
+        file = checkoutRemoteFile(baseFile, revision, group);
         if (file == null) return null;
         file = saveRevision(baseFile, file, revision);
         return file;
@@ -172,7 +172,7 @@ public class VersionsCache {
      * in repository in the specified revision
      * @throws IOException if some I/O error occurs during checkout
      */ 
-    private File checkoutRemoteFile(File baseFile, String revision) throws IOException {
+    private File checkoutRemoteFile(File baseFile, String revision, ExecutorGroup group) throws IOException {
         
         String repositoryPath = getRepositoryForDirectory(baseFile.getParentFile()) + "/" + baseFile.getName();
         
@@ -181,19 +181,28 @@ public class VersionsCache {
         cmd.setModule(repositoryPath);
         cmd.setPipeToOutput(true);
         if (!revision.equals(REVISION_HEAD)) cmd.setCheckoutByRevision(revision);
-        cmd.setDisplayName(NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName()));
-        
+        String msg  = NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName());
+        cmd.setDisplayName(msg);
+
         GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
         options.setCVSRoot(getCvsRoot(baseFile.getParentFile()));
         VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd, options);
+        if (group != null) {
+            group.progress(msg);
+            group.addExecutor(executor);
+        }
         executor.execute();
         ExecutorSupport.wait(new ExecutorSupport [] { executor });
-        if (executor.getFailure() != null) {
+
+        if (executor.isSuccessful()) {
+            return executor.getCheckedOutVersion();
+        } else {
+            // XXX note that executor already handles/notifies failures
             IOException ioe = new IOException("Unable to checkout revision " + revision + " of " + baseFile.getName());
             ioe.initCause(executor.getFailure());
             throw ioe;
         }
-        return executor.getCheckedOutVersion();
+
     }
 
     private String getCvsRoot(File baseFile) throws IOException {

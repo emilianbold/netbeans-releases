@@ -281,7 +281,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE);
             if (res != JOptionPane.YES_OPTION) return;
-            GetCleanAction.rollback(file, revision);
+            GetCleanAction.rollback(file, revision, null);
         }
     }
 
