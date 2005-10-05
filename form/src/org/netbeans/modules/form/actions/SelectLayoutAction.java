@@ -14,6 +14,7 @@
 package org.netbeans.modules.form.actions;
 
 import java.util.ArrayList;
+import java.awt.Component;
 import java.awt.event.*;
 import javax.swing.*;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
@@ -223,7 +224,9 @@ public class SelectLayoutAction extends CallableSystemAction {
                             java.util.Map idToComponent = new java.util.HashMap();
                             FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
                             for (int j=0; j<components.length; j++) {
-                                idToComponent.put(components[j].getId(), formDesigner.getComponent(components[j]));
+                                Component comp = (Component)formDesigner.getComponent(components[j]);
+                                if (comp == null) comp = (Component)components[j].getBeanInstance(); // Issue 65919
+                                idToComponent.put(components[j].getId(), comp);
                             }
                             layoutModel.createModel(container.getId(), (java.awt.Container)formDesigner.getComponent(container), idToComponent);
                         }

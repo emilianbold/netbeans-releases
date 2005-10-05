@@ -422,6 +422,7 @@ public class LayoutModel implements LayoutConstants {
         }
         Map idToBounds = new HashMap();
         Iterator iter = idToComponent.entrySet().iterator();
+        Rectangle notKnown = new Rectangle();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry)iter.next();
             String id = (String)entry.getKey();
@@ -432,9 +433,12 @@ public class LayoutModel implements LayoutConstants {
                 addComponent(lComp, lCont, -1);
             }
             Rectangle bounds = component.getBounds();
+            Dimension dim = component.getPreferredSize();
+            if (bounds.equals(notKnown)) { // Issue 65919
+                bounds.setSize(dim);
+            }
             bounds = new Rectangle(bounds.x - insets.left, bounds.y - insets.top, bounds.width, bounds.height);
             idToBounds.put(id, bounds);
-            Dimension dim = component.getPreferredSize();
             if (dim.width != bounds.width) {
                 LayoutInterval interval = lComp.getLayoutInterval(HORIZONTAL);
                 setIntervalSize(interval, interval.getMinimumSize(), bounds.width, interval.getMaximumSize());
