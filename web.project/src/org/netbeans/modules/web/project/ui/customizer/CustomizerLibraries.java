@@ -13,24 +13,18 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.JTable;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
 import org.openide.util.HelpCtx;
@@ -141,7 +135,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         viewProvider.testBroken();        
     }
     
-    private void initTableVisualProperties(JTable table) {
+    private void initTableVisualProperties(JTable table) {	
         //table.setGridColor(jTableCpC.getBackground());
         table.setRowHeight(jTableCpC.getRowHeight() + 4);        
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);        
@@ -150,10 +144,18 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         table.getParent().setBackground(table.getBackground());
         table.setShowHorizontalLines(false);
         table.setShowVerticalLines(false);
-        
+
         TableColumn column = table.getColumnModel().getColumn(1);
         JTableHeader header = table.getTableHeader();
         column.setMaxWidth(24 + SwingUtilities.computeStringWidth(header.getFontMetrics(header.getFont()), String.valueOf(column.getHeaderValue())));
+	
+	//#58200 - Need horizontal scrollbar for library names
+	//ugly but I didn't find a better way how to do it
+	table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        column = table.getColumnModel().getColumn(0);
+	column.setMinWidth(230);
+	column.setWidth(230);
+	column.setMinWidth(75);
     }
     
     // Implementation of HelpCtx.Provider --------------------------------------
