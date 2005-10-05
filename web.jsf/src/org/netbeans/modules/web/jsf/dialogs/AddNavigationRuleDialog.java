@@ -78,6 +78,7 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_AddNavigationRuleDialog"));
         jLabelFromView.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationRuleDialog.class, "MNE_FromView").charAt(0));
         jLabelFromView.setLabelFor(jTextFieldFromView);
         jLabelFromView.setText(org.openide.util.NbBundle.getMessage(AddNavigationRuleDialog.class, "LBL_FromView"));
@@ -90,6 +91,7 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 5, 0);
         add(jTextFieldFromView, gridBagConstraints);
+        jTextFieldFromView.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_RuleFromFiew"));
 
         jButtonBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationRuleDialog.class, "MNE_Browse").charAt(0));
         jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddNavigationRuleDialog.class, "LBL_Browse"));
@@ -103,6 +105,7 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 11);
         add(jButtonBrowse, gridBagConstraints);
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_RuleBrowse"));
 
         jLabelDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddNavigationRuleDialog.class, "MNE_BeanDescription").charAt(0));
         jLabelDesc.setLabelFor(jTextAreaDesc);
@@ -118,6 +121,7 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
         jTextAreaDesc.setColumns(20);
         jTextAreaDesc.setRows(5);
         jScrollPaneDesc.setViewportView(jTextAreaDesc);
+        jTextAreaDesc.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_RuleDescription"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
