@@ -24,14 +24,12 @@ import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.TransactionHelper;
-
 /**
  *
  * @author Chris Webster
@@ -82,8 +80,7 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
         EntityGenerator eg = new EntityGenerator();
         eg.generateEntity(ejbName, pkg, ejbPanel.hasRemote(), ejbPanel.hasLocal(), project, isCMP, ejbPanel.getPrimaryKeyClassName());
         transactionHelper.write();
-        EjbJar ejbModule = EjbJar.getEjbJar(pkg);
-        return Collections.singleton(ejbModule.getDeploymentDescriptor());
+        return Collections.EMPTY_SET;
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {
