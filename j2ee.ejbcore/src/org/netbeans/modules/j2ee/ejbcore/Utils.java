@@ -249,6 +249,7 @@ public class Utils {
                     JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
                     Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
                     beanClass.getContents().add(methodToAdd);
+		    JMIUtils.openInEditor(methodToAdd.getBody());
                 } else {
                     ref.generateServiceLocatorLookup(ejbRef, throwExceptions,
                             beanClass, serviceLocatorStrategy);
@@ -264,6 +265,7 @@ public class Utils {
                     JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
                     Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
                     beanClass.getContents().add(methodToAdd);
+		    JMIUtils.openInEditor(methodToAdd.getBody());
                 } else {
                     ref.generateServiceLocatorLookup(ejbLocalRef, throwExceptions,
                             beanClass, serviceLocatorStrategy);
