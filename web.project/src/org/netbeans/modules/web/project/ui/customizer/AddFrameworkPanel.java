@@ -69,7 +69,10 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jListFrameworks = new javax.swing.JList();
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACSD_AddFramework"));
         jScrollPane1.setViewportView(jListFrameworks);
+        jListFrameworks.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACSN_ListFrameworks"));
+        jListFrameworks.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACSD_ListFrameworks"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
