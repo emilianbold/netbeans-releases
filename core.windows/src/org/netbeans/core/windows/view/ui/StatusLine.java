@@ -27,6 +27,10 @@ import java.awt.*;
 */
 final class StatusLine extends JLabel implements ChangeListener, Runnable {
     private StatusDisplayer d = StatusDisplayer.getDefault();
+    /** Minimum size of the status line */
+    private static final Dimension PREF_SIZE = new Dimension(100, 0);
+    /** Minimum size of the status line */
+    private static final Dimension MIN_SIZE = new Dimension(0, 0);
 
     /** Creates a new StatusLine */
     public StatusLine () {
@@ -57,6 +61,18 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     */
     public void run () {
         setText (d.getStatusText ());
+    }
+    
+    /** #62967: Pref size so that status line is able to shrink as much as possible.
+     */
+    public Dimension getPreferredSize() {
+        return PREF_SIZE;
+    }
+    
+    /** #62967: Minimum size so that status line is able to shrink as much as possible.
+     */
+    public Dimension getMinimumSize() {
+        return MIN_SIZE;
     }
 
 }
