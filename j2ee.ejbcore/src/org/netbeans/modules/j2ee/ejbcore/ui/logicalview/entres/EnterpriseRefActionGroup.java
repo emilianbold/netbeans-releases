@@ -91,25 +91,6 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
             super(EnterpriseRefActionGroup.this.getName());
         }
         
-//        public JPopupMenu getPopupMenu() {
-//            if (getItemCount() == 0) {
-//                SystemAction[] grouped = grouped();
-//                for (int i = 0; i < grouped.length; i++) {
-//                    Action action = grouped[i];
-//                    if (action == null) {
-//                        addSeparator();
-//		    } else if (action instanceof ContextAwareAction) {
-//			action = ((ContextAwareAction)action).createContextAwareInstance(Utilities.actionsGlobalContext());
-//                    } else if (action instanceof Presenter.Popup) {
-//                        add(((Presenter.Popup)action).getPopupPresenter());
-//                    } else {
-//                        assert false : "Action had no popup presenter: " + action;
-//                    }
-//                }
-//            }
-//            return super.getPopupMenu();
-//        }
- 
         public JPopupMenu getPopupMenu() {
             if (getItemCount() == 0) {
                 Action[] grouped = grouped();
