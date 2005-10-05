@@ -105,6 +105,8 @@ public class AddDialog extends DialogDescriptor {
             errorLabel.setForeground(errorLabelColor);
             add(panel, java.awt.BorderLayout.CENTER);
             add(errorLabel, java.awt.BorderLayout.SOUTH);
+            this.getAccessibleContext().setAccessibleDescription(panel.getAccessibleContext().getAccessibleDescription());
+            this.getAccessibleContext().setAccessibleName(panel.getAccessibleContext().getAccessibleName());
         }
         
         void setErrorMessage(String message) {
