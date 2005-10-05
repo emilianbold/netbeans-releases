@@ -112,7 +112,10 @@ public class DiffStreamSource extends StreamSource {
             failure.initCause(e);
             throw failure;
         }
-        FileObject fo = remoteFile != null ? FileUtil.toFileObject(remoteFile) : null;
+        FileObject fo = FileUtil.toFileObject(baseFile);
+        if (fo == null && remoteFile != null) {
+            fo = FileUtil.toFileObject(remoteFile);
+        }
         if (fo != null) {
             mimeType = fo.getMIMEType();
         } else if (binary) {
