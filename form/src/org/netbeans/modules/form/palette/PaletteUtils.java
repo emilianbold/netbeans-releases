@@ -118,10 +118,8 @@ public final class PaletteUtils {
             try {
                 PaletteFilter filter = new PaletteFilter(){
                     public boolean isValidCategory( Lookup lkp ){                    
-                        FilterNode node = (FilterNode) lkp.lookup( Node.class );                           
-                        DataFolder df = (DataFolder) node.getCookie(DataObject.class);                        
-                        Boolean noPaletteCategory = (Boolean) df.getPrimaryFile().getAttribute("isNoPaletteCategory"); // NOI18N
-                        return noPaletteCategory != null ? !noPaletteCategory.booleanValue() : true;
+                        FilterNode node = (FilterNode) lkp.lookup( Node.class ); 
+			return representsValidPaletteCategory(node);
                     }
                     public boolean isValidItem( Lookup lkp ){                        
                         return true;
@@ -158,7 +156,7 @@ public final class PaletteUtils {
         if( null == item ) {
             getPalette().clearSelection();
         } else {
-            Node[] categories = getCategoryNodes( getPaletteNode(), false );
+            Node[] categories = getCategoryNodes( getPaletteNode(), false, true );
             for( int i=0; i<categories.length; i++ ) {
                 Node[] items = getItemNodes( categories[i], true );
                 for( int j=0; j<items.length; j++ ) {
@@ -173,7 +171,7 @@ public final class PaletteUtils {
     
     public static PaletteItem[] getAllItems() {
         HashSet uniqueItems = null;
-        Node[] categories = getCategoryNodes( getPaletteNode(), false );
+        Node[] categories = getCategoryNodes( getPaletteNode(), false, false );
         for( int i=0; i<categories.length; i++ ) {
             Node[] items = getItemNodes( categories[i], true );
             for( int j=0; j<items.length; j++ ) {
@@ -221,33 +219,46 @@ public final class PaletteUtils {
      * @return An array of categories in the given palette.
      */
     public static Node[] getCategoryNodes(Node paletteNode, boolean mustBeVisible) {
-        Node[] nodes = paletteNode.getChildren().getNodes(true);
-        if( mustBeVisible ) {
-            java.util.List list = null; // don't create until needed
-            for( int i=0; i<nodes.length; i++ ) {
-                if( isValidCategoryNode( nodes[i], mustBeVisible ) ) {
-                    if( list != null ) {
-                        list.add(nodes[i]);
-                    }
-                } else if( list == null ) {
-                    list = new ArrayList( nodes.length );
-                    for( int j=0; j < i; j++ ) {
-                        list.add(nodes[j]);
-                    }
-                }
-            }
-            if( list != null ) {
-                nodes = new Node[list.size()];
-                list.toArray(nodes);
-            }
-        }
+        return getCategoryNodes(paletteNode, mustBeVisible, true);
+    }
+    
+    /**
+     * Get an array of all categories in the given palette.
+     *
+     * @param paletteNode Palette's root node.
+     * @param mustBeVisible True to return only visible categories, false to return also
+     * categories with Hidden flag.
+     * @param mustBePaletteCategory True to return only categories not tagged as 'isNoPaletteCategory'
+     * @return An array of categories in the given palette.
+     */
+    private static Node[] getCategoryNodes(Node paletteNode, boolean mustBeVisible, boolean mustBePaletteCategory) {
+        Node[] nodes = paletteNode.getChildren().getNodes(true);        
+	java.util.List list = null; // don't create until needed
+	for( int i=0; i<nodes.length; i++ ) {
+	    if(    ( mustBeVisible && isVisibleCategoryNode( nodes[i], mustBeVisible ))
+	       ||  (!mustBeVisible && (!mustBePaletteCategory || representsValidPaletteCategory(nodes[i]))) ) 
+	    {
+		if( list != null ) {
+		    list.add(nodes[i]);
+		}
+	    } else if( list == null ) {
+		list = new ArrayList( nodes.length );
+		for( int j=0; j < i; j++ ) {
+		    list.add(nodes[j]);
+		}
+	    } 
+	}
+	if( list != null ) {
+	    nodes = new Node[list.size()];
+	    list.toArray(nodes);
+	}
         return nodes;
     }
 
     /**
      * @return True if the given node is a DataFolder and does not have Hidden flag set.
      */
-    static boolean isValidCategoryNode( Node node, boolean visible ) {
+    static boolean isVisibleCategoryNode( Node node, boolean visible) {
         DataFolder df = (DataFolder) node.getCookie(DataFolder.class);
         return (df != null) && (!visible || representsVisibleCategory(node));
     }
@@ -261,8 +272,12 @@ public final class PaletteUtils {
         if (value == null) {
             value = Boolean.TRUE;
         }
-        return Boolean.valueOf(value.toString()).booleanValue()
-            && !Boolean.TRUE.equals(df.getPrimaryFile().getAttribute("isNoPaletteCategory")); // NOI18N
+        return Boolean.valueOf(value.toString()).booleanValue() && representsValidPaletteCategory(node);
     }
 
+    private static boolean representsValidPaletteCategory(Node node) {        
+        DataFolder df = (DataFolder) node.getCookie(DataFolder.class);	
+        return !Boolean.TRUE.equals(df.getPrimaryFile().getAttribute("isNoPaletteCategory")); // NOI18N
+    }
+    
 }

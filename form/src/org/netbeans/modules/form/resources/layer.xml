@@ -185,7 +185,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="MenuBar.palette_item/PopupMenu.palette_item" boolvalue="true" />
         </folder>
 
-        <folder name="Layouts">
+        <folder name="_Layouts_only_for_internal_use_">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             <attr name="isNoPaletteCategory" boolvalue="true" />
             
@@ -234,8 +234,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <attr name="Swing/AWT" boolvalue="true" />
-        <attr name="AWT/Layouts" boolvalue="true" />
-        <attr name="Layouts/Borders" boolvalue="true" />
+        <attr name="AWT/Borders" boolvalue="true" />        
         <attr name="Borders/Beans" boolvalue="true" />
     </folder>
 
