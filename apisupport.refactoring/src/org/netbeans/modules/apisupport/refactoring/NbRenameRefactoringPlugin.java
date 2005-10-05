@@ -12,43 +12,30 @@
  */
 
 package org.netbeans.modules.apisupport.refactoring;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import javax.jmi.reflect.RefObject;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaPackage;
+import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.ExternalChange;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+
 
 /**
  *
@@ -58,6 +45,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
+    private RenameRefactoring rename;
     
     /**
      * Creates a new instance of NbRenameRefactoringPlugin
@@ -86,7 +74,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         semafor.set(new Object());
         try {
-            RenameRefactoring rename = (RenameRefactoring)refactoring;
+            rename = (RenameRefactoring)refactoring;
             Problem problem = null;
             RefObject refObject = (RefObject) rename.getRefactoredObject();
             if (refObject instanceof JavaClass) {
@@ -97,6 +85,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 if (project != null && project instanceof NbModuleProject) {
                     checkMetaInfServices(project, clzz, refactoringElements);
                     checkManifest((NbModuleProject)project, clzz, refactoringElements);
+//                    checkLayer((NbModuleProject)project, clzz, refactoringElements);
                 }
             }
             if (refObject instanceof JavaPackage) {
@@ -104,12 +93,16 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 Resource res = pack.getResource();
                 FileObject fo = JavaModel.getFileObject(res);
                 if (fo != null) {
-                    //#62636 for some reason in refactoring tests, fileobject is null.                    
+                    //#62636 for some reason in refactoring tests, fileobject is null.
                     Project project = FileOwnerQuery.getOwner(fo);
                     if (project != null && project instanceof NbModuleProject) {
                         checkMetaInfServices(project, pack, refactoringElements);
                     }
                 }
+            }
+            if (refObject instanceof Method) {
+                Method method = (Method)refObject;
+//                problem = checkLayer(method, refactoringElements);
             }
             
             err.log("Gonna return problem: " + problem);
@@ -144,15 +137,236 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         for (int i = 0; i < files.length; i++) {
             int line = checkContentOfFile(files[i], name);
             if (line != -1) {
-                RefactoringElementImplementation elem = 
+                RefactoringElementImplementation elem =
                         new ServicesPackageRenameRefactoringElement(pack, files[i]);
                 if (elem != null) {
                     refactoringElements.add(refactoring, elem);
                 }
             }
         }
-    }    
+    }
     
+//    protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
+//            LayerUtils.LayerHandle handle,
+//            FileObject layerFileObject,
+//            String layerAttribute) {
+//        // cannot rename a constructor.. is always a class rename
+//        return null;
+//    }
+//    
+//    protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
+//            LayerUtils.LayerHandle handle,
+//            FileObject layerFileObject,
+//            String layerAttribute) {
+//        return new LayerClassRefactoringElement(clazz, handle, layerFileObject,layerAttribute);
+//    }
+//    
+//    protected RefactoringElementImplementation createLayerRefactoring(Method method,
+//            LayerUtils.LayerHandle handle,
+//            FileObject layerFileObject,
+//            String layerAttribute) {
+//        return new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute);
+//    }
+    
+    public abstract class LayerAbstractRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
+        
+        protected FileObject layerFile;
+        protected LayerUtils.LayerHandle handle;
+        protected String oldFileName;
+        protected String oldAttrName;
+        protected String oldAttrValue;
+        protected String valueType;
+        
+        public LayerAbstractRefactoringElement(
+                LayerUtils.LayerHandle handle,
+                FileObject layerFile,
+                String attributeName) {
+            this.layerFile = layerFile;
+            this.parentFile = handle.getLayerFile();
+            this.handle = handle;
+            
+            oldFileName = layerFile.getName();
+            oldAttrName = attributeName;
+            if (attributeName != null) {
+                Object val = layerFile.getAttribute("literal:" + attributeName);
+                if (val == null) {
+                    throw new IllegalStateException();
+                }
+                if (val instanceof String) {
+                    oldAttrValue = (String)val;
+                    if (oldAttrValue.startsWith("new:")) {
+                        oldAttrValue = ((String)val).substring("new:".length());
+                        valueType = "newvalue:";
+                    } else if (oldAttrValue.startsWith("method:")) {
+                        oldAttrValue = ((String)val).substring("method:".length());
+                        valueType = "methodvalue:";
+                    }
+                }
+            }
+        }
+        
+        public void performChange() {
+            JavaMetamodel.getManager().registerExtChange(this);
+        }
+        
+        protected void doAttributeValueChange(String newOne, String type) {
+            boolean on = handle.isAutosave();
+            if (!on) {
+                //TODO is this a hack or not?
+                handle.setAutosave(true);
+            }
+            try {
+                layerFile.setAttribute(oldAttrName, (type != null ? type : "") + newOne);
+            } catch (IOException exc) {
+                ErrorManager.getDefault().notify(exc);
+            }
+            if (!on) {
+                handle.setAutosave(false);
+            }
+        }
+        
+        protected void doAttributeMove(String oldKey, String newKey) {
+            boolean on = handle.isAutosave();
+            if (!on) {
+                //TODO is this a hack or not?
+                handle.setAutosave(true);
+            }
+            try {
+                Object obj = layerFile.getAttribute(oldKey);
+                // now assume we're just moving ordering attributes..
+                layerFile.setAttribute(oldKey, null);
+                layerFile.setAttribute(newKey, obj);
+            } catch (IOException exc) {
+                ErrorManager.getDefault().notify(exc);
+            }
+            if (!on) {
+                handle.setAutosave(false);
+            }
+        }
+        
+        protected void doFileMove(String newName) {
+            boolean on = handle.isAutosave();
+            if (!on) {
+                //TODO is this a hack or not?
+                handle.setAutosave(true);
+            }
+            FileLock lock = null;
+            try {
+                lock = layerFile.lock();
+//TODO rename doesn'twork in the layered fs
+                layerFile.rename(lock, newName, layerFile.getExt());
+            } catch (IOException exc) {
+                ErrorManager.getDefault().notify(exc);
+            } finally {
+                if (lock != null) {
+                    lock.releaseLock();
+                }
+            }
+            if (!on) {
+                handle.setAutosave(false);
+            }
+        }
+    }
+    
+    
+    public final class LayerMethodRefactoringElement extends LayerAbstractRefactoringElement {
+        
+        private Method method;
+        private String newAttrValue;
+        
+        public LayerMethodRefactoringElement(Method method,
+                LayerUtils.LayerHandle handle,
+                FileObject layerFile,
+                String attributeName) {
+            super(handle, layerFile, attributeName);
+            this.method = method;
+            // for methods the change can only be in the attribute value;
+            newAttrValue = oldAttrValue.replaceAll("\\." + method.getName() + "$", "." + rename.getNewName());
+        }
+        
+        
+        /** Returns text describing the refactoring formatted for display (using HTML tags).
+         * @return Formatted text.
+         */
+        public String getDisplayText() {
+            return NbBundle.getMessage(getClass(), "TXT_LayerMethodRename", oldAttrValue, rename.getNewName());
+        }
+        
+        
+        public void performExternalChange() {
+            doAttributeValueChange(newAttrValue, valueType);
+        }
+        
+        public void undoExternalChange() {
+            doAttributeValueChange(oldAttrValue, valueType);
+        }
+    }
+    
+    public final class LayerClassRefactoringElement extends LayerAbstractRefactoringElement {
+        
+        private JavaClass clazz;
+        private String newAttrName;
+        private String newAttrValue;
+        private String newFileName;
+        
+        public LayerClassRefactoringElement(JavaClass clzz,
+                LayerUtils.LayerHandle handle,
+                FileObject layerFile,
+                String attributeName) {
+            super(handle, layerFile, attributeName);
+            this.clazz = clzz;
+            // for classes the change can be anywhere;
+            if (oldAttrName == null) {
+                // no attribute -> it's a filename change. eg. org-milos-kleint-MyInstance.instance
+                newFileName = oldFileName.replaceAll("-" + clazz.getSimpleName() + "\\.", "-" + rename.getNewName() + ".");
+            } else {
+                if (oldAttrName.indexOf(clazz.getName().replace('.','-') + ".instance") > 0) {
+                    //replacing the ordering attribute..
+                    newAttrName = oldAttrName.replaceAll("-" + clazz.getSimpleName() + "\\.", "-" + rename.getNewName() + ".");
+                } else {
+                    //replacing attr value probably in instanceCreate and similar
+                    if (oldAttrValue != null) {
+                        String toReplacePattern = clazz.getSimpleName();
+                        newAttrValue = oldAttrValue.replaceAll(toReplacePattern, rename.getNewName());
+                    }
+                }
+            }
+        }
+        
+        
+        /** Returns text describing the refactoring formatted for display (using HTML tags).
+         * @return Formatted text.
+         */
+        public String getDisplayText() {
+            return NbBundle.getMessage(getClass(), "TXT_LayerMethodRename", oldAttrValue, rename.getNewName());
+        }
+        
+        
+        public void performExternalChange() {
+            if (newAttrValue != null) {
+                doAttributeValueChange(newAttrValue, valueType);
+            }
+            if (newAttrName != null) {
+                doAttributeMove(oldAttrName, newAttrName);
+            }
+            if (newFileName != null) {
+                doFileMove(newFileName);
+            }
+        }
+        
+        public void undoExternalChange() {
+            if (newAttrValue != null) {
+                doAttributeValueChange(oldAttrValue, valueType);
+            }
+            if (newAttrName != null) {
+                doAttributeMove(newAttrName, oldAttrName);
+            }
+            if (newFileName != null) {
+                doFileMove(oldFileName);
+            }
+        }
+        
+    }
     
     
     public final class ManifestRenameRefactoringElement extends AbstractRefactoringElement implements ExternalChange {

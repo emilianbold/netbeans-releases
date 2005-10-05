@@ -27,11 +27,14 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.ExternalChange;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
@@ -40,6 +43,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,6 +98,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                     if (project != null && project instanceof NbModuleProject) {
                         checkMetaInfServices(project, clzz, refactoringElements);
                         checkManifest((NbModuleProject)project, clzz, refactoringElements);
+//                        checkLayer((NbModuleProject)project, clzz, refactoringElements);
                     }
                 }
             }
@@ -116,6 +121,32 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile) {
         return new ServicesSafeDeleteRefactoringElement(clazz, serviceFile);
     }
+
+//    protected RefactoringElementImplementation createLayerRefactoring(
+//            Constructor constructor,
+//            LayerUtils.LayerHandle handle,
+//            FileObject layerFileObject,
+//            String layerAttribute) {
+//        return new LayerSafeDeleteRefactoringElement(constructor.getName(), handle, layerFileObject);
+//            
+//    }
+//
+//    protected RefactoringElementImplementation createLayerRefactoring(
+//            JavaClass clazz, 
+//            LayerUtils.LayerHandle handle, 
+//            FileObject layerFileObject, 
+//            String layerAttribute) {
+//        return new LayerSafeDeleteRefactoringElement(clazz.getSimpleName(), handle, layerFileObject);
+//    
+//    }
+//
+//    protected RefactoringElementImplementation createLayerRefactoring(
+//            Method method, 
+//            LayerUtils.LayerHandle handle, 
+//            FileObject layerFileObject, 
+//            String layerAttribute) {
+//        return new LayerSafeDeleteRefactoringElement(method.getName(), handle, layerFileObject);
+//    }
     
     
     public final class ManifestSafeDeleteRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
@@ -282,4 +313,53 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
     }
+    
+    public final class LayerSafeDeleteRefactoringElement extends AbstractRefactoringElement  implements ExternalChange {
+        
+        private File parent;
+        private FileObject layerFO;
+        private LayerUtils.LayerHandle handle;
+        /**
+         * Creates a new instance of LayerRenameRefactoringElement
+         */
+        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFo) {
+            this.name = name;
+            this.handle = handle;
+            parentFile = handle.getLayerFile();
+            parent = FileUtil.toFile(parentFile);
+            layerFO = layerFo;
+        }
+        
+        /** Returns text describing the refactoring formatted for display (using HTML tags).
+         * @return Formatted text.
+         */
+        public String getDisplayText() {
+            return NbBundle.getMessage(NbSafeDeleteRefactoringPlugin.class, "TXT_LayerDelete", this.name);
+        }
+        
+        public void performChange() {
+            JavaMetamodel.getManager().registerExtChange(this);
+        }
+        
+        public void performExternalChange() {
+            boolean on = handle.isAutosave();
+            if (!on) {
+                //TODO is this a hack or not?
+                handle.setAutosave(true);
+            }
+            try {
+                layerFO.delete();
+            } catch (IOException exc) {
+                ErrorManager.getDefault().notify(exc);
+            } 
+            if (!on) {
+                handle.setAutosave(false);
+            }
+            
+        }
+        public void undoExternalChange() {
+        }
+        
+    }
+
 }
