@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-netbeans-modules-options-keymap-ExportShortcutsAction.instance" />
+        </folder>
+    </folder>
+    <!--<folder name="Menu">
+        <folder name="File">
+            <folder name="Export">
+                <file name="org-netbeans-modules-options-actionsimpl-ExportShortcutsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-actionsimpl-ExportShortcutsAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>-->
+    <folder name="OptionsDialog">
+        <file name="General.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.general.GeneralOptions"/>
+        </file>
+        <attr name="General.instance/Editor.instance" boolvalue="true" />
+        <file name="Editor.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.editor.Editor"/>
+        </file>    
+        <attr name="Editor.instance/FontsAndColors.instance" boolvalue="true" />
+        <file name="FontsAndColors.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.colors.FontAndColors"/>
+        </file>    
+        <attr name="FontsAndColors.instance/Advanced.instance" boolvalue="true" />
+        <folder name="Advanced">
+            <file name="FormEditor.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.options.advancedpanels.FormEditorOptions"/>
+            </file>
+<!--
+            <file name="InternationalizationOptions.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.options.advancedpanels.InternationalizationOptions"/>
+            </file>
+-->            
+        </folder>
+        <attr name="General.instance/Keymaps.instance" boolvalue="true" />
+        <file name="Keymaps.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.keymap.Keymap"/>
+        </file>    
+        <attr name="Keymaps.instance/Advanced.instance" boolvalue="true" />
+    </folder>
+</filesystem>
