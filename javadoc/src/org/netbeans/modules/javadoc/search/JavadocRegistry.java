@@ -19,6 +19,7 @@ import java.beans.PropertyChangeListener;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -39,6 +40,7 @@ import javax.swing.text.html.parser.ParserDelegator;
 import javax.swing.text.MutableAttributeSet;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
 
@@ -65,8 +67,8 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     private GlobalPathRegistry regs;    
     private ArrayList listeners;
     private Set/*<JavadocForBinaryQuery.Result>*/ results;
+    private ClassPath docRoots;
     private Set/*ClassPath*/ classpaths;
-    private FileObject[] roots;
     
     /** Creates a new instance of JavadocRegistry */
     private JavadocRegistry() {
@@ -85,8 +87,8 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
      */
     public FileObject[] getDocRoots() {
         synchronized (this) {
-            if (this.roots != null) {
-                return this.roots;
+            if (this.docRoots != null) {
+                return this.docRoots.getRoots();
             }
         }        
         //XXX must be called out of synchronized block to prevent
@@ -94,16 +96,15 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
         // write lock and Project's SFBQI requires the ProjectManager.mutex readLock
         Set/*<ClassPath>*/ _classpaths = new HashSet/*<ClassPath>*/();
         Set/*<JavadocForBinaryQuery.Result>*/  _results = new HashSet/*<JavadocForBinaryQuery.Result>*/();
-        Set/*<FileObject>*/ s = readRoots(this, _classpaths, _results);
+        Set/*<URL>*/ s = readRoots(this, _classpaths, _results);
         synchronized (this) {
-            if (this.roots == null) {
-                this.roots = new FileObject[ s.size() ];
-                s.toArray( this.roots );
+            if (this.docRoots == null) {
+                this.docRoots = ClassPathSupport.createClassPath((URL[])s.toArray(new URL[s.size()]));
                 this.classpaths = _classpaths;
                 this.results = _results;
-                registerListeners(this, _classpaths, _results);
+                registerListeners(this, _classpaths, _results, this.docRoots);
             }
-            return this.roots;
+            return this.docRoots.getRoots();
         }
     }
     
@@ -135,22 +136,15 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
             ClassPath ccp = (ClassPath)it.next();
             classpaths.add (ccp);
             //System.out.println("CCP " + ccp );
-            FileObject ccpRoots[] = ccp.getRoots();
+            List/*<ClassPath.Entry>*/ ccpRoots = ccp.entries();
             
-            for( int i = 0; i < ccpRoots.length; i++ ) {
-                //System.out.println(" CCPR " + ccpRoots[i]);
-                JavadocForBinaryQuery.Result result = JavadocForBinaryQuery.findJavadoc( URLMapper.findURL(ccpRoots[i], URLMapper.EXTERNAL ) );
+            for (Iterator it2 = ccpRoots.iterator(); it2.hasNext(); ) {
+                ClassPath.Entry ccpRoot = (ClassPath.Entry) it2.next ();
+                //System.out.println(" CCPR " + ccpRoot.getURL());
+                JavadocForBinaryQuery.Result result = JavadocForBinaryQuery.findJavadoc(ccpRoot.getURL());
                 results.add (result);
                 URL[] jdRoots = result.getRoots();                    
-                for ( int j = 0; j < jdRoots.length; j++ ) {
-                    //System.out.println( "  JDR " + jdRoots[j] );
-                    //System.out.println("Looking for root of: "+jdRoots[j]);
-                    FileObject fo = URLMapper.findFileObject(jdRoots[j]);
-                    //System.out.println("Found: "+fo);
-                    if (fo != null) {                        
-                        roots.add(fo);
-                    }
-                }                                    
+                roots.addAll (Arrays.asList(jdRoots));
             }
         }
         //System.out.println("roots=" + roots);
@@ -160,7 +154,8 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     private static void registerListeners(
             JavadocRegistry jdr,
             Set/*<ClassPath>*/ classpaths,
-            Set/*<JavadocForBinaryQuery.Result>*/ results) {
+            Set/*<JavadocForBinaryQuery.Result>*/ results,
+            ClassPath docRoots) {
         
         for (Iterator it = classpaths.iterator(); it.hasNext();) {
             ClassPath cpath = (ClassPath) it.next();
@@ -170,6 +165,9 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
             JavadocForBinaryQuery.Result result = (JavadocForBinaryQuery.Result) it.next();
             result.addChangeListener(jdr);
         }
+        
+        docRoots.addPropertyChangeListener (jdr);
+        
     }
 
     public void pathsAdded(GlobalPathRegistryEvent event) {
@@ -183,7 +181,8 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     }
     
     public void propertyChange (PropertyChangeEvent event) {        
-        if (ClassPath.PROP_ENTRIES.equals (event.getPropertyName())) {
+        if (ClassPath.PROP_ENTRIES.equals (event.getPropertyName()) ||
+            event.getSource() == this.docRoots) {
             this.throwCache ();
             this.fireChange ();
         }
@@ -228,7 +227,6 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     }    
     
     private synchronized void throwCache () {
-        this.roots = null;
         //Unregister itself from classpaths, not interested in events
         for (Iterator it = this.classpaths.iterator(); it.hasNext();) {
             ClassPath cp = (ClassPath) it.next ();
@@ -241,6 +239,9 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
             result.removeChangeListener (this);
             it.remove ();
         }
+        //Unregister listener from docRoots
+        this.docRoots.removePropertyChangeListener(this);
+        this.docRoots = null;
     }
 
 
