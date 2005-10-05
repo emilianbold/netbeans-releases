@@ -101,6 +101,9 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
         try {
             if (ideSettings == null) {
                 ClassLoader l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+                if (l == null) {
+                    l = getClass().getClassLoader();
+                }
                 Class clazz = l.loadClass("org.netbeans.core.IDESettings"); // NOI18N
                 ideSettings = (SystemOption) SharedClassObject.findObject(clazz, true);
                 if (ideSettings != null) {

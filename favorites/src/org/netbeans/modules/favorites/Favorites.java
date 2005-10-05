@@ -21,6 +21,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+
+import org.netbeans.api.queries.VisibilityQuery;
+
 import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -50,7 +53,7 @@ final class Favorites extends FilterNode {
 
     /** Creates new ProjectRootFilterNode. */
     private Favorites(Node node) {
-        super(node, new Chldrn (node));
+        super(node, new Chldrn (node, false));
     }
     
     public Image getIcon (int type) {
@@ -141,16 +144,26 @@ final class Favorites extends FilterNode {
     }
 
     private static class Chldrn extends FilterNode.Children {
+
+        private boolean hideHidden;
         /** Creates new Chldrn. */
-        public Chldrn (Node node) {
+        public Chldrn (Node node, boolean hideHidden) {
             super (node);
+            this.hideHidden = hideHidden;
         }
         
         protected Node[] createNodes(Object key) {
             Node node = (Node)key;
+            if (hideHidden) {
+                DataObject obj = (DataObject)node.getCookie(DataObject.class);
+                if (obj != null && !VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile())) {
+                    return null;
+                }
+            }
+            
             return new Node[] { new ProjectFilterNode (
                 node,
-                (node.isLeaf ()) ? Children.LEAF : new Chldrn (node)
+                (node.isLeaf ()) ? org.openide.nodes.Children.LEAF : new Chldrn (node, true)
             )};
         }
         
