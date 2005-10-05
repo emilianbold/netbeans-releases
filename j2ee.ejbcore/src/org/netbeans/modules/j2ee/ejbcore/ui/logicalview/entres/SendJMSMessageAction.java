@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -30,10 +31,12 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 
@@ -133,6 +136,10 @@ public class SendJMSMessageAction extends NodeAction {
         FileObject srcFile = JavaModel.getFileObject(jc.getResource());
         Project project = FileOwnerQuery.getOwner(srcFile);
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+	String serverId = j2eeModuleProvider.getServerInstanceID();
+	if (!Deployment.getDefault().getJ2eePlatform(serverId).getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+	    return false;
+	}
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
         if ((J2eeModule.WAR.equals(moduleType) && !WebApp.VERSION_2_4.equals(j2eeVersion)) || 
@@ -149,4 +156,10 @@ public class SendJMSMessageAction extends NodeAction {
      * putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CallEjbAction.class, "HINT_Action"));
      * }
      */
+
+    public Action createContextAwareInstance(Lookup actionContext) {
+        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? this : null;
+    }
+    
 }

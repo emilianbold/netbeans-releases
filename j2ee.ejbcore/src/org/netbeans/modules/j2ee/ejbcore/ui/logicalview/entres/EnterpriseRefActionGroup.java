@@ -12,7 +12,6 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
-
 import javax.swing.*;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -24,7 +23,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
-
 
 /**
  * Action which just holds a few other SystemAction's for grouping purposes.
@@ -84,11 +82,6 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
             p.getLookup().lookup(EnterpriseReferenceContainer.class) != null;
     }
 
-    public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
-        return enable ? this : null;
-    }
-    
     /**
      * Avoids constructing submenu until it will be needed.
      */
@@ -98,23 +91,44 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
             super(EnterpriseRefActionGroup.this.getName());
         }
         
+//        public JPopupMenu getPopupMenu() {
+//            if (getItemCount() == 0) {
+//                SystemAction[] grouped = grouped();
+//                for (int i = 0; i < grouped.length; i++) {
+//                    Action action = grouped[i];
+//                    if (action == null) {
+//                        addSeparator();
+//		    } else if (action instanceof ContextAwareAction) {
+//			action = ((ContextAwareAction)action).createContextAwareInstance(Utilities.actionsGlobalContext());
+//                    } else if (action instanceof Presenter.Popup) {
+//                        add(((Presenter.Popup)action).getPopupPresenter());
+//                    } else {
+//                        assert false : "Action had no popup presenter: " + action;
+//                    }
+//                }
+//            }
+//            return super.getPopupMenu();
+//        }
+ 
         public JPopupMenu getPopupMenu() {
             if (getItemCount() == 0) {
-                SystemAction[] grouped = grouped();
+                Action[] grouped = grouped();
                 for (int i = 0; i < grouped.length; i++) {
-                    SystemAction action = grouped[i];
-                    if (action == null) {
+                    Action action = grouped[i];
+                    if (action == null && getItemCount() != 0) {
                         addSeparator();
-                    } else if (action instanceof Presenter.Popup) {
-                        add(((Presenter.Popup)action).getPopupPresenter());
                     } else {
-                        assert false : "Action had no popup presenter: " + action;
+                        if (action instanceof ContextAwareAction) {
+                            action = ((ContextAwareAction)action).createContextAwareInstance(Utilities.actionsGlobalContext());
+                        }
+                        if (action instanceof Presenter.Popup) {
+                            add(((Presenter.Popup)action).getPopupPresenter());
+                        }
                     }
                 }
             }
             return super.getPopupMenu();
         }
- 
     }
     
 }

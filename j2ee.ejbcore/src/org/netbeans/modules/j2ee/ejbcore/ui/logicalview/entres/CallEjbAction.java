@@ -12,16 +12,20 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 
@@ -57,6 +61,14 @@ public class CallEjbAction extends NodeAction {
             return false;
         }
 	JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
+        FileObject srcFile = JavaModel.getFileObject(jc.getResource());
+        Project project = FileOwnerQuery.getOwner(srcFile);
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+	String serverId = j2eeModuleProvider.getServerInstanceID();
+	if (!Deployment.getDefault().getJ2eePlatform(serverId).getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+	    return false;
+	}
         return jc == null ? false : !jc.isInterface();
     }
     
@@ -68,4 +80,9 @@ public class CallEjbAction extends NodeAction {
      * }
      */
 
+    public Action createContextAwareInstance(Lookup actionContext) {
+        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? this : null;
+    }
+    
 }

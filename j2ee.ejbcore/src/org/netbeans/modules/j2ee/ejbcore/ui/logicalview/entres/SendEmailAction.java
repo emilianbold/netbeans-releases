@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.JavaClass;
@@ -29,12 +30,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.DialogDescriptor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -196,10 +200,24 @@ public class SendEmailAction extends NodeAction {
             return false;
         }
 	JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
+        FileObject srcFile = JavaModel.getFileObject(jc.getResource());
+        Project project = FileOwnerQuery.getOwner(srcFile);
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+	String serverId = j2eeModuleProvider.getServerInstanceID();
+	if (!Deployment.getDefault().getJ2eePlatform(serverId).getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+	    return false;
+	}
         return jc == null ? false : !jc.isInterface();
     }
     
     protected void initialize() {
         super.initialize();
     }
+
+    public Action createContextAwareInstance(Lookup actionContext) {
+        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        return enable ? this : null;
+    }
+    
 }
