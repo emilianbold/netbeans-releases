@@ -18,12 +18,14 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     private static final long serialVersionUID = 1L;
 
     private static @@TEMPLATENAME@@TopComponent instance;
+    // path to the icon used by the component and it's open action.
+@@COMMENTICON@@    static final String ICON_PATH = "@@ICONPATH@@";
 
     private @@TEMPLATENAME@@TopComponent() {
         initComponents();
         setName(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "CTL_@@TEMPLATENAME@@TopComponent"));
         setToolTipText(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "HINT_@@TEMPLATENAME@@TopComponent"));
-@@COMMENTICON@@        setIcon(Utilities.loadImage("@@ICONPATH@@", true));
+@@COMMENTICON@@        setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
     /** This method is called from within the constructor to
