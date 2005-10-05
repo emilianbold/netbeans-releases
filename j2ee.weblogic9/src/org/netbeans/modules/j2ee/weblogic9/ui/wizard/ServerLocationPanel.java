@@ -108,10 +108,23 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         
         // check for the validity of the entered installation directory
         // if it's invalid, return false
-        if (!WLPluginProperties.isGoodServerLocation(new File (locationField.getText()))) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT")); // NOI18N
+        File serverRoot = new File (locationField.getText());
+        if (!WLPluginProperties.isGoodServerLocation(serverRoot)) {
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT");
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg); // NOI18N
             return false;
         }
+
+        if (!WLPluginProperties.domainListExists(serverRoot)) {
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT") +
+                         " " + 
+                         NbBundle.getMessage(ServerLocationPanel.class, "DOMAIN_LIST_NOT_FOUND", 
+                            serverRoot.getPath() + File.separator + WLPluginProperties.DOMAIN_LIST
+                         );
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg); // NOI18N
+            return false;
+        }
+
         
         WLPluginProperties.getInstance().setInstallLocation(locationField.getText());
         WLPluginProperties.getInstance().saveProperties();

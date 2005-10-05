@@ -572,10 +572,12 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         // get the selected local instance
         Instance instance = (Instance) localInstancesCombo.getSelectedItem();
         
-        // set the fields' values
-        domainPathField.setText(instance.getDomainPath());
-        hostField.setText(instance.getHost());
-        portField.setText(instance.getPort());
+        if (instance != null) {
+            // set the fields' values
+            domainPathField.setText(instance.getDomainPath());
+            hostField.setText(instance.getHost());
+            portField.setText(instance.getPort());
+        }
         
     }
     ////////////////////////////////////////////////////////////////////////////
