@@ -29,7 +29,7 @@
           </Border>
         </Property>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[220, 400]"/>
+          <Dimension value="[200, 334]"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -107,6 +107,11 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
       <SubComponents>
         <Container class="javax.swing.JPanel" name="jPanel1">
+          <Properties>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[480, 334]"/>
+            </Property>
+          </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="card2"/>
@@ -135,6 +140,7 @@
             </Component>
             <Component class="javax.swing.JTextField" name="platformName">
               <Properties>
+                <Property name="columns" type="int" value="25"/>
                 <Property name="editable" type="boolean" value="false"/>
               </Properties>
               <AccessibilityProperties>
@@ -168,6 +174,7 @@
             </Component>
             <Component class="javax.swing.JTextField" name="platformHome">
               <Properties>
+                <Property name="columns" type="int" value="25"/>
                 <Property name="editable" type="boolean" value="false"/>
               </Properties>
               <AccessibilityProperties>

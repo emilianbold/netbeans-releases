@@ -60,9 +60,7 @@ import org.openide.util.NbBundle;
 public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
-    private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
-    
-    private static final Dimension PREFERRED_SIZE = new Dimension (720,400);
+    private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N   
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
@@ -96,11 +94,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             }           
         }
     }
-    
-    
-    public Dimension getPreferredSize () {
-        return PREFERRED_SIZE;
-    }
+        
 
     public synchronized ExplorerManager getExplorerManager() {
         if (this.manager == null) {
@@ -145,7 +139,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformsCustomizer"));
         platforms.setBorder(new javax.swing.border.EtchedBorder());
-        platforms.setPreferredSize(new java.awt.Dimension(220, 400));
+        platforms.setPreferredSize(new java.awt.Dimension(200, 334));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -194,6 +188,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        jPanel1.setPreferredSize(new java.awt.Dimension(480, 334));
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformName").charAt(0));
         jLabel1.setLabelFor(platformName);
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformName"));
@@ -201,6 +196,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(jLabel1, gridBagConstraints);
 
+        platformName.setColumns(25);
         platformName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -219,6 +215,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
 
+        platformHome.setColumns(25);
         platformHome.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
