@@ -300,13 +300,13 @@ class LayoutFeeder implements LayoutConstants {
         else { // parallel parent
             if (parent.isSequential()) {
                 parent = parent.getParent(); // alone in sequence, take parent
+                nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
                 if (alignment < 0)
                     alignment = LEADING;
             }
             else if (alignment < 0) {
                 alignment = interval.getAlignment();
             }
-            nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
             if (nonEmptyCount <= 2 && parent.getParent() != null) {
                 // parallel group will not survive when the interval is removed
                 parent = parent.getParent();
@@ -331,17 +331,11 @@ class LayoutFeeder implements LayoutConstants {
             else iDesc.parent = parent; // simply goes to the parallel group
         }
 
-        parent = LayoutInterval.getFirstParent(interval, PARALLEL);
-        boolean aligned;
         if (alignment == LEADING || alignment == TRAILING) {
-            aligned = LayoutInterval.isAlignedAtBorder(interval, parent, alignment);
             iDesc.fixedPosition = isFixedRelativePosition(interval, alignment);
         }
-        else aligned = (alignment == interval.getAlignment());
 
-        if (aligned) { // check for parallel aligning
-            iDesc.snappedParallel = findAlignedInterval(interval, parent, dimension, alignment);
-        }
+        iDesc.snappedParallel = findAlignedInterval(interval, dimension, alignment);
 
         // check for next to aligning
         if (iDesc.snappedParallel == null && (alignment == LEADING || alignment == TRAILING)) {
@@ -393,14 +387,20 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     private static LayoutInterval findAlignedInterval(LayoutInterval interval,
-                                                      LayoutInterval parent,
                                                       int dimension,
                                                       int alignment)
     {
+        LayoutInterval parent;
         LayoutInterval alignedInterval = null;
         do {
+            parent = LayoutInterval.getFirstParent(interval, PARALLEL);
+            boolean aligned = alignment == LEADING || alignment == TRAILING ?
+                              LayoutInterval.isAlignedAtBorder(interval, parent, alignment) :
+                              interval.getAlignment() == alignment && interval.getParent() == parent;
+            if (!aligned)
+                return null;
             if (parent.getParent() == null)
-                return parent;
+                return parent; // aligned with root group
 
             for (Iterator it=parent.getSubIntervals(); it.hasNext(); ) {
                 LayoutInterval sub = (LayoutInterval) it.next();
@@ -424,13 +424,9 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
 
-            if (alignedInterval == null) {
-                assert alignment == LEADING || alignment == TRAILING;
-                interval = parent;
-                parent = LayoutInterval.getFirstParent(interval, PARALLEL);
-            }
+            interval = parent;
         }
-        while (alignedInterval == null && LayoutInterval.isAlignedAtBorder(interval, parent, alignment));
+        while (alignedInterval == null);
 
         return parent.getSubIntervalCount() > 2 ? parent : alignedInterval;
     }
