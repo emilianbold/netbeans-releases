@@ -533,9 +533,13 @@ public class FileStatusCache {
         if (parentStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
             return isDirectory ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
         }
-        // Working directory roots (aka managed roots). We already know that cvs.isManaged(file) is true
-        if (isDirectory && parentStatus == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
-             return FILE_INFORMATION_UPTODATE_DIRECTORY;
+        if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
+            if (isDirectory) {
+                // Working directory roots (aka managed roots). We already know that cvs.isManaged(file) is true
+                return isInsideCvsMetadata(file) ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_UPTODATE_DIRECTORY;
+            } else {
+                return FILE_INFORMATION_NOTMANAGED;
+            }
         }
         if (repositoryStatus == REPOSITORY_STATUS_UNKNOWN || repositoryStatus == '?') {
             if (exists(file)) {
@@ -569,6 +573,10 @@ public class FileStatusCache {
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, false);
         }
         throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus);
+    }
+
+    private boolean isInsideCvsMetadata(File file) {
+        return file.getAbsolutePath().indexOf(File.separator + CvsVersioningSystem.FILENAME_CVS + File.separator) != -1;
     }
 
     private boolean exists(File file) {
