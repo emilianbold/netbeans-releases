@@ -22,10 +22,6 @@
                 <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.ManagerWrapperFactory"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
             </file>
-            <file name="DeploymentPlanSplitter.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.DeploymentPlanSplitterImpl"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
-            </file>
             <folder name="DeploymentFileNames">
               <folder name="WAR">
                 <file name="META-INF\context.xml"/>
