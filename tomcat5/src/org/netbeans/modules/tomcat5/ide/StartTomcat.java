@@ -347,6 +347,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         new TomcatFormat(startupScript, homeDir),
                         new String[] {
                             "JAVA_HOME="        + getJavaHome(getJavaPlatform()), // NOI18N
+                            "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
                             "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
                             "JPDA_TRANSPORT="   + transport,        // NOI18N
                             "JPDA_ADDRESS="     + address,          // NOI18N
@@ -387,6 +388,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     JavaPlatform platform = profilerSettings.getJavaPlatform();
                     String[] defaultEnv = new String[] {
                         "JAVA_HOME="        + getJavaHome(platform),        // NOI18N
+                        "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
                         "JAVA_OPTS="        + tp.getJavaOpts(),             // NOI18N
                         "CATALINA_OPTS="    + catalinaOpts.toString(),      // NOI18N
                         "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
@@ -436,6 +438,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         new TomcatFormat (startupScript, homeDir),
                         new String[] { 
                             "JAVA_HOME="        + getJavaHome(getJavaPlatform()),   // NOI18N
+                            "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
                             "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
                             "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
                             "CATALINA_BASE="    + baseDir.getAbsolutePath()     // NOI18N
