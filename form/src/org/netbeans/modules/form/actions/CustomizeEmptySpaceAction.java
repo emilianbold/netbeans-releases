@@ -180,14 +180,14 @@ class EmptySpaceCustomizer extends JPanel {
             } else {
                 try {
                     newPref = Integer.parseInt((String)selSize);
+                    if (newPref < 0) {
+                        newPref = pref;
+                    }
                 } catch (NumberFormatException nfex) {
                     newPref = pref; // Use old value instead
                 }
             }
-            if (pref != newPref) {
-                model.setIntervalSize(space, space.getMinimumSize(false), newPref, max);
-            }
-            if (oldResizable != newResizable) {
+            if ((pref != newPref) || (oldResizable != newResizable)) {
                 model.setIntervalSize(space,
                     newResizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
                     newPref,
