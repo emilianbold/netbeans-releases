@@ -1068,6 +1068,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             selectedNodes[i++] = metacomp.getNodeReference();
         }
         try {
+            setActivatedNodes(selectedNodes); // Issue 62356
             ci.setSelectedNodes(selectedNodes, formEditor);
             // sets also the activated nodes (both for ComponentInspector
             // and FormDesigner)
