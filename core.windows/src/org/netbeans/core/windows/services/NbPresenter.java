@@ -604,9 +604,9 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 panelForPrimary = new JPanel();
                 
                 if (currentAlign == -1) {
-                    panelForPrimary.setLayout(new org.openide.awt.EqualFlowLayout());
+                    panelForPrimary.setLayout (new FlowLayout ());
                 } else {
-                    panelForPrimary.setLayout(new org.openide.awt.EqualFlowLayout(FlowLayout.RIGHT));
+                    panelForPrimary.setLayout (new FlowLayout (FlowLayout.RIGHT));
                 }
                 for (int i = 0; i < currentPrimaryButtons.length; i++) {
                     modifyListener(currentPrimaryButtons[i], buttonListener, true); // add button listener
@@ -616,7 +616,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
             
             if (currentSecondaryButtons != null) {
                 panelForSecondary = new JPanel();
-                panelForSecondary.setLayout(new org.openide.awt.EqualFlowLayout(FlowLayout.LEFT));
+                panelForSecondary.setLayout (new FlowLayout (FlowLayout.LEFT));
                 for (int i = 0; i < currentSecondaryButtons.length; i++) {
                     modifyListener(currentSecondaryButtons[i], buttonListener, true); // add button listener
                     panelForSecondary.add(currentSecondaryButtons[i]);
