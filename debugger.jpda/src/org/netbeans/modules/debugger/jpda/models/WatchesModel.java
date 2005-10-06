@@ -21,6 +21,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import javax.security.auth.RefreshFailedException;
+import javax.security.auth.Refreshable;
 
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -217,7 +219,7 @@ public class WatchesModel implements TreeModel {
     // innerclasses ............................................................
     
     private static class JPDAWatchEvaluating extends AbstractVariable
-                                             implements JPDAWatch, Variable {//.Lazy {
+                                             implements JPDAWatch, Variable, Refreshable {//.Lazy {
         
         private WatchesModel model;
         private Watch w;
@@ -367,6 +369,25 @@ public class WatchesModel implements TreeModel {
         
         public void removePropertyChangeListener(PropertyChangeListener l) {
             propSupp.removePropertyChangeListener(l);
+        }
+        
+        /** Does wait for the value to be evaluated. */
+        public void refresh() throws RefreshFailedException {
+            synchronized (evaluating) {
+                if (evaluating[0]) {
+                    try {
+                        evaluating.wait();
+                    } catch (InterruptedException iex) {
+                        throw new RefreshFailedException(iex.getLocalizedMessage());
+                    }
+                }
+            }
+        }
+        
+        /** Tells whether the variable is fully initialized and getValue()
+         *  returns the value immediately. */
+        public boolean isCurrent() {
+            return evaluatedWatch != null;
         }
         
     }

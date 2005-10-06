@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import javax.security.auth.RefreshFailedException;
+import javax.security.auth.Refreshable;
 import javax.swing.Action;
 
 import org.netbeans.spi.debugger.ContextProvider;
@@ -59,12 +61,6 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private ContextProvider lookupProvider;
     
-    /** The set of nodes that already evaluated their values. */
-    private static final Set evaluatedNodes = new WeakSet();
-    
-    /** The set of nodes by their models. */
-    private final Map evaluatedNodesByModels = new WeakHashMap();
-    
     private final Collection modelListeners = new HashSet();
     
     private RequestProcessor evaluationRP = new RequestProcessor();
@@ -89,19 +85,20 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     }
     
     static boolean isEvaluated(Object o) {
-        synchronized (evaluatedNodes) {
-            return evaluatedNodes.contains(o);
+        if (o instanceof Refreshable) {
+            return ((Refreshable) o).isCurrent();
         }
+        return true;
     }
     
     private static void waitToEvaluate(Object o) {
-        synchronized (evaluatedNodes) {
-            while (!isEvaluated(o)) {
-                try {
-                    evaluatedNodes.wait();
-                } catch (InterruptedException iex) {
-                    Thread.currentThread().interrupt();
-                }
+        if (o instanceof Refreshable) {
+            // waits for the evaluation, the retrieval must already be initiated
+            try {
+                ((Refreshable) o).refresh();
+            } catch (RefreshFailedException exc) {
+                // Thrown when interrupted
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -175,18 +172,6 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             ch = original.getChildren (parent, from, to);
         else
             ch = vf.getChildren (original, (Variable) parent, from, to);
-        synchronized (evaluatedNodes) {
-            Set nodes = (Set) evaluatedNodesByModels.get(original);
-            if (nodes == null) {
-                original.addModelListener(new ValueChangeListener());
-                //System.out.println("  ADDED LISTENER to "+original);
-                nodes = new WeakSet();
-                evaluatedNodesByModels.put(original, nodes);
-            }
-            for (int i = 0; i < ch.length; i++) {
-                nodes.add(ch[i]);
-            }
-        }
         return ch;
     }
     
@@ -391,17 +376,6 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         } else {
             value = vf.getValueAt (original, (Variable) row, columnID);
         }
-        synchronized (evaluatedNodes) {
-            evaluatedNodes.add(row);
-            evaluatedNodes.notifyAll();
-            Set nodes = (Set) evaluatedNodesByModels.get(original);
-            if (nodes == null) {
-                nodes = new WeakSet();
-                evaluatedNodesByModels.put(original, nodes);
-                original.addModelListener(new ValueChangeListener());
-            }
-            nodes.add(row);
-        }
         return value;
     }
     
@@ -469,14 +443,11 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         Variable v = (Variable) o;
         
         if (checkEvaluated) {
-            synchronized (evaluatedNodes) {
-                //System.out.println("Var "+v+" is evaluated = "+evaluatedNodes.contains(v));
-                if (!evaluatedNodes.contains(v)) {
-                    if (whenEvaluated != null) {
-                        postEvaluationMonitor(o, whenEvaluated);
-                    }
-                    return null;
+            if (!isEvaluated(v)) {
+                if (whenEvaluated != null) {
+                    postEvaluationMonitor(o, whenEvaluated);
                 }
+                return null;
             }
         }
         
@@ -496,35 +467,4 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         return null;
     }
 
-    private final class ValueChangeListener extends Object implements ModelListener {
-        
-        public void modelChanged(ModelEvent event) {
-            Object node = null;
-            if (event instanceof ModelEvent.NodeChanged) {
-                node = ((ModelEvent.NodeChanged) event).getNode();
-            } else if (event instanceof ModelEvent.TableValueChanged) {
-                node = ((ModelEvent.TableValueChanged) event).getNode();
-            } else if (event instanceof ModelEvent.TreeChanged) {
-                Object model = ((ModelEvent.TreeChanged) event).getSource();
-                synchronized (evaluatedNodes) {
-                    Set nodes = (Set) evaluatedNodesByModels.remove(model);
-                    if (nodes != null) {
-                        for (Iterator it = nodes.iterator(); it.hasNext(); ) {
-                            node = it.next();
-                            evaluatedNodes.remove(node);
-                        }
-                    }
-                }
-                return ;
-            } else {
-                //System.out.println("\n\n  UNKNOWN EVENT  \n\n");
-                return ;
-            }
-            synchronized (evaluatedNodes) {
-                evaluatedNodes.remove(node);
-            }
-        }
-        
-    }
-    
 }
