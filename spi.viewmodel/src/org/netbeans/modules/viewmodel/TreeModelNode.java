@@ -424,6 +424,7 @@ public class TreeModelNode extends AbstractNode {
         private int[]               evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         private Object[]            children_evaluated;
         private boolean refreshingSubNodes = true;
+        private boolean refreshingStarted = true;
         
         private static final Object WAIT_KEY = new Object();
         
@@ -455,6 +456,9 @@ public class TreeModelNode extends AbstractNode {
         }
         
         public void evaluateLazily(Runnable evaluatedNotify) {
+            synchronized (evaluated) {
+                refreshingStarted = false;
+            }
             Object[] ch;
             try {
                 int count = model.getChildrenCount (object);
@@ -480,12 +484,18 @@ public class TreeModelNode extends AbstractNode {
             evaluatedNotify.run();
             boolean fire;
             synchronized (evaluated) {
-                fire = evaluated[0] == -1;
-                if (!fire) {
-                    children_evaluated = ch;
+                int eval = evaluated[0];
+                if (refreshingStarted) {
+                    fire = false;
+                } else {
+                    fire = evaluated[0] == -1;
+                    if (!fire) {
+                        children_evaluated = ch;
+                    }
+                    evaluated[0] = 1;
+                    evaluated.notifyAll();
                 }
-                evaluated[0] = 1;
-                evaluated.notifyAll();
+                //System.err.println(this.hashCode()+" evaluateLazily() ready, evaluated[0] = "+eval+" => fire = "+fire+", refreshingStarted = "+refreshingStarted+", children_evaluated = "+(children_evaluated != null));
             }
             if (fire) {
                 applyChildren(ch, refreshingSubNodes);
@@ -495,7 +505,9 @@ public class TreeModelNode extends AbstractNode {
         private void refreshLazyChildren (boolean refreshSubNodes) {
             synchronized (evaluated) {
                 evaluated[0] = 0;
+                refreshingStarted = true;
                 this.refreshingSubNodes = refreshSubNodes;
+                //System.err.println(this.hashCode()+" refreshLazyChildren() started = true, evaluated = 0");
             }
             // It's refresh => do not check for this children already being evaluated
             treeModelRoot.getChildrenEvaluator().evaluate(this, false);
@@ -514,6 +526,9 @@ public class TreeModelNode extends AbstractNode {
                 } else {
                     ch = children_evaluated;
                 }
+                //System.err.println(this.hashCode()+" refreshLazyChildren() ending, evaluated[0] = "+evaluated[0]+", refreshingStarted = "+refreshingStarted+", children_evaluated = "+(children_evaluated != null)+", ch = "+(ch != null));
+                // Do nothing when it's evaluated, but already unset.
+                if (children_evaluated == null && evaluated[0] == 1) return;
                 children_evaluated = null;
             }
             if (ch == null) {
@@ -524,6 +539,7 @@ public class TreeModelNode extends AbstractNode {
         }
         
         private void applyChildren(final Object[] ch, boolean refreshSubNodes) {
+            //System.err.println(this.hashCode()+" applyChildren("+refreshSubNodes+")");
             int i, k = ch.length; 
             WeakHashMap newObjectToNode = new WeakHashMap ();
             for (i = 0; i < k; i++) {
@@ -566,6 +582,7 @@ public class TreeModelNode extends AbstractNode {
         }
         
         private void applyWaitChildren() {
+            //System.err.println(this.hashCode()+" applyWaitChildren()");
             setKeys(new Object[] { WAIT_KEY });
         }
         
