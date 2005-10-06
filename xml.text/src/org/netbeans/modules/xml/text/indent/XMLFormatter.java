@@ -44,10 +44,10 @@ import org.netbeans.modules.xml.text.syntax.javacc.lib.JJEditorSyntax;
  * @author  Marek Fukala
  */
 public class XMLFormatter extends ExtFormatter {
-
+    
     //at least one character
     private static final Pattern VALID_TAG_NAME = Pattern.compile("[\\w+|-]*"); // NOI18N
-
+    
     public XMLFormatter(Class kitClass) {
         super(kitClass);
     }
@@ -81,25 +81,33 @@ public class XMLFormatter extends ExtFormatter {
             //get first non-white token backward
             int nonWSTokenBwd = Utilities.getFirstNonWhiteBwd(doc, endOffset);
             //get first non-white token on the line
-            int lineStart = Utilities.getRowStart(doc, nonWSTokenBwd);
-            int firstNonWsOffsetOnLine = Utilities.getFirstNonWhiteFwd(doc, lineStart);
-            
-            token = sup.getTokenChain(firstNonWsOffsetOnLine , firstNonWsOffsetOnLine + 1);
+            token = sup.getTokenChain(nonWSTokenBwd, nonWSTokenBwd + 1);
             if(token != null &&
                     token.getTokenID() == XMLTokenIDs.TAG &&
-                    token.getImage().startsWith("<") &&
-                    !token.getImage().startsWith("</")) {
-                //found an open tag => test whether it has a matching close tag between endOffset and the open tag offset
-                //if so, do not increase the indentation
-                int[] match = sup.findMatchingBlock(token.getOffset(), false);
-                if((match != null && match[0] > endOffset) || match == null) {
-                    //increase indentation
-                    int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
-                    int newLineIndent = previousLineIndentation + getShiftWidth();
-                    changeRowIndent(doc, startOffset, newLineIndent);
-                    return null;
-                }
+                    token.getImage().endsWith(">") &&
+                    !token.getImage().endsWith("/>")) {
+                //the enter was pressed after a tag which is not an empty tag
+                //find start token of the tag
+                do {
+                    token = token.getPrevious();
+                } while(token != null && token.getTokenID() != XMLTokenIDs.TAG);
                 
+                if(token != null &&
+                        token.getTokenID() == XMLTokenIDs.TAG &&
+                        token.getImage().startsWith("<") &&
+                        !token.getImage().startsWith("</")) {
+                    //found an open tag => test whether it has a matching close tag between endOffset and the open tag offset
+                    //if so, do not increase the indentation
+                    int[] match = sup.findMatchingBlock(token.getOffset(), false);
+                    if((match != null && match[0] > endOffset) || match == null) {
+                        //increase indentation
+                        int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
+                        int newLineIndent = previousLineIndentation + getShiftWidth();
+                        changeRowIndent(doc, startOffset, newLineIndent);
+                        return null;
+                    }
+                    
+                }
             }
             //found something else => indent to the some level
             int previousLineIndentation = Utilities.getRowIndent(doc, endOffset, false);
@@ -264,7 +272,7 @@ public class XMLFormatter extends ExtFormatter {
                                 if((match != null && match[0] < dotPos) || match == null) {
                                     //there isn't a _real_ matching tag => autocomplete
                                     //note: the test for match index is necessary since the '<'  in <tag> matches the '>' character on the end of the tag.
-                                    if(VALID_TAG_NAME.matcher(tagname).matches()) { //check the tag name 
+                                    if(VALID_TAG_NAME.matcher(tagname).matches()) { //check the tag name
                                         doc.atomicLock();
                                         try {
                                             doc.insertString( dotPos, "</"+tagname+">" , null);
