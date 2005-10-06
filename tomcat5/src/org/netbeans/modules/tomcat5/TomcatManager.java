@@ -650,9 +650,9 @@ public class TomcatManager implements DeploymentManager {
                     tp.setServerPort(Integer.parseInt(TomcatInstallUtil.getPort(server)));
                     tp.setShutdownPort(Integer.parseInt(TomcatInstallUtil.getShutdownPort(server)));
                 } catch (IOException ioe) {
-                    TomcatFactory.getEM().notify(ioe);
+                    TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, ioe);
                 } catch (NumberFormatException nfe) {
-                    TomcatFactory.getEM().notify(nfe);
+                    TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, nfe);
                 }
             }
         }
