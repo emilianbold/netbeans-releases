@@ -155,6 +155,12 @@ public class LayoutUtils implements LayoutConstants {
 
     static int getSizeOfDefaultGap(List sources, List targets, VisualMapper visualMapper,
                                    String contId, Map boundsMap) {
+        if (((sources != null) && (sources.isEmpty()))
+            || ((targets != null) && (targets.isEmpty()))) {
+            return 0; // Preferred gap not between components
+        }
+        sources = (sources == null) ? Collections.EMPTY_LIST : sources;
+        targets = (targets == null) ? Collections.EMPTY_LIST : targets;
         int size = 0;
         boolean containerGap = false;
         int containerGapAlignment = -1;
@@ -274,9 +280,10 @@ public class LayoutUtils implements LayoutConstants {
      * represent <code>LayoutComponent</code>s.
      */
     static List edgeSubComponents(LayoutInterval root, int edge) {
-        List components = new LinkedList();
+        List components = null;
         List candidates = new LinkedList();
         if (root != null) {
+            components = new LinkedList();
             candidates.add(root);
         }
         while (!candidates.isEmpty()) {
