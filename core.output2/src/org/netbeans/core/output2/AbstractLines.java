@@ -7,29 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.core.output2;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.openide.windows.OutputListener;
-import org.openide.ErrorManager;
-import org.openide.util.Mutex;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.nio.CharBuffer;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
+import org.openide.util.Mutex;
+import org.openide.windows.OutputListener;
 
 /**
  * Abstract Lines implementation with handling for getLine wrap calculations, etc.
@@ -830,6 +827,8 @@ abstract class AbstractLines implements Lines, Runnable {
      */ 
     static Pattern escapePattern(String s) {
         // fix for issue #50170, test for this method created, if necessary refine..
+        // [jglick] Probably this would work as well and be a bit more readable:
+        // String replacement = "\\Q" + s + "\\E";
         String replacement = s.replaceAll("([\\(\\)\\[\\]\\^\\*\\.\\$\\{\\}\\?\\+\\\\])", "\\\\$1");
         return Pattern.compile(replacement, Pattern.CASE_INSENSITIVE);
     }
