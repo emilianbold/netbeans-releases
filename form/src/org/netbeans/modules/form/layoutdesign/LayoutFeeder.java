@@ -664,7 +664,7 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     void addInterval(IncludeDesc iDesc1, IncludeDesc iDesc2) {
-        addToGroup(iDesc1, iDesc2);
+        addToGroup(iDesc1, iDesc2, true);
 
         // align in parallel if required
         if (iDesc1.snappedParallel != null || (iDesc2 != null && iDesc2.snappedParallel != null)) {
@@ -731,7 +731,7 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    private void addToGroup(IncludeDesc iDesc1, IncludeDesc iDesc2) {
+    private void addToGroup(IncludeDesc iDesc1, IncludeDesc iDesc2, boolean definite) {
         assert iDesc2 == null || (iDesc1.parent == iDesc2.parent
                                   && iDesc1.newSubGroup == iDesc2.newSubGroup
                                   && iDesc1.neighbor == iDesc2.neighbor);
@@ -905,7 +905,7 @@ class LayoutFeeder implements LayoutConstants {
                 gap.setMaximumSize(Short.MAX_VALUE);
                 // resizing gap may close the open parent group
                 IncludeDesc otherDesc = iiDesc == iDesc1 ? iDesc2 : iDesc1;
-                if (neighbors[i] != null && parent.getParent() != null
+                if (definite && neighbors[i] != null && parent.getParent() != null
                     && (otherDesc == null || otherDesc.alignment == DEFAULT)
                     && !isSignificantGroupEdge(seq, i^1))
                 {   // the aligned edge needs to be anchored out of parent (independently)
@@ -2146,7 +2146,7 @@ class LayoutFeeder implements LayoutConstants {
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc.parent.isParallel() || !iDesc.newSubGroup) {
-                addToGroup(iDesc, null);
+                addToGroup(iDesc, null, false);
 //                mainEffectiveAlign = getEffectiveAlignment(interval);
                 operations.extract(addingInterval, extractAlign, extractAlign == DEFAULT,
                                    separatedLeading, separatedTrailing);
@@ -2236,9 +2236,13 @@ class LayoutFeeder implements LayoutConstants {
                     separatingGap = commonSeq.getSubInterval(gapIdx);
             }
         }
-        if (separatingGap.isEmptySpace()) {
+        if (!separatingGap.isEmptySpace())
+            separatingGap = null;
+        else if (subGroup == null) {
             index = gapIdx;
-            // eliminate the gap if created just by addGroup called to separate sides
+            // eliminate the gap if caused by addToGroup called to separate adding
+            // interval's surroundings to side groups; the gap will be created
+            // again when addToGroup is called definitively (for merged inclusions)
             if (index == 0 && !LayoutInterval.isAlignedAtBorder(commonSeq, LEADING)) {
                 layoutModel.removeInterval(separatingGap);
                 separatingGap = null;
@@ -2248,7 +2252,6 @@ class LayoutFeeder implements LayoutConstants {
                 separatingGap = null;
             }
         }
-        else separatingGap = null;
 
         best.index = index;
         best.snappedNextTo = nextTo;
@@ -2257,7 +2260,12 @@ class LayoutFeeder implements LayoutConstants {
 
         // 7th resolve subgroup
         if (subGroup != null) {
-            if (separatingGap != null) {
+            if (separatingGap != null
+                && (extractAlign == DEFAULT
+                    || (extractAlign == LEADING && index > gapIdx)
+                    || (extractAlign == TRAILING && index <= gapIdx)))
+            {   // subGroup goes next to a separating gap - which is likely superflous
+                // (the extracted parallel sequence in subGroup has its own gap)
                 layoutModel.removeInterval(separatingGap);
             }
             if (subsubGroup != null && subsubGroup.getSubIntervalCount() > 0) {
