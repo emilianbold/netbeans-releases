@@ -172,7 +172,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
 
     public ExecutorGroup getGroup() {
         return group;
-    }    
+    }
 
     /**
      * Return internal errors.
@@ -456,7 +456,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         String cancel = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Cancel");
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel, 
-                NbBundle.getMessage(ExecutorSupport.class, "BK0004"),
+                NbBundle.getMessage(ExecutorSupport.class, "BK0004", getDisplayName()),
                 true, 
                 new Object [] { ok, cancel }, 
                 ok, 
@@ -465,7 +465,8 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                     }
-                }); 
+                });
+        descriptor.setMessageType(DialogDescriptor.ERROR_MESSAGE);
         descriptor.setClosingOptions(null);
         rootWizard.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {

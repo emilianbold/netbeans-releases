@@ -81,7 +81,7 @@ public final class ExecutorGroup implements Cancellable {
      */
     public void progress(String details) {
         if (progressHandle == null) {
-            progressHandle = ProgressHandleFactory.createHandle(name, this);
+            progressHandle = ProgressHandleFactory.createHandle(name + "...", this);
             progressHandle.start();
         }
 
@@ -132,7 +132,7 @@ public final class ExecutorGroup implements Cancellable {
      * Called by ExecutorSupport after processing.
      *
      * @param queue processign queue or null for all
-     * @param id identifier paired with {@link #finished}  
+     * @param id identifier paired with {@link #enqueued(ClientRuntime, Object)}
      * @return true for last id in given queue
      */
     synchronized boolean finished(ClientRuntime queue, Object id) {
