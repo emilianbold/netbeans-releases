@@ -282,7 +282,7 @@ public final class ExecutorGroup implements Cancellable {
     /**
      * Asynchronously executes all added executors. Executors
      * are grouped according to CVSRoot and serialized in
-     * particular ClientRuntime (thread) queue.
+     * particular ClientRuntime (thread) queue. It maintains
      *
      * <p>Warning:
      * <ul>

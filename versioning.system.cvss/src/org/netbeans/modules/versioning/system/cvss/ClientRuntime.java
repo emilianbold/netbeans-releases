@@ -147,6 +147,17 @@ public class ClientRuntime {
      * is appended at the end.
      */
     public void log(String message) {
+        if (log.isClosed()) {
+            log = IOProvider.getDefault().getIO(cvsRoot, false);
+            try {
+                // XXX workaround, otherwise it writes to nowhere
+                log.getOut().reset();
+            } catch (IOException e) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.notify(e);
+            }
+            //log.select();
+        }
         log.getOut().write(message);
     }
 
