@@ -105,7 +105,7 @@ public class DataFolderTest extends NbTestCase {
             "AA/a.txt",
             "AA/b.txt"
         };
-        TestUtilHid.destroyLocalFileSystem (getName());
+        clearWorkDir();
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
 
         DataFolder df = DataFolder.findFolder (lfs.findResource ("AA"));

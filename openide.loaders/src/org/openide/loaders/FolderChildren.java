@@ -238,6 +238,7 @@ implements PropertyChangeListener, ChangeListener {
          * or with empty collection if active is false
          */
         public void run() {
+            FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
             
             if (! active) {
                 setKeys (java.util.Collections.EMPTY_SET);

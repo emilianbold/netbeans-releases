@@ -60,6 +60,12 @@ implements ChangeListener {
 
     /** Lock for creating POOL instance */
     private static Object lockPOOL = new Object();
+
+    /** check to know if someone is waiting in waitNotified, changed from
+     * inside synchronized block, but read without synchronization, that is
+     * why it is made volatile
+     */
+    private volatile boolean inWaitNotified;
     
     /** Get the instance of DataObjectPool - value of static field 'POOL'.
      * Initialize the field if necessary.
@@ -452,8 +458,10 @@ implements ChangeListener {
      */
     public void waitNotified (DataObject obj) {
         for (;;) {
-            try {
-                synchronized (this) {
+            synchronized (this) {
+                try {
+                    inWaitNotified = true;
+                    
                     enterRecognition (obj.getPrimaryFile().getParent());
 
                     if (toNotify.isEmpty()) {
@@ -475,13 +483,23 @@ implements ChangeListener {
                     }
 
                     wait ();
+                } catch (InterruptedException ex) {
+                    // never mind
+                } finally {
+                    inWaitNotified = false;
                 }
-            } catch (InterruptedException ex) {
-                // never mind
             }
         }
     }
-        
+
+    /** Allows to check whether a code is in waitNotified method in order
+     * to detect more precisly the condition needed for deadlock #65543 really
+     * happened.
+     */
+    final boolean isInWaitNotified() {
+        return inWaitNotified;
+    }
+    
     
     /** Add to list of created objects.
      */
