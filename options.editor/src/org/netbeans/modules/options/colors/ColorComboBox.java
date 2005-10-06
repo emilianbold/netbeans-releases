@@ -86,6 +86,8 @@ public class ColorComboBox extends JComboBox {
 	new Value (loc ("CTL_None_Color"), null)                  //NOI18N
     };
     
+    private Color lastColor;
+    
     
     /** Creates a new instance of ColorChooser */
     public ColorComboBox () {
@@ -101,9 +103,12 @@ public class ColorComboBox extends JComboBox {
                         SwingUtilities.getAncestorOfClass 
                             (Dialog.class, ColorComboBox.this),
                         loc ("SelectColor"),
-                        null
+                        lastColor
                     );
-                    setColor (c);
+                    if (c != null)
+                        setColor (c);
+                } else {
+                    lastColor = ((Value) getSelectedItem ()).color;                    
                 }
                 ColorComboBox.this.firePropertyChange (PROP_COLOR, null, null);
             }
@@ -125,10 +130,13 @@ public class ColorComboBox extends JComboBox {
     }
     
     public void setColor (Color color) {
-        if (color == null)
+        if (color == null) {
             setSelectedIndex (content.length - 1);
-        else
+            lastColor = ((Value) getItemAt (content.length - 1)).color;
+        } else {
             setSelectedItem (new Value (color));
+            lastColor = color;
+        }
     }
     
     public Color getColor () {
