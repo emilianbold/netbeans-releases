@@ -170,6 +170,10 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         this.group = group;
     }
 
+    public ExecutorGroup getGroup() {
+        return group;
+    }    
+
     /**
      * Return internal errors.
      * @see #isSuccessful

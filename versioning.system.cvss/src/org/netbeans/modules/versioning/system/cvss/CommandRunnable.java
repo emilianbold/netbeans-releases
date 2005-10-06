@@ -106,6 +106,10 @@ class CommandRunnable implements Runnable, Cancellable {
         return true;
     }
 
+    public String toString() {
+        return "CommandRunnable command=" + cmd.getCVSCommand();  // NOI18N
+    }
+
     /** Periodic task updating transmitted/received data counter. */
     private class CounterRunnable implements Runnable {
 

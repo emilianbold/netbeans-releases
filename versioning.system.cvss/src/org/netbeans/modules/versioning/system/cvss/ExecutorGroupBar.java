@@ -46,7 +46,7 @@ final class ExecutorGroupBar implements ExecutorGroup.Groupable {
 
     private final Runnable action;
     private final ExecutorSupport[] bar;
-
+    private ExecutorGroup group;
 
     /**
      * Creates barrier, with optional action
@@ -70,7 +70,8 @@ final class ExecutorGroupBar implements ExecutorGroup.Groupable {
     }
 
     public void joinGroup(ExecutorGroup group) {
-        // nothing
+        this.group = group;
+        group.enqueued(null, this);
     }
 
     /**
@@ -82,5 +83,6 @@ final class ExecutorGroupBar implements ExecutorGroup.Groupable {
         if (action != null) {
             action.run();
         }
+        group.finished(null, this);
     }
 }

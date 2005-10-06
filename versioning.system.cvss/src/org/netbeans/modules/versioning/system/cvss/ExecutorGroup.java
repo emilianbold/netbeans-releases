@@ -93,15 +93,31 @@ public final class ExecutorGroup implements Cancellable {
 
     /**
      * Called by ExecutorSupport on enqueue.
+     * Pairs with finished.
+     *
+     * @param queue processign queue or null for all
+     * @param id identifier paired with {@link #finished}
      */
-    synchronized void enqueued(ClientRuntime queue, CommandRunnable run) {
+    synchronized void enqueued(ClientRuntime queue, Object id) {
         progress(null);
-        Set commands = (Set) queues.get(queue);
-        if (commands == null) {
-            commands = new HashSet();
+
+        Collection keys;
+        if (queue == null) {
+            keys = queues.keySet();
+        } else {
+            keys = Collections.singleton(queue);
         }
-        commands.add(run);
-        queues.put(queue, commands);
+
+        Iterator it = keys.iterator();
+        while (it.hasNext()) {
+            Object key = (Object) it.next();
+            Set commands = (Set) queues.get(key);
+            if (commands == null) {
+                commands = new HashSet();
+            }
+            commands.add(id);
+            queues.put(key, commands);
+        }
     }
 
     /**
@@ -109,24 +125,42 @@ public final class ExecutorGroup implements Cancellable {
      * @return true for the first command in given queue
      */
     synchronized boolean started(ClientRuntime queue) {
-        return executed && started.add(queue);
+        return started.add(queue);
     }
 
     /**
      * Called by ExecutorSupport after processing.
-     * @return true for last command in given queue
+     *
+     * @param queue processign queue or null for all
+     * @param id identifier paired with {@link #finished}  
+     * @return true for last id in given queue
      */
-    synchronized boolean finished(ClientRuntime queue, CommandRunnable command) {
-        Set commands = (Set) queues.get(queue);
-        commands.remove(command);
-        if (commands.isEmpty()) {
-            queues.remove(queue);
-            if (executed && queues.isEmpty() && progressHandle != null) {
-                progressHandle.finish();
-                progressHandle = null;
-            }
+    synchronized boolean finished(ClientRuntime queue, Object id) {
+
+        Collection keys;
+        if (queue == null) {
+            keys = queues.keySet();
+        } else {
+            keys = Collections.singleton(queue);
         }
-        return executed && commands.isEmpty();   // TODO how to tip true for non-executed?
+
+        boolean finished = executed; // TODO how to tip true for non-executed?
+        Iterator it = keys.iterator();
+        while (it.hasNext()) {
+            Object key = (Object) it.next();
+
+            Set commands = (Set) queues.get(key);
+            commands.remove(id);
+            if (commands.isEmpty()) {
+                queues.remove(key);
+                if (executed && queues.isEmpty() && progressHandle != null) {
+                    progressHandle.finish();
+                    progressHandle = null;
+                }
+            }
+            finished &= commands.isEmpty();
+        }
+        return finished;
     }
 
     boolean isCancelled() {

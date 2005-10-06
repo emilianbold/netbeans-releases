@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.checkout;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
 import org.netbeans.modules.versioning.system.cvss.executor.CheckoutExecutor;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
@@ -71,17 +72,21 @@ public final class CheckoutAction extends SystemAction {
     }
 
     /**
-     * Shows interactive chekcout wizard.
+     * Shows interactive checkout wizard.
      */
     public void actionPerformed(ActionEvent ev) {
         CheckoutWizard wizard = new CheckoutWizard();
         if (wizard.show() == false) return;
 
-        String tag = wizard.getTag();
-        String modules = wizard.getModules();
-        String workDir = wizard.getWorkingDir();
-        String cvsRoot = wizard.getCvsRoot();
-        checkout(cvsRoot, modules, tag, workDir, true);
+        final String tag = wizard.getTag();
+        final String modules = wizard.getModules();
+        final String workDir = wizard.getWorkingDir();
+        final String cvsRoot = wizard.getCvsRoot();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                checkout(cvsRoot, modules, tag, workDir, true);
+            }
+        });
     }
 
 
@@ -133,18 +138,20 @@ public final class CheckoutAction extends SystemAction {
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(cvsRoot);
-        CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
 
-        executor.execute();
+        ExecutorGroup group = new ExecutorGroup("Checkouting");
+        CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
+        group.addExecutor(executor);
         if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 && scanProject) {
-            executor.addTaskListener(new CheckoutCompletedController(executor, workingFolder, scanProject));
+            group.addBarrier(new CheckoutCompletedController(executor, workingFolder, scanProject));
         }
 
+        group.execute();
         return executor;
     }
 
     /** On task finish shows next steps UI.*/
-    private class CheckoutCompletedController implements TaskListener, ActionListener {
+    private class CheckoutCompletedController implements Runnable, ActionListener {
 
         private final CheckoutExecutor executor;
         private final File workingFolder;
@@ -160,9 +167,8 @@ public final class CheckoutAction extends SystemAction {
             this.openProject = openProject;
         }
 
-        public void taskFinished(Task task) {
+        public void run() {
 
-            executor.removeTaskListener(this);
             if (executor.isSuccessful() == false) {
                 return;
             }
@@ -171,25 +177,20 @@ public final class CheckoutAction extends SystemAction {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(workingFolder));
             if (fo != null) {
                 String name = NbBundle.getMessage(CheckoutAction.class, "BK1007");
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(name);
-                try {
-                    progressHandle.start();
-                    Iterator it = executor.getExpandedModules().iterator();
-                    while (it.hasNext()) {
-                        String module = (String) it.next();
-                        if (".".equals(module)) {
-                            checkedOutProjects = ProjectUtilities.scanForProjects(fo);
-                            break;
-                        } else {
-                            FileObject subfolder = fo.getFileObject(module);
-                            if (subfolder != null) {
-                                progressHandle.progress("Scanning " + module);
-                                checkedOutProjects.addAll(ProjectUtilities.scanForProjects(subfolder));
-                            }
+                executor.getGroup().progress(name);
+                Iterator it = executor.getExpandedModules().iterator();
+                while (it.hasNext()) {
+                    String module = (String) it.next();
+                    if (".".equals(module)) {
+                        checkedOutProjects = ProjectUtilities.scanForProjects(fo);
+                        break;
+                    } else {
+                        FileObject subfolder = fo.getFileObject(module);
+                        if (subfolder != null) {
+                            executor.getGroup().progress(name);
+                            checkedOutProjects.addAll(ProjectUtilities.scanForProjects(subfolder));
                         }
                     }
-                } finally {
-                    progressHandle.finish();
                 }
             }
 
@@ -242,9 +243,13 @@ public final class CheckoutAction extends SystemAction {
             descriptor.setOptions(options);
             descriptor.setClosingOptions(options);
             descriptor.setHelpCtx(new HelpCtx(CheckoutCompletedPanel.class));
-
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.setVisible(true);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    dialog.setVisible(true);
+                }
+            });
         }
 
         public void actionPerformed(ActionEvent e) {

@@ -19,6 +19,7 @@ import org.netbeans.lib.cvsclient.command.DefaultFileInfoContainer;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.commit.CommitInformation;
 import org.netbeans.lib.cvsclient.event.ModuleExpansionEvent;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -112,4 +113,5 @@ public class CheckoutExecutor extends ExecutorSupport {
             }
         }
     }
+
 }

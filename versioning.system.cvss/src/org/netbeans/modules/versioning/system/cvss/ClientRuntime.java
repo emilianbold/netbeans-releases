@@ -307,6 +307,10 @@ public class ClientRuntime {
         return cs;
     }
 
+    public String toString() {
+        return "ClientRuntime queue=" + cvsRoot + " processor=" + requestProcessor;  // NOI18N
+    }
+
     /**
      * Encapsulates result of a finished command. If the command succeeded, the 'error' field is null. If it failed,
      * it contains a throwable, cause of the error.
