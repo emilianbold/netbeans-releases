@@ -36,6 +36,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Libraries</em> panel in Suite customizer.
@@ -239,8 +240,8 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         Children.SortedArray clusters = new Children.SortedArray();
         clusters.setComparator(this);
         AbstractNode n = new AbstractNode(clusters);
-        n.setName(org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListClusters"));
-        n.setDisplayName(org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListClustersModules"));
+        n.setName(NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListClusters"));
+        n.setDisplayName(NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListClustersModules"));
         
         for (int i = 0; i < entries.length; i++) {
             Children clusterChildren = (Children)clusterToChildren.get(entries[i].getClusterDirectory());
@@ -261,7 +262,18 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
             AbstractNode module = new Enabled(Children.LEAF, !disabledModuleCNB.contains(cnb));
             module.setName(cnb);
             module.setDisplayName(entries[i].getLocalizedName());
-            module.setShortDescription(entries[i].getShortDescription());
+            String desc = entries[i].getShortDescription();
+            String tooltip;
+            if (desc != null) {
+                if (desc.startsWith("<html>")) { // NOI18N
+                    tooltip = "<html>" + NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.HINT_module_desc", cnb, desc.substring(6));
+                } else {
+                    tooltip = NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.HINT_module_desc", cnb, desc);
+                }
+            } else {
+                tooltip = NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.HINT_module_no_desc", cnb);
+            }
+            module.setShortDescription(tooltip);
             module.setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             
             clusterChildren.add(new Node[] { module });
@@ -396,7 +408,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         private Enabled node;
         
         public EnabledProp(Enabled node) {
-            super("enabled", Boolean.TYPE, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListEnabled"), org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListEnabledShortDescription"));
+            super("enabled", Boolean.TYPE, NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListEnabled"), NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListEnabledShortDescription"));
             this.node = node;
         }
         
