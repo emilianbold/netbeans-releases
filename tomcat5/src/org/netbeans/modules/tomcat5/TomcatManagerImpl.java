@@ -312,7 +312,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         run ();
         if (!authorized) {
             // connection to tomcat manager has not been authorized
-            String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "EX_AuthorizationFailed");
+            String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_AuthorizationFailed");
             IllegalStateException ise = new IllegalStateException(errMsg);
             throw (IllegalStateException)ise.initCause(new AuthorizationException());
         }
@@ -473,7 +473,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
 
                 // Establish the connection with the server
                 hconn.connect();
-                if (hconn.getResponseCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                int respCode = hconn.getResponseCode();
+                if (respCode == HttpURLConnection.HTTP_UNAUTHORIZED 
+                    || respCode == HttpURLConnection.HTTP_FORBIDDEN) {
                     // connection to tomcat manager has not been allowed
                     authorized = false;
                     String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_AuthorizationFailed");
