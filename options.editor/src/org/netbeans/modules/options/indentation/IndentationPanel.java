@@ -97,9 +97,9 @@ ChangeListener, ActionListener {
         cbAddStar.addActionListener (this);
         cbExpandTabs.addActionListener (this);
         cbSpace.addActionListener (this);
-        tfStatementIndent.setModel (new SpinnerNumberModel (0, 0, 50, 1));
+        tfStatementIndent.setModel (new SpinnerNumberModel (8, 1, 50, 1));
         tfStatementIndent.addChangeListener (this);
-        tfIndent.setModel (new SpinnerNumberModel (0, 0, 50, 1));
+        tfIndent.setModel (new SpinnerNumberModel (4, 1, 50, 1));
         tfIndent.addChangeListener (this);
         epPreview.setEditable (false);
 
