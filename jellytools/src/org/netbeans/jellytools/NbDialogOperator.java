@@ -111,7 +111,7 @@ public class NbDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btHelp() {
         if (_btHelp == null) {
-            String helpCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", "HELP_OPTION_CAPTION");
+            String helpCaption = Bundle.getStringTrimmed("org.netbeans.core.windows.services.Bundle", "HELP_OPTION_CAPTION");
             _btHelp = new JButtonOperator(this, helpCaption);
         }
         return _btHelp;
