@@ -1769,7 +1769,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             "FMT_ERR_CannotLoadClass3", // NOI18N
                             new Object[] { editorStr }),
                         propNode);
-                    ErrorManager.getDefault().annotate(t, msg);
+                    ErrorManager.getDefault().annotate(t, ErrorManager.USER, null, msg, null, null);
                     nonfatalErrors.add(t);
                     continue;
                 }
