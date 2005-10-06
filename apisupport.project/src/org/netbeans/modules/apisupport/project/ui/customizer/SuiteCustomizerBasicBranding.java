@@ -80,14 +80,15 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
         getBrandingModel().brandingEnabledRefresh();        
         getBrandingModel().initName(true);
         getBrandingModel().initTitle(true);
-        buildWithBranding.setSelected(getBrandingModel().isBrandingEnabled());
+        standaloneApp.setSelected(getBrandingModel().isBrandingEnabled());
+        addOn.setSelected(!getBrandingModel().isBrandingEnabled());
         nameValue.setText(getBrandingModel().getName());
         titleValue.setText(getBrandingModel().getTitle());
         iconSource = getBrandingModel().getIconSource();
         if (iconSource != null) {
             ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
         }
-        iconLocation.setText(getBrandingModel().getIconLocation());
+        //iconLocation.setText(getBrandingModel().getIconLocation());
         
         enableOrDisableComponents();
         
@@ -101,18 +102,17 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
     }
     
     private void enableOrDisableComponents() {
-        nameValue.setEnabled(buildWithBranding.isSelected());
-        name.setEnabled(buildWithBranding.isSelected());        
+        nameValue.setEnabled(standaloneApp.isSelected());
+        name.setEnabled(standaloneApp.isSelected());        
         
-        titleValue.setEnabled(buildWithBranding.isSelected());
-        title.setEnabled(buildWithBranding.isSelected());
+        titleValue.setEnabled(standaloneApp.isSelected());
+        title.setEnabled(standaloneApp.isSelected());
         
-        browse.setEnabled(buildWithBranding.isSelected());
+        browse.setEnabled(standaloneApp.isSelected());
         
-        iconLocation.setEnabled(buildWithBranding.isSelected());
-        icon.setEnabled(buildWithBranding.isSelected());
+        icon.setEnabled(standaloneApp.isSelected());
         
-        iconPreview.setEnabled(buildWithBranding.isSelected());
+        iconPreview.setEnabled(standaloneApp.isSelected());
     }
     
     /** This method is called from within the constructor to
@@ -124,29 +124,33 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         title = new javax.swing.JLabel();
         titleValue = new javax.swing.JTextField();
         iconPreview = new ImagePreview(BasicBrandingModel.ICON_WIDTH, BasicBrandingModel.ICON_HEIGHT);
         name = new javax.swing.JLabel();
         nameValue = new javax.swing.JTextField();
-        buildWithBranding = new javax.swing.JCheckBox();
         browse = new javax.swing.JButton();
         icon = new javax.swing.JLabel();
-        iconLocation = new javax.swing.JTextField();
+        addOn = new javax.swing.JRadioButton();
+        standaloneApp = new javax.swing.JRadioButton();
 
         setLayout(new java.awt.GridBagLayout());
 
+        title.setLabelFor(titleValue);
         org.openide.awt.Mnemonics.setLocalizedText(title, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_AppTitle"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(title, gridBagConstraints);
+        title.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("ACS_Title"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -154,49 +158,37 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(titleValue, gridBagConstraints);
 
+        iconPreview.setLabelFor(iconPreview);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 12);
         add(iconPreview, gridBagConstraints);
 
+        name.setLabelFor(nameValue);
         org.openide.awt.Mnemonics.setLocalizedText(name, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_AppName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(name, gridBagConstraints);
+        name.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("ACS_Name"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(nameValue, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(buildWithBranding, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_EnableBranding"));
-        buildWithBranding.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        buildWithBranding.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        buildWithBranding.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buildWithBrandingActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(buildWithBranding, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browse, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_Browse"));
         browse.addActionListener(new java.awt.event.ActionListener() {
@@ -207,31 +199,71 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 0);
         add(browse, gridBagConstraints);
+        browse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("ACS_Browse"));
 
         org.openide.awt.Mnemonics.setLocalizedText(icon, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_AppIcon"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 12);
         add(icon, gridBagConstraints);
 
-        iconLocation.setEditable(false);
+        buttonGroup1.add(addOn);
+        org.openide.awt.Mnemonics.setLocalizedText(addOn, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_AppAddOn"));
+        addOn.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        addOn.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        addOn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addOnActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 12);
-        add(iconLocation, gridBagConstraints);
+        add(addOn, gridBagConstraints);
+        addOn.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("ACS_AddOn"));
+
+        buttonGroup1.add(standaloneApp);
+        org.openide.awt.Mnemonics.setLocalizedText(standaloneApp, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_AppStandAlone"));
+        standaloneApp.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        standaloneApp.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        standaloneApp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                standaloneAppActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(standaloneApp, gridBagConstraints);
+        standaloneApp.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("ACS_StandAloneApp"));
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void standaloneAppActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standaloneAppActionPerformed
+        //TODO: Exclude IDE Modules must be done
+        enableOrDisableComponents();
+        getBrandingModel().setBrandingEnabled(standaloneApp.isSelected());                
+    }//GEN-LAST:event_standaloneAppActionPerformed
+
+    private void addOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addOnActionPerformed
+        enableOrDisableComponents();
+        getBrandingModel().setBrandingEnabled(standaloneApp.isSelected());                
+    }//GEN-LAST:event_addOnActionPerformed
     
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser();
@@ -246,21 +278,17 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
             ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
         }
     }//GEN-LAST:event_browseActionPerformed
-    
-    private void buildWithBrandingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildWithBrandingActionPerformed
-        enableOrDisableComponents();
-        getBrandingModel().setBrandingEnabled(buildWithBranding.isSelected());        
-    }//GEN-LAST:event_buildWithBrandingActionPerformed
-    
+        
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton addOn;
     private javax.swing.JButton browse;
-    private javax.swing.JCheckBox buildWithBranding;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel icon;
-    private javax.swing.JTextField iconLocation;
     private javax.swing.JLabel iconPreview;
     private javax.swing.JLabel name;
     private javax.swing.JTextField nameValue;
+    private javax.swing.JRadioButton standaloneApp;
     private javax.swing.JLabel title;
     private javax.swing.JTextField titleValue;
     // End of variables declaration//GEN-END:variables
@@ -274,8 +302,8 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
             //this.image = im;
             this.width = width;
             this.height = height;            
-            border = new TitledBorder(NbBundle.getMessage(getClass(),"LBL_IconPreview"));//NOI18N
-            setBorder(border);
+            //border = new TitledBorder(NbBundle.getMessage(getClass(),"LBL_IconPreview"));//NOI18N
+            //setBorder(border);
         }
         
         
@@ -283,17 +311,17 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
             super.paint(g);
             
             if ((getWidth() >  width) && (getHeight() > height) && image != null) {
-                if (getBorder() == null) {
+                /*if (getBorder() == null) {
                     setBorder(border);
-                }
-                int x = (getWidth()/2)-(width/2);
-                int y = (getHeight()/2)-(height/2);
+                }*/
+                int x = 0;//(getWidth()/2)-(width/2);
+                int y = 0;//(getHeight()/2)-(height/2);
                 g.drawImage(image.getImage(),x, y, width, height, this.getBackground(),null);
-            } else {
+            } /*else {
                 if (getBorder() != null) {
                     setBorder(null);
                 }
-            }
+            }*/
         }
         
         private void setImage(ImageIcon image) {
@@ -313,7 +341,8 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
 
     public void showSubCategory(String name) {
         if (name.equals(SuiteCustomizer.BASIC_BRANDING_CHECKBOX)) {
-	    buildWithBranding.requestFocus();
+	    //buildWithBranding.requestFocus();
+            addOn.requestFocus();
         } else {
             throw new IllegalArgumentException(name);
         }
