@@ -30,6 +30,8 @@ public class TestBase extends NbTestCase {
         // set the lookup which will be returned by Lookup.getDefault()
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         assertEquals("Unable to set the default lookup!", Lkp.class, Lookup.getDefault().getClass());
+        
+        ((Lkp)Lookup.getDefault()).setLookups(new Object[] { new RepositoryImpl() });
         assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
     }
     
@@ -39,11 +41,15 @@ public class TestBase extends NbTestCase {
     
     public static final class Lkp extends ProxyLookup {
         public Lkp() {
-            ClassLoader l = getClass().getClassLoader();
+            setLookups(new Object[0]);
+        }
+        
+        void setLookups(Object[] instances) {
+            ClassLoader l = TestBase.class.getClassLoader();
             setLookups(new Lookup[] {
                 Lookups.metaInfServices(l),
                 Lookups.singleton(l),
-                Lookups.singleton(new RepositoryImpl()),
+                Lookups.fixed(instances),
             });
         }
     }
