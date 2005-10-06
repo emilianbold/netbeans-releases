@@ -110,7 +110,8 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
     }
 
     public void enableComponents(boolean enable) {
-        
+        getComponent();
+        component.enableComponents(enable);
         
     }
 

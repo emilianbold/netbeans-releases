@@ -103,7 +103,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jComboBoxURLPattern, gridBagConstraints);
 
         jLabelAppResource.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MNE_ConfigPanel_ApplicationResource_Mnemonic").charAt(0));
@@ -129,20 +129,21 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
 
         jCheckBoxTLD.setMnemonic(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MNE_ConfigPanel_InstallStrutsTLDs_Mnemonic").charAt(0));
         jCheckBoxTLD.setText(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "LBL_ConfigPanel_InstallStrutsTLDs"));
-        jCheckBoxTLD.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBoxTLD.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxTLD.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jCheckBoxTLD, gridBagConstraints);
 
         jCheckBoxWAR.setMnemonic(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MNE_ConfigPanel_PackageStrutsJars_Mnemonic").charAt(0));
         jCheckBoxWAR.setSelected(true);
         jCheckBoxWAR.setText(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "LBL_ConfigPanel_PackageStrutsJars"));
-        jCheckBoxWAR.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBoxWAR.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxWAR.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

@@ -95,30 +95,30 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         cbValidate.setSelected(true);
         cbValidate.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Validate_XML"));
-        cbValidate.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        cbValidate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbValidate.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 5, 0);
         add(cbValidate, gridBagConstraints);
         cbValidate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ValidateXML"));
 
         cbVerify.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Verify_Objects"));
-        cbVerify.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        cbVerify.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbVerify.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 5, 5, 0);
         add(cbVerify, gridBagConstraints);
         cbVerify.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_VerifyObjects"));
 
         cbPackageJars.setSelected(true);
         cbPackageJars.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Package_JARs"));
-        cbPackageJars.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        cbPackageJars.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbPackageJars.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -251,5 +251,15 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     
     public boolean packageJars(){
         return cbPackageJars.isSelected();
+    }
+    
+    public void enableComponents(boolean enable){
+        cbPackageJars.setEnabled(enable);
+        cbValidate.setEnabled(enable);
+        cbVerify.setEnabled(enable);
+        lServletName.setEnabled(enable);
+        lURLPattern.setEnabled(enable);
+        tServletName.setEnabled(enable);
+        tURLPattern.setEnabled(enable);
     }
 }
