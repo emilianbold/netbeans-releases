@@ -893,7 +893,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         RADComponent radcomp = formDesigner.getMetaComponent(comp);
         if ((radcomp != null) && !(radcomp instanceof RADVisualContainer)) {
             radcomp = radcomp.getParentComponent();
-            comp = (Component)formDesigner.getComponent(radcomp);
+            comp = radcomp != null ? (Component)formDesigner.getComponent(radcomp) : null;
         }
         if ((radcomp == null) || (radcomp == formDesigner.getTopDesignComponent())
             || (!(comp instanceof JPanel))) {
@@ -2230,7 +2230,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         void init() {
             RADVisualContainer metacont = getSourceContainer();
             if (isTopComponent()) {
-                newDrag = getLayoutModel().getLayoutComponent(movingComponents[0].getId()) != null;
+                LayoutModel layoutModel = getLayoutModel();
+                newDrag = layoutModel != null
+                          && layoutModel.getLayoutComponent(movingComponents[0].getId()) != null;
                 oldDrag = !newDrag;
                 fixedTarget = null;
             }

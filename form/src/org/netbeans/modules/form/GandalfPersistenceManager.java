@@ -320,7 +320,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 String className = javaClass.getName();
                 int dotIndex = className.lastIndexOf('.');
                 className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
-                if (className.equals(javaFile.getName())) {
+                if (className.equals(jFO.getName())) {
                     declaredSuperclassName = javaClass.getSuperClass().getName();
                     break;
                 }

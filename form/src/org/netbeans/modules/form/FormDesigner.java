@@ -384,8 +384,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void updateComponentLayer(final boolean fireChange) {
-        if (getLayoutDesigner() == null) return;
         componentLayer.revalidate();
+        if (getLayoutDesigner() == null)
+            return;
 
         // after the components are layed out, sync the layout designer
         SwingUtilities.invokeLater(new Runnable() {
@@ -566,8 +567,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         RADComponent metacomp = topDesignComponent; //formModel.getTopRADComponent()
         if (metacomp instanceof RADVisualFormContainer)
             ((RADVisualFormContainer)metacomp).setDesignerSize(size);
-        else if (metacomp != null)
+        else if (metacomp != null) {
+            Dimension old = (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
             metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
+            getFormModel().fireSyntheticPropertyChanged(metacomp, FormDesigner.PROP_DESIGNER_SIZE, old, size);
+        }
     }
 
     private void setupDesignerSize() {
@@ -1773,7 +1777,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     formClone.setVisible(true);
                     componentLayer.setTopDesignComponent(formClone);
                     setupDesignerSize();
-                    getLayoutDesigner().externalSizeChangeHappened();
+                    if (getLayoutDesigner() != null)
+                        getLayoutDesigner().externalSizeChangeHappened();
                     updateComponentLayer(false);
                 }
                 return;
