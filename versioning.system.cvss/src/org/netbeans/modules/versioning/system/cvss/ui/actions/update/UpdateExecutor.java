@@ -118,7 +118,7 @@ public class UpdateExecutor extends ExecutorSupport {
             } else {
                 refreshFlat(files[i]);
             }
-            addFileSystem(filesystems, FileUtil.toFileObject(files[i]));
+            addFileSystem(filesystems, files[i]);
             if (files[i].isFile()) {
                 cache.refreshCached(files[i].getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
             }
@@ -140,7 +140,14 @@ public class UpdateExecutor extends ExecutorSupport {
         }
     }
 
-    private void addFileSystem(Set filesystems, FileObject fo) {
+    private void addFileSystem(Set filesystems, File file) {
+        FileObject fo;
+        for (;;) {
+            fo = FileUtil.toFileObject(file);
+            if (fo != null) break;
+            file = file.getParentFile();
+            if (file == null) return;
+        }
         try {
             filesystems.add(fo.getFileSystem());
         } catch (FileStateInvalidException e) {
