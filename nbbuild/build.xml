@@ -396,7 +396,7 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
                 <pathelement location="nbantext.jar"/>
             </classpath>
         </taskdef>
-        <checklinks basedir="${netbeans.javadoc.dir}" checkexternal="${javadoc.check.external.links}" failonerror="false" >
+        <checklinks basedir="${netbeans.javadoc.dir}" checkexternal="${javadoc.check.external.links}" failonerror="true" >
             <include name="*/overview-summary.html"/>
             <include name="*/apichanges.html"/>
             <include name="*/architecture-summary.html"/>

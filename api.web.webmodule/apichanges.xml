@@ -88,8 +88,8 @@ is the proper place.
                     the Web Module API/SPI. 
                 </p>
             </description>
-            <class package="org.netbeans.modules.web.api.webmodule" name="WebExtensionSupport"/>
-            <class package="org.netbeans.modules.web.spi.webmodule" name="WebExtensionProvider"/>
+            <class package="org.netbeans.modules.web.api.webmodule" name="WebExtensionSupport" link="no" />
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebExtensionProvider" link="no" />
         </change>
          
         <change id="Remove_URLCookie">
@@ -105,7 +105,7 @@ is the proper place.
                     with a corresponding SPI.
                 </p>
             </description>
-            <class package="org.netbeans.modules.web.api.webmodule" name="URLCookie"/>
+            <class package="org.netbeans.modules.web.api.webmodule" name="URLCookie" link="no" />
             <class package="org.netbeans.modules.web.api.webmodule" name="RequestParametersQuery"/>
             <class package="org.netbeans.modules.web.spi.webmodule" name="RequestParametersProvider"/>
          </change>
@@ -135,7 +135,7 @@ is the proper place.
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the <a href="http://www.netbeans.org/download/dev/javadoc/WebModuleAPI/">WebModule API</a>.</p>
+<p>This document lists changes made to the <a href="@TOP@overview-summary.html">WebModule API</a>.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>

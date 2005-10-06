@@ -1142,7 +1142,7 @@ Microsystems, Inc. All Rights Reserved.
             </description>
             <class package="org.openide.filesystems" name="MultiFileSystem"/>
         </change>
-        <change>
+        <change id='mfs-find-action' >
             <api name="filesystems"/>
             <summary>
                 <code>MultiFileSystem</code> finds actions on a set of files specially</summary>
@@ -1265,7 +1265,7 @@ Microsystems, Inc. All Rights Reserved.
             </description>
             <class package="org.openide.filesystems" name="FileStateInvalidException"/>
         </change>
-        <change>
+        <change id='repository-adapter-added' >
             <api name="filesystems"/>
             <summary>
                 <code>RepositoryAdapter</code> added</summary>
@@ -1389,7 +1389,7 @@ Microsystems, Inc. All Rights Reserved.
             </description>
             <class package="org.openide.filesystems" name="Repository"/>
         </change>
-        <change>
+        <change id='not-a-cookie' >
             <api name="filesystems"/>
             <summary>
                 <code>Repository</code> is not a cookie</summary>

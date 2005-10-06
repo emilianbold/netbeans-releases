@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
    The Error Stripe gathers the information to show from three sources:
        <ul>
           <li>(A subset of) editor annotations. See
-              <api type="export" category="stable" name="TextAPI" group="java" url="@org.openide.text@">OpenIDE Text API</api>
+              <api type="export" category="stable" name="TextAPI" group="java" url="@org-openide-text@/overview-summary.html">OpenIDE Text API</api>
               for more details.
           </li>
           <li>Up-to-date status providers. This is the
@@ -137,7 +137,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-usecases">
  
  <usecase id="annotations-provider" name="Augment Annotations to be shown in the Error Stripe">
-     Use the <api type="export" category="stable" name="TextAPI" group="java" url="@org.openide.text@">OpenIDE Text API</api>.
+     Use the <api type="export" category="stable" name="TextAPI" group="java" url="@org-openide-text@/overview-summary.html">OpenIDE Text API</api>.
  </usecase>
 
  <usecase id="up-to-date-provider" name="Provide Up-to-date Status for the Error Stripe">
@@ -149,9 +149,9 @@ Microsystems, Inc. All Rights Reserved.
  <p>Implement the <a href="@TOP@org/netbeans/spi/editor/errorstripe/UpToDateStatusProvider.html">UpToDateStatusProvider</a>
  that provides up-to-date status. Be sure that it fires PropertyChangeEvent when this status is changed.</p>
 
- <p>Implement the <a href="@TOP@org/netbeans/spi/editor/errorstripe/UpToDateStatusProviderCreator.html">UpToDateStatusProviderCreator</a>
+ <p>Implement the <a href="@TOP@org/netbeans/spi/editor/errorstripe/UpToDateStatusProviderFactory.html">UpToDateStatusProviderFactory</a>
  that creates an instance of your UpToDateStatusProvider for a given JTextComponent and install it as described
- <a href="@TOP@org/netbeans/spi/editor/errorstripe/UpToDateStatusProviderCreator.html">here</a>.</p>
+ <a href="@TOP@org/netbeans/spi/editor/errorstripe/UpToDateStatusProviderFactory.html">here</a>.</p>
  
  </usecase>
 
@@ -689,7 +689,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>The module does not use the global lookup. The module uses the lookup internally
-  to access UpToDateStatusProviderCreators.</p>
+  to access UpToDateStatusProviderFactories.</p>
  </answer>
 
 
@@ -939,7 +939,7 @@ Microsystems, Inc. All Rights Reserved.
    The module uses layers for two purposes:
        <ul>
            <li>To register the sidebar component throught the
-               <api name="Editor" type="import" category="friend" url="editor.html" group="java">Editor API</api>.
+               <api name="Editor" type="import" category="friend" group="java">Editor API</api>.
            </li>
            <li>To register providers of the <api type="export" category="private" group="java" name="ErrorStripePrivateSPI">private mark provider SPI.</api>
            </li>

@@ -241,6 +241,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
+  <defaultanswer generate='none'/>
   <ol>
    <li>
     <api group="java" name="Filesystems" type="import" category="official">

@@ -369,6 +369,12 @@ cause it to fail.
         <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../../../../">
             <include name="*/*/*/*/*/*/*.html"/>
         </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../../../../../">
+            <include name="*/*/*/*/*/*/*/*.html"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../../../../../../">
+            <include name="*/*/*/*/*/*/*/*/*.html"/>
+        </replace>
     </target>
     
     <target name="javadoc-stage-check" depends="javadoc-stage-replace" unless="javadoc.up.to.date">

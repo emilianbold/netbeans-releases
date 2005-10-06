@@ -52,7 +52,7 @@ J2EE Server Module provides support for development of J2EE modules and framewor
   </ul>
 </api>
     
-<api type="export" group="layer" name="PluginRegistration" category="friend" url="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+<api type="export" group="layer" name="PluginRegistration" category="friend" url="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
     XML layer contract for registration of server plugins and instances that implement 
     optional capabilities of server plugins.  Plugins with
     server-specific deployment decriptor files should declare the full
@@ -99,7 +99,7 @@ deployment, start/stop server or JSP compilation.
 <p><i>
 In order to do this the plugin needs to add the server classes that 
 implement Deployment API to classpath and to provide a 
-<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
 layer file</a> that will 
 register the server in IDE (specifying URL, user name and password) and 
 register a 
@@ -131,7 +131,7 @@ Each server plugin is required to provide J2EE platform which devmodules may use
 
 <p><i>Plugins must implement
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/J2eePlatformImpl.html">
-J2eePlatformImpl</a> interface and register it via <a href="org/netbeans/modules/j2ee/deployment/plugins/api/J2eePlatformFactory.html">J2eePlatformFactory</a> whose instance must be registered in the module <a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+J2eePlatformImpl</a> interface and register it via <a href="org/netbeans/modules/j2ee/deployment/plugins/api/J2eePlatformFactory.html">J2eePlatformFactory</a> whose instance must be registered in the module <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
 layer file</a>. Devmodules then may access the <a href="org/netbeans/modules/j2ee/deployment/devmodules/api/J2eePlatform.html">J2eePlatform</a> interface via the <a href="org/netbeans/modules/j2ee/deployment/devmodules/api/Deployment.html">Deployment</a> utility class.
 </i></p>
 </usecase>
@@ -145,9 +145,9 @@ customized UI for server management.
 <p><i>
 In order to do this plugin needs to implement the additional interfaces
 and register their instances in module 
-<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
 layer file</a> and in 
-<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/netbeans-deployment-dtd.txt">
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/netbeans-deployment-dtd.txt">
 netbeans-deployment.xml</a>
 file (an additional config file with specified DTD).
 </i>
@@ -323,7 +323,7 @@ Used for displaying event log.
         type="import"
         group="java" 
         category="stable"
-        url="@org-netbeans-modules-schema2beans@/index.html">
+    >
     Schema2beans infrastructure
     </api>
 Used for implementation of Deployment API, to work with DD and server specific DD. 

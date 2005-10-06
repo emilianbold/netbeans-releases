@@ -180,13 +180,7 @@ and components
 
 <a href="@JDK@/java/awt/Container.html#add(java.awt.Component,java.lang.Object)">added</a>
 
-to it. For example,
-
-<a href="@org-openide-compat@/org/openide/explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>
-
-is a subclass of <code>TopComponent</code> that uses a
-<code>BorderLayout</code> and may have arbitrary components placed
-on its surface.
+to it. 
 
 <p>There are a few general ways in which you can customize the
 component besides painting subcomponents on it:
@@ -368,9 +362,9 @@ pay attention to it.
 
 <a href="../TopComponent.html#setActivatedNodes(org.openide.nodes.Node[])"><code>TopComponent.setActivatedNodes(...)</code></a>.
 
-<p>Explorer views embedded in an
+<p>Explorer views embedded in as described at
 
-<a href="@org-openide-compat@/org/openide/explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>
+<a href="@org-openide-explorer@/org/openide/explorer/ExplorerUtils.html"><code>ExplorerUtils</code></a>
 
 automatically make the node selection track user selections in the
 view, as you would expect. Also, any top component associated with

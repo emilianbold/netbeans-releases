@@ -388,6 +388,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
+  <defaultanswer generate='none'/>
   <p>
    <api group="java" name="Lookup" type="import" category="official">
      JDBC drivers and database runtimes are registered in the default lookup.

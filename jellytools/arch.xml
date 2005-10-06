@@ -241,6 +241,7 @@ Microsystems, Inc. All Rights Reserved.
     org.openide.loaders, org.netbeans.core.output2, org.netbeans.swing.tabcontrol,
     org.netbeans.core.multiview.
   </p>
+  <defaultanswer generate='none' />
  </answer>
 
 
