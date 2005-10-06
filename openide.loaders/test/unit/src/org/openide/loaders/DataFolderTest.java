@@ -111,22 +111,12 @@ public class DataFolderTest extends NbTestCase {
         DataFolder df = DataFolder.findFolder (lfs.findResource ("AA"));
         java.lang.ref.WeakReference wr[] = new java.lang.ref.WeakReference[2];
         
-        try {
-            org.openide.nodes.Node [] na = df.getNodeDelegate().getChildren().getNodes(true);
-            wr[0] = new java.lang.ref.WeakReference(na[0].getCookie(DataObject.class));
-            wr[1] = new java.lang.ref.WeakReference(na[1].getCookie(DataObject.class));
-            assertNotNull(wr[0].get());
-            assertNotNull(wr[1].get());
-        } finally {
-            for (int i = 0; i < 10; i++) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ie) {}
-                System.gc();
-            }
-        }
-        assertNull(wr[0].get());
-        assertNull(wr[1].get());
+        org.openide.nodes.Node [] na = df.getNodeDelegate().getChildren().getNodes(true);
+        wr[0] = new java.lang.ref.WeakReference(na[0].getCookie(DataObject.class));
+        wr[1] = new java.lang.ref.WeakReference(na[1].getCookie(DataObject.class));
+        na = null;
+        assertGC("First object can go away", wr[0]);
+        assertGC("Second object can go away", wr[1]);
     }
     
     /** Tests whether children are updated immediatelly.
