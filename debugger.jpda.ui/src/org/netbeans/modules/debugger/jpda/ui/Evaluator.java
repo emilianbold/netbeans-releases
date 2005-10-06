@@ -85,6 +85,12 @@ public class Evaluator extends javax.swing.JPanel {
         initComponents();
         initCombo();
         initResult();
+        expressionLabel.setLabelFor(expressionComboBox);
+        expressionLabel.setDisplayedMnemonic(
+                NbBundle.getMessage(Evaluator.class, "Evaluator.Expression_Mnc").charAt(0));
+        resultLabel.setLabelFor(resultPanel);
+        resultLabel.setDisplayedMnemonic(
+                NbBundle.getMessage(Evaluator.class, "Evaluator.Result_Mnc").charAt(0));
         sessionListener = new SessionListener();
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
