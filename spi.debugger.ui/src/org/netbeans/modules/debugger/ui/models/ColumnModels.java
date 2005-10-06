@@ -19,6 +19,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 
@@ -1276,6 +1277,14 @@ public class ColumnModels {
     
     public static class LanguagePropertyEditor extends PropertyEditorSupport {
         
+        public void setValue(Object value) {
+            if (value != null && !(value instanceof Session)) {
+                ErrorManager.getDefault().notify(
+                        new IllegalArgumentException("Value "+value+" is not an instance of Session!"));
+            }
+            super.setValue(value);
+        }
+
         public String[] getTags () {
             if (getValue () == null) return new String [0];
             String[] s = ((Session) getValue ()).getSupportedLanguages ();
