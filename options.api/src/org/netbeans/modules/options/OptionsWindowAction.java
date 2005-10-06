@@ -111,7 +111,7 @@ public class OptionsWindowAction extends AbstractAction {
                 (descriptor, optionsPanel, bOK, bClassic);
             descriptor.setButtonListener (listener);
             optionsPanel.addPropertyChangeListener (listener);
-            optionsDialogDescriptor = new WeakReference (descriptor);
+            //optionsDialogDescriptor = new WeakReference (descriptor);
         } else {
             OptionsPanel optionsPanel = (OptionsPanel) descriptor.getMessage ();
             optionsPanel.update ();
