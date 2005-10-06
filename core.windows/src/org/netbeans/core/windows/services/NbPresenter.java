@@ -21,6 +21,7 @@ import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
@@ -61,7 +62,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     private final JButton stdOKButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("OK_OPTION_CAPTION")); // NOI18N
     private final JButton stdCancelButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("CANCEL_OPTION_CAPTION")); // NOI18N
     private final JButton stdClosedButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("CLOSED_OPTION_CAPTION")); // NOI18N
-    private final JButton stdHelpButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
+    private final JButton stdHelpButton = new JButton();
     private final JButton stdDetailButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
     {
         stdYesButton.setDefaultCapable(true);
@@ -72,8 +73,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         stdClosedButton.setDefaultCapable(false);
         stdHelpButton.setDefaultCapable(false);
         stdDetailButton.setDefaultCapable(false);
-        stdNoButton.setMnemonic(NbBundle.getBundle(NbPresenter.class).getString("NO_OPTION_CAPTION_MNEMONIC").charAt(0)); // NOI18N
-        stdHelpButton.setMnemonic(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION_MNEMONIC").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText (stdHelpButton, NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
         
         /** Initilizes accessible contexts */
         initAccessibility();
@@ -499,7 +499,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                     currentPrimaryButtons[i] = button;
                 } else {
                     JButton button = new JButton();
-                    org.openide.awt.Actions.setMenuText(button, primaryOptions[i].toString(), true);
+                    Mnemonics.setLocalizedText (button, primaryOptions [i].toString ());
                     button.setDefaultCapable(primaryOptions[i].equals(descriptor.getDefaultValue ()));
                     currentPrimaryButtons[i] = button;
                 }
@@ -585,7 +585,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                     currentSecondaryButtons[i] = button;
                 } else {
                     JButton button = new JButton();
-                    org.openide.awt.Actions.setMenuText(button, secondaryOptions[i].toString(), true);
+                    Mnemonics.setLocalizedText (button, secondaryOptions [i].toString ());
                     currentSecondaryButtons[i] = button;
                 }
             }
