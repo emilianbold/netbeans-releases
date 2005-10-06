@@ -20,6 +20,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 
 import javax.swing.*;
 import java.util.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Support for actions that run multiple commands.
@@ -34,7 +35,7 @@ import java.util.*;
  *
  * @author Petr Kuzel
  */
-public final class ExecutorGroup implements Cancellable {
+public final class ExecutorGroup extends AbstractAction implements Cancellable {
 
     private final String name;
     public boolean executed;
@@ -81,7 +82,7 @@ public final class ExecutorGroup implements Cancellable {
      */
     public void progress(String details) {
         if (progressHandle == null) {
-            progressHandle = ProgressHandleFactory.createHandle(name + "...", this);
+            progressHandle = ProgressHandleFactory.createHandle(name + "...", this, this);
             progressHandle.start();
         }
 
@@ -350,6 +351,18 @@ public final class ExecutorGroup implements Cancellable {
         // something is wrong
     }
 
+    /**
+     * Link action. Take random output, inmost coses one anyway.
+     */
+    public void actionPerformed(ActionEvent e) {
+        if (queues != null) {
+            Set keys = queues.keySet();
+            if (keys.isEmpty() == false) {
+                ClientRuntime queue = (ClientRuntime) keys.iterator().next();
+                queue.focusLog();
+            }
+        }
+    }
 
 
     public static interface Groupable {
