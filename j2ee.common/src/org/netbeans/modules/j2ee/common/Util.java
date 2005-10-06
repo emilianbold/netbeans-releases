@@ -35,7 +35,6 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 
@@ -111,7 +110,7 @@ public class Util {
     public static SourceGroup[] getJavaSourceGroups(Project project) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                                     JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set testGroups = getTestSourceGroups(project, sourceGroups);
+        Set testGroups = getTestSourceGroups(sourceGroups);
         List result = new ArrayList();
         for (int i = 0; i < sourceGroups.length; i++) {
             if (!testGroups.contains(sourceGroups[i])) {
@@ -121,7 +120,7 @@ public class Util {
         return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
     }
 
-    private static Set/*<SourceGroup>*/ getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
+    private static Set/*<SourceGroup>*/ getTestSourceGroups(SourceGroup[] sourceGroups) {
         Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
         Set testGroups = new HashSet();
         for (int i = 0; i < sourceGroups.length; i++) {
@@ -179,20 +178,14 @@ public class Util {
     }
     
     public static ClassPath getFullClasspath(FileObject fo) {
-        FileObject[] sourceRoots = ClassPath.getClassPath(fo, ClassPath.SOURCE).getRoots();
-        FileObject[] bootRoots = ClassPath.getClassPath(fo, ClassPath.BOOT).getRoots();
-        FileObject[] compileRoots = ClassPath.getClassPath(fo, ClassPath.COMPILE).getRoots();
-        FileObject[] roots = new FileObject[sourceRoots.length + bootRoots.length + compileRoots.length];
-        for (int i = 0; i < sourceRoots.length; i++) {
-            roots[i] = sourceRoots[i];
+        if (fo == null) {
+            return null;
         }
-        for (int i = 0; i < bootRoots.length; i++) {
-            roots[sourceRoots.length + i] = bootRoots[i];
-        }
-        for (int i = 0; i < compileRoots.length; i++) {
-            roots[sourceRoots.length + bootRoots.length + i] = compileRoots[i];
-        }
-        return ClassPathSupport.createClassPath(roots);
+        return ClassPathSupport.createProxyClassPath(new ClassPath[]{
+                ClassPath.getClassPath(fo, ClassPath.SOURCE),
+                ClassPath.getClassPath(fo, ClassPath.BOOT),
+                ClassPath.getClassPath(fo, ClassPath.COMPILE)
+        });
     }
 
 }
