@@ -120,12 +120,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                 showRevisionDiff(r1, onSelectionshowLastDifference);
                             }
                         } else if (nodes.length == 2) {
-                            LogInformation.Revision r2 = (LogInformation.Revision) nodes[1].getLookup().lookup(LogInformation.Revision.class);
-                            if (r2.getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
+                            SearchHistoryPanel.DispRevision r2 = (SearchHistoryPanel.DispRevision) nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
+                            if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
                                 throw new Exception();
                             }
                             String revision2 = r1.getRevision().getNumber();
-                            String revision1 = r2.getNumber();
+                            String revision1 = r2.getRevision().getNumber();
                             showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
                         }
                     } catch (Exception e) {
