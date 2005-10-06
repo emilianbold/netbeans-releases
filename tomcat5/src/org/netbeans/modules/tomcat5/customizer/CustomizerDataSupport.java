@@ -107,10 +107,16 @@ public class CustomizerDataSupport {
         // jvmModel
         jvmModel = new DefaultComboBoxModel();
         loadJvmModel();
-        jvmModel.addListDataListener(new ModelChangeAdapter() {
-            public void modelChanged() {
+        jvmModel.addListDataListener(new ListDataListener() {
+            public void contentsChanged(ListDataEvent e) {
                 jvmModelFlag = true;
                 store(); // This is just temporary until the server manager has OK and Cancel buttons
+            }
+            
+            public void intervalAdded(ListDataEvent e) {
+            }
+
+            public void intervalRemoved(ListDataEvent e) {
             }
         });
         
