@@ -269,12 +269,14 @@ public class LocalsTreeModel implements TreeModel {
     AbstractVariable[] getLocalVariables (
         final CallStackFrameImpl    callStackFrame, 
         final StackFrame            stackFrame,
-        final int                   from,
-        final int                   to
+        int                         from,
+        int                         to
     ) throws AbsentInformationException {
         try {
             String className = stackFrame.location ().declaringType ().name ();
             List l = stackFrame.visibleVariables ();
+            to = Math.min(l.size(), to);
+            from = Math.min(l.size(), from);
             int i, k = to - from, j = from;
             AbstractVariable[] locals = new AbstractVariable [k];
             for (i = 0; i < k; i++) {

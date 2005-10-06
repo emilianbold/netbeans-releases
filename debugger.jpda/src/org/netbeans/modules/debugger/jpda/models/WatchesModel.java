@@ -86,6 +86,8 @@ public class WatchesModel implements TreeModel {
             // 1) ger Watches
             Watch[] ws = DebuggerManager.getDebuggerManager ().
                 getWatches ();
+            to = Math.min(ws.length, to);
+            from = Math.min(ws.length, from);
             Watch[] fws = new Watch [to - from];
             System.arraycopy (ws, from, fws, 0, to - from);
             

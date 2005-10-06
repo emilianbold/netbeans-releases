@@ -177,6 +177,8 @@ public class AbstractVariable implements ObjectVariable {
             //either the fields are cached or we have to init them
             if (fields == null) initFields ();
             if (to != 0) {
+                to = Math.min(fields.length, to);
+                from = Math.min(fields.length, from);
                 Field[] fv = new Field [to - from];
                 System.arraycopy (fields, from, fv, 0, to - from);
                 return fv;
@@ -197,6 +199,8 @@ public class AbstractVariable implements ObjectVariable {
         }
         if (fields == null) initFields ();
         if (to != 0) {
+            to = Math.min(staticFields.length, to);
+            from = Math.min(staticFields.length, from);
             FieldVariable[] fv = new FieldVariable [to - from];
             System.arraycopy (staticFields, from, fv, 0, to - from);
             return fv;
@@ -216,6 +220,8 @@ public class AbstractVariable implements ObjectVariable {
         }
         if (fields == null) initFields ();
         if (to != 0) {
+            to = Math.min(inheritedFields.length, to);
+            from = Math.min(inheritedFields.length, from);
             FieldVariable[] fv = new FieldVariable [to - from];
             System.arraycopy (inheritedFields, from, fv, 0, to - from);
             return fv;

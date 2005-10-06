@@ -52,6 +52,8 @@ public class SessionsTreeModel implements TreeModel {
                 getSessions ();
             if (listener == null)
                 listener = new Listener (this);
+            to = Math.min(ss.length, to);
+            from = Math.min(ss.length, from);
             Session[] fss = new Session [to - from];
             System.arraycopy (ss, from, fss, 0, to - from);
             return fss;

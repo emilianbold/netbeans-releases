@@ -103,6 +103,8 @@ NodeActionsProvider {
             Object[] os = new Object [sourceRoots.length + ep.length];
             System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
             System.arraycopy (ep, 0, os, sourceRoots.length, ep.length);
+            to = Math.min(os.length, to);
+            from = Math.min(os.length, from);
             Object[] fos = new Object [to - from];
             System.arraycopy (os, from, fos, 0, to - from);
             if (listener == null)

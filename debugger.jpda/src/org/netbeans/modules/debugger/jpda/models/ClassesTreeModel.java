@@ -87,6 +87,8 @@ public class ClassesTreeModel implements TreeModel {
                 r = ((ReferenceType) o).nestedTypes ().toArray ();
             } else
             throw new UnknownTypeException (o);
+            to = Math.min(r.length, to);
+            from = Math.min(r.length, from);
             Object[] rr = new Object [to - from];
             System.arraycopy (r, from, rr, 0, to - from);
             return rr;

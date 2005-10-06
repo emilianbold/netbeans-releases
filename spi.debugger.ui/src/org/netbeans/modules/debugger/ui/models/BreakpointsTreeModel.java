@@ -71,6 +71,8 @@ public class BreakpointsTreeModel implements TreeModel {
                 listener = new Listener (this);
             if (to == 0)
                 return new ArrayList (l).toArray ();
+            to = Math.min(l.size(), to);
+            from = Math.min(l.size(), from);
             return new ArrayList (l).subList (from, to).toArray ();
         } else
         if (parent instanceof String) {
@@ -86,6 +88,8 @@ public class BreakpointsTreeModel implements TreeModel {
                 listener = new Listener (this);
             if (to == 0)
                 return new ArrayList (l).toArray ();
+            to = Math.min(l.size(), to);
+            from = Math.min(l.size(), from);
             return new ArrayList (l).subList (from, to).toArray ();
         } else
         throw new UnknownTypeException (parent);
