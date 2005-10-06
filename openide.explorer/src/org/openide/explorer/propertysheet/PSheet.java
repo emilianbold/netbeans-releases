@@ -95,7 +95,10 @@ class PSheet extends JPanel implements MouseListener {
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
             KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), "popup"
         ); //NOI18N
+        
         getActionMap().put("popup", new PopupAction()); //NOI18N
+        getActionMap().put("PreviousViewAction", new SwitchTabAction(-1)); //NOI18N
+        getActionMap().put("NextViewAction", new SwitchTabAction(1)); //NOI18N
     }
 
     SelectionAndScrollPositionManager manager() {
@@ -920,6 +923,43 @@ class PSheet extends JPanel implements MouseListener {
     private class PopupAction extends AbstractAction {
         public void actionPerformed(ActionEvent actionEvent) {
             popupRequested(new Point(0, 0));
+        }
+    }
+    
+    private class SwitchTabAction extends AbstractAction {
+        private int increment;
+        public SwitchTabAction( int increment ) {
+            this.increment = increment;
+        }
+        
+        public void actionPerformed(ActionEvent actionEvent) {
+            JComponent tabbed = findTabbedContainer();
+
+            if( null == tabbed )
+                return;
+            
+            Object o = TabbedContainerBridge.getDefault().getSelectedItem( tabbed );
+            if( null == o )
+                return;
+            
+            Object[] items = TabbedContainerBridge.getDefault().getItems( tabbed );
+            int currentIndex = -1;
+            for( int i=0; null != items && i<items.length; i++ ) {
+                if( items[i].equals( o ) ) {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            if( currentIndex < 0 )
+                return;
+            
+            int newIndex = currentIndex + increment;
+            if( newIndex < 0 )
+                newIndex = items.length-1;
+            if( newIndex >= items.length )
+                newIndex = 0;
+            TabbedContainerBridge.getDefault().setSelectedItem( tabbed, items[newIndex] );
         }
     }
 }
