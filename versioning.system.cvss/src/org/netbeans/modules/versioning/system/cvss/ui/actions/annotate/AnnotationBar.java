@@ -100,6 +100,9 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
      * {@link AnnotateLine}. <code>null</code> means that
      * no data are available, yet. So alternative
      * {@link #elementAnnotationsSubstitute} text shoudl be used.
+     *
+     * @thread it is accesed from multiple threads all mutations
+     * and iterations must be under elementAnnotations lock,
      */
     private Map elementAnnotations;
 
@@ -248,7 +251,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             doc.atomicLock();
             StyledDocument sd = (StyledDocument) doc;
             Iterator it = lines.iterator();
-            elementAnnotations = new HashMap(lines.size());
+            elementAnnotations = Collections.synchronizedMap(new HashMap(lines.size()));
             while (it.hasNext()) {
                 AnnotateLine line = (AnnotateLine) it.next();
                 int lineNum = ann2editorPermutation[line.getLineNum() -1];
@@ -520,12 +523,21 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                 if (lineCookie != null) {
                     Set annotations = new HashSet();
                     Line.Set lines = lineCookie.getLineSet();
-                    Iterator it2 = elementAnnotations.entrySet().iterator();
+
+                    // I cannot affort to lock elementAnnotations for long time
+                    // it's accessed from editor thread too
+                    Iterator it2;
+                    synchronized(elementAnnotations) {
+                        it2 = new HashSet(elementAnnotations.entrySet()).iterator();
+                    }
                     while (it2.hasNext()) {
                         Map.Entry next = (Map.Entry) it2.next();                        
                         AnnotateLine annotateLine = (AnnotateLine) next.getValue();
                         if (revision.equals(annotateLine.getRevision())) {
                             Element element = (Element) next.getKey();
+                            if (elementAnnotations.containsKey(element) == false) {
+                                continue;
+                            }
                             int elementOffset = element.getStartOffset();
                             int lineNumber = NbDocument.findLineNumber((StyledDocument)doc, elementOffset);
                             Line currentLine = lines.getCurrent(lineNumber);
@@ -639,12 +651,14 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         if (elementAnnotations == null) {
             longestString = elementAnnotationsSubstitute;
         } else {
-            Iterator it = elementAnnotations.values().iterator();
-            while (it.hasNext()) {
-                AnnotateLine line = (AnnotateLine) it.next();
-                String displayName = line.getRevision() + " " + line.getAuthor();
-                if (displayName.length() > longestString.length()) {
-                    longestString = displayName;
+            synchronized(elementAnnotations) {
+                Iterator it = elementAnnotations.values().iterator();
+                while (it.hasNext()) {
+                    AnnotateLine line = (AnnotateLine) it.next();
+                    String displayName = line.getRevision() + " " + line.getAuthor();
+                    if (displayName.length() > longestString.length()) {
+                        longestString = displayName;
+                    }
                 }
             }
         }
@@ -895,29 +909,31 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         //  - second time with two removed and two added lines
         if (elementAnnotations != null) {
             Element[] elements = e.getDocument().getRootElements();
-            for (int i = 0; i < elements.length; i++) {
-                Element element = elements[i];
-                DocumentEvent.ElementChange change = e.getChange(element);
-                if (change == null) continue;
-                Element[] removed = change.getChildrenRemoved();
-                Element[] added = change.getChildrenAdded();
-                if (removed.length == added.length) {
-                    for (int c = 0; c<removed.length; c++) {
-                        Object recent = elementAnnotations.get(removed[c]);
+            synchronized(elementAnnotations) { // atomic change
+                for (int i = 0; i < elements.length; i++) {
+                    Element element = elements[i];
+                    DocumentEvent.ElementChange change = e.getChange(element);
+                    if (change == null) continue;
+                    Element[] removed = change.getChildrenRemoved();
+                    Element[] added = change.getChildrenAdded();
+
+                    if (removed.length == added.length) {
+                        for (int c = 0; c<removed.length; c++) {
+                            Object recent = elementAnnotations.get(removed[c]);
+                            if (recent != null) {
+                                elementAnnotations.remove(removed[c]);
+                                elementAnnotations.put(added[c], recent);
+                            }
+                        }
+                    } else if (removed.length == 1 && added.length > 0) {
+                        Element key = removed[0];
+                        Object recent = elementAnnotations.get(key);
                         if (recent != null) {
-                            elementAnnotations.remove(removed[c]);
-                            elementAnnotations.put(added[c], recent);
+                            elementAnnotations.remove(key);
+                            elementAnnotations.put(added[0], recent);
                         }
                     }
-                } else if (removed.length == 1 && added.length > 0) {
-                    Element key = removed[0];
-                    Object recent = elementAnnotations.get(key);
-                    if (recent != null) {
-                        elementAnnotations.remove(key);
-                        elementAnnotations.put(added[0], recent);
-                    }
                 }
-
             }
         }
         repaint();
