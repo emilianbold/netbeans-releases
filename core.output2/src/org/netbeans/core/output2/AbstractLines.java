@@ -787,7 +787,7 @@ abstract class AbstractLines implements Lines, Runnable {
                 StringBuffer data = new StringBuffer (buf.toString());
                 data.reverse();
 
-                Pattern pat = Pattern.compile (sb.toString());
+                Pattern pat = escapePattern(sb.toString());
                 return pat.matcher(data);
             }
         } catch (Exception e) {
