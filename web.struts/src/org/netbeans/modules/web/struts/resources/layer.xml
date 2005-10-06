@@ -84,30 +84,30 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="JSP_Servlet">
-            <folder name="Struts">
+            <attr name="JSFManagedBean.java/StrutsAction.java" boolvalue="true"/>
+            <attr name="Html.html/StrutsAction.java" boolvalue="true"/>
+            <attr name="StrutsAction.java/StrutsFormBean.java" boolvalue="true"/>
+            <file name="StrutsAction.java" url="templates/StrutsAction.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
-                <file name="StrutsAction.java" url="templates/StrutsAction.template">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                    <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
-                    <attr name="templateCategory" stringvalue="servlet-types"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsAction.html"/>
-                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"  />          
-                </file>
-                <file name="DispatchAction.java" url="templates/DispatchAction.template"/>
-                <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template"/>
-                <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template"/>
-                <file name="StrutsFormBean.java" url="templates/StrutsFormBean.template">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                    <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
-                    <attr name="templateCategory" stringvalue="servlet-types"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsFormBean.html"/>
-                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.FormBeanIterator"  />          
-                </file>
-            </folder>
+                <attr name="template" boolvalue="true"/>
+                <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsAction.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"  />          
+            </file>
+            <file name="DispatchAction.java" url="templates/DispatchAction.template"/>
+            <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template"/>
+            <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template"/>
+            <file name="StrutsFormBean.java" url="templates/StrutsFormBean.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsFormBean.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.FormBeanIterator"  />          
+            </file>
         </folder>
     </folder>
 

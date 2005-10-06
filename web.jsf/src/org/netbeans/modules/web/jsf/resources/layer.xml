@@ -84,16 +84,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Templates">
         <folder name="JSP_Servlet">
-            <folder name="Java_Server_Faces">
+            <attr name="Html.html/JSFManagedBean.java" boolvalue="true"/>
+            <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="templateCategory" stringvalue="servlet-types"/>
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
-                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"  />          
-                </file>
-            </folder>
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"  />          
+            </file>
         </folder>
     </folder>
 
