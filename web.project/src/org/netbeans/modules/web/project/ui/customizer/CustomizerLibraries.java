@@ -216,6 +216,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jButtonRemoveC = new javax.swing.JButton();
         jButtonMoveUpC = new javax.swing.JButton();
         jButtonMoveDownC = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
         jPanelCompileTests = new javax.swing.JPanel();
         librariesJLabel2 = new javax.swing.JLabel();
         librariesJScrollPane1 = new javax.swing.JScrollPane();
@@ -274,7 +275,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         jPanelCompile.setLayout(new java.awt.GridBagLayout());
 
-        jPanelCompile.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        jPanelCompile.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         librariesJLabel1.setLabelFor(jTableCpC);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel1, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesC_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -363,15 +364,25 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanelCompile.add(jButtonMoveDownC, gridBagConstraints);
         jButtonMoveDownC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonMoveDownC"));
+
+        jLabel1.setLabelFor(jTableCpC);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "MSG_CustomizerLibraries_CompileCpMessage"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPanelCompile.add(jLabel1, gridBagConstraints);
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesTab"), jPanelCompile);
 
         jPanelCompileTests.setLayout(new java.awt.GridBagLayout());
 
-        jPanelCompileTests.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        jPanelCompileTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         librariesJLabel2.setLabelFor(jListCpCT);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel2, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesCT_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -449,7 +460,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         jPanelRunTests.setLayout(new java.awt.GridBagLayout());
 
-        jPanelRunTests.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        jPanelRunTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         librariesJLabel4.setLabelFor(jListCpRT);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel4, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesRT_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -587,6 +598,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JButton jButtonRemoveRT;
     private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
     private javax.swing.JComboBox jComboBoxTarget;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelErrorMessage;
     private javax.swing.JLabel jLabelTarget;
     private javax.swing.JList jListCpCT;
