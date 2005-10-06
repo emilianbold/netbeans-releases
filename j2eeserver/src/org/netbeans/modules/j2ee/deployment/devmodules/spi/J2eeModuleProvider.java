@@ -309,12 +309,16 @@ public abstract class J2eeModuleProvider {
                     oldCtxPath = "/" + new String (c); //NOI18N
                 }
                 getConfigSupportImpl().setWebContextRoot(oldCtxPath);
-                oldConSupp.dispose();
+                if (oldConSupp != null) {
+                    oldConSupp.dispose();
+                }
             } else {
                 ConfigSupportImpl oldConSupp = confSupp;
                 confSupp = null;
                 getConfigSupportImpl().ensureConfigurationReady();
-                oldConSupp.dispose();
+                if (oldConSupp != null) {
+                    oldConSupp.dispose();
+                }
             }
         }
     }
