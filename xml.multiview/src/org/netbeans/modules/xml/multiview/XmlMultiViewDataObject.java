@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.multiview;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.cookies.SaveCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -51,7 +52,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private org.xml.sax.SAXException saxError;
 
     private final DataCache dataCache = new DataCache();
-    private transient byte[] buffer = null;
     private transient long timeStamp = 0;
     private transient WeakReference lockReference;
 
@@ -69,6 +69,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().add(XmlMultiViewEditorSupport.class, this);
+    }
+
+    protected EditorCookie createEditorCookie() {
+        return getEditorSupport();
     }
 
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
@@ -208,6 +212,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e1) {
+                    //
                 }
             }
         }
@@ -247,6 +252,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
     public class DataCache {
 
+        private transient byte[] buffer = null;
         private long fileTime = 0;
 
         public void loadData() {
@@ -268,14 +274,17 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             try {
                 InputStream inputStream = getEditorSupport().getXmlEnv().getFileInputStream();
                 byte[] buffer;
+                long time;
                 try {
-                    fileTime = file.lastModified().getTime();
+                    time = file.lastModified().getTime();
                     int size = (int) file.getSize();
                     buffer = new byte[size];
                     inputStream.read(buffer);
                 } finally {
                     inputStream.close();
                 }
+                this.buffer = null;
+                fileTime = time;
                 setData(dataLock, buffer, true);
             } finally {
                 dataLock.releaseLock();

@@ -33,6 +33,7 @@ public abstract class XmlMultiViewDataSynchronizer {
     private long timeStamp;
     private final XmlMultiViewDataObject dataObject;
     private int reloading = 0;
+    private int updating = 0;
 
     protected final RequestProcessor requestProcessor =
             new RequestProcessor("XmlMultiViewDataSynchronizer RequestProcessor", 1);  // NOI18N
@@ -97,7 +98,7 @@ public abstract class XmlMultiViewDataSynchronizer {
     }
 
     protected void dataUpdated(long timeStamp) {
-        if (this.timeStamp < timeStamp) {
+        if (updating == 0 && this.timeStamp < timeStamp) {
             reloadTask.schedule(10);
         }
     }
@@ -182,7 +183,7 @@ public abstract class XmlMultiViewDataSynchronizer {
         reloading--;
     }
 
-    final RequestProcessor.Task getReloadTask() {
+    public final RequestProcessor.Task getReloadTask() {
         return reloadTask;
     }
 
@@ -191,7 +192,7 @@ public abstract class XmlMultiViewDataSynchronizer {
      */
     protected void reloadModel() {
         long newTimeStamp = dataCache.getTimeStamp();
-        if (timeStamp != newTimeStamp) {
+        if (timeStamp < newTimeStamp) {
             reloadingStarted();
             try {
                 timeStamp = newTimeStamp;
@@ -226,8 +227,13 @@ public abstract class XmlMultiViewDataSynchronizer {
      * should change after update or not
      */
     public void updateData(FileLock dataLock, boolean modify) {
-        updateDataFromModel(getModel(), dataLock, modify);
-        timeStamp = dataCache.getTimeStamp();
+        updating++;
+        try {
+            updateDataFromModel(getModel(), dataLock, modify);
+            timeStamp = dataCache.getTimeStamp();
+        } finally {
+            updating--;
+        }
     }
 
     /**
