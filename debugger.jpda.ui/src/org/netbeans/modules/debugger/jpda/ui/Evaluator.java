@@ -281,6 +281,8 @@ public class Evaluator extends javax.swing.JPanel {
                     }
                 });
         evalDialog = DialogDisplayer.getDefault().createDialog(dd);
+        evalDialog.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Evaluator.class, "Evaluator.A11YDescr"));
         currentEvaluator = evaluatorPanel;
         evalDialog.setVisible(true);
     }
