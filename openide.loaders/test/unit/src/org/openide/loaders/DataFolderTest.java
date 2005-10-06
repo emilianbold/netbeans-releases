@@ -28,6 +28,7 @@ import org.netbeans.junit.*;
  * @author  Vita Stejskal, Jesse Glick
  */
 public class DataFolderTest extends NbTestCase {
+    private ArrayList hold = new ArrayList();
 
     /** Creates new DataFolderTest */
     public DataFolderTest (String name) {
@@ -110,6 +111,10 @@ public class DataFolderTest extends NbTestCase {
 
         DataFolder df = DataFolder.findFolder (lfs.findResource ("AA"));
         java.lang.ref.WeakReference wr[] = new java.lang.ref.WeakReference[2];
+        
+        hold.add(df);
+        hold.add(lfs);
+        
         
         org.openide.nodes.Node [] na = df.getNodeDelegate().getChildren().getNodes(true);
         wr[0] = new java.lang.ref.WeakReference(na[0].getCookie(DataObject.class));
