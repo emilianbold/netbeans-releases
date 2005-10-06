@@ -74,14 +74,14 @@ public class VisibilityQueryWorksTest extends NbTestCase {
 
     
     protected void setUp () throws Exception {
+        clearWorkDir();
+
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
 
         ErrManager.log = getLog();
         err = ErrorManager.getDefault().getInstance("TEST-" + getName() + "");
         
-        clearWorkDir();
-
         err.log("Starting test");
         
         super.setUp ();
