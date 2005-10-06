@@ -43,7 +43,7 @@ public class ChooseSameSizeAction extends NodeAction {
 
     protected boolean enable(Node[] nodes) {
         List comps = FormUtils.getSelectedLayoutComponents(nodes);
-        return ((comps != null) && (comps.size() > 0));
+        return ((comps != null) && (comps.size() > 1));
     }
     
     public String getName() {
