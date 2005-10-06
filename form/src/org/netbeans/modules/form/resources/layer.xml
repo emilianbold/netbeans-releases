@@ -488,5 +488,11 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="system_with_project"/>
         </folder>
     </folder>
-
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="FormEditor.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.form.FormEditorOptions"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
