@@ -41,16 +41,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.colors.FontAndColors"/>
         </file>    
         <attr name="FontsAndColors.instance/Advanced.instance" boolvalue="true" />
-        <folder name="Advanced">
-            <file name="FormEditor.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.options.advancedpanels.FormEditorOptions"/>
-            </file>
-<!--
-            <file name="InternationalizationOptions.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.options.advancedpanels.InternationalizationOptions"/>
-            </file>
--->            
-        </folder>
         <attr name="General.instance/Keymaps.instance" boolvalue="true" />
         <file name="Keymaps.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.keymap.Keymap"/>
