@@ -24,6 +24,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author   Jan Jancura
  */
+// XXX ??? Totally useless class ???
 public class WatchesTableModel implements TableModel, Constants {
 
     public Object getValueAt (Object row, String columnID) throws 
