@@ -750,6 +750,11 @@ public class TreeModelNode extends AbstractNode {
                     }
                 });
             }
+            if (ret == EVALUATING_STR &&
+                    getValueType() != null && getValueType() != String.class) {
+                ret = null; // Must not provide String when the property type is different.
+                            // htmlDisplayValue attr will assure that the Evaluating str is there.
+            }
             return ret;
         }
         
