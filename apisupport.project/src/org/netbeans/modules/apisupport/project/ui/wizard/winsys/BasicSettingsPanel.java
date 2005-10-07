@@ -39,6 +39,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+	initAccessibility();
         setupCombo();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_TCWizardTitle"));
     }
@@ -176,5 +177,11 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     private javax.swing.JComboBox comMode;
     private javax.swing.JLabel lblMode;
     // End of variables declaration//GEN-END:variables
+
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicSettingsPanel"));        
+        cbOpenedOnStart.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_OpenOnStart"));
+        comMode.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Mode"));
+    }         
     
 }
