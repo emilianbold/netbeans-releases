@@ -1319,7 +1319,12 @@ class LayoutFeeder implements LayoutConstants {
                     else assert endGap == null || endGap.isEmptySpace();
 
                     operations.parallelizeWithParentSequence(toPar, end, dimension);
+
+                    if (alignment == TRAILING) // adjust index
+                        i -= n - parent.getSubIntervalCount();
+                    n  = parent.getSubIntervalCount(); // adjust count
                     end = -1; // don't try anymore
+
                     increment -= Math.abs(endPos - pos);
                     if (increment < 0)
                         increment = 0;
