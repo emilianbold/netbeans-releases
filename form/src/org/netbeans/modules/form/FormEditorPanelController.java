@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,7 +51,7 @@ public final class FormEditorPanelController extends PanelController {
     }
     
     public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.advanced.formEditor");
+        return new HelpCtx ("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
     }
     
     public JComponent getComponent (Lookup masterLookup) {

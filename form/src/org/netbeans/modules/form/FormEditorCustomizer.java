@@ -7,68 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.form;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
+import java.lang.reflect.Modifier;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
-import java.beans.PropertyEditorManager;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
-import javax.swing.JList;
-
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.spi.options.OptionsCategory;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
  * Implementation of one panel in Options Dialog.
  *
- * @author Jan Jancura
+ * @author Jan Stola, Jan Jancura
  */
-public final class FormEditorCustomizer extends JPanel implements 
-ActionListener, ChangeListener {
-    
-    private JTextField tfPropertyEditorSearchPath = new JTextField ();
-    
-    private JCheckBox cbBigIcons = new JCheckBox ();
-    private JCheckBox cbShowNames = new JCheckBox ();
-    private JCheckBox cbApplyGrid = new JCheckBox ();
-    private JSpinner sBorder = new JSpinner ();
-    
+public final class FormEditorCustomizer extends JPanel implements  ActionListener, ChangeListener {
     private JCheckBox cbFold = new JCheckBox ();
     private JComboBox cbModifier = new JComboBox ();
     private JRadioButton rbGenerateLocals = new JRadioButton ();
@@ -77,116 +50,156 @@ ActionListener, ChangeListener {
     private JTextField tfVariableName = new JTextField ();
     private JSpinner sGridX = new JSpinner ();
     private JSpinner sGridY = new JSpinner ();
-    
+
     private JCheckBox cbShowMnemonicsDialog = new JCheckBox ();
     private JCheckBox cbGenerateMnemonics = new JCheckBox ();
 
     private boolean changed = false;
-    
-    
-    
+
     public FormEditorCustomizer () {
-        loc (cbBigIcons, "Big_Icons");
-        cbBigIcons.setBackground (Color.white);
-        loc (cbShowNames, "Show_Names");
-        cbShowNames.setBackground (Color.white);
-        loc (cbApplyGrid, "Apply_Grid");
-        cbApplyGrid.setBackground (Color.white);
         ButtonGroup group = new ButtonGroup ();
-        loc (cbFold, "Fold");
+        loc(cbFold, "Fold"); // NOI18N
         cbFold.setBackground (Color.white);
         group = new ButtonGroup ();
-        loc (rbGenerateLocals, "Generate_Locals");
+        loc(rbGenerateLocals, "Generate_Locals"); // NOI18N
         rbGenerateLocals.setBackground (Color.white);
         group.add (rbGenerateLocals);
-        loc (rbGenerateFields, "Generate_Fields");
+        loc(rbGenerateFields, "Generate_Fields"); // NOI18N
         rbGenerateFields.setBackground (Color.white);
         group.add (rbGenerateFields);
-        cbModifier.addItem (loc ("Public_Modifier"));
-        cbModifier.addItem (loc ("Default_Modifier"));
-        cbModifier.addItem (loc ("Protected_Modifier"));
-        cbModifier.addItem (loc ("Private_Modifier"));
-        cbListenerStyle.addItem (loc ("Anonymous"));
-        cbListenerStyle.addItem (loc ("InnerClass"));
-        cbListenerStyle.addItem (loc ("MainClass"));
-        loc (cbShowMnemonicsDialog, "Show_Mnemonics_Dialog");
+        cbModifier.addItem(loc("Public_Modifier")); // NOI18N
+        cbModifier.addItem(loc("Default_Modifier")); // NOI18N
+        cbModifier.addItem(loc("Protected_Modifier")); // NOI18N
+        cbModifier.addItem(loc("Private_Modifier")); // NOI18N
+        cbListenerStyle.addItem(loc("Anonymous")); // NOI18N
+        cbListenerStyle.addItem(loc("InnerClass")); // NOI18N
+        cbListenerStyle.addItem(loc("MainClass")); // NOI18N
+        loc(cbShowMnemonicsDialog, "Show_Mnemonics_Dialog"); // NOI18N
         cbShowMnemonicsDialog.setBackground (Color.white);
-        loc (cbGenerateMnemonics, "Generate_Mnemonics");
+        loc(cbGenerateMnemonics, "Generate_Mnemonics"); // NOI18N
         cbGenerateMnemonics.setBackground (Color.white);
-        
-        FormLayout layout = new FormLayout (
-            "p:g", // cols
-            "p, p, p, p"
-        );      // rows
-        PanelBuilder builder = new PanelBuilder (layout, this);
-        CellConstraints cc = new CellConstraints ();
-        CellConstraints lc = new CellConstraints ();
-        
-            layout = new FormLayout (
-                "p", // cols
-                "p, 3dlu, p, 3dlu, p"
-            );      // rows
-            PanelBuilder builder2 = new PanelBuilder (layout);
-            builder2.add (cbBigIcons,                cc.xy (1, 1));
-            builder2.add (cbShowNames,               cc.xy (1, 3));
-            builder2.add (cbApplyGrid,               cc.xy (1, 5));
-            JPanel p = builder2.getPanel ();
-            p.setBorder (new TitledBorder (loc ("UI_Options")));
-            p.setBackground (Color.white);
-        builder.add (p,                              cc.xy (1, 1));
-        
-            layout = new FormLayout (
-                "p, 5dlu, 40dlu, 100dlu, p:g", // cols
-                "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p" + 
-                ", 3dlu, p, 3dlu, p, 3dlu, p"
-            );      // rows
-            builder2 = new PanelBuilder (layout);
-            builder2.addLabel (loc ("Generate_Components"),lc.xy (1, 5));
-            builder2.add (rbGenerateLocals,          cc.xyw (3, 5, 3));
-            builder2.add (rbGenerateFields,          cc.xyw (3, 7, 3));
-            builder2.add (cbFold,                    cc.xyw (3, 9, 3));
-            builder2.addLabel (loc ("Variable_Modifier"),
-                                                     lc.xy (1, 11), 
-                          cbModifier,                cc.xyw (3, 11, 2));
-            builder2.addLabel (loc ("Listener_Style"), lc.xy (1, 13), 
-                          cbListenerStyle,           cc.xyw (3, 13, 2));
-            builder2.addLabel (loc ("Variable_Name"), lc.xy (1, 15), 
-                          tfVariableName,            cc.xyw (3, 15, 2));
-            builder2.addLabel (loc ("Grid_X"),       lc.xy (1, 17), 
-                          sGridX,                    cc.xy (3, 17));
-            builder2.addLabel (loc ("Grid_Y"),       lc.xy (1, 19), 
-                          sGridY,                    cc.xy (3, 19));
-            p = builder2.getPanel ();
-            p.setBorder (new TitledBorder (loc ("Code_Generation")));
-            p.setBackground (Color.white);
-        builder.add (p,                              cc.xy (1, 2));
-        
-            layout = new FormLayout (
-                "p", // cols
-                "p, 3dlu, p"
-            );      // rows
-            builder2 = new PanelBuilder (layout);
-            builder2.add (cbGenerateMnemonics,       cc.xy (1, 1));
-            builder2.add (cbShowMnemonicsDialog,     cc.xy (1, 3));
-            p = builder2.getPanel ();
-            p.setBorder (new TitledBorder (loc ("Mnemonics_Options")));
-            p.setBackground (Color.white);
-        builder.add (p,                              cc.xy (1, 3));
 
-        cbApplyGrid.addActionListener (this);
-        cbBigIcons.addActionListener (this);
+        // Code Generation panel
+        JPanel codeGeneration = new JPanel();
+        JLabel generateComponetsLabel = new JLabel(loc("Generate_Components")); // NOI18N
+        JLabel variableModifierLabel = new JLabel(loc("Variable_Modifier")); // NOI18N
+        JLabel listenerStyleLabel = new JLabel(loc("Listener_Style")); // NOI18N
+        JLabel variableNameLabel = new JLabel(loc("Variable_Name")); // NOI18N
+        JLabel gridXLabel = new JLabel(loc("Grid_X")); // NOI18N
+        JLabel gridYLabel = new JLabel(loc("Grid_Y")); // NOI18N
+
+        variableModifierLabel.setLabelFor(cbModifier);
+        listenerStyleLabel.setLabelFor(cbListenerStyle);
+        variableNameLabel.setLabelFor(tfVariableName);
+        gridXLabel.setLabelFor(sGridX);
+        gridYLabel.setLabelFor(sGridY);
+
+        GroupLayout layout = new GroupLayout(codeGeneration);
+        codeGeneration.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(generateComponetsLabel)
+                    .add(variableModifierLabel)
+                    .add(listenerStyleLabel)
+                    .add(variableNameLabel)
+                    .add(gridXLabel)
+                    .add(gridYLabel))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.LEADING, false)
+                    .add(rbGenerateLocals)
+                    .add(rbGenerateFields)
+                    .add(cbFold)
+                    .add(cbModifier, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(tfVariableName, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(sGridX, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+                    .add(sGridY, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(generateComponetsLabel)
+                    .add(rbGenerateLocals))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(rbGenerateFields)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(cbFold)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(variableModifierLabel)
+                    .add(cbModifier))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(listenerStyleLabel)
+                    .add(cbListenerStyle))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(variableNameLabel)
+                    .add(tfVariableName))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(gridXLabel)
+                    .add(sGridX))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(gridYLabel)
+                    .add(sGridY))
+                .addContainerGap()
+        );
+        codeGeneration.setBorder(new TitledBorder(loc("Code_Generation"))); // NOI18N
+        codeGeneration.setBackground (Color.white);
+
+       // Mnemonics panel
+        JPanel mnemonics = new JPanel();
+        layout = new GroupLayout(mnemonics);
+        mnemonics.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(cbShowMnemonicsDialog)
+                    .add(cbGenerateMnemonics))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createSequentialGroup()
+                .addContainerGap()
+                .add(cbShowMnemonicsDialog)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(cbGenerateMnemonics)
+                .addContainerGap()
+        );
+        mnemonics.setBorder(new TitledBorder(loc("Mnemonics_Options"))); // NOI18N
+        mnemonics.setBackground (Color.white);
+        
+        // This panel
+        layout = new GroupLayout(this);
+        setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(GroupLayout.LEADING)
+                .add(codeGeneration)
+                .add(mnemonics)
+        );
+        layout.setVerticalGroup(
+            layout.createSequentialGroup()
+                .add(codeGeneration)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(mnemonics)
+        );
+
         cbFold.addActionListener (this);
         cbGenerateMnemonics.addActionListener (this);
         cbListenerStyle.addActionListener (this);
         cbModifier.addActionListener (this);
         cbShowMnemonicsDialog.addActionListener (this);
-        cbShowNames.addActionListener (this);
         rbGenerateFields.addActionListener (this);
         rbGenerateLocals.addActionListener (this);
-        sBorder.addChangeListener (this);
         sGridX.addChangeListener (this);
         sGridY.addChangeListener (this);
-        tfPropertyEditorSearchPath.addActionListener (this);
         tfVariableName.addActionListener (this);
     }
     
@@ -195,16 +208,11 @@ ActionListener, ChangeListener {
     }
     
     private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c, 
-                loc (key)
-            );
-        else
-            Mnemonics.setLocalizedText (
-                (JLabel) c, 
-                loc (key)
-            );
+        if (c instanceof AbstractButton) {
+            Mnemonics.setLocalizedText((AbstractButton)c, loc(key));
+        } else {
+            Mnemonics.setLocalizedText((JLabel)c, loc(key));
+        }
     }
     
     
@@ -213,7 +221,6 @@ ActionListener, ChangeListener {
     void update () {
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
-        cbApplyGrid.setSelected (options.getApplyGridToPosition ());
         cbFold.setSelected (options.getFoldGeneratedCode ());
         rbGenerateLocals.setSelected (options.getVariablesLocal ());
         rbGenerateFields.setSelected (!options.getVariablesLocal ());
@@ -239,8 +246,6 @@ ActionListener, ChangeListener {
     void applyChanges () {
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
-        options.setApplyGridToPosition (cbApplyGrid.isSelected ());
-        options.setApplyGridToSize (cbApplyGrid.isSelected ());
         options.setEventVariableName (tfVariableName.getText ());
         options.setFoldGeneratedCode (cbFold.isSelected ());
         options.setGenerateMnemonicsCode (cbGenerateMnemonics.isSelected ());
