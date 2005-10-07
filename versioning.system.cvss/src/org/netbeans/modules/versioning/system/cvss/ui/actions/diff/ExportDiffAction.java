@@ -25,6 +25,7 @@ import org.openide.windows.WindowManager;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -33,6 +34,8 @@ import org.openide.awt.StatusDisplayer;
 import javax.swing.*;
 import java.io.*;
 import java.awt.event.ActionEvent;
+import java.awt.Component;
+import java.awt.HeadlessException;
 import java.util.*;
 
 /**
@@ -102,9 +105,14 @@ public class ExportDiffAction extends AbstractSystemAction {
             return;
         }
 
-
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Export Diff Patch");
+        JFileChooser chooser = new JFileChooser() {
+            protected JDialog createDialog(Component parent) throws HeadlessException {
+                JDialog dialog = super.createDialog(parent);
+                dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportDiffAction.class, "ACSD_Export"));
+                return dialog;
+            }
+        };
+        chooser.setDialogTitle(NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_Title"));
         chooser.setMultiSelectionEnabled(false);
         javax.swing.filechooser.FileFilter[] old = chooser.getChoosableFileFilters();
         for (int i = 0; i < old.length; i++) {
@@ -120,8 +128,9 @@ public class ExportDiffAction extends AbstractSystemAction {
                 return "Patch Files (*.diff, *.patch)";
             }
         });
-
-        int ret = chooser.showDialog(WindowManager.getDefault().getMainWindow(), "Export");
+        
+        chooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffAction.class, "MNE_Export_ExportAction").charAt(0));
+        int ret = chooser.showDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_ExportAction"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File destination = chooser.getSelectedFile();
             String name = destination.getName();
