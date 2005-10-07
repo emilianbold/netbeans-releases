@@ -38,9 +38,13 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.beaninfo.ExplorerPanel;
+import org.netbeans.progress.module.Controller;
+import org.netbeans.progress.module.InternalHandle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.execution.ExecutorTask;
@@ -323,7 +327,7 @@ public class Install extends ModuleInstall {
     /** Gets pending (running) tasks. Used as keys 
      * for pending dialog root node children. Currently it gets pending
      * actions only. */
-    private static Collection getPendingTasks() {
+    static Collection getPendingTasks() {
         
         ArrayList pendingTasks = new ArrayList( 10 );
         // XXX no access to running actions at the moment
@@ -338,6 +342,8 @@ public class Install extends ModuleInstall {
             }
         }
         
+	pendingTasks.addAll(Arrays.asList(Controller.getDefault().getModel().getHandles()));
+	
         // [PENDING] When it'll be added another types of tasks (locks etc.)
         // add them here to the list. Then you need to create also a nodes
         // for them in PendingChildren.createNodes.
@@ -373,7 +379,8 @@ public class Install extends ModuleInstall {
    }
 
     /** Children showing pending tasks. */
-    private static class PendingChildren extends Children.Keys implements ExecutionListener {
+    /* non private because of tests - was private before */ 
+    static class PendingChildren extends Children.Keys implements ExecutionListener, ListDataListener {
 
         /** Listens on changes of sources from getting the tasks from.
          * Currently on module actions only. */
@@ -400,6 +407,7 @@ public class Install extends ModuleInstall {
             if (ee != null) {
                 ee.addExecutionListener(this);
             }
+	    Controller.getDefault().getModel().addListDataListener(this);
         }
 
         /** Implements superclass abstract method. Creates nodes from key.
@@ -410,7 +418,7 @@ public class Install extends ModuleInstall {
             if(key instanceof Action) {
                 n = new PendingActionNode((Action)key);
             }
-            else if ( key instanceof ExecutorTask ) {
+            else if ( key instanceof ExecutorTask) {
                 AbstractNode an = new AbstractNode( Children.LEAF );
                 an.setName(key.toString());
                 an.setDisplayName(NbBundle.getMessage(Install.class, "CTL_PendingExternalProcess2", 
@@ -419,6 +427,13 @@ public class Install extends ModuleInstall {
                 an.setIconBase( "org/netbeans/core/resources/execution" ); //NOI18N
                 n = an;
             }
+	    else if (key instanceof InternalHandle) {
+                AbstractNode an = new AbstractNode( Children.LEAF );
+                an.setName(((InternalHandle)key).getDisplayName());
+                an.setIconBase( "org/netbeans/core/resources/execution" ); //NOI18N
+                n = an;
+		
+	    }
             return n == null ? null : new Node[] { n };
         }
 
@@ -436,6 +451,7 @@ public class Install extends ModuleInstall {
             if (ee != null) {
                 ee.removeExecutionListener(this);
             }
+	    Controller.getDefault().getModel().removeListDataListener(this);
         }
         
         // ExecutionListener implementation ------------------------------------
@@ -447,6 +463,19 @@ public class Install extends ModuleInstall {
         public void finishedExecution( ExecutionEvent ev ) {
             setKeys(getPendingTasks());
         }
+
+	public void intervalAdded(ListDataEvent e) {
+            setKeys(getPendingTasks());
+	}
+	
+	public void intervalRemoved(ListDataEvent e) {
+            setKeys(getPendingTasks());
+	}
+	
+	
+	public void contentsChanged(ListDataEvent e) {
+            setKeys(getPendingTasks());
+	}
         
     } //  End of class PendingChildren.
 

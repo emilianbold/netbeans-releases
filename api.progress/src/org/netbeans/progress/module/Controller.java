@@ -81,7 +81,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     }
     
     
-    TaskModel getModel() {
+    public TaskModel getModel() {
         return model;
     }
     
