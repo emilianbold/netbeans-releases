@@ -193,6 +193,9 @@ public class VersionsCache {
         }
         executor.execute();
         ExecutorSupport.wait(new ExecutorSupport [] { executor });
+        if (group == null) {
+            executor.getGroup().executed();
+        }
 
         if (executor.isSuccessful()) {
             return executor.getCheckedOutVersion();

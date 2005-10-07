@@ -139,7 +139,7 @@ public final class CheckoutAction extends SystemAction {
         GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(cvsRoot);
 
-        ExecutorGroup group = new ExecutorGroup("Checkouting");
+        ExecutorGroup group = new ExecutorGroup("Checking out");
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
         group.addExecutor(executor);
         if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 && scanProject) {
