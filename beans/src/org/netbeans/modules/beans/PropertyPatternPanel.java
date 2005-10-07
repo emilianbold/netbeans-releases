@@ -318,6 +318,8 @@ public final class PropertyPatternPanel extends javax.swing.JPanel
 
     private void fieldCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldCheckBoxActionPerformed
         protectControls();
+        returnCheckBox.setSelected(fieldCheckBox.isSelected());
+        setCheckBox.setSelected(fieldCheckBox.isSelected());
     }//GEN-LAST:event_fieldCheckBoxActionPerformed
 
     private void constrainedCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_constrainedCheckBoxActionPerformed
