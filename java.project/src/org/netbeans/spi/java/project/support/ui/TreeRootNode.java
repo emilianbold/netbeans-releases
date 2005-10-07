@@ -160,7 +160,13 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 try {
                     return NodeOp.findPath(rootNode, Collections.enumeration(path));
                 } catch (NodeNotFoundException e) {
-                    return null;
+                    try {
+                        //#65555: DefaultDataObject cannot be selected
+                        path.set(path.size() - 1, fo.getNameExt());
+                        return NodeOp.findPath(rootNode, Collections.enumeration(path));
+                    } catch (NodeNotFoundException e2) {
+                        return null;
+                    }
                 }
             } else if (groupRoot.equals(fo)) {
                 return rootNode;
