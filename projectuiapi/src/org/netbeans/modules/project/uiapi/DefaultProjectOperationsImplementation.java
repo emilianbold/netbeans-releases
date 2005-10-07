@@ -17,6 +17,7 @@ import java.awt.Dialog;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -466,7 +469,20 @@ public final class DefaultProjectOperationsImplementation {
         final Dialog[] dialog = new Dialog[1];
         
         DialogDescriptor dd = new DialogDescriptor(doSetMessageType ? panel : wrapPanel(panel), caption, true, new Object[] {confirm, cancel}, cancelButton != null ? cancel : confirm, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+            private boolean operationRunning;
             public void actionPerformed(ActionEvent e) {
+                //#65634: making sure that the user cannot close the dialog before the operation is finished:
+                if (operationRunning) {
+                    return ;
+                }
+                
+                if (dialog[0] instanceof JDialog) {
+                    ((JDialog) dialog[0]).getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).remove(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
+                    ((JDialog) dialog[0]).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+                }
+                
+                operationRunning = true;
+		
                 if (e.getSource() == confirm) {
                     confirm.setEnabled(false);
                     cancel.setEnabled(false);
@@ -515,6 +531,8 @@ public final class DefaultProjectOperationsImplementation {
         if (doSetMessageType) {
             dd.setMessageType(NotifyDescriptor.QUESTION_MESSAGE);
         }
+        
+        dd.setClosingOptions(new Object[0]);
         
         dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
         
