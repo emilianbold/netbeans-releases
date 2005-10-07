@@ -259,7 +259,8 @@ public class LayoutPersistenceManager implements LayoutConstants {
      * @param attributes attributes of some layout interval.
      */
     private void saveAttributes(int attributes) {
-        attributes &= LayoutInterval.ATTR_PERSISTENT_MASK;
+        if (!humanReadable)
+            attributes &= LayoutInterval.ATTR_PERSISTENT_MASK;
         sb.append(' ').append(ATTR_ATTRIBUTES).append("=\""); // NOI18N
         sb.append(attributes).append("\""); // NOI18N
     }
