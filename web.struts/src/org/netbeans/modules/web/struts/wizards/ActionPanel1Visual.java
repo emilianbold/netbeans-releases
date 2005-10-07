@@ -98,7 +98,6 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBInputAction, gridBagConstraints);
 
@@ -107,14 +106,13 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFInputResource, gridBagConstraints);
 
         CHBUseFormBean.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "LBL_UseFormBean_mnem").charAt(0));
         CHBUseFormBean.setSelected(true);
         CHBUseFormBean.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "CB_UseFormBean"));
-        CHBUseFormBean.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        CHBUseFormBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBUseFormBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
         CHBUseFormBean.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -144,14 +142,14 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         RBSession.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_Session_mnem").charAt(0));
         RBSession.setSelected(true);
         RBSession.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_Sesson"));
-        RBSession.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBSession.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBSession.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBSession);
 
         buttonGroup1.add(RBRequest);
         RBRequest.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_Request_mnem").charAt(0));
         RBRequest.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_Request"));
-        RBRequest.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBRequest.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBRequest.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBRequest);
 
@@ -184,19 +182,17 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFAttribute, gridBagConstraints);
 
         CHBValidate.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "CB_Validate_mnem").charAt(0));
         CHBValidate.setSelected(true);
         CHBValidate.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "CB_Validate"));
-        CHBValidate.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        CHBValidate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBValidate.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(CHBValidate, gridBagConstraints);
@@ -215,7 +211,6 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
         add(TFParameter, gridBagConstraints);
 
@@ -223,7 +218,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         RBInputResource.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_InputResource_mnem").charAt(0));
         RBInputResource.setSelected(true);
         RBInputResource.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_InputResource"));
-        RBInputResource.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBInputResource.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputResource.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputResource.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -241,7 +236,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         buttonGroup2.add(RBInputAction);
         RBInputAction.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_InputAction_mnem").charAt(0));
         RBInputAction.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_InputAction"));
-        RBInputAction.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBInputAction.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputAction.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputAction.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -260,6 +255,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jParameterSpecificLabel, gridBagConstraints);
 

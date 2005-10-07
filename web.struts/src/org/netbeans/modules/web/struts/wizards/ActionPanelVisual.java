@@ -90,7 +90,6 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jComboBoxConfigFile, gridBagConstraints);
 
@@ -100,7 +99,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabelPath, gridBagConstraints);
 
@@ -109,7 +108,8 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jTextFieldPath, gridBagConstraints);
 
