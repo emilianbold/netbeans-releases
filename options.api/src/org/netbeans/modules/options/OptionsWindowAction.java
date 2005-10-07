@@ -111,7 +111,7 @@ public class OptionsWindowAction extends AbstractAction {
                 (descriptor, optionsPanel, bOK, bClassic);
             descriptor.setButtonListener (listener);
             optionsPanel.addPropertyChangeListener (listener);
-            //optionsDialogDescriptor = new WeakReference (descriptor);
+            optionsDialogDescriptor = new WeakReference (descriptor);
         } else {
             OptionsPanel optionsPanel = (OptionsPanel) descriptor.getMessage ();
             optionsPanel.update ();
@@ -174,6 +174,9 @@ public class OptionsWindowAction extends AbstractAction {
         }
         
         public void actionPerformed (ActionEvent e) {
+            if (dialog == null) 
+                return; //WORKARROUND for some bug in NbPresenter
+                // listener is called twice ...
             if (e.getSource () == bOK) {
                 dialog.setVisible (false);
                 optionsPanel.save ();
@@ -215,22 +218,23 @@ public class OptionsWindowAction extends AbstractAction {
                     a.putValue ("additionalActionName", loc ("CTL_Modern"));
                     a.putValue (
                         "additionalActionListener", 
-                        new ActionListener () {
-                            public void actionPerformed (ActionEvent e) {
-                                RequestProcessor.getDefault ().post (new Runnable () {
-                                    public void run () {
-                                        OptionsWindowAction.this.actionPerformed 
-                                            (new ActionEvent (this, 0, "Open"));
-                                    }
-                                });
-                            }
-                        }
+                        new OpenOptionsListener ()
                     );
                     a.performAction ();
                 } catch (Exception ex) {
                     ErrorManager.getDefault ().notify (ex);
                 }
             } // classic
+        }
+    }
+    
+    class OpenOptionsListener implements ActionListener {
+        public void actionPerformed (ActionEvent e) {
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    actionPerformed (new ActionEvent (this, 0, "Open"));
+                }
+            });
         }
     }
 }
