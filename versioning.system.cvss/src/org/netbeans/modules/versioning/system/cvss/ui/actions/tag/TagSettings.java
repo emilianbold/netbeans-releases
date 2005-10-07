@@ -54,9 +54,9 @@ public class TagSettings extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
-        cbCheckModified.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("MNE_TagForm_EnsureUptodate").charAt(0));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         org.openide.awt.Mnemonics.setLocalizedText(cbCheckModified, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_TagForm_EnsureUptodate"));
+        cbCheckModified.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_TagForm_EnsureUptodate"));
         cbCheckModified.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCheckModifiedActionPerformed(evt);
@@ -72,8 +72,8 @@ public class TagSettings extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(cbCheckModified, gridBagConstraints);
 
-        cbMoveTag.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("MNE_TagForm_MoveExisting").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(cbMoveTag, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_TagForm_MoveExisting"));
+        cbMoveTag.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_TagForm_MoveExisting"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

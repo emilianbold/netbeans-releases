@@ -68,6 +68,7 @@ public class TagAction extends AbstractSystemAction {
         settings.setCommand(cmd);
         DialogDescriptor descriptor = new DialogDescriptor(settings, title); 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TagAction.class, "ACSD_TagDialog"));
         dialog.setVisible(true);
         if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
 
