@@ -60,6 +60,7 @@ final class CheckoutCompletedPanel extends javax.swing.JPanel {
         add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(openButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK1003"));
+        openButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/checkout/Bundle").getString("TT_OpenProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -67,11 +68,13 @@ final class CheckoutCompletedPanel extends javax.swing.JPanel {
         add(openButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(createButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK1004"));
+        createButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/checkout/Bundle").getString("TT_CreateProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         add(createButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK1005"));
+        closeButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/checkout/Bundle").getString("TT_Close"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 0);

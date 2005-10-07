@@ -244,6 +244,7 @@ public final class CheckoutAction extends SystemAction {
             descriptor.setClosingOptions(options);
             descriptor.setHelpCtx(new HelpCtx(CheckoutCompletedPanel.class));
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+            dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CheckoutAction.class, "ACSD_CheckoutCompleted_Dialog"));
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
