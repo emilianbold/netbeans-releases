@@ -135,7 +135,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             Component right = splitPane.getRightComponent();
             
             if (position == JSplitPane.LEFT) {
-                if (right == null) {
+                if ((right == null) || (right == component)) {
                     rect.width = sz.width / 2;
                 }
                 else {
@@ -143,7 +143,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                 }
             }
             else {
-                if (left == null) {
+                if ((left == null) || (left == component)) {
                     rect.x = insets.left + sz.width / 2;
                     rect.width = sz.width - rect.x;
                 }
@@ -158,7 +158,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             Component bottom = splitPane.getBottomComponent();
             
             if (position == JSplitPane.TOP) {
-                if (bottom == null) {
+                if ((bottom == null) || (bottom == component)) {
                     rect.height /= 2;
                 }
                 else {
@@ -166,7 +166,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                 }
             }
             else {
-                if (top == null) {
+                if ((top == null) || (top == component)) {
                     rect.y = insets.top + sz.height / 2;
                     rect.height = sz.height - rect.y;
                 }

@@ -76,6 +76,7 @@ public class JToolBarSupport extends AbstractLayoutSupport {
         
         Component[] components = container.getComponents();
         for (int i = 0; i < components.length; i++) {
+            if (component == components[i]) continue;
             Rectangle b = components[i].getBounds();
             if (orientation == SwingConstants.HORIZONTAL) {
                 if (posInCont.x < b.x + b.width / 2)
@@ -119,7 +120,10 @@ public class JToolBarSupport extends AbstractLayoutSupport {
         Component[] components = container.getComponents();
         Rectangle rect;
 
-        if (components.length == 0) {
+        if ((newIndex >= 0) && (newIndex < components.length) && (component == components[newIndex])) {
+            newIndex++;
+        }
+        if ((components.length == 0) || ((components.length == 1) && (components[0] == component))) {
             Insets ins = container.getInsets();
             rect = orientation == SwingConstants.HORIZONTAL ?
                    new Rectangle(ins.left,
@@ -132,7 +136,8 @@ public class JToolBarSupport extends AbstractLayoutSupport {
                                  30, 20);
         }
         else if (newIndex < 0 || newIndex >= components.length) {
-            Rectangle b = components[components.length - 1].getBounds();
+            int index = (components[components.length-1] == component) ? components.length-2 : components.length-1;
+            Rectangle b = components[index].getBounds();
             rect = orientation == SwingConstants.HORIZONTAL ?
                    new Rectangle(b.x + b.width - 10, b.y, 20, b.height) :
                    new Rectangle(b.x, b.y + b.height - 10, b.width, 20);

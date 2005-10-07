@@ -168,7 +168,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         if (!(container instanceof JTabbedPane))
             return false;
 
-        if (container.getComponentCount() == 0) {
+        if ((container.getComponentCount() == 0) || (component == container.getComponent(0))) {
             Dimension sz = container.getSize();
             Insets insets = container.getInsets();
             sz.width -= insets.left + insets.right;
