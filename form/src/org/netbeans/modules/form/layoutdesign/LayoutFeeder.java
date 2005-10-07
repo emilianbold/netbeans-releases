@@ -2071,9 +2071,16 @@ class LayoutFeeder implements LayoutConstants {
             return;
         }
 
-        // 2nd remove incompatible inclusions, move compatible ones to same level
         LayoutInterval commonGroup = best.parent.isSequential() ? best.parent.getParent() : best.parent;
-        boolean originalInCommonGroup = original != null ? original.parent == commonGroup : false;
+        boolean originalInCommonGroup;
+        boolean originalInCommonSeq;
+        if (original != null) {
+            originalInCommonGroup = original.parent == commonGroup;
+            originalInCommonSeq = original.parent.isSequential() && original.parent.getParent() == commonGroup;
+        }
+        else originalInCommonGroup = originalInCommonSeq = false;
+
+        // 2nd remove incompatible inclusions, move compatible ones to same level
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc != best) {
@@ -2170,7 +2177,7 @@ class LayoutFeeder implements LayoutConstants {
                 it.remove();
         }
 
-        // 5th create groups of merged content around the adding component
+        // prepare the common group for merged content
         int[] borderPos = commonGroup.getCurrentSpace().positions[dimension];
         int[] neighborPos = (subGroup != null ? subGroup : addingInterval).getCurrentSpace().positions[dimension];
         LayoutInterval commonSeq;
@@ -2198,9 +2205,14 @@ class LayoutFeeder implements LayoutConstants {
             layoutModel.addInterval(commonSeq, commonGroup, -1);
             index = 0;
         }
+        if (originalInCommonSeq) {
+            original.parent = commonSeq;
+        }
         if (commonSeq.getSubIntervalCount() == 0) {
             commonSeq.getCurrentSpace().set(dimension, commonGroup.getCurrentSpace());
         }
+
+        // 5th create groups of merged content around the adding component
         if (!separatedLeading.isEmpty()) {
             int checkCount = commonSeq.getSubIntervalCount(); // remember ...
             LayoutInterval sideGroup = operations.addGroupContent(
