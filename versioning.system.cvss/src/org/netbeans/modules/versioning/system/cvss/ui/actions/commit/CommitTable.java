@@ -18,6 +18,7 @@ import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.TableSorter;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
@@ -42,7 +43,7 @@ class CommitTable implements AncestorListener {
     private TableSorter sorter;
     private String[]    columns;
 
-    public CommitTable() {
+    public CommitTable(JLabel label) {
         tableModel = new CommitTableModel();
         sorter = new TableSorter(tableModel);
         table = new JTable(sorter);
@@ -54,6 +55,8 @@ class CommitTable implements AncestorListener {
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        label.setLabelFor(table);
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable"));
     }
 
     public void ancestorAdded(AncestorEvent event) {
