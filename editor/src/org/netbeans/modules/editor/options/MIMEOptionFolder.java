@@ -68,6 +68,8 @@ public class MIMEOptionFolder{
     /** Creates new MIMEOptionFolder */
     public MIMEOptionFolder(DataFolder f, BaseOptions bean){
         folder = f;
+        
+        /* commenting due to issue #65446
         folder.getPrimaryFile().addFileChangeListener(new FileChangeAdapter(){
             // update settings if new xml settings files appear
             public void fileDataCreated(FileEvent fe) {
@@ -79,6 +81,8 @@ public class MIMEOptionFolder{
             }
             
         });
+         */
+        
         base = bean;
         mime=BaseOptions.BASE.equals(base.getTypeName())? "text/base" : BaseKit.getKit(base.getKitClass()).getContentType(); //NOI18N
         if (mime == null) mime = base.getTypeName();
