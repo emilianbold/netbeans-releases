@@ -309,6 +309,7 @@ class LayoutFeeder implements LayoutConstants {
             }
             if (nonEmptyCount <= 2 && parent.getParent() != null) {
                 // parallel group will not survive when the interval is removed
+                LayoutInterval subGroup = parent;
                 parent = parent.getParent();
                 if (parent.isSequential()) {
                     boolean ortOverlap = false;
@@ -321,8 +322,10 @@ class LayoutFeeder implements LayoutConstants {
                             break;
                         }
                     }
-                    if (ortOverlap) // parallel with part of the sequence
+                    if (ortOverlap) { // parallel with part of the sequence
                         iDesc.newSubGroup = true;
+                        iDesc.index = parent.indexOf(subGroup);
+                    }
                     else // parallel with whole sequence
                         parent = parent.getParent();
                 }

@@ -998,8 +998,12 @@ class LayoutOperations implements LayoutConstants {
         }
 
         if (leadingGap != null || trailingGap != null) {
-            groupOuterPos[LEADING] = groupInnerPosLeading;
-            groupOuterPos[TRAILING] = groupInnerPosTrailing;
+            if (leadingGap != null || !LayoutRegion.isValidCoordinate(groupOuterPos[LEADING])) {
+                groupOuterPos[LEADING] = groupInnerPosLeading;
+            }
+            if (trailingGap != null || !LayoutRegion.isValidCoordinate(groupOuterPos[TRAILING])) {
+                groupOuterPos[TRAILING] = groupInnerPosTrailing;
+            }
             groupOuterPos[CENTER] = (groupInnerPosLeading + groupInnerPosTrailing) / 2;
             if (leadingGap != null) {
                 group = insertGap(leadingGap, group, groupInnerPosLeading, dimension, LEADING);

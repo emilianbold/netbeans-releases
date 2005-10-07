@@ -203,11 +203,9 @@ public class LayoutDesigner implements LayoutConstants {
                     int pref = sub.getPreferredSize(true);
                     int max = sub.getMaximumSize(true);
                     if ((min == pref || min == USE_PREFERRED_SIZE)
-                        && (pref == max || max == USE_PREFERRED_SIZE)) {
-                        // Fixed size padding
-                        if (pref == NOT_EXPLICITLY_DEFINED) {
-                            pref = LayoutUtils.getSizeOfDefaultGap(sub, visualMapper);
-                        }
+                        && (pref == max || max == USE_PREFERRED_SIZE)
+                        && pref != NOT_EXPLICITLY_DEFINED) {
+                        // Fixed size gap
                         if (first) {
                             leadingSpace = pref;
                         } else {
