@@ -44,6 +44,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+	initAccessibility();
         Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle")); // NOI18N
         modifiedFilesValue.setBackground(lblBgr);
@@ -297,6 +298,17 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));        
+        comPackageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PackageName"));
+        comCategory.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Category"));
+        txtDisplayName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
+        txtName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Name"));
+        txtProjectName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ProjectName"));
+        createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFilesValue"));
+        modifiedFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFilesValue"));
+    }         
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comCategory;

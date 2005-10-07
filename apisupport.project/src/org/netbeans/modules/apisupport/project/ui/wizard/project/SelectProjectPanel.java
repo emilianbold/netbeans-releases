@@ -49,6 +49,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+	initAccessibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle"));
         loadComboBox();
         comProject.addItemListener(new ItemListener() {
@@ -181,6 +182,12 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(SelectProjectPanel.class);
+    }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectProjectPanel"));        
+        btnProject.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_btnProject"));
+        comProject.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_comProject"));
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
