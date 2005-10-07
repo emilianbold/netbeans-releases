@@ -15,6 +15,7 @@ package org.netbeans.modules.beans;
 
 import java.awt.*;
 import java.beans.*;
+import org.openide.ErrorManager;
 
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.netbeans.jmi.javamodel.Type;
@@ -23,6 +24,7 @@ import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 
 import javax.jmi.reflect.JmiException;
+import org.openide.util.NbBundle;
 
 /** Property editor for the property type property
 *
@@ -58,7 +60,7 @@ public class PropertyTypeEditor extends PropertyEditorSupport implements Enhance
     public void setAsText (String string) throws IllegalArgumentException {
         String normalizedInput;
         if (string == null || (normalizedInput = string.trim()).length() == 0) {
-            throw new IllegalArgumentException(string);
+            throw (IllegalArgumentException) ErrorManager.getDefault().annotate(new IllegalArgumentException(string), NbBundle.getMessage(PropertyTypeEditor.class, "MSG_Not_Valid_Type"));
         }
         Type oldType = (Type) getValue();
         Type newType;
