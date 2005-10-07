@@ -198,19 +198,28 @@ ActionListener {
     void applyChanges () {
         if (!changed) return;
         AntSettings settings = AntSettings.getDefault ();
-        settings.setAntHome (new File (tfAntHome.getText ()));
-        settings.setAutoCloseTabs (cbReuseOutput.isSelected ());
-        settings.setSaveAll (cbSaveFiles.isSelected ());
-        settings.setAlwaysShowOutput (cbAlwaysShowOutput.isSelected ());
-        settings.setVerbosity (cbVerbosity.getSelectedIndex () + 1);
-        settings.setProperties (properties);
-        settings.setExtraClasspath (classpath);
+        File f = new File (tfAntHome.getText ());
+        if (!settings.getAntHome ().equals (f))
+            settings.setAntHome (f);
+        if (settings.getAutoCloseTabs () != cbReuseOutput.isSelected ())
+            settings.setAutoCloseTabs (cbReuseOutput.isSelected ());
+        if (settings.getSaveAll () != cbSaveFiles.isSelected ())
+            settings.setSaveAll (cbSaveFiles.isSelected ());
+        if (settings.getAlwaysShowOutput () != cbAlwaysShowOutput.isSelected ())
+            settings.setAlwaysShowOutput (cbAlwaysShowOutput.isSelected ());
+        if (settings.getVerbosity () != cbVerbosity.getSelectedIndex () + 1)
+            settings.setVerbosity (cbVerbosity.getSelectedIndex () + 1);
+        if (!settings.getProperties ().equals (properties))
+            settings.setProperties (properties);
+        if (!settings.getExtraClasspath ().equals (classpath))
+            settings.setExtraClasspath (classpath);
     }
     
     void cancel () {
         if (!changed) return;
         AntSettings settings = AntSettings.getDefault ();
-        settings.setAntHome (originalAntHome);
+        if (!settings.getAntHome ().equals (originalAntHome))
+            settings.setAntHome (originalAntHome);
     }
     
     boolean dataValid () {
