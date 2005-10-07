@@ -209,8 +209,11 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             //scan the document for syntax elements - from startOffset to endOffset
             while(sel != null && getSyntaxElementEndOffset(sel) <= endOffset) {
                 if(sel instanceof SyntaxElement.Error) {
-                    if(debug) System.out.println("Error found! => breaking the generation.");
-                    throw new DocumentModelException("XML File is unparsable.");
+                    //add error element into the structure
+                    if(debug) System.out.println("Error found! => adding error element.");
+                    String errorText = doc.getText(sel.getElementOffset(), sel.getElementLength());
+                    addedElements.add(dtm.addDocumentElement(errorText, XML_ERROR, Collections.EMPTY_MAP,
+                                    sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 }
                 
                 if(sel instanceof StartTag) {
@@ -389,6 +392,8 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
     public static final String XML_CDATA = "cdata";
     public static final String XML_DOCTYPE = "doctype";
     public static final String XML_COMMENT = "comment";
+    
+    public static final String XML_ERROR = "error";
     
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.xml.text.structure.debug");
