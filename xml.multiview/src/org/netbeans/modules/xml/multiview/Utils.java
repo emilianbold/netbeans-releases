@@ -14,14 +14,19 @@
 package org.netbeans.modules.xml.multiview;
 
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.api.EncodingUtil;
 
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
+import java.io.IOException;
 
 /**
  * Utils.java
@@ -187,4 +192,67 @@ public class Utils {
         }
     }
 
+    public static boolean checkEncoding(final StyledDocument doc) throws IOException {
+        // dependency on xml/core
+        String enc = EncodingUtil.detectEncoding(doc);
+        if (enc == null) enc = "UTF8"; //!!! // NOI18N
+
+        try {
+            //test encoding on dummy stream
+            new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
+            return true;
+        } catch (java.io.UnsupportedEncodingException ex) {
+            // ask user what next?
+            String message = NbBundle.getMessage(Utils.class,"TEXT_SAVE_AS_UTF", enc);
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
+            Object res = DialogDisplayer.getDefault().notify(descriptor);
+
+            if (res.equals(NotifyDescriptor.YES_OPTION)) {
+
+                // update prolog to new valid encoding
+
+                try {
+                    final int MAX_PROLOG = 1000;
+                    int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
+                    final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
+                    int prologLen = 0;  // actual prolog length
+
+                    //parse prolog and get prolog end
+                    if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
+
+                        // look for delimitting ?>
+                        for (int i = 3; i<maxPrologLen; i++) {
+                            if (prolog[i] == '?' && prolog[i+1] == '>') {
+                                prologLen = i + 1;
+                                break;
+                            }
+                        }
+                    }
+
+                    final int passPrologLen = prologLen;
+
+                    Runnable edit = new Runnable() {
+                         public void run() {
+                             try {
+
+                                doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
+                                doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+
+                             } catch (BadLocationException e) {
+                                 if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+                                     e.printStackTrace();
+                             }
+                         }
+                    };
+
+                    NbDocument.runAtomic(doc, edit);
+                    return true;
+
+                } catch (BadLocationException lex) {
+                    ErrorManager.getDefault().notify(lex);
+                }
+            }
+        }
+        return false;
+    }
 }

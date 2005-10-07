@@ -165,8 +165,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             saveLock = dataLock;
             documentSynchronizer.reloadModel();
             try {
-                super.saveDocument();
-                ((XmlMultiViewDataObject) getDataObject()).getDataCache().resetFileTime();
+                if (Utils.checkEncoding(getDocument())) {
+                    super.saveDocument();
+                    ((XmlMultiViewDataObject) getDataObject()).getDataCache().resetFileTime();
+                }
             } finally {
                 saveLock = null;
             }
@@ -524,11 +526,20 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         protected void reloadModelFromData() {
             if (loading == 0) {
+                final boolean[] completed = new boolean[]{false};
                 Utils.runInAwtDispatchThread(new Runnable() {
                     public void run() {
                         Utils.replaceDocument(document, new String(dObj.getDataCache().getData()));
+                        completed[0] = true;
                     }
                 });
+                while (!completed[0]) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        //
+                    }
+                }
             }
         }
     }
