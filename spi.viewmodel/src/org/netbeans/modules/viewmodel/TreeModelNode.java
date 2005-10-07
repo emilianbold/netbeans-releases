@@ -56,6 +56,11 @@ import org.openide.util.lookup.Lookups;
  */
 public class TreeModelNode extends AbstractNode {
 
+    /**
+     * The maximum length of text that is interpreted as HTML.
+     * This is documented at openide/explorer/src/org/openide/explorer/doc-files/propertyViewCustomization.html
+     */
+    private static final int MAX_HTML_LENGTH = 511;
     
     // variables ...............................................................
 
@@ -385,8 +390,36 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static String htmlValue (String name) {
-        if (name.startsWith ("<html>")) return name;
-        else return null;
+        if (!name.startsWith ("<html>")) return null;
+        if (name.length() > MAX_HTML_LENGTH) {
+            int endTagsPos = findEndTagsPos(name);
+            String ending = name.substring(endTagsPos + 1);
+            name = name.substring(0, MAX_HTML_LENGTH - 3 - ending.length());
+            // Check whether we haven't cut "&...;" in between:
+            int n = name.length();
+            for (int i = n - 1; i > n - 6; i--) {
+                if (name.charAt(i) == ';') {
+                    break; // We have an end of the group
+                }
+                if (name.charAt(i) == '&') {
+                    name = name.substring(0, i);
+                    break;
+                }
+            }
+            name += "..." + ending;
+        }
+        return name;
+    }
+    
+    private static int findEndTagsPos(String s) {
+        int openings = 0;
+        int i;
+        for (i = s.length() - 1; i >= 0; i--) {
+            if (s.charAt(i) == '>') openings++;
+            else if (s.charAt(i) == '<') openings--;
+            else if (openings == 0) break;
+        }
+        return i;
     }
     
     private static String removeHTML (String text) {
