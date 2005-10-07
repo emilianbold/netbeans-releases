@@ -49,6 +49,7 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+	initAccessibility();
         group = new ButtonGroup();
         group.add(rbByElement);
         group.add(rbByExtension);
@@ -280,5 +281,13 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     private javax.swing.JTextField txtMimeType;
     private javax.swing.JTextField txtNamespace;
     // End of variables declaration//GEN-END:variables
-    
+
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_FileRecognitionPanel"));        
+        rbByElement.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ByElement"));
+        rbByExtension.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ByExtension"));
+        txtExtension.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Extension"));
+        txtNamespace.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Namespace"));
+        txtMimeType.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Mimetype"));
+    }      
 }
