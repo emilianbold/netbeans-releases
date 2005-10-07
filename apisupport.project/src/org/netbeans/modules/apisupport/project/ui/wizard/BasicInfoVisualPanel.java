@@ -429,7 +429,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         infoPanel.add(folderValue, gridBagConstraints);
 
-        suitePlatform.setLabelFor(platformValue);
+        suitePlatform.setLabelFor(suitePlatformValue);
         org.openide.awt.Mnemonics.setLocalizedText(suitePlatform, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_NetBeansPlatform"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
