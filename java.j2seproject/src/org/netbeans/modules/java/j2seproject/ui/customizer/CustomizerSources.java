@@ -63,7 +63,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
-        this.sourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);        
+        this.sourceLevel.setEditable(false);
+        this.sourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);
+        this.sourceLevel.setRenderer(uiProperties.JAVAC_SOURCE_RENDERER);        
         uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
             public void intervalAdded(ListDataEvent e) {
                 enableSourceLevel ();

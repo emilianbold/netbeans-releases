@@ -39,7 +39,9 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -79,6 +81,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
+import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -208,9 +211,40 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         J2SEProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     
-    public boolean hasBrokenLinks() {
+    public boolean hasBrokenLinks () {
         return BrokenReferencesSupport.isBroken(helper.getAntProjectHelper(), resolver, getBreakableProperties(),
                 new String[] {J2SEProjectProperties.JAVA_PLATFORM});
+    }
+    
+    public boolean hasInvalidJdkVersion () {
+        String javaSource = this.evaluator.getProperty("javac.source");     //NOI18N
+        String javaTarget = this.evaluator.getProperty("javac.target");    //NOI18N
+        if (javaSource == null && javaTarget == null) {
+            //No need to check anything
+            return false;
+        }
+        JavaPlatform activePlatform = null;
+        String platformId = this.evaluator.getProperty("platform.active");  //NOI18N
+        if (platformId != null) {
+            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (null, new Specification("j2se",null));    //NOI18N
+            for (int i=0; i<platforms.length; i++) {
+                if (platformId.equals (platforms[i].getProperties().get("platform.ant.name"))) {
+                    activePlatform = platforms[i];
+                    break;
+                }
+            }                
+            if (activePlatform == null) {
+                //Should never happen
+                assert false : "Broken platform but the BrokenReferencesSupport.isBroken () returned false";    //NOI18N
+                return true;
+            }
+        }
+        else {
+            activePlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        }
+        SpecificationVersion platformVersion = activePlatform.getSpecification().getVersion();
+        return (javaSource != null && new SpecificationVersion (javaSource).compareTo(platformVersion)>0)
+               || (javaTarget != null && new SpecificationVersion (javaTarget).compareTo(platformVersion)>0);
     }
     
     private String[] getBreakableProperties() {
@@ -234,7 +268,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         private Image icon;
         private Lookup lookup;
         private Action brokenLinksAction;
-        private boolean broken;
+        private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
+        private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
         
         // icon badging >>>
         private Set files;
@@ -254,6 +289,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks()) {
                 broken = true;
+            }
+            else if (hasInvalidJdkVersion ()) {
+                illegalState = true;
             }
             brokenLinksAction = new BrokenLinksAction();
             setProjectFiles(project);
@@ -337,7 +375,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             } catch (CharConversionException ex) {
                 return dispName;
             }
-            return broken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
+            return broken || illegalState ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
         
         public Image getIcon(int type) {
@@ -357,7 +395,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         private Image getMyIcon(int type) {
             Image original = super.getIcon(type);
-            return broken ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         public Image getOpenedIcon(int type) {
@@ -377,7 +415,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         private Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
-            return broken ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         public void run() {
@@ -534,6 +572,13 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             fireDisplayNameChange(null, null);
         }
         
+        private void setIllegalState (boolean illegalState) {
+            this.illegalState = illegalState;
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
+        }
+        
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
@@ -575,10 +620,16 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             }
             
             public synchronized void run() {
-                boolean old = broken;
-                broken = hasBrokenLinks();
+                boolean old = J2SELogicalViewRootNode.this.broken;
+                boolean broken = hasBrokenLinks();
                 if (old != broken) {
                     setBroken(broken);
+                }
+                
+                old = J2SELogicalViewRootNode.this.illegalState;
+                broken = hasInvalidJdkVersion ();
+                if (old != broken) {
+                    setIllegalState(broken);
                 }
             }
             

@@ -15,6 +15,8 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -188,8 +190,9 @@ public class J2SEProjectGenerator {
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
         }, false);
 
-        ep.setProperty("javac.source", "${default.javac.source}"); // NOI18N
-        ep.setProperty("javac.target", "${default.javac.target}"); // NOI18N
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        ep.setProperty("javac.source", defaultPlatform.getSpecification().getVersion().toString()); // NOI18N
+        ep.setProperty("javac.target", defaultPlatform.getSpecification().getVersion().toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
         ep.setProperty("javac.test.classpath", new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
