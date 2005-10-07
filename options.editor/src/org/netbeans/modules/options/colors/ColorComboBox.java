@@ -83,7 +83,7 @@ public class ColorComboBox extends JComboBox {
 	new Value (Color.WHITE), 
 	new Value (Color.YELLOW), 
 	CUSTOM_COLOR, 
-	new Value (loc ("CTL_None_Color"), null)                  //NOI18N
+	new Value (loc ("CTL_Default_Color"), null)                  //NOI18N
     };
     
     private Color lastColor;
@@ -124,7 +124,7 @@ public class ColorComboBox extends JComboBox {
             );
         else
             ncontent [content.length - 1] = new Value (
-                loc ("CTL_None_Color"), null                       //NOI18N
+                loc ("CTL_Default_Color"), null                       //NOI18N
             );
 	setModel (new DefaultComboBoxModel (ncontent));
     }
