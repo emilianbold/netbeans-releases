@@ -83,10 +83,11 @@ class SwitchBranchPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         bgSwitchRadio.add(rbSwitchToTrunk);
         org.openide.awt.Mnemonics.setLocalizedText(rbSwitchToTrunk, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_SwitchBranchForm_ToTrunk"));
-        rbSwitchToTrunk.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 2, 0)));
+        rbSwitchToTrunk.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_SwitchBranchForm_ToTrunk"));
+        rbSwitchToTrunk.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
         rbSwitchToTrunk.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rbSwitchToTrunk.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -103,7 +104,8 @@ class SwitchBranchPanel extends javax.swing.JPanel {
 
         bgSwitchRadio.add(rbSwitchToBranch);
         org.openide.awt.Mnemonics.setLocalizedText(rbSwitchToBranch, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_SwitchBranchForm_ToBranch"));
-        rbSwitchToBranch.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        rbSwitchToBranch.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_SwitchBranchForm_ToBranch"));
+        rbSwitchToBranch.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rbSwitchToBranch.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rbSwitchToBranch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -125,8 +127,11 @@ class SwitchBranchPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(tfBranchName, gridBagConstraints);
+        tfBranchName.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("ACSN_SwitchBranchForm_BranchName"));
+        tfBranchName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("ACSD_SwitchBranchForm_BranchName"));
 
         org.openide.awt.Mnemonics.setLocalizedText(bBrowse, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_SwitchBranchForm_BrowseBranch"));
+        bBrowse.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_SwitchBranchForm_BrowseBranch"));
         bBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseBranches(evt);

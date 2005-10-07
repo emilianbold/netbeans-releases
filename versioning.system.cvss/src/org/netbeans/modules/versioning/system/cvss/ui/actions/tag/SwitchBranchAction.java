@@ -75,7 +75,9 @@ public class SwitchBranchAction extends AbstractSystemAction {
         final SwitchBranchPanel settings = new SwitchBranchPanel(context.getFiles());
 
         JButton swich = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Switch"));
+        swich.setToolTipText(NbBundle.getMessage(SwitchBranchAction.class, "TT_SwitchBranchDialog_Action_Switch"));
         JButton cancel = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SwitchBranchAction.class, "ACSD_SwitchBranchDialog_Action_Cancel"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
                 title,
@@ -88,6 +90,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
         descriptor.setClosingOptions(null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SwitchBranchAction.class, "ACSD_SwitchBranchDialog"));
         dialog.setVisible(true);
         if (descriptor.getValue() != swich) return;
 
