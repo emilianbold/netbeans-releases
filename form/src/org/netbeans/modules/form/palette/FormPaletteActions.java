@@ -27,25 +27,34 @@ public class FormPaletteActions extends PaletteActions {
     }
 
     public Action[] getImportActions() {
-        return new Action[] {
-            new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) { // NOI18N
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    BeanInstaller.installBeans(ClassSource.JAR_SOURCE);
-                }
-            },
-                    
-            new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) { // NOI18N
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    BeanInstaller.installBeans(ClassSource.LIBRARY_SOURCE);
-                }
-            },
-                    
-            new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) { // NOI18N
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    BeanInstaller.installBeans(ClassSource.PROJECT_SOURCE);
-                }
-            }
-        };
+        
+        Action[] res = new Action[3];
+        
+        res[0] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) { // NOI18N
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        BeanInstaller.installBeans(ClassSource.JAR_SOURCE);
+                    }
+                 };
+        res[0].putValue( Action.LONG_DESCRIPTION, 
+                 PaletteUtils.getBundleString("ACSD_AddJAR_Button") ); // NOI18N
+        
+        res[1] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) { // NOI18N
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        BeanInstaller.installBeans(ClassSource.LIBRARY_SOURCE);
+                    }
+                };
+        res[1].putValue( Action.LONG_DESCRIPTION, 
+                 PaletteUtils.getBundleString("ACSD_AddLibrary_Button") ); // NOI18N
+        
+        res[2] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) { // NOI18N
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        BeanInstaller.installBeans(ClassSource.PROJECT_SOURCE);
+                    }
+                };
+        res[2].putValue( Action.LONG_DESCRIPTION, 
+                 PaletteUtils.getBundleString("ACSD_AddProject_Button") ); // NOI18N
+        
+        return res;
     }
 
     public Action[] getCustomCategoryActions(org.openide.util.Lookup category) {

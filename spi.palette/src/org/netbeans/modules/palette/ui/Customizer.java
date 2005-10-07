@@ -57,6 +57,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         JButton closeButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(
             closeButton, Utils.getBundleString("CTL_Close_Button")); // NOI18N
+        closeButton.getAccessibleContext().setAccessibleDescription( Utils.getBundleString("ACSD_Close") );
         DialogDescriptor dd = new DialogDescriptor(
             new Customizer( paletteRoot, settings ),
             Utils.getBundleString("CTL_Customizer_Title"), // NOI18N
@@ -89,10 +90,11 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         initComponents();
 
         CheckTreeView treeView = new CheckTreeView( settings );
-//        treeView.getAccessibleContext().setAccessibleName(
-//            Utils.getBundleString("???")); // NOI18N
-//        treeView.getAccessibleContext().setAccessibleDescription(
-//            Utils.getBundleString("???")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleName(
+            Utils.getBundleString("ACSN_PaletteContentsTree")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(
+            Utils.getBundleString("ACSD_PaletteContentsTree")); // NOI18N
+        infoLabel.setLabelFor( treeView );
         treePanel.add(treeView, java.awt.BorderLayout.CENTER);
         captionLabel.setLabelFor(treeView);
 
@@ -146,6 +148,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_PaletteCustomizer"));
         org.openide.awt.Mnemonics.setLocalizedText(captionLabel, Utils.getBundleString("CTL_Caption"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -156,7 +159,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
 
         treePanel.setLayout(new java.awt.BorderLayout());
 
-        treePanel.setBorder(new javax.swing.border.EtchedBorder());
+        treePanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         treePanel.setPreferredSize(new java.awt.Dimension(288, 336));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -191,6 +194,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(28, 12, 0, 10);
         add(moveUpButton, gridBagConstraints);
+        moveUpButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_MoveUp"));
 
         org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, Utils.getBundleString("CTL_MoveDown_Button"));
         moveDownButton.addActionListener(new java.awt.event.ActionListener() {
@@ -205,6 +209,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 10);
         add(moveDownButton, gridBagConstraints);
+        moveDownButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_MoveDown"));
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, Utils.getBundleString("CTL_Remove_Button"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -219,6 +224,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 10);
         add(removeButton, gridBagConstraints);
+        removeButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_Remove"));
 
         org.openide.awt.Mnemonics.setLocalizedText(newCategoryButton, Utils.getBundleString("CTL_NewCategory_Button"));
         newCategoryButton.addActionListener(new java.awt.event.ActionListener() {
@@ -233,6 +239,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 10);
         add(newCategoryButton, gridBagConstraints);
+        newCategoryButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_NewCategory"));
 
         customActionsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -353,6 +360,8 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
             customButtons[i] = new JButton( actions[i] );
             if( null != actions[i].getValue( Action.NAME ) )
                 Mnemonics.setLocalizedText( customButtons[i], actions[i].getValue( Action.NAME ).toString() );
+            if( null != actions[i].getValue( Action.LONG_DESCRIPTION ) )
+                customButtons[i].getAccessibleContext().setAccessibleDescription( actions[i].getValue( Action.LONG_DESCRIPTION ).toString() );
             java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = i;

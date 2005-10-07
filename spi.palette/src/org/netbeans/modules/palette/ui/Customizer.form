@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_PaletteCustomizer" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -61,6 +66,11 @@
           <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="CTL_MoveUp_Button" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_MoveUp" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moveUpButtonActionPerformed"/>
       </Events>
@@ -79,6 +89,11 @@
           <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="CTL_MoveDown_Button" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_MoveDown" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moveDownButtonActionPerformed"/>
       </Events>
@@ -97,6 +112,11 @@
           <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="CTL_Remove_Button" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_Remove" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeButtonActionPerformed"/>
       </Events>
@@ -115,6 +135,11 @@
           <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="CTL_NewCategory_Button" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_NewCategory" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newCategoryButtonActionPerformed"/>
       </Events>
