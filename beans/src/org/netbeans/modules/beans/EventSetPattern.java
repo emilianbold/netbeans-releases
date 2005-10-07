@@ -278,14 +278,22 @@ public final class EventSetPattern extends Pattern {
                 
                 state = 1;
             } else {
+                JavaModelPackage jmodel = (JavaModelPackage) addListenerMethod.refImmediatePackage();
+                
                 String newTypeName = ((JavaClass) newType).getSimpleName();
                 List/*<Parameter>*/  params = addListenerMethod.getParameters();
                 params.clear();
-                params.add(newType);
+                Parameter newParameter = jmodel.getParameter().createParameter();
+                newParameter.setName("listener"); // NOI18N
+                newParameter.setType(newType);
+                params.add(newParameter);
 
                 params = removeListenerMethod.getParameters();
                 params.clear();
-                params.add(newType);
+                newParameter = jmodel.getParameter().createParameter();
+                newParameter.setName("listener"); // NOI18N
+                newParameter.setType(newType);
+                params.add(newParameter);
 
                 // Ask if we have to change the bame of the methods
                 String msg = MessageFormat.format(PatternNode.getString("FMT_ChangeEventSourceName"), // NOI18N
