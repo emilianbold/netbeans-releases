@@ -240,7 +240,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
             mainElement = XMLUtil.parse(new org.xml.sax.InputSource(
-                                            formFile.getPath()),
+                                            FileUtil.toFileObject(formFile).getURL().toExternalForm()),
                                         false, false, null, null)
                           .getDocumentElement();
         }
