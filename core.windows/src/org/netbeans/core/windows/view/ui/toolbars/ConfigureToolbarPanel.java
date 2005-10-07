@@ -78,13 +78,20 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         lblWait.setHorizontalAlignment( JLabel.CENTER );
         palettePanel.setPreferredSize( new Dimension( 440, 350 ) );
         palettePanel.add( lblWait );
+        getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_ToolbarCustomizer") );
     }
     
     public void run() {
         ActionsTree tree = new ActionsTree( root );
+        tree.getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_ActionsTree") );
+        tree.getAccessibleContext().setAccessibleName( getBundleString("ACSN_ActionsTree") );
         palettePanel.removeAll();
         palettePanel.setBorder( BorderFactory.createEmptyBorder() );
-        palettePanel.add( new JScrollPane(tree), BorderLayout.CENTER );
+        JScrollPane scrollPane = new JScrollPane(tree);
+        scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleName( getBundleString("ACSN_ActionsScrollBar") );
+        scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_ActionsScrollBar") );
+        palettePanel.add( scrollPane, BorderLayout.CENTER );
+        lblHint.setLabelFor( tree );
         invalidate();
         validate();
         repaint();
@@ -102,6 +109,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                     endToolbarEditMode();
                 }
             });
+            closeButton.getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_Close") );
             org.openide.awt.Mnemonics.setLocalizedText(
                 closeButton, getBundleString("CTL_Close")); 
             DialogDescriptor dd = new DialogDescriptor(
@@ -188,7 +196,6 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
 
         setLayout(new java.awt.GridBagLayout());
 
-        lblHint.setLabelFor(palettePanel);
         lblHint.setText(getBundleString("CTL_TreeLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -198,7 +205,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
 
         palettePanel.setLayout(new java.awt.BorderLayout());
 
-        palettePanel.setBorder(new javax.swing.border.EtchedBorder());
+        palettePanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -209,8 +216,9 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         gridBagConstraints.insets = new java.awt.Insets(1, 10, 5, 10);
         add(palettePanel, gridBagConstraints);
 
+        checkSmallIcons.setMnemonic(getBundleString("CTL_SmallIconsMnemonic").charAt(0));
         checkSmallIcons.setText(getBundleString("CTL_SmallIcons"));
-        checkSmallIcons.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        checkSmallIcons.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         checkSmallIcons.setMargin(new java.awt.Insets(0, 0, 0, 0));
         checkSmallIcons.setSelected( ToolbarPool.getDefault().getPreferredIconSize() == 16 );
         checkSmallIcons.addActionListener(new java.awt.event.ActionListener() {
@@ -225,7 +233,9 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         add(checkSmallIcons, gridBagConstraints);
+        checkSmallIcons.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_SmallIcons"));
 
+        btnNewToolbar.setMnemonic(getBundleString("CTL_NewToolbarMnemonic").charAt(0));
         btnNewToolbar.setText(getBundleString("CTL_NewToolbar"));
         btnNewToolbar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -239,6 +249,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         add(btnNewToolbar, gridBagConstraints);
+        btnNewToolbar.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_NewToolbar"));
 
     }
     // </editor-fold>//GEN-END:initComponents
