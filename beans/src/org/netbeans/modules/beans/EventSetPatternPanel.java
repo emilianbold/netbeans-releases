@@ -356,7 +356,8 @@ public final class EventSetPatternPanel extends javax.swing.JPanel
             try {
                 JMIUtils.beginTrans(false);
                 try {
-                    validateType(userText);
+                    if (!validateType(userText))
+                        return;
                 } finally {
                     JMIUtils.endTrans();
                 }
@@ -368,8 +369,11 @@ public final class EventSetPatternPanel extends javax.swing.JPanel
         dialog.setVisible( false );
         dialog.dispose();
     }
-    
-    private void validateType(String typeName) throws JmiException {
+    /**
+     * @return true if type is valid
+     *         false if type is invalid
+     */
+    private boolean validateType(String typeName) throws JmiException {
         Type type;
                 
         try {
@@ -381,7 +385,7 @@ public final class EventSetPatternPanel extends javax.swing.JPanel
                         PatternNode.getString("MSG_Not_Valid_Type"),
                         NotifyDescriptor.ERROR_MESSAGE) );
                 typeComboBox.requestFocus();
-                return;
+                return false;
             }
             // Test wheter property with this name already exists
             EventSetPattern eventSetPattern = groupNode.findEventSetPattern( type );
@@ -392,11 +396,11 @@ public final class EventSetPatternPanel extends javax.swing.JPanel
                     new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
 
                 typeComboBox.requestFocus();
-                return;
+                return false;
             }
         } catch ( JmiException ex ) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            return;
+            return false;
         }
                 
         // Check whether the property points to a valid listener
@@ -405,8 +409,9 @@ public final class EventSetPatternPanel extends javax.swing.JPanel
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
                                              NotifyDescriptor.ERROR_MESSAGE) );
-            return;
+            return false;
         }
+        return true;
     }
 
 }
