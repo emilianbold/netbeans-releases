@@ -85,6 +85,8 @@ final class NbInstaller extends ModuleInstaller {
     private ModuleManager mgr;
     /** set of permitted core or package dependencies from a module */
     private final Map kosherPackages = new HashMap(100); // Map<Module,Set<String>>
+    /** Package prefixes passed as special system property. */
+    private static String[] specialResourcePrefixes = null;
         
     /** Create an NbInstaller.
      * You should also call {@link #registerManager} and if applicable
@@ -947,16 +949,47 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
 
-        // IBM's stuff goes here for now:
-        if (pkg.startsWith("org/omg/CORBA/")) return true; // NOI18N
-        if (pkg.startsWith("com/ibm/ejs/util/")) return true; // NOI18N
-        if (pkg.startsWith("javax/rmi/CORBA/")) return true; // NOI18N
+        if (isSpecialResourceFromSystemProperty(pkg)) {
+            return true;
+        }
         
         // Some classes like DOMError are only in xerces.jar, not in JDK:
         if (pkg.equals("org/w3c/dom/")) return true; // NOI18N
         // #36578: JDK 1.5 has DOM3
         if (pkg.equals("org/w3c/dom/ls/")) return true; // NOI18N
         return super.isSpecialResource(pkg);
+    }
+    
+    /**
+     * Checks the passed in package for having a prefix one
+     * of the strings specified in the system property 
+     * "org.netbeans.core.startup.specialResource".
+     */
+    private boolean isSpecialResourceFromSystemProperty(String pkg) {
+        String []prefixes = getSpecialResourcePrefixes();
+        for (int i = 0; i < prefixes.length; i++) {
+            if (pkg.startsWith(prefixes[i])) {
+                return true;
+            }
+        }
+        return false; 
+    }
+    
+    /**
+     * Reads the system property 
+     * "org.netbeans.core.startup.specialResource"
+     * and extracts the comma separated entries in it.
+     */
+    private static String[] getSpecialResourcePrefixes() {
+        if (specialResourcePrefixes == null) {
+            String sysProp = System.getProperty("org.netbeans.core.startup.specialResource");
+            if (sysProp != null) {
+                specialResourcePrefixes = sysProp.split(",");
+            } else {
+                specialResourcePrefixes = new String[0];
+            }
+        }
+        return specialResourcePrefixes;
     }
     
     /** Get the effective "classpath" used by a module.
