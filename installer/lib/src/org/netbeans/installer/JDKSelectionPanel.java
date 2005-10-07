@@ -62,7 +62,11 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
             DestinationItem item = new DestinationItem();
             JDKInfoAux desc = (JDKInfoAux) jdkHomeList.elementAt(i);
             item.setValue(desc.getHome());
-            item.setDescription(desc.getHome() + "    (v. " + desc.getVersion() + ")");
+            if (desc.getVersion().length() > 0) {
+                item.setDescription(desc.getHome() + "    (v. " + desc.getVersion() + ")");
+            } else {
+                item.setDescription(desc.getHome());
+            }
             destinations.add(item);
         }
         setSelectedDestinationIndex(""+JDKSearchAction.getLatestVersionIndex());

@@ -521,14 +521,22 @@ public class Util {
         cmdArr[1] = "-version";
         runCommand.execute(cmdArr);
         runCommand.waitFor();
-                                                                                                                                         
-        String line = runCommand.getErrorLine();
-                                                                                                                                         
-        if (line != null) {
+        
+        //Look for line starting with "java version"
+        String line = "", s = "";
+        while (s != null) {
+            s = runCommand.getErrorLine();
+            if (s.startsWith("java version")) {
+                line = s;
+                break;
+            }
+        }
+        
+        if (line.length() > 0) {
             StringTokenizer st = new StringTokenizer(line.trim());
             String version="";
             while (st.hasMoreTokens()) {
-                version=st.nextToken();
+                version = st.nextToken();
             }
             String jdkVersion = LocalizedStringResolver.resolve("org.netbeans.installer.Bundle","JDK.version");
             if (version.equals("\"" + jdkVersion + "\"")) {
@@ -544,9 +552,7 @@ public class Util {
     /** Check public JRE installed by jdkbundle installer.
      * Used only on Windows where public JRE is in different directory. */
     public static boolean checkJreHome(String jreHome) {
-        File jvmFile = new File(jreHome, File.separator + "bin" +
-                       File.separator + getJVMName());
-                                                                                                                                         
+        File jvmFile = new File(jreHome, File.separator + "bin" + File.separator + getJVMName());
         if (!jvmFile.exists()) {
             return false;
         }
@@ -557,14 +563,22 @@ public class Util {
         cmdArr[1] = "-version";
         runCommand.execute(cmdArr);
         runCommand.waitFor();
-                                                                                                                                         
-        String line = runCommand.getErrorLine();
-                                                                                                                                         
-        if (line != null) {
+        
+        //Look for line starting with "java version"
+        String line = "", s = "";
+        while (s != null) {
+            s = runCommand.getErrorLine();
+            if (s.startsWith("java version")) {
+                line = s;
+                break;
+            }
+        }
+        
+        if (line.length() > 0) {
             StringTokenizer st = new StringTokenizer(line.trim());
-            String version="";
+            String version = "";
             while (st.hasMoreTokens()) {
-                version=st.nextToken();
+                version = st.nextToken();
             }
             String jreVersion = LocalizedStringResolver.resolve("org.netbeans.installer.Bundle","JRE.version");
             if (version.equals("\"" + jreVersion + "\"")){

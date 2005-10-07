@@ -332,19 +332,32 @@ public class JDKSearchAction extends CancelableWizardAction  {
             cmdArr[1] = "-version";
             runCommand.execute(cmdArr);
             runCommand.waitFor();
-            String line = runCommand.getErrorLine();
-            StringTokenizer st = new StringTokenizer(line.trim());
-            String version = "";
-            while (st.hasMoreTokens()) {
-                version = st.nextToken();
-            }
-            StringBuffer stringBuffer = new StringBuffer();
-            for (int j = 0; j < version.length(); j++) {
-                if (version.charAt(j) != '\"') {
-                    stringBuffer.append(version.charAt(j));
+            
+            //Look for line starting with "java version"
+            String line = "", s = "";
+            while (s != null) {
+                s = runCommand.getErrorLine();
+                if (s.startsWith("java version")) {
+                    line = s;
+                    break;
                 }
             }
-            String jdkVersion = stringBuffer.toString();
+            
+            String version = "";
+            String jdkVersion = "";
+            if (line.length() > 0) {
+                StringTokenizer st = new StringTokenizer(line.trim());
+                while (st.hasMoreTokens()) {
+                    version = st.nextToken();
+                }
+                StringBuffer stringBuffer = new StringBuffer();
+                for (int j = 0; j < version.length(); j++) {
+                    if (version.charAt(j) != '\"') {
+                        stringBuffer.append(version.charAt(j));
+                    }
+                }
+                jdkVersion = stringBuffer.toString();
+            }
             jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
         }
         return jdkHomeList1;

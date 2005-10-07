@@ -252,11 +252,17 @@ public class JDKVersion {
         cmdArr[1] = "-version";
 	runCommand.execute(cmdArr);
         runCommand.waitFor();
-	String line = runCommand.getErrorLine();
-	if (line == null) {
-	    line =  "";
-	}
-
+        
+        //Look for line starting with "java version"
+        String line = "", s = "";
+        while (s != null) {
+            s = runCommand.getErrorLine();
+            if (s.startsWith("java version")) {
+                line = s;
+                break;
+            }
+        }
+        
 	return trimQuotes(line);
     }
 

@@ -154,28 +154,40 @@ public class JDKInfo {
                 cmdArr[1] = "-version";
                 runCommand.execute(cmdArr);
                 runCommand.waitFor();
-                String line = runCommand.getErrorLine();
                 
+                //Look for line starting with "java version"
+                String line = "", s = "";
+                while (s != null) {
+                    s = runCommand.getErrorLine();
+                    log.logEvent(log, Log.DBG, "Java version line: '" + s.trim() + "'");
+                    if (s.startsWith("java version")) {
+                        line = s;
+                        break;
+                    }
+                }
+                
+                if (line.length() == 0) {
+                    log.logEvent(log, Log.ERROR, "Cannot parse java version.");
+                    return INVALID;
+                }
                 StringTokenizer st = new StringTokenizer(line.trim());
                 String _version="";
-                while(st.hasMoreTokens()) 
-                    _version=st.nextToken();
+                while (st.hasMoreTokens()) {
+                    _version = st.nextToken();
+                }
                 this.version = _version;
                 
-                if(isJVMVersionValid(version)){
+                if (isJVMVersionValid(version)) {
                     type = VALID_JDK;
                 }
             }
-        }
-        catch (NullPointerException npe) {
+        } catch (NullPointerException npe) {
             log.logEvent(log, Log.DBG, "NPE: " + npe);
             npe.printStackTrace();
-        }
-        catch (SecurityException secx) {
+        } catch (SecurityException secx) {
             log.logEvent(log, Log.DBG, "SecurityException: " + secx);
             secx.printStackTrace();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             log.logEvent(log, Log.DBG, ex);
             ex.printStackTrace();
         }
