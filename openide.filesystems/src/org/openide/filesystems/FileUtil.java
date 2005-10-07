@@ -1364,14 +1364,7 @@ public final class FileUtil extends Object {
             return false;
         }
 
-        FileObject fo = null;        
-        try {
-            fo = URLMapper.findFileObject(url);
-        } catch(IllegalArgumentException iax) {            
-            //#65894
-            ErrorManager.getDefault().notify(iax);
-            return false;
-        }
+        FileObject fo = URLMapper.findFileObject(url);
 
         if ((fo != null) && !fo.isVirtual()) {
             return isArchiveFile(fo);
