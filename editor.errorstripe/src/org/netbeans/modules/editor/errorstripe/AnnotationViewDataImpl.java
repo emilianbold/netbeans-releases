@@ -90,7 +90,13 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
     
     public void unregister() {
-        //TODO: remove listeners!
+        if (document != null) {
+            document.getAnnotations().removeAnnotationsListener(this);
+        }
+        
+        removeListenersFromProviders();
+        
+        document = null;
     }
     
     private void gatherProviders(JTextComponent pane) {
@@ -188,6 +194,20 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
     }
 
+    private void removeListenersFromProviders() {
+        for (Iterator p = upToDateStatusProviders.iterator(); p.hasNext(); ) {
+            UpToDateStatusProvider provider = (UpToDateStatusProvider) p.next();
+            
+            SPIAccessor.getDefault().removePropertyChangeListener(provider, this);
+        }
+        
+        for (Iterator p = providers.iterator(); p.hasNext(); ) {
+            MarkProvider provider = (MarkProvider) p.next();
+            
+            provider.removePropertyChangeListener(this);
+        }
+    }
+    
     /*package private*/ static List/*<Mark>*/ createMergedMarks(List/*<MarkProvider>*/ providers) {
         List result = new ArrayList();
         

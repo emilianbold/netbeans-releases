@@ -127,16 +127,17 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         data.unregister();
         Document newDocument = pane.getDocument();
         
-        if (!(newDocument instanceof BaseDocument)) {
+        if (this.doc != null) {
+            this.doc.removeDocumentListener(this);
             this.doc = null;
-        } else {
+        }
+        
+        if (newDocument instanceof BaseDocument) {
             this.doc = (BaseDocument) pane.getDocument();
             this.doc.addDocumentListener(this);
         }
         
         data.register(this.doc);
-//        gatherProviders(pane);
-//        addListenersToProviders();
     }
         
     /*package private for tests*/int[] getLinesSpan(int currentLine) {
