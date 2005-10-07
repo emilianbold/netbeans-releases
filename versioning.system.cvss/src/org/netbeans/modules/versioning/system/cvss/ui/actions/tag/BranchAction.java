@@ -63,7 +63,9 @@ public class BranchAction extends AbstractSystemAction {
                                      new Object[] { getContextDisplayName() });
 
         JButton branch = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Branch"));
+        branch.setToolTipText(NbBundle.getMessage(BranchAction.class,  "TT_BranchDialog_Action_Branch"));
         JButton cancel = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BranchAction.class,  "ACSD_BranchDialog_Action_Cancel"));
         BranchSettings settings = new BranchSettings(context.getFiles());
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
@@ -78,6 +80,7 @@ public class BranchAction extends AbstractSystemAction {
 
         settings.putClientProperty("org.openide.DialogDescriptor", descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BranchAction.class,  "ACSD_BranchDialog"));
         dialog.setVisible(true);
         if (descriptor.getValue() != branch) return;
 

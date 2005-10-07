@@ -125,9 +125,10 @@ class BranchSettings extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         cbTagBase.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbTagBase, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_TagBase"));
+        cbTagBase.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_TagBase"));
         cbTagBase.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbTagBaseActionPerformed(evt);
@@ -145,6 +146,7 @@ class BranchSettings extends javax.swing.JPanel {
 
         cbCheckoutBranch.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbCheckoutBranch, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_UpdateToBranch"));
+        cbCheckoutBranch.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_UpdateToBranch"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -182,7 +184,8 @@ class BranchSettings extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(tfName, gridBagConstraints);
 
-        jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BrowseBranch"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BrowseBranch"));
+        jButton1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_Browse"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseBranches(evt);
@@ -195,7 +198,8 @@ class BranchSettings extends javax.swing.JPanel {
         add(jButton1, gridBagConstraints);
 
         jLabel1.setLabelFor(tfBaseTagName);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BaseTagName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BaseTagName"));
+        jLabel1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_BaseTagName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
