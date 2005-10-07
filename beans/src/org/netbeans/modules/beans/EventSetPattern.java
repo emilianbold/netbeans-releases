@@ -347,7 +347,7 @@ public final class EventSetPattern extends Pattern {
                 if (Modifier.isPublic(lsnrMethod.getModifiers())) {
                     for (Iterator it2 = sourceMethods.iterator(); it2.hasNext();) {
                         Method srcMethod = (Method) it2.next();
-                        if (srcMethod.getName().equals(method)) {
+                        if (srcMethod.isValid() && srcMethod.getName().equals(method)) {
                             if (!canDelete) {
                                 // Ask, if the fire methods can be deleted
                                 String mssg = MessageFormat.format( PatternNode.getString( "FMT_DeleteFire" ),
