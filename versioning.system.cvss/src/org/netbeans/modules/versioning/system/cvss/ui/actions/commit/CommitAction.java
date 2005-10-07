@@ -78,8 +78,10 @@ public class CommitAction extends AbstractSystemAction {
         final CommitSettings settings = new CommitSettings();
         settings.setCommand(cmd);
         final JButton commit = new JButton(loc.getString("CTL_CommitForm_Action_Commit"));
+        commit.setToolTipText(NbBundle.getMessage(CommitAction.class, "TT_CommitDialog_Action_Commit"));
         commit.setEnabled(false);
         JButton cancel = new JButton(loc.getString("CTL_CommitForm_Action_Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog_Action_Cancel"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings, 
                 MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }),
@@ -100,6 +102,7 @@ public class CommitAction extends AbstractSystemAction {
         settings.putClientProperty("contentTitle", contentTitle);
         settings.putClientProperty("DialogDescriptor", descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));
         dialog.setVisible(true);
         if (descriptor.getValue() != commit) return;
 

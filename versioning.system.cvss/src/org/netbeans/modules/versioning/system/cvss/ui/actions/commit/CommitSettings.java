@@ -119,7 +119,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         errorLabel.setMinimumSize(errorLabel.getPreferredSize());
         errorLabel.setText("");
         jScrollPane1.setMinimumSize(jScrollPane1.getPreferredSize());
-        commitTable = new CommitTable();
+        commitTable = new CommitTable(jLabel3);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -180,10 +180,10 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         jLabel2.setLabelFor(taMessage);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_Message"));
-        jLabel2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 2, 0)));
+        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -198,6 +198,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         taMessage.setTabSize(4);
         taMessage.setWrapStyleWord(true);
         jScrollPane1.setViewportView(taMessage);
+        taMessage.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("TT_CommitForm_Message"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -209,7 +210,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         add(jScrollPane1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_FilesToCommit"));
-        jLabel3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 0, 0, 0)));
+        jLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -219,7 +220,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         add(jLabel3, gridBagConstraints);
 
         errorLabel.setText("Y");
-        errorLabel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(2, 0, 0, 0)));
+        errorLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
