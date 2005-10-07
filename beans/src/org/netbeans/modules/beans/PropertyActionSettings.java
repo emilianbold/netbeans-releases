@@ -14,6 +14,7 @@
 package org.netbeans.modules.beans;
 
 import org.openide.options.SystemOption;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Options for setting properties of generating property patterns from fields
@@ -73,5 +74,9 @@ public class PropertyActionSettings extends SystemOption {
         putProperty (PROP_STYLE, style, false);
         if (!(initializing || isReadExternal()))
             firePropertyChange(PROP_NAME_STYLE, null, null);
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PropertyActionSettings.class.getName());
     }
 }
