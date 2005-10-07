@@ -890,8 +890,9 @@ final class BeanPatternGenerator extends Object {
             for (Iterator it = params.iterator(); it.hasNext();) {
                 Parameter param = (Parameter) it.next();
                 Parameter newParam = jmodel.getParameter().createParameter();
-                newParam.setName("param"); // NOI18N
+                newParam.setName(param.getName()); // NOI18N
                 newParam.setType(param.getType());
+                result.add(newParam);
             }
             return result;
         }
