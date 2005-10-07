@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
@@ -37,6 +38,7 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.ErrorManager;
 
 
 
@@ -211,6 +213,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } catch (AbsentInformationException ex) {
             // we are not able to create breakpoint in this situation. 
             // should we write some message?!?
+            // We should indicate somehow that the breakpoint is invalid...
         } catch (ObjectCollectedException ex) {
             // no problem, breakpoint will be created next time the class 
             // is loaded
@@ -218,7 +221,11 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } catch (ClassNotPreparedException ex) {
             // should not occurre. VirtualMachine.allClasses () returns prepared
             // classes only. But...
-            ex.printStackTrace ();
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+        } catch (InternalException iex) {
+            // Something wrong in JDI
+            ErrorManager.getDefault().notify(iex);
+            // We should indicate somehow that the breakpoint is invalid...
         }
         return new ArrayList();
     }
