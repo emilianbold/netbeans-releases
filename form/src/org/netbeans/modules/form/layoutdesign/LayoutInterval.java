@@ -460,7 +460,7 @@ public final class LayoutInterval implements LayoutConstants {
         while (interval.getParent() != null) {
             interval = interval.getParent();
         }
-        assert interval.isParallel();
+//        assert interval.isParallel();
         return interval;
     }
 

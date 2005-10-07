@@ -2077,13 +2077,6 @@ class LayoutFeeder implements LayoutConstants {
         }
 
         LayoutInterval commonGroup = best.parent.isSequential() ? best.parent.getParent() : best.parent;
-        boolean originalInCommonGroup;
-        boolean originalInCommonSeq;
-        if (original != null) {
-            originalInCommonGroup = original.parent == commonGroup;
-            originalInCommonSeq = original.parent.isSequential() && original.parent.getParent() == commonGroup;
-        }
-        else originalInCommonGroup = originalInCommonSeq = false;
 
         // 2nd remove incompatible inclusions, move compatible ones to same level
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
@@ -2102,8 +2095,12 @@ class LayoutFeeder implements LayoutConstants {
                         // [what about the alignment?]
                         layoutModel.addInterval(neighbor, commonGroup, -1);
                         if (group.getSubIntervalCount() == 1) {
+                            LayoutInterval parent = group.getParent();
                             LayoutInterval last = layoutModel.removeInterval(group, 0);
-                            operations.addContent(last, group.getParent(), layoutModel.removeInterval(group));
+                            operations.addContent(last, parent, layoutModel.removeInterval(group));
+                            if (commonGroup == last && commonGroup.getParent() == null) // commonGroup dissolved in parent
+                                commonGroup = parent;
+                            updateReplacedOriginalGroup(commonGroup, null);
                         }
                         if (iDesc.parent == group)
                             iDesc.parent = commonGroup;
@@ -2202,20 +2199,16 @@ class LayoutFeeder implements LayoutConstants {
                 commonGroup = parent;
                 index = 0;
             }
-            if (originalInCommonGroup)
-                original.parent = commonGroup;
         }
         else {
             commonSeq = new LayoutInterval(SEQUENTIAL);
             layoutModel.addInterval(commonSeq, commonGroup, -1);
             index = 0;
         }
-        if (originalInCommonSeq) {
-            original.parent = commonSeq;
-        }
         if (commonSeq.getSubIntervalCount() == 0) {
             commonSeq.getCurrentSpace().set(dimension, commonGroup.getCurrentSpace());
         }
+        updateReplacedOriginalGroup(commonGroup, commonSeq);
 
         // 5th create groups of merged content around the adding component
         if (!separatedLeading.isEmpty()) {
@@ -2302,10 +2295,7 @@ class LayoutFeeder implements LayoutConstants {
             }
             operations.addContent(subGroup, commonSeq, index);
 
-            if (originalInCommonGroup && original.neighbor != null && subGroup.isParentOf(original.neighbor)) {
-                original.parent = LayoutInterval.getFirstParent(original.neighbor, PARALLEL);
-                correctNeighborInSequence(original);
-            }
+            updateMovedOriginalNeighbor();
         }
     }
 
@@ -2337,6 +2327,33 @@ class LayoutFeeder implements LayoutConstants {
         LayoutRegion spaceAvailable = group1.getCurrentSpace();
         return LayoutRegion.pointInside(spaceToHold, LEADING, spaceAvailable, dimension)
                && LayoutRegion.pointInside(spaceToHold, TRAILING, spaceAvailable, dimension);
+    }
+
+    private void updateReplacedOriginalGroup(LayoutInterval newGroup, LayoutInterval newSeq) {
+        updateReplacedOriginalGroup(originalPositions1[dimension], newGroup, newSeq);
+        updateReplacedOriginalGroup(originalPositions2[dimension], newGroup, newSeq);
+    }
+
+    private static void updateReplacedOriginalGroup(IncludeDesc iDesc, LayoutInterval newGroup, LayoutInterval newSeq)
+    {
+        if (iDesc != null && LayoutInterval.getRoot(newGroup) != LayoutInterval.getRoot(iDesc.parent)) {
+            if (iDesc.parent.isParallel())
+                iDesc.parent = newGroup;
+            else if (newSeq != null)
+                iDesc.parent = newSeq;
+        }
+    }
+
+    private void updateMovedOriginalNeighbor() {
+        updateMovedOriginalNeighbor(originalPositions1[dimension]);
+        updateMovedOriginalNeighbor(originalPositions2[dimension]);
+    }
+
+    private static void updateMovedOriginalNeighbor(IncludeDesc iDesc) {
+        if (iDesc != null && iDesc.neighbor != null) {
+            iDesc.parent = LayoutInterval.getFirstParent(iDesc.neighbor, PARALLEL);
+            correctNeighborInSequence(iDesc);
+        }
     }
 
     private boolean mergeSequentialInclusions(IncludeDesc iDesc1, IncludeDesc iDesc2) {
