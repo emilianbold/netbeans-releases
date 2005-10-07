@@ -69,7 +69,9 @@ public class MergeBranchAction extends AbstractSystemAction {
         MergeBranchPanel settings = new MergeBranchPanel(context.getFiles());
 
         JButton merge = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Merge"));
+        merge.setToolTipText(NbBundle.getMessage(MergeBranchAction.class, "TT_MergeBranchDialog_Action_Merge"));
         JButton cancel = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeBranchAction.class, "ACSD_MergeBranchDialog_Action_Cancel"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
                 title,
@@ -82,6 +84,7 @@ public class MergeBranchAction extends AbstractSystemAction {
         descriptor.setClosingOptions(null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeBranchAction.class, "ACSD_MergeBranchDialog"));
         dialog.setVisible(true);
         if (descriptor.getValue() != merge) return;
 
