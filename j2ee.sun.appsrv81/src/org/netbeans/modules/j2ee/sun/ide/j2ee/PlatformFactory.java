@@ -17,6 +17,7 @@ import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 /**
  */
@@ -29,7 +30,7 @@ public final class PlatformFactory extends J2eePlatformFactory {
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties (dm);
 //        String location = dmProps.getLocation();
-        File irf = PluginProperties.getDefault().getPlatformRoot();
+        File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
         if (null == irf || !irf.exists()) {
             return null;
         }

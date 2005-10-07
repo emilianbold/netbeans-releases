@@ -16,21 +16,6 @@ import java.util.Set;
 import java.util.HashSet;
 
 import org.openide.util.NbBundle;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-
-import javax.swing.JFileChooser;
-import java.awt.event.ActionEvent;
-
-import java.io.File;
-import java.util.Collection;
-
-import org.netbeans.modules.j2ee.sun.ide.Installer;
-import org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
-
-import java.awt.KeyboardFocusManager;
 
 /** A single panel for a wizard - the GUI portion.
  *

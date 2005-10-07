@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
 import javax.management.Attribute;
 import javax.management.ObjectName;
 import javax.management.AttributeList;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -405,7 +406,10 @@ public class ResourceUtils implements WizardConstants{
         String instances [] = InstanceProperties.getInstanceList();
         List targets = new ArrayList();
         for (int i=0; i < instances.length; i++) {
-            if (instances[i].startsWith("deployer:Sun:AppServer")) {
+            if (instances[i].startsWith(SunURIManager.SUNSERVERSURI)) {
+                targets.add(InstanceProperties.getInstanceProperties(instances[i]).getDeploymentManager());
+            }
+            else  if (instances[i].startsWith("[")) {
                 targets.add(InstanceProperties.getInstanceProperties(instances[i]).getDeploymentManager());
             }
         }

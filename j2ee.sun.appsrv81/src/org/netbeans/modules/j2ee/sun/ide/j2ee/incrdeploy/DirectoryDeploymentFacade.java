@@ -20,7 +20,6 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy;
 import java.io.File;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
 
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -36,32 +35,19 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.openide.ErrorManager;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 
 /**
  *
  * @author  vkraemer
  */
-public class DirectoryDeploymentFacade
-        extends IncrementalDeployment {// implements DeploymentPlanSplitter {
+public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     
     Object inner = null;
       private File[] resourceDirs = null;
     private SunDeploymentManagerInterface dm;
    
-    /** Creates a new instance of DirectoryDeploymentFacade */
-    public DirectoryDeploymentFacade() {
-        
-        try{
 
-               inner = Installer.getPluginLoader().loadClass("org.netbeans.modules.j2ee.sun.bridge.DirectoryDeployment").newInstance();//NOI18N
-            
-        } catch (Throwable t) {
-          //  t.printStackTrace();
-           // System.out.println("WARNING: cannot create a good DirectoryDeploymentFacade: to correct, set com.sun.aas.installRoot to the correct App Server 8 PE Location and restart. -> " +t.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,t);
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
-        }
-    }
     /** Creates a new instance of DirectoryDeploymentFacade */
     public DirectoryDeploymentFacade(DeploymentManager dm) {
         //System.out.println("DirectoryDeploymentFacade called");
@@ -70,7 +56,9 @@ public class DirectoryDeploymentFacade
             Class[] cls= new Class[1];
             cls[0]=DeploymentManager.class;
             java.lang.reflect.Constructor ctr =null;
-                ctr = Installer.getPluginLoader().loadClass("org.netbeans.modules.j2ee.sun.bridge.DirectoryDeployment").getConstructor(cls);
+	    SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
+	    ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
+            ctr = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.DirectoryDeployment").getConstructor(cls);
             Object[] o= new Object[1];
             o[0]=dm;
             
@@ -92,50 +80,7 @@ public class DirectoryDeploymentFacade
             throw new IllegalArgumentException("setDeploymentManager: Invalid manager type, expecting SunDeploymentManager and got "+manager.getClass().getName());
     }    
     
-//    public String[] getDeploymentPlanFileNames( javax.enterprise.deploy.shared.ModuleType module) {
-//        if (null == inner)
-//            return null;
-//        return ((DeploymentPlanSplitter)inner).getDeploymentPlanFileNames(module);
-//        
-//    }
-    /** Return a bogus name to satisfy the API. A file may be created by the
-     * tool side. That file will be returned to this object in
-     * writeDeploymentPlanFiles.  I will use it to find the directory for
-     * writing the deployment descriptors and then delete it from that
-     * directory.
-     *
-     * @param targetModuleID The module id
-     * @return a single, unique file name.
-     */
-// !PW REMOVE DeploymentPlanSplitter
-//    public String[] getDeploymentPlanFileNames(ModuleType type) {
-//        String[] s;
-//        if (type==null){
-//            throw new IllegalArgumentException("invalid null argumment");
-//        }
-//        else if(type.equals(ModuleType.WAR)){
-//            s = new String[] { "WEB-INF/sun-web.xml" };
-//        }
-//        else if(type.equals(ModuleType.EJB)){
-//            s = new String[] { "META-INF/sun-ejb-jar.xml", "META-INF/sun-cmp-mappings.xml" };
-//        }
-//        else if(type.equals(ModuleType.EAR)){
-//            s = new String[] { "META-INF/sun-application.xml" };
-//        }
-//        else if(type.equals(ModuleType.RAR)){
-//            s = new String[] { "META-INF/sun-connector.xml" };
-//        }
-//        else if(type.equals(ModuleType.CAR)){
-//            s = new String[] { "META-INF/sun-client-application.xml" };
-//        }
-//      
-//        else{
-//            s = new String[] { ".timestamp" };
-//        }
-//
-//        return s;
-//    }    
-    
+        
     
     public java.io.File getDirectoryForModule(javax.enterprise.deploy.spi.TargetModuleID module) {
         if (null == inner)
@@ -202,7 +147,6 @@ public class DirectoryDeploymentFacade
     public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){
         SunONEDeploymentConfiguration s1dc =(SunONEDeploymentConfiguration) configuration;       
         s1dc.setDeploymentModuleName(deploymentName);
-        //System.out.println("Ludo fix 2 getDirectoryForNewApplication"+deploymentName);
 	return null;
     }
     
@@ -210,39 +154,4 @@ public class DirectoryDeploymentFacade
         return ((IncrementalDeployment)inner).getDirectoryForNewModule(file,str, deployableObject,deploymentConfiguration);
     }
     
-    //for DeploymentPlanSplitter
-
-// !PW REMOVE DeploymentPlanSplitter
-//    public void readDeploymentPlanFiles(DeploymentConfiguration config, DeployableObject mod, File[] files) throws ConfigurationException {
-//        //Thread.dumpStack();
-//        SunONEDeploymentConfiguration s1dc =
-//            (SunONEDeploymentConfiguration) config;
-//        
-//        int len = getValidatedNumberOfFiles(mod, files);
-//        for (int i = 0; i < len; i++)
-//            s1dc.addFileToPlanForModule(files[i], mod);
-//
-//    }
-//    
-//    public void writeDeploymentPlanFiles(DeploymentConfiguration config, DeployableObject mod, File[] files) throws ConfigurationException {
-//        SunONEDeploymentConfiguration s1dc =
-//            (SunONEDeploymentConfiguration) config;
-//        
-//        int len = getValidatedNumberOfFiles(mod, files);
-//        //
-//        for (int i = 0; i < len; i++) {
-//                s1dc.extractFileFromPlanForModule(files[i], mod);
-//        }
-//    }
-//        
-//    
-//    int getValidatedNumberOfFiles(DeployableObject mod, File[] files) throws ConfigurationException {
-//        int len = 0;
-//        if (null != files)
-//            len = files.length;
-//        // POST MS5 -- this should check by module type
-//        if (len < 1)
-//            throw new ConfigurationException("file list is too short");
-//        return len;
-//    }    
 }

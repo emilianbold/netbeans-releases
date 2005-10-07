@@ -94,9 +94,10 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
        // "SCHEMA:http://www.ibm.com/webservices/xsd/j2ee_web_services_client_1_1.xsd"          ,"j2ee_web_services_client_1_1",
     };
     
-    
+    File platformRootDir=null;
     /** Creates a new instance of RunTimeDDCatalog */
     public RunTimeDDCatalog() {
+        platformRootDir = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
     }
     private static RunTimeDDCatalog ddCatalog;
     
@@ -112,7 +113,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return null if cannot proceed, try later.
      */
     public java.util.Iterator getPublicIDs() {
-        File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
         if (platformRootDir == null) {
             return null;
         }
@@ -141,7 +141,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
-        File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
         if (platformRootDir == null) {
             return null;
         }
@@ -179,6 +178,12 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Refresh content according to content of mounted catalog.
      */
     public void refresh() {
+        File newLoc = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
+        if (platformRootDir!=newLoc){
+            platformRootDir = newLoc;
+            getRunTimeDDCatalog().fireCatalogListeners();
+        }
+    
     }
     
     private java.util.List/*<CatalogListeners>*/ catalogListeners = new java.util.ArrayList(1);
@@ -207,6 +212,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     }
     
     public  void fireCatalogListeners() {
+        platformRootDir = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
         java.util.Iterator iter = catalogListeners.iterator();
         while (iter.hasNext()) {
             CatalogListener l = (CatalogListener) iter.next();
@@ -286,7 +292,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
         
         if (SCHEMASLOCATION == null) {
-            File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
             if (platformRootDir == null) {
                 return null;
             }
@@ -433,7 +438,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      */
     public String resolveURI(String name) {
         // System.out.println("resolveURI(String name)="+name);
-        File platformRootDir = PluginProperties.getDefault().getPlatformRoot();
         if (platformRootDir == null) {
             return null;
         }

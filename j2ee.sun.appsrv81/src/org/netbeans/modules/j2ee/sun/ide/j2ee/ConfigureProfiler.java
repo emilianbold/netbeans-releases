@@ -38,6 +38,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 /**
  *
  * @author Ludovic Champenois
@@ -50,10 +51,10 @@ public class ConfigureProfiler {
     
     
     // replaces the AS_JAVA item in asenv.bat/conf
-    public static boolean modifyAsEnvScriptFile( String targetJavaHomePath) {
+    public static boolean modifyAsEnvScriptFile( SunDeploymentManagerInterface dm, String targetJavaHomePath) {
         
             String ext = (isUnix() ? "conf" : "bat");
-        File irf = PluginProperties.getDefault().getPlatformRoot();
+        File irf = dm.getPlatformRoot();
         if (null == irf || !irf.exists()) {
             return false;
         }

@@ -2,7 +2,7 @@
 
 <netbeans-deployment>
     <icon>org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad</icon>
-    <disconnected-string>deployer:Sun:AppServer::localhost:4849</disconnected-string>
+    <disconnected-string>[  ]deployer:Sun:AppServer::localhost:4849</disconnected-string>
 
      <web-context-root>
         <xpath>/</xpath>

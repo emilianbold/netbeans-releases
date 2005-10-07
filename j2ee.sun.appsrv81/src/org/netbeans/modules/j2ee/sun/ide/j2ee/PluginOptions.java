@@ -12,11 +12,9 @@
  */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
-
-import java.io.File;
+import java.util.ResourceBundle;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
 
 /**
  *
@@ -26,7 +24,8 @@ public class PluginOptions extends SystemOption {
     private static final long serialVersionUID = 6035345535764474326L;
     
     public String displayName() {
-        return Installer.getDeploymentFactory().getDisplayName();
+        return  ResourceBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.ide.dm.Bundle").getString("FACTORY_DISPLAYNAME");	// NOI18N);
     }
     
     public HelpCtx getHelpCtx() {
@@ -72,23 +71,23 @@ public class PluginOptions extends SystemOption {
     public void setIncrementalDeploy(Boolean b) {
         PluginProperties.getDefault().setIncrementalDeploy(b);
     }
-    public File getInstallRoot(){
-        File irf = PluginProperties.getDefault().getPlatformRoot();
-        if (null == irf || !irf.exists()) {
-            return null;
-        }
-        return irf;
-    }
-    
-    public void setInstallRoot(File f) {
-        File current= getInstallRoot();
+//    public File getInstallRoot(){
+//        File irf = PluginProperties.getDefault().getPlatformRoot();
+//        if (null == irf || !irf.exists()) {
+//            return null;
+//        }
+//        return irf;
+//    }
+//    
+//    public void setInstallRoot(File f) {
+//        File current= getInstallRoot();
+//        
+//        if ((current==null)||(!f.getAbsolutePath().equals(current.getAbsolutePath()))){
+//            PluginProperties.getDefault().setPlatformRoot(f);
+//            
+//        }
         
-        if ((current==null)||(!f.getAbsolutePath().equals(current.getAbsolutePath()))){
-            PluginProperties.getDefault().setPlatformRoot(f);
-            
-        }
-        
-    }
+//    }
     public void readExternal(java.io.ObjectInput in){
         //do nothing, we use a propertie file storage
         

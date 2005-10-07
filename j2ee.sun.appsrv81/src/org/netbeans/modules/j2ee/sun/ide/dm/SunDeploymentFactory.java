@@ -13,29 +13,30 @@
 
 package org.netbeans.modules.j2ee.sun.ide.dm;
 
+import java.io.File;
+import java.net.Authenticator;
 import java.util.ResourceBundle;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 /** This deploymenmt factory can creates an alternate deployment manager for
- * S1AS8.
+ * S1AS.
  * @author vkraemer,ludo
- * @version prototype
  */
 public class SunDeploymentFactory implements Constants, DeploymentFactory {
     
-    // VBK hack the innerDF is used to support configuration
-    // prototype in J2EE 1.4 RI beta 1 deploytool
+
     //
     // this whole class should probably be a subclass of the
     // com.sun.enterprise.deployapi.SunDeploymentFactory...
     private DeploymentFactory innerDF = null;
     
-    private Throwable rootCause = null;
     
     /** resource bundle
      */
@@ -43,26 +44,6 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
             "org.netbeans.modules.j2ee.sun.ide.dm.Bundle");	// NOI18N
     
     public SunDeploymentFactory() {
-        try{
-            
-             org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader loader =  org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader();
-            Object o = loader.loadClass("com.sun.enterprise.deployapi.SunDeploymentFactory").newInstance();//NOI18N
-            innerDF = (DeploymentFactory)o;
-            //innerDF =   new com.sun.enterprise.deployapi.SunDeploymentFactory();
-            //
-            //turn off severe loggin which is not needed in plugins:
-            java.util.logging.Logger.getLogger("javax.enterprise.system.tools.deployment").setLevel(java.util.logging.Level.OFF);
-        } catch (ClassNotFoundException cnfe) {
-            // ignore this, since the plugin's install location property may not be set.
-            rootCause = cnfe;
-        } catch (Throwable e){
-            //nothin to report there. The node name will indicate the config issue 
-            //e.printStackTrace();
-            //System.out.println("  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
-            rootCause = e;
-        }
         
     }
     
@@ -78,17 +59,18 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      */
     public DeploymentManager getDeploymentManager(String uri, String userName,String password) throws DeploymentManagerCreationException {
         
-        if (null == innerDF) {
-            DeploymentManagerCreationException foo = 
-                    new DeploymentManagerCreationException(NbBundle.getMessage(SunDeploymentFactory.class,"ERR_CreateInnerDF"));
-            foo.initCause(rootCause);
-            throw foo;
-        }
         try {
-            return  new SunDeploymentManager(innerDF, uri, userName, password);
-        } catch (NoClassDefFoundError e) {
-            throw new DeploymentManagerCreationException(bundle.getString("MSG_WrongInstallDir"));
+            Authenticator.setDefault(new AdminAuthenticator());
+            innerDF = ServerLocationManager.getDeploymentFactory(getServerLocationFromURI(uri));
+            if (innerDF==null){
+                throw new DeploymentManagerCreationException(getRealURI(uri)+getServerLocationFromURI( uri)+bundle.getString("MSG_WrongInstallDir"));
+                
+            }
+            return  new SunDeploymentManager(innerDF, getRealURI(uri), userName, password,getServerLocationFromURI( uri));
+        } catch (Exception e) {
+            throw new DeploymentManagerCreationException(getRealURI(uri)+getServerLocationFromURI( uri)+bundle.getString("MSG_WrongInstallDir"));
         }
+        
     }
     
     /** This method returns a disconnected deployment manager.
@@ -100,16 +82,15 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      * @return a deployment manager for doing configuration.
      */
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        if (null == innerDF) {
-            DeploymentManagerCreationException foo = 
-                    new DeploymentManagerCreationException(NbBundle.getMessage(SunDeploymentFactory.class,"ERR_CreateInnerDF"));
-            foo.initCause(rootCause);
-            throw foo;
-        }        
+        
         try {
-            return new SunDeploymentManager(innerDF,uri,null,null);
-        } catch (NoClassDefFoundError e) {
-            throw new DeploymentManagerCreationException(bundle.getString("MSG_WrongInstallDir"));
+            Authenticator.setDefault(new AdminAuthenticator());
+            innerDF = ServerLocationManager.getDeploymentFactory(getServerLocationFromURI(uri));
+
+            return new SunDeploymentManager(innerDF,getRealURI(uri),null,null,getServerLocationFromURI( uri));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DeploymentManagerCreationException(getRealURI(uri)+getServerLocationFromURI( uri)+bundle.getString("MSG_WrongInstallDir"));
         }
         
     }
@@ -128,17 +109,17 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      */
     public boolean handlesURI(String uri) {
         if (uri==null)
-            return false;        
-        if (null != innerDF) {
-            boolean retval = false;
-            try {
-                retval = innerDF.handlesURI(uri);
-            } catch (Exception t) {
-            }
+            return false;
+        if(uri.startsWith("[")){//NOI18N
+            return true;
+        }
+        //old style : need to geet app server root from prop file
+        if (uri.startsWith(SunURIManager.SUNSERVERSURI)){
+            return true;
             
-            return retval;
-        } else
-            return uri.startsWith("deployer:Sun:AppServer::");//NOI18N
+        }
+        
+        return false;
     }
     
     public String getDisplayName() {
@@ -151,8 +132,23 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
         return "1.0";//NOI18N
     }
     
-    
-    
-    
-    
+    private static File getServerLocationFromURI(String uri) throws DeploymentManagerCreationException{
+        
+        if(uri.startsWith("[")){//NOI18N
+            String loc = uri.substring(1,uri.indexOf("]"));
+            return new File(loc);
+        } else   if (uri.startsWith(SunURIManager.SUNSERVERSURI)){
+            return PluginProperties.getDefault().getPlatformRoot();
+        }
+        throw new DeploymentManagerCreationException(uri+bundle.getString("MSG_WrongInstallDir"));
+    }
+    private static String getRealURI(String uri) throws DeploymentManagerCreationException{
+        
+        if(uri.startsWith("[")){//NOI18N
+            return uri.substring(uri.indexOf("]")+1,uri.length());
+        } 
+        return uri;// the old one.
+        
+        
+    }
 }

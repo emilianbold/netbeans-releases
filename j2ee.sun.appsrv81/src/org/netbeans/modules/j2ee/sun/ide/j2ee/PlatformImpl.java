@@ -26,7 +26,6 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
@@ -36,7 +35,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
-
 /**
  */
 public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeListener {
@@ -96,6 +94,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 RegisterPointbase.getDefault().register(rootLocation);
+                RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
             }
         });
     }

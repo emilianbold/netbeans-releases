@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Enumeration;
 import java.io.File;
 import java.io.FileInputStream;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 
 import org.openide.*;
 import org.openide.DialogDescriptor;
@@ -52,10 +53,17 @@ public class AdminAuthenticator extends java.net.Authenticator {
         String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
         String title = getRequestingPrompt();
         InstanceProperties ip = null;
-        ip= InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+site.getHostName()+":"+getRequestingPort());
+        String keyURI=SunURIManager.SUNSERVERSURI+site.getHostName()+":"+getRequestingPort();
+        ip= InstanceProperties.getInstanceProperties(keyURI);
         if (ip==null){
-            ip= InstanceProperties.getInstanceProperties("deployer:Sun:GlassFishAppServer::"+site.getHostName()+":"+getRequestingPort());
+            String list[] = InstanceProperties.getInstanceList();
+            for (int i=0;i<list.length;i++){
+                if(list[i].endsWith(keyURI)){
+                    ip= InstanceProperties.getInstanceProperties(list[i]);
+               }
+            }
         }
+        
         if (ip!=null){
             title = bundle.getString( "LBL_AdminAuthenticatorTitle");
         }

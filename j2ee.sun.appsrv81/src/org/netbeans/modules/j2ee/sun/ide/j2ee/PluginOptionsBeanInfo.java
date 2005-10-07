@@ -32,9 +32,9 @@ import org.netbeans.modules.j2ee.sun.ide.editors.LoggingLevelEditor;
  */
 public class PluginOptionsBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors() {
-        PropertyDescriptor proot = createPropertyDescriptor("installRoot", "LBL_InstallRoot", "DSC_InstallRoot");//NOI18N
-        proot.setValue("files", Boolean.FALSE); // only directories...
-        proot.setValue("changeImmediate", Boolean.FALSE); // change on ok only...
+//        PropertyDescriptor proot = createPropertyDescriptor("installRoot", "LBL_InstallRoot", "DSC_InstallRoot");//NOI18N
+//        proot.setValue("files", Boolean.FALSE); // only directories...
+//        proot.setValue("changeImmediate", Boolean.FALSE); // change on ok only...
 
         PropertyDescriptor[] retValue = new PropertyDescriptor[] {
             // TODO: from bundle
@@ -42,8 +42,8 @@ public class PluginOptionsBeanInfo extends SimpleBeanInfo {
             createPropertyDescriptor("groupList", "LBL_GroupList", "DSC_GroupList"),//NOI18N
             createPropertyDescriptor("charsetDisplayPreference", "LBL_CharsetDispPref", "DSC_CharsetDispPref", CharsetDisplayPreferenceEditor.class),//NOI18N
             createPropertyDescriptor("logLevel", "LBL_PluginLogLevel", "DSC_PluginLogLevel", LoggingLevelEditor.class),//NOI18N
-            createPropertyDescriptor("incrementalDeploy", "LBL_INCREMENTAL", "DSC_INCREMENTAL"),//NOI18N
-            proot
+            createPropertyDescriptor("incrementalDeploy", "LBL_INCREMENTAL", "DSC_INCREMENTAL")//NOI18N
+           // proot
             
         };
         return retValue;

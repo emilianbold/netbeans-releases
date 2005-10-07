@@ -61,7 +61,7 @@ public class RunASVerifierAction extends NodeAction {
     }
     
     public void launchVerifier(String archiveLocation){
-        java.io.File irf = PluginProperties.getDefault().getPlatformRoot();
+        java.io.File irf = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
         if (null != irf && irf.exists()) {
             String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
             System.setProperty("com.sun.aas.configRoot", installRoot+"/config");

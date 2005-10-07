@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.sun.api;
 
+import java.io.File;
 import java.rmi.ServerException;
 import java.rmi.RemoteException;
 import org.openide.nodes.Node;
@@ -78,4 +79,13 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     *
     **/
    void refreshDeploymentManager();
+   
+   /*
+    * return the App Server installation root used for getting the extra jar for this Deployment
+    * manager
+    * might return null if not a valid directory
+    * usually, this is not stored within the DM URI and correctly calculated when ytou create the DM.
+    
+    */
+   File  getPlatformRoot();
 }

@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.net.Authenticator;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 
 import javax.enterprise.deploy.shared.ActionType;
@@ -44,22 +45,16 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.DeploymentManager;
-
-
-
-
-
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
-
-
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.debugger.jpda.*;
-
 
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
@@ -100,7 +95,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 
     public StartSunServer(DeploymentManager deploymentManager) {
         this.dm = deploymentManager;
-        Authenticator.setDefault(new AdminAuthenticator());   
         pes = new ProgressEventSupport(this);
 
         java.util.logging.Logger.getLogger("javax.enterprise.system.tools.admin.client").setLevel(java.util.logging.Level.OFF);
@@ -249,7 +243,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	String domainDir = null;
 	int errorCode=-1;
 	
-	File irf = PluginProperties.getDefault().getPlatformRoot();
+	File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
 	if (null == irf || !irf.exists()) {
 	    return;
 	}
@@ -291,6 +285,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	
 	
 	if (cmd == CMD_START || cmd == CMD_RESTART) {
+            Authenticator.setDefault(new AdminAuthenticator());
 	    
 	    //verify is http monitoring is necessary on not for this run
 	    try{
@@ -336,6 +331,21 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	
 	if (cmd != CMD_STOP && !((SunDeploymentManagerInterface)dm).isRunning(true)) {
 	    viewLogFile();
+            // wait a little bit more to make sure we are not started. Sometimes, the server is not fully initialized
+            for (int l=0;l<5;l++){
+                try {
+                    Thread.sleep(3000);
+                    if(((SunDeploymentManagerInterface)dm).isRunning(true)){// GOOD, we are really ready
+                        pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, ct, "", StateType.COMPLETED));
+                        cmd = CMD_NONE;
+                        pes.clearProgressListener();
+                        return;
+                    }
+                    
+                } catch (Exception e) {
+                }
+            }
+            // we tried, but we failed!!!
 	    pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
 		    ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));
 	    cmd = CMD_NONE;
@@ -499,7 +509,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
         String domain ;
         String domainDir ;
-        String installRoot = PluginProperties.getDefault().getPlatformRoot().getAbsolutePath();
+        String installRoot = ((SunDeploymentManagerInterface)dm).getPlatformRoot().getAbsolutePath();
         
         domain = dmProps.getDomainName();
         domainDir = dmProps.getLocation();
@@ -508,8 +518,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         if (pwdFile.exists()) {
             try {
                 
-                Class pluginRootFactoryClass =org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader().
-                        loadClass("com.sun.enterprise.security.store.PasswordAdapter");//NOI18N
+		SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
+		ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
+                Class pluginRootFactoryClass =loader.loadClass("com.sun.enterprise.security.store.PasswordAdapter");//NOI18N
                 java.lang.reflect.Constructor constructor =pluginRootFactoryClass.getConstructor(new Class[] {String.class, getMasterPasswordPassword().getClass()});
                 Object PasswordAdapter =constructor.newInstance(new Object[] {pwdFile.getAbsolutePath(),getMasterPasswordPassword() });
                 Class PasswordAdapterClazz = PasswordAdapter.getClass();

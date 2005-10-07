@@ -22,6 +22,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 /**
  *
@@ -77,16 +79,16 @@ public class NodeFactory implements org.netbeans.modules.j2ee.deployment.plugins
     private org.openide.nodes.Node initializePluginTree( final DeploymentManager deployMgr) throws Exception {
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try{
-            Class pluginRootFactoryClass =org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader().
-                    loadClass("org.netbeans.modules.j2ee.sun.util.PluginRootNodeFactory");//NOI18N
+	    SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)deployMgr;
+	    ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
+            Class pluginRootFactoryClass =loader.loadClass("org.netbeans.modules.j2ee.sun.util.PluginRootNodeFactory");//NOI18N
             Constructor constructor =pluginRootFactoryClass.getConstructor(new Class[] {DeploymentManager.class});
             Object pluginRootFactory =constructor.newInstance(new Object[] {deployMgr});
             Class factoryClazz = pluginRootFactory.getClass();
             Method method =factoryClazz.getMethod("getPluginRootNode", null);
             
             
-            Thread.currentThread().setContextClassLoader(
-                    org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+            Thread.currentThread().setContextClassLoader( loader);
             
             
             return (org.openide.nodes.Node)method.invoke(pluginRootFactory, null);

@@ -15,6 +15,9 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.ide.Installer;
 import org.openide.util.NbBundle;
 
 import org.openide.modules.InstalledFileLocator;
@@ -32,12 +35,8 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.netbeans.modules.j2ee.sun.ide.editors.CharsetDisplayPreferenceEditor;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
-
-import org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
-
 /**
  *
  * @author  ludo
@@ -80,7 +79,7 @@ public class PluginProperties  {
     
     
     private  PluginProperties(){
-	ideHomeLocation = System.getProperty("netbeans.home");
+	ideHomeLocation = Installer.ideHomeLocation;
 	ideHomeLocation = new File(ideHomeLocation).getParentFile().getAbsolutePath();
 
         java.io.InputStream inStream = null;
@@ -137,6 +136,15 @@ public class PluginProperties  {
         incrementalDeployPossible = b.equals("true");
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
 
+        if (loc!=null){
+	    if (loc.startsWith(IDEHOME)){
+		loc = ideHomeLocation + loc.substring(IDEHOME.length(),loc.length());
+	    }
+	    platformRoot = new File(loc);
+        }
+
+/*        String loc = inProps.getProperty(INSTALL_ROOT_KEY);
+
         if (loc==null){// try to get the default value
 	    platformRoot = new File(getDefaultInstallRoot());
             if (isGoodAppServerLocation(platformRoot)){
@@ -174,7 +182,7 @@ public class PluginProperties  {
             }
             
             
-        }
+        }*/
         
 
  
@@ -199,7 +207,27 @@ public class PluginProperties  {
         
     }
     
-    
+    static public void configureDefaultServerInstance(){
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject dir = fs.findResource("J2EE/platform.properties");
+        if (dir==null){// try to get the default value
+            
+            final File platformRoot = new File(getDefaultInstallRoot());
+            if (isGoodAppServerLocation(platformRoot)){
+                javax.swing.SwingUtilities.invokeLater(new Runnable(){
+                    public void run(){
+                        PluginProperties.getDefault().registerDefaultDomain(platformRoot);
+                        PluginProperties.getDefault().saveProperties();
+                    }
+                    
+                });
+            } else {
+
+                PluginProperties.getDefault().saveProperties();
+            }
+        }
+        
+    }
     
     public void setIncrementalDeploy(Boolean b){
         
@@ -408,8 +436,7 @@ public class PluginProperties  {
                 }
             }
         } catch (java.io.IOException ioe) {
-            Constants.pluginLogger.throwing(PluginProperties.class.toString(), "saveChange",
-                    ioe);
+            Constants.pluginLogger.throwing(PluginProperties.class.toString(), "saveChange",ioe);
         }
         
         
@@ -424,26 +451,7 @@ public class PluginProperties  {
 
 
     
-    /** set the plugin's install root
-     *
-     * this simple Javabean setter has to be preverted to not throw a
-     * PropertyvetoException, since netbeans seems to freak out about it.
-     *
-     * Instead you need to throw an IllegalArgumentException decorated
-     * with an ErrorManager annotation.
-     */
-    public void setPlatformRoot(File fo)  {
-        File oldInstallRoot = platformRoot;
-        if (this.isGoodAppServerLocation(fo)){
-            platformRoot = fo;
-            System.setProperty(INSTALL_ROOT_PROP_NAME, fo.getAbsolutePath());	
-	    saveProperties();
-            Installer.resetClassLoader();//TODO do  better for next release: separate options to this PluginProperties stuff.
-            RunTimeDDCatalog.getRunTimeDDCatalog().fireCatalogListeners();
-        } 
-    }
-    
-    private  String getDefaultInstallRoot() {
+    private  static String getDefaultInstallRoot() {
         String candidate = System.getProperty(INSTALL_ROOT_PROP_NAME); //NOI18N
         if (null != candidate){
 
@@ -455,7 +463,7 @@ public class PluginProperties  {
         }
         InstalledFileLocator fff= InstalledFileLocator.getDefault();
         
-	File ff = new File(System.getProperty("netbeans.home"));
+	File ff = new File(Installer.ideHomeLocation);
 
 	File f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH);
         if (f3!=null){
@@ -471,7 +479,7 @@ public class PluginProperties  {
     
     
     
-    boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
+    static boolean  hasRequiredChildren(File candidate, Collection requiredChildren) {
         if (null == candidate)
             return false;
         String[] children = candidate.list();
@@ -491,13 +499,13 @@ public class PluginProperties  {
         fileColl.add("config");
     }
     
-    public boolean isGlassFish(File candidate){
+    private static boolean isGlassFish(File candidate){
         //now test for AS 9 (J2EE 5.0) which should work for this plugin
         File as9 = new File(candidate.getAbsolutePath()+"/lib/dtds/sun-web-app_2_5-0.dtd");
         return as9.exists();
     }
     
-    public boolean isGoodAppServerLocation(File candidate){
+    private static boolean isGoodAppServerLocation(File candidate){
         if (null == candidate || !candidate.exists() || !candidate.canRead() ||
                 !candidate.isDirectory()  || !hasRequiredChildren(candidate, fileColl)) {
             
@@ -518,7 +526,7 @@ public class PluginProperties  {
         return isGoodAppServerLocation(platformRoot);
     }
     
-    public void registerDefaultDomain(){
+    private static void registerDefaultDomain(File platformRoot){
         String username ="admin";//default//NOI18N
         String password ="adminadmin";//default//NOI18N
         
@@ -550,12 +558,12 @@ public class PluginProperties  {
             // if it is writable
             if (confDir.exists() && confDir.isDirectory() && confDir.canWrite()) {
                 // try to get the host/port data
-                String hp = getHostPort(new File(confDir,"domain.xml"));//NOI18N
+                String hp = getHostPort(platformRoot, new File(confDir,"domain.xml"));//NOI18N
                 if (hp==null){
                     // if we did not get the data out of domain.xml; use a default
                     hp ="localhost:4848";
                 }
-                String dmUrl = "deployer:Sun:AppServer::"+hp; //NOI18N
+                String dmUrl = "["+platformRoot.getAbsolutePath()+"]" +SunURIManager.SUNSERVERSURI+hp; //NOI18N
                 String displayName = NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name");
                 if (null == displayName) {
                     displayName = hp;
@@ -575,7 +583,7 @@ public class PluginProperties  {
             ///  Util.showInformation(e.getLocalizedMessage(), NbBundle.getMessage(RegisterServerAction.class, "LBL_RegServerFailed"));
         }
     }
-    private String getHostPort(File domainXml){
+    private static String getHostPort(File serverroot, File domainXml){
         String adminHostPort = null;
         try{
             Class[] argClass = new Class[1];
@@ -583,7 +591,7 @@ public class PluginProperties  {
             Object[] argObject = new Object[1];
             argObject[0] = domainXml;
             
-            ExtendedClassLoader loader = Installer.getClassLoader();
+	    ClassLoader loader = ServerLocationManager.getServerOnlyClassLoader(serverroot);
             if(loader != null){
                 Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.AppServerBridge");
                 Method getHostPort = cc.getMethod("getHostPort", argClass);//NOI18N

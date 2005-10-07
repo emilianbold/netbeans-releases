@@ -16,10 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Locale;
-import java.io.IOException;
-import java.net.Socket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.lang.reflect.Method;
@@ -40,6 +37,7 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
@@ -61,8 +59,7 @@ import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 
 import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.openide.ErrorManager;
-
-
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 /**
  *
  * @author  ludo, vkraemer
@@ -88,6 +85,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private boolean runningState=false;
     private boolean secure =false;
     private long timeStampCheckingRunning =0;
+    private File platformRoot  =null;
     
     /* cache for local value. Sometimes, the islocal() call can be very long for IP that changed
      * usually when dhcp is used. So we calculate the value in a thread at construct time
@@ -107,9 +105,10 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      **/
 
 
-    public SunDeploymentManager( DeploymentFactory df, String uri,String userName, String password)  throws DeploymentManagerCreationException{
+    public SunDeploymentManager( DeploymentFactory df, String uri,String userName, String password, File platformRootDir)  throws DeploymentManagerCreationException{
         this.df= df;
         this.uri =uri;
+	this.platformRoot =  platformRootDir;
         secure = uri.endsWith(SECURESTRINGDETECTION);
         String uriNonSecure =uri;
         if (secure)
@@ -118,7 +117,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         host = getHostFromURI(uriNonSecure);
         adminPortNumber = getPortFromURI(uriNonSecure);
         try {
-            InstanceProperties props = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber); //NOI18N
+            InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber); 
+
             if (userName == null && props != null) {
                 this.userName = props.getProperty(InstanceProperties.USERNAME_ATTR);
             } else {
@@ -145,21 +145,18 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      **
      */
     
-    public DeploymentManager getInnerDeploymentManager()  {
-        return innerDM;
-    }
+
     
     private void resetInnerDeploymentManager() throws DeploymentManagerCreationException{
         try {
             if (isConnected){
                 innerDM = df.getDeploymentManager(uri,userName,password);
             } else{
-                innerDM = df.getDisconnectedDeploymentManager(uri);
-                
+                if (df!=null) innerDM = df.getDisconnectedDeploymentManager(uri);
             }
-            if(innerDM == null) {
-                throw new DeploymentManagerCreationException("invalid URI");
-            }
+////////            if(innerDM == null) {
+////////                throw new DeploymentManagerCreationException("invalid URI");
+////////            }
         } catch (NoClassDefFoundError ee) {
             throw ee;
         } catch (Exception e) {
@@ -174,7 +171,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 Object[] argObject = new Object[1];
                 argObject[0] = innerDM;
                 
-                 org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader loader =  org.netbeans.modules.j2ee.sun.ide.Installer.getClassLoader();
+                 ClassLoader loader =  getExtendedClassLoader();
                 if(loader != null){
                     Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.AppServerBridge");
                     Method setServerConnectionEnvironment = cc.getMethod("setServerConnectionEnvironment", argClass);//NOI18N
@@ -331,7 +328,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             //
             //  2. call the inner DeploymentManager.distribute method
             //
-             Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+             Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
             ProgressObject retVal = innerDM.distribute(target, archive, innerPlan);
             retVal.addProgressListener(new FileDeleter(f));
             return retVal;
@@ -369,7 +366,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
 
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+            Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
       //  getStartServerInterface().viewLogFile();
             return innerDM.distribute(target, archive, null);
            // return distribute(target, a, p);
@@ -392,7 +389,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
         ThrowExceptionIfSuspended();
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+        Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         
         try{
             TargetModuleID[] tm =  innerDM.getAvailableModules(modType, target);
@@ -439,7 +436,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     public TargetModuleID[] getRunningModules(ModuleType mType, Target[] target)
     throws TargetException, IllegalStateException {
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+        Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{
             TargetModuleID[] ttt= innerDM.getRunningModules(mType, target);
             return ttt;
@@ -470,7 +467,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         else {
             ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
             try {
-                Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+                Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
                 retVal = innerDM.getTargets();
             }
             catch (IllegalStateException ise) {
@@ -515,7 +512,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try {
-           Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+           Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
     //        File f = getInternalPlanFile(plan);
     //        innerPlan = new FileInputStream(f);
             ProgressObject  retVal = innerDM.redeploy(targetModuleID, archive, innerPlan);
@@ -570,7 +567,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             throw ise;
         }
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+        Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{
             return  innerDM.redeploy(targetModuleID, archive, null);
             //return redeploy(targetModuleID, a, p);
@@ -610,7 +607,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     throws IllegalStateException {
         ThrowExceptionIfSuspended();
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+        Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{
             return  innerDM.start(targetModuleID);
         }
@@ -626,7 +623,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     throws IllegalStateException {
         ThrowExceptionIfSuspended();
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+        Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{ 
             return  innerDM.stop(targetModuleID);
         }
@@ -644,7 +641,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
        // System.out.println("undeploy.");
         ThrowExceptionIfSuspended();
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
+        Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         
         try{
             return innerDM.undeploy(targetModuleID);
@@ -726,7 +723,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             //timeStampCheckingRunning = current;
             return runningState;
             }
-//System.out.println("startinsruning"+current);
         runningState = false; // simpleConnect(getHost(),getPort());
         timeStampCheckingRunning = current;
         
@@ -739,10 +735,12 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 else
                     
                     runningState = true;
-            }            
+            }  
+           //System.out.println("isRunning" +runningState);
         } catch (Throwable /*IllegalStateException*/ e) {
             runningState  =false;
-        }
+            //System.out.println(" bisRunning" +runningState);
+       }
         if ((runningState)&&(nonAdminPortNumber == null)){
             try{
       //  System.out.println("inrunning get admin port number"+(System.currentTimeMillis()-current));
@@ -824,7 +822,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             Object[] argObject = new Object[1];
             argObject[0] = this;
             
-            org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader loader = org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader();
+            ClassLoader loader = getExtendedClassLoader();
             if(loader != null){
                 Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.share.management.ServerMEJB");
                 mmm = (ServerInterface)cc.newInstance();
@@ -852,7 +850,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 Object[] argObject = new Object[1];
                 argObject[0] = this;
                 
-                org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader loader = org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader();
+                ClassLoader loader = getExtendedClassLoader();
                 if(loader != null){
                     Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator");
                     resourceConfigurator = (ResourceConfiguratorInterface)cc.newInstance();
@@ -920,7 +918,17 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }catch(Exception ex)   {
         }
     }
+    
+    
+    public File getPlatformRoot() {
+        return  platformRoot;
+    }
 
+    private ClassLoader getExtendedClassLoader(){
+	
+	return ServerLocationManager.getNetBeansAndServerClassLoader(getPlatformRoot());	
+    }
+    
     // VBK hack target objects to support configuration prototyping in
      // J2EE 1.4 RI beta 1 deploytool
      class FakeTarget implements Target {
