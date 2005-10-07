@@ -339,7 +339,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
             </file>
-            <file name="SO-F7.shadow">
+            <file name="D-F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
             </file>
             <file name="F5.shadow">
