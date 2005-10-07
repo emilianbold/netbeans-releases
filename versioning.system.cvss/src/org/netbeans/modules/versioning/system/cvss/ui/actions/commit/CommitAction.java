@@ -63,6 +63,9 @@ public class CommitAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
+    /**
+     * Shows commit dialog UI and handles selected option.
+     */
     public static void invokeCommit(String contentTitle, Context context) {
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         if (CvsVersioningSystem.getInstance().getFileTableModel(context, FileInformation.STATUS_LOCAL_CHANGE).getNodes().length == 0) {
@@ -106,9 +109,12 @@ public class CommitAction extends AbstractSystemAction {
         dialog.setVisible(true);
         if (descriptor.getValue() != commit) return;
 
+
         settings.updateCommand(cmd);
         copy(commandTemplate, cmd);
-        executeCommit(settings);
+        ExecutorGroup group = new ExecutorGroup("Commiting");
+        addCommit(group, settings);
+        group.execute();
     }
     
     private static void setupNodes(CommitSettings settings, Context context) {
@@ -186,11 +192,12 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     /**
-     * Executes add/commit actions based on settings in the Commit dialog.
-     * 
+     * Prepares add/commit actions based on settings in the Commit dialog.
+     *
+     * @param group where commit is added
      * @param settings user settings
-     */ 
-    public static void executeCommit(CommitSettings settings) {
+     */
+    public static void addCommit(ExecutorGroup group, CommitSettings settings) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
         List commitBucket = new ArrayList();
@@ -219,8 +226,6 @@ public class CommitAction extends AbstractSystemAction {
         }
 
         // perform
-        ExecutorGroup group = new ExecutorGroup("Commiting");
-
         group.addExecutors(createAdd(addDefaultBucket, null));
         group.addExecutors(createAdd(addKkvBucket, KeywordSubstitutionOptions.DEFAULT));
         group.addExecutors(createAdd(addKkvlBucket, KeywordSubstitutionOptions.DEFAULT_LOCKER));
@@ -230,8 +235,6 @@ public class CommitAction extends AbstractSystemAction {
         group.addExecutors(createAdd(addKvBucket, KeywordSubstitutionOptions.ONLY_VALUES));
         group.addExecutors(createRemove(removeBucket));
         group.addExecutors(createCommit(commitBucket, settings.getCommitMessage()));
-
-        group.execute();
     }
 
     private static void addExecutors(Collection target, ExecutorSupport[] src) {
