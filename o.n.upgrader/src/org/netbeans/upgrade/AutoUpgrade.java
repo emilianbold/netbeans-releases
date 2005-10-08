@@ -16,6 +16,8 @@ import java.io.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -23,6 +25,7 @@ import javax.swing.JOptionPane;
 import org.netbeans.util.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
@@ -180,5 +183,37 @@ public final class AutoUpgrade {
         org.openide.filesystems.FileSystem mine = Repository.getDefault ().getDefaultFileSystem ();
         
         Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude);
+        
+        // copy Shortcuts to Profiles/NetBeans41
+        FileObject shortcuts = old.getRoot ().getFileObject ("Shortcuts"); //NOI18N
+        if (shortcuts != null) {
+            FileObject root = mine.getRoot ();
+            FileObject keymaps = root.getFileObject ("Keymaps"); //NOI18N
+            if (keymaps == null)
+                keymaps = root.createFolder ("Keymaps"); //NOI18N
+            FileObject nb = keymaps.getFileObject ("NetBeans");
+            if (nb == null)
+                nb = keymaps.createFolder ("NetBeans"); //NOI18N
+            copy (shortcuts, nb);
+        }
+    }
+    
+    private static void copy (FileObject sourceDir, FileObject destDir) 
+    throws IOException {
+        Enumeration en = sourceDir.getData (false);
+        while (en.hasMoreElements ()) {
+            FileObject fo = (FileObject) en.nextElement ();
+            if (fo.isFolder ()) {
+                FileObject newDestDir = destDir.createFolder (fo.getName ());
+                copy (fo, newDestDir);
+            } else {
+                FileObject destFile = FileUtil.copyFile 
+                        (fo, destDir, fo.getName (), fo.getExt ());
+                FileUtil.copyAttributes (fo, destFile);
+            }
+        }
     }
 }
+
+
+
