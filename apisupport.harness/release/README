@@ -148,6 +148,55 @@ IDE in the special case that the destination directory is the subsubdirectory
 "nbbuild/netbeans" of a netbeans.org CVS checkout (i.e. if you build NetBeans
 from sources and then build your suite against that).
 
+"CHAINING" SUITES (INTER-SUITE DEPENDENCIES HOWTO)
+--------------------------------------------------
+
+Suppose you have one platform P1, say the bare NetBeans Platform. Then you have
+a module suite S1 with modules M1a...M1z which uses P1. Now it may happen that
+you want another suite S2 with modules M2a...M2z to depend on S1 as well as P1.
+This is possible, though not yet trivial to set up. Basically, you will make a
+new platform P2 by building S1 + P1. Here's what you need to do in brief:
+
+1. Set up S1 with P1 in the normal way.
+
+2. Edit S1/build.xml to include a target to make a platform P2. For example:
+
+    <target name="create-platform" depends="build-zip">
+        <mkdir dir="${p2}"/>
+        <unzip src="dist/${app.name}.zip" dest="p2"/>
+    </target>
+
+where S1/nbproject/project.properties or S1/nbproject/private/private.properties
+defines:
+
+    p2=...path.../myplatform
+
+3. Now configure S2 to use P2 as its platform. If an absolute path, you can use
+the Platform Manager, else for relative paths see the preceding section.
+
+4. To associate sources with binaries for P2, you will need to use the Platform
+Manager. You can select multiple source associations. In this case, use a
+netbeans.org CVS checkout or source download for the P1 (NetBeans platform)
+portion of P2, and use S1 (the suite directory) for the M1a...M1z modules in P2.
+
+5. In an S2 module like M2a you should be able to depend on any module in P2,
+including both NetBeans modules and modules from S1 like M1a. Code completion,
+popup Javadoc, etc. should work if source associations have been correctly
+configured in step #5.
+
+6. In case S1 was an application module with configured branding, you might wish
+to use S1's launchers in S2 rather than making a new app for S2. Or, in place of
+a suite S2 you might have a standalone module M2. In either case, you can use
+S1's launchers by making sure that the 'bin/' and 'etc/' directories get copied
+into the P2 platform (i.e. do not specifically exclude them in step #2); and
+configure nbproject/project.properties in S2 (or standalone module M2):
+
+    run.app.exe=bin\\s1.exe
+    run.app.sh=bin/s1
+
+where 's1' was the branding name you chose for S1. This will permit Run, Reload,
+etc. on S2 and its modules like M2a, or standalone module M2, to work correctly.
+
 netbeans.org MODULES: CONFIGURATION FILES
 -----------------------------------------
 
