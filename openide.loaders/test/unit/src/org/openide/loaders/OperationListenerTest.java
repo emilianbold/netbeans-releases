@@ -111,12 +111,18 @@ implements OperationListener {
     }
 
     public void testCopyFile() throws Exception {
+        err.log("Before add listener");
         pool.addOperationListener(this);
+        err.log("after add listener");
         DataObject obj = DataObject.find (fs.findResource ("fake/A.instance"));
+        err.log("object found: " + obj);
         DataFolder df = DataFolder.findFolder (fs.findResource ("dir"));
+        err.log("folder found: " + df);
         DataObject n = obj.copy (df);
+        err.log("copy done: " + n);
         assertEquals ("Copy successfull", n.getFolder(), df);
         
+        err.log("Comparing events");
         assertEvents ("All well", new OperationEvent[] {
             new OperationEvent (obj),
             new OperationEvent (df),
