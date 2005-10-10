@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -123,10 +124,14 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
 
     /**
      * Called by ExecutorSupport on start.
-     * @return true for the first command in given queue
      */
-    synchronized boolean started(ClientRuntime queue) {
-        return started.add(queue);
+    synchronized void started(ClientRuntime queue) {
+        if (started.add(queue)) {
+            String msg = NbBundle.getMessage(ExecutorGroup.class, "BK1001", new Date(), getDisplayName());
+            String sep = NbBundle.getMessage(ExecutorGroup.class, "BK1000");
+            String header = "\n" + sep + "\n" + msg + "\n"; // NOI18N
+            queue.log(header);
+        }
     }
 
     /**
@@ -134,9 +139,8 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      *
      * @param queue processign queue or null for all
      * @param id identifier paired with {@link #enqueued(ClientRuntime, Object)}
-     * @return true for last id in given queue
      */
-    synchronized boolean finished(ClientRuntime queue, Object id) {
+    synchronized void finished(ClientRuntime queue, Object id) {
 
         Collection keys;
         if (queue == null) {
@@ -161,7 +165,33 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
             }
             finished &= commands.isEmpty();
         }
-        return finished;
+
+        if (finished) {
+            logFinished(queue);
+        }
+    }
+
+    private void logFinished(ClientRuntime queue) {
+        Collection consoles;
+        if (queue == null) {
+            consoles = started;
+        } else {
+            consoles = Collections.singleton(queue);
+        }
+
+        String msg;
+        if (isCancelled()) {
+            msg = NbBundle.getMessage(ExecutorGroup.class, "BK1006", new Date(), getDisplayName());
+        } else {
+            msg = NbBundle.getMessage(ExecutorGroup.class, "BK1002", new Date(), getDisplayName());
+        }
+
+        Iterator it2 = consoles.iterator();
+        while (it2.hasNext()) {
+            ClientRuntime console = (ClientRuntime) it2.next();
+            console.log(msg + "\n"); // NOI18N
+            console.focusLog();
+        }
     }
 
     boolean isCancelled() {
@@ -319,9 +349,11 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
     }
 
     /**
-     * Allows client to communicate it's assumtion that
-     * group was executed. If it's not something went wrong,
-     * it's time for cleanup.  
+     * Allows clients that execute grouped suppors
+     * synchronously communicate their assumtion that
+     * all supporst in group have been executed. It's
+     * time for progress cleanup and logging finished
+     * messages.
      */
     public synchronized void executed() {
         if (executed == false) {
@@ -329,6 +361,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
                 progressHandle.finish();
                 progressHandle = null;
             }
+            logFinished(null);
         }
     }
 

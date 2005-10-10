@@ -282,13 +282,8 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
      * It (re)runs...
      */
     public void commandStarted(CommandRunnable commandRunnable) {
-        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1001", new Date(), getDisplayName());
-        String sep = NbBundle.getMessage(ExecutorSupport.class, "BK1000");
-        String header = "\n" + sep + "\n" + msg + "\n"; // NOI18N
         clientRuntime = cvs.getClientRuntime(cmd, options);
-        if (group.started(clientRuntime)) {
-            clientRuntime.log(header);
-        }
+        group.started(clientRuntime);
     }
 
     public void commandTerminated(TerminationEvent e) {
@@ -361,22 +356,8 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                     }
                 }
 
-
-                String msg;
-                if (group.isCancelled()) {
-                    msg = NbBundle.getMessage(ExecutorSupport.class, "BK1006", new Date(), getDisplayName());
-                } else {
-                    msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), getDisplayName());
-                }
-                logFinishedCommand(msg);
+                group.finished(clientRuntime, commandRunnable);
             }
-        }
-    }
-
-    private void logFinishedCommand(String msg) {
-        if (group.finished(clientRuntime, commandRunnable)) {
-            clientRuntime.log(msg + "\n"); // NOI18N
-            clientRuntime.focusLog();
         }
     }
 
