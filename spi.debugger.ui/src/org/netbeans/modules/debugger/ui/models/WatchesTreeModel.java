@@ -55,6 +55,8 @@ public class WatchesTreeModel implements TreeModel {
                 getWatches ();
             if (listener == null)
                 listener = new Listener (this);
+            to = Math.min(ws.length, to);
+            from = Math.min(ws.length, from);
             Watch[] fws = new Watch [to - from];
             System.arraycopy (ws, from, fws, 0, to - from);
             return fws;
