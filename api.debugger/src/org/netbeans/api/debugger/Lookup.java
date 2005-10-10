@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -223,10 +224,38 @@ abstract class Lookup implements ContextProvider {
             try {
                 ClassLoader cl = (ClassLoader) org.openide.util.Lookup.
                     getDefault ().lookup (ClassLoader.class);
+                String method = null;
+                if (service.endsWith("()")) {
+                    int lastdot = service.lastIndexOf('.');
+                    if (lastdot < 0) {
+                        ErrorManager.getDefault().log("Bad service - dot before method name is missing: " +
+                                "'" + service + "'.");
+                        return null;
+                    }
+                    method = service.substring(lastdot + 1, service.length() - 2).trim();
+                    service = service.substring(0, lastdot);
+                }
                 Class cls = cl.loadClass (service);
 
                 Object o = null;
-                if (context != null) {
+                if (method != null) {
+                    Method m = null;
+                    if (context != null) {
+                        try {
+                            m = cls.getDeclaredMethod(method, new Class[] { Lookup.class });
+                        } catch (NoSuchMethodException nsmex) {}
+                    }
+                    if (m == null) {
+                        try {
+                            m = cls.getDeclaredMethod(method, new Class[] { });
+                        } catch (NoSuchMethodException nsmex) {}
+                    }
+                    if (m != null) {
+                        o = m.invoke(null, (m.getParameterTypes().length == 0)
+                                     ? new Object[] {} : new Object[] { context });
+                    }
+                }
+                if (o == null && context != null) {
                     Constructor[] cs = cls.getConstructors ();
                     int i, k = cs.length;
                     for (i = 0; i < k; i++) {
