@@ -85,8 +85,13 @@ public class EditorView extends ViewElement {
         if (editorArea != null) {
             panel.setBorder(null);
         } else {
-            // special border installed into UI manager by netbeans
-            panel.setBorder((Border)UIManager.get("Nb.ScrollPane.border"));
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+               //#64701 on macosx the nb.scrollpane.border draws ugly line on top
+                panel.setBorder(BorderFactory.createEmptyBorder());
+            } else {
+                // special border installed into UI manager by netbeans
+                panel.setBorder((Border)UIManager.get("Nb.ScrollPane.border"));
+	    }
         }
     }
     

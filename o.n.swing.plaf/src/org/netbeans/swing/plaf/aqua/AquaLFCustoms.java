@@ -88,7 +88,7 @@ public final class AquaLFCustoms extends LFCustoms {
             EXPLORER_FOLDER_ICON ,explorerIcon,
             EXPLORER_FOLDER_OPENED_ICON, explorerIcon,
             DESKTOP_BORDER, empty,
-            SCROLLPANE_BORDER, empty,
+            SCROLLPANE_BORDER, UIManager.get("ScrollPane.border"),
             EXPLORER_STATUS_BORDER, topOnly,
             EDITOR_STATUS_LEFT_BORDER, topOnly,
             EDITOR_STATUS_RIGHT_BORDER, topOnly,
