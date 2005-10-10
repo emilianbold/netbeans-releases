@@ -13,35 +13,24 @@
 
 package org.netbeans.modules.web.debug.util;
 
-import java.util.*;
-
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
 import javax.swing.text.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
 import org.openide.cookies.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-import org.openide.filesystems.Repository;
-
-import org.netbeans.modules.web.debug.Context;
-
 import org.netbeans.modules.web.api.webmodule.*;
-import org.netbeans.modules.j2ee.deployment.impl.projects.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 
 import org.netbeans.api.project.*;
 
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.debugger.jpda.*;
 
 
 /**
@@ -101,6 +90,24 @@ public class Utils {
            return "text/x-tag".equals(fo.getMIMEType());   //NOI18N
         }
         return false;
+    }
+
+    public static String getTargetServerID(String url) {
+        FileObject fo = getFileObjectFromUrl(url);
+        if (fo != null) {
+            WebModule wm = WebModule.getWebModule(fo);
+            if (wm != null) {
+                Project p = FileOwnerQuery.getOwner(wm.getDocumentBase());
+                if (p != null) {
+                    J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
+                    if (mp != null) {
+                        String serverID = mp.getServerID();
+                        return serverID;
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     public static String getJspName(String url) {

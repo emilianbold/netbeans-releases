@@ -18,12 +18,15 @@ import java.beans.*;
 
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.debugger.*;
 
 import org.netbeans.modules.web.debug.Context;
 import org.netbeans.modules.web.debug.JspBreakpointAnnotationListener;
 import org.netbeans.modules.web.debug.util.Utils;
 import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /** 
  * Toggle JSP Breakpoint action provider.
@@ -53,8 +56,17 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-        boolean isJsp = Utils.isJsp(Context.getCurrentURL()) || Utils.isTag(Context.getCurrentURL());
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isJsp);
+        String url = Context.getCurrentURL();
+        
+        boolean isJsp = Utils.isJsp(url) || Utils.isTag(url);
+
+        //#issue 65969 fix:
+        //we allow bp setting only if the file is JSP or TAG file and target server of it's module is NOT WebLogic 9;
+        //TODO it should be solved by adding new API into j2eeserver which should announce whether the target server
+        //supports JSP debugging or not
+        String serverID = Utils.getTargetServerID(url);
+
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isJsp && serverID != null && !serverID.equals("WebLogic9")); //NOI18N
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
         ) 
