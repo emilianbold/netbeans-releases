@@ -21,6 +21,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.queries.VisibilityQuery;
 
@@ -143,13 +145,17 @@ final class Favorites extends FilterNode {
         }
     }
 
-    private static class Chldrn extends FilterNode.Children {
-
+    private static class Chldrn extends FilterNode.Children 
+    implements ChangeListener, Runnable {
+        private ChangeListener weak;
         private boolean hideHidden;
         /** Creates new Chldrn. */
         public Chldrn (Node node, boolean hideHidden) {
             super (node);
             this.hideHidden = hideHidden;
+            
+            weak = org.openide.util.WeakListeners.change(this, VisibilityQuery.getDefault());
+            VisibilityQuery.getDefault().addChangeListener(weak);
         }
         
         protected Node[] createNodes(Object key) {
@@ -166,8 +172,18 @@ final class Favorites extends FilterNode {
                 (node.isLeaf ()) ? org.openide.nodes.Children.LEAF : new Chldrn (node, true)
             )};
         }
+
+        public void stateChanged(ChangeEvent e) {
+            MUTEX.postWriteRequest(this);
+        }
         
-    }
+        public void run() {
+            Node[] arr = original.getChildren().getNodes();
+            for (int i = 0; i < arr.length; i++) {
+                refreshKey(arr[i]);
+            }
+        }
+    } // end of Chldrn
 
     /** This FilterNode is sensitive to 'Delete Original Files' property of {@link ProjectOption}.
      * When this property is true then original DataObjects pointed to by links under the project's node

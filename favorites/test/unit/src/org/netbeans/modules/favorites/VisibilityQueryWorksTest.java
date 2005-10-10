@@ -16,8 +16,10 @@ package org.netbeans.modules.favorites;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.AssertionFailedError;
 
@@ -78,6 +80,9 @@ public class VisibilityQueryWorksTest extends NbTestCase {
 
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
+        
+        Lkp lkp = (Lkp)Lookup.getDefault();
+        lkp.init();
 
         ErrManager.log = getLog();
         err = ErrorManager.getDefault().getInstance("TEST-" + getName() + "");
@@ -165,6 +170,14 @@ public class VisibilityQueryWorksTest extends NbTestCase {
         
         assertNodeForDataObject("hidden object is not there", hiddenDO, false, arr);
         assertEquals("No children at all", 0, arr.length);
+        
+        Lkp lkp = (Lkp)Lkp.getDefault();
+        lkp.showAll = true;
+        lkp.fire();
+        
+        arr = f.getChildren().getNodes(true);
+        assertNodeForDataObject("hidden object is now there", hiddenDO, true, arr);
+        assertEquals("One child at all", 1, arr.length);
     }
 
     /* these tests were created to fix issue 62863, but it is not going 
@@ -236,14 +249,40 @@ public class VisibilityQueryWorksTest extends NbTestCase {
             setLookups(new Lookup[] { al, ml });
         }
         
+        public void init() {
+            showAll = false;
+//            listener = null;
+        }
+
+        boolean showAll;
+        
         public boolean isVisible(FileObject file) {
+            if (showAll) {
+                return true;
+            }
             return file.getPath().indexOf("hidden") == -1;
         }
 
-        public void addChangeListener(ChangeListener l) {
+        
+        private ArrayList listeners = new ArrayList();
+        public synchronized void addChangeListener(ChangeListener l) {
+            listeners.add(l);
         }
 
-        public void removeChangeListener(ChangeListener l) {
+        public synchronized void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+        }
+        
+        public void fire() {
+            ChangeEvent ev = new ChangeEvent(this);
+            ChangeListener[] arr;
+            synchronized (this) {
+                arr = (ChangeListener[])listeners.toArray(new ChangeListener[0]);
+            }
+            
+            for (int i = 0; i < arr.length; i++) {
+                arr[i].stateChanged(ev);
+            }
         }
     }
     //
