@@ -40,6 +40,7 @@ import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlRenderer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -559,23 +560,26 @@ public class PlatformUiSupport {
         }
     }
     
-    private static class SourceLevelListCellRenderer extends DefaultListCellRenderer {
+    private static class SourceLevelListCellRenderer implements ListCellRenderer {
         
-        public /*@Override*/ Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        ListCellRenderer delegate;
+        
+        public SourceLevelListCellRenderer () {
+            this.delegate = HtmlRenderer.createRenderer();
+        }
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert value instanceof SourceLevelKey;
             SourceLevelKey key = (SourceLevelKey) value;
             String message;
             if (key.isBroken()) {                
-                message = NbBundle.getMessage(PlatformUiSupport.class,"TXT_InvalidSourceLevel",key.getSourceLevel().toString());
+                message = "<html><font color=\"#A40000\">" + 
+                    NbBundle.getMessage(PlatformUiSupport.class,"TXT_InvalidSourceLevel",key.getSourceLevel().toString());
             }
             else {
                 message = key.getSourceLevel().toString();
             }
-            super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
-            if (key.isBroken()) {
-                this.setForeground(new Color (164,0,0));
-            }
-            return this;
+            return this.delegate.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
         }
     }
     
