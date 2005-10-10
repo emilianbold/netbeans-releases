@@ -100,7 +100,7 @@ public class LineDiff implements Diff {
         
         String[] testLines,passLines;
         //read lines
-        ArrayList tmp=new ArrayList();
+        ArrayList tmp=new ArrayList(128);
         while ((passLine = second.readLine()) != null) {
             if (ignoreEmptyLines && passLine.trim().length() == 0) {
                 continue;
@@ -136,9 +136,9 @@ public class LineDiff implements Diff {
             tmp.add(testLine);
         }
         first.close();
-        //match&=(firstFile.length() == secondFile.length()); - there can be different end lines
-        if (match) {
-            return false;
+        match &= passLines.length == tmp.size();
+        if (match || diffFile == null) {
+            return !match;
         }
         testLines=(String[])(tmp.toArray(new String[tmp.size()]));
         tmp.clear();
@@ -147,7 +147,7 @@ public class LineDiff implements Diff {
         ArrayList[] passindicies=new ArrayList[passLines.length-lastPassIndex];
         
         for (int i=lastPassIndex;i < passLines.length;i++) {
-            passindicies[i-lastPassIndex]=new ArrayList();
+            passindicies[i-lastPassIndex]=new ArrayList(testLines.length-lastPassIndex);
             for (int j=lastPassIndex;j < testLines.length;j++) {
                 if (compareLines(passLines[i], testLines[j])) { //if equals add to indicies
                     IndexValue iv=new IndexValue(j, i);
@@ -166,7 +166,7 @@ public class LineDiff implements Diff {
                 IndexValue iv=(IndexValue)(passindicies[i].get(j));
                 if (tmp.contains(iv)) continue;
                 int delta=iv.index-iv.passIndex;
-                ArrayList path=new ArrayList();
+                ArrayList path=new ArrayList(128);
                 path.add(iv);
                 int ind=i+1;
                 while (ind < passindicies.length) {
@@ -243,7 +243,7 @@ public class LineDiff implements Diff {
             } while (once && passindicies[i].size() > 0);
         }
         //generate result list
-        ArrayList result=new ArrayList();
+        ArrayList result=new ArrayList(128);
         
         for (int i=lastPassIndex;i < passLines.length;i++) {
             if (passindicies[i-lastPassIndex].size() > 0) {
