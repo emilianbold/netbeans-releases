@@ -169,7 +169,7 @@ public class MakeListOfNBM extends Task {
                 String abs = inFile.getAbsolutePath();
                 String prefix = ds.getBasedir().getAbsolutePath() + File.separatorChar;
                 if (! abs.startsWith(prefix)) throw new IllegalStateException(abs);
-                version.addFileWithCrc(abs.substring(prefix.length()), Long.toString( crc.getValue() ) );
+                version.addFileWithCrc(abs.substring(prefix.length()).replace(File.separatorChar, '/'), Long.toString( crc.getValue() ) );
             } catch (IOException ex) {
                 log( ex.toString() );
             }

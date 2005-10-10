@@ -132,7 +132,7 @@ class UpdateTracking {
         List files = ((Version) module.getVersions().get(0)).getFiles();
         String [] listFiles = new String[ files.size() ];
         for (int i=0; i < files.size(); i++) {
-            listFiles[i] = (((ModuleFile) files.get(i)).getName());
+            listFiles[i] = (((ModuleFile) files.get(i)).getName().replace(File.separatorChar,'/'));
         }
         
         return listFiles;
@@ -171,7 +171,7 @@ class UpdateTracking {
             while ( it3.hasNext() ) {
                 ModuleFile file = (ModuleFile)it3.next();
                 Element e_file = document.createElement(ELEMENT_FILE);
-                e_file.setAttribute(ATTR_FILE_NAME, file.getName());
+                e_file.setAttribute(ATTR_FILE_NAME, file.getName().replace(File.separatorChar,'/'));
                 e_file.setAttribute(ATTR_CRC, file.getCrc());
                 e_version.appendChild( e_file );
             }
@@ -342,7 +342,7 @@ class UpdateTracking {
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
             if (attr.getName().equals(ATTR_FILE_NAME)) { // <file name="???">
-                file.setName( attr.getValue() );
+                file.setName( attr.getValue().replace(File.separatorChar,'/') );
             }
             if (attr.getName().equals(ATTR_CRC)) { // <file crc="???">
                 file.setCrc( attr.getValue() );
@@ -550,7 +550,7 @@ class UpdateTracking {
          * @param name New value of property name.
          */
         void setName(String name) {
-            this.name = name;
+            this.name = name.replace(File.separatorChar,'/');
         }
         
         /** Getter for property crc.
