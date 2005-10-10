@@ -821,6 +821,10 @@ public abstract class CLIHandler extends Object {
                 return;
             }
             
+            ServerSocket toClose = socket;
+            if (toClose == null) {
+                return;
+            }
             
             while (socket != null) {
                 try {
@@ -844,17 +848,18 @@ public abstract class CLIHandler extends Object {
                     ex.printStackTrace();
                 }
             }
-        }
-
-        final void stopServer () {
+            
             try {
-                ServerSocket s = socket;
-                if (s == null) return;
-                socket = null;
-                s.close ();
+                toClose.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+        }
+
+        final void stopServer () {
+            socket = null;
+            // interrupts the listening server
+            interrupt();
         }
         
         private void handleConnect(Socket s) throws IOException {
