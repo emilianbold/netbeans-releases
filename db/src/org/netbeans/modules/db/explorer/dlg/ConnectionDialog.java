@@ -63,7 +63,6 @@ public class ConnectionDialog {
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
         descriptor.setClosingOptions(closingOptions);
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.setResizable(false);
         dialog.setVisible(false);
     }
     
