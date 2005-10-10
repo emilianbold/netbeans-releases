@@ -70,8 +70,7 @@ final class ExecutorGroupBar implements ExecutorGroup.Groupable {
     }
 
     public void joinGroup(ExecutorGroup group) {
-        this.group = group;
-        group.enqueued(null, this);
+        this.group = group;        
     }
 
     /**
@@ -79,6 +78,7 @@ final class ExecutorGroupBar implements ExecutorGroup.Groupable {
      * executors and action finish (successfuly or fail).
      */
     public void execute() {
+        group.enqueued(null, this);
         ExecutorSupport.wait(bar);
         if (action != null) {
             action.run();
