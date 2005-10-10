@@ -14,24 +14,30 @@
         <h2>Merging File Revisions</h2>        
         <!-<p><small><a href="#seealso">See Also</a></small></p>
         <p>The Merge command is useful for 
-        incorporating changes in earlier revisions into your working copy. You
-        can merge  revisions on different branches of the repository with your
-        local working copy of a file or directory. You can also  merge the difference
-        between two earlier revisions with your
+        incorporating changes made in earlier revisions into your working copy.
+        	You can merge revisions on different branches of the repository with
+        	your local working copy of a file or directory. You can also merge the
+        	difference between two earlier revisions with your
         local working copy. </p>
 		  <a name="Merge"></a>
         <h4>To merge an earlier revision with your working copy:</h4>
         <ol>
-            <li>In the Versioning window, expand the file's node to reveal the subnodes
-            for each revision and branch.</li>
-            <li>Right-click the revision you want to merge into your working copy and choose
-                Merge With Revision.
-                <p>The IDE incorporates any differences found in the revision into your local
-                copy of the file. If merge conflicts occur, the file's status is updated
-                to Merge Conflict to indicate this. </p>
-            </li>
+            <li>In the Projects window, Files window, or Favorites window, right-click
+            	the revision you want to merge into your working copy and choose
+            	Merge Changes from Branch.            </li>
+            <li>In the Merge Changes from Branch dialog, specify the branch,           	</li>
+        		<li>If you want to merge changes after a specific tag, select the Merge
+        			Only Changes  Made after Tag checkbox and designate the tag 
+        			in the field directly below.  			  </li>
+        		<li>If you want to  tag  the merge, select the Tag
+        			Trunk after Merge checkbox and enter the desired tag
+					name.
+        			<p>The IDE incorporates any differences found in the revision into your local
+        				copy of the file. If merge conflicts occur, the file's status is updated
+     				 to Merge Conflict to indicate this. </p>
+  			  </li>
         </ol>
-        <h4>To merge the difference between two revisions with your working copy:</h4>
+        <!--<h4>To merge the difference between two revisions with your working copy:</h4>
         <ol>
             <li>In the Versioning window, expand the file's node to reveal the subnodes
             for each revision and branch.</li>
@@ -41,7 +47,7 @@
             <p>The IDE incorporates any differences in the revisions into your local
             copy of the file. If merge conflicts occur, the file's VCS status changes
             to Merge Conflict to indicate this. </p>
-        </ol>
+        </ol>-->
         <p>For more information about merging files with CVS consult your CVS documentation.
         CVS documentation is available from: </p>
         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
