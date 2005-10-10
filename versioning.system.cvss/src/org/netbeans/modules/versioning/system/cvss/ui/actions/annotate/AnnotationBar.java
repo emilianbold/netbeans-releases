@@ -37,6 +37,7 @@ import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.*;
 import javax.swing.text.*;
+import javax.accessibility.Accessible;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -57,7 +58,7 @@ import java.text.MessageFormat;
  *
  * @author Petr Kuzel
  */
-final class AnnotationBar extends JComponent implements FoldHierarchyListener, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener, Runnable {
+final class AnnotationBar extends JComponent implements Accessible, FoldHierarchyListener, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener, Runnable {
 
     /**
      * Target text component for which the annotation bar is aiming.
