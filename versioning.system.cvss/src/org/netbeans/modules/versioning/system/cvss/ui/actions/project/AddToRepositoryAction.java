@@ -13,11 +13,8 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
-import org.netbeans.api.project.ProjectUtils;
 import org.openide.util.actions.NodeAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
+import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -25,9 +22,7 @@ import org.openide.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.xml.XMLUtil;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
@@ -40,6 +35,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.CVSRoot;
@@ -59,7 +55,23 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
- * Imports project into CVS repository.
+ * Imports folder into CVS repository. It's enabled on Nodes that represent:
+ * <ul>
+ * <li>project root directory, parent of all necessary
+ * project data and metadata.
+ * <li>folders that are not a part on any project
+ * </ul>
+ * It's minimalitics attempt to assure
+ * that the project can be reopend after checkout.
+ * It also simplifies implemenattion avoiding huge
+ * import mapping wizard for projects with external
+ * data folders.
+ *
+ * <p>Before actual CVS <tt>import</tt> it recursively scans
+ * imported context and prepares <tt>.cvsignore</tt> files.
+ * After <tt>import</tt> it optionally turns imported context
+ * into versioned using <tt>checkout</tt> and copying respective
+ * CVS metadata.
  *
  * @author Petr Kuzel
  */
@@ -88,9 +100,31 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         return null;
     }
 
+    protected boolean enable(Node[] nodes) {
+        if (nodes.length == 1) {
+            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+            File dir = lookupImportDirectory(nodes[0]);
+            if (dir != null && dir.isDirectory()) {
+                FileInformation status = cache.getStatus(dir);
+                // mutually exclusive enablement logic with commit
+                if ((status.getStatus() & FileInformation.STATUS_MANAGED) == 0) {
+                    // do not allow to import partial/nonatomic project, all must lie under imported common root
+                    FileObject fo = FileUtil.toFileObject(dir);
+                    Project p = FileOwnerQuery.getOwner(fo);
+                    if (p == null) {
+                        return true;
+                    }
+                    FileObject projectDir = p.getProjectDirectory();
+                    return FileUtil.isParentOf(projectDir, fo) == false;
+                }
+            }
+        }
+        return false;
+    }
+
     protected void performAction(Node[] nodes) {
         if (nodes.length == 1) {
-            File importDirectory = lookupImportDirectory(nodes[0]);
+            final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {
 
                 // try to detect some resonable defaults for cvs root and repositoryStep
@@ -166,40 +200,63 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
 
                 Object result = DialogDisplayer.getDefault().notify(wizard);
                 if (result == DialogDescriptor.OK_OPTION) {
-
-                    boolean checkout = importStep.getCheckout();
-                    String logMessage = importStep.getMessage();
-                    String module = importStep.getModule();
-                    String vendorTag = "default_vendor";
-                    String releaseTag = "default_release";
-                    String selectedRoot = repositoryStep.getCvsRoot();
-                    String folder = importStep.getFolder();
-                    File dir = new File(folder);
-
-                    HistorySettings.addRecent(HistorySettings.PROP_CVS_ROOTS, selectedRoot);
-
-                    try {
-                        prepareIgnore(dir);
-                    } catch (IOException e) {
-                        ErrorManager err = ErrorManager.getDefault();
-                        err.annotate(e, "Can not generate .cvsignore for unshareable files!");
-                        err.notify(e);
-                    }
-
-                    GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
-                    gtx.setCVSRoot(selectedRoot);
-                    ImportCommand importCommand = new ImportCommand();
-                    importCommand.setModule(module);
-                    importCommand.setLogMessage(logMessage);
-                    importCommand.setVendorTag(vendorTag);
-                    importCommand.setReleaseTag(releaseTag);
-                    importCommand.setImportDirectory(importDirectory.getPath());
-
-                    ImportExecutor executor = new ImportExecutor(importCommand, gtx, checkout, folder);
-                    executor.execute();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            async(importDirectory);
+                        }
+                    });
                 }
             }
         }
+    }
+
+    private void async(File importDirectory) {
+        boolean checkout = importStep.getCheckout();
+        String logMessage = importStep.getMessage();
+        String module = importStep.getModule();
+        String vendorTag = "default_vendor";
+        String releaseTag = "default_release";
+        String selectedRoot = repositoryStep.getCvsRoot();
+        String folder = importStep.getFolder();
+        File dir = new File(folder);
+
+        HistorySettings.addRecent(HistorySettings.PROP_CVS_ROOTS, selectedRoot);
+
+        ExecutorGroup group = new ExecutorGroup("Importing");
+        try {
+            group.progress("Preparing .cvsignore");
+            final Thread thread = Thread.currentThread();
+            group.addCancellable(new Cancellable() {
+                public boolean cancel() {
+                    thread.interrupt();
+                    return true;
+                }
+            });
+            prepareIgnore(dir);
+        } catch (IOException e) {
+            group.executed();
+            ErrorManager err = ErrorManager.getDefault();
+            err.annotate(e, "Can not generate .cvsignore for unshareable files!");
+            err.notify(e);
+            return;
+        }
+
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
+        gtx.setCVSRoot(selectedRoot);
+        ImportCommand importCommand = new ImportCommand();
+        importCommand.setModule(module);
+        importCommand.setLogMessage(logMessage);
+        importCommand.setVendorTag(vendorTag);
+        importCommand.setReleaseTag(releaseTag);
+        importCommand.setImportDirectory(importDirectory.getPath());
+
+        new ImportExecutor(importCommand, gtx, checkout, folder, group); // joins the group
+        group.execute();
+    }
+
+    public boolean cancel() {
+
+        return true;
     }
 
     private File lookupImportDirectory(Node node) {
@@ -441,15 +498,22 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         valid &= module.length() > 0;
         if (!valid) return "Specify repository module";
         valid &= module.indexOf(" ") == -1;  // NOI18N
+        valid &= ".".equals(module.trim()) == false;  // NOI18N
         if (!valid) return "Invalid repository module name";
 
         return null;
     }
 
-    private void prepareIgnore(File dir) throws IOException {
+    /**
+     * @return false on Thread.interrupted i.e. user cancel.
+     */
+    private boolean prepareIgnore(File dir) throws IOException {
         File[] projectMeta = dir.listFiles();
         Set ignored = new HashSet();
         for (int i = 0; i < projectMeta.length; i++) {
+            if (Thread.interrupted()) {
+                return false;
+            }
             File file = projectMeta[i];
             String name = file.getName();
             int sharability = SharabilityQuery.getSharability(file);
@@ -484,25 +548,11 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                 }
             }
         }
-
+        return true;
     }
 
     protected boolean asynchronous() {
         return false;
     }
 
-    protected boolean enable(Node[] nodes) {
-        if (nodes.length == 1) {
-            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-            File dir = lookupImportDirectory(nodes[0]);
-            if (dir != null && dir.isDirectory()) {
-                FileInformation status = cache.getStatus(dir);
-                // mutually exclusive enablement logic with commit
-                if ((status.getStatus() & FileInformation.STATUS_MANAGED) == 0) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }

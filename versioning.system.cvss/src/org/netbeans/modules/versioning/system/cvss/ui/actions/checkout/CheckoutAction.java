@@ -84,7 +84,7 @@ public final class CheckoutAction extends SystemAction {
         final String cvsRoot = wizard.getCvsRoot();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                checkout(cvsRoot, modules, tag, workDir, true);
+                checkout(cvsRoot, modules, tag, workDir, true, null);
             }
         });
     }
@@ -98,10 +98,11 @@ public final class CheckoutAction extends SystemAction {
      * @param tag branch name of <code>null</code> for trunk
      * @param workingDir target directory
      * @param scanProject if true scan folder for projects and show UI (subject of global setting)
+     * @param group if specified checkout is added into tthe group without executing it.
      *
      * @return async executor
      */
-    public CheckoutExecutor checkout(String cvsRoot, String modules, String tag, String workingDir, boolean scanProject) {
+    public CheckoutExecutor checkout(String cvsRoot, String modules, String tag, String workingDir, boolean scanProject, ExecutorGroup group) {
         CheckoutCommand cmd = new CheckoutCommand();
 
         String moduleString = modules;
@@ -139,14 +140,20 @@ public final class CheckoutAction extends SystemAction {
         GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(cvsRoot);
 
-        ExecutorGroup group = new ExecutorGroup("Checking out");
+        boolean execute = false;
+        if (group == null) {
+            execute = true;
+            group = new ExecutorGroup("Checking out");
+        }
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
         group.addExecutor(executor);
         if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 && scanProject) {
             group.addBarrier(new CheckoutCompletedController(executor, workingFolder, scanProject));
         }
 
-        group.execute();
+        if (execute) {
+            group.execute();
+        }
         return executor;
     }
 

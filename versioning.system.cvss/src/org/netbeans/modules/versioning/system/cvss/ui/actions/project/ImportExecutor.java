@@ -13,10 +13,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
-import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
-import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.executor.CheckoutExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.Kit;
@@ -41,7 +38,7 @@ import java.util.Date;
  *
  * @author Petr Kuzel
  */
-final class ImportExecutor extends ExecutorSupport implements TaskListener {
+final class ImportExecutor extends ExecutorSupport implements Runnable {
 
     private final String module;
     private final String cvsRoot;
@@ -49,6 +46,7 @@ final class ImportExecutor extends ExecutorSupport implements TaskListener {
     private final String folder;
     private CheckoutExecutor checkoutExecutor;
     private File checkoutDir;
+    private final ExecutorGroup group;
 
     /**
      * Creates new executor that on succesfull import
@@ -58,38 +56,40 @@ final class ImportExecutor extends ExecutorSupport implements TaskListener {
      * @param options
      * @param checkout perform initial checkout
      * @param folder structure that is imported
+     * @param group that this executor joins
      */
-    public ImportExecutor(ImportCommand cmd, GlobalOptions options, boolean checkout, String folder) {
+    public ImportExecutor(ImportCommand cmd, GlobalOptions options, boolean checkout, String folder, ExecutorGroup group) {
         super(CvsVersioningSystem.getInstance(), cmd, options);
         module = cmd.getModule();
         cvsRoot = options.getCVSRoot();
         this.checkout = checkout;
         this.folder = folder;
+        this.group = group;
+
+        group.addExecutor(this);
+        if (checkout) {
+            checkoutDir = Kit.createTmpFolder();
+            CheckoutAction checkoutAction = (CheckoutAction) SystemAction.get(CheckoutAction.class);
+            checkoutExecutor = checkoutAction.checkout(cvsRoot, module, null, checkoutDir.getAbsolutePath(), false, group);
+            group.addBarrier(this);
+        }
     }
 
     protected void commandFinished(ClientRuntime.Result result) {
-        if (result.getError() == null) {
-            if (checkout) {
-                checkoutDir = Kit.createTmpFolder();
-                CheckoutAction checkoutAction = (CheckoutAction) SystemAction.get(CheckoutAction.class);
-                checkoutExecutor = checkoutAction.checkout(cvsRoot, module, null, checkoutDir.getAbsolutePath(), false);
-                checkoutExecutor.addTaskListener(this);
-            }
-        }
     }
 
     // TODO detect conflics
     // test for "No conflicts created by this import"
 
     /**
-     * @param task
+     * afrer checkout barrier implementation
      * @thread called asynchrously from random thread (ClientRuntime)
      */
-    public void taskFinished(Task task) {
-        checkoutExecutor.removeTaskListener(this);
+    public void run() {
         if (checkoutExecutor.isSuccessful()) {
             copyMetadata();
         }
+        Kit.deleteRecursively(checkoutDir);
     }
 
     private void copyMetadata() {
