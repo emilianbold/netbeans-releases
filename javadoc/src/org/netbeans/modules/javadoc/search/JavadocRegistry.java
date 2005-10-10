@@ -240,8 +240,10 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
             it.remove ();
         }
         //Unregister listener from docRoots
-        this.docRoots.removePropertyChangeListener(this);
-        this.docRoots = null;
+        if (this.docRoots != null) {
+            this.docRoots.removePropertyChangeListener(this);
+            this.docRoots = null;
+        }
     }
 
 
