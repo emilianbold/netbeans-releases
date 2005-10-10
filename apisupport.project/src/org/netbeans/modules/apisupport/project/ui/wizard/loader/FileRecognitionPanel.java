@@ -210,7 +210,7 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         add(txtMimeType, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(rbByExtension, org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "LBL_ByExtension"));
-        rbByExtension.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        rbByExtension.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rbByExtension.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -239,7 +239,7 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         add(txtExtension, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(rbByElement, org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "LBL_ByElement"));
-        rbByElement.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        rbByElement.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rbByElement.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -249,7 +249,7 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(rbByElement, gridBagConstraints);
 
-        lblNamespace.setLabelFor(txtMimeType);
+        lblNamespace.setLabelFor(txtNamespace);
         org.openide.awt.Mnemonics.setLocalizedText(lblNamespace, org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "LBL_Element"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
