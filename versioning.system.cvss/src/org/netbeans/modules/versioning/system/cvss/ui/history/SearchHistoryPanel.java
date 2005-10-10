@@ -18,6 +18,7 @@ import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
+import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
@@ -84,6 +85,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         searchCriteriaPanel.add(criteria);
         searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) {
+            {
+                putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "TT_Search"));
+            }
             public void actionPerformed(ActionEvent e) {
                 search();
             }
@@ -91,6 +95,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); //NOI18N
         getActionMap().put("search", searchAction);//NOI18N
         bSearch.setAction(searchAction);
+        Mnemonics.setLocalizedText(bSearch, NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search"));
         
         Dimension d1 = tbSummary.getPreferredSize();
         Dimension d2 = tbDiff.getPreferredSize();
@@ -472,7 +477,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 0, 8)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
         searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -484,6 +489,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         gridBagConstraints.weightx = 1.0;
         add(searchCriteriaPanel, gridBagConstraints);
 
+        bSearch.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_Search"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -503,7 +509,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jToolBar1.setRollover(true);
         buttonGroup1.add(tbSummary);
         tbSummary.setSelected(true);
-        tbSummary.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_ShowSummary"));
+        org.openide.awt.Mnemonics.setLocalizedText(tbSummary, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_ShowSummary"));
+        tbSummary.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_Summary"));
         tbSummary.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onViewToggle(evt);
@@ -513,7 +520,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jToolBar1.add(tbSummary);
 
         buttonGroup1.add(tbDiff);
-        tbDiff.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_ShowDiff"));
+        org.openide.awt.Mnemonics.setLocalizedText(tbDiff, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_ShowDiff"));
+        tbDiff.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_ShowDiff"));
         tbDiff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onViewToggle(evt);

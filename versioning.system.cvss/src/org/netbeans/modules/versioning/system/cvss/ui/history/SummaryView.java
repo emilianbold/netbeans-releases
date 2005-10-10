@@ -62,6 +62,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         resultsList.addMouseListener(this);
         resultsList.addMouseMotionListener(this);
         resultsList.setCellRenderer(new SummaryCellRenderer());
+        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SummaryView.class, "ACSN_SummaryView_List"));
+        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SummaryView.class, "ACSD_SummaryView_List"));
         scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         master.addComponentListener(this);
     }

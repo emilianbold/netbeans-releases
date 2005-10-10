@@ -111,9 +111,10 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 12, 0, 11)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
         jLabel1.setLabelFor(tfCommitMessage);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseCommitMessage"));
+        jLabel1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_CommitMessage"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         add(jLabel1, gridBagConstraints);
@@ -130,6 +131,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         jLabel2.setLabelFor(tfUsername);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseUsername"));
+        jLabel2.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_Username"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -147,6 +149,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         jLabel3.setLabelFor(tfFrom);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseFrom"));
+        jLabel3.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_From"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -169,6 +172,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         add(jLabel5, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bBrowseFrom, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_BrowseFrom"));
+        bBrowseFrom.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_BrowseFrom"));
         bBrowseFrom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onFromBrowse(evt);
@@ -183,6 +187,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         jLabel4.setLabelFor(tfTo);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseTo"));
+        jLabel4.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_To"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
@@ -212,6 +217,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         add(jLabel6, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bBrowseTo, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_BrowseTo"));
+        bBrowseTo.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("TT_BrowseTo"));
         bBrowseTo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onToBrowse(evt);
