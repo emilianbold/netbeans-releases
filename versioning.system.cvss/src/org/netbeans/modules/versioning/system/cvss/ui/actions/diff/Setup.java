@@ -148,7 +148,10 @@ class Setup {
         }
     }
 
-    /** Loads data over network */
+    /**
+     * Loads data over network
+     * @param group that carries shared state. Note that this group must not be executed later on. 
+     */
     void initSources(ExecutorGroup group) throws IOException {
         if (firstSource != null) firstSource.init(group);
         if (secondSource != null) secondSource.init(group);

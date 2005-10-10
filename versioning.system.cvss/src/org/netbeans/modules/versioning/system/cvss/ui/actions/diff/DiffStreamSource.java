@@ -97,6 +97,7 @@ public class DiffStreamSource extends StreamSource {
      * Loads data over network.
      *
      * @param group combines multiple loads or <code>null</code>
+     * Note that this group must not be executed later on. 
      */
     synchronized void init(ExecutorGroup group) throws IOException {
         if (remoteFile != null || revision == null) return;

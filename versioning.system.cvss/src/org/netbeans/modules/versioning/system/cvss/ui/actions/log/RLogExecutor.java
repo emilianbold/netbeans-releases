@@ -79,7 +79,6 @@ public class RLogExecutor extends ExecutorSupport {
                         command.setModule(remoteRepository);
                         command.setDisplayName(NbBundle.getMessage(RLogExecutor.class, "MSG_RLogExecutor_CmdContext", remoteRepository));
                         RLogExecutor executor = new RLogExecutor(cvs, command, directory, currentOptions);
-                        executor.execute();
                         executors.add(executor);
                         remoteRepository = repository;
                         directory = dir;

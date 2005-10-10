@@ -92,6 +92,7 @@ public class GetCleanAction extends AbstractSystemAction {
      * 
      * @param file the file to overwrite
      * @param revision revision to get
+     * @param group that carries shared state. Note that this group must not be executed later on. 
      */ 
     public static void rollback(File file, String revision, ExecutorGroup group) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();

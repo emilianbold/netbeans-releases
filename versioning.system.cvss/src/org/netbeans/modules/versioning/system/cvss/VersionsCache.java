@@ -66,6 +66,7 @@ public class VersionsCache {
      * and their cached versions are purged with the {@link #purgeVolatileRevisions()} method.
      * 
      * @param revision revision to fetch
+     * @param group that carries shared state. Note that this group must not be executed later on. 
      * @return File supplied file in the specified revision (locally cached copy) or null if this file does not exist
      * in the specified revision
      * @throws java.io.IOException
@@ -168,6 +169,7 @@ public class VersionsCache {
      * 
      * @param baseFile location of the file in local workdir (need not exist)
      * @param revision revision number to get
+     * @param group that carries shared state. Note that this group must not be executed later on.
      * @return File file on disk (most probably located in some temp diretory) or null if this file does not exist
      * in repository in the specified revision
      * @throws IOException if some I/O error occurs during checkout
