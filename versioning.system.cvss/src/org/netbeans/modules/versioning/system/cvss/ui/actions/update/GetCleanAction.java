@@ -21,10 +21,11 @@ import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -50,13 +51,17 @@ public class GetCleanAction extends AbstractSystemAction {
     }
     
     public void performCvsAction(ActionEvent ev) {
-        int res = JOptionPane.showConfirmDialog(
-                null, 
-                NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Prompt"),
+        String message = NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Prompt");
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                message,
                 NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Title"),
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
-        if (res != JOptionPane.YES_OPTION) return;
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                null,
+                null
+        );
+        Object option = DialogDisplayer.getDefault().notify(descriptor);
+        if (option != NotifyDescriptor.YES_OPTION) return;
         
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
