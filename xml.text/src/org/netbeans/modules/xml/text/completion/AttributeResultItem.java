@@ -14,6 +14,7 @@
 package org.netbeans.modules.xml.text.completion;
 
 import java.awt.Color;
+import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.xml.api.model.*;
 
@@ -35,8 +36,14 @@ class AttributeResultItem extends XMLResultItem {
     }
     
     public String getReplacementText(int modifiers) {
-        String extend = inline ? "" : "=\"";     // NOI18N
+        String extend = inline ? "" : "=\"\"";     // NOI18N
         return super.getReplacementText(modifiers) + extend;
+    }
+    
+    public boolean substituteText( JTextComponent c, int offset, int len, int modifiers ){
+        boolean result = super.replaceText(c, getReplacementText(modifiers), offset, len);
+        c.getCaret().setDot(c.getCaretPosition() - 1); //shift cursor into bracklets
+        return result;
     }
     
 }
