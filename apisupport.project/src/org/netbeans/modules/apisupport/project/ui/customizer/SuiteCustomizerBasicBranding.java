@@ -13,14 +13,15 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.AlphaComposite;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -309,6 +310,12 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
         
         public void paint(Graphics g) {
             super.paint(g);
+            Graphics2D g2d = (Graphics2D)g;
+            
+            if (!isEnabled()) {
+                g2d.setComposite(AlphaComposite.getInstance(
+                        AlphaComposite.SRC_OVER, 0.3f));
+            }
             
             if ((getWidth() >  width) && (getHeight() > height) && image != null) {
                 /*if (getBorder() == null) {

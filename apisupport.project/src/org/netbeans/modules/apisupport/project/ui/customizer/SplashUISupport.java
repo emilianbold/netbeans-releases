@@ -13,11 +13,13 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
@@ -332,6 +334,11 @@ class SplashUISupport {
             }
             
             public void paint(Graphics g) {
+                Graphics2D g2d = (Graphics2D)g;
+                if (!isEnabled()) {
+                    g2d.setComposite(AlphaComposite.getInstance(
+                            AlphaComposite.SRC_OVER, 0.3f));
+                }                
                 Color oldColor = g.getColor();
                 Dimension size = getSize();
                 g.setColor(getBackground());

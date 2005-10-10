@@ -487,7 +487,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
             public void paint(Graphics g) {
                 assert resizeMode != -1;
                 assert rec != null;
-                
+                int inset = 5;
                 Graphics2D g2d = (Graphics2D)g;
                 Stroke oStroke = g2d.getStroke();
                 g2d.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, new float[]{3.0f}, 0.0f));
@@ -495,16 +495,16 @@ final class DragManager implements DragGestureListener, DragSourceListener,
                 Line2D line = null;
                 switch(resizeMode) {
                     case OneSideScaleMode.N_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getCenterY(),rec2d.getMaxX(),rec2d.getCenterY());
+                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getCenterY(),rec2d.getMaxX()-inset,rec2d.getCenterY());
                         break;
                     case OneSideScaleMode.E_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getCenterX(),rec2d.getMinY(),rec2d.getCenterX(),rec2d.getMaxY());
+                        line = new Line2D.Double(rec2d.getCenterX(),rec2d.getMinY(),rec2d.getCenterX(),rec2d.getMaxY()-inset);
                         break;
                     case OneSideScaleMode.S_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getCenterY(),rec2d.getMaxX(),rec2d.getCenterY());
+                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getCenterY(),rec2d.getMaxX()-inset,rec2d.getCenterY());
                         break;
                     case OneSideScaleMode.W_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getCenterX(),rec2d.getMinY(),rec2d.getCenterX(),rec2d.getMaxY());
+                        line = new Line2D.Double(rec2d.getCenterX(),rec2d.getMinY(),rec2d.getCenterX(),rec2d.getMaxY()-inset);
                         break;
                 }
                 g2d.draw(line);

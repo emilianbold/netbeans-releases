@@ -197,6 +197,8 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     
     private void enableDisableComponents() {
         final BasicBrandingModel branding = getBrandingModel();
+        jLabel1.setEnabled(branding.isBrandingEnabled());
+        jLabel2.setEnabled(branding.isBrandingEnabled());
         fontSize.setEnabled(branding.isBrandingEnabled());
         runningTextBounds.setEnabled(branding.isBrandingEnabled());
         progressBarBounds.setEnabled(branding.isBrandingEnabled());

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -23,16 +24,13 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.net.URL;
 import java.util.StringTokenizer;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
-import org.openide.util.NbBundle;
+
 
 /**
  * @author Radek Matous
@@ -279,6 +277,12 @@ class SplashComponentPreview extends JLabel {
     }
     
     public void originalPaint(Graphics graphics) {
+        Graphics2D g2d = (Graphics2D)graphics;
+        if (!isEnabled()) {
+            g2d.setComposite(AlphaComposite.getInstance(
+                    AlphaComposite.SRC_OVER, 0.3f));
+        }
+        
         graphics.setColor(color_text);
         graphics.drawImage(image, 0, 0, null);
         
@@ -297,7 +301,6 @@ class SplashComponentPreview extends JLabel {
                 SwingConstants.BOTTOM, SwingConstants.LEFT, SwingConstants.BOTTOM, SwingConstants.LEFT,
                 this.view, new Rectangle(), rect, 0);
         // turn anti-aliasing on for the splash text
-        Graphics2D g2d = (Graphics2D)graphics;
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         graphics.drawString(text, rect.x, rect.y + fm.getAscent());
