@@ -30,6 +30,7 @@ import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.FileWriter;
@@ -78,6 +79,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
         swich.setToolTipText(NbBundle.getMessage(SwitchBranchAction.class, "TT_SwitchBranchDialog_Action_Switch"));
         JButton cancel = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Cancel"));
         cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SwitchBranchAction.class, "ACSD_SwitchBranchDialog_Action_Cancel"));
+        cancel.setMnemonic(KeyEvent.VK_ESCAPE);
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
                 title,
