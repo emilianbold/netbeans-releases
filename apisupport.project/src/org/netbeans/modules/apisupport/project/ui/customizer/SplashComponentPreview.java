@@ -61,15 +61,14 @@ class SplashComponentPreview extends JLabel {
     private int barLength = 0;
     
     private DragManager dragManager;
-    private DragManager.DragItem textDragItem;    
+    private DragManager.DragItem textDragItem;
     private DragManager.DragItem progressDragItem;
-    
-    
+        
     /**
      * Creates a new splash screen component.
      */
     public SplashComponentPreview() {                
-        setBorder(new TitledBorder(NbBundle.getMessage(getClass(),"LBL_SplashPreview")));
+        //setBorder(new TitledBorder(NbBundle.getMessage(getClass(),"LBL_SplashPreview")));
         dragManager = new DragManager(this);
         textDragItem = dragManager.createNewItem();
         progressDragItem = dragManager.createNewItem();
@@ -115,6 +114,7 @@ class SplashComponentPreview extends JLabel {
     
     void setProgressBarEnabled(final boolean enabled) {
         draw_bar = enabled; // NOI18N
+        progressDragItem.setEnabled(enabled);
     }
     
     void setProgressBarBounds(final Rectangle bounds) throws NumberFormatException {
@@ -160,7 +160,8 @@ class SplashComponentPreview extends JLabel {
                 SwingUtilities.layoutCompoundLabel(fm, text, null,
                         SwingConstants.BOTTOM, SwingConstants.LEFT, SwingConstants.BOTTOM, SwingConstants.LEFT,
                         SplashComponentPreview.this.view, new Rectangle(), rect, 0);
-                textDragItem.setRectangle(rect);
+                //textDragItem.setRectangle(rect);
+                textDragItem.setRectangle(SplashComponentPreview.this.view);
                 dirty = dirty.union(rect);
                 // update screen (assume repaint manager optimizes unions;)
 //                repaint(dirty);
@@ -259,7 +260,7 @@ class SplashComponentPreview extends JLabel {
      */
     public void paint(Graphics g) {
         super.paint(g);
-        int width = image.getWidth(null);//BasicBrandingModel.SPLASH_WIDTH;
+        /*int width = image.getWidth(null);//BasicBrandingModel.SPLASH_WIDTH;
         int height = image.getHeight(null);//BasicBrandingModel.SPLASH_HEIGHT;
         int x = (getWidth()/2)-(width/2);
         int y = (getHeight()/2)-(height/2);
@@ -271,7 +272,8 @@ class SplashComponentPreview extends JLabel {
         tx.translate(x, y);
         dragManager.setTranslate(x,y);
         g2d.setTransform(tx);
-        
+        */
+        dragManager.setTranslate(0,0);
         originalPaint(g);
         dragManager.paint(g);
     }
@@ -325,5 +327,11 @@ class SplashComponentPreview extends JLabel {
     
     public Rectangle getView() {
         return view;
+    }
+
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        textDragItem.setEnabled(enabled);
+        progressDragItem.setEnabled(enabled & draw_bar);
     }
 }

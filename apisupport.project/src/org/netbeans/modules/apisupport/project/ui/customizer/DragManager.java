@@ -148,6 +148,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         if (activeDragItem != null) {
             activeDragItem.recalculateSize(dtde.getLocation());
             activeDragItem.updateSize();
+            activeDragItem.scroll(component);                    
             component.repaint();
         }
     }
@@ -216,6 +217,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         private DropHandler dHandler;
         private Rectangle bounds;
         private Mode[] allmodes = new Mode[9];
+        private boolean enabled = true;
         DragItem(){
             allmodes[0] = new OneSideScaleMode(OneSideScaleMode.N_RESIZE_MODE);
             allmodes[1] = new OneSideScaleMode(OneSideScaleMode.S_RESIZE_MODE);
@@ -249,13 +251,14 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         
         public boolean contains(Point point) {
             Mode mode = null;
-            for (int i = 0; i < allmodes.length; i++) {
-                if (allmodes[i].contains(point)) {
-                    mode = allmodes[i];
-                    break;
+            if (isEnabled()) {
+                for (int i = 0; i < allmodes.length; i++) {
+                    if (allmodes[i].contains(point)) {
+                        mode = allmodes[i];
+                        break;
+                    }
                 }
             }
-            
             dragMode = mode;
             return mode != null;
         }
@@ -277,14 +280,40 @@ final class DragManager implements DragGestureListener, DragSourceListener,
                 oldtDragRect.setBounds(currentDragRect);
                 dragMode.recalculateSize(p);
                 if (bounds != null && !bounds.contains(currentDragRect)) {
-                    currentDragRect.setBounds(currentDragRect.intersection(bounds));
+                    int x = currentDragRect.x;
+                    int y = currentDragRect.y;
+                    int w = currentDragRect.width;
+                    int h = currentDragRect.height;
+                    
+                    if (x < bounds.x) {
+                        x = bounds.x;
+                    }
+                    
+                    if (y < bounds.y) {
+                        y = bounds.y;
+                    }
+
+                    if (h  + y > bounds.height + bounds.y) {
+                        y = (bounds.height + bounds.y) - h;
+                    }
+
+                    if (w + x > bounds.width + bounds.x ) {
+                        x = (bounds.width + bounds.x) - w;
+                    }
+                    
+                    //currentDragRect.setBounds(currentDragRect.intersection(bounds));
+                    currentDragRect.setBounds(x,y,w,h);
                 }
                 
-                if (currentDragRect.width <=0 || currentDragRect.height <=0) {
+                if (currentDragRect.width <=0 || currentDragRect.height <=0) {                    
                     currentDragRect.setBounds(oldtDragRect);
                 } 
             }
             
+        }
+        
+        public void scroll(JComponent component) {
+            component.scrollRectToVisible(currentDragRect);            
         }
         
         void setBounds(Rectangle bounds) {
@@ -292,8 +321,10 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         }
         
         public void paint(Graphics g) {
-            for (int i = 0; i < allmodes.length; i++) {
-                allmodes[i].paint(g);
+            if (isEnabled()) {
+                for (int i = 0; i < allmodes.length; i++) {
+                    allmodes[i].paint(g);
+                }
             }
         }
         
@@ -521,6 +552,15 @@ final class DragManager implements DragGestureListener, DragSourceListener,
                 }
             }
         }
+
+        boolean isEnabled() {
+            return enabled;
+        }
+
+        void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
     }
     
     private interface   Mode {
