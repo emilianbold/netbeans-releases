@@ -52,6 +52,8 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+	initAccesibility();
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
         coockieClass.setModel(COOKIE_CLASS_MODEL);
     }
     
@@ -225,5 +227,13 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     private javax.swing.ButtonGroup whenEnabledGroup;
     // End of variables declaration//GEN-END:variables
     
+    private void initAccesibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_ActionTypePanel"));        
+        alwaysEnabled.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_alwaysEnabled"));
+        condionallyEnabled.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_condionallyEnabled"));
+        coockieClass.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_coockieClass"));
+        modeMultiple.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_modeMultiple"));
+        modeOne.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_modeOne"));
+    }
 }
 

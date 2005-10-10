@@ -48,6 +48,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+	initAccessibility();
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
         className.select(0, className.getText().length());
         DocumentListener updateListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -341,5 +343,16 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JTextField project;
     private javax.swing.JLabel projectTxt;
     // End of variables declaration//GEN-END:variables
-    
+   
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));        
+        className.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ClassName"));
+        createdFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFiles"));
+        displayName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
+        icon.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Icon"));
+        iconButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_IconButton"));
+        modifiedFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFiles"));
+        packageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PackageName"));
+        project.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Project"));
+    }        
 }

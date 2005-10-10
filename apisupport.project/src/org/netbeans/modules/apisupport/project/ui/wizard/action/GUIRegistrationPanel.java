@@ -88,6 +88,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+	initAccesibility();
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
+	
         menu.addPopupMenuListener(new PML(menu, menuPosition));
         toolbar.addPopupMenuListener(new PML(toolbar, toolbarPosition));
         ftContentType.addPopupMenuListener(new PML(ftContentType, ftPosition));
@@ -416,7 +419,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         add(category, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(globalMenuItem, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_GlobalMenuItem"));
-        globalMenuItem.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        globalMenuItem.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         globalMenuItem.setMargin(new java.awt.Insets(0, 0, 0, 0));
         globalMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -478,7 +481,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         menuSeparatorPanel.add(menuSeparatorBefore);
 
         org.openide.awt.Mnemonics.setLocalizedText(menuSeparatorAfter, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_SeparatorAfter"));
-        menuSeparatorAfter.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 6, 0, 0)));
+        menuSeparatorAfter.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
         menuSeparatorAfter.setMargin(new java.awt.Insets(0, 0, 0, 0));
         menuSeparatorPanel.add(menuSeparatorAfter);
 
@@ -491,7 +494,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         add(menuSeparatorPanel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(globalToolbarButton, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_GlobalToolbarButton"));
-        globalToolbarButton.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        globalToolbarButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         globalToolbarButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         globalToolbarButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -547,7 +550,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         add(toolbarPosition, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(globalKeyboardShortcut, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_GlobalKeyboardShortcut"));
-        globalKeyboardShortcut.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        globalKeyboardShortcut.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         globalKeyboardShortcut.setMargin(new java.awt.Insets(0, 0, 0, 0));
         globalKeyboardShortcut.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -606,7 +609,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         add(filler, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(fileTypeContext, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_FileTypeContextMenuItem"));
-        fileTypeContext.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        fileTypeContext.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         fileTypeContext.setMargin(new java.awt.Insets(0, 0, 0, 0));
         fileTypeContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -668,7 +671,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         ftSeparatorPanel.add(ftSeparatorBefore);
 
         org.openide.awt.Mnemonics.setLocalizedText(ftSeparatorAfter, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_SeparatorAfter"));
-        ftSeparatorAfter.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 6, 0, 0)));
+        ftSeparatorAfter.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
         ftSeparatorAfter.setMargin(new java.awt.Insets(0, 0, 0, 0));
         ftSeparatorPanel.add(ftSeparatorAfter);
 
@@ -681,7 +684,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         add(ftSeparatorPanel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(editorContext, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_EditorContextMenuItem"));
-        editorContext.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        editorContext.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         editorContext.setMargin(new java.awt.Insets(0, 0, 0, 0));
         editorContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -697,7 +700,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
         add(editorContext, gridBagConstraints);
 
-        edContentTypeTxt.setLabelFor(ftContentType);
+        edContentTypeTxt.setLabelFor(edContentType);
         org.openide.awt.Mnemonics.setLocalizedText(edContentTypeTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_ContentType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -716,7 +719,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
         add(edContentType, gridBagConstraints);
 
-        edPositionTxt.setLabelFor(ftPosition);
+        edPositionTxt.setLabelFor(edPosition);
         org.openide.awt.Mnemonics.setLocalizedText(edPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -743,7 +746,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         edSeparatorPanel.add(edSeparatorBefore);
 
         org.openide.awt.Mnemonics.setLocalizedText(edSeparatorAfter, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_SeparatorAfter"));
-        edSeparatorAfter.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 6, 0, 0)));
+        edSeparatorAfter.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
         edSeparatorAfter.setMargin(new java.awt.Insets(0, 0, 0, 0));
         edSeparatorPanel.add(edSeparatorAfter);
 
@@ -834,6 +837,31 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JLabel toolbarPositionTxt;
     private javax.swing.JLabel toolbarTxt;
     // End of variables declaration//GEN-END:variables
+    
+    private void initAccesibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_GuiRegistrationPanel"));        
+        category.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Category"));
+        edContentType.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_edContentType"));
+        edPosition.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_edPosition"));
+        edSeparatorAfter.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_edSeparatorAfter"));
+        edSeparatorBefore.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_edSeparatorBefore"));
+        editorContext.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_EditorContext"));
+        fileTypeContext.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_FileTypeContext"));
+        ftContentType.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ftContentType"));
+        ftPosition.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ftPosition"));
+        ftSeparatorAfter.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ftSeparatorAfter"));
+        ftSeparatorBefore.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ftSeparatorBefore"));
+        globalKeyboardShortcut.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_globalKeyboardShortcut"));
+        globalMenuItem.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_globalMenuItem"));
+        globalToolbarButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_globalToolbarButton"));
+        keyStrokeChange.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_keyStrokeChange"));
+        menu.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_menu"));
+        menuPosition.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_menuPosition"));
+        menuSeparatorAfter.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_menuSeparatorAfter"));
+        menuSeparatorBefore.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_menuSeparatorBefore"));
+        toolbar.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_toolbar"));
+        toolbarPosition.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_toolbarPosition"));
+    }
     
     /** Don't call me from EDT! */
     private FileSystem getSFS() {
