@@ -74,6 +74,10 @@ public class JspCompletionQuery implements CompletionQuery {
                         (SyntaxElement.EndTag)elem, doc);
                     return result(component, offset, jspData);
                     
+                //DIRECTIVE COMPLETION IN JSP SCRIPTLET (<%| should offer <%@taglib etc.)
+                case JspSyntaxSupport.SCRIPTINGL_COMPLETION_CONTEXT:
+                    return queryJspDirectiveInScriptlet(component, offset, sup, elem, doc);
+                    
                 // DIRECTIVE COMPLETION
                 case JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT :
                     return queryJspDirective(component, offset, sup, 
@@ -269,6 +273,28 @@ public class JspCompletionQuery implements CompletionQuery {
         removeLength = tokenPart.length();
         return new CompletionData (sup.getPossibleEndTags (offset, tokenPart), removeLength);
     }
+    
+    
+    /** Gets a list of JSP directives which can be completed just after <% in java scriptlet context */
+    protected CompletionQuery.Result queryJspDirectiveInScriptlet(JTextComponent component, int offset, JspSyntaxSupport sup, 
+        SyntaxElement elem, BaseDocument doc) throws BadLocationException {
+
+        List compItems = new ArrayList();
+        
+        TokenItem item = sup.getItemAtOrBefore(offset);
+        if (item == null) {
+            return result (component, offset, new CompletionData(compItems, 0));
+        }
+
+        TokenID id = item.getTokenID();
+        String tokenPart = item.getImage().substring(0, offset - item.getOffset());
+        
+        if(id == JspTagTokenContext.SYMBOL2 && tokenPart.equals("<%"))
+            addDirectiveItems(sup, compItems, sup.getDirectives("")); // NOI18N
+        
+        return result(component, offset, new CompletionData(compItems, 1 /*removeLength*/));
+    }
+    
     
     /** Gets a list of completion items for JSP directives.
     * @param component editor component
