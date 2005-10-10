@@ -50,8 +50,14 @@ public class PendingTaskTest extends TestCase {
         proghandle.start();
 	assertEquals(Install.getPendingTasks().size(), 1);
 	
-        proghandle.finish();
-	assertEquals(Install.getPendingTasks().size(), 1);
+	proghandle.finish();
+	// we need to sleep because the progress handling is scheduled and processed in quantas.
+	try {
+	    Thread.sleep(1000);
+	} catch (InterruptedException ex) {
+	    ex.printStackTrace();
+	}
+	assertEquals(Install.getPendingTasks().size(), 0);
     }
 
 }
