@@ -140,7 +140,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
 
         Collection keys;
         if (queue == null) {
-            keys = queues.keySet();
+            keys = new HashSet(queues.keySet());
         } else {
             keys = Collections.singleton(queue);
         }
