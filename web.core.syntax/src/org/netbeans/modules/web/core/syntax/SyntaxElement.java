@@ -93,6 +93,20 @@ public abstract class SyntaxElement extends Object {
             return "JSP Comment " + super.toString();   // NOI18N
         }
     }
+    
+    public static class ExpressionLanguage extends SyntaxElement {
+        public ExpressionLanguage( JspSyntaxSupport support, int from, int to ) {
+            super( support, from, to );
+        }
+
+        public int getCompletionContext() {
+            return JspSyntaxSupport.EL_COMPLETION_CONTEXT;
+        }
+        
+        public String toString() {
+            return "Expression Language " + super.toString();   // NOI18N
+        }
+    }
 
     public static class Text extends SyntaxElement {
         public Text( JspSyntaxSupport support, int from, int to ) {

@@ -507,9 +507,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 item = item.getNext();
                 id = item == null ? null : item.getTokenID();
 
-                while( id == HTMLTokenContext.WS || 
+                while( id != null && (id == HTMLTokenContext.WS || 
                        id == HTMLTokenContext.ARGUMENT || id == HTMLTokenContext.OPERATOR ||
-                       id == HTMLTokenContext.VALUE || id == HTMLTokenContext.CHARACTER
+                       id == HTMLTokenContext.VALUE || id == HTMLTokenContext.CHARACTER ||
+                        !item.getTokenContextPath().contains(HTMLTokenContext.contextPath)) //be able to create SyntaxElement for tags containing JSP scriptlet or EL
                 ) {
                     if( id == HTMLTokenContext.ARGUMENT ) attrs.add( item.getImage() );  // log all attributes
                     lastOffset = getTokenEnd( item );
@@ -547,7 +548,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             if( elem.getType() == SyntaxElement.TYPE_ENDTAG && elem.getText().endsWith(">") ) { // NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Named)elem).getName().toUpperCase() );
                 if(tag == null || !tag.isEmpty()) stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
-            } else if( (elem.getType() == SyntaxElement.TYPE_TAG) && (elem.getText().indexOf("<") == -1)) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
+            } else if( (elem.getType() == SyntaxElement.TYPE_TAG) && (!elem.getText().startsWith("<"))) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
 
                 if( tag == null ) continue; // Unknown tag - ignore

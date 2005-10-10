@@ -69,6 +69,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     public static final int SCRIPTINGL_COMPLETION_CONTEXT = 7;
     /** Completion context for error */
     public static final int ERROR_COMPLETION_CONTEXT = 8;
+    /** Completion context for expression language */
+    public static final int EL_COMPLETION_CONTEXT = 9;
+    
+    
     
     private static final String STANDARD_JSP_PREFIX = "jsp";    // NOI18N
     /** Data for completion: TreeMap for standard JSP tags 
@@ -1107,7 +1111,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (item == null)
             return null;
         TokenID id = item.getTokenID();
-        
+
         if (/*id == JspTagTokenContext.COMMENT || */
             id == JspTagTokenContext.ERROR || 
             id == JspTagTokenContext.TEXT ||
@@ -1120,8 +1124,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             return null;
         }
         
+        //JSP comment
         if(id == JspTagTokenContext.COMMENT || id == JspDirectiveTokenContext.COMMENT) {
             return getCommentChain(item, offset);
+        }
+
+        //Expression language handling
+        if(item.getTokenContextPath().contains(ELTokenContext.contextPath)) {
+            return getELChain(item, offset);
         }
         
         if (id == JspTagTokenContext.SYMBOL2 || id == JspDirectiveTokenContext.SYMBOL2) {
@@ -1193,7 +1203,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 elementStart = elementStart.getPrevious(); // now non-null
                 if (!isScriptingOrContentToken(elementStart)
                     || elementStart.getTokenID() == JspTagTokenContext.COMMENT 
-                    || elementStart.getTokenID() == JspDirectiveTokenContext.COMMENT) {
+                    || elementStart.getTokenID() == JspDirectiveTokenContext.COMMENT
+                    || elementStart.getTokenContextPath().contains(ELTokenContext.contextPath)) {
                     // something from JSP
                     if (isScriptStartToken(elementStart)) {
                         return getScriptingChain(elementStart.getNext(), offset);
@@ -1374,6 +1385,28 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return new SyntaxElement.Comment(this, start.getOffset(), getTokenEnd(end));
     }
     
+    private SyntaxElement getELChain(TokenItem token, int offset) {
+        //we are somewhere in an expression language - need to find its start and end
+        //backtrace for start
+        TokenItem scan = token;
+        TokenItem start = null;
+        do {
+            start = scan;
+            scan = scan.getPrevious();
+        } while(scan != null && scan.getTokenContextPath().contains(ELTokenContext.contextPath));
+        
+        //find comment end
+        TokenItem end = null;
+        scan = token;
+        do {
+            end = scan;
+            scan = scan.getNext();
+        } while(scan != null && scan.getTokenContextPath().contains(ELTokenContext.contextPath));
+        
+        return new SyntaxElement.ExpressionLanguage(this, start.getOffset(), getTokenEnd(end));
+    }
+    
+    
     /** Gets an element representing a tag or directive starting with token item firstToken. */
     private SyntaxElement getTagOrDirectiveChain(boolean tag, TokenItem firstToken, int offset) {
         //suppose we are in a tag or directive => we do not have to distinguish tokenIDs -
@@ -1531,7 +1564,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
             if (!isScriptingOrContentToken(nextItem) 
                     || nextItem.getTokenID() == JspTagTokenContext.COMMENT 
-                    || nextItem.getTokenID() == JspDirectiveTokenContext.COMMENT)
+                    || nextItem.getTokenID() == JspDirectiveTokenContext.COMMENT
+                    || nextItem.getTokenContextPath().contains(ELTokenContext.contextPath))
                 return new SyntaxElement.ContentL(this, 
                     firstToken.getOffset(), getTokenEnd(item));
             item = nextItem;
