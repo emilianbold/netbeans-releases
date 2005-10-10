@@ -51,7 +51,21 @@ public class GetCleanAction extends AbstractSystemAction {
     }
     
     public void performCvsAction(ActionEvent ev) {
-        String message = NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Prompt");
+        if (!confirmed(null, null)) return;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                revertModifications();
+            }
+        });
+    }
+
+    private static boolean confirmed(File file, String revision) {
+        String message;
+        if (file == null || revision == null) {
+            message = NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Prompt");
+        } else {
+            message = NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Prompt2", file.getName(), revision);
+        }
         NotifyDescriptor descriptor = new NotifyDescriptor(
                 message,
                 NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Title"),
@@ -61,15 +75,9 @@ public class GetCleanAction extends AbstractSystemAction {
                 null
         );
         Object option = DialogDisplayer.getDefault().notify(descriptor);
-        if (option != NotifyDescriptor.YES_OPTION) return;
-        
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                revertModifications();
-            }
-        });
+        return option == NotifyDescriptor.YES_OPTION;
     }
-
+    
     private void revertModifications() {
         ExecutorGroup group = new ExecutorGroup("Reverting");
         try {
@@ -85,7 +93,7 @@ public class GetCleanAction extends AbstractSystemAction {
         }
 
     }
-    
+
     /**
      * Overwrites given file with its specified revision. Revision number and sticky information in Entries is NOT modified, 
      * only the content is overwritten.
@@ -94,7 +102,12 @@ public class GetCleanAction extends AbstractSystemAction {
      * @param revision revision to get
      * @param group that carries shared state. Note that this group must not be executed later on. 
      */ 
-    public static void rollback(File file, String revision, ExecutorGroup group) {
+    public static void rollback(File file, String revision) {
+        if (!confirmed(file, revision)) return;
+        rollback(file, revision, null);
+    }
+    
+    private static void rollback(File file, String revision, ExecutorGroup group) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
         Entry entry = null;

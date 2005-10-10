@@ -213,15 +213,7 @@ class RevisionNode extends AbstractNode {
 
         public void actionPerformed(ActionEvent e) {
             File file = revision.getLogInfoHeader().getFile();
-            int res = JOptionPane.showConfirmDialog(
-                    null,
-                    NbBundle.getMessage(RevisionNode.class, "CTL_Rollback_Prompt", file.getName(), revision.getNumber()),
-                    NbBundle.getMessage(RevisionNode.class, "CTL_Rollback_Title"),
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-            if (res != JOptionPane.YES_OPTION) return;
-
-            GetCleanAction.rollback(file, revision.getNumber(), null);
+            GetCleanAction.rollback(file, revision.getNumber());
         }
     }
 

@@ -276,14 +276,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             String revision = drev.getRevision().getNumber().trim();
             File file = drev.getRevision().getLogInfoHeader().getFile();
-            int res = JOptionPane.showConfirmDialog(
-                    null, 
-                    NbBundle.getMessage(SummaryView.class, "CTL_Rollback_Prompt", file.getName(), revision),
-                    NbBundle.getMessage(SummaryView.class, "CTL_Rollback_Title"),
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-            if (res != JOptionPane.YES_OPTION) return;
-            GetCleanAction.rollback(file, revision, null);
+            GetCleanAction.rollback(file, revision);
         }
     }
 

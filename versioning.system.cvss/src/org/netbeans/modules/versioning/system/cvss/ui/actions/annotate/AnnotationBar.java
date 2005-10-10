@@ -21,6 +21,7 @@ import org.netbeans.api.xml.parsers.*;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.*;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.*;
 import org.netbeans.lib.cvsclient.command.annotate.*;
 import org.netbeans.spi.diff.*;
@@ -337,6 +338,8 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         final JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_RollbackToRevision"));
         rollbackMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                File file = getCurrentFile();
+                GetCleanAction.rollback(file, recentRevision);
             }
         });
         popupMenu.add(rollbackMenu);
