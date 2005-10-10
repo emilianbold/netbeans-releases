@@ -120,7 +120,7 @@ public class JspCompletionItem {
                 doc.atomicLock();
                 try {
                     //test whether we are trying to insert sg. what is already present in the text
-                    String currentText = doc.getText(offset, fill.length() - 1);
+                    String currentText = doc.getText(offset, (doc.getLength() - offset) < fill.length() ? (doc.getLength() - offset) : fill.length()) ;
                     if(!fill.substring(0, fill.length() - 1).equals(currentText)) {
                         //remove common part
                         doc.remove( offset, len );

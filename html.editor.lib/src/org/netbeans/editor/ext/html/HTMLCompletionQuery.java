@@ -526,7 +526,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
             doc.atomicLock();
             try {
                 //test whether we are trying to insert sg. what is already present in the text
-                String currentText = doc.getText(offset, text.length());
+                String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length()) ;
                 if(!text.equals(currentText)) {
                     //remove common part
                     doc.remove( offset, length );
