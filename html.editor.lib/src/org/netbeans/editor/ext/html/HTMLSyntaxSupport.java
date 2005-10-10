@@ -559,7 +559,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 if( stack.empty() ) {           // empty stack - we are on the same tree deepnes - can close this tag
                     if( name.startsWith( prefix ) && !found.contains( name ) ) {    // add only new items
                         found.add( name );
-                        result.add( new HTMLCompletionQuery.EndTagItem( name, offset-2-prefixLen, prefixLen+2 ) );
+                        result.add( new HTMLCompletionQuery.EndTagItem( name, offset-2-prefixLen, prefixLen+2, name ) );
                     }
                     if( ! tag.hasOptionalEnd() ) break;  // If this tag have required EndTag, we can't go higher until completing this tag
                 } else {                        // not empty - we match content of stack

@@ -598,6 +598,10 @@ else System.err.println( "Inside token " + item.getTokenID() );
             super( baseText, offset, length );
         }
         
+        public EndTagItem( String baseText, int offset, int length, String helpID ) {
+            super( baseText, offset, length, helpID );
+        }
+        
         Color getPaintColor() { return Color.blue; }
         
         public String getItemText() { return "</" + baseText + ">"; } // NOI18N
