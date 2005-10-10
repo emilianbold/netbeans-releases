@@ -70,7 +70,8 @@ public class OptionsWindowAction extends AbstractAction {
     /** weak link to options dialog DialogDescriptor. */
     private WeakReference       optionsDialogDescriptor = 
                                     new WeakReference (null);
-    
+    private ErrorManager        log = ErrorManager.getDefault ().getInstance
+                                    (OptionsWindowAction.class.getName ());
     
     public OptionsWindowAction () {
         putValue (
@@ -84,6 +85,7 @@ public class OptionsWindowAction extends AbstractAction {
             // dialog already opened
             dialog.setVisible (true);
             dialog.toFront ();
+            log.log ("Front Options Dialog"); //NOI18N
             return;
         }
         
@@ -115,9 +117,11 @@ public class OptionsWindowAction extends AbstractAction {
             descriptor.setButtonListener (listener);
             optionsPanel.addPropertyChangeListener (listener);
             optionsDialogDescriptor = new WeakReference (descriptor);
+            log.log ("Create new Options Dialog"); //NOI18N
         } else {
             optionsPanel = (OptionsPanel) descriptor.getMessage ();
             optionsPanel.update ();
+            log.log ("Reopen Options Dialog"); //NOI18N
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
@@ -181,16 +185,19 @@ public class OptionsWindowAction extends AbstractAction {
                 return; //WORKARROUND for some bug in NbPresenter
                 // listener is called twice ...
             if (e.getSource () == bOK) {
+                log.log ("Options Dialog - Ok pressed."); //NOI18N
                 dialog.dispose ();
                 optionsPanel.save ();
                 dialog = null;
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION) {
+                log.log ("Options Dialog - Cancel pressed."); //NOI18N
                 dialog.dispose ();
                 optionsPanel.cancel ();
                 dialog = null;
             } else
             if (e.getSource () == bClassic) {
+                log.log ("Options Dialog - Classic pressed."); //NOI18N
                 if (optionsPanel.isChanged ()) {
                     Confirmation descriptor = new Confirmation (
                         loc ("CTL_Some_values_changed"), 
@@ -241,12 +248,14 @@ public class OptionsWindowAction extends AbstractAction {
         }
         
         public void windowClosed (WindowEvent e) {
+            log.log ("Options Dialog - windowClosed " + dialog); //NOI18N
             if (dialog == null) return;
             optionsPanel.cancel ();
             dialog = null;
         }
 
         public void windowDeactivated (WindowEvent e) {
+            log.log ("Options Dialog - windowDeactivated " + dialog); //NOI18N
             if (dialog == null) return;
             optionsPanel.cancel ();
             dialog = null;
@@ -263,6 +272,7 @@ public class OptionsWindowAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
             RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
+                    log.log ("Options Dialog - Back to modern."); //NOI18N
                     actionPerformed (new ActionEvent (this, 0, "Open"));
                 }
             });
