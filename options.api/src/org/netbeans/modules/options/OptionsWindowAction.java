@@ -20,6 +20,8 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -88,12 +90,13 @@ public class OptionsWindowAction extends AbstractAction {
         DialogDescriptor descriptor = (DialogDescriptor) 
             optionsDialogDescriptor.get ();
         
+        OptionsPanel optionsPanel = null;
         if (descriptor == null) {
             // create new DialogDescriptor for options dialog
             JButton bClassic = (JButton) loc (new JButton (), "CTL_Classic");//NOI18N
             JButton bOK = (JButton) loc (new JButton (), "CTL_OK");//NOI18N
 
-            OptionsPanel optionsPanel = new OptionsPanel ();
+            optionsPanel = new OptionsPanel ();
             descriptor = new DialogDescriptor (
                 optionsPanel,
                 "Options",
@@ -113,13 +116,13 @@ public class OptionsWindowAction extends AbstractAction {
             optionsPanel.addPropertyChangeListener (listener);
             optionsDialogDescriptor = new WeakReference (descriptor);
         } else {
-            OptionsPanel optionsPanel = (OptionsPanel) descriptor.getMessage ();
+            optionsPanel = (OptionsPanel) descriptor.getMessage ();
             optionsPanel.update ();
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
         dialog.setVisible (true);
-        
+        dialog.addWindowListener (new MyWindowListener (optionsPanel));
         descriptor = null;
     }
     
@@ -150,10 +153,10 @@ public class OptionsWindowAction extends AbstractAction {
         
         
         OptionsPanelListener (
-            DialogDescriptor descriptor, 
-            OptionsPanel optionsPanel,
-            JButton bOK,
-            JButton bClassic
+            DialogDescriptor    descriptor, 
+            OptionsPanel        optionsPanel,
+            JButton             bOK,
+            JButton             bClassic
         ) {
             this.descriptor = descriptor;
             this.optionsPanel = optionsPanel;
@@ -178,12 +181,12 @@ public class OptionsWindowAction extends AbstractAction {
                 return; //WORKARROUND for some bug in NbPresenter
                 // listener is called twice ...
             if (e.getSource () == bOK) {
-                dialog.setVisible (false);
+                dialog.dispose ();
                 optionsPanel.save ();
                 dialog = null;
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION) {
-                dialog.setVisible (false);
+                dialog.dispose ();
                 optionsPanel.cancel ();
                 dialog = null;
             } else
@@ -197,14 +200,14 @@ public class OptionsWindowAction extends AbstractAction {
                     if (DialogDisplayer.getDefault ().notify (descriptor) ==
                         NotifyDescriptor.OK_OPTION
                     ) {
-                        dialog.setVisible (false);
+                        dialog.dispose ();
                         optionsPanel.save ();
                     } else {
-                        dialog.setVisible (false);
+                        dialog.dispose ();
                         optionsPanel.cancel ();
                     }
                 } else {
-                    dialog.setVisible (false);
+                    dialog.dispose ();
                     optionsPanel.cancel ();
                 }
                 dialog = null;
@@ -226,6 +229,34 @@ public class OptionsWindowAction extends AbstractAction {
                 }
             } // classic
         }
+    }
+    
+    private class MyWindowListener implements WindowListener {
+        
+        private OptionsPanel optionsPanel;
+        
+        
+        MyWindowListener (OptionsPanel optionsPanel) {
+            this.optionsPanel = optionsPanel;
+        }
+        
+        public void windowClosed (WindowEvent e) {
+            if (dialog == null) return;
+            optionsPanel.cancel ();
+            dialog = null;
+        }
+
+        public void windowDeactivated (WindowEvent e) {
+            if (dialog == null) return;
+            optionsPanel.cancel ();
+            dialog = null;
+        }
+
+        public void windowOpened (WindowEvent e) {}
+        public void windowClosing (WindowEvent e) {}
+        public void windowIconified (WindowEvent e) {}
+        public void windowDeiconified (WindowEvent e) {}
+        public void windowActivated (WindowEvent e) {}
     }
     
     class OpenOptionsListener implements ActionListener {
