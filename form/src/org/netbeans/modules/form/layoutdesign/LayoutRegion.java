@@ -184,21 +184,25 @@ class LayoutRegion implements LayoutConstants {
      */
     void expand(LayoutRegion reg) {
         for (int i=0; i < DIM_COUNT; i++) {
-            int[] pos = positions[i];
-            int[] exPos = reg.positions[i];
-            if (exPos[LEADING] != UNKNOWN
-                && (pos[LEADING] == UNKNOWN || exPos[LEADING] < pos[LEADING]))
-            {
-                pos[LEADING] = exPos[LEADING];
-            }
-            if (exPos[TRAILING] != UNKNOWN
-                && (pos[TRAILING] == UNKNOWN || exPos[TRAILING] > pos[TRAILING]))
-            {
-                pos[TRAILING] = exPos[TRAILING];
-            }
-            if (pos[LEADING] != UNKNOWN && pos[TRAILING] != UNKNOWN) {
-                pos[CENTER] = (pos[LEADING] + pos[TRAILING]) / 2;
-            }
+            expand(reg, i);
+        }
+    }
+
+    void expand(LayoutRegion reg, int dimension) {
+        int[] pos = positions[dimension];
+        int[] exPos = reg.positions[dimension];
+        if (exPos[LEADING] != UNKNOWN
+            && (pos[LEADING] == UNKNOWN || exPos[LEADING] < pos[LEADING]))
+        {
+            pos[LEADING] = exPos[LEADING];
+        }
+        if (exPos[TRAILING] != UNKNOWN
+            && (pos[TRAILING] == UNKNOWN || exPos[TRAILING] > pos[TRAILING]))
+        {
+            pos[TRAILING] = exPos[TRAILING];
+        }
+        if (pos[LEADING] != UNKNOWN && pos[TRAILING] != UNKNOWN) {
+            pos[CENTER] = (pos[LEADING] + pos[TRAILING]) / 2;
         }
     }
 

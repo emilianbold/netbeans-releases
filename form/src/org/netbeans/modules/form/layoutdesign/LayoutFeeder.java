@@ -720,7 +720,6 @@ class LayoutFeeder implements LayoutConstants {
             int nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
             if (nonEmptyCount == 1) { // this is a newly created sequence
                 operations.optimizeGaps(parent.getParent(), dimension); // may eliminate the sequence
-                operations.mergeParallelGroups(LayoutInterval.getFirstParent(addingInterval, PARALLEL));
             }
             else if (dimension == HORIZONTAL) {
                 // check whether the added interval could not be rather placed
@@ -730,8 +729,9 @@ class LayoutFeeder implements LayoutConstants {
         }
         else {
             operations.optimizeGaps(parent, dimension); // also removes supporting gap in container
-            operations.mergeParallelGroups(parent);
         }
+        // avoid unnecessary parallel group nesting
+        operations.mergeParallelGroups(LayoutInterval.getFirstParent(addingInterval, PARALLEL));
     }
 
     private void addToGroup(IncludeDesc iDesc1, IncludeDesc iDesc2, boolean definite) {
@@ -2438,7 +2438,6 @@ class LayoutFeeder implements LayoutConstants {
             if (endIndex > startIndex + 1
                 || (endIndex == startIndex+1 && !startGap && !endGap))
             {   // there is a significant part of the common sequence to be parallelized
-                // [could use LayoutOperations.addParallelWithSequence?]
                 LayoutInterval parGroup;
                 if (startIndex == 0 && endIndex == commonGroup.getSubIntervalCount()-1) {
                     // parallel with whole sequence
@@ -2453,6 +2452,8 @@ class LayoutFeeder implements LayoutConstants {
                         LayoutInterval li = layoutModel.removeInterval(commonGroup, i);
                         endIndex--;
                         layoutModel.addInterval(li, parSeq, -1);
+                        if (!li.isEmptySpace())
+                            parGroup.getCurrentSpace().expand(li.getCurrentSpace(), dimension);
                     }
                     layoutModel.addInterval(parGroup, commonGroup, startIndex);
                 }
