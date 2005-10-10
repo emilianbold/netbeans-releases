@@ -37,6 +37,7 @@ implements OperationListener {
     private ArrayList events = new ArrayList ();
     private FileSystem fs;
     private DataLoaderPool pool;
+    private org.openide.ErrorManager err;
     
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.loaders.OperationListenerTest$Lkp");
@@ -61,15 +62,21 @@ implements OperationListener {
         assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
         ErrManager.resetMessages();
         
+        err = ErrManager.getDefault().getInstance("TEST-" + getName());
+        
         pool = DataLoaderPool.getDefault ();
         assertNotNull (pool);
         assertEquals (Pool.class, pool.getClass ());
         
         Pool.setExtra(null);
+        
+        err.log("setUp is over");
     }
     
     //Clear all stuff when the test finish
     protected void tearDown() throws Exception {
+        err.log("entering tearDown");
+        
         pool.removeOperationListener(this);
         
 //        AddLoaderManuallyHid.addRemoveLoader (ALoader.getLoader (ALoader.class), false);
@@ -122,21 +129,29 @@ implements OperationListener {
         BrokenLoader loader = (BrokenLoader)DataLoader.getLoader(BrokenLoader.class);
         
         try {
+            err.log("before setExtra: " + loader);
             Pool.setExtra(loader);
             
+            err.log("before addOperationListener");
             pool.addOperationListener(this);
             
             loader.acceptableFO = fs.findResource ("source/A.attr");
+            err.log("File object found: " + loader.acceptableFO);
             try {
                 DataObject obj = DataObject.find (fs.findResource ("source/A.attr"));
                 fail ("The broken loader throws exception and cannot be created");
             } catch (IOException ex) {
                 // ok
+                err.log("Exception thrown correctly:");
+                err.notify(ex);
             }
             assertEquals ("Loader created an object", loader, loader.obj.getLoader());
             
+            err.log("brefore waitFinished");
             // and the task can be finished
             loader.recognize.waitFinished ();
+            
+            err.log("waitFinished done");
             
             assertEvents ("One creation notified even if the object is broken", new OperationEvent[] {
                 new OperationEvent (loader.obj),
@@ -338,6 +353,16 @@ implements OperationListener {
         static final String DELIMITER = ": ";
         static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
         
+        private String prefix;
+        
+        public ErrManager() {
+            this("");
+        }
+        
+        private ErrManager(String p) {
+            this.prefix = p;
+        }
+        
         static void resetMessages() {
             messages.delete(0, ErrManager.messages.length());
             nOfMessages = 0;
@@ -345,6 +370,7 @@ implements OperationListener {
         
         public void log(int severity, String s) {
             nOfMessages++;
+            messages.append(prefix);
             messages.append(severity + DELIMITER + s);
             messages.append('\n');
         }
@@ -364,7 +390,7 @@ implements OperationListener {
         }
         
         public org.openide.ErrorManager getInstance(String name) {
-            return this;
+            return new ErrManager(prefix + name);
         }
         
         public void notify(int severity, Throwable t) {}
