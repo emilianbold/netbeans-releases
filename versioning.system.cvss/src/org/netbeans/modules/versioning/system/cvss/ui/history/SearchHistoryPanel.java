@@ -358,6 +358,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         public File getFile() {
             return header.getFile();
         }
+
+        /** Goes into clipboard */
+        public String toString() {
+            return getName() + "    " + getPath(); // NOI18N
+        }
     }
 
     static class DispRevision {
@@ -420,6 +425,21 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         public void setIndentation(int indentation) {
             this.indentation = indentation;
         }
+
+        /** Goes into clipboard */
+        public String toString() {
+            StringBuffer indent = new StringBuffer("  ");  // NOi18N
+            for (int i = 0; i<getIndentation(); i++) {
+                indent.append("  "); // NOI18N
+            }
+            StringBuffer text = new StringBuffer();
+            text.append(indent).append(getRevision().getNumber()).append("\t").append(getRevision().getDateString()).append(" ").append(getRevision().getAuthor());
+            text.append("\n"); // NOI18N
+            text.append(getRevision().getMessage());
+
+            return text.toString();
+        }
+
     }
 
     /**
