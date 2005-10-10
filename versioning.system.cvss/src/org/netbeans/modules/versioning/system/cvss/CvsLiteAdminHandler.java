@@ -18,6 +18,7 @@ import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.openide.filesystems.FileUtil;
 
 import java.io.*;
@@ -31,19 +32,32 @@ import java.util.*;
  */
 class CvsLiteAdminHandler implements AdminHandler {
 
+    static final String INVALID_METADATA_MARKER = "invalid-metadata";
+
+    private static final String INVALID_METADATA_MARKER_PATH = CvsVersioningSystem.FILENAME_CVS + "/" + INVALID_METADATA_MARKER;
+
     private StandardAdminHandler stdHandler;
 
     public CvsLiteAdminHandler() {
         this.stdHandler = new StandardAdminHandler();
     }
 
+    private void checkForInvalidMetadata(File dir) {
+        File marker = new File(dir, INVALID_METADATA_MARKER_PATH);
+        if (marker.exists()) {
+            Utils.deleteRecursively(marker.getParentFile());
+        }
+    }
+
     public void updateAdminData(String localDirectory, String repositoryPath,
                          Entry entry, GlobalOptions globalOptions)
             throws IOException {
+        checkForInvalidMetadata(new File(localDirectory));
         stdHandler.updateAdminData(localDirectory, repositoryPath, entry, globalOptions);
     }
 
     public Entry getEntry(File file) throws IOException {
+        checkForInvalidMetadata(file.getParentFile());
         if (file.exists()) return stdHandler.getEntry(file);
         File parent = file.getParentFile();
         if (parent.exists()) return stdHandler.getEntry(file);
@@ -64,6 +78,7 @@ class CvsLiteAdminHandler implements AdminHandler {
     }
 
     public Iterator getEntries(File directory) throws IOException {
+        checkForInvalidMetadata(directory);
         if (directory.exists()) {
             return stdHandler.getEntries(directory);
         } else {
@@ -76,6 +91,7 @@ class CvsLiteAdminHandler implements AdminHandler {
     
     public Entry[] getEntriesAsArray(File directory)
             throws IOException {
+        checkForInvalidMetadata(directory);
         List entries = new ArrayList();
         for (Iterator i = getEntries(directory); i.hasNext(); ) {
             entries.add(i.next());
@@ -84,6 +100,7 @@ class CvsLiteAdminHandler implements AdminHandler {
     }    
 
     public void setEntry(File file, Entry entry) throws IOException {
+        checkForInvalidMetadata(file.getParentFile());
         // create missing directories beforehand
         File adminDir = new File(file.getParentFile(), CvsVersioningSystem.FILENAME_CVS);
         createAdminDirs(adminDir);
@@ -112,6 +129,7 @@ class CvsLiteAdminHandler implements AdminHandler {
     public String getRepositoryForDirectory(String directory, String repository)
             throws IOException {
 
+        checkForInvalidMetadata(new File(directory));
         // TODO consult MetadataAttic.getScheduledRepository
 
         File dirFile = new File(directory);
@@ -135,6 +153,7 @@ class CvsLiteAdminHandler implements AdminHandler {
 
     public void removeEntry(File file) throws IOException {
         File parent = file.getParentFile();
+        checkForInvalidMetadata(parent);
         CvsMetadata data = MetadataAttic.getMetadata(parent);
         if (data != null) {
             String [] entries = data.getEntries();
@@ -157,11 +176,13 @@ class CvsLiteAdminHandler implements AdminHandler {
     }
 
     public Set getAllFiles(File directory) throws IOException {
+        checkForInvalidMetadata(directory);
         // TODO: override
         return stdHandler.getAllFiles(directory);
     }
 
     public String getStickyTagForDirectory(File directory) {
+        checkForInvalidMetadata(directory);
         return stdHandler.getStickyTagForDirectory(directory);
     }
 

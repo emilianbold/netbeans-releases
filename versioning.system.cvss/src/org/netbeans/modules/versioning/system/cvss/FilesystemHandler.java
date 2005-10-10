@@ -72,6 +72,25 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     
     // InterceptionListener implementation ---------------------------
     
+    public void createSuccess(FileObject fo) {
+      if (fo.isFolder() && fo.getNameExt().equals(CvsVersioningSystem.FILENAME_CVS)) {
+            File f = new File(FileUtil.toFile(fo), CvsLiteAdminHandler.INVALID_METADATA_MARKER);
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath());
+            }
+        }        
+    }
+
+    public void beforeCreate(FileObject parent, String name, boolean isFolder) {
+        // not interested
+    }
+    
+    public void createFailure(FileObject parent, String name, boolean isFolder) {
+        // not interested
+    }
+
     /**
      * We save all CVS metadata to be able to commit files that were
      * in that directory.

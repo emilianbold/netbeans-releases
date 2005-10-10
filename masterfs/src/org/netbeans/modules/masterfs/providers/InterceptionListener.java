@@ -19,6 +19,9 @@ package org.netbeans.modules.masterfs.providers;
  */
 
 public interface InterceptionListener {
+    void beforeCreate(org.openide.filesystems.FileObject parent, String name, boolean isFolder);
+    void createSuccess(org.openide.filesystems.FileObject fo);
+    void createFailure(org.openide.filesystems.FileObject parent, String name, boolean isFolder);    
     void beforeDelete(org.openide.filesystems.FileObject fo);
     void deleteSuccess(org.openide.filesystems.FileObject fo);
     void deleteFailure(org.openide.filesystems.FileObject fo);    

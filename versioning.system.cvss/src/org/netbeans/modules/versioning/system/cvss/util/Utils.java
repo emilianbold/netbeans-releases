@@ -414,6 +414,21 @@ public class Utils {
     }
 
     /**
+     * Recursively deletes all files and directories under a given file/directory.
+     *
+     * @param file file/directory to delete
+     */
+    public static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File [] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteRecursively(files[i]);
+            }
+        }
+        file.delete();
+    }
+    
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
     public static class ByImportanceComparator implements Comparator {
