@@ -188,7 +188,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setPreferredSize(new java.awt.Dimension(480, 334));
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformName").charAt(0));
         jLabel1.setLabelFor(platformName);
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformName"));

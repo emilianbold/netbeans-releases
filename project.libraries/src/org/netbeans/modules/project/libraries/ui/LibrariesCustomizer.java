@@ -58,9 +58,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author  tom
  */
-public final class LibrariesCustomizer extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
-    
-    private static final Dimension PREFERRED_SIZE = new Dimension (720,400);
+public final class LibrariesCustomizer extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {    
     
     private ExplorerManager manager;
     private LibrariesModel model;
@@ -133,11 +131,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             }
         }
         this.libraries.requestFocus();
-    }
-    
-    public Dimension getPreferredSize () {
-        return PREFERRED_SIZE;
-    }
+    }    
     
     
     public ExplorerManager getExplorerManager () {
@@ -184,6 +178,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         c.weighty = 1.0;        
         ((GridBagLayout)this.libsPanel.getLayout()).setConstraints(this.libraries,c);
         this.libsPanel.add(this.libraries);
+        this.libraries.setPreferredSize(new Dimension (200,334));
         this.libraryName.setColumns(25);
         this.libraryName.setEnabled(false);
         this.libraryName.addActionListener(
