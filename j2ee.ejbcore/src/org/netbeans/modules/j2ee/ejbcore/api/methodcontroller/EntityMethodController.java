@@ -34,8 +34,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -100,14 +98,7 @@ public class EntityMethodController extends AbstractMethodController {
         try {
             String fieldName = field.getFieldName();
             // find findBy<field> query in DD
-            Query[] queries = model.getQuery();
-            for (int i = 0; i < queries.length; i++) {
-                query = queries[i];
-                String queryMethodName = query.getQueryMethod().getMethodName();
-                if (queryMethodName.equals(prependAndUpper(fieldName, "findBy"))) {
-                    break;
-                }
-            }
+            query = findQueryByCmpField(fieldName);
             // remove findBy<field> method from local interfaces (should be only in local home)
             for (Iterator iter = getLocalInterfaces().iterator(); iter.hasNext();) {
                 JavaClass ce = (JavaClass) iter.next();
@@ -141,6 +132,18 @@ public class EntityMethodController extends AbstractMethodController {
         // remove CMP field from DD
         model.removeCmpField(field);
         parent.write(dd);
+    }
+
+    private Query findQueryByCmpField(String fieldName) {
+        Query[] queries = model.getQuery();
+        for (int i = 0; i < queries.length; i++) {
+            Query query = queries[i];
+            String queryMethodName = query.getQueryMethod().getMethodName();
+            if (queryMethodName.equals(prependAndUpper(fieldName, "findBy"))) {
+                return query;
+            }
+        }
+        return null;
     }
 
     private void removeMethodsFromBean(List methods) {
