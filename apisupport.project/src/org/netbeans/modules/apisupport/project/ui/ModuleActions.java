@@ -200,6 +200,7 @@ public final class ModuleActions implements ActionProvider {
         globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"reload"}); // NOI18N
+        globalCommands.put("profile", new String[] {"profile"}); // NOI18N
         globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
         if (project.supportsUnitTests()) {
             globalCommands.put(ActionProvider.COMMAND_TEST, new String[] {"test"}); // NOI18N

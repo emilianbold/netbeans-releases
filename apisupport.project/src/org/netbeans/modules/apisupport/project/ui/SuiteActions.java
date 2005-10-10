@@ -128,6 +128,7 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
+            "profile" // NOI18N
         };
     }
     
@@ -179,9 +180,11 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
+        } else if (command.equals("profile")) { // NOI18N
+            targetNames = new String[] {"profile"}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
-        }
+        } 
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, null);
     }

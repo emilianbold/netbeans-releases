@@ -136,5 +136,27 @@ Microsystems, Inc. All Rights Reserved.
             <param name="run.args" value="${debug.args}"/>
         </antcall>
     </target>
-
+    
+    <target name="profile" description="Profile a project in the IDE.">
+        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+        <nbprofiledirect 
+            jvmargsprefix="-J" 
+            jvmargsproperty="profiler.jvmargs" 
+            mainclass="org.netbeans.Main"
+        >
+            <classpath>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="${cluster}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </nbprofiledirect>
+        
+        <antcall target="run">
+            <param name="run.args" value="${profiler.jvmargs}"/>
+        </antcall>
+    </target>
+    
 </project>

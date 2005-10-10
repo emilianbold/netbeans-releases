@@ -791,6 +791,25 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <antcall target="tryme"/>
   </target>
           
+            
+  <target name="tryme-profile" description="Start IDE in debugger. May only be called from within IDE.">
+    <nbprofiledirect 
+        jvmargsprefix="-J" 
+        jvmargsproperty="profiler.jvmargs" 
+        mainclass="org.netbeans.Main"
+    >
+      <classpath>
+        <fileset dir="${netbeans.dest.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+    </nbprofiledirect>
+    
+    <antcall target="tryme">
+        <param name="tryme.args" value="${profiler.jvmargs}"/>
+    </antcall>
+  </target>
+  
   <target name="tryme" depends="init,maybe-build-nozip,tryme-setup-debug-args"
           description="Try running the IDE interactively (build it first if needed).
 It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in debug mode" 

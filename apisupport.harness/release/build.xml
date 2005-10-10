@@ -147,6 +147,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="run" depends="netbeans">
         <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
+
+    <target name="profile" depends="netbeans" >
+        <ant antfile="${harness.dir}/run.xml" target="profile"/>
+    </target>
     
     <target name="debug" depends="netbeans">
         <ant antfile="${harness.dir}/run.xml" target="debug"/>

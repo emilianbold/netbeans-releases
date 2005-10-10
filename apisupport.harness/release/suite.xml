@@ -149,6 +149,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="debug" depends="build" description="Runs this suite in place in the debugger.">
         <ant antfile="${harness.dir}/run.xml" target="debug"/>
     </target>
+
+    <target name="profile" depends="build" description="Runs this suite in place in the profiler.">
+        <ant antfile="${harness.dir}/run.xml" target="profile"/>
+    </target>
     
     <target name="build-jnlp" depends="build" description="Packages this suite as a JNLP application.">
         <ant antfile="${harness.dir}/jnlp.xml" target="build"/>

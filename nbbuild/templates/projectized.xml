@@ -97,6 +97,10 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${nb_all}/nbbuild" target="tryme-debug"/>
     </target>
     
+    <target name="profile" depends="netbeans" >
+        <ant dir="${nb_all}/nbbuild" target="tryme-profile" />
+    </target>
+    
     <target name="reload" depends="netbeans">
         <ant dir="${nb_all}/nbbuild" target="tryme">
             <property name="tryme.debug.args" value="--reload ${cluster}/${module.jar}"/>
