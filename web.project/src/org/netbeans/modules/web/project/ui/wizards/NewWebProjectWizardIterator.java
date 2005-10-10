@@ -42,7 +42,6 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 
-
 /**
  * Wizard to create a new Web project.
  * @author Jesse Glick, Radko Najman
@@ -57,10 +56,18 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     public NewWebProjectWizardIterator() {}
         
     private String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
-            NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
-        };
+	String[] steps;
+	if (WebFrameworkSupport.getFrameworkProviders().size() > 0)
+	    steps = new String[] {
+		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
+		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
+	    };
+	else
+	    steps = new String[] {
+		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
+	    };
+	
+        return steps;
     }
     
     public Set instantiate() throws IOException {
@@ -139,11 +146,17 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         this.wiz = wiz;
         index = 0;
 
-        //two standerd panels + configurable framework panels
-        panels = new WizardDescriptor.Panel[] {
-            new PanelConfigureProject(),
-            new PanelSupportedFrameworks()
-        };
+	if (WebFrameworkSupport.getFrameworkProviders().size() > 0)
+	    //standard panels + configurable framework panel
+	    panels = new WizardDescriptor.Panel[] {
+		new PanelConfigureProject(),
+		new PanelSupportedFrameworks()
+	    };
+	else
+	    //no framework available, don't show framework panel
+	    panels = new WizardDescriptor.Panel[] {
+		new PanelConfigureProject(),
+	    };
         panelsCount = panels.length;
         
         // Make sure list of steps is accurate.
