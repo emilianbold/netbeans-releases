@@ -36,6 +36,7 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     public PlatformInfoVisualPanel(WizardDescriptor setting) {
         super(setting);
         initComponents();
+	initAccessibility();
         setName(NbPlatformCustomizer.INFO_STEP);
     }
     
@@ -122,4 +123,9 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     private javax.swing.JLabel plafName;
     private javax.swing.JTextField plafNameValue;
     // End of variables declaration//GEN-END:variables
+
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_PlatformInfoVisualPanel"));        
+        plafNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_plafNameValue"));
+    }
 }

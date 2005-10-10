@@ -39,6 +39,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerJavadoc() {
         initComponents();
+	initAccessibility();
         javadocList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -228,4 +229,16 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
     private javax.swing.JButton moveUpButton;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
+
+    private void initAccessibility() {
+        addFolderButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_addFolderButton"));
+        javadocList.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_javadocList"));
+        moveDownButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_moveDownButton"));
+        moveUpButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_moveUpButton"));
+        removeButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_removeButton"));
+    }
+    
+    private String getMessage(String key) {
+	return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, key);
+    }
 }

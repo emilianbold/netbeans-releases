@@ -70,6 +70,7 @@ public final class NbPlatformCustomizer extends JPanel {
      */
     private  NbPlatformCustomizer() {
         initComponents();
+	initAccessibility();
         if (platformsList.getModel().getSize() > 0) {
             platformsList.setSelectedIndex(0);
             sourcesTab = new NbPlatformCustomizerSources();
@@ -306,5 +307,12 @@ public final class NbPlatformCustomizer extends JPanel {
     private javax.swing.JTextField plfNameValue;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
-    
+
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NbPlatformCustomizer"));        
+        platformsList.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_platformsList"));
+        plfFolderValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_plfFolderValue"));
+        plfNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_plfNameValue"));
+        removeButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_removeButton"));
+    }
 }
