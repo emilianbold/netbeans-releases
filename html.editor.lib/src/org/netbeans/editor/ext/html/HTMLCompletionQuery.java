@@ -810,7 +810,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
     }
     
     
-    static class DocItem implements CompletionDocumentation {
+    public static class DocItem implements CompletionDocumentation {
         private String name;
         
         public DocItem(HTMLResultItem ri) {

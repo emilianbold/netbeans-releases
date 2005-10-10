@@ -30,7 +30,9 @@ import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.CompletionQuery;
+import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -72,9 +74,11 @@ public class HTMLCompletionProvider implements CompletionProvider {
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE)
             return new AsyncCompletionTask(new Query(), component);
-        return null;
+        else if (queryType == DOCUMENTATION_QUERY_TYPE)
+            return new AsyncCompletionTask(new DocQuery(null), component);
+        return null; 
     }
-    
+
     static class Query extends AsyncCompletionQuery {
         
         private JTextComponent component;
@@ -89,6 +93,34 @@ public class HTMLCompletionProvider implements CompletionProvider {
             resultSet.addAllItems(results);
             resultSet.finish();
         }
+    }
+    
+    static class DocQuery extends AsyncCompletionQuery {
+        
+        private JTextComponent component;
+        private ResultItem item;
+        
+        DocQuery(HTMLResultItem item) {
+            this.item = item;
+        }
+        
+        protected void prepareQuery(JTextComponent component) {
+            this.component = component;
+        }
+        
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            if(item == null) {
+                List result = queryImpl(component, caretOffset);
+                if(result != null && result.size() > 0) {
+                    Object resultObj = result.get(0);
+                    if(resultObj instanceof ResultItem)
+                        item = (ResultItem)resultObj;
+                }
+            }
+            if(item != null) resultSet.setDocumentation(new HTMLCompletionQuery.DocItem((HTMLResultItem)item));
+            resultSet.finish();
+        }
+        
     }
     
     private static List/*<CompletionItem>*/ queryImpl(JTextComponent component, int offset) {
