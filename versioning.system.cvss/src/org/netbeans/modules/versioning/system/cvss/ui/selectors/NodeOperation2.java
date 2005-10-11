@@ -19,6 +19,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
 
@@ -49,7 +50,7 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
     public NodeOperation2() {
     }
 
-    public Node[] select(String title, String subtitle, Node root, NodeAcceptor acceptor) throws UserCancelException {
+    public Node[] select(String title, String subtitle, String acsd, Node root, String browserAcsn, String browserAcsd, NodeAcceptor acceptor) throws UserCancelException {
         manager.setRootContext(root);
         manager.addPropertyChangeListener(this);
 
@@ -65,8 +66,12 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
         setDefaultActionAllowed (false);
         setBorder(BorderFactory.createEtchedBorder());
 
-        JLabel label = new JLabel(subtitle);
-        label.setLabelFor(this);        
+        JLabel label = new JLabel();
+        Mnemonics.setLocalizedText(label, subtitle);
+        label.setLabelFor(tree);
+        label.setToolTipText(browserAcsd);
+        getAccessibleContext().setAccessibleDescription(browserAcsd);
+        getAccessibleContext().setAccessibleName(browserAcsn);
         ExplorerParent pane = new ExplorerParent(this);
         pane.add(label, BorderLayout.NORTH);
         pane.setBorder(BorderFactory.createEmptyBorder(12,12,0,12));
@@ -80,6 +85,7 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
         testAccept();
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.getAccessibleContext().setAccessibleDescription(acsd);
         dialog.setVisible(true);
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {

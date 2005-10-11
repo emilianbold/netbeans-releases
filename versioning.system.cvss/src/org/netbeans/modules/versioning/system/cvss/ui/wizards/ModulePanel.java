@@ -37,6 +37,7 @@ final class ModulePanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setName(org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2009"));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("ACSD_ModuleStep"));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2001"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -47,6 +48,7 @@ final class ModulePanel extends javax.swing.JPanel {
 
         jLabel2.setLabelFor(moduleTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2002"));
+        jLabel2.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_Module"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -60,6 +62,7 @@ final class ModulePanel extends javax.swing.JPanel {
         add(moduleTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(moduleButton, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2003"));
+        moduleButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_BrowseModule"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -77,6 +80,7 @@ final class ModulePanel extends javax.swing.JPanel {
 
         jLabel4.setLabelFor(tagTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2005"));
+        jLabel4.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_Branch"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -89,7 +93,8 @@ final class ModulePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(tagTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(tagButton, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2003"));
+        org.openide.awt.Mnemonics.setLocalizedText(tagButton, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2093"));
+        tagButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_BrowseBranch"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
@@ -105,6 +110,7 @@ final class ModulePanel extends javax.swing.JPanel {
 
         jLabel6.setLabelFor(workTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2007"));
+        jLabel6.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_LocalFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -117,7 +123,8 @@ final class ModulePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(workTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(workButton, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2003"));
+        org.openide.awt.Mnemonics.setLocalizedText(workButton, org.openide.util.NbBundle.getMessage(ModulePanel.class, "BK2094"));
+        workButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_BrowseFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);

@@ -38,6 +38,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006"));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("ACSD_RepositoryStep"));
         org.openide.awt.Mnemonics.setLocalizedText(headerLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0001"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -61,6 +62,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         jPanel3.add(rootComboBox, java.awt.BorderLayout.CENTER);
 
         org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1105"));
+        editButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_EditFields"));
         jPanel3.add(editButton, java.awt.BorderLayout.EAST);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -83,6 +85,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
 
         pPaswordLabel.setLabelFor(passwordTextField);
         org.openide.awt.Mnemonics.setLocalizedText(pPaswordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0003"));
+        pPaswordLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_PserverPassword"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -105,7 +108,8 @@ final class RepositoryPanel extends javax.swing.JPanel {
         sshButtonGroup.add(internalSshRadioButton);
         internalSshRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(internalSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1100"));
-        internalSshRadioButton.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        internalSshRadioButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_UseInternalSSH"));
+        internalSshRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         internalSshRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -115,6 +119,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
 
         extPasswordLabel5.setLabelFor(extPasswordField);
         org.openide.awt.Mnemonics.setLocalizedText(extPasswordLabel5, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1011"));
+        extPasswordLabel5.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_SSHPassword"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
@@ -129,6 +134,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         add(extPasswordField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(extREmemberPasswordCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1012"));
+        extREmemberPasswordCheckBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_RememberPassword"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -137,6 +143,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         add(extREmemberPasswordCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(proxyConfigurationButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0005"));
+        proxyConfigurationButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_ProxyConfig"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -145,7 +152,8 @@ final class RepositoryPanel extends javax.swing.JPanel {
 
         sshButtonGroup.add(extSshRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(extSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1101"));
-        extSshRadioButton.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        extSshRadioButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_UseExternal"));
+        extSshRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         extSshRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -155,6 +163,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
 
         extCommandLabel.setLabelFor(extCommandTextField);
         org.openide.awt.Mnemonics.setLocalizedText(extCommandLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1013"));
+        extCommandLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_ExternalCommand"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);

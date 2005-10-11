@@ -15,48 +15,30 @@ package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
 import org.openide.*;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
-import org.netbeans.lib.cvsclient.connection.*;
 import org.netbeans.lib.cvsclient.CVSRoot;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.JTextComponent;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import javax.net.SocketFactory;
 import java.util.*;
 import java.util.List;
-import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.InetSocketAddress;
-import java.lang.reflect.InvocationTargetException;
 
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxySelector;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
-import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
-import org.netbeans.modules.versioning.system.cvss.SSHConnection;
-import org.netbeans.modules.proxy.ClientSocketFactory;
-import org.netbeans.modules.proxy.ConnectivitySettings;
+import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 
 /**
  * Checkout wizard controller with input validation.
@@ -114,7 +96,7 @@ public final class CheckoutWizard implements ChangeListener{
 
     /** Called on sucessfull finish. */
     private void onFinished() {
-        String checkout = (String) modulePanel.workTextField.getText();
+        String checkout = modulePanel.workTextField.getText();
         HistorySettings.addRecent(HistorySettings.PROP_CHECKOUT_DIRECTORY, checkout);
     }
 
@@ -318,7 +300,7 @@ public final class CheckoutWizard implements ChangeListener{
             } else if (e.getSource() == modulePanel.workButton) {
 
                 File defaultDir = defaultWorkingDirectory();
-                JFileChooser fileChooser = new JFileChooser(defaultDir);
+                JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(CheckoutWizard.class, "ACSD_BrowseFolder"), defaultDir);
                 fileChooser.setDialogTitle(NbBundle.getMessage(CheckoutWizard.class, "BK0010"));
                 fileChooser.setMultiSelectionEnabled(false);
                 FileFilter[] old = fileChooser.getChoosableFileFilters();

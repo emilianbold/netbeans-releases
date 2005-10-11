@@ -115,6 +115,7 @@ public final class RootWizard implements ActionListener, DocumentListener {
         checkInput();
 
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        d.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RootWizard.class, "ACSD_CvsRootPanel"));
         d.setVisible(true);
         
         if (DialogDescriptor.OK_OPTION.equals(dd.getValue())) {

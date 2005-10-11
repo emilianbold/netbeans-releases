@@ -24,7 +24,6 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.CommandException;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.openide.DialogDescriptor;
 import org.openide.nodes.*;
 import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
@@ -61,7 +60,13 @@ public final class ModuleSelector {
             NodeOperation2 op = new NodeOperation2();
             op.setRootVisible(false);
             op.setHelpCtx(new HelpCtx(ModuleSelector.class));
-            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2019"), org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2020"), rootNode, new NodeAcceptor() {
+            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2019"), 
+                                        org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2020"), 
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_ModuleSelect"), 
+                                        rootNode, 
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSN_ModulesTree"), 
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_ModulesTree"), 
+                                        new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     boolean ret = nodes.length > 0;
                     for (int i = 0; i < nodes.length; i++) {

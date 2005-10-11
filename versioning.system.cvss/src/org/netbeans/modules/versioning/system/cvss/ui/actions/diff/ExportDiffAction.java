@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.api.diff.Difference;
@@ -34,8 +35,6 @@ import org.openide.awt.StatusDisplayer;
 import javax.swing.*;
 import java.io.*;
 import java.awt.event.ActionEvent;
-import java.awt.Component;
-import java.awt.HeadlessException;
 import java.util.*;
 
 /**
@@ -105,13 +104,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             return;
         }
 
-        JFileChooser chooser = new JFileChooser() {
-            protected JDialog createDialog(Component parent) throws HeadlessException {
-                JDialog dialog = super.createDialog(parent);
-                dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportDiffAction.class, "ACSD_Export"));
-                return dialog;
-            }
-        };
+        JFileChooser chooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffAction.class, "ACSD_Export"));
         chooser.setDialogTitle(NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_Title"));
         chooser.setMultiSelectionEnabled(false);
         javax.swing.filechooser.FileFilter[] old = chooser.getChoosableFileFilters();

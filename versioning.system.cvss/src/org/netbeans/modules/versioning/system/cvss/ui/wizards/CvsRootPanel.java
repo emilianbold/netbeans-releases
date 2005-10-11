@@ -79,6 +79,7 @@ public class CvsRootPanel extends javax.swing.JPanel {
 
         accessLabel.setLabelFor(accessComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(accessLabel, org.openide.util.NbBundle.getMessage(CvsRootPanel.class, "BK1006"));
+        accessLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_AccessMethod"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 3);
@@ -95,6 +96,7 @@ public class CvsRootPanel extends javax.swing.JPanel {
 
         userLabel.setLabelFor(userTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(CvsRootPanel.class, "BK1007"));
+        userLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_Username"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -111,6 +113,7 @@ public class CvsRootPanel extends javax.swing.JPanel {
 
         hostLabel.setLabelFor(hostTextField);
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(CvsRootPanel.class, "BK1008"));
+        hostLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_CVSHost"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -125,6 +128,7 @@ public class CvsRootPanel extends javax.swing.JPanel {
 
         portLabel.setLabelFor(portTextField);
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(CvsRootPanel.class, "BK1009"));
+        portLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_CVSPort"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(portLabel, gridBagConstraints);
@@ -140,6 +144,7 @@ public class CvsRootPanel extends javax.swing.JPanel {
 
         repositoryLabel.setLabelFor(repositoryTextField);
         org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(CvsRootPanel.class, "BK1005"));
+        repositoryLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_Repository"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 3);

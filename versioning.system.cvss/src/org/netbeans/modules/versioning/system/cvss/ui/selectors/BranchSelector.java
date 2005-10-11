@@ -15,7 +15,6 @@ package org.netbeans.modules.versioning.system.cvss.ui.selectors;
 
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.Client;
-import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.connection.*;
 import org.netbeans.lib.cvsclient.event.*;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
@@ -23,26 +22,18 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.CommandException;
 import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
-import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.NodeOperation;
 import org.openide.nodes.NodeAcceptor;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Allows to select branches for given repository path,
@@ -51,11 +42,7 @@ import java.io.IOException;
  */
 public final class BranchSelector implements Runnable {
 
-    private JList list;
-
     private CVSRoot root;
-
-    private DialogDescriptor descriptor;
 
     private String module;
     
@@ -91,7 +78,13 @@ public final class BranchSelector implements Runnable {
             op.setIconsVisible(false);
             op.setRootVisible(false);
             op.setHelpCtx(new HelpCtx(BranchSelector.class));
-            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2012"), org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2013"), rootNode, new NodeAcceptor() {
+            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2012"), 
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2013"), 
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_BranchSelect"), 
+                                        rootNode, 
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSN_BranchesTree"), 
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_BranchesTree"), 
+                                        new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length != 1) return false;
                     return nodes[0].getLookup().lookup(String.class) != null;
