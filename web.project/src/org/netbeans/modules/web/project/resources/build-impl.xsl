@@ -606,7 +606,7 @@ is divided into following sections:
                         base="${{build.generated.dir}}/wsbinary"
                         sourceBase="${{build.generated.dir}}/wsclient"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
-                        mapping="${{build.web.dir.real}}/WEB-INF/{$wsclientname}-mapping.xml"
+                        mapping="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-mapping.xml"
                         httpproxy="${{wscompile.client.{$wsclientname}.proxy}}"
                         config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
@@ -624,6 +624,13 @@ is divided into following sections:
                             <xsl:value-of select="webproject3:web-service-client-name"/><xsl:text>-client-wscompile</xsl:text>
                         </xsl:for-each>
                     </xsl:attribute>
+                    <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
+                        <xsl:variable name="wsclientname">
+                            <xsl:value-of select="webproject3:web-service-client-name"/>
+                        </xsl:variable>
+	                    <copy file="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-mapping.xml"
+	                        tofile="${{build.web.dir.real}}/WEB-INF/{$wsclientname}-mapping.xml"/>
+                    </xsl:for-each>
                 </target>
                 <target name="web-service-client-compile" depends="web-service-client-generate">
                     <webproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
