@@ -19,12 +19,10 @@ import org.netbeans.core.startup.ModuleHistory;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.netbeans.core.NbTopManager;
-import org.netbeans.core.modules.*;
 import org.openide.util.*;
 import java.io.File;
 import java.util.*;
 import javax.print.PrintServiceLookup;
-
 /** Test whether modules can really register things in their META-INF/services/class.Name
  * files, and whether this behaves correctly when the modules are disabled/enabled.
  * Note that Plain loads its classpath modules as soon as you ask for it, so these
