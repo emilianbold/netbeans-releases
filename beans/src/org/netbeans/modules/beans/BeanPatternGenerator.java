@@ -866,7 +866,7 @@ final class BeanPatternGenerator extends Object {
     static boolean usesConstructorParameters( JavaClass eventClass, boolean passEvent ) throws JmiException {
 
         assert JMIUtils.isInsideTrans();
-        if ( passEvent || eventClass == null || JMIUtils.getConstructors(eventClass).size() > 1 )
+        if ( passEvent || eventClass == null || eventClass.isInterface() || JMIUtils.getConstructors(eventClass).size() > 1 )
             return false;
         else
             return true;
