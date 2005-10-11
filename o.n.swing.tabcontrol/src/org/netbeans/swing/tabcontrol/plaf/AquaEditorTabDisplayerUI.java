@@ -170,7 +170,7 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         
         int centerY = (((displayer.getHeight() - 
             (AquaEditorTabCellRenderer.TOP_INSET + AquaEditorTabCellRenderer.BOTTOM_INSET)) / 2) 
-            + AquaEditorTabCellRenderer.TOP_INSET - 1) + getTabAreaInsets().top;
+            + AquaEditorTabCellRenderer.TOP_INSET - 1) + getTabAreaInsets().top + 1;
         
         if (lineMiddleColor == null) {
             lineMiddleColor = ColorUtil.getMiddle(UIManager.getColor("controlShadow"), 
@@ -178,8 +178,8 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         }
         g.setColor (lineMiddleColor);
         
-        int rightLineStart = getTabsAreaWidth() - 4;
-        int rightLineEnd = displayer.getWidth() - 7;
+        int rightLineStart = getTabsAreaWidth() - 14;
+        int rightLineEnd = displayer.getWidth() - 9;
         
         if (displayer.getModel().size() > 0 && !scroll().isLastTabClipped()) {
             //Extend the line out to the edge of the last visible tab

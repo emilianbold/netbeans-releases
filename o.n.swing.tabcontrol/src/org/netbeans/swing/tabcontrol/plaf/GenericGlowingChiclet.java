@@ -612,37 +612,37 @@ class GenericGlowingChiclet {
         }
 
         if (notchRight) {
-            gp.curveTo(bds.x + bds.width - upperRightArc, bds.y, bds.x
-                + bds.width,
-                bds.y, bds.x + bds.width,
+            gp.curveTo(bds.x + bds.width - upperRightArc - 1, bds.y, bds.x
+                + bds.width - 1,
+                bds.y, bds.x + bds.width - 1,
                 Math.min( bds.y + upperRightArc,
                 bds.y + (bds.height / 2) - notchR));
 
             if (bds.y + upperRightArc < bds.y + (bds.height / 2) - notchR) {
-                gp.lineTo(bds.x + bds.width,
+                gp.lineTo(bds.x + bds.width - 1,
                           bds.y + (bds.height / 2) - notchR);
             }
-            gp.curveTo(bds.x + bds.width, bds.y + (bds.height / 2) - notchR,
-                       bds.x + bds.width - notchR,
+            gp.curveTo(bds.x + bds.width - 1, bds.y + (bds.height / 2) - notchR,
+                       bds.x + bds.width - notchR - 1,
                        bds.y + (bds.height / 2) - notchR,
-                       bds.x + bds.width - notchR, bds.y + (bds.height / 2));
+                       bds.x + bds.width - notchR - 1, bds.y + (bds.height / 2));
 
-            gp.curveTo(bds.x + bds.width - notchR, bds.y + (bds.height / 2),
-                       bds.x + bds.width - notchR,
-                       bds.y + (bds.height / 2) + notchR, bds.x + bds.width,
+            gp.curveTo(bds.x + bds.width - notchR - 1, bds.y + (bds.height / 2),
+                       bds.x + bds.width - notchR - 1,
+                       bds.y + (bds.height / 2) + notchR, bds.x + bds.width - 1,
                        bds.y + (bds.height / 2) + notchR);
 
             if (bds.y + (bds.height / 2) + notchR
                     < bds.y + bds.height - lowerRightArc) {
-                gp.lineTo(bds.x + bds.width,
+                gp.lineTo(bds.x + bds.width - 1,
                           bds.y + bds.height - lowerRightArc);
             }
 
-            gp.curveTo(bds.x + bds.width, Math.max(
+            gp.curveTo(bds.x + bds.width - 1, Math.max(
                     bds.y + (bds.height / 2) + notchR,
                     bds.y + bds.height - lowerRightArc),
-                       bds.x + bds.width, bds.y + bds.height,
-                       bds.x + bds.width - lowerRightArc, bds.y + bds.height);
+                       bds.x + bds.width - 1, bds.y + bds.height,
+                       bds.x + bds.width - lowerRightArc - 1, bds.y + bds.height);
 
         } else {
             if (upperRightArc != 0) {
