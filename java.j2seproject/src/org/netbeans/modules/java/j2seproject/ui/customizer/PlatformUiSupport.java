@@ -26,7 +26,6 @@ import java.util.TreeSet;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -406,19 +405,31 @@ public class PlatformUiSupport {
         
     }
     
-    private static class PlatformListCellRenderer extends DefaultListCellRenderer {
+    private static class PlatformListCellRenderer implements ListCellRenderer {
+        
+        private ListCellRenderer delegate;
+        
+        public PlatformListCellRenderer () {
+            this.delegate = HtmlRenderer.createRenderer ();
+        }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof PlatformKey : "Wrong model";  //NOI18N
-            PlatformKey key = (PlatformKey) value;
             String name;
-            if (key.isBroken()) {
-                name = NbBundle.getMessage (PlatformUiSupport.class,"TXT_BrokenPlatformFmt", key.getDisplayName());
+            if (value == null) {
+                name = "";  //NOI18N
             }
             else {
-                name = key.getDisplayName();
+                assert value instanceof PlatformKey : "Wrong model";  //NOI18N
+                PlatformKey key = (PlatformKey) value;           
+                if (key.isBroken()) {
+                    name = "<html><font color=\"#A40000\">" +    //NOI18N
+                        NbBundle.getMessage (PlatformUiSupport.class,"TXT_BrokenPlatformFmt", key.getDisplayName());
+                }
+                else {
+                    name = key.getDisplayName();
+                }
             }
-            return super.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+            return this.delegate.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
         }        
     }
     
@@ -569,15 +580,20 @@ public class PlatformUiSupport {
         }
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof SourceLevelKey;
-            SourceLevelKey key = (SourceLevelKey) value;
             String message;
-            if (key.isBroken()) {                
-                message = "<html><font color=\"#A40000\">" + 
-                    NbBundle.getMessage(PlatformUiSupport.class,"TXT_InvalidSourceLevel",key.getSourceLevel().toString());
+            if (value == null) {
+                message = "";   //NOI18N
             }
             else {
-                message = key.getSourceLevel().toString();
+                assert value instanceof SourceLevelKey;
+                SourceLevelKey key = (SourceLevelKey) value;            
+                if (key.isBroken()) {                
+                    message = "<html><font color=\"#A40000\">" +    //NOI18N
+                        NbBundle.getMessage(PlatformUiSupport.class,"TXT_InvalidSourceLevel",key.getSourceLevel().toString());
+                }
+                else {
+                    message = key.getSourceLevel().toString();
+                }
             }
             return this.delegate.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
         }

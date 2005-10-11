@@ -234,8 +234,6 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 }
             }                
             if (activePlatform == null) {
-                //Should never happen
-                assert false : "Broken platform but the BrokenReferencesSupport.isBroken () returned false";    //NOI18N
                 return true;
             }
         }
