@@ -19,6 +19,7 @@ import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
@@ -68,10 +69,11 @@ public class CallEjbAction extends NodeAction {
 	if (serverId == null) {
 	    return false;
 	}
-	if (Deployment.getDefault().getJ2eePlatform(serverId) == null) {
+	J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverId);
+	if (platform == null) {
 	    return false;
 	}
-	if (!Deployment.getDefault().getJ2eePlatform(serverId).getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+	if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
 	    return false;
 	}
         return jc == null ? false : !jc.isInterface();
