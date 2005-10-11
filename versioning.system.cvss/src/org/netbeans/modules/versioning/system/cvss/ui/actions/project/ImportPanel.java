@@ -36,6 +36,7 @@ public class ImportPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setName(org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK0014"));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/project/Bundle").getString("ACSD_ImportPanel"));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1012"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -45,6 +46,7 @@ public class ImportPanel extends javax.swing.JPanel {
 
         jLabel3.setLabelFor(folderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1104"));
+        jLabel3.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/project/Bundle").getString("TT_FolderToImport"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -55,14 +57,16 @@ public class ImportPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(folderTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(folderButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1016"));
+        org.openide.awt.Mnemonics.setLocalizedText(folderButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1020"));
+        folderButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/project/Bundle").getString("TT_BrowseFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
         add(folderButton, gridBagConstraints);
 
-        jLabel1.setLabelFor(commentScrollPane);
+        jLabel1.setLabelFor(commentTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK0001"));
+        jLabel1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/project/Bundle").getString("TT_ImportMessage"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -89,6 +93,7 @@ public class ImportPanel extends javax.swing.JPanel {
 
         jLabel2.setLabelFor(moduleTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportPanel.class, "Bk0002"));
+        jLabel2.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/project/Bundle").getString("TT_RepositoryFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -102,6 +107,7 @@ public class ImportPanel extends javax.swing.JPanel {
         add(moduleTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(moduleButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1016"));
+        moduleButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/project/Bundle").getString("TT_BrowseRepository"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
@@ -109,7 +115,8 @@ public class ImportPanel extends javax.swing.JPanel {
 
         checkoutCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkoutCheckBox, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK0011"));
-        checkoutCheckBox.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        checkoutCheckBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/project/Bundle").getString("TT_Checkout"));
+        checkoutCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         checkoutCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
