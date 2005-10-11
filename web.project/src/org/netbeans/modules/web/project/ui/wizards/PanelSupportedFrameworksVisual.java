@@ -165,6 +165,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
 
         setPreferredSize(new java.awt.Dimension(500, 340));
         setRequestFocusEnabled(false);
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "MNE_Frameworks").charAt(0));
         jLabel1.setLabelFor(jTableFrameworks);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "LBL_NWP2_Frameworks"));
         gridBagConstraints = new java.awt.GridBagConstraints();
