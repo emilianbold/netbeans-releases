@@ -37,12 +37,74 @@ public class ColumnModels {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
      * table view representation.
      */
-    public abstract static class AbstractColumn extends ColumnModel 
-    implements Constants {
+    private static class AbstractColumn extends ColumnModel {
+        
+        private String id;
+        private String previousColumnId = null;
+        private String nextColumnId = null;
+        private String displayName;
+        private String shortDescription;
+        private Class type;
+        private boolean defaultVisible;
+        private PropertyEditor propertyEditor;
         
         Properties properties = Properties.getDefault ().
             getProperties ("debugger").getProperties ("views");
 
+        public AbstractColumn(String id, String displayName, String shortDescription,
+                              Class type) {
+            this(id, displayName, shortDescription, type, true);
+        }
+        
+        public AbstractColumn(String id, String displayName, String shortDescription,
+                              Class type, boolean defaultVisible) {
+            this(id, null, null, displayName, shortDescription, type, defaultVisible);
+        }
+        
+        public AbstractColumn(String id, String previousColumnId, String nextColumnId,
+                              String displayName, String shortDescription,
+                              Class type, boolean defaultVisible) {
+            this(id, previousColumnId, nextColumnId, displayName, shortDescription,
+                 type, defaultVisible, null);
+        }
+        
+        public AbstractColumn(String id, String previousColumnId, String nextColumnId,
+                              String displayName, String shortDescription,
+                              Class type, boolean defaultVisible,
+                              PropertyEditor propertyEditor) {
+            this.id = id;
+            this.previousColumnId = previousColumnId;
+            this.nextColumnId = nextColumnId;
+            this.displayName = displayName;
+            this.shortDescription = shortDescription;
+            this.type = type;
+            this.defaultVisible = defaultVisible;
+            this.propertyEditor = propertyEditor;
+        }
+        
+        public String getID() {
+            return id;
+        }
+        
+        public String getPreviuosColumnID () {
+            return previousColumnId;
+        }
+        
+        public String getNextColumnID() {
+            return nextColumnId;
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getBundle (ColumnModels.class).getString(displayName);
+        }
+        
+        public String getShortDescription() {
+            return NbBundle.getBundle (ColumnModels.class).getString(shortDescription);
+        }
+        
+        public Class getType() {
+            return type;
+        }
         
         /**
          * Set true if column is visible.
@@ -120,7 +182,7 @@ public class ColumnModels {
          * @return true if column should be visible by default
          */
         public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
+            return properties.getBoolean (getID () + ".visible", defaultVisible);
         }
 
         /**
@@ -144,703 +206,7 @@ public class ColumnModels {
                 false
             );
         }
-    }
-    
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
-     * representation.
-     */
-    public static class DefaultBreakpointsColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "DefaultBreakpointColumn";
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (DefaultBreakpointsColumn.class).
-                getString ("CTL_BreakpointView_Column_Name_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (DefaultBreakpointsColumn.class).
-                getString ("CTL_BreakpointView_Column_Name_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return null;
-        }
-    }
-    
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
-     * representation.
-     */
-    public static class BreakpointEnabledColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return BREAKPOINT_ENABLED_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (BreakpointEnabledColumn.class).
-                getString ("CTL_BreakpointView_Column_Enabled_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (BreakpointEnabledColumn.class).
-                getString ("CTL_BreakpointView_Column_Enabled_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return Boolean.TYPE;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
-    }
-    
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
-     * representation.
-     */
-    public static class DefaultCallStackColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "DefaultCallStackColumn";
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (DefaultCallStackColumn.class).
-                getString ("CTL_CallstackView_Column_Name_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (DefaultCallStackColumn.class).
-                getString ("CTL_CallstackView_Column_Name_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return null;
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
-     * view representation.
-     */
-    public static class CallStackLocationColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return CALL_STACK_FRAME_LOCATION_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (CallStackLocationColumn.class).
-                getString ("CTL_CallstackView_Column_Location_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (CallStackLocationColumn.class)
-            .getString ("CTL_CallstackView_Column_Location_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", false);
-        }
-    }
-    
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
-     * view representation.
-     */
-    public static class DefaultLocalsColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "DefaultLocalsColumn";
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (DefaultLocalsColumn.class).
-                getString ("CTL_LocalsView_Column_Name_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (DefaultLocalsColumn.class).
-                getString ("CTL_LocalsView_Column_Name_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return null;
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
-     * view representation.
-     */
-    public static class LocalsToStringColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return LOCALS_TO_STRING_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column previous to this one.
-         *
-         * @return ID of column previous to this one
-         */
-        public String getPreviuosColumnID () {
-            return LOCALS_VALUE_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (LocalsToStringColumn.class).
-                getString ("CTL_LocalsView_Column_ToString_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (LocalsToStringColumn.class).
-                getString ("CTL_LocalsView_Column_ToString_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", false);
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
-     * table view representation.
-     */
-    public static class LocalsTypeColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return LOCALS_TYPE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column next to this one.
-         *
-         * @return ID of column next to this one
-         */
-        public String getNextColumnID () {
-            return LOCALS_VALUE_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (LocalsTypeColumn.class).
-                getString ("CTL_LocalsView_Column_Type_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (LocalsTypeColumn.class).
-                getString ("CTL_LocalsView_Column_Type_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
-     * view representation.
-     */
-    public static class LocalsValueColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return LOCALS_VALUE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column previous to this one.
-         *
-         * @return ID of column previous to this one
-         */
-        public String getPreviuosColumnID () {
-            return LOCALS_TYPE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column next to this one.
-         *
-         * @return ID of column next to this one
-         */
-        public String getNextColumnID () {
-            return LOCALS_TO_STRING_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (LocalsValueColumn.class).
-                getString ("CTL_LocalsView_Column_Value_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (LocalsValueColumn.class).
-                getString ("CTL_LocalsView_Column_Value_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
-    }
-    
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
-     * view representation.
-     */
-    public static class DefaultSessionColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "DefaultSessionColumn";
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (DefaultSessionColumn.class).
-                getString ("CTL_SessionsView_Column_Name_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (DefaultSessionColumn.class).
-                getString ("CTL_SessionsView_Column_Name_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return null;
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
-     * view representation.
-     */
-    public static class SessionHostNameColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return SESSION_HOST_NAME_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column previous to this one.
-         *
-         * @return ID of column previous to this one
-         */
-        public String getPreviuosColumnID () {
-            return SESSION_LANGUAGE_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (SessionHostNameColumn.class).
-                getString ("CTL_SessionsView_Column_HostName_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (SessionHostNameColumn.class).
-                getString ("CTL_SessionsView_Column_HostName_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", false);
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
-     * table view representation.
-     */
-    public static class SessionStateColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return SESSION_STATE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column next to this one.
-         *
-         * @return ID of column next to this one
-         */
-        public String getNextColumnID () {
-            return SESSION_HOST_NAME_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (SessionStateColumn.class).
-                getString ("CTL_SessionsView_Column_State_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (SessionStateColumn.class).
-                getString ("CTL_SessionsView_Column_State_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
-     * view representation.
-     */
-    public static class SessionLanguageColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return SESSION_LANGUAGE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column previous to this one.
-         *
-         * @return ID of column previous to this one
-         */
-        public String getPreviuosColumnID () {
-            return SESSION_STATE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column next to this one.
-         *
-         * @return ID of column next to this one
-         */
-        public String getNextColumnID () {
-            return SESSION_HOST_NAME_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (SessionLanguageColumn.class).
-                getString ("CTL_SessionsView_Column_Language_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (SessionLanguageColumn.class).
-                getString ("CTL_SessionsView_Column_Language_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return Session.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
-    
+        
         /**
          * Returns {@link java.beans.PropertyEditor} to be used for 
          * this column. Default implementation returns <code>null</code> - 
@@ -849,9 +215,85 @@ public class ColumnModels {
          * @return {@link java.beans.PropertyEditor} to be used for 
          *         this column
          */
-        public PropertyEditor getPropertyEditor () {
-            return new LanguagePropertyEditor ();
+        public PropertyEditor getPropertyEditor() {
+            return propertyEditor;
         }
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
+     * representation.
+     */
+    public static ColumnModel createDefaultBreakpointsColumn() {
+        return new AbstractColumn("DefaultBreakpointColumn",
+                "CTL_BreakpointView_Column_Name_Name",
+                "CTL_BreakpointView_Column_Name_Desc",
+                null);
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
+     * representation.
+     */
+    public static ColumnModel createBreakpointEnabledColumn() {
+        return new AbstractColumn(Constants.BREAKPOINT_ENABLED_COLUMN_ID,
+                "CTL_BreakpointView_Column_Enabled_Name",
+                "CTL_BreakpointView_Column_Enabled_Desc",
+                Boolean.TYPE);
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
+     * representation.
+     */
+    public static ColumnModel createDefaultCallStackColumn() {
+        return new AbstractColumn("DefaultCallStackColumn",
+                "CTL_CallstackView_Column_Name_Name",
+                "CTL_CallstackView_Column_Name_Desc",
+                null);
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
+     */
+    public static ColumnModel createCallStackLocationColumn() {
+        return new AbstractColumn(Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID,
+                "CTL_CallstackView_Column_Location_Name",
+                "CTL_CallstackView_Column_Location_Desc",
+                String.class,
+                false);
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
+     */
+    public static ColumnModel createDefaultLocalsColumn() {
+        return new AbstractColumn("DefaultLocalsColumn",
+                "CTL_LocalsView_Column_Name_Name",
+                "CTL_LocalsView_Column_Name_Desc",
+                null);
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
+     */
+    public static ColumnModel createLocalsToStringColumn() {
+        return new AbstractColumn(Constants.LOCALS_TO_STRING_COLUMN_ID,
+                Constants.LOCALS_VALUE_COLUMN_ID,
+                null,
+                "CTL_LocalsView_Column_ToString_Name",
+                "CTL_LocalsView_Column_ToString_Desc",
+                String.class,
+                false);
     }
     
     /**
@@ -859,173 +301,54 @@ public class ColumnModels {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
      * table view representation.
      */
-    public static class DefaultThreadColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "DefaultThreadColumn";
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (DefaultThreadColumn.class).
-                getString ("CTL_ThreadsView_Column_Name_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (DefaultThreadColumn.class).
-                getString ("CTL_ThreadsView_Column_Name_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return null;
-        }
+    public static ColumnModel createLocalsTypeColumn() {
+        return new AbstractColumn(Constants.LOCALS_TYPE_COLUMN_ID,
+                null,
+                Constants.LOCALS_VALUE_COLUMN_ID,
+                "CTL_LocalsView_Column_Type_Name",
+                "CTL_LocalsView_Column_Type_Desc",
+                String.class,
+                true);
     }
-
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
-     * table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
-    public static class ThreadStateColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return THREAD_STATE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column next to this one.
-         *
-         * @return ID of column next to this one
-         */
-        public String getNextColumnID () {
-            return THREAD_SUSPENDED_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (ThreadStateColumn.class).
-                getString ("CTL_ThreadsView_Column_State_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (ThreadStateColumn.class).
-                getString ("CTL_ThreadsView_Column_State_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
+    public static ColumnModel createLocalsValueColumn() {
+        return new AbstractColumn(Constants.LOCALS_VALUE_COLUMN_ID,
+                Constants.LOCALS_TYPE_COLUMN_ID,
+                Constants.LOCALS_TO_STRING_COLUMN_ID,
+                "CTL_LocalsView_Column_Value_Name",
+                "CTL_LocalsView_Column_Value_Desc",
+                String.class,
+                true);
     }
-
     /**
      * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
-     * table view representation.
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
      */
-    public static class ThreadSuspendedColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-                return THREAD_SUSPENDED_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column previous to this one.
-         *
-         * @return ID of column previous to this one
-         */
-        public String getPreviuosColumnID () {
-            return THREAD_STATE_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (ThreadSuspendedColumn.class).
-                getString ("CTL_ThreadsView_Column_Suspended_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (ThreadSuspendedColumn.class).
-                getString ("CTL_ThreadsView_Column_Suspended_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return Boolean.TYPE;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", false);
-        }
+    public static ColumnModel createDefaultSessionColumn() {
+        return new AbstractColumn("DefaultSessionColumn",
+                "CTL_SessionsView_Column_Name_Name",
+                "CTL_SessionsView_Column_Name_Desc",
+                null);
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
+     */
+    public static ColumnModel createSessionHostNameColumn() {
+        return new AbstractColumn(Constants.SESSION_HOST_NAME_COLUMN_ID,
+                Constants.SESSION_LANGUAGE_COLUMN_ID,
+                null,
+                "CTL_SessionsView_Column_HostName_Name",
+                "CTL_SessionsView_Column_HostName_Desc",
+                String.class,
+                false);
     }
     
     /**
@@ -1033,45 +356,30 @@ public class ColumnModels {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
      * table view representation.
      */
-    public static class DefaultWatchesColumn extends AbstractColumn {
+    public static ColumnModel createSessionStateColumn () {
+        return new AbstractColumn(Constants.SESSION_STATE_COLUMN_ID,
+                null,
+                Constants.SESSION_HOST_NAME_COLUMN_ID,
+                "CTL_SessionsView_Column_State_Name",
+                "CTL_SessionsView_Column_State_Desc",
+                String.class,
+                true);
+    }
 
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "DefaultWatchesColumn";
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (DefaultWatchesColumn.class).
-                getString ("CTL_WatchesView_Column_Name_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (DefaultWatchesColumn.class).
-                getString ("CTL_WatchesView_Column_Name_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return null;
-        }
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table 
+     * view representation.
+     */
+    public static ColumnModel createSessionLanguageColumn () {
+        return new AbstractColumn(Constants.SESSION_LANGUAGE_COLUMN_ID,
+                Constants.SESSION_STATE_COLUMN_ID,
+                Constants.SESSION_HOST_NAME_COLUMN_ID,
+                "CTL_SessionsView_Column_Language_Name",
+                "CTL_SessionsView_Column_Language_Desc",
+                Session.class,
+                true,
+                new LanguagePropertyEditor ());
     }
 
     /**
@@ -1079,203 +387,101 @@ public class ColumnModels {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
      * table view representation.
      */
-    public static class WatchToStringColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return WATCH_TO_STRING_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column previous to this one.
-         *
-         * @return ID of column previous to this one
-         */
-        public String getPreviuosColumnID () {
-            return WATCH_VALUE_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (WatchToStringColumn.class).
-                getString ("CTL_WatchesView_Column_ToString_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (WatchToStringColumn.class).
-                getString ("CTL_WatchesView_Column_ToString_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", false);
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
-     * table view representation.
-     */
-    public static class WatchTypeColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return WATCH_TYPE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column next to this one.
-         *
-         * @return ID of column next to this one
-         */
-        public String getNextColumnID () {
-            return WATCH_VALUE_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (WatchTypeColumn.class).
-                getString ("CTL_WatchesView_Column_Type_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (WatchTypeColumn.class).
-                getString ("CTL_WatchesView_Column_Type_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
-     * table view representation.
-     */
-    public static class WatchValueColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return WATCH_VALUE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column previous to this one.
-         *
-         * @return ID of column previous to this one
-         */
-        public String getPreviuosColumnID () {
-            return WATCH_TYPE_COLUMN_ID;
-        }
-
-        /**
-         * Returns ID of column next to this one.
-         *
-         * @return ID of column next to this one
-         */
-        public String getNextColumnID () {
-            return WATCH_TO_STRING_COLUMN_ID;
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (WatchValueColumn.class).
-                getString ("CTL_WatchesView_Column_Value_Name");
-        }
-
-        /**
-         * Returns tooltip for given column.
-         *
-         * @return  tooltip for given node
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (WatchValueColumn.class).
-                getString ("CTL_WatchesView_Column_Value_Desc");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return String.class;
-        }
-
-        /**
-         * True if column should be visible by default.
-         *
-         * @return true if column should be visible by default
-         */
-        public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", true);
-        }
+    public static ColumnModel createDefaultThreadColumn() {
+        return new AbstractColumn("DefaultThreadColumn",
+                "CTL_ThreadsView_Column_Name_Name",
+                "CTL_ThreadsView_Column_Name_Desc",
+                null);
     }
     
-    public static class LanguagePropertyEditor extends PropertyEditorSupport {
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
+     */
+    public static ColumnModel createThreadStateColumn() {
+        return new AbstractColumn(Constants.THREAD_STATE_COLUMN_ID,
+                null,
+                Constants.THREAD_SUSPENDED_COLUMN_ID,
+                "CTL_ThreadsView_Column_State_Name",
+                "CTL_ThreadsView_Column_State_Desc",
+                String.class,
+                true);
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
+     */
+    public static ColumnModel createThreadSuspendedColumn() {
+        return new AbstractColumn(Constants.THREAD_SUSPENDED_COLUMN_ID,
+                Constants.THREAD_STATE_COLUMN_ID,
+                null,
+                "CTL_ThreadsView_Column_Suspended_Name",
+                "CTL_ThreadsView_Column_Suspended_Desc",
+                Boolean.TYPE,
+                false);
+    }
+
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
+     */
+    public static ColumnModel createDefaultWatchesColumn() {
+        return new AbstractColumn("DefaultWatchesColumn",
+                "CTL_WatchesView_Column_Name_Name",
+                "CTL_WatchesView_Column_Name_Desc",
+                null);
+    }
+
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
+     */
+    public static ColumnModel createWatchToStringColumn() {
+        return new AbstractColumn(Constants.WATCH_TO_STRING_COLUMN_ID,
+                Constants.WATCH_VALUE_COLUMN_ID,
+                null,
+                "CTL_WatchesView_Column_ToString_Name",
+                "CTL_WatchesView_Column_ToString_Desc",
+                String.class,
+                false);
+    }
+
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
+     */
+    public static ColumnModel createWatchTypeColumn() {
+        return new AbstractColumn(Constants.WATCH_TYPE_COLUMN_ID,
+                null,
+                Constants.WATCH_VALUE_COLUMN_ID,
+                "CTL_WatchesView_Column_Type_Name",
+                "CTL_WatchesView_Column_Type_Desc",
+                String.class,
+                true);
+    }
+
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree 
+     * table view representation.
+     */
+    public static ColumnModel createWatchValueColumn() {
+        return new AbstractColumn(Constants.WATCH_VALUE_COLUMN_ID,
+                Constants.WATCH_TYPE_COLUMN_ID,
+                Constants.WATCH_TO_STRING_COLUMN_ID,
+                "CTL_WatchesView_Column_Value_Name",
+                "CTL_WatchesView_Column_Value_Desc",
+                String.class,
+                true);
+    }
+
+    private static class LanguagePropertyEditor extends PropertyEditorSupport {
         
         public void setValue(Object value) {
             if (value != null && !(value instanceof Session)) {
