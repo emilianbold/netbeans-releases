@@ -17,26 +17,47 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.modules.debugger.ui.Utils;
+import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author   Jan Jancura
  */
-public abstract class DebuggerAction extends AbstractAction {
+public class DebuggerAction extends AbstractAction {
+    
+    private Object action;
 
-    public DebuggerAction () {
+    private DebuggerAction (Object action) {
+        this.action = action;
         new Listener (this);
         setEnabled (getCurrentActionsManager ().isEnabled (getAction ()));
     }
     
-    public abstract Object getAction ();
+    public Object getAction () {
+        return action;
+    }
+    
+    public Object getValue(String key) {
+        if (key == Action.NAME) {
+            return NbBundle.getMessage (DebuggerAction.class, (String) super.getValue(key));
+        }
+        Object value = super.getValue(key);
+        if (key == Action.SMALL_ICON) {
+            if (value instanceof String) {
+                value = Utils.getIcon ((String) value);
+            }
+        }
+        return value;
+    }
     
     public void actionPerformed (ActionEvent evt) {
         // Post the action asynchronously, since we're on AWT
@@ -50,7 +71,142 @@ public abstract class DebuggerAction extends AbstractAction {
             DebuggerManager.getDebuggerManager ().getCurrentEngine ().
                 getActionsManager ();
     }
+    
+    public static DebuggerAction createContinueAction() {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_CONTINUE);
+        action.putValue (Action.NAME, "CTL_Continue_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/Continue" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/Continue.gif" // NOI18N
+        );
+        return action;
+    }
+    
+    public static DebuggerAction createFixAction() {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_FIX);
+        action.putValue (Action.NAME, "CTL_Fix_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/Fix" // NOI18N
+        );
+        action.putValue (
+            "iconBase",
+            "org/netbeans/modules/debugger/resources/actions/Fix.gif" // NOI18N
+        );
+        return action;
+    }
+    
+    public static DebuggerAction createKillAction() {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_KILL);
+        action.putValue (Action.NAME, "CTL_KillAction_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/Kill" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/Kill.gif" // NOI18N
+        );
+        action.setEnabled (false);
+        return action;
+    }
+    
+    public static DebuggerAction createMakeCalleeCurrentAction() {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
+        action.putValue (Action.NAME, "CTL_MakeCalleeCurrentAction_name");
+        return action;
+    }
 
+    public static DebuggerAction createMakeCallerCurrentAction() {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_MAKE_CALLER_CURRENT);
+        action.putValue (Action.NAME, "CTL_MakeCallerCurrentAction_name");
+        return action;
+    }
+    
+    public static DebuggerAction createPauseAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_PAUSE);
+        action.putValue (Action.NAME, "CTL_Pause_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/Pause" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/Pause.gif" // NOI18N
+        );
+        return action;
+    }
+    
+    public static DebuggerAction createPopTopmostCallAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_POP_TOPMOST_CALL);
+        action.putValue (Action.NAME, "CTL_PopTopmostCallAction_name");
+        return action;
+    }
+    
+    public static DebuggerAction createRunIntoMethodAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_RUN_INTO_METHOD);
+        action.putValue (Action.NAME, "CTL_Run_into_method_action_name");
+        return action;
+    }
+    
+    public static DebuggerAction createRunToCursorAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_RUN_TO_CURSOR);
+        action.putValue (Action.NAME, "CTL_Run_to_cursor_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/RunToCursor" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/RunToCursor.gif" // NOI18N
+        );
+        return action;
+    }
+
+    public static DebuggerAction createStepIntoAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_INTO);
+        action.putValue (Action.NAME, "CTL_Step_into_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/StepInto" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/StepInto.gif" // NOI18N
+        );
+        return action;
+    }
+    
+    public static DebuggerAction createStepOutAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_OUT);
+        action.putValue (Action.NAME, "CTL_Step_out_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/StepOut" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/StepOut.gif" // NOI18N
+        );
+        return action;
+    }
+    
+    public static DebuggerAction createStepOverAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_OVER);
+        action.putValue (Action.NAME, "CTL_Step_over_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/StepOver" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/StepOver.gif" // NOI18N
+        );
+        return action;
+    }
+    
+    public static DebuggerAction createToggleBreakpointAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+        action.putValue (Action.NAME, "CTL_Toggle_breakpoint");
+        return action;
+    }
+    
     
     // innerclasses ............................................................
     
