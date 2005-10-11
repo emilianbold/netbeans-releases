@@ -97,6 +97,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void checkValidity() {
+        String pName = packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassName())) {
             setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier")); // NOI18N
         } else if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) {
@@ -105,6 +106,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("MSG_ClassAlreadyExists")); // NOI18N
         } else if (data.isToolbarEnabled() && getIconPath() == null) {
             setErrorMessage(getMessage("MSG_IconRequiredForToolbar")); // NOI18N
+        } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) { 
+            setErrorMessage(getMessage("ERR_Package_Invalid")); // NOI18N
         } else {
             setErrorMessage(null);
         }

@@ -103,7 +103,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             }
         }
         String packageName = comPackageName.getEditor().getItem().toString().trim();
-        if (packageName.length() == 0 || !Pattern.matches("[a-zA-Z0-9.]*", packageName)) { //NOI18N
+        if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) { //NOI18N
             setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
             return;
         }

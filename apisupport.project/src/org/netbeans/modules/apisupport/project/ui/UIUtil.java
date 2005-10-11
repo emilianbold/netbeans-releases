@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.Stack;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -55,6 +56,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * UI related utility methods for the module.
@@ -147,6 +149,24 @@ public final class UIUtil {
         JComboBox packagesComboBox = new JComboBox(PackageView.createListView(srcRoot));
         packagesComboBox.setRenderer(PackageView.listRenderer());
         return packagesComboBox;
+    }
+    
+    /**
+     * Returns true for valid package name.
+     */
+    public static boolean isValidPackageName(String str) {
+        if (str.length() > 0 && str.charAt(0) == '.') {
+            return false;
+        }
+        StringTokenizer tukac = new StringTokenizer(str, ".");
+        while (tukac.hasMoreTokens()) {
+            String token = tukac.nextToken();
+            if ("".equals(token))
+                return false;
+            if (!Utilities.isJavaIdentifier(token))
+                return false;
+        }
+        return true;
     }
     
     /**

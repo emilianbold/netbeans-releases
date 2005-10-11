@@ -97,7 +97,12 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             pValid = false;
         }
         
-        
+        String packageName = packageNameValue.getEditor().getItem().toString().trim();
+        if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) { //NOI18N
+            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_Package_Invalid")); // NOI18N
+            pValid = false;            
+        }
+                        
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         if (pValid && cmf != null) {
             String[] modifiedFiles = cmf.getModifiedPaths();
