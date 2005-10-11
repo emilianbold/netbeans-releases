@@ -206,32 +206,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception PersistenceException if some fatal problem occurred which
      *            prevents loading the form
      */
-    public void loadForm(FileObject formFile, FileObject javaFile,
+    public FormModel loadForm(FileObject formFile, FileObject javaFile,
                          FormModel formModel,
                          List nonfatalErrors)
         throws PersistenceException
     {
         this.formFile = formFile;
-        loadForm(FileUtil.toFile(formFile), 
-              FileUtil.toFile(javaFile),
-              formModel,
-              nonfatalErrors);
-    }    
 
-    /** This method loads the form from given data object.
-     * @param formFile form file corresponding to java file
-     * @param javaFile java file
-     * @param formModel FormModel to be filled with loaded data
-     * @param nonfatalErrors List to be filled with errors occurred during
-     *        loading which are not fatal (but should be reported)
-     * @exception PersistenceException if some fatal problem occurred which
-     *            prevents loading the form
-     */
-    public FormModel loadForm(File formFile, File javaFile,
-                         FormModel formModel,
-                         List nonfatalErrors)
-        throws PersistenceException
-    {
         boolean underTest = ((javaFile == null) || (javaFile.equals(formFile)));
                 
         if (formModel == null) {
@@ -240,7 +221,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
             mainElement = XMLUtil.parse(new org.xml.sax.InputSource(
-                                            FileUtil.toFileObject(formFile).getURL().toExternalForm()),
+                                            formFile.getURL().toExternalForm()),
                                         false, false, null, null)
                           .getDocumentElement();
         }
@@ -303,14 +284,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             formInfoName = null; // not available
 
         try { // try declared superclass from java source first
-            FileObject jFO = FileUtil.toFileObject(javaFile);
             ClassPath classPath;
             Resource resource;
             List classifiers = Collections.EMPTY_LIST;
             if (!underTest) {
-                classPath = ClassPath.getClassPath(jFO, ClassPath.SOURCE);
-                resource = JavaModel.getResource(classPath.findOwnerRoot(jFO),
-                    classPath.getResourceName(jFO));
+                classPath = ClassPath.getClassPath(javaFile, ClassPath.SOURCE);
+                resource = JavaModel.getResource(classPath.findOwnerRoot(javaFile),
+                    classPath.getResourceName(javaFile));
                 classifiers = resource.getClassifiers();
             }
             Iterator classIter = classifiers.iterator();
@@ -320,15 +300,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 String className = javaClass.getName();
                 int dotIndex = className.lastIndexOf('.');
                 className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
-                if (className.equals(jFO.getName())) {
+                if (className.equals(javaFile.getName())) {
                     declaredSuperclassName = javaClass.getSuperClass().getName();
                     break;
                 }
             }
             
-            Class superclass = (declaredSuperclassName != null) ?
-                FormUtils.loadClass(declaredSuperclassName, 
-                    FileUtil.toFileObject(formFile)) : Object.class;
+            Class superclass = ((declaredSuperclassName != null) && (!underTest)) ?
+                FormUtils.loadClass(declaredSuperclassName, formFile) : Object.class;
             formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
 
             if (formBaseClass != superclass)
@@ -746,7 +725,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             visualContainer.setOldLayoutSupport(false);
             formModel.setFreeDesignDefaultLayout(true);
             LayoutModel layoutModel = formModel.getLayoutModel();
-            layoutModel.addRootComponent(
+	    layoutModel.addRootComponent(
                 new LayoutComponent(visualContainer.getId(), true));
             Map nameToIdMap = new HashMap();
             for (int i=0; i<childComponents.length; i++) {
@@ -4674,7 +4653,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private /*static */Class getClassFromString(String type)
         throws ClassNotFoundException
     {
-        if ("int".equals(type)) // NOI18N
+        if ("int".equals(type)) // NOI18N   
             return Integer.TYPE;
         else if ("short".equals(type)) // NOI18N
             return Short.TYPE;

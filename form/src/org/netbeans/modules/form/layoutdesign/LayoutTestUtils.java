@@ -112,7 +112,7 @@ public class LayoutTestUtils implements LayoutConstants {
         codeList.add("};");
     }
     
-    static void dumpTestcode(List codeList, DataObject form, Map idToNameMap) {
+    static void dumpTestcode(List codeList, DataObject form, Map idToNameMap, int idCounter) {
 
         FileWriter fw = null;
         String template = ""; //NOI18N
@@ -138,8 +138,8 @@ public class LayoutTestUtils implements LayoutConstants {
                 System.out.println(line);
                 code += line + "\n"; //NOI18N
             }
-
-            //3. Put the idToNameMap into the code 
+	    
+	    //3.a Put the idToNameMap into the code 
             String nameMap = "HashMap nameToIdMap = new HashMap(); \n"; //NOI18N
             Iterator ids = idToNameMap.keySet().iterator();
             while (ids.hasNext()) {
@@ -147,9 +147,12 @@ public class LayoutTestUtils implements LayoutConstants {
                 nameMap += "nameToIdMap.put(\"" + (String)idToNameMap.get(id) + "\", \"" + id + "\"); \n"; //NOI18N
                 nameMap += "idToNameMap.put(\"" + id + "\", \"" + (String)idToNameMap.get(id) + "\"); \n"; //NOI18N
             }
-
             code = nameMap.concat(code);
             
+            //3.b Set the idCounter to correct value
+            String idCounterStr = "RADComponent.setIdCounter(" + idCounter + "); \n";
+            code = idCounterStr.concat(code);
+	    
             //4. Put the doChanges code into the test class file
             String output = Utilities.replaceString(template, "${CODE_GOES_HERE}", code); //NOI18N
 
@@ -184,9 +187,9 @@ public class LayoutTestUtils implements LayoutConstants {
         
     }
     
-    public static void writeTest(FormDesigner fd, FormDataObject formDO, Map idToNameMap, LayoutModel lm) {
+    public static void writeTest(FormDesigner fd, FormDataObject formDO, Map idToNameMap, LayoutModel lm, int idCounter) {
 	FileObject formFO = formDO.getFormFile();
-	fd.getLayoutDesigner().dumpTestcode(formDO, idToNameMap);
+	fd.getLayoutDesigner().dumpTestcode(formDO, idToNameMap, idCounter);
 	FileWriter fw = null;
 	try {
 	    FileObject fo = formFO.getParent().createData(formFO.getName() + "Test-ExpectedEndModel", "txt"); //NOI18N
@@ -203,4 +206,5 @@ public class LayoutTestUtils implements LayoutConstants {
 	    }
 	}
     }
+    
 }

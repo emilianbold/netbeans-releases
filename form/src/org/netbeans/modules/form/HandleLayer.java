@@ -87,6 +87,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
+    private int savedIdCounter = -1;
+    
     // -------
 
     HandleLayer(FormDesigner fd) {
@@ -426,7 +428,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
 		FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
-		LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel);
+		LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel, savedIdCounter);
             }
         } else if (((keyCode == KeyEvent.VK_S)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
@@ -435,6 +437,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             try {
                 if (saveCookie != null) saveCookie.save();
                 formFile.copy(formFile.getParent(), formFile.getName() + "Test-StartingForm", formFile.getExt()); //NOI18N
+		savedIdCounter = RADComponent.getIdCounter();
             } catch (IOException ioe) {
                 //TODO
             }

@@ -1459,4 +1459,12 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             propertyDescriptors.clear();
         }
     }    
+
+    public static int getIdCounter() {
+        return idCounter;
+    }
+
+    public static void setIdCounter(int aIdCounter) {
+        idCounter = aIdCounter;
+    }
 }

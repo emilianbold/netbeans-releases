@@ -316,8 +316,8 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
-    public void dumpTestcode(DataObject form, Map idToNameMap) {
-        LayoutTestUtils.dumpTestcode(testCode, form, idToNameMap);
+    public void dumpTestcode(DataObject form, Map idToNameMap, int idCounter) {
+        LayoutTestUtils.dumpTestcode(testCode, form, idToNameMap, idCounter);
     }
     
     // -----
@@ -478,6 +478,9 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (!dragger.isResizing() && (!lockDimension || dragger.getTargetContainer() == null)) {
+	    if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+		em.log("Asking for container id: " + containerId); //NOI18N		
+	    }
             dragger.setTargetContainer(layoutModel.getLayoutComponent(containerId));
         }
 
