@@ -163,7 +163,7 @@ public class XMLFormatter extends ExtFormatter {
                                                     deltahelp = Utilities.getRowFirstNonWhite(doc, rowOffset );
                                                     if (deltahelp > -1){
                                                         token = sup.getTokenChain(deltahelp, deltahelp+1);
-                                                        if (token != null && (token.getTokenID() != XMLTokenIDs.TEXT) && token.getTokenContextPath().contains(XMLDefaultTokenContext.contextPath)){
+                                                        if (token != null && token.getTokenContextPath().contains(XMLDefaultTokenContext.contextPath)){
                                                             changeRowIndent(doc, rowOffset, indentation);
                                                             int htmlindent = Utilities.getRowIndent(doc, rowOffset);
                                                             delta = delta + Utilities.getRowFirstNonWhite(doc, rowOffset ) - deltahelp;
