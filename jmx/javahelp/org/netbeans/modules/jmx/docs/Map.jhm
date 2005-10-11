@@ -15,7 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <map version="1.0">
   <mapID target="jmx_about" url="jmx_about.html" />
-	<mapID target="tbd" url="tbd.html" />
         <mapID target="ext_documentation" url="ext_documentation.html" />
 	<mapID target="jmx_architecture" url="jmx_architecture.html" />
         <mapID target="jmx_instrumentation" url="jmx_instrumentation.html" />
