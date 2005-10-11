@@ -62,16 +62,16 @@ object. All available configurations are listed in
 <a href="@org-openide-loaders@/org/openide/awt/ToolbarPool.html#getConfigurations()"><code>ToolbarPool.getConfigurations()</code></a>,
 
 and <code>ToolbarPool</code> also permits the current configuration
-to be retrieved and set. Normally the choice of configuration is
-made by the user in a popup menu on the Main Window.
-Users may also configure toolbars on a per-workspace basis,
-though currently this is not accessible from the APIs.
+to be retrieved and set.  Please note that even though there are two
+ToolbarConfiguration instances by default (Standard/Coding and Debugging)
+there is no user interface for switching between them. Use 
+<code>ToolbarPool.setConfiguration(String)</code> to activate a different toolbar
+configuration. Users may only show/hide toolbars from the active configuration.
 
 <p>What are these configurations and how may new ones be added?
 Essentially, a configuration is just a component which displays the
 toolbars it represents (it is the responsibility of the
-configuration to determine which these are), and also provides a
-popup menu allowing the user to switch to a different one. To add a
+configuration to determine which these are). To add a
 new configuration, you should as usual add an instance to the main
 toolbars folder, which should be a subclass of either:
 
