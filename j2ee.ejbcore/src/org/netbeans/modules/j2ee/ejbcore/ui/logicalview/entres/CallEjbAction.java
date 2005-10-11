@@ -64,8 +64,13 @@ public class CallEjbAction extends NodeAction {
         FileObject srcFile = JavaModel.getFileObject(jc.getResource());
         Project project = FileOwnerQuery.getOwner(srcFile);
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
-        Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
 	String serverId = j2eeModuleProvider.getServerInstanceID();
+	if (serverId == null) {
+	    return false;
+	}
+	if (Deployment.getDefault().getJ2eePlatform(serverId) == null) {
+	    return false;
+	}
 	if (!Deployment.getDefault().getJ2eePlatform(serverId).getSupportedModuleTypes().contains(J2eeModule.EJB)) {
 	    return false;
 	}
