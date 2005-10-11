@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE transformations PUBLIC "-//NetBeans//DTD Module Automatic Dependencies 1.0//EN" "http://www.netbeans.org/dtds/module-auto-deps-1_0.dtd">
+<transformations version="1.0">
+
+    <transformationgroup>
+        <description>message-1</description>
+        <exclusion codenamebase="a" prefix="false"/>
+        <exclusion codenamebase="b" prefix="true"/>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="orig" spec="1.1"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="nue" spec="1.0"/>
+                </result>
+                <result>
+                    <token-dependency name="Nue"/>
+                </result>
+            </implies>
+        </transformation>
+        <transformation>
+            <trigger-dependency type="cancel">
+                <package-dependency name="javax.death"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="javax.death" major="1" spec="1.0"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>
+
+    <transformationgroup>
+        <description>message-1a</description>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="stabilized" major="1"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="stabilized" major="1" spec="1.0"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>
+
+</transformations>
