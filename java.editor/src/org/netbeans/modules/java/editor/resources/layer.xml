@@ -170,7 +170,6 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-ElementCreatingCompletionProvider.instance"/>                    
                     <file name="org-netbeans-modules-editor-java-AbbreviationsCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-editor-java-JavadocCompletionProvider.instance"/>
                     <attr name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance/org-netbeans-modules-editor-java-ElementCreatingCompletionProvider.instance" boolvalue="true"/>
                 </folder>
                 <folder name="HyperlinkProviders">
