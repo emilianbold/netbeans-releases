@@ -110,7 +110,7 @@ public final class OpenAction extends AbstractAction {
     private static boolean openElement(final Element element) {
         repo.beginTrans(false);
         try {
-            Resource resource = element.getResource();
+            Resource resource = element.isValid() ? element.getResource() : null;
             if (resource != null) {
                 JavaModel.setClassPath(resource);
                 DataObject dob = jmm.getDataObject(resource);
@@ -200,8 +200,10 @@ public final class OpenAction extends AbstractAction {
         // get elem position first
         repo.beginTrans(false);
         try {
-            JavaModel.setClassPath(element.getResource());
-            bounds = jmm.getElementPosition(element);
+            if (element.isValid()) {
+                JavaModel.setClassPath(element.getResource());
+                bounds = jmm.getElementPosition(element);
+            }
         } finally {
             repo.endTrans(false);
         }
