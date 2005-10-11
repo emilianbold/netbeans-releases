@@ -172,6 +172,11 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         commitMessages = null;
         ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         elementAnnotationsSubstitute = loc.getString("CTL_AnnotationSubstitute");
+
+        doc.addDocumentListener(this);
+        foldHierarchy.addFoldHierarchyListener(this);
+        editorUI.addPropertyChangeListener(this);
+
         revalidate();  // resize the component
     }
 
@@ -421,9 +426,6 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         // register with tooltip manager
         setToolTipText("");
 
-        doc.addDocumentListener(this);
-        foldHierarchy.addFoldHierarchyListener(this);
-        editorUI.addPropertyChangeListener(this);
     }
 
     /**
