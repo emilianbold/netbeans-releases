@@ -33,6 +33,16 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 
 /** Node representing a J2EE Server node under Servers node.
+ * <p>
+ * Usage:<br>
+ * <pre>
+ *      J2eeServerNode server = J2eeServerNode.invoke("Bundled Tomcat");
+ *      server.start();
+ *      ....
+ *      server.waitFinished();
+ *      server.stop();
+ * </pre>
+ *
  * @author Martin.Schovanek@sun.com
  */
 public class J2eeServerNode extends Node {
@@ -49,11 +59,19 @@ public class J2eeServerNode extends Node {
             "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
             "SERVER_REGISTRY_NODE");
     
-    /** Finds Source Packages node under project with given name
+    /** Creates new instance of J2eeServerNode with given name
      * @param projectName display name of project
      */
     public J2eeServerNode(String serverName) {
         super(new RuntimeTabOperator().getRootNode(), SERVERS+"|"+serverName);
+    }
+    
+    /** Finds J2EE Server node with given name
+     * @param projectName display name of project
+     */
+    public static J2eeServerNode invoke(String serverName) {
+        RuntimeTabOperator.invoke();
+        return new J2eeServerNode(serverName);
     }
     
     /** tests popup menu items for presence */
@@ -106,6 +124,11 @@ public class J2eeServerNode extends Node {
     public void stop() {
         stopAction.perform(this);
         waitStopped();
+    }
+    
+    /** waits till server finishes current action */
+    public void waitFinished() {
+        waitNotWaiting();
     }
     
     //// PRIVATE METHODS ////

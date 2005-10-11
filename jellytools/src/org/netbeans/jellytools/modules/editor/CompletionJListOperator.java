@@ -253,13 +253,13 @@ public class CompletionJListOperator extends JListOperator {
         
         static DocumentListener listener = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
-                setModified(true);
+                //setModified(true);
             }
             public void insertUpdate(DocumentEvent e) {
                 setModified(true);
             }
             public void removeUpdate(DocumentEvent e) {
-                setModified(true);
+                //setModified(true);
             }
         };
         
