@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
@@ -376,14 +377,17 @@ public abstract class Properties {
         // there is at most one
         private RequestProcessor.Task task;
 
-        private void save () {
-            if (task != null)
-                task.cancel ();
-            task = RequestProcessor.getDefault ().post (new Runnable () {
-                public void run () {
-                    saveIn ();
-                }
-            }, 4000);
+        private synchronized void save () {
+            if (task == null) {
+                task = new RequestProcessor("Debugger Properties Save RP", 1).create(
+                        new Runnable() {
+                            public void run () {
+                                saveIn ();
+                            }
+                        }
+                );
+            }
+            task.schedule(4000);
         }
 
         private void saveIn () {
@@ -411,10 +415,16 @@ public abstract class Properties {
                 }
                 pw.flush ();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(ex,
+                        "Can not save debugger settings."));
             } finally {
-                pw.close ();
-                lock.releaseLock ();
+                if (pw != null) {
+                    pw.close ();
+                }
+                if (lock != null) {
+                    lock.releaseLock ();
+                }
             }
         }
     }
