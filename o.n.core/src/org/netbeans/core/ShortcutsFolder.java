@@ -131,33 +131,18 @@ class ShortcutsFolder {
         KeyStroke[] keyStrokes
     ) {
         Keymap currentKeymap = keymap;
-        String shoutcutText = null;
         int i, k = keyStrokes.length - 1;
         for (i = 0; i < k; i++) {
             Action a = currentKeymap.getAction (keyStrokes [i]);
-            if (shoutcutText == null) 
-                shoutcutText = getKeyText (keyStrokes [i]);
-            else
-                shoutcutText += " " + getKeyText (keyStrokes [i]); // NOI18N
             if (a == null) {
                 a = keymap.createMapAction 
-                    (new NbKeymap.SubKeymap (null), shoutcutText);
+                    (new NbKeymap.SubKeymap (null), keyStrokes [i]);
                 currentKeymap.addActionForKeyStroke (keyStrokes [i], a);
             }
             if (!(a instanceof KeymapAction)) return;
             currentKeymap = ((KeymapAction) a).getSubMap ();
         }
         currentKeymap.addActionForKeyStroke (keyStrokes [k], action);
-    }
-    
-    private static String getKeyText (KeyStroke keyStroke) {
-        if (keyStroke == null) return "";                       // NOI18N
-        String modifText = KeyEvent.getKeyModifiersText 
-            (keyStroke.getModifiers ());
-        if ("".equals (modifText))                              // NOI18N   
-            return KeyEvent.getKeyText (keyStroke.getKeyCode ());
-        return modifText + "+" +                                // NOI18N
-            KeyEvent.getKeyText (keyStroke.getKeyCode ()); 
     }
     
     private static DataFolder getDataFolder (String name) {

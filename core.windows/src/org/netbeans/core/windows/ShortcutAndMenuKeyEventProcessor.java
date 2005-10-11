@@ -15,8 +15,10 @@ package org.netbeans.core.windows;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.core.NbKeymap;
 import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
 import org.openide.actions.ActionManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -114,6 +116,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     private int lastModifiers;
     private char lastKeyChar;
     private boolean lastSampled = false;
+    private boolean skipNextTyped = false;
     
     public boolean postProcessKeyEvent(KeyEvent ev) {
         if (ev.isConsumed())
@@ -152,7 +155,20 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
                 ev.setModifiers(mods);
             }
         }
-
+        
+        // in some ctx, may need event filtering
+        if (NbKeymap.getContext().length != 0) {
+            Component comp = ev.getComponent();
+            if (!(comp instanceof JComponent) ||
+                ((JComponent)comp).getClientProperty("context-api-aware") == null) {
+                    // not context api aware, don't pass subsequent events
+                processShortcut(ev);
+                // ignore processShortcut result, consume everything while in ctx
+                skipNextTyped = true;
+                return true; 
+            }
+        }
+ 
         if (ev.getID() == KeyEvent.KEY_PRESSED
             && ev.getModifiers() == (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
             && (ev.getKeyCode() == KeyEvent.VK_PAUSE
@@ -167,9 +183,23 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
             ev.consume();
             return true;
         }
+        
+	
+	// multi-shortcut in middle
+        if (ev.getID() == KeyEvent.KEY_TYPED && skipNextTyped) {
+            ev.consume();
+            skipNextTyped = false;
+            return true;
+        }
+
+        skipNextTyped = false;
+        
+//        if (ev.getID() == KeyEvent.KEY_PRESSED && StatusDisplayer.getDefault().getContext().length != 0) {
+//            skipNextTyped = true;
+//        }
 
         if (ev.getID() == KeyEvent.KEY_PRESSED) {
-            // decompose to primitive fields to avoid memory profiler confusion (keyEevnt keeps source reference)
+            // decompose to primitive fields to avoid memory profiler confusion (keyEvent keeps source reference)
             lastKeyChar = ev.getKeyChar();
             lastModifiers = ev.getModifiers();
             lastSampled = true;
@@ -242,7 +272,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         
         // don't let action keystrokes to propagate from both
         // modal and nonmodal dialogs
-        if (!isTransmodalAction(ks) && (w instanceof Dialog)) {
+        if ((w instanceof Dialog) && !isTransmodalAction(ks)) {
             return false;
         }
         

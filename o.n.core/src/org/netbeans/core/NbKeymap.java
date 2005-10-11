@@ -38,13 +38,41 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     /** hash table to map (Action -> ArrayList of KeyStrokes) */
     Map actions;
     
-    /* The keymap that is currently active */
-    private Keymap active;
+    private static List context = new ArrayList();
     
+    public static void resetContext() {
+        context.clear();
+        StatusDisplayer.getDefault().setStatusText("");
+    }
+
+    public static KeyStroke[] getContext() {
+        return (KeyStroke[]) context.toArray(new KeyStroke[context.size()]);
+    }
+    
+    public static void shiftContext(KeyStroke stroke) {
+        context.add(stroke);
+
+        StringBuffer text = new StringBuffer();
+        for (Iterator it = context.iterator(); it.hasNext();) {
+            text.append(getKeyText((KeyStroke)it.next())).append(' ');
+        }
+        StatusDisplayer.getDefault().setStatusText(text.toString());        
+    }
+    
+    private static String getKeyText (KeyStroke keyStroke) {
+        if (keyStroke == null) return "";                       // NOI18N
+        String modifText = KeyEvent.getKeyModifiersText 
+            (keyStroke.getModifiers ());
+        if ("".equals (modifText))                              // NOI18N   
+            return KeyEvent.getKeyText (keyStroke.getKeyCode ());
+        return modifText + "+" +                                // NOI18N
+            KeyEvent.getKeyText (keyStroke.getKeyCode ()); 
+    }
+           
     private final Action NO_ACTION = new KeymapAction(null, null);
     
-    public Action createMapAction(Keymap k, String contextName) {
-        return new KeymapAction(k, contextName);
+    public Action createMapAction(Keymap k, KeyStroke stroke) {
+        return new KeymapAction(k, stroke);
     }
 
     /** Default constructor
@@ -78,46 +106,60 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
 
     public Action getAction(KeyStroke key) {
         Action a;
-        
-        if (active != null) {
-            a = active.getAction(key);
 
-            if (a != null) {
-                // always reset immediatelly, the action may set the new ctx then
-                active = null; 
-                StatusDisplayer.getDefault ().setStatusText ("");
-                return a;
+        KeyStroke[] ctx = getContext();
+        Keymap activ = this;
+        for (int i=0; i<ctx.length; i++) {
+            if (activ == this) {
+                a = (Action) bindings.get(ctx[i]);
+                if ((a == null) && (parent != null)) {
+                    a = parent.getAction(ctx[i]);
+                }
+            } else {
+                a = activ.getAction(ctx[i]);
             }
             
-            // no action, should we reset?
-            if (key.isOnKeyRelease() ||
-                (key.getKeyChar() != 0 && key.getKeyChar() != KeyEvent.CHAR_UNDEFINED)) {
-                
+            if (a instanceof KeymapAction) {
+                activ = ((KeymapAction)a).keymap;
+            } else { // unknown ctx
+                resetContext();
                 return null;
-            } 
-            
-            switch (key.getKeyCode()) {
-                case KeyEvent.VK_SHIFT:
-                case KeyEvent.VK_CONTROL:
-                case KeyEvent.VK_ALT:
-                case KeyEvent.VK_META:
-                    return null;
             }
-            
-            active = null;
-            StatusDisplayer.getDefault ().setStatusText ("");
-            
-            // don't fall through, would be misleading
-            return NO_ACTION;
         }
         
-        synchronized (this) {
+        if (activ == this) {
             a = (Action) bindings.get(key);
+            if ((a == null) && (parent != null)) {
+                a = parent.getAction(key);
+            }
+            return a;
+        } else {
+            a = activ.getAction(key);
         }
-        if ((a == null) && (parent != null)) {
-            a = parent.getAction(key);
+        
+        if (a != null) {
+            if (!(a instanceof KeymapAction)) {
+                resetContext();
+            }
+            return a;
         }
-        return a;
+            
+        // no action, should we reset?
+        if (key.isOnKeyRelease() ||
+            (key.getKeyChar() != 0 && key.getKeyChar() != KeyEvent.CHAR_UNDEFINED)) {
+                return null;
+        }
+            
+        switch (key.getKeyCode()) {
+            case KeyEvent.VK_SHIFT:
+            case KeyEvent.VK_CONTROL:
+            case KeyEvent.VK_ALT:
+            case KeyEvent.VK_META:
+                return null;
+        }
+            
+        resetContext();
+        return NO_ACTION;        
     }
 
     public KeyStroke[] getBoundKeyStrokes() {
@@ -361,11 +403,11 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     
     public class KeymapAction extends javax.swing.AbstractAction {
         private Keymap keymap;
-        private String contextName;
-        
-        public KeymapAction(Keymap keymap, String contextName) {
+        private KeyStroke stroke;
+	
+        public KeymapAction(Keymap keymap, KeyStroke stroke) {
             this.keymap = keymap;
-            this.contextName = contextName;
+            this.stroke = stroke;
         }
         
         public Keymap getSubMap() {
@@ -373,9 +415,11 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
         }
         
         public void actionPerformed(java.awt.event.ActionEvent e) {
-            if (contextName != null)
-                StatusDisplayer.getDefault ().setStatusText (contextName);
-            NbKeymap.this.active = keymap;
+            if (stroke == null) { // NO_ACTION -> reset
+                resetContext();
+            } else {
+                shiftContext(stroke);
+            }	    
         }
     }
 }
