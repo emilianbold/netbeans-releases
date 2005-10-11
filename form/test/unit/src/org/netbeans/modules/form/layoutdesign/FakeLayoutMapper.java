@@ -97,7 +97,8 @@ public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
                                    int paddingType)
     {
         String id = comp1Id + "-" + comp2Id  + "-" + dimension + "-" + comp2Alignment + "-" + paddingType; //NOI18N
-        return ((Integer) prefPadding.get(id)).intValue();
+        Integer pad = (Integer) prefPadding.get(id);
+        return pad != null ? pad.intValue() : 6;
     }
 
     public int getPreferredPaddingInParent(String parentId,
@@ -106,7 +107,8 @@ public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
                                            int compAlignment)
     {
         String id = parentId + "-" + compId + "-" + dimension + "-" + compAlignment; //NOI18N
-        return ((Integer) prefPaddingInParent.get(id)).intValue();
+        Integer pad = (Integer) prefPaddingInParent.get(id);
+        return pad != null ? pad.intValue() : 10;
     }
 
     public boolean[] getComponentResizability(String compId, boolean[] resizability) {
