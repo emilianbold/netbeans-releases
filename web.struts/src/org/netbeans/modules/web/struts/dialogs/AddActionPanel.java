@@ -115,7 +115,8 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_AddActionDialog"));
         jLabelFormName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_FormName_mnem").charAt(0));
         jLabelFormName.setLabelFor(CBFormName);
         jLabelFormName.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_FormName"));
@@ -133,6 +134,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBFormName, gridBagConstraints);
+        CBFormName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CBFormName"));
 
         CBInputAction.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -142,6 +144,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBInputAction, gridBagConstraints);
+        CBInputAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CBInputAction"));
 
         TFInputResource.setText("/");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -151,11 +154,13 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFInputResource, gridBagConstraints);
+        TFInputResource.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSN_TFInputResource"));
+        TFInputResource.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFinputResource"));
 
         CHBUseFormBean.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_UseFormBean_mnem").charAt(0));
         CHBUseFormBean.setSelected(true);
         CHBUseFormBean.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_UseFormBean"));
-        CHBUseFormBean.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        CHBUseFormBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBUseFormBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
         CHBUseFormBean.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -169,6 +174,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(CHBUseFormBean, gridBagConstraints);
+        CHBUseFormBean.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CHBUseFormBean"));
 
         jButtonBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton_mnem").charAt(0));
         jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton"));
@@ -183,6 +189,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jButtonBrowse, gridBagConstraints);
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jButtonBrowse"));
 
         jLabelScope.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Scope"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -209,11 +216,12 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFAttribute, gridBagConstraints);
+        TFAttribute.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFAttribute"));
 
         CHBValidate.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_Validate_mnem").charAt(0));
         CHBValidate.setSelected(true);
         CHBValidate.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_Validate"));
-        CHBValidate.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        CHBValidate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBValidate.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -222,6 +230,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(CHBValidate, gridBagConstraints);
+        CHBValidate.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CHBValidate"));
 
         jLabelParameter.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Parameter_mnem").charAt(0));
         jLabelParameter.setLabelFor(TFParameter);
@@ -240,12 +249,13 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
         add(TFParameter, gridBagConstraints);
+        TFParameter.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFParameter"));
 
         buttonGroup1.add(RBInputResource);
         RBInputResource.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputResource_mnem").charAt(0));
         RBInputResource.setSelected(true);
         RBInputResource.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputResource"));
-        RBInputResource.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBInputResource.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputResource.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputResource.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -259,11 +269,12 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(RBInputResource, gridBagConstraints);
+        RBInputResource.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBInputResources"));
 
         buttonGroup1.add(RBInputAction);
         RBInputAction.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputAction_mnem").charAt(0));
         RBInputAction.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputAction"));
-        RBInputAction.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBInputAction.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputAction.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputAction.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -277,21 +288,24 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(RBInputAction, gridBagConstraints);
+        RBInputAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBInputAction"));
 
         buttonGroup2.add(RBSession);
         RBSession.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Session_mnem").charAt(0));
         RBSession.setSelected(true);
         RBSession.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Sesson"));
-        RBSession.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBSession.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBSession.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBSession);
+        RBSession.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBSession"));
 
         buttonGroup2.add(RBRequest);
         RBRequest.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Request_mnem").charAt(0));
         RBRequest.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Request"));
-        RBRequest.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        RBRequest.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBRequest.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBRequest);
+        RBRequest.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBRequest"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -299,6 +313,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jPanel1, gridBagConstraints);
+        jPanel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_Scope"));
 
         jLabelActionClass.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionClass_mnem").charAt(0));
         jLabelActionClass.setLabelFor(TFActionClass);
@@ -317,6 +332,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(TFActionClass, gridBagConstraints);
+        TFActionClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFActionClass"));
 
         jButtonBrowseClass.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Browse_mnem").charAt(0));
         jButtonBrowseClass.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton"));
@@ -331,6 +347,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jButtonBrowseClass, gridBagConstraints);
+        jButtonBrowseClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jButtonBrowseClass"));
 
         jLabelActionPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionPath_mnem").charAt(0));
         jLabelActionPath.setLabelFor(TFActionPath);
@@ -350,6 +367,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFActionPath, gridBagConstraints);
+        TFActionPath.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFActionPath"));
 
     }
     // </editor-fold>//GEN-END:initComponents
