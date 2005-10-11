@@ -40,6 +40,10 @@ public class ${CLASS_NAME} extends LayoutTestCase {
         }
     }
     
+    protected int getCounterId() {
+	return ${COUNTER_ID};
+    }
+
     protected void doChanges(LayoutModel model) {
         
         ${CODE_GOES_HERE}

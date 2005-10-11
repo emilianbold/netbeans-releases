@@ -437,7 +437,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             try {
                 if (saveCookie != null) saveCookie.save();
                 formFile.copy(formFile.getParent(), formFile.getName() + "Test-StartingForm", formFile.getExt()); //NOI18N
-		savedIdCounter = RADComponent.getIdCounter();
+		savedIdCounter = RADComponent.getIdCounter() - 1;
             } catch (IOException ioe) {
                 //TODO
             }

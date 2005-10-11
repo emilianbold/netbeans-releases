@@ -148,11 +148,7 @@ public class LayoutTestUtils implements LayoutConstants {
                 nameMap += "idToNameMap.put(\"" + id + "\", \"" + (String)idToNameMap.get(id) + "\"); \n"; //NOI18N
             }
             code = nameMap.concat(code);
-            
-            //3.b Set the idCounter to correct value
-            String idCounterStr = "RADComponent.setIdCounter(" + idCounter + "); \n";
-            code = idCounterStr.concat(code);
-	    
+
             //4. Put the doChanges code into the test class file
             String output = Utilities.replaceString(template, "${CODE_GOES_HERE}", code); //NOI18N
 
@@ -168,7 +164,10 @@ public class LayoutTestUtils implements LayoutConstants {
             //6. Rename the class in template to correct class name
             output = Utilities.replaceString(output, "${CLASS_NAME}", testFO.getName()); //NOI18N
             
-            //7. correct references, so that the file can be read better
+            //7. Put the correct idcounter value
+            output = Utilities.replaceString(output, "${COUNTER_ID}", Integer.toString(idCounter)); //NOI18N
+
+	    //8. correct references, so that the file can be read better
             ids = idToNameMap.keySet().iterator();
             while (ids.hasNext()) {
                 String id = (String)ids.next();

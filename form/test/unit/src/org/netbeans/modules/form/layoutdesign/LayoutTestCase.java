@@ -25,6 +25,7 @@ import org.netbeans.modules.form.FormDesigner;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.GandalfPersistenceManager;
 import org.netbeans.modules.form.PersistenceException;
+import org.netbeans.modules.form.RADComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -56,16 +57,8 @@ public abstract class LayoutTestCase extends TestCase {
     
     public LayoutTestCase(String name) {
         super(name);
-//        try {
-//            // classloader points to form/build/test/unit/classes/
-//            // golden file is in form/test/unit/data/goldenfiles/
-//            String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
-//            startingFormFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-StartingForm.form").getCanonicalFile();
-//            expectedLayoutFile = new File(url.getFile() + goldenFilesPath + this.getClass().getSimpleName() + "-ExpectedEndModel.txt").getCanonicalFile();
-//        } catch (IOException ioe) {
-//            fail(ioe.toString());
-//        }
     }
+    
     
     /**
      * Tests the layout model by loading a form file, add/change some components there,
@@ -97,6 +90,7 @@ public abstract class LayoutTestCase extends TestCase {
         List errors = new ArrayList();
         
         try {
+	    RADComponent.setIdCounter(getCounterId());
             fm = gpm.loadForm(file, file, null, errors);
         } catch (PersistenceException pe) {
             fail(pe.toString());
@@ -147,4 +141,7 @@ public abstract class LayoutTestCase extends TestCase {
     }
     
     protected abstract void doChanges(LayoutModel model);
+    
+    protected abstract int getCounterId();
+    
 }
