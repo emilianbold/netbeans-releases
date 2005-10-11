@@ -60,4 +60,13 @@ public class PendingTaskTest extends TestCase {
 	assertEquals(Install.getPendingTasks().size(), 0);
     }
 
+    public void testActionManagersInvokeAction() {
+        assertEquals(Install.getPendingTasks().size(), 0);
+        
+        assertEquals(Install.getPendingTasks().size(), 1);
+        
+        assertEquals(Install.getPendingTasks().size(), 1);
+	assertEquals(Install.getPendingTasks().size(), 0);
+    }
+
 }
