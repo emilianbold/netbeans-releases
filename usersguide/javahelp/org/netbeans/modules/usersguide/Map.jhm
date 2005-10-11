@@ -426,6 +426,8 @@ under Print Settings in the Options window)
 <mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
 <mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
 
+<!--CSH for Options - Editing Beans Property-->
+<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="configure/options_beans_prop_classic.html" />
 
 <!--CSH - Whenever main window or a menu item is in focus when Help is clicked:-->
 <mapID target="org.netbeans.core.windows.view.ui.MainWindow" url="pending.html" />
