@@ -728,6 +728,9 @@ netbeans-extra - hook target: does nothing unless overridden, but called when
 building a module. Override to insert any additional build tasks you need to do:
 copying libraries to the cluster, etc.
 
+profile - used from inside the IDE if NetBeans's profiler is installed to 
+profile the entire application
+
 release - copies contents of ${release.dir} to ${cluster}.
 
 reload - reloads the module in the target IDE/app to try out changes interactively.
@@ -737,9 +740,6 @@ interactively. Only available when run from inside NetBeans. Use with care.
 
 run - build module and then run application interactively. Only for external
 modules. Either way, available from context menu in Projects tab.
-
-profile - used from inside the IDE if NetBeans's profiler is installed to 
-profile the entire application
 
 test - run all unit tests for the module. Run -> Test... in the IDE.
 
@@ -784,10 +784,6 @@ topologically sorted by build order; suitable for use with <subant>, for
 example. Some other basic properties like ${netbeans.dest.dir} will also be
 defined.
 
-build - build all suite modules.
-
-clean - clean all suite modules.
-
 branding - building branding JARs, if applicable. Example: if ${branding.token}
 is "foo", then a file such as
 
@@ -797,18 +793,22 @@ will be packed into
 
     ${cluster}/modules/locale/org-netbeans-modules-x_foo.jar!/org/netbeans/modules/x/resources/Bundle_foo.properties
 
-run - start application for testing.
+build - build all suite modules.
+
+build-jnlp - builds the JNLP war file with your application
+
+clean - clean all suite modules.
 
 debug - like run, but run in the JPDA debugger. (Only available from inside the
 IDE.)
 
+debug-jnlp - starts debuging of your JNLP application (works only from NetBeans IDE)
+
 profile - used from inside the NetBeans IDE to profile the entire suite
 
-build-jnlp - builds the JNLP war file with your application
+run - start application for testing.
 
 run-jnlp - executes your JNLP application (currently from local files)
-
-debug-jnlp - starts debuging of your JNLP application (works only from NetBeans IDE)
 
 CONTENTS OF YOUR manifest.mf
 ----------------------------
