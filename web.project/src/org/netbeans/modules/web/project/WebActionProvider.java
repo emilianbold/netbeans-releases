@@ -228,16 +228,9 @@ class WebActionProvider implements ActionProvider {
                     return null;
                 }
                 if (isDebugged()) {
-                    NotifyDescriptor nd;
-                    String text;
-                    if (command.equals (COMMAND_RUN)) {
-                        ProjectInformation pi = ProjectUtils.getInformation(project);
-                        text = pi.getDisplayName();
-                    } else { //COMMAND_RUN_SINGLE
-                        files = ActionUtils.findSelectedFiles(context, null, null, false);
-                        text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
-                    }
-                    nd = new NotifyDescriptor.Confirmation(
+                    files = ActionUtils.findSelectedFiles(context, null, null, false);
+                    String text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                                 NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
                                 NotifyDescriptor.OK_CANCEL_OPTION);
                     Object o = DialogDisplayer.getDefault().notify(nd);
@@ -350,17 +343,15 @@ class WebActionProvider implements ActionProvider {
                     return null;
                 }
                 if (isDebugged()) {
-                    NotifyDescriptor nd;
-                    String text;
-                    if (command.equals (COMMAND_RUN)) {
-                        ProjectInformation pi = ProjectUtils.getInformation(project);
-                        text = pi.getDisplayName();
-                    } else { //COMMAND_RUN_SINGLE
-                        files = ActionUtils.findSelectedFiles(context, null, null, false);
-                        text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
-                    }
-                    nd = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
+                    ProjectInformation pi = ProjectUtils.getInformation(project);
+                    String text = pi.getDisplayName();
+                    String msgKey = "";
+                    if (command.equals(COMMAND_RUN))
+                        msgKey = "MSG_SessionRunning";
+                    else //if (command.equals(COMMAND_REDEPLOY))
+                        msgKey = "MSG_CantDeployWhenSessionRunning";
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                                NbBundle.getMessage(WebActionProvider.class, msgKey, text),
                                 NotifyDescriptor.OK_CANCEL_OPTION);
                     Object o = DialogDisplayer.getDefault().notify(nd);
                     if (o.equals(NotifyDescriptor.OK_OPTION)) {            
