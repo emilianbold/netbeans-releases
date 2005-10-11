@@ -16,7 +16,7 @@
               <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
               
               <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" /> 
-              <tocitem text="Updating Local Files" target="cvs-lite_updating" />
+              <tocitem text="Updating Files in a Local Working Directory" target="cvs-lite_updating" />
               <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
               <tocitem text="Comparing File Revisions" target="cvs-lite_diff" /> 
               <tocitem text="Merging File Revisions" target="cvs-lite_merge" /> 
