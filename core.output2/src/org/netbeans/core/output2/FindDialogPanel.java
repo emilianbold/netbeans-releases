@@ -85,8 +85,25 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         }
         return result;
     }
-
-
+    
+    void setFindText(String text) {
+	int end = text.indexOf("\n");
+	String txt = text;
+	if (end  > -1) {
+	    txt = text.substring(0, end);
+	}
+	if (!txt.equals(findWhat.getSelectedItem())) {
+	    findWhat.insertItemAt(txt, 0);
+	    findWhat.setSelectedIndex(0);
+	}
+	Component comp = findWhat.getEditor().getEditorComponent();
+	if (comp instanceof JTextField) {
+	    ((JTextField)comp).setSelectionStart(0);
+	    ((JTextField)comp).setSelectionEnd(txt.length());
+	}
+    }
+    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -130,11 +147,13 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
 
 
 
-    static void showFindDialog(ActionListener al) {
+    static void showFindDialog(ActionListener al, String selection) {
         java.awt.Dialog dialog = getDialog();
         FindDialogPanel findPanel = getPanel();
         findPanel.acceptButton.putClientProperty ("panel", findPanel);
-
+	if (selection != null) {
+	    findPanel.setFindText(selection);
+	}
         if (!Arrays.asList(findPanel.acceptButton.getActionListeners()).contains(al)) {
             findPanel.acceptButton.addActionListener(al);
         }

@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.BadLocationException;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
@@ -358,7 +359,17 @@ public class Controller { //XXX public only for debug access to logging code
                 tab.getOutputPane().selectAll();
                 break;
             case ACTION_FIND:
-                FindDialogPanel.showFindDialog(new FindActionListener (win, tab, findNextAction, findPreviousAction, copyAction));
+				int start = tab.getOutputPane().getSelectionStart();
+				int end = tab.getOutputPane().getSelectionEnd();
+				String str = null;
+				if (start > 0 && end > start) {
+		    		try {
+						str = tab.getOutputPane().getDocument().getText(start, end - start);
+				    } catch (BadLocationException ex) {
+						ex.printStackTrace();
+				    }
+				}
+                FindDialogPanel.showFindDialog(new FindActionListener (win, tab, findNextAction, findPreviousAction, copyAction), str);
                 break;
             case ACTION_FINDNEXT:
                 findNext (tab);
