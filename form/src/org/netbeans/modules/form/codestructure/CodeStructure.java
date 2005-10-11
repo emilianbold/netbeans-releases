@@ -37,6 +37,7 @@ public class CodeStructure {
 
     private Map namesToVariables = new HashMap(50);
     private Map expressionsToVariables = new HashMap(50);
+    private Set externalVariables = null;
 
     private static int globalDefaultVariableType = CodeVariable.FIELD
                                                    | CodeVariable.PRIVATE;
@@ -455,42 +456,7 @@ public class CodeStructure {
         if (expressionsToVariables.get(expression) != null)
             removeExpressionFromVariable(expression);
 
-        if (name == null || namesToVariables.get(name) != null) {
-            // variable name not provided or already being used
-            int n = 0;
-            String baseName;
-            if (name != null) { // already used name provided
-                // try to find number suffix
-                int i = name.length();
-                int exp = 1;
-                while (--i >= 0) {
-                    char c = name.charAt(i);
-                    if (c >= '0' && c <= '9') {
-                        n += (c - '0') * exp;
-                        exp *= 10;
-                    }
-                    else break;
-                }
-
-                baseName = i >= 0 ? name.substring(0, i+1) : name;
-            }
-            else { // derive default name from class type, add "1" as suffix
-                String typeName = expression.getOrigin().getType().getName();
-                int i = typeName.lastIndexOf('$'); // NOI18N
-                if (i < 0) {
-                    i = typeName.lastIndexOf('+'); // NOI18N
-                    if (i < 0)
-                        i = typeName.lastIndexOf('.'); // NOI18N
-                }
-                baseName = Character.toLowerCase(typeName.charAt(i+1))
-                           + typeName.substring(i+2);
-            }
-
-            do { // find a free name
-                name = baseName + (++n);
-            }
-            while (namesToVariables.get(name) != null);
-        }
+	name = getFreeVariableName(name, expression.getOrigin().getType());
 
         Variable var = new Variable(type,
                                     expression.getOrigin().getType(),
@@ -512,6 +478,65 @@ public class CodeStructure {
         return var;
     }
 
+    private String getFreeVariableName(String name, Class type) {
+        if (name == null || namesToVariables.get(name) != null) {
+            // variable name not provided or already being used
+            int n = 0;
+            String baseName;
+            if (name != null) { // already used name provided
+                // try to find number suffix
+                int i = name.length();
+                int exp = 1;
+                while (--i >= 0) {
+                    char c = name.charAt(i);
+                    if (c >= '0' && c <= '9') {
+                        n += (c - '0') * exp;
+                        exp *= 10;
+                    }
+                    else break;
+                }
+
+                baseName = i >= 0 ? name.substring(0, i+1) : name;
+            }
+            else { // derive default name from class type, add "1" as suffix
+                String typeName = type.getName();
+                int i = typeName.lastIndexOf('$'); // NOI18N
+                if (i < 0) {
+                    i = typeName.lastIndexOf('+'); // NOI18N
+                    if (i < 0)
+                        i = typeName.lastIndexOf('.'); // NOI18N
+                }
+                baseName = Character.toLowerCase(typeName.charAt(i+1))
+                           + typeName.substring(i+2);
+            }
+
+            do { // find a free name
+                name = baseName + (++n);
+            }
+            while (namesToVariables.get(name) != null);
+        }	
+	return name;
+    }        
+    
+    public String getExternalVariableName(Class type) {
+	String name = getFreeVariableName(null, type);
+	createVariable(CodeVariable.LOCAL, type, name);    
+	if(externalVariables == null) {
+	    externalVariables = new HashSet();
+	}	
+	externalVariables.add(name);
+	return name;
+    }
+    
+    public void clearExternalVariableNames() {
+	if(externalVariables!=null) {	    
+	    for (Iterator it = externalVariables.iterator(); it.hasNext();) {
+		releaseVariable((String) it.next());		
+	    }	    
+	    externalVariables.clear();	  	    
+	}
+    }
+    
     /** Attaches an expression to a variable. The variable will be used in the
      * code instead of the expression. */
     public void attachExpressionToVariable(CodeExpression expression,

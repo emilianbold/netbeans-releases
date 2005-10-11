@@ -28,8 +28,7 @@ import org.netbeans.modules.form.*;
  * @author Tomas Pavek
  */
 
-public class BorderDesignSupport implements FormDesignValue,
-                                            FormPropertyContainer
+public class BorderDesignSupport implements FormDesignValue
 {
     private Border theBorder;
     private boolean borderNeedsUpdate;
@@ -37,7 +36,6 @@ public class BorderDesignSupport implements FormDesignValue,
     private CreationDescriptor creationDesc;
     private FormPropertyContext propertyContext = null;
     private FormProperty[] properties = null;
-
     // -------------------------
     // constructors
 
@@ -52,7 +50,7 @@ public class BorderDesignSupport implements FormDesignValue,
 
         theBorder = (Border) CreationFactory.createInstance(borderClass);
     }
-
+    
     public BorderDesignSupport(Border border) {
         creationDesc = CreationFactory.getDescriptor(border.getClass());
         if (creationDesc == null) {
@@ -296,7 +294,11 @@ public class BorderDesignSupport implements FormDesignValue,
             }
             return null;
         }
-
+	
+	protected Method getWriteMethod() {
+	    return desc.getWriteMethod();	    
+	}
+    
         protected void propertyValueChanged(Object old, Object current) {
             super.propertyValueChanged(old, current);
             borderNeedsUpdate = (getAccessType() & DETACHED_WRITE) != 0;

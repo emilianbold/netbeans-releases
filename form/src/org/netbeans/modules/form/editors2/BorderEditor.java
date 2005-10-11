@@ -30,9 +30,7 @@ import org.openide.explorer.*;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
-import org.openide.nodes.Node.PropertySet;
-
-/**
+import org.openide.nodes.Node.PropertySet;/**
  * A property editor for swing border class.
  *
  * This editor should be in some subpackage under developerx package,
@@ -43,7 +41,8 @@ import org.openide.nodes.Node.PropertySet;
 public final class BorderEditor extends PropertyEditorSupport
                                 implements FormAwareEditor,
                                            XMLPropertyEditor,
-                                           NamedPropertyEditor
+                                           NamedPropertyEditor,
+					   BeanPropertyEditor
 {
     /** Icon base for unknown border node. */
     private static final String UNKNOWN_BORDER_BASE =
@@ -469,8 +468,8 @@ public final class BorderEditor extends PropertyEditorSupport
             else if (BevelBorder.class.isAssignableFrom(borderClass))
                 storedNode = storeBevelBorder(doc, ID_BI_BEVEL);
             else if (borderClass.isAssignableFrom(MatteBorder.class))
-                storedNode = storeMatteBorder(doc);
-
+                storedNode = storeMatteBorder(doc);           
+	    
             // no other way of storing to XML ...
             // [PENDING: store border as a bean]
 
@@ -494,13 +493,14 @@ public final class BorderEditor extends PropertyEditorSupport
                   the specified XML element
      */
     public void readFromXML(org.w3c.dom.Node element) throws IOException {
-        if (!XML_BORDER.equals(element.getNodeName())) {
+        if ( !XML_BORDER.equals(element.getNodeName()) )
+	{
             IOException ex = new IOException("Missing \"Border\" XML element"); // NOI18N
             ErrorManager.getDefault().annotate(
                 ex, getBundle().getString("MSG_ERR_MissingMainElement")); // NOI18N
-            throw ex;
+            throw ex;            
         }
-
+            
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         String infoName = attributes.getNamedItem(ATTR_INFO).getNodeValue();
         if (ID_BI_NULL_BORDER.equals(infoName))
@@ -545,7 +545,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
         current = borderSupport;
     }
-
+    
     // ------------------------------
     // helper storing/reading methods
 
@@ -589,6 +589,12 @@ public final class BorderEditor extends PropertyEditorSupport
                                                  .encodeValue(prop.getValue());
             if (encodedSerializeValue != null)
                 el.setAttribute(propName, encodedSerializeValue);
+
+
+
+
+
+
         }
         catch (Exception ex) { // should not happen
             ex.printStackTrace();
@@ -661,7 +667,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 throw lastEx;
             }
         }
-        // TODO for custom borders
+	// TODO for custom borders
 /*        else { // node not found, try attribute (of the element) with encoded
                // serialized value
             org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
@@ -674,6 +680,7 @@ public final class BorderEditor extends PropertyEditorSupport
                                             .getPropertyOfName(borderPropName);
                     try {
                         if (prop != null && (value = GandalfPersistenceManager
+
                                             .decodeValue(valueText)) != null)
                             prop.setValue(value);
                     }
@@ -1280,4 +1287,31 @@ public final class BorderEditor extends PropertyEditorSupport
             throw ioex;
         }
     }
+
+    public boolean valueIsBeanProperty() {
+	return !isSupportedBorder();
+    }
+	
+    private boolean isSupportedBorder() {
+	Class borderClass = borderSupport.getBorderClass();
+	return borderClass.isAssignableFrom(TitledBorder.class)
+            || borderClass.isAssignableFrom(EtchedBorder.class)
+            || borderClass.isAssignableFrom(LineBorder.class)
+            || borderClass.isAssignableFrom(EmptyBorder.class)
+            || borderClass.isAssignableFrom(CompoundBorder.class)
+            || SoftBevelBorder.class.isAssignableFrom(borderClass)
+            || BevelBorder.class.isAssignableFrom(borderClass)
+            || borderClass.isAssignableFrom(MatteBorder.class);                
+    }
+
+    public Node.Property[] getProperties() {
+	return borderSupport.getProperties();
+    }
+
+    public void intializeFromType(Class type) throws Exception {
+	borderSupport = new BorderDesignSupport(type);
+	borderSupport.setPropertyContext(propertyContext);
+	current = borderSupport;	 	
+    }
+    
 }

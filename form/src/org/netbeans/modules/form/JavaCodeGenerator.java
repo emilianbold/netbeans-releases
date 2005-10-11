@@ -782,7 +782,8 @@ class JavaCodeGenerator extends CodeGenerator {
             constructorProperties.clear();
         if (containerDependentProperties != null)
             containerDependentProperties.clear();
-
+	formModel.getCodeStructure().clearExternalVariableNames();
+	
         try {
             boolean expandInitComponents = false;
             boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
@@ -883,7 +884,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 constructorProperties.clear();
             if (containerDependentProperties != null)
                 containerDependentProperties.clear();
-
+	    formModel.getCodeStructure().clearExternalVariableNames();
+	
             initCodeWriter.write("}\n"); // NOI18N
 
             int listenerCodeStyle = formModel.getSettings().getListenerGenerationStyle();
@@ -1205,8 +1207,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 initCodeWriter.write(" = "); // NOI18N
-
-                String[] propNames = creator.getPropertyNames();
+		
+                String[] propNames = creator.getPropertyNames();		
                 FormProperty[] props;
                 if (propNames.length > 0) {
                     if (constructorProperties == null)
@@ -1437,6 +1439,15 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generatePropertySetter(FormProperty prop,
                                         RADComponent comp,
+                                        Writer initCodeWriter) 
+	throws IOException
+    {
+	generatePropertySetter(prop, comp, null, initCodeWriter);
+    }		    
+    
+    private void generatePropertySetter(FormProperty prop,
+                                        RADComponent comp,
+					String setterVariable,
                                         Writer initCodeWriter)
         throws IOException
     {
@@ -1450,15 +1461,23 @@ class JavaCodeGenerator extends CodeGenerator {
         
         // 2. property setter code
         if (prop.isChanged()) {
-            String javaStr;
-
-            if ((javaStr = prop.getWholeSetterCode()) != null) {
+            String javaStr = null;
+	    //Object value = null;	    
+	    
+	    if(setterVariable == null) {
+		setterVariable = getComponentInvokeString(comp, true);
+	    }
+	
+	    if( prop.getCurrentEditor() instanceof BeanPropertyEditor ) {		    		    		   		    						
+		generatePropertyBeanSetterCode(prop, setterVariable, initCodeWriter);		
+	    } else if ((javaStr = prop.getWholeSetterCode()) != null) {
                 initCodeWriter.write(javaStr);
                 if (!javaStr.endsWith("\n")) // NOI18N
                     initCodeWriter.write("\n"); // NOI18N
             }
             // Mnemonics support - start -
-            else if ("text".equals(prop.getName()) // NOI18N
+            else if (comp != null 
+		     && "text".equals(prop.getName()) // NOI18N
                      && canUseMnemonics(comp) && isUsingMnemonics(comp))
             {
                 javaStr = prop.getJavaInitializationString();
@@ -1470,31 +1489,14 @@ class JavaCodeGenerator extends CodeGenerator {
                     initCodeWriter.write(");\n"); // NOI18N
                 }
             }
-            // Mnemonics support - end -
-            else if ((javaStr = prop.getPartialSetterCode()) != null) {
-                // if the setter throws checked exceptions,
-                // we must generate try/catch block around it.
-                Class[] exceptions = null;
-                if (prop instanceof RADProperty) {
-                    Method writeMethod = ((RADProperty)prop)
-                                    .getPropertyDescriptor().getWriteMethod();
-                    if (writeMethod != null) {
-                        exceptions = writeMethod.getExceptionTypes();
-                        if (needTryCode(exceptions))
-                            initCodeWriter.write("try {\n"); // NOI18N
-                        else
-                            exceptions = null;
-                    }
-                }
+            // Mnemonics support - end -	     
+	    else if ((javaStr = prop.getPartialSetterCode()) != null) {	    	    			    			    						
+		generateSimpleSetterCode(prop, 
+					  javaStr, 
+					  setterVariable, 
+					  initCodeWriter);
 
-                initCodeWriter.write(getComponentInvokeString(comp, true));
-                initCodeWriter.write(javaStr);
-                initCodeWriter.write(";\n"); // NOI18N
-
-                // add the catch code if needed
-                if (exceptions != null)
-                    generateCatchCode(exceptions, initCodeWriter);
-            }
+	    } 
         }
 
         // 3. post-initialization code
@@ -1506,6 +1508,134 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
+    private void generatePropertyBeanSetterCode(FormProperty prop, 
+						  String setterVariable, 
+						  Writer initCodeWriter) 
+	throws IOException
+    {
+	
+	FormProperty[] properties = null;
+	Class propertyType = null;
+	try {
+	    properties = (FormProperty[]) ((BeanPropertyEditor) prop.getCurrentEditor()).getProperties();
+	    propertyType = prop.getRealValue().getClass();
+	} catch (Exception ex) {
+	    // should not happen
+	    ErrorManager.getDefault().notify(ex);
+	    return;
+	} 	    	
+	
+	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
+	FormProperty[] creatorProperties = getCreatorProperties(creator, properties);
+															
+	java.util.List remainingProperties = new ArrayList();		
+	if(properties !=null) {
+	    for (int i = 0; i < properties.length; i++) {
+		if( properties[i].isChanged() 
+                    && (constructorProperties == null
+                        || constructorProperties.get(properties[i]) == null) ) 
+		{			    
+		    remainingProperties.add(properties[i]);
+		}
+	    }					    						
+	}
+
+	String propertyInitializationString = creator.getJavaCreationCode(creatorProperties);	
+	
+	String javaStr = "";
+	if(remainingProperties.size() == 0) {		    		    
+	    generateSimpleSetterCode(prop, 
+				      prop.getWriteMethod().getName() + "(" + propertyInitializationString + ")", // NOI18N 
+				      setterVariable, 
+				      initCodeWriter);
+	} else if(remainingProperties.size() > 0) {
+	    generateWholePropertyInitialization(prop, propertyType, setterVariable, 
+				 propertyInitializationString, remainingProperties, initCodeWriter);	    	    
+	}		
+		
+    }
+            
+    private FormProperty[] getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
+	String[] propNames = creator.getPropertyNames();	
+	FormProperty[] creatorProperties;
+	if (propNames.length > 0) {
+	    if (constructorProperties == null) {
+		constructorProperties = new HashMap();		
+	    }
+	    creatorProperties = new FormProperty[propNames.length];		    
+	    for (int i=0; i < propNames.length; i++) {
+		for (int j = 0; j < properties.length; j++) {
+		    if(properties[j].getName().equals(propNames[i])) {
+			creatorProperties[i] = properties[j];				
+			constructorProperties.put(properties[j], properties[j]);
+			break;
+		    }			    			    
+		}                        
+	    }
+	}
+	else creatorProperties = new FormProperty[0];		
+	return creatorProperties;
+    }
+    
+    private CreationDescriptor.Creator getPropertyCreator(Class clazz, FormProperty[] properties) {	
+	CreationDescriptor creationDesc = CreationFactory.getDescriptor(clazz);
+	return creationDesc.findBestCreator(properties,
+					    // XXX CHANGED_ONLY ???
+					    CreationDescriptor.CHANGED_ONLY | CreationDescriptor.PLACE_ALL);	
+    }
+    
+    private void generateWholePropertyInitialization(FormProperty prop,
+					      Class propertyType, 
+					      String setterVariable,
+					      String propertyInitializationString, 
+					      java.util.List remainingProperties,
+					      Writer initCodeWriter) 
+	throws IOException					    
+    {
+	String variableName = formModel.getCodeStructure().getExternalVariableName(propertyType);	
+
+	String javaStr = propertyType.getName() + " " + variableName + " = " + propertyInitializationString; // NOI18N		
+	initCodeWriter.write(javaStr);
+	initCodeWriter.write(";\n"); // NOI18N		    		
+
+	for (Iterator it = remainingProperties.iterator(); it.hasNext();) {
+	    generatePropertySetter((FormProperty) it.next(), null, variableName + ".", initCodeWriter); // NOI18N 	
+	}
+
+	generateSimpleSetterCode(prop, 
+				  prop.getWriteMethod().getName() + "(" + variableName + ")", // NOI18N 
+				  setterVariable, 
+				  initCodeWriter);	    
+    }
+    
+    private void generateSimpleSetterCode(FormProperty prop, 
+					   String partialSetterCode, 
+	                                   String setterVariable, 
+					   Writer initCodeWriter)
+	throws IOException
+    {
+
+	// if the setter throws checked exceptions,
+	// we must generate try/catch block around it.
+	Class[] exceptions = null;
+	Method writeMethod = prop.getWriteMethod(); 
+	if (writeMethod != null) {
+	    exceptions = writeMethod.getExceptionTypes();
+	    if (needTryCode(exceptions))
+		initCodeWriter.write("try {\n"); // NOI18N
+	    else
+		exceptions = null;
+	}
+
+	initCodeWriter.write(setterVariable);		    
+	initCodeWriter.write(partialSetterCode);
+	initCodeWriter.write(";\n"); // NOI18N		    
+
+	// add the catch code if needed
+	if (exceptions != null)
+	    generateCatchCode(exceptions, initCodeWriter);	
+    }    
+    
     // generates code for handling events of one component
     // (all component.addXXXListener() calls)
     private void generateComponentEvents(RADComponent component,
@@ -2387,7 +2517,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     void regenerateCode() {
-        if (!codeUpToDate) {
+        if (!codeUpToDate) {	    
             codeUpToDate = true;
             regenerateVariables();
             regenerateInitComponents();

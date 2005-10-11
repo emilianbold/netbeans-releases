@@ -27,11 +27,7 @@ public class FakeRADProperty extends RADProperty {
     public FakeRADProperty(RADComponent comp, FakePropertyDescriptor desc) throws IntrospectionException {
         super(comp, desc);
         setAccessType(NORMAL_RW);                
-    }
-
-    String getWholeSetterCode() {
-        return "";
-    }                  
+    }             
        
     public Object getTargetValue() throws IllegalAccessException,
                                           InvocationTargetException {

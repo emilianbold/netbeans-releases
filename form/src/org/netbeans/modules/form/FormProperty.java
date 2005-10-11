@@ -12,12 +12,9 @@
  */
 
 package org.netbeans.modules.form;
-
-import java.util.*;
 import java.beans.*;
 import java.lang.reflect.*;
 import org.openide.nodes.Node;
-
 /** 
  * This class provides basic implementation of properties used in form module
  * which are generated in the java code. FormProperty can use multiple property
@@ -604,7 +601,15 @@ public abstract class FormProperty extends Node.Property {
      */
     // [This method is to be removed in the future.]
     String getPartialSetterCode() {
-        return null;
+        Method writeMethod = getWriteMethod();
+        if (writeMethod == null)
+            return null;
+
+        String str = getJavaInitializationString();
+        if (str == null)
+            return null;
+
+        return writeMethod.getName() + "(" + str + ")"; // NOI18N
     }
 
     /** Gets the complete java code for setting the property, including the
@@ -616,6 +621,15 @@ public abstract class FormProperty extends Node.Property {
         return null;
     }
 
+    /** 
+     * Gets the write method setting the property. 
+     * Used by {@link JavaCodeGenerator}.
+     *
+     */   
+    protected Method getWriteMethod() {
+	return null;
+    }
+    
     /** Gets the code to be generated before the property setter code
      * (on separate line).
      */

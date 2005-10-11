@@ -37,7 +37,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.ClassDefinition;
-
+import org.w3c.dom.NamedNodeMap;
 /**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
  * The class contains lots of complicated code with many hacks ensuring full
@@ -88,7 +88,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String XML_CODE_CONSTRUCTOR = "CodeConstructor"; // NOI18N
     static final String XML_CODE_METHOD = "CodeMethod"; // NOI18N
     static final String XML_CODE_FIELD = "CodeField"; // NOI18N
-
+    static final String XML_PROPERTY_BEAN = "PropertyBean"; // NOI18N    
+    
     // XML attributes names
     static final String ATTR_FORM_VERSION = "version"; // NOI18N
     static final String ATTR_FORM_TYPE = "type"; // NOI18N
@@ -1648,11 +1649,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                          RADComponent metacomp,
                                          String propCategory)
     {
+
+                
+	FormProperty[] properties;                        
         org.w3c.dom.Node[] propNodes = findSubNodes(node, XML_PROPERTY);
         String[] propNames = getPropertyAttributes(propNodes, ATTR_PROPERTY_NAME);
-        
-        FormProperty[] properties;
-                        
+	
         if(metacomp.isValid()) {
             properties = findProperties(propNames, metacomp, propCategory);            
         } else {                        
@@ -1667,246 +1669,328 @@ public class GandalfPersistenceManager extends PersistenceManager {
             org.w3c.dom.Node propNode = propNodes[i];
             FormProperty property = properties[i];
 
-            if (property == null) {
-                PersistenceException ex = new PersistenceException(
-                                                 "Unknown property"); // NOI18N
-                String msg = createLoadingErrorMessage(
-                    FormUtils.getBundleString("MSG_ERR_UnknownProperty"), // NOI18N
-                    propNode);
-                ErrorManager.getDefault().annotate(
-                    ex, ErrorManager.ERROR, null, msg, null, null);
-                nonfatalErrors.add(ex);
-                continue;
-            }
-
-            // read pre-init and post-init code of the property
-            String preCode = getAttribute(propNode, ATTR_PROPERTY_PRE_CODE);
-            if (preCode != null)
-                property.setPreCode(preCode);
-            String postCode = getAttribute(propNode, ATTR_PROPERTY_POST_CODE);
-            if (postCode != null)
-                property.setPostCode(postCode);
-
-            String typeStr = getAttribute(propNode, ATTR_PROPERTY_TYPE);
-            String editorStr = getAttribute(propNode, ATTR_PROPERTY_EDITOR);
-            String valueStr = getAttribute(propNode, ATTR_PROPERTY_VALUE);
-
-            // get the type of stored property value
-            Class propertyType = null;
-            Throwable t = null;
-
-            if (typeStr != null) {
-                try {
-                    propertyType = getClassFromString(typeStr);
-                }
-                catch (Exception ex) {
-                    t = ex;
-                }
-                catch (LinkageError ex) {
-                    t = ex;
-                }
-                if (t != null) {
-                    String msg = createLoadingErrorMessage(
-                        FormUtils.getFormattedBundleString(
-                            "FMT_ERR_CannotLoadClass2", // NOI18N
-                            new Object[] { typeStr }),
-                        propNode);
-                    ErrorManager.getDefault().annotate(t, msg);
-                    nonfatalErrors.add(t);
-                    continue;
-                }
-                if (!property.getValueType().isAssignableFrom(propertyType)) {
-                    PersistenceException ex = new PersistenceException(
-                                           "Incompatible property type"); // NOI18N
-                    String msg = createLoadingErrorMessage(
-                        FormUtils.getBundleString("MSG_ERR_IncompatiblePropertyType"), // NOI18N
-                        propNode);
-                    ErrorManager.getDefault().annotate(
-                        ex, ErrorManager.ERROR, null, msg, null, null);
-                    nonfatalErrors.add(ex);
-                    continue;
-                }
-            }
-            else propertyType = property.getValueType();
-
-            // load the property editor class and create an instance of it
-            PropertyEditor prEd = null;
-            if (editorStr != null) {
-                Class editorClass = null;
-                try {
-                    editorClass = PersistenceObjectRegistry.loadClass(editorStr, formFile);
-                }
-                catch (Exception ex) {
-                    t = ex;
-                }
-                catch (LinkageError ex) {
-                    t = ex;
-                }
-                if (t != null) {
-                    String msg = createLoadingErrorMessage(
-                        FormUtils.getFormattedBundleString(
-                            "FMT_ERR_CannotLoadClass3", // NOI18N
-                            new Object[] { editorStr }),
-                        propNode);
-                    ErrorManager.getDefault().annotate(t, ErrorManager.USER, null, msg, null, null);
-                    nonfatalErrors.add(t);
-                    continue;
-                }
-
-                try {
-                    prEd = createPropertyEditor(editorClass,
-                                                propertyType,
-                                                property);
-                }
-                catch (Exception ex) {
-                    t = ex;
-                }
-                catch (LinkageError ex) {
-                    t = ex;
-                }
-                if (t != null) {
-                    String msg = createLoadingErrorMessage(
-                        FormUtils.getFormattedBundleString(
-                            "FMT_ERR_CannotCreateInstance2", // NOI18N
-                            new Object[] { editorStr }),
-                        propNode);
-                    ErrorManager.getDefault().annotate(t, msg);
-                    nonfatalErrors.add(t);
-                    continue;
-                }
-            }
-
-            // load the property value
-            Object value = NO_VALUE;
-            if (valueStr != null) { // it is a primitive value
-                try {
-                    value = decodePrimitiveValue(valueStr, propertyType);
-                    if (prEd != null) {
-                        prEd.setValue(value);
-                        value = prEd.getValue();
-                    }
-                }
-                catch (IllegalArgumentException ex) {
-                    String msg = createLoadingErrorMessage(
-                        FormUtils.getFormattedBundleString(
-                            "FMT_ERR_CannotDecodePrimitive", // NOI18N
-                            new Object[] { valueStr, propertyType.getName() }),
-                        propNode);
-                    ErrorManager.getDefault().annotate(ex, msg);
-                    nonfatalErrors.add(ex);
-                    continue;
-                }
-            }
-            else { // the value is serialized or saved by XMLPropertyEditor
-                org.w3c.dom.NodeList children = propNode.getChildNodes();
-                int n = children != null ? children.getLength() : 0;
-                if (n > 0) {
-                    try {
-                        boolean serialized = false;
-                        // first try if the value is serialized
-                        for (int j=0; j < n; j++) {
-                            if (XML_SERIALIZED_PROPERTY_VALUE.equals(
-                                        children.item(j).getNodeName()))
-                            {   // here is the value serialized in XML
-                                String serValue = getAttribute(children.item(j),
-                                                            ATTR_PROPERTY_VALUE);
-                                if (serValue != null) {
-                                    serialized = true;
-                                    value = decodeValue(serValue);
-                                }
-                                break;
-                            }
-                        }
-
-                        if (!serialized) {
-                            if (prEd instanceof XMLPropertyEditor) {
-                                // the value is saved by XMLPropertyEditor
-                                for (int j=0; j < n; j++) {
-                                    if (children.item(j).getNodeType()
-                                        == org.w3c.dom.Node.ELEMENT_NODE)
-                                    {   // here is the element of stored value
-                                        ((XMLPropertyEditor)prEd).readFromXML(
-                                                              children.item(j));
-                                        value = prEd.getValue();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex) {
-                        t = ex;
-                    }
-                    catch (LinkageError ex) {
-                        t = ex;
-                    }
-                    if (t != null) {
-                        String msg = createLoadingErrorMessage(
-                            FormUtils.getBundleString(
-                                "MSG_ERR_CannotReadPropertyValue"), // NOI18N
-                            propNode);
-                        ErrorManager.getDefault().annotate(t, msg);
-                        nonfatalErrors.add(t);
-                        continue;
-                    }
-                }
-
-                if (value == NO_VALUE) { // the value is missing
-                    if (preCode != null || postCode != null)
-                        continue; // not an error
-                    PersistenceException ex = new PersistenceException(
-                                               "Missing property value"); // NOI18N
-                    String msg = createLoadingErrorMessage(
-                        FormUtils.getBundleString("MSG_ERR_MissingPropertyValue"), // NOI18N
-                        propNode);
-                    ErrorManager.getDefault().annotate(
-                        ex, ErrorManager.ERROR, null, msg, null, null);
-                    nonfatalErrors.add(ex);
-                    continue;
-                }
-            }
-
-            // hack for properties that can't be set until all children 
-            // are added to the container
-            if (FormUtils.isContainerContentDependentProperty(
-                                     metacomp.getBeanClass(),
-                                     property.getName()))
-            {
-                List propList;
-                if (containerDependentProperties != null) {
-                    propList = (List) containerDependentProperties.get(metacomp);
-                }
-                else {
-                    containerDependentProperties = new HashMap();
-                    propList = null;
-                }
-                if (propList == null) {
-                    propList = new LinkedList();
-                    containerDependentProperties.put(metacomp, propList);
-                }
-
-                propList.add(property);
-                propList.add(value);
-                continue;
-            }
-
-            // set the value to the property
-            try {
-                property.setValue(value);
-                if (prEd != null)
-                    property.setCurrentEditor(prEd);
-            }
-            catch (Exception ex) {
-                String msg = createLoadingErrorMessage(
-                    FormUtils.getBundleString("MSG_ERR_CannotSetLoadedValue"), // NOI18N
-                    propNode);
-                ErrorManager.getDefault().annotate(ex, msg);
-                nonfatalErrors.add(ex);
-                continue;
-            }
+	    loadProperty(propNode, metacomp, property);            
         }
     }
+    
+    private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property) {
+	
+	Throwable t = null;
+	org.w3c.dom.Node valueNode = null;
+	
+	if (property == null) {
+	    PersistenceException ex = new PersistenceException(
+					     "Unknown property"); // NOI18N
+	    String msg = createLoadingErrorMessage(
+		FormUtils.getBundleString("MSG_ERR_UnknownProperty"), // NOI18N
+		propNode);
+	    ErrorManager.getDefault().annotate(
+		ex, ErrorManager.ERROR, null, msg, null, null);
+	    nonfatalErrors.add(ex);
+	    return;
+	}
 
+	// read pre-init and post-init code of the property
+	String preCode = getAttribute(propNode, ATTR_PROPERTY_PRE_CODE);
+	if (preCode != null)
+	    property.setPreCode(preCode);
+	String postCode = getAttribute(propNode, ATTR_PROPERTY_POST_CODE);
+	if (postCode != null)
+	    property.setPostCode(postCode);
+	
+	String typeStr = getAttribute(propNode, ATTR_PROPERTY_TYPE);
+	String editorStr = getAttribute(propNode, ATTR_PROPERTY_EDITOR);
+	String valueStr = getAttribute(propNode, ATTR_PROPERTY_VALUE);
+
+	// get the type of stored property value
+	Class propertyType = getPropertyType(typeStr, property, propNode);
+	if(propertyType==null) {
+	    return;
+	}
+
+	// load the property editor class and create an instance of it
+	PropertyEditor prEd = null;
+	if (editorStr != null) {
+	    prEd = getPropertyEditor(editorStr, property, propertyType, propNode);
+	    if(prEd==null) {
+		return;
+	    }	    
+	}	    
+
+	// load the property value
+	Object value = NO_VALUE;
+	if (valueStr != null) { // it is a primitive value
+	    try {
+		value = decodePrimitiveValue(valueStr, propertyType);
+		if (prEd != null) {
+		    prEd.setValue(value);
+		    value = prEd.getValue();
+		}
+	    }
+	    catch (IllegalArgumentException ex) {
+		String msg = createLoadingErrorMessage(
+		    FormUtils.getFormattedBundleString(
+			"FMT_ERR_CannotDecodePrimitive", // NOI18N
+			new Object[] { valueStr, propertyType.getName() }),
+		    propNode);
+		ErrorManager.getDefault().annotate(ex, msg);
+		nonfatalErrors.add(ex);
+		return;
+	    }
+	}
+	else { // the value is serialized or saved by XMLPropertyEditor
+	    org.w3c.dom.NodeList children = propNode.getChildNodes();
+	    int n = children != null ? children.getLength() : 0;
+	    if (n > 0) {
+		try {
+		    boolean serialized = false;
+		    // first try if the value is serialized
+		    for (int j=0; j < n; j++) {
+			if (XML_SERIALIZED_PROPERTY_VALUE.equals(
+				    children.item(j).getNodeName()))
+			{   // here is the value serialized in XML
+			    String serValue = getAttribute(children.item(j),
+							ATTR_PROPERTY_VALUE);
+			    if (serValue != null) {
+				serialized = true;
+				value = decodeValue(serValue);
+			    }
+			    break;
+			}
+		    }
+
+		    if (!serialized) {			
+			// the value is saved by XMLPropertyEditor
+			for (int j=0; j < n; j++) {
+			    
+			    org.w3c.dom.Node node = children.item(j);			    
+			    
+			    if (node.getNodeType()
+				== org.w3c.dom.Node.ELEMENT_NODE)
+			    {   // here is the element of stored value
+				
+				if(prEd instanceof BeanPropertyEditor &&
+				   XML_PROPERTY_BEAN.equals(node.getNodeName())) 
+				{				    
+				    loadBeanFromXML(node, (BeanPropertyEditor) prEd);	
+				    loadBeanProperty((BeanPropertyEditor) prEd, node);
+				} else if (prEd instanceof XMLPropertyEditor) {								
+				    ((XMLPropertyEditor)prEd).readFromXML(node);  				   
+				}
+				
+				value = prEd.getValue();					
+				break;
+			    }
+			}				    
+		    }
+		}
+		catch (Exception ex) {
+		    t = ex;
+		}
+		catch (LinkageError ex) {
+		    t = ex;
+		}
+		if (t != null) {
+		    String msg = createLoadingErrorMessage(
+			FormUtils.getBundleString(
+			    "MSG_ERR_CannotReadPropertyValue"), // NOI18N
+			propNode);
+		    ErrorManager.getDefault().annotate(t, msg);
+		    nonfatalErrors.add(t);
+		    return;
+		}
+	    }
+
+	    if (value == NO_VALUE) { // the value is missing
+		if (preCode != null || postCode != null)
+		    return; // not an error
+		PersistenceException ex = new PersistenceException(
+					   "Missing property value"); // NOI18N
+		String msg = createLoadingErrorMessage(
+		    FormUtils.getBundleString("MSG_ERR_MissingPropertyValue"), // NOI18N
+		    propNode);
+		ErrorManager.getDefault().annotate(
+		    ex, ErrorManager.ERROR, null, msg, null, null);
+		nonfatalErrors.add(ex);
+		return;
+	    }
+	}	
+	
+	// hack for properties that can't be set until all children 
+        // are added to the container
+	if(metacomp!=null) {
+	    if (FormUtils.isContainerContentDependentProperty(
+				     metacomp.getBeanClass(),
+				     property.getName()))
+	    {
+		List propList;
+		if (containerDependentProperties != null) {
+		    propList = (List) containerDependentProperties.get(metacomp);
+		}
+		else {
+		    containerDependentProperties = new HashMap();
+		    propList = null;
+		}
+		if (propList == null) {
+		    propList = new LinkedList();
+		    containerDependentProperties.put(metacomp, propList);
+		}
+
+		propList.add(property);
+		propList.add(value);
+		return;
+	    }	    
+	}
+
+	// set the value to the property
+	try {
+	    property.setValue(value);
+	    if (prEd != null)
+		property.setCurrentEditor(prEd);	     	
+	}
+	catch (Exception ex) {
+	    String msg = createLoadingErrorMessage(
+		FormUtils.getBundleString("MSG_ERR_CannotSetLoadedValue"), // NOI18N
+		propNode);
+	    ErrorManager.getDefault().annotate(ex, msg);
+	    nonfatalErrors.add(ex);
+	    return;
+	}	
+    }
+    
+    private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode) {
+	// load the property editor class and create an instance of it
+	PropertyEditor prEd = null;
+	Throwable t = null;	
+	if (editorStr != null) {
+	    Class editorClass = null;
+	    try {
+		editorClass = PersistenceObjectRegistry.loadClass(editorStr, formFile);
+	    }
+	    catch (Exception ex) {
+		t = ex;
+	    }
+	    catch (LinkageError ex) {
+		t = ex;
+	    }
+	    if (t != null) {
+		String msg = createLoadingErrorMessage(
+		    FormUtils.getFormattedBundleString(
+			"FMT_ERR_CannotLoadClass3", // NOI18N
+			new Object[] { editorStr }),
+		    propNode);
+		ErrorManager.getDefault().annotate(t, ErrorManager.USER, null, msg, null, null);
+		nonfatalErrors.add(t);
+		return null;
+	    }
+
+	    try {
+		prEd = createPropertyEditor(editorClass,
+					    propertyType,
+					    property);
+	    }
+	    catch (Exception ex) {
+		t = ex;
+	    }
+	    catch (LinkageError ex) {
+		t = ex;
+	    }
+	    if (t != null) {
+		String msg = createLoadingErrorMessage(
+		    FormUtils.getFormattedBundleString(
+			"FMT_ERR_CannotCreateInstance2", // NOI18N
+			new Object[] { editorStr }),
+		    propNode);
+		ErrorManager.getDefault().annotate(t, msg);
+		nonfatalErrors.add(t);
+		return null;
+	    }
+	}	
+	return prEd;
+    }
+    
+    private Class getPropertyType(String typeStr, FormProperty property, org.w3c.dom.Node propNode) {
+	// get the type of stored property value
+	Class propertyType = null;
+	Throwable t = null;
+
+	if (typeStr != null) {
+	    try {
+		propertyType = getClassFromString(typeStr);
+	    }
+	    catch (Exception ex) {
+		t = ex;
+	    }
+	    catch (LinkageError ex) {
+		t = ex;
+	    }
+	    if (t != null) {
+		String msg = createLoadingErrorMessage(
+		    FormUtils.getFormattedBundleString(
+			"FMT_ERR_CannotLoadClass2", // NOI18N
+			new Object[] { typeStr }),
+		    propNode);
+		ErrorManager.getDefault().annotate(t, msg);
+		nonfatalErrors.add(t);
+		return null;
+	    }
+	    if (!property.getValueType().isAssignableFrom(propertyType)) {
+		PersistenceException ex = new PersistenceException(
+				       "Incompatible property type"); // NOI18N
+		String msg = createLoadingErrorMessage(
+		    FormUtils.getBundleString("MSG_ERR_IncompatiblePropertyType"), // NOI18N
+		    propNode);
+		ErrorManager.getDefault().annotate(
+		    ex, ErrorManager.ERROR, null, msg, null, null);
+		nonfatalErrors.add(ex);
+		return null;
+	    }
+	}
+	else propertyType = property.getValueType();	
+	return propertyType;
+    }
+    
+    private void loadBeanFromXML(org.w3c.dom.Node node, BeanPropertyEditor beanPropertyEditor) 
+	throws Exception 
+    {
+	String typeStr = node.getAttributes().getNamedItem(ATTR_PROPERTY_TYPE).getNodeValue();
+	Class type = null;
+	try {
+	    type = getClassFromString(typeStr);
+	} catch (ClassNotFoundException ex) {
+	    String msg = createLoadingErrorMessage(
+		FormUtils.getFormattedBundleString(
+		    "FMT_ERR_CannotLoadClass2", // NOI18N
+		    new Object[] { typeStr }),
+		    node);
+	    ErrorManager.getDefault().annotate(ex, msg);
+	    nonfatalErrors.add(ex);
+	    return;
+	}
+	
+	beanPropertyEditor.intializeFromType(type);							    	
+	
+    }
+    
+    private void loadBeanProperty(BeanPropertyEditor beanPropertyEditor, org.w3c.dom.Node valueNode) {	
+	if(beanPropertyEditor.valueIsBeanProperty()) {
+	    org.w3c.dom.NodeList children = valueNode.getChildNodes();	
+	    Node.Property[] allBeanProperties = beanPropertyEditor.getProperties();
+	    org.w3c.dom.Node node;		
+	    FormProperty prop;
+
+	    for (int i=0; i<children.getLength(); i++) {
+		node = children.item(i);	  
+		if (node != null && node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) { 
+		    prop = (FormProperty) getPropertyOfName(allBeanProperties, getAttribute(node, ATTR_PROPERTY_NAME));
+		    if(prop != null) {
+			loadProperty(node, null, prop);								
+		    }	    
+		}	  
+	    }		    
+	}	
+    }
+    
     private String[] getPropertyAttributes(org.w3c.dom.Node[] propNodes, String attribute){
         String[] ret = new String[propNodes.length];
         for (int i=0; i < propNodes.length; i++) {
@@ -1998,7 +2082,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }        
         return clazz;
     }
-    
+        
+    private Node.Property getPropertyOfName(Node.Property[] props, String name) {
+        for (int i=0; i < props.length; i++)
+            if (props[i].getName().equals(name))
+                return props[i];
+
+        return null;
+    }
+       
     private void loadSyntheticProperties(org.w3c.dom.Node node,
                                          RADComponent metacomp)
     {
@@ -3209,7 +3301,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node valueNode = null;
 
         PropertyEditor prEd = property.getCurrentEditor();
-        if (prEd instanceof XMLPropertyEditor) {
+	if ( prEd instanceof BeanPropertyEditor &&
+	     ((BeanPropertyEditor) prEd).valueIsBeanProperty() ) 
+	{
+	    valueNode = saveBeanToXML(realValue.getClass(), topDocument);
+	} else if (prEd instanceof XMLPropertyEditor) {
             prEd.setValue(value);
             valueNode = ((XMLPropertyEditor)prEd).storeToXML(topDocument);
             if (valueNode == null) { // property editor refused to save the value
@@ -3229,6 +3325,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         return false;
                     }
                 }
+
 //                PersistenceException ex = new PersistenceException(
 //                                   "Cannot save the property value"); // NOI18N
 //                String msg = FormUtils.getFormattedBundleString(
@@ -3278,7 +3375,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     property.getPreCode(),
                     property.getPostCode() });
         }
-        else {
+        else {	    	    
             addElementOpenAttr(
                 buf,
                 XML_PROPERTY,
@@ -3289,15 +3386,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     ATTR_PROPERTY_PRE_CODE,
                     ATTR_PROPERTY_POST_CODE },
                 new String[] {
-                    propertyName,
+                    propertyName,		    
                     property.getValueType().getName(),
                     prEd.getClass().getName(),
                     property.getPreCode(),
                     property.getPostCode() });
 
-            if (valueNode != null) {
-                saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
-            }
+	    if (valueNode != null) {					
+		if( prEd instanceof BeanPropertyEditor 
+		    && ((BeanPropertyEditor) prEd).valueIsBeanProperty() ) 
+		{	
+		    // the property is a bean,
+		    // so there could be some children nodes ...
+		    saveBeanProperty((BeanPropertyEditor) prEd, valueNode, buf, indent + ONE_INDENT);
+		} else {
+		    saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);					    		    
+		}                
+            }		    
             else {
                 buf.append(indent + ONE_INDENT);
                 addLeafElementOpenAttr(
@@ -3311,7 +3416,57 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         return true;
     }
+    
+    private org.w3c.dom.Node saveBeanToXML(Class type, org.w3c.dom.Document doc) {
+	org.w3c.dom.Element el = doc.createElement(XML_PROPERTY_BEAN);
+	el.setAttribute(ATTR_PROPERTY_TYPE, type.getName());	
+	return el;
+    }
+    
+    private void saveBeanProperty(BeanPropertyEditor beanPropertyEditor, org.w3c.dom.Node valueNode, StringBuffer buf, String indent) {	
+	boolean children = false;
+	FormProperty[] props = (FormProperty[]) beanPropertyEditor.getProperties();
 
+	NamedNodeMap attributes = valueNode.getAttributes();
+	String[] attrNames = new String[attributes.getLength()];
+	String[] attrValues = new String[attributes.getLength()];
+
+	for (int i = 0; i < attrValues.length; i++) {
+	    attrNames[i] = attributes.item(i).getNodeName();
+	    attrValues[i] = attributes.item(i).getNodeValue();
+	}
+			
+	for (int i=0; i<props.length; i++) {
+	    if( props[i].isChanged() ) {
+		if(!children) {
+		    // we found the first child property, 		    
+		    // let's start the element tag	    
+		    buf.append(indent);
+		    addElementOpenAttr(buf,
+					valueNode.getNodeName(),
+					attrNames,
+					attrValues);
+		    children = true;
+		}		
+		saveProperty(props[i],
+			 props[i].getName(),
+			 buf,
+			 indent + ONE_INDENT);	
+	    }			
+	}		    			    					
+
+	if(children) {	    
+	    // there were children properties,
+	    // we should close the element tag
+	    buf.append(indent);	    
+	    addElementClose(buf, valueNode.getNodeName());			    
+	} else {
+	    // there were no children properties,
+	    // let's save the node as it is
+	    saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);	    
+	}
+    }
+    
     private boolean saveValue(Object value,
                               Class valueType,
                               PropertyEditor prEd,
@@ -4742,7 +4897,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * <LI> Integer, Short, Byte, Long, Float, Double, Boolean, Character </UL>
      * @return String containing encoded value or null if specified object is not of supported type
      */
-    private String encodePrimitiveValue(Object value) {
+    public static String encodePrimitiveValue(Object value) {
         if (value instanceof Integer || value instanceof Short
                 || value instanceof Byte || value instanceof Long
                 || value instanceof Float || value instanceof Double
