@@ -99,7 +99,8 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_AddFormPropertyPanel"));
         jLabelPropertyName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_PropertyName_mnem").charAt(0));
         jLabelPropertyName.setLabelFor(jTextFieldPropertyName);
         jLabelPropertyName.setText(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_PropertyName"));
@@ -119,12 +120,13 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jTextFieldPropertyName, gridBagConstraints);
+        jTextFieldPropertyName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jTextFieldPropertyName"));
 
         buttonGroup1.add(jRadioButtonSingle);
         jRadioButtonSingle.setMnemonic(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_SingleType_mnem").charAt(0));
         jRadioButtonSingle.setSelected(true);
         jRadioButtonSingle.setText(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_SingleType"));
-        jRadioButtonSingle.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButtonSingle.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonSingle.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButtonSingle.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -138,6 +140,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jRadioButtonSingle, gridBagConstraints);
+        jRadioButtonSingle.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButtonSingle"));
 
         jTextFieldSize.setColumns(5);
         jTextFieldSize.setEditable(false);
@@ -149,6 +152,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jTextFieldSize, gridBagConstraints);
+        jTextFieldSize.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jTextFieldSize"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -157,6 +161,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jComboBoxFormName, gridBagConstraints);
+        jComboBoxFormName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jComboBoxFormName"));
 
         jLabelFormName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_FormName_mnem").charAt(0));
         jLabelFormName.setLabelFor(jComboBoxFormName);
@@ -188,6 +193,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jComboBoxPropertyType, gridBagConstraints);
+        jComboBoxPropertyType.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jComboBoxPropertyType"));
 
         jLabelInitValue.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_InitValue_mnem").charAt(0));
         jLabelInitValue.setLabelFor(jTextFieldInitValue);
@@ -212,7 +218,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         buttonGroup1.add(jRadioButtonArray);
         jRadioButtonArray.setMnemonic(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_ArrayType_mnem").charAt(0));
         jRadioButtonArray.setText(org.openide.util.NbBundle.getMessage(AddFormPropertyPanel.class, "LBL_ArrayType"));
-        jRadioButtonArray.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButtonArray.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonArray.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -220,6 +226,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jRadioButtonArray, gridBagConstraints);
+        jRadioButtonArray.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButtonArray"));
 
         jTextFieldInitValue.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -230,6 +237,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jTextFieldInitValue, gridBagConstraints);
+        jTextFieldInitValue.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jTextFieldInitValue"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -238,6 +246,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.weightx = 2.0;
         add(jPanel1, gridBagConstraints);
 
+        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSM_BrowseClasses").charAt(0));
         jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("B_BROWSE"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -251,6 +260,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jbBrowseClass"));
 
     }
     // </editor-fold>//GEN-END:initComponents
