@@ -15,91 +15,23 @@
         <h2>Using CVS with the IDE </h2>        
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>The IDE's CVS support enables you to view 
-        and manage the evolution of changes in version-controlled files. </p>
-
-			<a name="viewing"></a>
-        	<h3>Viewing Versioning Information</h3>
-<p>CVS enables you to view file status information in several ways:
-<ul>
-    <li><b>Color coding.</b> Graphical indication of the status of individual files.
-    <li><b>Status badges.</b> Graphical indication of the status of files contained within your project, folder, and package nodes.
-    <li><b>Versioning window.</b> Provides a real-time list of all of the changed, removed, new, and out-of-date files in selected directories.
-</ul>
-
-        <p>The Versioning window displays versioned files using the following
-        color coding and font styles:
-        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
-            task name. The right column lists the steps to perform.">
-            <tr valign="top">
-                <th scope="col" align="left">Icon</th>
-                <th scope="col" align="center">Description</th>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/defaultNode.gif" alt="Note"></p></td>
-                <td>General version-controlled file node, annotated with a revision number
-                and log message.</td>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/revisionCurrentIcon.gif" alt="Note"></p></td>
-                <td>Current revision node. The current copy of a file as it exists in your
-                working directory.</td>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/revisionIcon.gif" alt="Note"></p></td>
-                <td> Revision subnode. A prior revision of a file existing in the VCS repository.</td>
-            </tr>
-            <tr valign="top">
-            <td align="center"><p><img src="./images/branchIcon.gif" alt="Note"></p></td>
-            <td> Branch revision node. A prior revision of a file existing on a branch
-            in the VCS repository.</td>
-        </table>
-
-        <p>Current VCS file status is indicated by
-        adding the following  badges to project, package and directory  icons:
-        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
-            task name. The right column lists the steps to perform.">
-            <tr valign="top">
-                <th scope="col" align="left"> Badge</th>
-                <th scope="col" align="center">Description</th>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/badgeUpToDate.gif" alt="Note"></p></td>
-                <td>Up to Date badge. The local   copy  of the
-                file is the same as the current repository revision. </td>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/badgeNeedsCheckout.gif" alt="Note"></p></td>
-                <td>Needs Checkout badge. </td>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/badgeLocModified.gif" alt="Note"></p></td>
-                <td>Locally Modified badge. The local copy    of the
-                file has been changed and needs to be committed.</td>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/badgeLocRemoved.gif" alt="Note"></p></td>
-                <td>Locally Removed badge. The local copy   of the
-                file has been removed from the working directory. </td>
-            </tr>
-            <tr valign="top">
-                <td align="center"><p><img src="./images/badgeMergeConflict.gif" alt="Note"></p></td>
-                <td>Merge Conflict badge. The repository copy of the file is a more recent
-                revision than the local copy and contains changes which conflict with the
-                local version's new edits. </td>
-            </tr>
-        </table>
-        <p>To open the Versioning window, choose Window > Versioning > Versioning
-        (Ctrl-8). </p>
-
-        <h3>Tracking Changes in the Versioning Window <a name="monitor"></a></h3>
+        and manage the evolution of changes in version-controlled files so that
+        	_____. To open the Versioning window, choose Window > Versioning > Versioning
+        	(Ctrl-8). </p>
+        <p>CVS enables you to view file status information in several ways. The
+        	Versioning window distinguishes versioned files using color coding and
+        	font styles. Current VCS file status is indicated by adding the badges
+     	  to project, package and directory icons. </p>
+        <a name="viewing"></a>
+			<h3>Tracking Changes in the Versioning Window <a name="monitor"></a></h3>
         <p>The Versioning window presents a real-time view of the changes in selected directories. 
         It opens at the bottom of the IDE whenever you view changes. You can do this by right-clicking any project, directory, or file that is in a CVS working 
-        directory and choose CVS > Show Changes. 
-        </p>
-
+        directory and choose CVS > Show Changes.        </p>
         <h3>Calling Version Control Commands</h3>
-        <p>The CVS commands  submenu  contains all of the available CVS
-        commands for the currently selected file or directory. </p>
+        <p>You can call CVS commands on versioned-controlled files (those exisiting
+        	within a registered working directory) using the CVS menu in the IDE's
+        	main window. In addition, many CVS commands are available in the CVS
+        	commands submenu for the currently selected file or directory. </p>
         <p>You can access the CVS commands submenu by right-clicking a file or directory
         in any of the following:</p>
         <ul>
@@ -107,12 +39,13 @@
             <li><b>Files window</b></li>
             <li><strong>Favorites window </strong></li>
             <li><b>Versioning window</b></li>            
-            <!--<li><b>Search Results window</b></li>-->
+            <li><b>Search Histories window </b></li>
+            <li><b>Search Results window</b></li>
+            <li><b>Source Editor</b></li>
             <p>The Status Bar in the bottom left of the IDE window displays the current
             command's status. If the command is set to display ouput, the output is automatically
             displayed in the Output window.</p>
         </ul>
-
         <table>
             <tr>
                 <th colspan=2 align=left><a name="seealso">See Also</a></th>
@@ -121,8 +54,8 @@
                 <td width="23"></td>
                 <td>
                 <a href="cvs-lite_about.html">About Version Control</a><br>
-                <a href="cvs-lite_overview.html">Working with Version Control</a><br>
-                <a href="cvs-lite_quickref.html">VCS Tasks: Quick Reference</a> 
+                <a href="cvs-lite_overview.html">Working with CVS</a><br>
+                <a href="cvs-lite_quickref.html">CVS Tasks: Quick Reference</a> 
             </tr>
         </table>
         <hr>
