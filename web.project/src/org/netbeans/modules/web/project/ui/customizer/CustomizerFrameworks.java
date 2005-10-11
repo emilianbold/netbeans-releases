@@ -98,6 +98,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         jScrollPane1.setMinimumSize(new java.awt.Dimension(22, 70));
         jScrollPane1.setPreferredSize(new java.awt.Dimension(259, 70));
         jScrollPane1.setViewportView(jListFrameworks);
+        jListFrameworks.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "ACS_Frameworks_FrameworksList_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -122,6 +123,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonAdd, gridBagConstraints);
+        jButtonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "ACS_Frameworks_AddButton_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
