@@ -27,6 +27,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -76,7 +77,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
     public void testHyperlinkRun() throws Exception {
         FileObject buildXml = FileUtil.toFileObject(new File(simpleAppDir, "build.xml"));
         assertNotNull("have build.xml as a FileObject", buildXml);
-        ActionUtils.runTarget(buildXml, new String[] {"clean", "run"}, props);
+        ActionUtils.runTarget(buildXml, new String[] {"clean", "run"}, props).result();
         //System.out.println("nonhyperlinkedOut=" + nonhyperlinkedOut + " nonhyperlinkedErr=" + nonhyperlinkedErr + " hyperlinkedOut=" + hyperlinkedOut + " hyperlinkedErr=" + hyperlinkedErr);
         assertTrue("got a hyperlink for Clazz.run NPE", hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:4)"));
     }
@@ -85,7 +86,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
     public void testHyperlinkTest() throws Exception {
         FileObject buildXml = FileUtil.toFileObject(new File(simpleAppDir, "build.xml"));
         assertNotNull("have build.xml as a FileObject", buildXml);
-        ActionUtils.runTarget(buildXml, new String[] {"clean", "test"}, props);
+        ActionUtils.runTarget(buildXml, new String[] {"clean", "test"}, props).result();
         //System.out.println("nonhyperlinkedOut=" + nonhyperlinkedOut + " nonhyperlinkedErr=" + nonhyperlinkedErr + " hyperlinkedOut=" + hyperlinkedOut + " hyperlinkedErr=" + hyperlinkedErr);
         assertTrue("got a hyperlink for Clazz.run NPE in " + hyperlinkedErr, hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:4)"));
     }
