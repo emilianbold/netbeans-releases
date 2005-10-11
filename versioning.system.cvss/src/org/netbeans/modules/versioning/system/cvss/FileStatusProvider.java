@@ -19,6 +19,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.CvsCommandsMenuItem;
 import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
+import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -27,6 +28,8 @@ import javax.swing.*;
 import java.util.*;
 import java.awt.Image;
 import java.io.File;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Contract specific for Filesystem <-> UI interaction, to be replaced later with something more
@@ -36,7 +39,7 @@ import java.io.File;
  * 
  * @author Maros Sandor
  */
-public class FileStatusProvider extends AnnotationProvider implements VersioningListener {
+public class FileStatusProvider extends AnnotationProvider implements VersioningListener, PropertyChangeListener {
 
     private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     
@@ -52,7 +55,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public String annotateNameHtml(String name, Set files) {
-        return CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(name, files, FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+        return CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(name, files, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
     }
     
     public String annotateName(String name, Set files) {
@@ -164,11 +167,13 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
     void shutdown() {
         shutdown = true;
+        CvsModuleConfig.getDefault().removePropertyChangeListener(this);        
         refreshModifiedFiles();
     }
 
     void init() {
         refreshModifiedFiles();
+        CvsModuleConfig.getDefault().addPropertyChangeListener(this);        
     }
 
     private void refreshModifiedFiles() {
@@ -176,6 +181,32 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             fireFileStatusEvent(file);
+        }
+    }
+    
+    private void refreshAllFiles() {
+        Set filesystems = new HashSet(1);
+        File[] allRoots = File.listRoots();
+        for (int i = 0; i < allRoots.length; i++) {
+            File root = allRoots[i];
+            FileObject fo = FileUtil.toFileObject(root);
+            if (fo != null) {
+                try {
+                    filesystems.add(fo.getFileSystem());
+                } catch (FileStateInvalidException e) {
+                    // ignore invalid filesystems
+                }
+            }
+        }
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fireFileStatusChanged(new FileStatusEvent(fileSystem, false, true));                
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT.equals(evt.getPropertyName())) {
+            refreshAllFiles();
         }
     }
 }

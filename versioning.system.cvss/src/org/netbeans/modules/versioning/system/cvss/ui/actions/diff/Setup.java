@@ -103,7 +103,7 @@ class Setup {
 
         firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle);
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
-        title = "<html>" + Annotator.annotateNameHtml(baseFile, status);
+        title = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(baseFile, info);
     }
 
     /** Text file setup for arbitrary revisions. */

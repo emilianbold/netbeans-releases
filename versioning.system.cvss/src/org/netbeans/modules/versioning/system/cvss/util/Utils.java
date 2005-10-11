@@ -346,6 +346,9 @@ public class Utils {
         FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file);
         Entry entry = info.getEntry(file);
         if (entry != null) {
+            if (file.isDirectory()) {
+                return CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
+            }
             String stickyInfo = null;
             if (entry.getTag() != null) stickyInfo = "T" + entry.getTag();
             else if (entry.getDate() != null) stickyInfo = "D" + entry.getDateFormatted();

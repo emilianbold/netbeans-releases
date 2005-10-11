@@ -132,12 +132,13 @@ public class SyncFileNode extends AbstractNode {
     }
 
     private void refreshHtmlDisplayName() {
-        int status = node.getInformation().getStatus();
+        FileInformation info = node.getInformation(); 
+        int status = info.getStatus();
         // Special treatment: Mergeable status should be annotated as Conflict in Versioning view according to UI spec
         if (status == FileInformation.STATUS_VERSIONED_MERGE) {
             status = FileInformation.STATUS_VERSIONED_CONFLICT;
         }
-        htmlDisplayName = Annotator.annotateNameHtml(node.getFile().getName(), status);
+        htmlDisplayName = CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), info, null);
         fireDisplayNameChange(node.getName(), node.getName());
     }
 

@@ -53,6 +53,7 @@ import java.lang.reflect.Field;
  */
 public class Annotator {
 
+    private static MessageFormat uptodateFormat = getFormat("uptodateFormat");  // NOI18N
     private static MessageFormat newLocallyFormat = getFormat("newLocallyFormat");  // NOI18N
     private static MessageFormat addedLocallyFormat = getFormat("addedLocallyFormat"); // NOI18N
     private static MessageFormat modifiedLocallyFormat = getFormat("modifiedLocallyFormat"); // NOI18N
@@ -65,6 +66,12 @@ public class Annotator {
     private static MessageFormat mergeableFormat = getFormat("mergeableFormat"); // NOI18N
     private static MessageFormat excludedFormat = getFormat("excludedFormat"); // NOI18N
 
+    private static final int STATUS_TEXT_ANNOTABLE = FileInformation.STATUS_NOTVERSIONED_EXCLUDED | 
+            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_UPTODATE |
+            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_VERSIONED_CONFLICT | 
+            FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | 
+            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
+    
     private final FileStatusCache cache;
 
     Annotator(CvsVersioningSystem cvs) {
@@ -99,7 +106,7 @@ public class Annotator {
     private void setAnnotationColor(String name, String colorString) {
         try {
             Field field = Annotator.class.getDeclaredField(name + "Format");
-            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font>");
+            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");
             field.set(null, format);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid color name");
@@ -111,44 +118,81 @@ public class Annotator {
      * display name and status is usually its CVS status as reported by FileStatusCache. 
      * 
      * @param name name to annotate
-     * @param status status that an object with the given name has
+     * @param info status that an object with the given name has
+     * @param file file this annotation belongs to. It is used to determine sticky tags for textual annotations. Pass
+     * null if you do not want textual annotations to appear in returned markup
      * @return String html-annotated name that can be used in Swing controls that support html rendering. Note: it may
      * also return the original name String
      */ 
-    public static String annotateNameHtml(String name, int status) {
+    public String annotateNameHtml(String name, FileInformation info, File file) {
+        int status = info.getStatus();
+        String textAnnotation;
+        String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();
+        if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
+            String sticky = Utils.getSticky(file);
+            if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                textAnnotation = "";
+            } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                textAnnotation = " [" + sticky.substring(1) + "]";
+            } else  if (sticky == null) {
+                textAnnotation = " [" + info.getShortStatusText() + "]";
+            } else {
+                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]";
+            }
+        } else {
+            textAnnotation = "";
+        }
         switch (status) {
-        case FileInformation.STATUS_VERSIONED_UPTODATE:
-        case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
         case FileInformation.STATUS_UNKNOWN:
+        case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
             return name;
+        case FileInformation.STATUS_VERSIONED_UPTODATE:
+            return uptodateFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-            return modifiedLocallyFormat.format(new Object [] { name });
+            return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
-            return newLocallyFormat.format(new Object [] { name });
+            return newLocallyFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-            return removedLocallyFormat.format(new Object [] { name });
+            return removedLocallyFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-            return deletedLocallyFormat.format(new Object [] { name });
+            return deletedLocallyFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
-            return newInRepositoryFormat.format(new Object [] { name });
+            return newInRepositoryFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-            return modifiedInRepositoryFormat.format(new Object [] { name });
+            return modifiedInRepositoryFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
-            return removedInRepositoryFormat.format(new Object [] { name });
+            return removedInRepositoryFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
-            return addedLocallyFormat.format(new Object [] { name });
+            return addedLocallyFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MERGE:
-            return mergeableFormat.format(new Object [] { name });
+            return mergeableFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_CONFLICT:
-            return conflictFormat.format(new Object [] { name });
+            return conflictFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-            return excludedFormat.format(new Object [] { name });
+            return excludedFormat.format(new Object [] { name, textAnnotation });
         default:
             throw new IllegalArgumentException("Unknown status: " + status);
         }
     }
 
-    private static String annotateFolderNameHtml(String name, int status) {
+    private String annotateFolderNameHtml(String name, FileInformation info, File file) {
+        int status = info.getStatus();
+        String textAnnotation;
+        String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();        
+        if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
+            String sticky = Utils.getSticky(file);
+            if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                textAnnotation = "";
+            } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                textAnnotation = " [" + sticky.substring(1) + "]";
+            } else  if (sticky == null) {
+                textAnnotation = " [" + info.getShortStatusText() + "]";
+            } else {
+                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]";
+            }
+        } else {
+            textAnnotation = "";
+        }
         switch (status) {
         case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
         case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
@@ -156,7 +200,6 @@ public class Annotator {
         case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
         case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
         case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
-        case FileInformation.STATUS_VERSIONED_UPTODATE:
         case FileInformation.STATUS_VERSIONED_MERGE:
         case FileInformation.STATUS_UNKNOWN:
         case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
@@ -164,15 +207,17 @@ public class Annotator {
         case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
         case FileInformation.STATUS_VERSIONED_CONFLICT:
             return name;
+        case FileInformation.STATUS_VERSIONED_UPTODATE:
+            return uptodateFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-            return excludedFormat.format(new Object [] { name });
+            return excludedFormat.format(new Object [] { name, textAnnotation });
         default:
             throw new IllegalArgumentException("Unknown status: " + status);
         }
     }
     
-    public static String annotateNameHtml(File file, int status) {
-        return annotateNameHtml(file.getName(), status);
+    public String annotateNameHtml(File file, FileInformation info) {
+        return annotateNameHtml(file.getName(), info, file);
     }
     
     /**
@@ -186,19 +231,23 @@ public class Annotator {
     public String annotateNameHtml(String name, Set files, int includeStatus) {
         if (files.size() == 0) return name;
         
-        int lastStatus = -1;
+        FileInformation lastInfo = null;
+        File lastFile = null;
         boolean folderAnnotation = false;
         
         for (Iterator i = files.iterator(); i.hasNext();) {
             FileObject fo = (FileObject) i.next();
-            int status = cache.getStatus(FileUtil.toFile(fo)).getStatus();
+            File file = FileUtil.toFile(fo);
+            FileInformation info = cache.getStatus(file);
+            int status = info.getStatus();
             if ((status & includeStatus) == 0) continue;
             
-            if (lastStatus == -1) {
-                lastStatus = status;
+            if (lastInfo == null) {
+                lastInfo = info;
+                lastFile = file;
                 folderAnnotation = fo.isFolder();
             } else {
-                if (status != lastStatus) return name;
+                if (status != lastInfo.getStatus()) return name;
             }
         }
 
@@ -206,8 +255,8 @@ public class Annotator {
             folderAnnotation = looksLikeLogicalFolder(files);
         }
 
-        if (lastStatus == -1) return name;
-        return folderAnnotation ? annotateFolderNameHtml(name, lastStatus) : annotateNameHtml(name, lastStatus);
+        if (lastInfo == null) return name;
+        return folderAnnotation ? annotateFolderNameHtml(name, lastInfo, lastFile) : annotateNameHtml(name, lastInfo, lastFile);
     }
 
     public String annotateName(String name, Set files) {

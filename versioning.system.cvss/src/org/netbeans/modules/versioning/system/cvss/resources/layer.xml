@@ -17,6 +17,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Repository">
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.ShowTextAnnotationsAction"/>
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusProjectsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusProjectsAction"/>
             </file>
@@ -86,9 +89,13 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu"> 
         <attr name="CVS/Tools" boolvalue="true" />
         <attr name="RunProject/CVS" boolvalue="true" />
-        <!-- Hide current Versioning menu -->
-        <folder name="Versioning_hidden"/>
             
+        <folder name="View">
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.instance"/>
+            </file>            
+        </folder>
+        
         <folder name="CVS">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.system.cvss.Bundle" />
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusProjectsAction.shadow">

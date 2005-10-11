@@ -193,7 +193,7 @@ class CommitTable implements AncestorListener {
                 CommitTableModel model = (CommitTableModel) sorter.getTableModel();
                 CvsFileNode node = model.getNodeAt(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = "<html>" + Annotator.annotateNameHtml(node.getFile(), node.getInformation().getStatus());
+                    value = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), node.getInformation(), null);
                 }
                 if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
                     value = "<html><s>" + value + "</s></html>";
