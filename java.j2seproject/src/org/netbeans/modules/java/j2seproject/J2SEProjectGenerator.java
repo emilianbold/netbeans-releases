@@ -260,7 +260,7 @@ public class J2SEProjectGenerator {
                 throw new IOException ("Can not create project folder.");   //NOI18N
             }
             refreshFileSystem (dir);
-        }        
+        }
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N        
@@ -321,6 +321,7 @@ public class J2SEProjectGenerator {
         FileObject fo = FileUtil.toFileObject(dir);
         if (fo != null) {
             fo.getChildren();
+            fo.refresh();
         }
     }
 }
