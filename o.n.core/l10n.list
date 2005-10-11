@@ -43,3 +43,6 @@ core/swing/plaf/src/**/*.png
 core/swing/tabcontrol/src/**/Bundle.properties
 core/swing/tabcontrol/src/**/*.gif
 core/swing/tabcontrol/src/**/*.png
+core/palette/src/**/Bundle.properties
+core/palette/src/**/*.gif
+core/palette/src/**/*.png
