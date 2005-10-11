@@ -199,7 +199,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         add(jButtonExcType, gridBagConstraints);
         jButtonExcType.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jButtonExcType"));
 
-        jLabelCall.setLabelFor(jRadioButtonResFile);
         jLabelCall.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddExcDialog_Call"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -276,7 +275,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         add(jComboBoxCallAction, gridBagConstraints);
         jComboBoxCallAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jComboBoxCallAction"));
 
-        jLabelScope.setLabelFor(jRadioButtonSession);
         jLabelScope.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddExcDialog_Scope"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -285,7 +283,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         add(jLabelScope, gridBagConstraints);
 
-        jLabelLocation.setLabelFor(jRadioButtonGlobalExc);
         jLabelLocation.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddFwdDialog_Location"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
