@@ -463,7 +463,6 @@ public abstract class Children extends Object {
     private ChildrenArray getArray(boolean[] cannotWorkBetter) {
         ChildrenArray arr;
         boolean doInitialize = false;
-
         synchronized (LOCK) {
             arr = (ChildrenArray) array.get();
 
@@ -512,6 +511,13 @@ public abstract class Children extends Object {
                             initThread = null;
                             LOCK.notifyAll();
                         }
+                        
+                        if (IS_LOG_GET_ARRAY) {
+                            LOG_GET_ARRAY.log(
+                                "notifyAll done"
+                            ); // NOI18N
+                        }
+                        
                     }
                 }
 
@@ -566,14 +572,13 @@ public abstract class Children extends Object {
                     } catch (InterruptedException ex) {
                     }
                 }
-
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.log(
-                        " children are here for " + this + // NOI18N
-                        " on " + Thread.currentThread() + // NOI18N
-                        " children " + arr.children
-                    );
-                }
+            }
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.log(
+                    " children are here for " + this + // NOI18N
+                    " on " + Thread.currentThread() + // NOI18N
+                    " children " + arr.children
+                );
             }
         }
 

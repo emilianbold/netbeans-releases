@@ -19,8 +19,10 @@ import java.lang.ref.*;
 import java.util.*;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.*;
+import org.openide.ErrorManager;
 
 public class ChildrenKeysTest extends NbTestCase {
+    private ErrorManager err;
     
     public ChildrenKeysTest(java.lang.String testName) {
         super(testName);
@@ -29,11 +31,19 @@ public class ChildrenKeysTest extends NbTestCase {
     protected Node createNode (Children ch) {
         return new AbstractNode (ch);
     }
+    
+    public static junit.framework.Test suite() {
+        return new ChildrenKeysTest("testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces");
+        //return new NbTestSuite(ChildrenKeysTest.class);
+    }
 
     protected void setUp () throws Exception {
         System.setProperty("org.openide.util.Lookup", "org.openide.nodes.ChildrenKeysTest$Lkp");
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
         ErrManager.messages.delete (0, ErrManager.messages.length ());
+        ErrManager.clearBlocks();
+        
+        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
     }    
 
     protected void runTest () throws Throwable {
@@ -68,7 +78,7 @@ public class ChildrenKeysTest extends NbTestCase {
         final Node node = new AbstractNode(children);
         
         // Get optimal nodes from other thread
-        Thread t = new Thread() {
+        Thread t = new Thread("THREAD") {
             Node[] keep;
             public void run() {
                 t1.tick();
@@ -614,6 +624,99 @@ public class ChildrenKeysTest extends NbTestCase {
         k.refreshKey (NULL);
         assertEquals ("Just one node", 1, n.getChildren ().getNodesCount ());
     }
+
+    public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
+        final Ticker t1 = new Ticker();
+        final List who = new java.util.Vector();
+        
+        final int[] count = new int[1];
+        class ChildrenKeys extends Children.Keys {
+            protected Node[] createNodes(Object key) {
+                who.add(new Exception("Creating: " + count[0] + " for key: " + key));
+                count[0]++;
+                AbstractNode n = new AbstractNode(Children.LEAF);
+                n.setName(key.toString());
+                try {Thread.sleep(2000);}catch(InterruptedException e) {}
+                return n == null ? new Node[]{} : new Node[]{n};
+            }
+
+            protected void addNotify() {
+                setKeys(Arrays.asList(new Object[] {"1", "2"}));
+            }            
+        };
+        
+        // Get optimal nodes from other thread
+        
+        final String TOKEN = new String("TOKEN to wait on");
+        final String THREAD_NAME = Thread.currentThread().getName();
+        
+        class Th extends Thread {
+            public Th() {
+                super("THREAD");
+            }
+            Node node;
+            Node[] keep;
+            Error err;
+            
+            public void run() {
+                synchronized (TOKEN) {
+                }
+     
+                try {
+                    ErrManager.registerBlock("THREAD", "waiting for children for", TOKEN, null);
+                    ErrManager.registerBlock("THREAD", " children are here for", TOKEN, TOKEN);
+                    ErrManager.registerBlock("THREAD", "cannot initialize better", TOKEN, TOKEN);
+                    keep = node.getChildren().getNodes(true);
+                } catch (Error err) {
+                    this.err = err;
+                }
+            }
+        }
+        
+        Th t = new Th();
+        ChildrenKeys children = new ChildrenKeys();
+        t.node = new AbstractNode(children);
+        
+        ErrManager.registerBlock(THREAD_NAME, "Initialize org.openide.nodes", TOKEN, TOKEN);
+        ErrManager.registerBlock(THREAD_NAME, "notifyAll done", TOKEN, TOKEN);
+        ErrManager.registerBlock(THREAD_NAME, "cannot initialize better", TOKEN, TOKEN);
+
+        Node[] remember;
+        synchronized (TOKEN) {
+            t.start();
+
+            // this call will result in "point X".notifyAll() when the 
+            // main thread reaches "setEntries"
+            remember = t.node.getChildren().getNodes();
+            
+            ErrManager.clearBlocks();
+            TOKEN.notifyAll();
+        }
+        
+        // wait for other thread
+        t.join();
+        
+        if (2 != count[0]) {
+            StringWriter w = new StringWriter();
+            PrintWriter pw = new PrintWriter(w);
+            w.write("Just two nodes created: " + count[0] + " stacks:\n");
+            Iterator it = who.iterator();
+            while (it.hasNext()) {
+                Exception e = (Exception)it.next();
+                e.printStackTrace(pw);
+            }
+            pw.close();
+            
+            fail(w.toString());;
+        }
+        
+        if (t.err != null) {
+            throw t.err;
+        }
+        
+        //fail("Ok");
+    }
+
     
     /** Sample keys.
     */
@@ -671,6 +774,40 @@ public class ChildrenKeysTest extends NbTestCase {
     
     private static final class ErrManager extends org.openide.ErrorManager {
         public static final StringBuffer messages = new StringBuffer ();
+        /** list of messages to block on in log */
+        private static final HashMap/*<String,List<String, Object, Object>*/ map = new HashMap();
+        
+        public static void clearBlocks() {
+            map.clear();
+        }
+        
+        public static void registerBlock(String threadName, String msgPrefix, Object toNotify, Object toWait) {
+            List/*<String>*/ list = (List)map.get(threadName);
+            if (list == null) {
+                list = new ArrayList();
+                map.put(threadName, list);
+            }
+            list.add(msgPrefix);
+            list.add(toNotify);
+            list.add(toWait);
+        }
+        
+        public static void unregisterBlock(String threadName, String msgPrefix) {
+            List/*<String>*/ list = (List)map.get(threadName);
+            if (list == null) {
+                return;
+            }
+            
+            for (Iterator it = list.iterator(); it.hasNext();) {
+                Object elem = (Object) it.next();
+                if (elem.equals(msgPrefix)) {
+                    it.remove();
+                    it.next(); it.remove();
+                    it.next(); it.remove();
+                    return;
+                }
+            }
+        }
         
         public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
             return t;
@@ -691,6 +828,42 @@ public class ChildrenKeysTest extends NbTestCase {
         public void log (int severity, String s) {
             messages.append (s);
             messages.append ('\n');
+            
+            List prefixes = (List)map.get(Thread.currentThread().getName());
+            if (prefixes != null) {
+                for (Iterator it = prefixes.iterator(); it.hasNext();) {
+                    Object obj = it.next();
+                    if (!(obj instanceof String)) {
+                        continue;
+                    }
+                    
+                    String pref = (String) obj;
+                    if (s.startsWith(pref)) {
+                        messages.append("BLOCKING thread: " + Thread.currentThread().getName() + " on " + pref + '\n');
+                        Object toNotify = it.next();
+                        Object toWait = it.next();
+                        Object tw = toWait == null ? new Object() : toWait;
+                        
+                        synchronized (tw) {
+                            try {
+                                synchronized (toNotify) {
+                                    toNotify.notifyAll();
+                                }
+                                if (toWait != null) {
+                                    long now = System.currentTimeMillis();
+                                    toWait.wait(10000);
+                                    if (System.currentTimeMillis() - now > 9000) {
+                                        fail("Releasing blocked " + Thread.currentThread() + " after 10s: " + pref);
+                                    }
+                                }
+                            } catch (InterruptedException ex) {
+                                throw (AssertionError)new AssertionError(ex.getMessage()).initCause(ex);
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
         }
         
         public void notify (int severity, Throwable t) {
