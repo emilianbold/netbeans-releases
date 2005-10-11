@@ -576,7 +576,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             }
             body.append(");\n"); // NOI18N
         } else {
-            body.append("\n// add your own implementation\n\n"); // NOI18N
+            body.append("\n// TODO add your own implementation\n\n"); // NOI18N
             if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
                 body.append("return " +  // NOI18N
                         WizardHelpers.getDefaultValue(operation.getReturnTypeName()) +
@@ -617,19 +617,19 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                     "</code>\n"); // NOI18N
         }
         
-        Method method = pkg.getMethod().createMethod(
-                operation.getName(),
-                Collections.EMPTY_LIST,
-                Modifier.PUBLIC,
-                doc.toString(), // javadoc text
-                null, // jvadoc
-                null, // object body
-                isDeclaration ? null : body.toString(), // string body
-                Collections.EMPTY_LIST, // type params
-                params, // parameters
-                exceptions, // exceptions
-                getTypeRef(pkg, operation.getReturnTypeName()), // type
-                0);
+            Method method = pkg.getMethod().createMethod(
+                    operation.getName(),
+                    Collections.EMPTY_LIST,
+                    Modifier.PUBLIC,
+                    doc.toString(), // javadoc text
+                    null, // jvadoc
+                    null, // object body
+                    isDeclaration ? null : body.toString(), // string body
+                    Collections.EMPTY_LIST, // type params
+                    params, // parameters
+                    exceptions, // exceptions
+                    getTypeRef(pkg, operation.getReturnTypeName()), // type
+                    0);
         tgtClass.getFeatures().add(method);
 
     }

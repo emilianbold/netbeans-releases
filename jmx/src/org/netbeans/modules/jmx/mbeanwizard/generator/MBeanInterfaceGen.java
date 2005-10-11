@@ -268,7 +268,7 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
             boolean isDeclaration) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
-        String methodBody = "\n// add your own implementation\n\n"; // NOI18N
+        String methodBody = "\n//TODO add your own implementation\n\n"; // NOI18N
         
         if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
             methodBody += "return " +  // NOI18N
