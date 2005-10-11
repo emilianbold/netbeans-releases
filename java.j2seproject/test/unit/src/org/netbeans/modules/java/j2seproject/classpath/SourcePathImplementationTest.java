@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
@@ -48,7 +49,9 @@ public class SourcePathImplementationTest extends NbTestCase {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);
         sources = projdir.getFileObject("src");

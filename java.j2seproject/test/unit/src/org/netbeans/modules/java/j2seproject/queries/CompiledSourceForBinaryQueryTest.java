@@ -28,6 +28,7 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 
 /**
@@ -71,7 +72,9 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     private void prepareProject () throws IOException {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");        
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null);
+        J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);
         sources = projdir.getFileObject("src");

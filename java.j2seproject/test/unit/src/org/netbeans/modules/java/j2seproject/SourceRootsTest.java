@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Collections;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
@@ -54,7 +55,9 @@ public class SourceRootsTest extends NbTestCase {
         });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
         sources = projdir.getFileObject("src");
         tests = projdir.getFileObject("test");
         pm = ProjectManager.getDefault();

@@ -19,6 +19,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
@@ -58,8 +59,10 @@ public class J2SESourcesTest extends NbTestCase {
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         });
         scratch = TestUtil.makeScratchDir(this);
-        projdir = scratch.createFolder("proj");        
+        projdir = scratch.createFolder("proj");
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N        
+        J2SEProjectGenerator.setDefaultSourceLevel(null);
         sources = this.getFileObject(projdir, "src");
         build = this.getFileObject (scratch, "build");
         classes = this.getFileObject(build,"classes");

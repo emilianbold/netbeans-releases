@@ -32,6 +32,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -73,7 +74,9 @@ public class J2SEActionProviderTest extends NbTestCase {
         });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf"); //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);
         actionProvider = (J2SEActionProvider)pp.getLookup().lookup(J2SEActionProvider.class);              

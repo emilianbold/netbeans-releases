@@ -38,6 +38,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -79,7 +80,9 @@ public final class BuildImplTest extends NbTestCase {
         if (subFolder != null) {
             proj = new File(getWorkDir(), subFolder);
         }
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, subFolder != null ? subFolder + getName() : getName(), (String)null, (String)null);
+        J2SEProjectGenerator.setDefaultSourceLevel(null);
         FileObject root = aph.getProjectDirectory();
         for (int i=0; i<numberOfSourceFiles; i++) {
             String res = "src/pkg/Source" + i + ".java";

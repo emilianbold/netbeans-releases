@@ -32,6 +32,7 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.ErrorManager;
@@ -189,10 +190,9 @@ public class J2SEProjectGenerator {
         ep.setComment("javac.compilerargs", new String[] {
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
         }, false);
-
-        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        ep.setProperty("javac.source", defaultPlatform.getSpecification().getVersion().toString()); // NOI18N
-        ep.setProperty("javac.target", defaultPlatform.getSpecification().getVersion().toString()); // NOI18N
+        SpecificationVersion sourceLevel = getDefaultSourceLevel();
+        ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
+        ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
         ep.setProperty("javac.test.classpath", new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
@@ -323,6 +323,29 @@ public class J2SEProjectGenerator {
             fo.getChildren();
             fo.refresh();
         }
+    }
+    
+    //------------ Used by unit tests -------------------
+    private static SpecificationVersion defaultSourceLevel;
+    
+    private static SpecificationVersion getDefaultSourceLevel () {
+        if (defaultSourceLevel != null) {
+            return defaultSourceLevel;
+        }
+        else {
+            JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+            return defaultPlatform.getSpecification().getVersion();
+        }
+    }
+    
+    /**
+     * Unit test only method. Sets the default source level for tests
+     * where the default platform is not available.
+     * @param version the default source level set to project when it is created
+     *
+     */
+    public static void setDefaultSourceLevel (SpecificationVersion version) {
+        defaultSourceLevel = version;
     }
 }
 

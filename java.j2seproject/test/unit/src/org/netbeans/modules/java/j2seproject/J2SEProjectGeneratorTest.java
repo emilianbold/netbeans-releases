@@ -21,6 +21,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * Tests for J2SEProjectGenerator
@@ -140,7 +141,9 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     public void testCreateProject() throws Exception {
         File proj = getWorkDir();
         clearWorkDir();
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "test-project", null, "manifest.mf");
+        J2SEProjectGenerator.setDefaultSourceLevel(null);
         assertNotNull(aph);
         FileObject fo = aph.getProjectDirectory();
         for (int i=0; i<createdFiles.length; i++) {
@@ -164,7 +167,9 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         srcRoot.mkdir ();
         File testRoot = new File (root, "test");
         testRoot.mkdir ();
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot}, "manifest.mf");
+        J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
         assertNotNull (helper);
         FileObject fo = FileUtil.toFileObject(proj);
         for (int i=0; i<createdFilesExtSources.length; i++) {

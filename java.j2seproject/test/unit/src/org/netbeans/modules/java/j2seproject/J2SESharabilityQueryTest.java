@@ -15,6 +15,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import org.netbeans.api.project.ProjectUtils;
+import org.openide.modules.SpecificationVersion;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
@@ -54,7 +55,9 @@ public class J2SESharabilityQueryTest extends NbTestCase {
         });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(null);
         sources = projdir.getFileObject("src");
         tests = projdir.getFileObject("test");
         dist = FileUtil.createFolder(projdir,"dist");
