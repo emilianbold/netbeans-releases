@@ -13,18 +13,23 @@
 
 package org.netbeans.core.execution;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import junit.framework.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.module.ProgressEvent;
 import org.netbeans.progress.module.ProgressUIWorker;
+import org.openide.actions.ActionManager;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkleint
  */
-public class PendingTaskTest extends TestCase {
+public class PendingTaskTest extends NbTestCase {
     
     public PendingTaskTest(String testName) {
 	super(testName);
@@ -35,38 +40,99 @@ public class PendingTaskTest extends TestCase {
 
     protected void tearDown() throws Exception {
     }
+
     
-// TODO add test methods here. The name must begin with 'test'. For example:
-// public void testHello() {}
-    public void testProgressTasks() {
-        Controller.defaultInstance = new Controller(new ProgressUIWorker() {
-            public void processProgressEvent(ProgressEvent event) { }
-            public void processSelectedProgressEvent(ProgressEvent event) { }
-        });
-        ProgressHandle proghandle = ProgressHandleFactory.createHandle("a1");
-	proghandle.setInitialDelay(0);
-	assertEquals(Install.getPendingTasks().size(), 0);
-	
-        proghandle.start();
-	assertEquals(Install.getPendingTasks().size(), 1);
-	
-	proghandle.finish();
-	// we need to sleep because the progress handling is scheduled and processed in quantas.
-	try {
-	    Thread.sleep(1000);
-	} catch (InterruptedException ex) {
-	    ex.printStackTrace();
-	}
-	assertEquals(Install.getPendingTasks().size(), 0);
+    public void testActionManagersInvokeAction() throws InterruptedException {
+        class BlockingAction extends AbstractAction implements Runnable {
+            public synchronized void actionPerformed(ActionEvent e) {
+                notifyAll();
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                    fail("No InterruptedException please");
+                }
+            }
+
+            
+            public void run() {
+                ActionManager.getDefault().invokeAction(this, new ActionEvent(this, 0, ""));
+            }
+        }
+        
+        BlockingAction b = new BlockingAction();
+        
+
+        assertEquals("No tasks now", Install.getPendingTasks().size(), 0);
+        
+        RequestProcessor.Task t;
+        synchronized (b) {
+            t = RequestProcessor.getDefault().post(b);
+            b.wait();
+        }
+        
+        assertEquals("One action in progress", 1, Install.getPendingTasks().size());
+        
+        synchronized (b) {
+            b.notifyAll();
+        }
+        t.waitFinished();
+        
+    	assertEquals("Action finished", Install.getPendingTasks().size(), 0);
     }
 
-    public void testActionManagersInvokeAction() {
-        assertEquals(Install.getPendingTasks().size(), 0);
+    
+    public void testProgressTasks() throws InterruptedException {
+        class MyWorker implements ProgressUIWorker {
+            int cnt;
         
-        assertEquals(Install.getPendingTasks().size(), 1);
+            public synchronized void processProgressEvent(ProgressEvent event) {
+                cnt++;
+                getLog().println("processProgressEvent: " + event);
+                notifyAll();
+            }
+            public void processSelectedProgressEvent(ProgressEvent event) {
+                getLog().println("processSelectedProgressEvent: " + event);
+            }
+
+            public synchronized void waitForEvent() throws InterruptedException {
+                int prev = cnt;
+                getLog().println("waitForEvent before wait");
+                wait(5000);
+                getLog().println("waitForEvent after wait");
+                if (prev == cnt) {
+                    fail("Time out - no event delivered");
+                }
+            }
+        }
         
-        assertEquals(Install.getPendingTasks().size(), 1);
-	assertEquals(Install.getPendingTasks().size(), 0);
+        MyWorker worker = new MyWorker();
+        Controller.defaultInstance = new Controller(worker);
+        
+        ProgressHandle proghandle = ProgressHandleFactory.createHandle("a1");
+        proghandle.setInitialDelay(0);
+        
+        assertEquals("None before", 0, Install.getPendingTasks().size());
+
+        synchronized (worker) {
+            getLog().println("proghandle - start");
+            proghandle.start();
+            worker.waitForEvent();
+        }
+            
+        assertEquals("One now", 1, Install.getPendingTasks().size());
+	
+        // waiting a while to overcome possible optimizations in progress api
+        // that prevent the finish event to be delivered
+        Thread.sleep(1000);
+        
+        synchronized (worker) {
+            getLog().println("proghandle - finish");
+            proghandle.finish();
+            worker.waitForEvent();
+        }
+        
+        assertEquals("None after", 0, Install.getPendingTasks().size());
     }
 
 }
