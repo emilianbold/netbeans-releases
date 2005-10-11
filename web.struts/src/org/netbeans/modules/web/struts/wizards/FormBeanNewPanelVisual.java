@@ -91,6 +91,7 @@ public class FormBeanNewPanelVisual extends javax.swing.JPanel implements HelpCt
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jComboBoxConfigFile, gridBagConstraints);
+        jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_ConfiguratioFile"));
 
     }
     // </editor-fold>//GEN-END:initComponents
