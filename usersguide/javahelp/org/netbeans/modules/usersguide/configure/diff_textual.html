@@ -24,9 +24,9 @@
         <p>You can change the default Diff settings in the Options window.
         You can modify how the Textual Diff Viewer and the Graphical Diff Viewer display results when comparing file versions using the diff command.
         You can also modify the display properties of the Graphical Merge Conflicts Resolver. </p>
-        <p>You can access this node by choosing Tools &gt; Options and then clicking Classic View in the Options window.
-        In the left pane of the Options window, expand IDE Configuration &gt; Server and External Tool Settings &gt; Diff and Merge Types.
-        You can modify the Diff Viewer and Merge Visualizer properties using the following nodes in the left pane.</p>
+        <p>To configure the diff viewer, choose Tools &gt; Options and then click the Classic View button in the Options window.
+        In the left pane of the Options window, expand IDE Configuration &gt; Server and External Tool Settings &gt; Diff and Merge Types.</p>
+        <p>You can modify the Diff Viewer and Merge Visualizer properties using the following nodes in the left pane.</p>
         <ul>
             <li><b>Diff Engines.</b> Enables you to specify diff command options.</li>
             <li><b>Diff Visualizers.</b> Enables you to set properties for the Diff viewers, which display the results when comparing different versions of files using the Diff command in the IDE.</li>
@@ -37,32 +37,33 @@
 
         <p><b>To change diff viewer settings:</b> </p>
         <ol>
-            <li>Choose Tools &gt; Options and click Classic View at the bottom of the Options window.</li>
-            <li>Expand IDE Configuration &gt; Server and External Tools Settings &gt; Diff and Merge Types.</li>
-            <li>Expand the Diff Engines node to set properties for the following:
+            <li>In Classic View of the Options window, expand IDE Configuration &gt; Server and External Tools Settings &gt; Diff and Merge Types.</li>
+            <li>Expand the Diff Engines node to set properties to configure the following:
                 <ul>
                     <li><b>Command-line Diff.</b> Click the ellipsis (...) button to specify any diff command options (for example, <tt>diff -b</tt>) to be used when running the diff command from the command line in the IDE.</li>
                     <li><b>Built-in Diff Engine.</b> No properties are available.</li>
                 </ul>
             </li>
-            <li>
-            <li>Expand the Diff Visualizers node to set properties for the following: 
+            <li>Expand the Diff Visualizers node to set properties to configure the following: 
                 <ul>
-                    <li><b>Textual Diff Viewer.</b> You can enable or disable Context Mode. If Context Mode is selected, lines of context are displayed around differences in the textual diff.
-                    You can specify the number of lines of context to display.</li> 
+                    <li><b>Textual Diff Viewer.</b> You can enable or disable Context Mode and specify the number of lines of context to display. 
+		    If Context Mode is selected, the specified number of lines of context are displayed around differences in the textual diff.</li> 
                     <li><b>Graphical Diff Viewer.</b> You can modify the default background highlight colors for changed text in the graphical diff viewer.
                     Click the ellipsis (...) button to specify the color.</li>
                 </ul>
             </li>
-            <li>Expand the Diff Services node to set properties for the following:
+            <li>Expand the Diff Services node to set properties to configure the following:
                 <ul>
-                    <li><b>Built-in Diff Service.</b> If Show Diff Service Selector is selected, the drop-down list to toggle between diff services is visible in the toolbar of the diff results window.</li>
+                    <li><b>Built-in Diff Service.</b> You can enable or disable the diff service selector. 
+		    If Show Diff Service Selector is selected, the drop-down list to select a diff viewer is visible in the toolbar of the diff results window.
+                    The service selector enables you to switch between the diff viewers.  </li>
                 </ul>
             </li>
-            <li>Expand the Merge Visualizers node to set properties for the following:
+            <li>Expand the Merge Visualizers node to set properties to configure the following:
                 <ul>
                     <li><b>Graphical Merge Conflicts Resolver.</b> You can modify the default background highlight colors for changed text in the Graphical Merge Conflicts Resolver.
                     Click the ellipsis (...) button to specify the color.</li>
+		    <!-- TODO: confirm - does this work with CVS lite or only Classic-->
                 </ul>
             </li>
         </ol>
