@@ -372,7 +372,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         StringBuffer buff = new StringBuffer();
         StringTokenizer tokens = new StringTokenizer(ext, " ,"); // NOI18N
         while (tokens.hasMoreTokens()) {
-            String element = tokens.nextToken();
+            String element = tokens.nextToken().trim();
             if (element.startsWith(".")) { // NOI18N
                 element = element.substring(1);
             }
@@ -386,7 +386,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         StringTokenizer tokens = new StringTokenizer(ext," ,"); // NOI18N
         String element = "someextension"; // NOI18N
         if (tokens.hasMoreTokens()) {
-            element = tokens.nextToken();
+            element = tokens.nextToken().trim();
             if (element.startsWith(".")) { //NOI18N
                 element = element.substring(1);
             }

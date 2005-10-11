@@ -33,7 +33,7 @@ import org.openide.util.NbBundle;
  */
 final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     
-    private static final Pattern EXTENSION_PATTERN = Pattern.compile("[a-zA-Z0-9_,. ]*"); // NOI18N
+    private static final Pattern EXTENSION_PATTERN = Pattern.compile("([.]?[a-zA-Z0-9_]+){1}([ ,]+[.]?[a-zA-Z0-9_]+)*[ ]*"); // NOI18N
     private static final Pattern ELEMENT_PATTERN = Pattern.compile("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)"); // NOI18N
     private static final Pattern MIME_TYPE_PATTERN = Pattern.compile("(application|text|image|audio|video)/([a-zA-Z0-9_.+-])+"); // NOI18N
     private static final String DEFAULT_MIME_TYPE = "text/x-<type>"; // NOI18N
