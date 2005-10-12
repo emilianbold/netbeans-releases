@@ -359,16 +359,16 @@ public class Controller { //XXX public only for debug access to logging code
                 tab.getOutputPane().selectAll();
                 break;
             case ACTION_FIND:
-				int start = tab.getOutputPane().getSelectionStart();
-				int end = tab.getOutputPane().getSelectionEnd();
-				String str = null;
-				if (start > 0 && end > start) {
-		    		try {
-						str = tab.getOutputPane().getDocument().getText(start, end - start);
-				    } catch (BadLocationException ex) {
-						ex.printStackTrace();
-				    }
-				}
+                int start = tab.getOutputPane().getSelectionStart();
+                int end = tab.getOutputPane().getSelectionEnd();
+                String str = null;
+                if (start > 0 && end > start) {
+                    try {
+                        str = tab.getOutputPane().getDocument().getText(start, end - start);
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace();
+                    }
+                }
                 FindDialogPanel.showFindDialog(new FindActionListener (win, tab, findNextAction, findPreviousAction, copyAction), str);
                 break;
             case ACTION_FINDNEXT:

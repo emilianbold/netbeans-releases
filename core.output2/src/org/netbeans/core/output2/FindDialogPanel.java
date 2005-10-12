@@ -87,20 +87,20 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
     }
     
     void setFindText(String text) {
-	int end = text.indexOf("\n");
-	String txt = text;
-	if (end  > -1) {
-	    txt = text.substring(0, end);
-	}
-	if (!txt.equals(findWhat.getSelectedItem())) {
-	    findWhat.insertItemAt(txt, 0);
-	    findWhat.setSelectedIndex(0);
-	}
-	Component comp = findWhat.getEditor().getEditorComponent();
-	if (comp instanceof JTextField) {
-	    ((JTextField)comp).setSelectionStart(0);
-	    ((JTextField)comp).setSelectionEnd(txt.length());
-	}
+        int end = text.indexOf("\n");
+        String txt = text;
+        if (end  > -1) {
+            txt = text.substring(0, end);
+        }
+        if (!txt.equals(findWhat.getSelectedItem())) {
+            findWhat.insertItemAt(txt, 0);
+            findWhat.setSelectedIndex(0);
+        }
+        Component comp = findWhat.getEditor().getEditorComponent();
+        if (comp instanceof JTextField) {
+            ((JTextField)comp).setSelectionStart(0);
+            ((JTextField)comp).setSelectionEnd(txt.length());
+        }
     }
     
     

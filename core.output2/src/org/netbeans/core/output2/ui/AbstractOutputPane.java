@@ -137,7 +137,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
     
     public int getSelectionEnd() {
-	return textView.getSelectionEnd();
+        return textView.getSelectionEnd();
     }
 
     public void setSelection (int start, int end) {
