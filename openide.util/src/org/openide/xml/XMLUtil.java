@@ -706,10 +706,6 @@ public final class XMLUtil extends Object {
      * @see "#62006"
      */
     private static Document normalize(Document orig) throws IOException {
-        if (orig.getChildNodes().getLength() != 1) {
-            // Don't mess around with it.
-            return orig;
-        }
         DocumentBuilder builder = (DocumentBuilder) builderTL[0].get();
         if (builder == null) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -722,10 +718,35 @@ public final class XMLUtil extends Object {
             }
             builderTL[0].set(builder);
         }
-        Document doc = builder.newDocument();
-        doc.appendChild(doc.importNode(orig.getDocumentElement(), true));
+        DocumentType doctype = null;
+        NodeList nl = orig.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            if (nl.item(i) instanceof DocumentType) {
+                // We cannot import DocumentType's, so we need to manually copy it.
+                doctype = (DocumentType) nl.item(i);
+            }
+        }
+        Document doc;
+        if (doctype != null) {
+            doc = builder.getDOMImplementation().createDocument(
+                orig.getDocumentElement().getNamespaceURI(),
+                orig.getDocumentElement().getTagName(),
+                builder.getDOMImplementation().createDocumentType(
+                    orig.getDoctype().getName(),
+                    orig.getDoctype().getPublicId(),
+                    orig.getDoctype().getSystemId()));
+            // XXX what about entity decls inside the DOCTYPE?
+            doc.removeChild(doc.getDocumentElement());
+        } else {
+            doc = builder.newDocument();
+        }
+        for (int i = 0; i < nl.getLength(); i++) {
+            if (!(nl.item(i) instanceof DocumentType)) {
+                doc.appendChild(doc.importNode(nl.item(i), true));
+            }
+        }
         doc.normalize();
-        NodeList nl = doc.getElementsByTagName("*"); // NOI18N
+        nl = doc.getElementsByTagName("*"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             Element e = (Element) nl.item(i);
             NodeList nl2 = e.getChildNodes();
