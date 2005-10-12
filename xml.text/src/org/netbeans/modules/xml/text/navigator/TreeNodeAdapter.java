@@ -295,6 +295,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         } else if(ade.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
             //handle error element
             markNodeAsError(this);
+        } else if(ade.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+            //do nothing for comments
         } else {
             TreeNode tn = new TreeNodeAdapter(ade, tm, tree, this, true); //do not create children adapters here!!!
             int insertIndex = getVisibleChildIndex(ade);
@@ -354,7 +356,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             
             //skip text and error tokens
             if(!child.getType().equals(XMLDocumentModelProvider.XML_CONTENT)
-            && !child.getType().equals(XMLDocumentModelProvider.XML_ERROR) ) index++;
+            && !child.getType().equals(XMLDocumentModelProvider.XML_ERROR)
+            && !child.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) index++;
         }
         return -1;
     }
@@ -378,6 +381,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             childTextElementChanged();
         } else if(rde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
             unmarkNodeAsError(this);
+        } else if(rde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+            //do nothing for comments
         } else {
             if(debug) System.out.println(">>> removing tag element");
             final TreeNode tn = getChildTreeNodeForDE(rde);
@@ -470,6 +475,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
                 childTextElementChanged();
             } else if(chde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
                 markNodeAsError(this);
+            } else if(chde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+                //do nothing for comments
             } else {
                 //add the adapter only when there isn't any
                 if(getChildTreeNode(chde) == null) children.add(new TreeNodeAdapter(chde, tm, tree, this));

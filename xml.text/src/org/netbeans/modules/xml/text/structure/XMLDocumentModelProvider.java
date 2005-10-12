@@ -91,6 +91,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 while(ti != null && ti.getOffset() < (changeOffset + changeLength)) {
                     if(ti.getTokenID() != XMLTokenIDs.TEXT
                             && ti.getTokenID() != XMLTokenIDs.DECLARATION
+                            && ti.getTokenID() != XMLTokenIDs.BLOCK_COMMENT
                             && ti.getTokenID() != XMLTokenIDs.PI_CONTENT
                             && ti.getTokenID() != XMLTokenIDs.CDATA_SECTION) {
                         textOnly = false;
@@ -106,6 +107,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     ( leaf.getType().equals(XML_CONTENT)
                     || leaf.getType().equals(XML_DOCTYPE)
                     || leaf.getType().equals(XML_PI)
+                    || leaf.getType().equals(XML_COMMENT)
                     || leaf.getType().equals(XML_CDATA))){
                 //just a text written into a text element simply fire document element change event and do not regenerate anything
                 //add the element update request into transaction
@@ -314,8 +316,8 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 } else if (sel instanceof CommentImpl) {
                     //comment element <!-- xxx -->
                     //DO NOT CREATE ELEMENT FOR COMMENTS
-//                    addedElements.add(dtm.addDocumentElement("", XML_COMMENT, Collections.EMPTY_MAP,
-//                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                    addedElements.add(dtm.addDocumentElement("comment", XML_COMMENT, Collections.EMPTY_MAP,
+                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else {
                     //everything else is content
                     addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
