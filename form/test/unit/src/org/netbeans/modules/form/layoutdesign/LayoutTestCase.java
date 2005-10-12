@@ -15,6 +15,7 @@ package org.netbeans.modules.form.layoutdesign;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public abstract class LayoutTestCase extends TestCase {
      * In case the dump does not match, it is saved into a file under
      * build/test/unit/results so it can be compared with the golden file manually.namename
      */
-    public void testLayout() {
+    public void testLayout() throws IOException {
 		
         loadForm(startingFormFile);
         doChanges(lm);
@@ -82,7 +83,12 @@ public abstract class LayoutTestCase extends TestCase {
         System.out.println(currentLayout);
         System.out.println("");
         
-        assertEquals(expectedLayout, currentLayout);
+        boolean same = expectedLayout.equals(currentLayout);
+        if (!same) {
+            writeCurrentWrongLayout(currentLayout);
+        }
+
+	assertTrue("Model dump gives different result than expected", same);
     }
     
     private void loadForm(FileObject file) {
@@ -143,5 +149,29 @@ public abstract class LayoutTestCase extends TestCase {
     protected abstract void doChanges(LayoutModel model);
     
     protected abstract int getCounterId();
+
+    private void writeCurrentWrongLayout(String dump) throws IOException {
+        // will go to form/build/test/unit/results
+        File file = new File(url.getFile() + "../results").getCanonicalFile();
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        file = new File(file, "layoutModelDump.fail");
+        if (file.exists()) {
+            file.delete();
+        }
+        file.createNewFile();
+
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(file);
+            fw.write(dump);
+        }
+        finally {
+            if (fw != null) {
+                fw.close();
+            }
+        }
+    }
     
 }
