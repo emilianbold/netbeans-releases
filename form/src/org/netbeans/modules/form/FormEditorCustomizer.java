@@ -224,13 +224,13 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbFold.setSelected (options.getFoldGeneratedCode ());
         rbGenerateLocals.setSelected (options.getVariablesLocal ());
         rbGenerateFields.setSelected (!options.getVariablesLocal ());
-        if ((options.getVariablesModifier () | Modifier.PUBLIC) > 0)
+        if ((options.getVariablesModifier () & Modifier.PUBLIC) > 0)
             cbModifier.setSelectedIndex (0);
         else
-        if ((options.getVariablesModifier () | Modifier.PROTECTED) > 0)
+        if ((options.getVariablesModifier () & Modifier.PROTECTED) > 0)
             cbModifier.setSelectedIndex (2);
         else
-        if ((options.getVariablesModifier () | Modifier.PRIVATE) > 0)
+        if ((options.getVariablesModifier () & Modifier.PRIVATE) > 0)
             cbModifier.setSelectedIndex (3);
         else
             cbModifier.setSelectedIndex (1);
