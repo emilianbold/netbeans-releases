@@ -1,4 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
 <!--
  * 
  *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
@@ -6,38 +8,34 @@
  *
  *
 -->
-<html>
-    <head>
-        <title>Creating and Applying a Patch</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
-    <body>
-        <h2>Creating and Applying a Patch</h2>
-		  <p><small><a href="#seealso">See Also</a></small></p>
-        
-        <p>Patch files enable software developers who are not sharing a common
-        repository to distribute and integrate changes that have been made to
-        	the code without requiring the files to be edited manually. The IDE
-        	enables you to create and apply patches that update copies of source
-        	files. </p>
-
-        <a name="CreatePatch"></a>
-		  <h4>To create a patch file of the differences between
-            a locally modified  copy of a source   and the repository revision:</h4>
-        
-        <ol>
-            <li>Select the file or folder for which you want to create a patch
-           	in the Projects, Files,  or Favorites window. </li>
-           	<li>Choose CVS&nbsp;> Export <tt>&lt;file_name&gt;</tt> Diff
-            Patch. </li>
-        	  <li>Enter
-        	  	a name for the patch file and specify the location where you want
-        	  	to save the patch. 
-        	  <li>Click Export.
-                <p>A patch file is created in the specified location containing
-        	  the differences between the source file versions.     	  	  </li>
-        </ol>
-        <!--<h4>To create a patch file of the differences between two repository revisions
+  <title>Creating and Applying a Patch</title>
+  <link rel="StyleSheet"
+ href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Creating and Applying a Patch</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Patch files enable software developers who are not sharing a common
+repository to distribute and integrate changes that have been made to
+the code without requiring the files to be edited manually. The IDE
+enables you to create and apply patches that update copies of source
+files. </p>
+<a name="CreatePatch"></a>
+<h4>To create a patch file of the differences between a locally
+modified copy of a source and the repository revision:</h4>
+<ol>
+  <li>Select the file or folder for which you want to create a patch in
+the Projects, Files, or Favorites window. </li>
+  <li>Choose CVS&nbsp;&gt; Export <tt>&lt;file_name&gt;</tt> Diff
+Patch. </li>
+  <li>Enter a name for the patch file and specify the location where
+you want to save the patch. </li>
+  <li>Click Export.
+    <p>A patch file is created in the specified location containing the
+differences between the source file versions. </p>
+  </li>
+</ol>
+<!--<h4>To create a patch file of the differences between two repository revisions
         of a source file:</h4>
         <ol>
             <li>Select the source files from whose differences  you wish to generate the
@@ -96,37 +94,33 @@
             or folder contains the changes from the patch file after using the Apply
             Patch command.
         </li></ol>-->
-        <ul class="note">
-            <li>Because  patches on folders use relative paths
-            to the files within them, folder patches must
-            be applied on the same folder node that the patch was created on to insure
-            the patch is applied properly.</li>
-        </ul>
-        <table>
-            <tr>
-                <th colspan=2 align=left><a name="seealso">See Also</a></th>
-            </tr>
-            <tr>
-                <td width="23"></td>
-                <td> 
-                    <a href="cvs-lite_diff.html">Comparing File Revisions</a><br>
-                    <a href="cvs-lite_merge.html">Merging File Revisions</a><br>
-                    <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a>
-                </td>
-            </tr>
-        </table>
-        <hr>
-        <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="20">
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-        </table>
-    </body>
+<ul class="note">
+  <li>Because patches on folders use relative paths to the files within
+them, folder patches must be applied on the same folder node that the
+patch was created on to insure the patch is applied properly.</li>
+</ul>
+<table>
+  <tbody>
+    <tr>
+      <th colspan="2" align="left"><a name="seealso">See Also</a></th>
+    </tr>
+    <tr>
+      <td width="23"><br>
+      </td>
+      <td> <a href="cvs-lite_diff.html">Comparing File Revisions</a><br>
+      <a href="cvs-lite_merge.html">Merging File Revisions</a><br>
+      <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<hr> <small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</body>
 </html>

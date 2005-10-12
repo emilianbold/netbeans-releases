@@ -38,8 +38,8 @@ menu. If you are unfamiliar with the syntax, click the Edit button and
 enter the required information in the Edit CVS Root dialog.</li>
   <li>Enter your password in the Password field. </li>
   <li>If you are using a proxy, click the Proxy Configuration button
-and enter the required information. Click Next.<!--Note that by default the IDE sets this
-	to Use System Proxy Settings.	-->
+and enter the required information. Click Next.
+<!--Note that by default the IDE sets this to Use System Proxy Settings.-->
   </li>
   <li>On the Module to Checkout page, specify the files and directories
 you want to check out in the Module field or click the Browse button to
@@ -55,40 +55,10 @@ to navigate to the desired directory on your system.</li>
 Status bar indicates the progress of the files downloading from the
 branch to your local working directory.</p>
 </ol>
-<h3>Merging Changes to a Branch<br>
-</h3>
-<p>Any changes you make on one branch can be merged back to another
-branch. Because the trunk is also a branch, you can use this procedure
-to merge changes made on a branch back to the trunk.<br>
+<h3>Switching a File to a Branch</h3>
+<p>tbd...
 </p>
-<p><b>To merge files from a branch:</b></p>
-<!--todo : add info about merge from trunk (see dialog)-->
-<ol>
-  <li>In the Projects, Files, Favorites, or Versioning window,
-right-click the files or folders you want to merge to the trunk (or a
-different branch) and choose CVS &gt; Branches &gt; Merge Changes from
-Branch. </li>
-  <li>In the dialog that appears, select the branch you want to merge
-the changes to. If you want to merge changes to a branch other than the
-trunk, enter the branch name or click Browse to see a list of available
-branches. </li>
-  <li>If you want to specify a revision number or tag for the checkout,
-select the appropriate checkboxes and enter the tag name. Alternately,
-you can click the Browse buttons to choose from a list of available
-tags.</li>
-  <li>Click Merge.
-    <p>The IDE merges changes in the files from the branch in the
-repository to the branch (or trunk) in your local&nbsp; working
-directory. Any merge conflicts are indicated in the Versioning window
-with the Merge Conflict badge.</p>
-  </li>
-</ol>
-<ul class="note">
-  <li>After merging file changes from a branch to your local working
-directory, you still must commit the changes using the Commit command
-in order for them to added to the repository.</li>
-</ul>
-<h3>Creating a branch</h3>
+<h3>Creating a Branch</h3>
 <p>Branches are created by adding a branch tag to a file revision or
 directory.</p>
 <p><b>To create a branch:</b></p>
@@ -121,12 +91,21 @@ documentation at:</p>
  value="blue"> </object></p>
 <dl>
   <dt> <a name="seealso">See Also</a></dt>
-  <dd> <a href="cvs-lite_repositorysetup.html">Setting Up CVS</a></dd>
+  <dd> <a href="cvs-lite_merge.html">Merging File Revisions from a
+Branch<br>
+    </a></dd>
   <dd> <a href="cvs-lite_updating.html">Updating Files in a Local
 Working Directory<br>
     </a></dd>
   <dd> <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
 </dl>
 <hr> <small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
 </body>
 </html>

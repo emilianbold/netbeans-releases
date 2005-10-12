@@ -1,43 +1,27 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
 <!--
  * 
  *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
  *     Use is subject to license terms.
  * 
 -->
-<html>
-    <head>
-        <title>Merging File Revisions</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
-    <body>
-        <h2>Merging File Revisions</h2>        
-        <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The Merge command is useful for 
-        incorporating changes made in earlier revisions into your working copy.
-        You can merge revisions on different branches of the repository with
-        your local working copy of a file or directory. You can also merge the
-        difference between two earlier revisions with your
-        local working copy. </p>
-
-        <h4>To merge an earlier revision with your working copy:</h4>
-        <ol>
-            <li>In the Projects window, Files window, or Favorites window, right-click
-            	the revision you want to merge into your working copy and choose
-            	Merge Changes from Branch.            </li>
-            <li>In the Merge Changes from Branch dialog, specify the branch,           	</li>
-        		<li>If you want to merge changes after a specific tag, select the Merge
-        			Only Changes  Made after Tag checkbox and designate the tag 
-        			in the field directly below.  			  </li>
-        		<li>If you want to  tag  the merge, select the Tag
-        			Trunk after Merge checkbox and enter the desired tag
-					name.
-        			<p>The IDE incorporates any differences found in the revision into your local
-        				copy of the file. If merge conflicts occur, the file's status is updated
-     				 to Merge Conflict to indicate this. </p>
-  			  </li>
-        </ol>
-        <!--<h4>To merge the difference between two revisions with your working copy:</h4>
+  <title>Merging File Revisions from a Branch</title>
+  <link rel="StyleSheet"
+ href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Merging File Revisions from a Branch
+</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Merge command is useful for incorporating changes made on
+different branches of the repository with your local working copy of a
+file or directory. Any changes you make on one branch can be merged to
+another
+branch, including back to the trunk. You can also merge the difference
+between two earlier revisions with your local working copy.</p>
+<h4><b>To merge a file from a branch</b> with your local working copy:<!--<h4>To merge the difference between two revisions with your working copy:</h4>
         <ol>
             <li>In the Versioning window, expand the file's node to reveal the subnodes
             for each revision and branch.</li>
@@ -47,38 +31,71 @@
             <p>The IDE incorporates any differences in the revisions into your local
             copy of the file. If merge conflicts occur, the file's VCS status changes
             to Merge Conflict to indicate this. </p>
-        </ol>-->
-        <p>For more information about merging files with CVS consult your CVS documentation.
-        CVS documentation is available from: </p>
-        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="http://www.cvshome.org/docs/manual">
-            <param name="text" value="<html><u>http://www.cvshome.org/docs/manual</u></html>">
-            <param name="textFontSize" value="medium">
-            <param name="textColor" value="blue">
-        </object>
-        <table>
-            <tr>
-                <th colspan=2 align=left><a name="seealso">See Also</a></th>
-            </tr>
-            <tr>
-                <td width="23"></td>
-                <td> <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a><br>
-                <a href="cvs-lite_patch.html">Creating and Applying a Patch</a><br>
-                <a href="cvs-lite_diff.html">Comparing File Revisions</a></td>
-            </tr>
-        </table>
-        <hr>
-        <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="20">
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-        </table>
-    </body>
+        </ol>--><!--todo : add info about merge from trunk (see dialog)-->
+</h4>
+<ol>
+  <li>In the Projects, Files, Favorites, or Versioning window,
+right-click the files or folders that you want to merge into your local
+working copy and choose CVS &gt; Branches &gt; Merge Changes from
+Branch. </li>
+  <li>In the dialog that appears, select the branch you want to merge
+the changes to. If you want to merge changes to a branch other than the
+trunk, enter the branch name or click Browse to see a list of available
+branches. </li>
+  <li>If you want to merge changes after a specific tag, select the
+Merge Only Changes Made after Tag checkbox and designate the tag in the
+Tag Name field. Alternately,
+you can click the Browse buttons to choose from a list of available
+tags.</li>
+  <li>If you want to tag the merge, select the Tag Trunk after Merge
+checkbox and enter the desired tag name. Alternately,
+you can click the Browse buttons to choose from a list of available
+tags.</li>
+  <li>Click Merge.
+    <p>The IDE incorporates any differences found in the branch version
+into
+your local copy of the file. If merge conflicts occur, the file's
+status is updated to Merge Conflict to indicate this.</p>
+  </li>
+</ol>
+<ul class="note">
+  <li>After merging file changes from a branch to your local working
+directory, you must still commit the changes using the Commit command
+in order for them to added to the repository.<br>
+  </li>
+</ul>
+<p>
+For more information about merging files with CVS consult your CVS
+documentation. CVS documentation is available from: </p>
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.cvshome.org/docs/manual"> <param
+ name="text"
+ value="&lt;html&gt;&lt;u&gt;http://www.cvshome.org/docs/manual&lt;/u&gt;&lt;/html&gt;"> <param
+ name="textFontSize" value="medium"> <param name="textColor"
+ value="blue"> </object>
+<table>
+  <tbody>
+    <tr>
+      <th colspan="2" align="left"><a name="seealso">See Also</a></th>
+    </tr>
+    <tr>
+      <td width="23"><br>
+      </td>
+      <td> <a href="cvs-lite_mergeresolve.html">Resolving Merge
+Conflicts</a><br>
+      <a href="cvs-lite_patch.html">Creating and Applying a Patch</a><br>
+      <a href="cvs-lite_diff.html">Comparing File Revisions</a></td>
+    </tr>
+  </tbody>
+</table>
+</p>
+<hr> <small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</body>
 </html>

@@ -1,79 +1,76 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
 <!--
 *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
-<html>
-    <head>
-        <title>Committing Local Changes to a Remote Repository</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
-    <body>
-        <h2>Committing Local Changes to a Remote Repository</h2>
-        
-        <p><small><a href="#seealso">See Also</a></small></p>
-        <p>Once your working copies of version-controlled files have been edited,
-     	  you can then place your changes into the repository using the Commit
-        	command. </p>
-			<!--todo : mention adding and removing-->
-        <ul class="note">
-        <li>Project directories must be located within a 
-        local working directory that is registered with the IDE
-        in order to call CVS commands on them.</li></ul>
-        <h4>To commit changes in local files to a remote repository:</h4>
-        <ol>
-            <li>Select the files or directories you wish to commit in the Versioning window,
-            Projects window, Files window, or Favorites window.
-            <li>Ensure that your local copies of the files are up-to-date by right-clicking
-            and choosing CVS > Update before committing your changes.
-            <li>Right-click the files or directories you wish to commit and choose
-            	CVS > Commit.
-            If the files you want to commit do not already exist in the repository,
-            the Commit command will add them.</li>
-            <p>The CVS Commit dialog  appears prompting you to enter a message
-           	describing your changes.</p>
-        </ol>
-
-        <h3>Ignoring Files</h3>
-            <p>The IDE enables you to specify which files in your local
-            	working directory are recognized when
-            	using  CVS  commands. Using the Ignore command, you can
-            	set the IDE to ignore the files and directories you do not
-            	want to place under version control.
-        		<h4>To ignore local files in your working directory:</h4>
-        <ol>
-            <li>Select the files or directories you wish to ignore in the Versioning window,
-            Projects window, Files window, or Favorites window.
-            <li>Right-click  and choose CVS > Ignore.
-            Note that the Ignore command is unavailable for files that already exist in the repository.</li>
-            <p>The IDE ignores the file or directory whenever CVS commands are called on
-                them or the directories within which they are stored.</p>
-        </ol>               
-        <table>
-            <tr>
-                <th colspan="2" align="left"><a name="seealso">See Also</a></th>
-            </tr>
-            <tr>
-                <td width="23"></td>
-                <td><a href="cvs-lite_checkout.html">Checking Out Files from
-                		a Remote Repository</a><br>
-                <a href="cvs-lite_diff.html">Comparing File Revisions</a><br>
-                <a href="cvs-lite_quickref.html">CVS Tasks: Quick Reference</a> </td>
-            </tr>
-        </table>
-        <hr>
-        <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="20">
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-        </table>
-    </body>
+  <title>Committing Local Changes to a Remote Repository</title>
+  <link rel="StyleSheet"
+ href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Committing Local Changes to a Remote Repository</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Once your working copies of version-controlled files have been
+edited, you can then place your changes into the repository using the
+Commit command. </p>
+<!--todo : mention adding and removing-->
+<ul class="note">
+  <li>Project directories must be located within a local working
+directory that is registered with the IDE in order to call CVS commands
+on them.</li>
+</ul>
+<h4>To commit changes in local files to a remote repository:</h4>
+<ol>
+  <li>Select the files or directories you wish to commit in the
+Versioning window, Projects window, Files window, or Favorites window. </li>
+  <li>Ensure that your local copies of the files are up-to-date by
+right-clicking and choosing CVS &gt; Update before committing your
+changes. </li>
+  <li>Right-click the files or directories you wish to commit and
+choose CVS &gt; Commit. If the files you want to commit do not already
+exist in the repository, the Commit command will add them.</li>
+  <p>The CVS Commit dialog appears prompting you to enter a message
+describing your changes.</p>
+</ol>
+<h3>Ignoring Files</h3>
+<p>The IDE enables you to specify which files in your local working
+directory are recognized when using CVS commands. Using the Ignore
+command, you can set the IDE to ignore the files and directories you do
+not want to place under version control. </p>
+<h4>To ignore local files in your working directory:</h4>
+<ol>
+  <li>Select the files or directories you wish to ignore in the
+Versioning window, Projects window, Files window, or Favorites window. </li>
+  <li>Right-click and choose CVS &gt; Ignore. Note that the Ignore
+command is unavailable for files that already exist in the repository.</li>
+  <p>The IDE ignores the file or directory whenever CVS commands are
+called on them or the directories within which they are stored.</p>
+</ol>
+<table>
+  <tbody>
+    <tr>
+      <th colspan="2" align="left"><a name="seealso">See Also</a></th>
+    </tr>
+    <tr>
+      <td width="23"><br>
+      </td>
+      <td><a href="cvs-lite_checkout.html">Checking Out Files from a
+Remote Repository</a><br>
+      <a href="cvs-lite_diff.html">Comparing File Revisions</a><br>
+      <a href="cvs-lite_quickref.html">CVS Tasks: Quick Reference</a> </td>
+    </tr>
+  </tbody>
+</table>
+<hr> <small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</body>
 </html>
