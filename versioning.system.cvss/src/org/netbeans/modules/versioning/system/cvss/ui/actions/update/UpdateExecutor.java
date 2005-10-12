@@ -138,6 +138,10 @@ public class UpdateExecutor extends ExecutorSupport {
             FileSystem fileSystem = (FileSystem) i.next();
             fileSystem.refresh(true);
         }
+        
+        if (ucmd.getUpdateByRevision() != null || ucmd.isResetStickyOnes()) {
+            FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
+        }
     }
 
     private void addFileSystem(Set filesystems, File file) {

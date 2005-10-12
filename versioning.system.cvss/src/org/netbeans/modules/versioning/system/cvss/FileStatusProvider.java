@@ -50,7 +50,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         instance = this;
     }
 
-    static FileStatusProvider getInstance() {
+    public static FileStatusProvider getInstance() {
         return instance;
     }
 
@@ -184,7 +184,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         }
     }
     
-    private void refreshAllFiles() {
+    public void refreshAllAnnotations(boolean icon, boolean text) {
         Set filesystems = new HashSet(1);
         File[] allRoots = File.listRoots();
         for (int i = 0; i < allRoots.length; i++) {
@@ -200,13 +200,13 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         }
         for (Iterator i = filesystems.iterator(); i.hasNext();) {
             FileSystem fileSystem = (FileSystem) i.next();
-            fireFileStatusChanged(new FileStatusEvent(fileSystem, false, true));                
+            fireFileStatusChanged(new FileStatusEvent(fileSystem, icon, text));                
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT.equals(evt.getPropertyName())) {
-            refreshAllFiles();
+            refreshAllAnnotations(false, true);
         }
     }
 }
