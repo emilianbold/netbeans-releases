@@ -48,23 +48,22 @@ public class Util {
     }
 
     // XXX this method could probably be removed... use standard FileUtil stuff
-    static URL getRootURL  (File f) {
-        URL url = null;
+    static URL getRootURL  (final File f) {        
         try {
-            if (isArchiveFile(f)) {
-                url = FileUtil.getArchiveRoot(f.toURI().toURL());
+            URL url = f.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot (url);
             }
-            else {
-                url = f.toURI().toURL();
+            else if (!f.exists()) {
                 String surl = url.toExternalForm();
                 if (!surl.endsWith("/")) {
                     url = new URL (surl+"/");
                 }
             }
+            return url;
         } catch (MalformedURLException e) {
             throw new AssertionError(e);            
-        }
-        return url;
+        }        
     }
 
 
@@ -183,13 +182,6 @@ public class Util {
         }
         // Nothing decent in it at all; use zero.
         return new SpecificationVersion("0"); // NOI18N
-    }
-
-    // XXX this method could probably be removed...
-    private static boolean isArchiveFile (File f) {
-        // the f might not exist and so you cannot use e.g. f.isFile() here
-        String fileName = f.getName().toLowerCase();
-        return fileName.endsWith(".jar") || fileName.endsWith(".zip");    //NOI18N
-    }
+    }   
 
 }
