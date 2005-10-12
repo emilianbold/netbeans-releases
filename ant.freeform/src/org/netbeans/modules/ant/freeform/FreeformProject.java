@@ -84,6 +84,7 @@ public final class FreeformProject implements Project {
             new ArtifactProvider(this), // AntArtifactProvider
             new LookupMergerImpl(), // LookupMerger
             new FreeformProjectOperations(this),
+	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
         });
         return new FreeformLookup(baseLookup, this, helper, eval, aux);
     }
