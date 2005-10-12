@@ -5,6 +5,6 @@
           "http://www.netbeans.org/dtds/tc-ref2_0.dtd">
 
 <tc-ref version="2.0">
-    <tc-id id="threads" />
+    <tc-id id="threadsView" />
     <state opened="false" />
 </tc-ref>
