@@ -201,7 +201,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private ClassPath getBootClassPath() {
         ClassPath cp = null;
         if (cache[7] == null || (cp = (ClassPath)cache[7].get()) == null) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(helper, evaluator));
+            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
             cache[7] = new SoftReference(cp);
         }
         return cp;

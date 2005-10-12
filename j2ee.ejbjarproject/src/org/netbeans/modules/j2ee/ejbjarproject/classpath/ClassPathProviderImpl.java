@@ -237,7 +237,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
     private ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if (cp == null) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(helper));
+            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
             cache[7] = cp;
         }
         return cp;
