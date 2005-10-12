@@ -85,11 +85,12 @@ public class CommonPropertyVisualPanel extends javax.swing.JPanel implements Wiz
         setPreferredSize(new java.awt.Dimension(627, 305));
         getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("TITLE_CommonPropertyPanel"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommonPropertyVisualPanel.class, "CommonPropertyPanel_Description", this.helper.getData().getString(__JndiName)));
-        descriptionTextArea.setBackground(new java.awt.Color(236, 233, 216));
+        descriptionTextArea.setBackground(new java.awt.Color(204, 204, 204));
         descriptionTextArea.setEditable(false);
         descriptionTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
         descriptionTextArea.setLineWrap(true);
         descriptionTextArea.setText(NbBundle.getMessage(CommonPropertyVisualPanel.class, "CommonPropertyPanel_Description", this.helper.getData().getString(__JndiName)));
+        descriptionTextArea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
         descriptionTextArea.setFocusable(false);
         descriptionTextArea.setMinimumSize(new java.awt.Dimension(500, 17));
         descriptionTextArea.setPreferredSize(new java.awt.Dimension(500, 17));
