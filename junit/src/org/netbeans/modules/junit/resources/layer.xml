@@ -42,7 +42,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.EmptyTestCaseWizardIterator.singleton"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="junit"/>
             </file>
             
@@ -51,7 +51,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.SimpleTestCaseWizardIterator.singleton"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="junit"/>
             </file>
             
@@ -60,7 +60,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/TestSuite.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.TestSuiteWizardIterator.singleton"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="junit"/>
             </file>
             <file name="Package.shadow">
@@ -142,7 +142,7 @@
     <folder name="Services">
     	<file name="org-netbeans-modules-junit-JUnitSettings.settings" url="JUnitSettings.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
     	</file>        
     </folder>
 
