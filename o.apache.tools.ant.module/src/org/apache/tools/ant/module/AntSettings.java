@@ -217,7 +217,8 @@ public class AntSettings extends SystemOption implements ChangeListener {
     private NbClassPath defAECP = null;
     private Lookup.Result aecpResult = null;
     
-    private synchronized NbClassPath defaultAutomaticExtraClasspath() {
+    private NbClassPath defaultAutomaticExtraClasspath() {
+        synchronized (/* #66463 */getLock()) {
         if (aecpResult == null) {
             aecpResult = Lookup.getDefault().lookup(new Lookup.Template(AutomaticExtraClasspathProvider.class));
             aecpResult.addLookupListener(new LookupListener() {
@@ -237,6 +238,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
             defAECP = new NbClassPath((File[])items.toArray(new File[items.size()]));
         }
         return defAECP;
+        }
     }
     
     public boolean getAutoCloseTabs() {
