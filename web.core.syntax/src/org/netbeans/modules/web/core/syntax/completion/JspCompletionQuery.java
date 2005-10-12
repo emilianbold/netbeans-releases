@@ -240,7 +240,8 @@ public class JspCompletionQuery implements CompletionQuery {
                     AttributeValueSupport.getSupport(true, elem.getName(), attrName);
                 if (attSup != null) {
                     CompletionQuery.Result result = attSup.getResult (component, offset, sup, elem, valuePart);
-                    setResultItemsOffset(result.getData(), valuePart.length(), offset);
+                    if(!(attSup instanceof AttrSupports.FilenameSupport))
+                        setResultItemsOffset(result.getData(), valuePart.length(), offset);
                     return result;
                 }
             }

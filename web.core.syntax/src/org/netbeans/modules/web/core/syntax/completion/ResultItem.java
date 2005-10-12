@@ -40,19 +40,19 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
     
     static String toAdd;
     public static final String COMPLETION_SUBSTITUTE_TEXT= "completion-substitute-text"; //NOI18N
-        
+    
     protected int selectionStartOffset = -1;
     protected int selectionEndOffset = -1;
-    private int offset = -1; //stores the substituteOffset
+    private int substituteOffset = -1; //stores the substituteOffset
     
     protected boolean shift = false;
     
     public int getSubstituteOffset() {
-        return offset;
+        return substituteOffset;
     }
     
     void setSubstituteOffset(int offset) {
-        this.offset = offset;
+        this.substituteOffset = offset;
     }
     
     public abstract String getItemText();
@@ -125,9 +125,9 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
         Component renderComponent = getPaintComponent(false);
         return renderComponent.getPreferredSize().width;
     }
-
+    
     public void render(Graphics g, Font defaultFont, Color defaultColor,
-    Color backgroundColor, int width, int height, boolean selected) {
+            Color backgroundColor, int width, int height, boolean selected) {
         Component renderComponent = getPaintComponent(selected);
         renderComponent.setFont(defaultFont);
         renderComponent.setForeground(defaultColor);
@@ -162,12 +162,12 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
     public int getImportance() {
         return 0;
     }
-
+    
     public void defaultAction(JTextComponent component) {
         int substOffset = getSubstituteOffset();
         if (substOffset == -1)
             substOffset = component.getCaret().getDot();
-
+        
         if(!shift) Completion.get().hideAll();
         substituteText(component, substOffset, component.getCaret().getDot() - substOffset, shift);
     }
