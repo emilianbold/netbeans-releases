@@ -78,9 +78,12 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected void readFromDataModel() {
-        checkValidity();
+        if (data.getPackageName() != null) {
+            comPackageName.setSelectedItem(data.getPackageName());
+        }
         txtPrefix.setText(data.getPrefix());
         txtIcon.setText(data.getPrefix());
+        checkValidity();
     }
     
     protected String getPanelName() {

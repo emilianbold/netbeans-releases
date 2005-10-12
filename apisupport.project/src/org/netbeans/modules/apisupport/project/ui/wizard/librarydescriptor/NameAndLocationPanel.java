@@ -57,7 +57,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         }
     }
     
-    protected void storeToDataModel() {}
+    protected void storeToDataModel() {
+        updateData();
+    }
     
     private void updateData() {
         data.setPackageName(packageNameValue.getEditor().getItem().toString());
@@ -75,7 +77,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     protected void readFromDataModel() {
         libraryNameVale.setText(this.data.getLibrary().getName());
         libraryDisplayNameValue.setText(this.data.getLibrary().getDisplayName());
-        updateData();
+        if (data.getPackageName() != null) {
+            packageNameValue.setSelectedItem(data.getPackageName());
+        }
+        checkValidity();
+//        updateData();
     }
     
     protected String getPanelName() {

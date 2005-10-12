@@ -93,13 +93,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     protected void readFromDataModel() {
         loadCombo();
+        if (data.getPackageName() != null) {
+            comPackageName.setSelectedItem(data.getPackageName());
+        }
         checkValidity();
-    }
-    
-    private static JComboBox createComboBox(SourceGroup srcRoot) {
-        JComboBox packagesComboBox = new JComboBox(PackageView.createListView(srcRoot));
-        packagesComboBox.setRenderer(PackageView.listRenderer());
-        return packagesComboBox;
     }
     
     protected String getPanelName() {
@@ -151,7 +148,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         lblProjectName = new javax.swing.JLabel();
         txtProjectName = new JTextField(ProjectUtils.getInformation(this.data.getProject()).getDisplayName());
         lblPackageName = new javax.swing.JLabel();
-        comPackageName = this.createComboBox(this.data.getSourceRootGroup());
+        comPackageName = UIUtil.createPackageComboBox(this.data.getSourceRootGroup());
         createdFiles = new javax.swing.JLabel();
         modifiedFiles = new javax.swing.JLabel();
         filler = new javax.swing.JLabel();

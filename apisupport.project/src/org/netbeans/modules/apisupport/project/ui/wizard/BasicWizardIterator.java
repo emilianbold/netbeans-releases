@@ -106,6 +106,20 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
             }
             
             project = (NbModuleProject) tmpProject;
+            // #66339 need to prefetch the packagename and populate data with it..
+            FileObject fo = Templates.getTargetFolder(wiz);
+            if (fo != null) {
+                Sources srcs = (Sources)project.getLookup().lookup(Sources.class);
+                SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                for (int i = 0; i < grps.length; i++) {
+                    if (FileUtil.isParentOf(grps[i].getRootFolder(), fo)) {
+                        String relPath = FileUtil.getRelativePath(grps[i].getRootFolder(), fo);
+                        relPath = relPath.replace('/', '.');
+                        setPackageName(relPath);
+                        break;
+                    }
+                }
+            }
         }
         
         public NbModuleProject getProject() {

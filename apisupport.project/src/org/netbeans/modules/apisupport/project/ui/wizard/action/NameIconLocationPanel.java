@@ -53,7 +53,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         className.select(0, className.getText().length());
         DocumentListener updateListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                updateData();
+                checkValidity();
+                storeBaseData();
             }
         };
         className.getDocument().addDocumentListener(updateListener);
@@ -70,7 +71,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     protected void storeToDataModel() {
         storeBaseData();
-        data.setDisplayName(displayName.getText());
     }
     
     protected void readFromDataModel() {
@@ -78,7 +78,9 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void updateData() {
-        storeBaseData();
+        if (data.getPackageName() != null) {
+            packageName.setSelectedItem(data.getPackageName());
+        }
         CreatedModifiedFiles files = data.getCreatedModifiedFiles();
         createdFiles.setText(UIUtil.generateTextAreaContent(files.getCreatedPaths()));
         modifiedFiles.setText(UIUtil.generateTextAreaContent(files.getModifiedPaths()));
@@ -90,6 +92,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         data.setClassName(getClassName());
         data.setPackageName(packageName.getEditor().getItem().toString());
         data.setIconPath(getIconPath());
+        data.setDisplayName(displayName.getText());
     }
     
     private String getIconPath() {
@@ -324,7 +327,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             icon.setText(file.getAbsolutePath());
-            updateData();
+            checkValidity();
+            storeBaseData();
         }
     }//GEN-LAST:event_iconButtonActionPerformed
     

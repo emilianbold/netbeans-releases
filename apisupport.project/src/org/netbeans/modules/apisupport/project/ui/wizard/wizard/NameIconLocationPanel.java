@@ -103,12 +103,16 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         iconButton.setVisible(visible);
         iconTxt.setVisible(visible);
         if (firstTime) {
+            if (data.getPackageName() != null) {
+                packageName.setSelectedItem(data.getPackageName());
+            }
             loadCategories();
             firstTime = false;
             setValid(Boolean.FALSE);
         } else {
             updateData();
         }
+        
     }
     
     private void updateData() {
