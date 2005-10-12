@@ -126,12 +126,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private boolean checkValidity() {
         boolean valid = false;
+        String pName = packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassNamePrefix())) {
             setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier")); // NOI18N
         } else if (data.isFileTemplateType() &&
                 (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL))) {
             setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered")); // NOI18N
-        } else {
+        } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
+            setErrorMessage(getMessage("ERR_Package_Invalid")); // NOI18N
+        } else  {
             setErrorMessage(null);
             valid = true;
         }
