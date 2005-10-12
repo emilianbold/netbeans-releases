@@ -266,12 +266,7 @@ Microsystems, Inc. All Rights Reserved.
        
         <tr class="tabler">
             <td>
-                <a>
-                    <xsl:attribute name="name" >
-                        <xsl:value-of select="$group" /><xsl:text>-</xsl:text><xsl:value-of select="$name" />
-                    </xsl:attribute>
-                    <xsl:value-of select="$name" />
-                </a>
+                <xsl:value-of select="$name"/>
             </td>
             <xsl:if test="$type" > 
                 <td> <!-- imported/exported -->
@@ -311,10 +306,16 @@ Microsystems, Inc. All Rights Reserved.
             </td>
             
             <td> <!-- description -->
-                <xsl:call-template name="describe">
-                  <xsl:with-param name="name" select="$name" />
-                  <xsl:with-param name="group" select="$group" />
-                </xsl:call-template>
+                <!-- Put anchor here, since name is centered, and we want hyperlinks to scroll to top of table row: -->
+                <a>
+                    <xsl:attribute name="name">
+                        <xsl:value-of select="$group" /><xsl:text>-</xsl:text><xsl:value-of select="$name"/>
+                    </xsl:attribute>
+                    <xsl:call-template name="describe">
+                        <xsl:with-param name="name" select="$name"/>
+                        <xsl:with-param name="group" select="$group"/>
+                    </xsl:call-template>
+                </a>
             </td>
         </tr>
     </xsl:template>  
