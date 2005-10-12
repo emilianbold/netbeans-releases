@@ -17,7 +17,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 
@@ -37,14 +40,33 @@ public final class DeleteLocalAction extends AbstractSystemAction {
     public static final int LOCALLY_DELETABLE_MASK = FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
     public void performCvsAction(ActionEvent ev) {
-        File [] files = getContext().getFiles();
-        int res = JOptionPane.showConfirmDialog(
-                null,
-                NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt"),
-                NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title"),
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
-        if (res != JOptionPane.YES_OPTION) return;
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt"));
+        descriptor.setTitle(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title"));
+        descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+        descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+        Object res = DialogDisplayer.getDefault().notify(descriptor);
+        if (res != NotifyDescriptor.YES_OPTION) {
+            return;
+        }
+
+        final File [] files = getContext().getFiles();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                async(files);
+            }
+        });
+    }
+
+    protected int getFileEnabledStatus() {
+        return LOCALLY_DELETABLE_MASK;
+    }
+
+    protected String getBaseName() {
+        return "Delete";  // NOI18M
+    }
+
+    public void async(File[] files) {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             StandardAdminHandler entries = new StandardAdminHandler();
@@ -66,13 +88,5 @@ public final class DeleteLocalAction extends AbstractSystemAction {
                 }
             }
         }
-    }
-
-    protected int getFileEnabledStatus() {
-        return LOCALLY_DELETABLE_MASK;
-    }
-
-    protected String getBaseName() {
-        return "Delete";  // NOI18M
     }
 }

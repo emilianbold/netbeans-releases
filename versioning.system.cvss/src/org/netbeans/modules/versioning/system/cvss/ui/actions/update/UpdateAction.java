@@ -47,15 +47,17 @@ public class UpdateAction extends AbstractSystemAction {
 
     public void performCvsAction(ActionEvent ev) {
 
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(UpdateAction.class, "BK0001"));
+        group.progress("Preparing");
         Context context = getContext();
         GlobalOptions options = null;
         if (context.getExclusions().size() > 0) {
             options = CvsVersioningSystem.createGlobalOptions();
             options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
         }
-        
+
         File [][] flatRecursive = Utils.splitFlatOthers(context.getRootFiles());
-        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(UpdateAction.class, "BK0001"));
+
         if (flatRecursive[0].length > 0) {
             UpdateCommand cmd = new UpdateCommand();
             cmd.setDisplayName(NbBundle.getMessage(UpdateAction.class, "BK0001"));
