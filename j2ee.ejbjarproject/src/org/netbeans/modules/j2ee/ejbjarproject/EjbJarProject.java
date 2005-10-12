@@ -36,6 +36,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
+import org.netbeans.modules.j2ee.ejbjarproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
@@ -276,6 +277,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
                 new CompiledSourceForBinaryQuery(helper,evaluator(),getSourceRoots(),getTestSourceRoots()),
+                new JavadocForBinaryQueryImpl(helper, evaluator()),
                 new AntArtifactProviderImpl(),
                 new ProjectXmlSavedHookImpl(),
                 new ProjectOpenedHookImpl(),
