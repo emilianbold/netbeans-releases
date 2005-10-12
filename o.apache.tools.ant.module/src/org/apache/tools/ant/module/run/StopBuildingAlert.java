@@ -76,7 +76,7 @@ final class StopBuildingAlert extends JPanel {
         list.setSelectedIndex(0);
         // Make a dialog with buttons "Stop Building" and "Cancel".
         DialogDescriptor dd = new DialogDescriptor(alert, NbBundle.getMessage(StopBuildingAlert.class, "TITLE_SBA"));
-        dd.setMessageType(NotifyDescriptor.QUESTION_MESSAGE);
+        dd.setMessageType(NotifyDescriptor.PLAIN_MESSAGE);
         final JButton stopButton = new JButton(NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_stop"));
         list.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -105,7 +105,8 @@ final class StopBuildingAlert extends JPanel {
         buildsList.setCellRenderer(new ProcessCellRenderer());
     }
     
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         introLabel = new javax.swing.JLabel();
@@ -113,39 +114,49 @@ final class StopBuildingAlert extends JPanel {
         buildsScrollPane = new javax.swing.JScrollPane();
         buildsList = new javax.swing.JList();
 
-        setLayout(new java.awt.GridBagLayout());
-
         org.openide.awt.Mnemonics.setLocalizedText(introLabel, org.openide.util.NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_intro"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
-        add(introLabel, gridBagConstraints);
 
         buildsLabel.setLabelFor(buildsList);
         org.openide.awt.Mnemonics.setLocalizedText(buildsLabel, org.openide.util.NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_select"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(buildsLabel, gridBagConstraints);
 
         buildsScrollPane.setViewportView(buildsList);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(buildsScrollPane, gridBagConstraints);
-
-    }//GEN-END:initComponents
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(buildsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(buildsLabel)
+                            .add(introLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(28, 28, 28))))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(introLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buildsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buildsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+    }
+    // </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel buildsLabel;
-    private javax.swing.JList buildsList;
-    private javax.swing.JScrollPane buildsScrollPane;
-    private javax.swing.JLabel introLabel;
+    public javax.swing.JLabel buildsLabel;
+    public javax.swing.JList buildsList;
+    public javax.swing.JScrollPane buildsScrollPane;
+    public javax.swing.JLabel introLabel;
     // End of variables declaration//GEN-END:variables
 
     private final class ProcessCellRenderer extends DefaultListCellRenderer/*<Thread>*/ {
