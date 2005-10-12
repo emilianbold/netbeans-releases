@@ -86,6 +86,15 @@ class DTDGrammar implements GrammarQuery {
         if ("quot".startsWith(prefix)) list.add(new MyEntityReference("quot"));
         if ("amp".startsWith(prefix)) list.add(new MyEntityReference("amp"));
         
+        Collections.sort(list, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((MyEntityReference)o1).getNodeName().compareTo(((MyEntityReference)o2).getNodeName());
+            }
+            public boolean equals(Object obj) {
+                return true;
+            }
+        });
+        
         return java.util.Collections.enumeration (list);
     }
     
