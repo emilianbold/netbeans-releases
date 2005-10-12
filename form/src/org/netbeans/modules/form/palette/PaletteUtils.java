@@ -110,7 +110,7 @@ public final class PaletteUtils {
     }
     
     static Node getPaletteNode() {
-        return getPaletteDataFolder().getNodeDelegate();
+        return (Node)getPalette().getRoot().lookup( Node.class );
     }
     
     public static PaletteController getPalette() {
