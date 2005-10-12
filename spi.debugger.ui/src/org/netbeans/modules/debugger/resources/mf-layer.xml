@@ -19,36 +19,12 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Actions">
         <folder name="Window">
             <folder name="Debug">
-                <file name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createLocalsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                </file>
-                <file name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createWatchesViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                </file>
-                <file name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createCallStackViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                </file>
-                <file name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createBreakpointsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                </file>
-                <file name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createSessionsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                </file>
-                <file name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createThreadsViewAction"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance" />
+                <file name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance" />
+                <file name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance" />
+                <file name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance" />
+                <file name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance" />
+                <file name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance" />
             </folder>
         </folder>
     </folder>
@@ -115,40 +91,40 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
         <folder name="Components">
-            <file name="localsView.settings" url="components/locals.settings" />
-            <file name="watchesView.settings" url="components/watches.settings" />
-            <file name="sessionsView.settings" url="components/sessions.settings" />
-            <file name="threadsView.settings" url="components/threads.settings" />
-            <file name="callstackView.settings" url="components/callstack.settings" />
-            <file name="breakpointsView.settings" url="components/breakpoints.settings" />
+            <file name="locals.settings" url="components/locals.settings" />
+            <file name="watches.settings" url="components/watches.settings" />
+            <file name="sessions.settings" url="components/sessions.settings" />
+            <file name="threads.settings" url="components/threads.settings" />
+            <file name="callstack.settings" url="components/callstack.settings" />
+            <file name="breakpoints.settings" url="components/breakpoints.settings" />
         </folder>
 
         <folder name="Modes">
             <file name="debugger.wsmode" url="modes/debugger.wsmode" />
             <folder name="debugger">
-                <file name="watchesView.wstcref" url="modes/debugger/watches.wstcref" />
-                <attr name="watchesView.wstcref/localsView.wstcref" boolvalue="true"/>
-                <file name="localsView.wstcref" url="modes/debugger/locals.wstcref" />
-                <attr name="localsView.wstcref/callstackView.wstcref" boolvalue="true"/>
-                <file name="callstackView.wstcref" url="modes/debugger/callstack.wstcref" />
-                <attr name="callstackView.wstcref/breakpointsView.wstcref" boolvalue="true"/>
-                <file name="breakpointsView.wstcref" url="modes/debugger/breakpoints.wstcref" />
-                <attr name="breakpointsView.wstcref/sessionsView.wstcref" boolvalue="true"/>
-                <file name="sessionsView.wstcref" url="modes/debugger/sessions.wstcref" />
-                <attr name="sessionsView.wstcref/threadsView.wstcref" boolvalue="true"/>
-                <file name="threadsView.wstcref" url="modes/debugger/threads.wstcref" />
+                <file name="watches.wstcref" url="modes/debugger/watches.wstcref" />
+                <attr name="watches.wstcref/locals.wstcref" boolvalue="true"/>
+                <file name="locals.wstcref" url="modes/debugger/locals.wstcref" />
+                <attr name="locals.wstcref/callstack.wstcref" boolvalue="true"/>
+                <file name="callstack.wstcref" url="modes/debugger/callstack.wstcref" />
+                <attr name="callstack.wstcref/breakpoints.wstcref" boolvalue="true"/>
+                <file name="breakpoints.wstcref" url="modes/debugger/breakpoints.wstcref" />
+                <attr name="breakpoints.wstcref/sessions/wstcref" boolvalue="true"/>
+                <file name="sessions.wstcref" url="modes/debugger/sessions.wstcref" />
+                <attr name="sessions.wstcref/threads.wstcref" boolvalue="true"/>
+                <file name="threads.wstcref" url="modes/debugger/threads.wstcref" />
             </folder>
         </folder>
         
         <folder name="Groups">
             <file name="debugger.wsgrp" url="groups/debugger.wsgrp" />
             <folder name="debugger">
-                <file name="localsView.wstcgrp" url="groups/debugger/locals.wstcgrp" />
-                <file name="watchesView.wstcgrp" url="groups/debugger/watches.wstcgrp" />
-                <file name="sessionsView.wstcgrp" url="groups/debugger/sessions.wstcgrp" />
-                <file name="threadsView.wstcgrp" url="groups/debugger/threads.wstcgrp" />
-                <file name="callstackView.wstcgrp" url="groups/debugger/callstack.wstcgrp" />
-                <file name="breakpointsView.wstcgrp" url="groups/debugger/breakpoints.wstcgrp" />
+                <file name="locals.wstcgrp" url="groups/debugger/locals.wstcgrp" />
+                <file name="watches.wstcgrp" url="groups/debugger/watches.wstcgrp" />
+                <file name="sessions.wstcgrp" url="groups/debugger/sessions.wstcgrp" />
+                <file name="threads.wstcgrp" url="groups/debugger/threads.wstcgrp" />
+                <file name="callstack.wstcgrp" url="groups/debugger/callstack.wstcgrp" />
+                <file name="breakpoints.wstcgrp" url="groups/debugger/breakpoints.wstcgrp" />
             </folder>
         </folder>
 
