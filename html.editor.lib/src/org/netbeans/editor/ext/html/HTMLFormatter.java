@@ -72,36 +72,38 @@ public class HTMLFormatter extends ExtFormatter {
             //pressed enter - called from indentNewLine
             //get first non-white token backward
             int nonWSTokenBwd = Utilities.getFirstNonWhiteBwd(doc, endOffset);
-            token = sup.getTokenChain(nonWSTokenBwd, nonWSTokenBwd + 1);
-            if(token != null 
-                    && token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL
-                    && !token.getImage().equals("/>")) {
-                //the enter was pressed after a tag which is not an empty tag
-                //find start token of the tag
-                do {
-                    token = token.getPrevious();
-                } while(token != null && token.getTokenID() != HTMLTokenContext.TAG_OPEN);
-                
-                if(token != null) {
-                    //found an open tag => test whether it has a matching close tag between endOffset and the open tag offset
-                    //if so, do not increase the indentation
-                    int[] match = sup.findMatchingBlock(token.getOffset(), false);
-                    if((match != null && match[0] > endOffset) || match == null) {
-                        //test if the tag has optional end -> if so not not indent
-                        TokenItem tagNameToken = token;
-                        DTD dtd = sup.getDTD();
-                        if(tagNameToken != null && dtd != null) {
-                            Element elem = dtd.getElement(tagNameToken.getImage().toUpperCase());
-                            if(elem != null && !elem.hasOptionalEnd()) {
-                                //increase indentation
-                                int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
-                                int newLineIndent = previousLineIndentation + getShiftWidth();
-                                changeRowIndent(doc, startOffset, newLineIndent);
-                                return null;
+            if(nonWSTokenBwd != -1) {
+                token = sup.getTokenChain(nonWSTokenBwd, nonWSTokenBwd + 1);
+                if(token != null
+                        && token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL
+                        && !token.getImage().equals("/>")) {
+                    //the enter was pressed after a tag which is not an empty tag
+                    //find start token of the tag
+                    do {
+                        token = token.getPrevious();
+                    } while(token != null && token.getTokenID() != HTMLTokenContext.TAG_OPEN);
+                    
+                    if(token != null) {
+                        //found an open tag => test whether it has a matching close tag between endOffset and the open tag offset
+                        //if so, do not increase the indentation
+                        int[] match = sup.findMatchingBlock(token.getOffset(), false);
+                        if((match != null && match[0] > endOffset) || match == null) {
+                            //test if the tag has optional end -> if so not not indent
+                            TokenItem tagNameToken = token;
+                            DTD dtd = sup.getDTD();
+                            if(tagNameToken != null && dtd != null) {
+                                Element elem = dtd.getElement(tagNameToken.getImage().toUpperCase());
+                                if(elem != null && !elem.hasOptionalEnd()) {
+                                    //increase indentation
+                                    int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
+                                    int newLineIndent = previousLineIndentation + getShiftWidth();
+                                    changeRowIndent(doc, startOffset, newLineIndent);
+                                    return null;
+                                }
                             }
                         }
+                        
                     }
-                    
                 }
             }
             //found something else => indent to the some level
