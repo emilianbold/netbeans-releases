@@ -46,3 +46,6 @@ core/swing/tabcontrol/src/**/*.png
 core/palette/src/**/Bundle.properties
 core/palette/src/**/*.gif
 core/palette/src/**/*.png
+core/navigator/src/**/Bundle.properties
+core/navigator/src/**/*.gif
+core/navigator/src/**/*.png
