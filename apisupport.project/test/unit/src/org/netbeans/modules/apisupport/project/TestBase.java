@@ -231,6 +231,26 @@ public abstract class TestBase extends NbTestCase {
             lock.releaseLock();
         }
     }
+    public static String slurp(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(is, baos);
+            return baos.toString("UTF-8");
+        } finally {
+            is.close();
+        }
+    }
+    public static void dump(File f, String contents) throws IOException {
+        OutputStream os = new FileOutputStream(f);
+        try {
+            Writer w = new OutputStreamWriter(os, "UTF-8");
+            w.write(contents);
+            w.flush();
+        } finally {
+            os.close();
+        }
+    }
     
     // XXX copied from TestBase in ant/freeform
     public static final class TestPCL implements PropertyChangeListener {

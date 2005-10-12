@@ -18,7 +18,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +28,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
-
 /**
  * Represents localized information for a NetBeans module usually loaded from a
  * <em>Bundle.properties</em> specified in a module's manifest. It is actaully
@@ -50,10 +47,10 @@ public final class LocalizedBundleInfo {
     public static final String SHORT_DESCRIPTION = "OpenIDE-Module-Short-Description"; // NOI18N
     public static final String LONG_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
     
-    static final LocalizedBundleInfo EMPTY = new LocalizedBundleInfo(new EditableProperties(true));
+    static final LocalizedBundleInfo EMPTY = new LocalizedBundleInfo(new EditableProperties[] {new EditableProperties(true)});
     
-    private EditableProperties props;
-    private File path;
+    private final EditableProperties[] props;
+    private final File[] paths;
     
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
@@ -64,14 +61,11 @@ public final class LocalizedBundleInfo {
      * given object represents a regular {@link java.io.File}.
      * @param bundleFO {@link FileObject} representing localizing bundle.
      *        Usually <em>bundle.properties</em> or its branded version.
+     *        Given as an array so you can pass multiple locale variants (most specific last).
      * @return instance representing data in the given bundle
      */
-    public static LocalizedBundleInfo load(FileObject bundleFO) throws IOException {
-        if (bundleFO == null) {
-            return null;
-        }
-        LocalizedBundleInfo info = new LocalizedBundleInfo(bundleFO);
-        return info;
+    public static LocalizedBundleInfo load(FileObject[] bundleFOs) throws IOException {
+        return new LocalizedBundleInfo(bundleFOs);
     }
     
     /**
@@ -83,85 +77,82 @@ public final class LocalizedBundleInfo {
      *        <em>bundle.properties</em> or its branded version.
      * @return instance representing data in the given bundle
      */
-    public static LocalizedBundleInfo load(InputStream bundleIS) throws IOException {
-        EditableProperties props = new EditableProperties();
-        props.load(bundleIS);
+    public static LocalizedBundleInfo load(InputStream[] bundleISs) throws IOException {
+        EditableProperties[] props = new EditableProperties[bundleISs.length];
+        for (int i = 0; i < props.length; i++) {
+            props[i] = new EditableProperties();
+            props[i].load(bundleISs[i]);
+        }
         return new LocalizedBundleInfo(props);
     }
     
     /** Use factory method instead. */
-    private LocalizedBundleInfo(EditableProperties props) {
+    private LocalizedBundleInfo(EditableProperties[] props) {
         this.props = props;
+        paths = new File[props.length];
     }
     
     /** Use factory method instead. */
-    private LocalizedBundleInfo(FileObject bundleFO) throws IOException {
-        InputStream bundleIS = bundleFO.getInputStream();
-        try {
-            EditableProperties props = new EditableProperties();
-            props.load(bundleIS);
-            this.props = props;
-            
-            File f = FileUtil.toFile(bundleFO);
-            if (f != null) {
-                this.setPath(f);
-                bundleFO.addFileChangeListener(new FileChangeAdapter() {
-                    public void fileChanged(FileEvent fe) {
-                        try {
-                            LocalizedBundleInfo.this.reload();
-                        } catch (IOException e) {
-                            Util.err.log(ErrorManager.WARNING,
-                                    "Cannot reload localized bundle info " + // NOI18N
-                                    FileUtil.getFileDisplayName(fe.getFile()));
-                        }
-                    }
-                });
+    private LocalizedBundleInfo(FileObject[] bundleFOs) throws IOException {
+        if (bundleFOs == null || bundleFOs.length == 0) {
+            throw new IllegalArgumentException();
+        }
+        props = new EditableProperties[bundleFOs.length];
+        paths = new File[bundleFOs.length];
+        for (int i = 0; i < bundleFOs.length; i++) {
+            InputStream bundleIS = bundleFOs[i].getInputStream();
+            try {
+                props[i] = new EditableProperties();
+                props[i].load(bundleIS);
+            } finally {
+                bundleIS.close();
             }
-        } finally {
-            bundleIS.close();
+            paths[i] = FileUtil.toFile(bundleFOs[i]);
+            bundleFOs[i].addFileChangeListener(new FileChangeAdapter() {
+                public void fileChanged(FileEvent fe) {
+                    try {
+                        LocalizedBundleInfo.this.reload();
+                    } catch (IOException e) {
+                        Util.err.log(ErrorManager.WARNING,
+                                "Cannot reload localized bundle info " + // NOI18N
+                                FileUtil.getFileDisplayName(fe.getFile()));
+                    }
+                }
+            });
         }
     }
     
     /**
      * Reload data of this localizing bundle info from the file represented by
-     * previously set path. If the {@link #setPath} hasn't been called before
-     * an {@link java.lang.IllegalStateException} will be thrown.
+     * previously set path.
      */
     public void reload() throws IOException {
-        if (getPath() == null) {
-            throw new IllegalStateException("First you must call " // NOI18N
-                    + getClass().getName() + ".setPath()"); // NOI18N
-        }
-        FileObject bundleFO = FileUtil.toFileObject(getPath());
         String oldDisplayName = getDisplayName();
-        this.props = bundleFO != null ? Util.loadProperties(bundleFO) : new EditableProperties();
+        for (int i = 0; i < paths.length; i++) {
+            if (paths[i] == null) {
+                props[i] = new EditableProperties();
+                continue;
+            }
+            FileObject bundleFO = FileUtil.toFileObject(paths[i]);
+            props[i] = bundleFO != null ? Util.loadProperties(bundleFO) : new EditableProperties();
+        }
         firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, getDisplayName());
     }
     
     /**
      * Reload this localizing bundle from the file specified by previously set
-     * path. If the {@link #setPath} hasn't been called before an {@link
-     * java.lang.IllegalStateException} will be thrown.
+     * path.
      */
     public void store() throws IOException {
-        if (getPath() == null) {
-            throw new IllegalStateException("First you must call " // NOI18N
-                    + getClass().getName() + ".setPath()"); // NOI18N
-        }
-        FileObject bundleFO = FileUtil.toFileObject(getPath());
-        if (bundleFO == null) {
-            return;
-        }
-        FileLock lock = bundleFO.lock();
-        try {
-            OutputStream os = bundleFO.getOutputStream(lock);
-            try {
-                props.store(os);
-            } finally {
-                os.close();
+        for (int i = 0; i < paths.length; i++) {
+            if (paths[i] == null) {
+                continue;
             }
-        } finally {
-            lock.releaseLock();
+            FileObject bundleFO = FileUtil.toFileObject(paths[i]);
+            if (bundleFO == null) {
+                return;
+            }
+            Util.storeProperties(bundleFO, props[i]);
         }
     }
     
@@ -170,11 +161,20 @@ public final class LocalizedBundleInfo {
      * EditableProperties}.
      */
     public EditableProperties toEditableProperties() {
-        return props;
+        return props[0];
+    }
+    
+    private String getProperty(String key) {
+        for (int i = props.length - 1; i >= 0; i--) {
+            if (props[i].containsKey(key)) {
+                return props[i].getProperty(key);
+            }
+        }
+        return null;
     }
     
     public String getDisplayName() {
-        return props.getProperty(NAME);
+        return getProperty(NAME);
     }
     
     public void setDisplayName(String name) {
@@ -184,7 +184,7 @@ public final class LocalizedBundleInfo {
     }
     
     public String getCategory() {
-        return props.getProperty(DISPLAY_CATEGORY);
+        return getProperty(DISPLAY_CATEGORY);
     }
     
     public void setCategory(String category) {
@@ -192,7 +192,7 @@ public final class LocalizedBundleInfo {
     }
     
     public String getShortDescription() {
-        return props.getProperty(SHORT_DESCRIPTION);
+        return getProperty(SHORT_DESCRIPTION);
     }
     
     public void setShortDescription(String shortDescription) {
@@ -200,27 +200,19 @@ public final class LocalizedBundleInfo {
     }
     
     public String getLongDescription() {
-        return props.getProperty(LONG_DESCRIPTION);
+        return getProperty(LONG_DESCRIPTION);
     }
     
     public void setLongDescription(String longDescription) {
         this.setProperty(LONG_DESCRIPTION, longDescription, true);
     }
     
-    public File getPath() {
-        return path;
-    }
-    
-    /**
-     * After calling this methods instance become <em>storable</em>. So methods
-     * {@link #store} and {@link #reload} can be called.
-     */
-    public void setPath(File path) {
-        this.path = path;
+    public File[] getPaths() {
+        return paths;
     }
     
     private void setProperty(String name, String value, boolean split) {
-        if (Utilities.compareObjects(value, props.getProperty(name))) {
+        if (Utilities.compareObjects(value, getProperty(name))) {
             return;
         }
         if (value != null) {
@@ -228,12 +220,14 @@ public final class LocalizedBundleInfo {
         }
         if (value != null && value.length() > 0) {
             if (split) {
-                props.setProperty(name, splitBySentence(value));
+                props[props.length - 1].setProperty(name, splitBySentence(value));
             } else {
-                props.setProperty(name, value);
+                props[props.length - 1].setProperty(name, value);
             }
         } else {
-            props.remove(name);
+            for (int i = 0; i < props.length; i++) {
+                props[i].remove(name);
+            }
         }
     }
     

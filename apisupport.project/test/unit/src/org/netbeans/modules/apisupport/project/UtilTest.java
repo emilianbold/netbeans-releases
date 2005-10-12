@@ -18,10 +18,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.jar.JarFile;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.zip.CRC32;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
@@ -29,7 +38,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 /**
  * Tests {@link Util}.
  *
@@ -70,9 +78,7 @@ public class UtilTest extends TestBase {
     
     public void testFindLocalizedBundleInfoFromBinaryModule() throws Exception {
         File apisupportF = file("nbbuild/netbeans/ide6/modules/org-netbeans-modules-apisupport-project.jar");
-        JarFile apisupportJar = new JarFile(apisupportF);
-        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(apisupportJar);
-        assertApiSupportInfo(info);
+        assertApiSupportInfo(Util.findLocalizedBundleInfoFromJAR(apisupportF));
     }
     
     private void assertApiSupportInfo(LocalizedBundleInfo info) {
@@ -86,6 +92,87 @@ public class UtilTest extends TestBase {
                 "Provides the logical view for modules, supplies the classpath " +
                 "used for code completion, integrates with the NetBeans build " +
                 "system (using Ant), etc.", info.getLongDescription());
+    }
+    
+    /** cf. #64782 */
+    public void testFindLocalizedBundleInfoLocalization() throws Exception {
+        Locale orig = Locale.getDefault();
+        Locale.setDefault(Locale.JAPAN);
+        try {
+            clearWorkDir();
+            File dir = getWorkDir();
+            Manifest mani = new Manifest();
+            mani.getMainAttributes().putValue("Manifest-Version", "1.0");
+            mani.getMainAttributes().putValue("OpenIDE-Module-Localizing-Bundle", "pack/age/Bundle.properties");
+            // Start with an unlocalized source project.
+            File src = new File(dir, "src");
+            File f = new File(src, "pack/age/Bundle.properties".replace('/', File.separatorChar));
+            f.getParentFile().mkdirs();
+            TestBase.dump(f, "OpenIDE-Module-Name=Foo\nOpenIDE-Module-Display-Category=Foo Stuff\nOpenIDE-Module-Short-Description=short\nOpenIDE-Module-Long-Description=Long...");
+            // XXX test also Util.findLocalizedBundleInfo(File)?
+            LocalizedBundleInfo info = Util.findLocalizedBundleInfo(FileUtil.toFileObject(src), mani);
+            assertEquals("Foo", info.getDisplayName());
+            assertEquals("Foo Stuff", info.getCategory());
+            assertEquals("short", info.getShortDescription());
+            assertEquals("Long...", info.getLongDescription());
+            // Now add some locale variants.
+            f = new File(src, "pack/age/Bundle_ja.properties".replace('/', File.separatorChar));
+            TestBase.dump(f, "OpenIDE-Module-Long-Description=Long Japanese text...");
+            f = new File(src, "pack/age/Bundle_ja_JP.properties".replace('/', File.separatorChar));
+            TestBase.dump(f, "OpenIDE-Module-Name=Foo Nihon");
+            info = Util.findLocalizedBundleInfo(FileUtil.toFileObject(src), mani);
+            assertEquals("Foo Nihon", info.getDisplayName());
+            assertEquals("Foo Stuff", info.getCategory());
+            assertEquals("short", info.getShortDescription());
+            assertEquals("Long Japanese text...", info.getLongDescription());
+            // Now try it on JAR files.
+            f = new File(dir, "noloc.jar");
+            writeJar(f, Collections.singletonMap("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo"), mani);
+            info = Util.findLocalizedBundleInfoFromJAR(f);
+            assertEquals("Foo", info.getDisplayName());
+            assertNull(info.getShortDescription());
+            f = new File(dir, "internalloc.jar");
+            Map/*<String,String>*/ contents = new HashMap();
+            contents.put("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo\nOpenIDE-Module-Short-Description=short");
+            contents.put("pack/age/Bundle_ja_JP.properties", "OpenIDE-Module-Name=Foo Nihon");
+            writeJar(f, contents, mani);
+            info = Util.findLocalizedBundleInfoFromJAR(f);
+            assertEquals("Foo Nihon", info.getDisplayName());
+            assertEquals("short", info.getShortDescription());
+            f = new File(dir, "externalloc.jar");
+            writeJar(f, Collections.singletonMap("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo\nOpenIDE-Module-Short-Description=short"), mani);
+            File f2 = new File(dir, "locale" + File.separatorChar + "externalloc_ja.jar");
+            f2.getParentFile().mkdirs();
+            writeJar(f2, Collections.singletonMap("pack/age/Bundle_ja.properties", "OpenIDE-Module-Short-Description=short Japanese"), new Manifest());
+            info = Util.findLocalizedBundleInfoFromJAR(f);
+            assertEquals("Foo", info.getDisplayName());
+            assertEquals("the meat of #64782", "short Japanese", info.getShortDescription());
+        } finally {
+            Locale.setDefault(orig);
+        }
+    }
+    
+    private static void writeJar(File jar, Map/*<String,String>*/ contents, Manifest manifest) throws IOException {
+        OutputStream os = new FileOutputStream(jar);
+        try {
+            JarOutputStream jos = new JarOutputStream(os, manifest);
+            Iterator it = contents.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry) it.next();
+                String path = (String) entry.getKey();
+                byte[] data = ((String) entry.getValue()).getBytes("UTF-8");
+                JarEntry je = new JarEntry(path);
+                je.setSize(data.length);
+                CRC32 crc = new CRC32();
+                crc.update(data);
+                je.setCrc(crc.getValue());
+                jos.putNextEntry(je);
+                jos.write(data);
+            }
+            jos.close();
+        } finally {
+            os.close();
+        }
     }
     
     public void testLoadProperties() throws Exception {

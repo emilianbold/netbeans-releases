@@ -12,19 +12,8 @@
  */
 
 package org.netbeans.modules.apisupport.project.layers;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,17 +23,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
-import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
-import org.netbeans.tax.TreeDocumentRoot;
-import org.netbeans.tax.TreeException;
-import org.netbeans.tax.TreeObject;
-import org.netbeans.tax.io.TreeStreamResult;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
@@ -52,8 +33,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Task;
-import org.xml.sax.InputSource;
 
 /**
  * Test functionality of {@link WritableXMLFileSystem}.
@@ -579,27 +558,6 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertSize("Filesystem not too big", count * bytesPerFile, l);
     }
     
-    private static String slurp(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            FileUtil.copy(is, baos);
-            return baos.toString("UTF-8");
-        } finally {
-            is.close();
-        }
-    }
-    private static void dump(File f, String contents) throws IOException {
-        OutputStream os = new FileOutputStream(f);
-        try {
-            Writer w = new OutputStreamWriter(os, "UTF-8");
-            w.write(contents);
-            w.flush();
-        } finally {
-            os.close();
-        }
-    }
-    
     /**
      * Handle for working with an XML layer.
      */
@@ -630,7 +588,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 String contents = (String) entry.getValue();
                 File f = new File(folder, fname.replace('/', File.separatorChar));
                 f.getParentFile().mkdirs();
-                dump(f, contents);
+                TestBase.dump(f, contents);
             }
         }
         private File makeFolder() throws Exception {
@@ -646,7 +604,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         private final String FOOTER = "</filesystem>\n";
         private FileObject makeLayer(String xml) throws Exception {
             File f = new File(folder, "layer.xml");
-            dump(f, HEADER + xml + FOOTER);
+            TestBase.dump(f, HEADER + xml + FOOTER);
             return FileUtil.toFileObject(f);
         }
         /**
@@ -709,7 +667,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 if (f.isDirectory()) {
                     traverse(m, f, prefix + kids[i] + '/');
                 } else {
-                    m.put(path, slurp(f));
+                    m.put(path, TestBase.slurp(f));
                 }
             }
         }

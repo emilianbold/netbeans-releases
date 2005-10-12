@@ -182,7 +182,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(
                 new TreeSet(Arrays.asList(manifestManager.getRequiredTokens())));
-        if (isFileBundle()) {
+        if (bundleInfo != null) {
             try {
                 bundleInfo.reload();
             } catch (IOException ioe) {
@@ -190,11 +190,6 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
         }
         firePropertiesRefreshed();
-    }
-    
-    /** i.e. whether the bundle can be stored/reload etc. */
-    private boolean isFileBundle() {
-        return bundleInfo != null && bundleInfo.getPath() != null;
     }
     
     Map/*<String, String>*/ getDefaultValues() {
@@ -511,7 +506,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         storeManifestChanges();
         
         // store localized info
-        if (isFileBundle()) {
+        if (bundleInfo != null) {
             bundleInfo.store();
         } // XXX else ignore for now but we could save into some default location
         

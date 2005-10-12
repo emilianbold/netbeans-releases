@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,7 +47,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
 /**
  * Utility methods for the module.
  * @author Jesse Glick
@@ -260,29 +260,27 @@ public class Util {
      * @return localized bundle info for the given project or <code>null</code>
      */
     public static LocalizedBundleInfo findLocalizedBundleInfo(FileObject sourceDir, Manifest manifest) {
-        LocalizedBundleInfo locInfo = null;
         String locBundleResource =
                 ManifestManager.getInstance(manifest, false).getLocalizingBundle();
         try {
             if (locBundleResource != null) {
+                List/*<FileObject>*/ bundleFOs = new ArrayList();
                 for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
                     String resource = (String) it.next();
                     FileObject bundleFO = sourceDir.getFileObject(resource);
                     if (bundleFO != null) {
-                        LocalizedBundleInfo supposedLI;
-                        supposedLI = LocalizedBundleInfo.load(bundleFO);
-                        if (supposedLI.getDisplayName() != null) {
-                            supposedLI.setPath(FileUtil.toFile(bundleFO));
-                            locInfo = supposedLI;
-                            break;
-                        }
+                        bundleFOs.add(bundleFO);
                     }
+                }
+                if (!bundleFOs.isEmpty()) {
+                    Collections.reverse(bundleFOs);
+                    return LocalizedBundleInfo.load((FileObject[]) bundleFOs.toArray(new FileObject[bundleFOs.size()]));
                 }
             }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
-        return locInfo;
+        return null;
     }
     
     /**
@@ -304,36 +302,70 @@ public class Util {
      * The same as {@link #findLocalizedBundleInfo(FileObject, Manifest)} but
      * searching in the given JAR representing a NetBeans module.
      */
-    public static LocalizedBundleInfo findLocalizedBundleInfo(JarFile binaryProject) {
-        LocalizedBundleInfo locInfo = null;
+    public static LocalizedBundleInfo findLocalizedBundleInfoFromJAR(File binaryProject) {
         try {
-            Manifest mf = binaryProject.getManifest();
-            if (mf != null) {
+            JarFile main = new JarFile(binaryProject);
+            try {
+                Manifest mf = main.getManifest();
                 String locBundleResource =
                         ManifestManager.getInstance(mf, false).getLocalizingBundle();
                 if (locBundleResource != null) {
-                    for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
-                        String resource = (String) it.next();
-                        ZipEntry entry = binaryProject.getEntry(resource);
-                        if (entry != null) {
-                            InputStream bundleIS = binaryProject.getInputStream(entry);
-                            try {
-                                LocalizedBundleInfo supposedLI = LocalizedBundleInfo.load(bundleIS);
-                                if (supposedLI.getDisplayName() != null) {
-                                    locInfo = supposedLI;
-                                    break;
-                                }
-                            } finally {
-                                bundleIS.close();
+                    List/*<InputStream>*/ bundleISs = new ArrayList();
+                    Collection/*<JarFile>*/ extraJarFiles = new ArrayList();
+                    try {
+                        // Look for locale variant JARs too.
+                        // XXX the following could be simplified with #29580:
+                        String name = binaryProject.getName();
+                        int dot = name.lastIndexOf('.');
+                        if (dot == -1) {
+                            dot = name.length();
+                        }
+                        String base = name.substring(0, dot);
+                        String suffix = name.substring(dot);
+                        Iterator it = NbBundle.getLocalizingSuffixes();
+                        while (it.hasNext()) {
+                            String infix = (String) it.next();
+                            File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix);
+                            if (variant.isFile()) {
+                                JarFile jf = new JarFile(variant);
+                                extraJarFiles.add(jf);
+                                addBundlesFromJar(jf, bundleISs, locBundleResource);
                             }
+                        }
+                        // Add main last, since we are about to reverse it:
+                        addBundlesFromJar(main, bundleISs, locBundleResource);
+                        if (!bundleISs.isEmpty()) {
+                            Collections.reverse(bundleISs);
+                            return LocalizedBundleInfo.load((InputStream[]) bundleISs.toArray(new InputStream[bundleISs.size()]));
+                        }
+                    } finally {
+                        Iterator it = bundleISs.iterator();
+                        while (it.hasNext()) {
+                            ((InputStream) it.next()).close();
+                        }
+                        it = extraJarFiles.iterator();
+                        while (it.hasNext()) {
+                            ((JarFile) it.next()).close();
                         }
                     }
                 }
+            } finally {
+                main.close();
             }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
-        return locInfo;
+        return null;
+    }
+    private static void addBundlesFromJar(JarFile jf, List/*<InputStream>*/ bundleISs, String locBundleResource) throws IOException {
+        for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
+            String resource = (String) it.next();
+            ZipEntry entry = jf.getEntry(resource);
+            if (entry != null) {
+                InputStream bundleIS = jf.getInputStream(entry);
+                bundleISs.add(bundleIS);
+            }
+        }
     }
     
     /**

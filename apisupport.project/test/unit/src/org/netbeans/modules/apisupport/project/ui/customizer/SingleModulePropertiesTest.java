@@ -102,14 +102,14 @@ public class SingleModulePropertiesTest extends TestBase {
 
         // silently change bundle
         EditableProperties ep = new EditableProperties();
-        is = new FileInputStream(props.getBundleInfo().getPath());
+        is = new FileInputStream(props.getBundleInfo().getPaths()[0]);
         try {
             ep.load(is);
         } finally {
             is.close();
         }
         ep.setProperty(LocalizedBundleInfo.NAME, "Miscellaneous");
-        os = new FileOutputStream(props.getBundleInfo().getPath());
+        os = new FileOutputStream(props.getBundleInfo().getPaths()[0]);
         try {
             ep.store(os);
         } finally {
@@ -146,7 +146,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("display name from LocalizedBundleInfo", "Testing Module",
                 props.getBundleInfo().getDisplayName());
 
-        FileObject bundleFO = FileUtil.toFileObject(props.getBundleInfo().getPath());
+        FileObject bundleFO = FileUtil.toFileObject(props.getBundleInfo().getPaths()[0]);
         EditableProperties bundleEP = Util.loadProperties(bundleFO);
         bundleEP.setProperty(LocalizedBundleInfo.NAME, "Miscellaneous");
         // let's fire a change

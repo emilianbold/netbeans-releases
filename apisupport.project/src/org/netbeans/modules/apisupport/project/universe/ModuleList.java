@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
@@ -42,7 +41,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
 
 /**
  * Represents list of known modules.
@@ -851,16 +849,6 @@ public final class ModuleList {
     
     public static LocalizedBundleInfo loadBundleInfo(File projectDir) {
         LocalizedBundleInfo bundleInfo = Util.findLocalizedBundleInfo(projectDir);
-        return bundleInfo == null ? LocalizedBundleInfo.EMPTY : bundleInfo;
-    }
-    
-    static LocalizedBundleInfo loadBundleInfoFromBinary(File jarLocation) {
-        LocalizedBundleInfo bundleInfo = null;
-        try {
-            bundleInfo = Util.findLocalizedBundleInfo(new JarFile(jarLocation));
-        } catch (IOException e) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-        }
         return bundleInfo == null ? LocalizedBundleInfo.EMPTY : bundleInfo;
     }
     

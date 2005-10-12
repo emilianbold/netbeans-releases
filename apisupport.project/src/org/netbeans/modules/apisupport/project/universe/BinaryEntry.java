@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.Util;
 
 final class BinaryEntry extends AbstractEntry {
     
@@ -107,7 +108,10 @@ final class BinaryEntry extends AbstractEntry {
     
     protected LocalizedBundleInfo getBundleInfo() {
         if (bundleInfo == null) {
-            bundleInfo = ModuleList.loadBundleInfoFromBinary(getJarLocation());
+            bundleInfo = Util.findLocalizedBundleInfoFromJAR(getJarLocation());
+            if (bundleInfo == null) {
+                bundleInfo = LocalizedBundleInfo.EMPTY;
+            }
         }
         return bundleInfo;
     }
