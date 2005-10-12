@@ -869,6 +869,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         if (done) {
             draggingEnded = true;
+            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
         }
 
         return done;
