@@ -309,7 +309,7 @@ public final class EjbJarSourceRootsUi {
                 else if (this.relatedEditMediator != null && this.relatedEditMediator.ownedFolders.contains(normalizedFile)) {
                     rootsFromRelatedSourceRoots.add (normalizedFile);
                 }
-                else if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.equals(project)) {
+                else if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
                     rootsFromOtherProjects.add (normalizedFile);
                 }
                 else {
