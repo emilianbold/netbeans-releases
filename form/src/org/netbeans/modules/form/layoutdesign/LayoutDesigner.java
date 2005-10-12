@@ -515,6 +515,9 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     public void endMoving(boolean committed) {
+        if (!committed && dragger == null)
+            return; // redundant call
+
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
             if (committed) {
                 em.log("writing move code"); //NOI18N
