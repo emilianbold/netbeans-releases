@@ -642,7 +642,7 @@ public class ReferenceHelperTest extends NbTestCase {
         refval = projectProps.getProperty("project.proj2");        
         assertEquals("reference correctly stored into project.properties", "../proj2", refval);        
         refval = pev.getProperty("reference.proj2.dojar");
-        assertEquals("reference correctly evaluated", f.getAbsolutePath(), refval);                
+        assertNotNull("reference correctly evaluated", refval);                
         assertEquals("reference correctly evaluated", f, h.resolveFile(refval));
         AntArtifact art = r.getForeignFileReferenceAsArtifact("${reference.proj2.dojar}");
         assertNotNull("got the reference back", art);
