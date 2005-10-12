@@ -358,7 +358,7 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
                     int line = getCurrentLine();
                     if (line == -1) return;
                     AnnotateLine al = getAnnotateLine(line);
-                    if (al == null) return;
+                    if (al == null || commitMessages == null) return;
                     String message = (String) commitMessages.get(al.getRevision());
                     File file = getCurrentFile();
                     Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
@@ -375,7 +375,7 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
                 int line = getCurrentLine();
                 if (line == -1) return;
                 AnnotateLine al = getAnnotateLine(line);
-                if (al == null) return;
+                if (al == null || commitMessages == null) return;
                 String message = (String) commitMessages.get(al.getRevision());
                 File file = getCurrentFile();
                 SearchHistoryAction.openSearch(NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision), 

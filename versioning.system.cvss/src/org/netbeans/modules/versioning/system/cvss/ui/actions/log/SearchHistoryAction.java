@@ -80,11 +80,14 @@ public class SearchHistoryAction extends AbstractSystemAction  {
     }
 
     public static void openSearch(Context context, String title, String commitMessage, String username, Date date) {
-        Date from = date;
         Calendar c = Calendar.getInstance();
         c.setTime(date);
+        // annotations do not include time information, we must search whole day
         c.add(Calendar.DATE, 1);
         Date to = c.getTime();
+        c.setTime(date);
+        c.add(Calendar.DATE, -1);
+        Date from = c.getTime();
         
         if (commitMessage != null && commitMessage.indexOf('\n') != -1) {
             commitMessage = commitMessage.substring(0, commitMessage.indexOf('\n'));
