@@ -166,6 +166,12 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             Servlet servlet = StrutsConfigUtilities.getActionServlet(wm.getDeploymentDescriptor());
             panel.setServletName(servlet.getServletName());
             panel.setURLPattern(StrutsConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor()));
+            MessageResources resource = StrutsConfigUtilities.getDefatulMessageResource(wm.getDeploymentDescriptor());
+            if (resource != null){
+                String name = resource.getAttributeValue("parameter");
+                name = name.replaceAll("/", ".");
+                panel.setAppResource(name);
+            }
         }
         
         return panel;

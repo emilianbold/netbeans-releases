@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.web.struts;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -34,6 +35,8 @@ import org.netbeans.modules.web.struts.config.model.MessageResources;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
 import org.netbeans.modules.web.struts.config.model.FormBeans;
 import org.netbeans.modules.web.struts.config.model.FormBean;
+import org.netbeans.modules.xml.core.lib.FileUtilities;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -330,6 +333,33 @@ public class StrutsConfigUtilities {
             else
                 if (mapping.endsWith("/*"))
                     resource = mapping.substring(0,mapping.length()-2) + action;
+        }
+        return resource;
+    }
+    
+    public static MessageResources getDefatulMessageResource(FileObject dd){
+        FileObject [] files = getConfigFilesFO(dd);
+        MessageResources resource = null;
+        int index = 0;
+        DataObject configDO;
+        try {
+            while (resource == null && index < files.length){
+                configDO = DataObject.find(files[index]);
+                if (configDO != null && configDO instanceof StrutsConfigDataObject){
+                    MessageResources[] resources = ((StrutsConfigDataObject)configDO).getStrutsConfig().getMessageResources();
+                    for (int i = 0; i < resources.length; i++){
+                        if (resources[i].getAttributeValue("key") == null)    {  //NOI18N
+                            resource = resources[i];
+                            break;
+                        }
+                    } 
+                }
+                index++;
+            }
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
         }
         return resource;
     }
