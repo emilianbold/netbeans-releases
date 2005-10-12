@@ -64,6 +64,7 @@ public final class RootNode extends FilterNode {
         if( null != df ) {
             content.add( new DataFolder.Index( df, this ) );
         }
+        content.add( this );
         setDisplayName(Utils.getBundleString("CTL_Component_palette")); // NOI18N
     }
     
