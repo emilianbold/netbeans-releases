@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.earproject.classpath;
@@ -39,14 +39,17 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private static final String ANT_NAME = "platform.ant.name";             //NOI18N
     private static final String J2SE = "j2se";                              //NOI18N
 
-    private AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
+    private JavaPlatformManager platformManager;
+    //name of project active platform
+    private String activePlatformName;
+    //active platform is valid (not broken reference)
+    private boolean isActivePlatformValid;
     private List resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public BootClassPathImplementation(AntProjectHelper helper, PropertyEvaluator evaluator) {
-        assert helper != null;
-        this.helper = helper;
+    public BootClassPathImplementation(PropertyEvaluator evaluator) {
+        assert evaluator != null;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
@@ -65,6 +68,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 }
                 resourcesCache = Collections.unmodifiableList (result);
             }
+            else {
+                resourcesCache = Collections.EMPTY_LIST;
+            }
         }
         return this.resourcesCache;
     }
@@ -78,30 +84,75 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     }
 
     private JavaPlatform findActivePlatform () {
-        JavaPlatformManager pm = JavaPlatformManager.getDefault();
-        String platformName = evaluator.getProperty(PLATFORM_ACTIVE);
-        if (platformName!=null) {
-            JavaPlatform[] installedPlatforms = pm.getInstalledPlatforms();
+        if (this.platformManager == null) {
+            this.platformManager = JavaPlatformManager.getDefault();
+            this.platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, this.platformManager));
+        }
+        this.activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
+        if (activePlatformName!=null) {
+            JavaPlatform[] installedPlatforms = this.platformManager.getInstalledPlatforms();
             for (int i = 0; i< installedPlatforms.length; i++) {
                 Specification spec = installedPlatforms[i].getSpecification();
                 String antName = (String) installedPlatforms[i].getProperties().get (ANT_NAME);
                 if (J2SE.equalsIgnoreCase(spec.getName())
-                    && platformName.equals(antName)) {
-                    return installedPlatforms[i];
+                    && activePlatformName.equals(antName)) {
+                        this.isActivePlatformValid = true;
+                        return installedPlatforms[i];
                 }
             }
+            //Platform not found, return the default platform and listen
+            //on broken reference resolution
+            this.isActivePlatformValid = false;
+            return null; //this.platformManager.getDefaultPlatform ();
+        } else {
+            //Platform not set => default platform
+            return this.platformManager.getDefaultPlatform();
         }
-        //Invalid platform ID or default platform
-        return pm.getDefaultPlatform();
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
-            synchronized (this) {
-                resourcesCache = null;
-            }
-            support.firePropertyChange(PROP_RESOURCES, null, null);
+        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
+            //Active platform was changed
+            resetCache ();
         }
+        else if (evt.getSource() == this.platformManager && JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName()) && activePlatformName != null) {
+            //Platform definitions were changed, check if the platform was not resolved or deleted
+            if (this.isActivePlatformValid) {
+                JavaPlatform[] j2sePlatforms = this.platformManager.getPlatforms(null,new Specification("j2se",null)); //NOI18N
+                boolean found = false;
+                for (int i=0; i< j2sePlatforms.length; i++) {
+                    String antName = (String) j2sePlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                    if (antName != null && antName.equals(this.activePlatformName)) {
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    //the platform was not removed
+                    this.resetCache();
+                }
+            }
+            else {
+                JavaPlatform[] j2sePlatforms = this.platformManager.getPlatforms(null,new Specification("j2se",null)); //NOI18N
+                for (int i=0; i< j2sePlatforms.length; i++) {
+                    String antName = (String) j2sePlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                    if (antName != null && antName.equals(this.activePlatformName)) {
+                        this.resetCache();
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
+    
+    /**
+     * Resets the cache and firesPropertyChange
+     */
+    private void resetCache () {
+        synchronized (this) {
+            resourcesCache = null;
+        }
+        support.firePropertyChange(PROP_RESOURCES, null, null);
     }
     
 }
