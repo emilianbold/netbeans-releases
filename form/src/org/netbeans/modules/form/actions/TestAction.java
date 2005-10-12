@@ -92,7 +92,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
         try {
             // create a copy of form
-            Frame frame = (Frame)
+            final Frame frame = (Frame)
                 FormDesigner.createFormView(topComp, frameClass);
 
             // set title
@@ -111,15 +111,15 @@ public class TestAction extends CallableSystemAction implements Runnable {
                                         "gui.modes"); // NOI18N
             }
             else {
-                final Frame showingFrame = frame;
                 frame.addWindowListener(new java.awt.event.WindowAdapter() {
                     public void windowClosing(java.awt.event.WindowEvent evt) {
-                        showingFrame.dispose();
+                        frame.dispose();
                     }
                 });
             }
  
             // set size
+            boolean shouldPack = false;
             if (formModel.isFreeDesignDefaultLayout()) {
                 // [temporary hack for new layout: always set the size according to the form designer]
                 if (formContainer != null) {
@@ -129,7 +129,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
                                          size.height + diffDim.height);
                     frame.setSize(size);
                 }
-                else frame.pack();
+                else shouldPack = true;
             }
             else {
                 if (formContainer != null
@@ -139,11 +139,20 @@ public class TestAction extends CallableSystemAction implements Runnable {
                 {
                     frame.setSize(formContainer.getFormSize());
                 }
-                else frame.pack();
+                else shouldPack = true;
             }
 
-            frame.setBounds(org.openide.util.Utilities.findCenterBounds(frame.getSize()));
-            frame.show();
+            // Issue 66594 and 12084
+            final boolean pack = shouldPack;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    if (pack) {
+                        frame.pack();
+                    }
+                    frame.setBounds(org.openide.util.Utilities.findCenterBounds(frame.getSize()));
+                    frame.show();
+                }
+            });
         }
         catch (Exception ex) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
