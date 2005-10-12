@@ -277,7 +277,9 @@ public final class CheckoutAction extends SystemAction {
                         if (projectFolder != null) {
                             try {
                                 Project p = ProjectManager.getDefault().findProject(projectFolder);
-                                openProject(p);
+                                if (p != null) {
+                                    openProject(p);
+                                }
                             } catch (IOException e1) {
                                 ErrorManager err = ErrorManager.getDefault();
                                 err.annotate(e1, "Can not find project for " + projectFolder);
