@@ -36,10 +36,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
-import java.lang.reflect.*;
+import java.lang.reflect.*; 
 import java.util.*;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
-
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
  * for the form.
@@ -944,10 +943,10 @@ class JavaCodeGenerator extends CodeGenerator {
                                 variablesBuffer);
         else
             variablesWriter = variablesBuffer;
-        
+	    
         try {
-            
-            variablesWriter.write(getVariablesHeaderComment());
+	    
+	    variablesWriter.write(getVariablesHeaderComment());
             variablesWriter.write("\n"); // NOI18N
 
             addVariables(variablesWriter);
@@ -1516,14 +1515,22 @@ class JavaCodeGenerator extends CodeGenerator {
 	
 	FormProperty[] properties = null;
 	Class propertyType = null;
+	Object value = null;
+	
 	try {
-	    properties = (FormProperty[]) ((BeanPropertyEditor) prop.getCurrentEditor()).getProperties();
-	    propertyType = prop.getRealValue().getClass();
-	} catch (Exception ex) {
-	    // should not happen
-	    ErrorManager.getDefault().notify(ex);
-	    return;
-	} 	    	
+	    value = prop.getValue();    	
+	    propertyType = prop.getRealValue().getClass();	   	
+	} catch (IllegalAccessException ex) {
+	    ErrorManager.getDefault().notify(ex); // should not happen
+	    return;	    
+	} catch (InvocationTargetException ex) {    	    
+	    ErrorManager.getDefault().notify(ex); // should not happen
+	    return;                                      	
+	}	
+	 
+	prop.getCurrentEditor().setValue(value);
+	BeanPropertyEditor beanPropertyEditor = (BeanPropertyEditor) prop.getCurrentEditor();	    		    
+	properties = (FormProperty[]) beanPropertyEditor.getProperties();	    
 	
 	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
 	FormProperty[] creatorProperties = getCreatorProperties(creator, properties);

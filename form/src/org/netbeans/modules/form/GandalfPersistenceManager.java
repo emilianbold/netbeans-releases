@@ -21,7 +21,6 @@ import java.lang.reflect.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.*;
@@ -37,8 +36,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.w3c.dom.NamedNodeMap;
-/**
+import org.w3c.dom.NamedNodeMap;/**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
  * The class contains lots of complicated code with many hacks ensuring full
  * compatibility of the format despite that many original classes already don't
@@ -3300,13 +3298,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String encodedSerializeValue = null;
         org.w3c.dom.Node valueNode = null;
 
-        PropertyEditor prEd = property.getCurrentEditor();
-	if ( prEd instanceof BeanPropertyEditor &&
-	     ((BeanPropertyEditor) prEd).valueIsBeanProperty() ) 
-	{
-	    valueNode = saveBeanToXML(realValue.getClass(), topDocument);
-	} else if (prEd instanceof XMLPropertyEditor) {
-            prEd.setValue(value);
+        PropertyEditor prEd = property.getCurrentEditor();	
+		
+	if ( prEd instanceof BeanPropertyEditor || 
+	     prEd instanceof XMLPropertyEditor ) {
+	    prEd.setValue(value);
+	}
+	
+	if ( prEd instanceof BeanPropertyEditor && 
+	     ((BeanPropertyEditor) prEd).valueIsBeanProperty()) 
+	{	    		     	    
+	    valueNode = saveBeanToXML(realValue.getClass(), topDocument);			    
+	} else if (prEd instanceof XMLPropertyEditor) {            
             valueNode = ((XMLPropertyEditor)prEd).storeToXML(topDocument);
             if (valueNode == null) { // property editor refused to save the value
                 // XXX quick hack for JDNC to serialize custom borders XXX
