@@ -5,51 +5,42 @@
 *
 -->
 <html>
-<head>
-<title>Web Browser Options</title>
-<link rel="StyleSheet" href="../ide.css" type="text/css">
-</head>
-<body>
-
-<h2>Web Browser Options</h2>
-<p>
-<small><a href="#seealso">See Also</a></small></p>
-<p> The Web Browsers node in the Options window contains subnodes for each of 
-  the IDE's registered web browsers, such as Internet Explorer and Netscape. The 
-  &lt;Default System Browser&gt; node represents your operating system's default 
-  web browser. </p>
-<p>You can view these settings by opening the Options window and expanding IDE 
-  Configuration  &gt; Server 
-  and External Tool Settings  &gt; Web 
-  Browsers. </p>
-<p> Except for the Swing HTML Browser, each web browser has the following properties: 
-</p>
-<ul>
-<li><b>Browser Description.</b>
-Provides a description of the browser type.
-</li>
-  <li><b>Browser Executable.</b> Specifies the path to the browser executable 
-    and any arguments that are used when the browser is activated. If the IDE 
-    cannot find your browser, use the property editor for this property to check 
-    that the executable location is correct. </li>
-</ul>
-<table>
-<tr>
-<th colspan="2" align="left"><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-    <td> <a href="httpserver-options.html">Configuring HTTP Server Options</a> <br>
-<a href="swingbrowser.html">Swing HTML Browser</a>
-<br>
-      <a href="default.html">Specifying the Default Browser</a> </td>
-  </tr>
-</table>
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
+    <head>
+	<title>Options Window: Web Browser</title>
+	<link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body>
+	<!-- This page is CSH for Web Browser node in Options window - Classic view-->
+	<h2>Options Window: Web Browser</h2>
+	<p><small><a href="#seealso">See Also</a></small></p>
+	<p>You can use the Options window to specify options for the web browsers registered with the IDE.</p>
+	<p>You can access the web browser options by choosing Tools &gt; Options from the main menu, clicking Classic View in the Options window, and then expanding IDE Configuration  &gt; Server and External Tool Settings  &gt; Web Browsers in the left pane.</p>
+	<p>The Web Browsers node in the Options window contains subnodes for each of 
+	the IDE's registered web browsers, such as Internet Explorer and Netscape. The 
+	&lt;Default System Browser&gt; node represents your operating system's default web browser. </p>
+	<ul class="note">
+	    <li>You cannot configure options for the <a href="swingbrowser.html">Swing HTML Browser</a>.</li>
+	</ul>
+	
+	<h3>Properties:</h3>
+	<ul>
+	    <li><b>Browser Executable.</b> This property enables you to specify the path to the browser executable 
+	    and any arguments that are used when the browser is activated.
+	    To specify the path to the browser executable, click the ellipsis button (..) to open the Browser Executable dialog box
+	    and enter the path to the browser executable in the Process field.
+	    Alternately, click the ellipsis button (...) and navigate to the location of the web browser executable.</li>
+	</ul>
+	<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd>    <a href="httpserver-options.html">Configuring HTTP Server Options</a> </dd>
+	    <dd>    <a href="swingbrowser.html">Swing HTML Browser</a></dd>
+	    <dd>    <a href="default.html">Specifying the Default Browser</a> </dd>
+	    <dd>    <a href="../configure/configure_options.html">Using the Options Window</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../credits.html">Legal Notices</a></small>
+	<table border="0" cellpadding="50">
+	    <tr><td>&nbsp;</td></tr>
+	</table>
+    </body>
 </html>

@@ -5,79 +5,69 @@
 *
 -->
 <html>
-<head>
-<title>Changing the Default Web Browser</title>
-<link rel="StyleSheet" href="../ide.css" type="text/css">
-</head>
-<body>
-<!--linked to from web/advanced help set - file webmod/mod_browser.html-->
-<h2>Changing the Default Web Browser</h2>
-<p>
-<small><a href="#seealso">See Also</a></small></p>
-<p>The IDE uses the specified default web browser to display web pages and run
-	web applications. You can choose any one of the supported browsers, such
-	 as the supported versions of Mozilla, Netscape, and Internet Explorer, or
+    <head>
+	<title>Changing the Default Web Browser</title>
+	<link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body>
+	<h2>Changing the Default Web Browser</h2>
+	<p>
+	<small><a href="#seealso">See Also</a></small></p>
+	<p>The IDE uses the specified default web browser to display web pages and run
+	web applications. In the Options window you can choose any one of the supported browsers, such
+	as the supported versions of Mozilla, Netscape, and Internet Explorer, or
 	the IDE's internal Swing web browser. In addition, you can also configure
 	the IDE to use other browser types.</p>
-<ol>
-  <li>Choose Tools &gt; Options from the main menu. </li>
-  <li>Select a browser from the Web Browser drop-down list.</li>
-  <p>You can choose from the following web browsers:</p>
-  <ul>
-    <li><b>&lt;System Default&gt;.</b> The browser that is registered as your 
-      operating system's default browser.</li>
-    <li><b>Swing Browser.</b> A simple HTML browser based on a Swing component.
-    	 The internal Swing HTML browser provides a higher level of integration
-    	with  the IDE than an external browser as you can embed  it within its
-    	own IDE window or an MDI frame. </li>
-    <li>Any other browsers installed on your computer.</li>
-  </ul>
-</ol>
-<ul class="note">
+	<ol>
+	    <li>Choose Tools &gt; Options from the main menu and click General in the left pane of the Options window. </li>
+	    <li>Select a browser from the Web Browser drop-down list.</li>
+	    <p>You can choose from the following web browsers:</p>
+	    <ul>
+		<li><b>&lt;System Default&gt;.</b> The browser that is registered as your 
+		operating system's default browser.</li>
+		<li><b>Swing Browser.</b> A simple HTML browser based on a Swing component.
+		The internal Swing HTML browser provides a higher level of integration
+		with  the IDE than an external browser as you can embed  it within its
+		own IDE window or an MDI frame. </li>
+		<li>Any other browsers installed on your computer.</li>
+	    </ul>
+	    </li>
+	</ol>
+	<ul class="note">
+	    <li>If you select a web browser and the web browser fails to open, confirm that 
+	    the correct path to the browser executable is set in the Options window.</li>
+	</ul>
 	
-  <li>If you select a web browser and the web browser fails to open, confirm that 
-    the correct path to the browser executable appears in the browser's Options 
-    window property sheet. 
-</ul>
-	
-<p><b>To specify the location of the browser executable:</b></p>
-<ol>
-  <li>Choose Tools  &gt; Options 
-    from the main menu. </li>
-  <li>Expand IDE Configuration  &gt; Server 
-    and External Tools Settings  &gt; Web 
-    Browsers and select the browser type you are using.</li>
-  <li>Open the property editor for Browser Executable property and set the full 
-    path to the executable in the Process field. You can click the ellipsis button 
-    (...) to browse to the executable.</li>
-</ol>
-<h3>Troubleshooting</h3>
-<p>If you get "file not found" errors when you execute a web application, 
-see <a href="nbdocs:/org/netbeans/modules/usersguide/webbrowser/bypassproxy.html">Accessing 
-  Local files Through a Proxy</a> for possible solutions.</p>
+	<p><b>To specify the location of the browser executable:</b></p>
+	<ol>
+	    <li>Choose Tools  &gt; Options from the main menu and click Classic View in the Options window.</li>
+	    <li>Expand IDE Configuration  &gt; Server and External Tools Settings  &gt; Web 
+	    Browsers and select the browser type you are using.</li>
+	    <li>Open the property editor for Browser Executable property and set the full 
+	    path to the executable in the Process field. You can click the ellipsis button 
+	    (...) to browse to the executable.</li>
+	</ol>
+	<h3>Troubleshooting</h3>
+	<p>If you get "file not found" errors when you execute a web application, 
+	see <a href="nbdocs:/org/netbeans/modules/usersguide/webbrowser/bypassproxy.html">Accessing 
+	Local files Through a Proxy</a> for possible solutions.</p>
 
-<ul class="note">
-	<li>If the browser does not reflect changes in a JSP file or HTML file, this
-		might be due to the way the browser caches pages. Check the browser's settings
-	to ensure that the browser is set to reload pages each time you access them. 
-</ul>
-<table>
-<tr>
-<th colspan="2" align="left"><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-    <td> <a href="webbrowser.html">Opening a Web Browser</a><br>
-      <a href="httpserver-options.html">Configuring HTTP Server Options</a> <br>
-      <a href="proxy.html">Setting a Proxy</a> </td>
-  </tr>
-</table>
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+	<ul class="note">
+	    <li>If the browser does not reflect changes in a JSP file or HTML file, this
+	    might be due to the way the browser caches pages. Check the browser's settings
+	    to ensure that the browser is set to reload pages each time you access them. </li>
+	</ul>
+	<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd>    <a href="webbrowser.html">Opening a Web Browser</a></dd>
+	    <dd>    <a href="httpserver-options.html">Configuring HTTP Server Options</a> </dd>
+	    <dd>    <a href="proxy.html">Setting a Proxy</a> </dd>
+	    <dd>    <a href="../configure/configure_options.html">Using the Options Window</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../credits.html">Legal Notices</a></small>
+	<table border="0" cellpadding="50">
+	    <tr><td>&nbsp;</td></tr>
+	</table>
+    </body>
 </html>
