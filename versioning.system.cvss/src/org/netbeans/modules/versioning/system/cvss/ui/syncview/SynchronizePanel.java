@@ -67,9 +67,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private Thread                      refreshViewThread;
     private ExecutorGroup               refreshCommandGroup;
 
-    private long lastEventTimestamp;
-    private long flatModelTimestamp;
-
     private static final RequestProcessor   rp = new RequestProcessor("CVS-VersioningView", 1);
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
@@ -120,7 +117,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      */ 
     void setContext(Context ctx) {
         context = ctx;
-        lastEventTimestamp = System.currentTimeMillis();
         reScheduleRefresh(0);
     }
     
@@ -187,7 +183,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * Must NOT be run from AWT.
      */
     private void setupModels() {
-        if (lastEventTimestamp < flatModelTimestamp) return;
         if (context == null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -233,8 +228,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 tableColumns = null;
                 branchTitle = null;
             }
-
-            flatModelTimestamp = System.currentTimeMillis();
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -300,7 +293,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     }
 
     private void refreshStatuses() {
-        lastEventTimestamp = System.currentTimeMillis();
         executeUpdateCommand(true);
         reScheduleRefresh(1000);
     }
@@ -366,13 +358,11 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
 
     private void setDisplayStatuses(int displayStatuses) {
         this.displayStatuses = displayStatuses;
-        lastEventTimestamp = System.currentTimeMillis();
         reScheduleRefresh(0);
     }
 
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
-            lastEventTimestamp = System.currentTimeMillis();
             if (cvs.getParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING) != null) {
                 reScheduleRefresh(1000);
             } else {
@@ -382,7 +372,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             if (pendingRefresh && event.getParams()[0].equals(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING)) {
                 if (cvs.getParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING) == null) {
                     pendingRefresh = false;
-                    lastEventTimestamp = System.currentTimeMillis();
                     reScheduleRefresh(0);
                 }
             }
