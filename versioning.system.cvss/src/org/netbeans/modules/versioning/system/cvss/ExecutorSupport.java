@@ -126,8 +126,10 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             group.fail();
 
             String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1003", new Date(), getDisplayName());
-            clientRuntime.log(msg + "\n"); // NOI18N
-            clientRuntime.logError(e);
+            if (clientRuntime != null) {    // it is null if command did not start
+                clientRuntime.log(msg + "\n"); // NOI18N
+                clientRuntime.logError(e);
+            }
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             synchronized(this) {
                 finishedExecution = true;
