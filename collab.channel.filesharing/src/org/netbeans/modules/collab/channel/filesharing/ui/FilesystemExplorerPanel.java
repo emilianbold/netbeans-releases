@@ -92,10 +92,7 @@ public class FilesystemExplorerPanel extends JPanel implements ExplorerManager.P
         setPreferredSize(new Dimension(300, 200));
 
         // Create explorer tree
-        // MCF Fix for bug 6174107
-        //treeView=new BeanTreeView();
-        // workaround for NB #59175, replace with BeanTreeView once fixed
-        treeView = new FilesystemTreeView();
+        treeView = new BeanTreeView();
         treeView.setRootVisible(true);
         treeView.setAllowedDropActions(DnDConstants.ACTION_COPY);
 
@@ -416,23 +413,4 @@ public class FilesystemExplorerPanel extends JPanel implements ExplorerManager.P
         );
     }
 
-    private static class FilesystemTreeView extends BeanTreeView {
-        FilesystemTreeView() {
-            super();
-            tree.setCellRenderer(new WorkaroundCellRenderer());
-        }
-    }
-
-    private static class WorkaroundCellRenderer implements TreeCellRenderer {
-        private NodeRenderer delegate = new NodeRenderer();
-
-        public Component getTreeCellRendererComponent(
-            JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus
-        ) {
-            Component result = delegate.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-            result.setEnabled(tree.isEnabled());
-
-            return result;
-        }
-    }
 }
