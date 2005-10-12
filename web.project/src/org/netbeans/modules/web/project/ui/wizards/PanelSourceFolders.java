@@ -260,6 +260,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         getAccessibleContext().setAccessibleName(null);
         getAccessibleContext().setAccessibleDescription(null);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LocationDesc_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -270,6 +271,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         jLabel3.getAccessibleContext().setAccessibleName(null);
         jLabel3.getAccessibleContext().setAccessibleDescription(null);
 
+        jLabelWebPages.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_WebPagesLocation_LabelMnemonic").charAt(0));
         jLabelWebPages.setLabelFor(jTextFieldWebPages);
         jLabelWebPages.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_WebPagesLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -288,6 +290,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         add(jTextFieldWebPages, gridBagConstraints);
         jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_WebPagesFolder"));
 
+        jButtonWebpagesLocation.setMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_WebPagesFolder_MNE").charAt(0));
         jButtonWebpagesLocation.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_BrowseLocation_Button"));
         jButtonWebpagesLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -303,6 +306,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         add(jButtonWebpagesLocation, gridBagConstraints);
         jButtonWebpagesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseWebPageFolder"));
 
+        jLabelLibraries.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_LabelMnemonic").charAt(0));
         jLabelLibraries.setLabelFor(jTextFieldLibraries);
         jLabelLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -321,6 +325,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         add(jTextFieldLibraries, gridBagConstraints);
         jTextFieldLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_LibrariesFolder"));
 
+        jButtonLibraries.setMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_BrowseProjectFolder_MNE").charAt(0));
         jButtonLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_BrowseLocation_Button"));
         jButtonLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
