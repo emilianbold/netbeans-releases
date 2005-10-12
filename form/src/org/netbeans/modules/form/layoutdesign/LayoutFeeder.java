@@ -878,7 +878,8 @@ class LayoutFeeder implements LayoutConstants {
                     || LayoutInterval.wantResize(addingInterval)
                     || (originalGap != null && !LayoutInterval.canResize(originalGap))
                     || (originalGap == null
-                        && (LayoutInterval.wantResize(seq)
+                        && ((neighbors[i] != null && LayoutInterval.getEffectiveAlignment(neighbors[i], i^1) == (i^1))
+                            || LayoutInterval.wantResize(seq)
                             || (neighbors[i] == null && !LayoutInterval.contentWantResize(parent))))))
             {   // can't introduce resizing gap
                 fixedGap = true;
@@ -1802,7 +1803,7 @@ class LayoutFeeder implements LayoutConstants {
     private void analyzeSequential(LayoutInterval group, List inclusions) {
         boolean inSequence = false;
         boolean parallelWithSequence = false;
-        int index = -1;
+        int index = 0;
         int distance = Integer.MAX_VALUE;
         int ortDistance = Integer.MAX_VALUE;
 
@@ -1873,11 +1874,13 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 int point = aEdge < 0 ? CENTER : aEdge;
                 if (getAddDirection(addingSpace, subSpace, dimension, point) == LEADING) {
-                    index = i;
+                    if (aEdge != LEADING)
+                        index = i;
                     break; // this interval is already after the adding one, no need to continue
                 }
                 else { // intervals before this one are irrelevant
                     parallelWithSequence = false;
+                    index = i + 1;
                 }
             }
             else { // no orthogonal overlap, moreover in vertical dimension located parallelly
@@ -1887,18 +1890,14 @@ class LayoutFeeder implements LayoutConstants {
 
         if (inSequence || (dimension == VERTICAL && !parallelWithSequence)) {
             // so it make sense to add the interval to this sequence
-            if (index < 0) {
-                index = group.getSubIntervalCount();
-            }
             if (aSnappedNextTo != null
                 && (group.isParentOf(aSnappedNextTo) || aSnappedNextTo.getParent() == null))
             {   // snapped interval is in this sequence, or it is the root group
                 distance = -1; // preferred distance
             }
             IncludeDesc iDesc = addInclusion(group, parallelWithSequence, distance, ortDistance, inclusions);
-            if (iDesc != null) {
-                iDesc.index = index < 0 ? group.getSubIntervalCount() : index;
-            }
+            if (iDesc != null)
+                iDesc.index = index;
         }
     }
 
@@ -2398,11 +2397,6 @@ class LayoutFeeder implements LayoutConstants {
             boolean endGap = false;
 
             if (commonGroup.isSequential()) {
-                if (iDesc1.alignment == TRAILING) {
-                    IncludeDesc temp = iDesc1;
-                    iDesc1 = iDesc2;
-                    iDesc2 = temp;
-                }
                 if (commonGroup.isParentOf(iDesc1.parent)) {
                     ext1 = iDesc1.parent.isSequential() ? iDesc1.parent : iDesc1.neighbor;
                     if (ext1 != null) {
@@ -2410,6 +2404,13 @@ class LayoutFeeder implements LayoutConstants {
                             ext1 = ext1.getParent();
                         }
                         startIndex = commonGroup.indexOf(ext1.getParent());
+                    }
+                    else { // nothing to extract, just find out the index
+                        LayoutInterval inCommon = iDesc1.parent;
+                        while (inCommon.getParent() != commonGroup) {
+                            inCommon = inCommon.getParent();
+                        }
+                        startIndex = commonGroup.indexOf(inCommon);
                     }
                 }
                 else {
@@ -2419,7 +2420,6 @@ class LayoutFeeder implements LayoutConstants {
                     startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
                 }
 
-                endIndex = commonGroup.getSubIntervalCount() - 1;
                 if (commonGroup.isParentOf(iDesc2.parent)) {
                     ext2 = iDesc2.parent.isSequential() ? iDesc2.parent : iDesc2.neighbor;
                     if (ext2 != null) {
@@ -2427,6 +2427,13 @@ class LayoutFeeder implements LayoutConstants {
                             ext2 = ext2.getParent();
                         }
                         endIndex = commonGroup.indexOf(ext2.getParent());
+                    }
+                    else {
+                        LayoutInterval inCommon = iDesc2.parent;
+                        while (inCommon.getParent() != commonGroup) {
+                            inCommon = inCommon.getParent();
+                        }
+                        endIndex = commonGroup.indexOf(inCommon);
                     }
                 }
                 else {
