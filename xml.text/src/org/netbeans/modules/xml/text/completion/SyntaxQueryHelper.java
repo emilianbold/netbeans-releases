@@ -241,8 +241,12 @@ final class SyntaxQueryHelper {
                         ctx.init(syntaxNode, preText.substring(1));
                         return COMPLETION_TYPE_ELEMENT;
                     }
+                } else if(EndTag.class.equals(syntaxNode.getClass())){
+                    //endtag
+                    ctx.init(syntaxNode, preText.substring(2));
+                    return COMPLETION_TYPE_ELEMENT;
                 } else {
-                    // end tag, pairing tag completion if not at boundary
+                    // pairing tag completion if not at boundary
                     if ("".equals(preText) && token.getImage().endsWith(">")) {
                         ctx.init(syntaxNode, preText);
                         return COMPLETION_TYPE_VALUE;

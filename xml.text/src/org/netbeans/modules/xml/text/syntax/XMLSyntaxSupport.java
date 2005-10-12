@@ -807,18 +807,17 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 while ( token != null){
                     if (token.getTokenID() == XMLTokenIDs.TAG && !">".equals(token.getImage())) {
                         if (token.getImage().substring(1).trim().toLowerCase().equals(tag)
-                        /*&& !isSingletonTag(token)*/) {
+                        && !isSingletonTag(token)) {
                             //it's an open tag
                             if (poss == 0){
                                 //get offset of previous token: < or </
                                 start = token.getOffset();
                                 end = token.getOffset()+token.getImage().length();
+                                //include the closing > token into the block if it follows the opentag token 
+                                TokenItem next = token.getNext();
+                                if(next != null && next.getTokenID() == XMLTokenIDs.TAG && ">".equals(next.getImage()))
+                                    end++;
                                 
-//                                while (token != null && token.getTokenID() != XMLTokenIDs.TAG){
-//                                    token = token.getNext();
-//                                }
-//                                if (token != null)
-//                                    end = token.getOffset()+token.getImage().length();
                                 return new int[] {start, end};
                             } else{
                                 poss--;
@@ -826,7 +825,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                         } else {
                             //test whether the tag is a close tag for the 'tag' tagname
                             if ((token.getImage().substring(2).toLowerCase().indexOf(tag) > -1)
-                            /*&& !isSingletonTag(token)*/) {
+                            && !isSingletonTag(token)) {
                                 poss++;
                             }
                         }
@@ -838,7 +837,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 //we are in an open tag
                 //We need to find out whether the open tag is a singleton tag or not.
                 //In the first case no matching is needed
-                /*if(isSingletonTag(token)) return null;*/
+                if(isSingletonTag(token)) return null;
                 
                 String tag = token.getImage().substring(1).toLowerCase();
                 while ( token != null){
@@ -854,8 +853,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                             } else
                                 poss--;
                         } else{
-                            if (token.getImage().substring(1).toLowerCase().equals(tag))
-                                /*&& !isSingletonTag(token))*/
+                            if (token.getImage().substring(1).toLowerCase().equals(tag)
+                                && !isSingletonTag(token))
                                 poss++;
                         }
                     }
@@ -871,25 +870,24 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      * @tagTokenItem a token item whithin a tag
      * @return true is the token is a part of singleton tag
      */
-    /*public boolean isSingletonTag(TokenItem tagTokenItem) {
+    public boolean isSingletonTag(TokenItem tagTokenItem) {
         TokenItem ti = tagTokenItem;
         while(ti != null) {
-            if(ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
+            if(ti.getTokenID() == XMLTokenIDs.TAG) {
                 if("/>".equals(ti.getImage())) { // NOI18N
-                    //it is a singleton tag => do not match
                     return true;
                 }
-                if(">".equals(ti.getImage())) break; // NOI18N
+                if(">".equals(ti.getImage())) return false; // NOI18N
             }
             //break the loop on TEXT or on another open tag symbol
             //(just to prevent long loop in case the tag is not closed)
-            if((ti.getTokenID() == HTMLTokenContext.TEXT)
-            || (ti.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL)) break;
+            if(ti.getTokenID() == XMLTokenIDs.TEXT) break;
+            
      
             ti = ti.getNext();
         }
         return false;
-    }*/
+    }
     
     
     
