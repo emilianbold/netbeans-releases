@@ -96,17 +96,6 @@ is the proper place.
     <!-- Now the surrounding HTML text and document structure: -->
 
     <htmlcontents>
-<!--
-
-                            NO NO NO NO NO!
-
-         ==============>    DO NOT EDIT ME!  <==============
-
-          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
-
-                SEE CHANGEME/apichanges.xml
-
--->
     <head>
       <title>Change History for the Editor Code Templates API</title>
       <link rel="stylesheet" href="prose.css" type="text/css"/>
@@ -116,10 +105,19 @@ is the proper place.
 <p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
 
 <h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
 
-<p>This document lists changes made to the <a href="@org-netbeans-modules-editor-codetemplates@/architecture-summary.html">Editor Code Templates API</a>.</p>
+<p>
+The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.
+</p>
 
-<!-- The actual lists of changes, as summaries and details: -->
       <hr/>
       <standard-changelists module-code-name="org.netbeans.modules.editor.codetemplates/1"/>
 
