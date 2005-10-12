@@ -2,3 +2,6 @@
 
 1.0.4:	fixed memory leak #63911
 	Proper way of providing status component, fixes #64110
+
+1.0.5:	NBM needs restart, otherwise a race condition can cause NPE (#66452)
+	More robust menu positioning (#64531)
