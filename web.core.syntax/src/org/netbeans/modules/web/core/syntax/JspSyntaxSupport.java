@@ -1951,6 +1951,29 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 	return null;
     }
     
+    /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
+     * @tagTokenItem a token item whithin a tag
+     * @return true is the token is a part of singleton tag
+     */
+    public boolean isSingletonTag(TokenItem tagTokenItem) {
+        TokenItem ti = tagTokenItem;
+        while(ti != null) {
+            if(ti.getTokenID() == JspTagTokenContext.SYMBOL){
+                if("/>".equals(ti.getImage())) { // NOI18N
+                    //it is a singleton tag => do not match
+                    return true;
+                }
+                if(">".equals(ti.getImage())) return false; // NOI18N
+            }
+            //break the loop on TEXT or on another open tag symbol
+            //(just to prevent long loop in case the tag is not closed)
+            if(ti.getTokenID() == JspTagTokenContext.TEXT) break;
+            
+            ti = ti.getNext();
+        }
+        return false;
+    }
+    
     /** Get the array of token IDs that should be skipped when
      * searching for matching bracket. It usually includes comments
      * and character and string constants. Returns empty array by default.
