@@ -1,0 +1,70 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+
+
+<title>Mapping Relationship Fields</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+<h2>Mapping Relationship Fields</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<div class="indent">
+  <p>When you have foreign-key relationships between database tables, you usually 
+    want to preserve those relationships in the CMP beans mapped to those tables. 
+    Container-managed relationships (CMR) determine how relationships between 
+    mapped CMP beans are stored in the database. CMRs enable navigation from one 
+    bean to another, in the same way that a foreign key enables navigation from 
+    one table to another. </p>
+  <p>If you are deploying to the Sun Java System Application Server, you can configure 
+    CMRs in the Sun Configuration editor. If you are deploying to a different 
+    application server, you have to configure CMRs yourself in the server-specific 
+    deployment descriptors. </p>
+  <p><b>To edit your relationship field mappings:</b></p>
+  <ol>
+    <li>Make sure you have <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/ejb_relationship.html">configured 
+      the CMRs in the general deployment descriptors</a>.</li>
+    <li>In the Projects window, expand the Configuration Files node and double-click 
+      the <tt>sun-ejb-jar.xml</tt> file to open it in the Sun Configuration editor. 
+      In the Sun Configuration editor, expand the Sun Configuration node and select 
+      the bean you want to map.</li>
+    <li>Select <tt>&lt;map relationship field&gt;</tt> in the Mapped Column column 
+      for the CMR field. The Map Relationship Field wizard opens.</li>
+    <li>Follow the <a href="nbdocs:/com/sun/jdo/modules/persistence/docs/mapping/ejb/RelationshipMappingWizard.html">steps 
+      in the wizard</a>.</li>
+  </ol>
+  <p>In the Field Mappings table in the IDE, persistent fields with mapped relationships 
+    are indicated by <tt>&lt;mapped relationship&gt;</tt> in the Mapped Column 
+    column. When you create or modify field mappings in the Sun Configuration 
+    editor, the IDE makes these changes in the <tt>sun-cmp-mappings.xml</tt> file. 
+    The modified <tt>sun-cmp-mappings.xml</tt> file is copied to the Sun Java 
+    System Application Server when the application is deployed.</p>
+</div>
+<dl> 
+  <dt>See Also<a name="seealso"></a></dt>
+  <dd><a href="about_cmp.html">About CMP Mappings</a></dd>
+  <dd><a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans 
+    from a Database</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining 
+    a Database Schema</a></dd>
+  <dd><a href="map_bean_to_db.html">Configuring CMP Mappings</a></dd>
+  <dd><a href="fields_mult_cols.html">Mapping CMP Fields to Multiple Columns</a> 
+  </dd>
+</dl>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>
