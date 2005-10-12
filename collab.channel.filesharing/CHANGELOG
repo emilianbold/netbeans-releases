@@ -1,0 +1,2 @@
+1.0.2 - fix 64184
+        fixed memory leak #63910
