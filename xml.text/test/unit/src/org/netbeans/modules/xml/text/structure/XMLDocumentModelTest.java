@@ -475,6 +475,92 @@ public class XMLDocumentModelTest extends NbTestCase {
         assertEquals(0, rootTag.getChildren().size()); //has not children
     }
     
+    public void testCreateAndUpdateCommentElement() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc1();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc1);
+        
+        DocumentElement root = model.getRootElement();
+        DocumentElement rootTag = root.getElement(1); //get <root> element
+        DocumentElement aTag = rootTag.getElement(0);
+        
+        //add-listen to model
+        final Vector addedElements = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementAdded(DocumentElement de) {
+                System.out.println("added " + de);
+                addedElements.add(de);
+            }
+        });
+        
+        //add-listen to element
+        final Vector addedElementsToATag = new Vector();
+        aTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementAdded(DocumentElementEvent e) {
+                addedElementsToATag.add(e.getChangedChild());
+            }
+        });
+        
+        assertEquals(1, aTag.getElementCount()); //A has only C children
+        
+        doc1.insertString(30,"<!-- xml comment -->",null);
+        Thread.sleep(1000); //wait for the model update (started after 500ms)
+        //text after:
+        //                  <?xml version='1.0'?><root><a><!-- xml comment --><c/></a><b>text</b></root>
+        //                  012345678901234567890123456789012345678901234567890123456789
+        //                  0         1         2         3         4         5
+        
+        System.out.println(doc1.getText(0, doc1.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        //check events
+        assertEquals(1, addedElements.size());
+        assertEquals(1, addedElementsToATag.size());
+        
+        //test a tag and its content
+        assertEquals("a", aTag.getName());
+        assertEquals(XMLDocumentModelProvider.XML_TAG, aTag.getType());
+        assertEquals(2, aTag.getElementCount()); //the new commnent and C tag 
+        assertEquals(rootTag, aTag.getParentElement());
+        
+        //check content and offsets
+        assertEquals(27, aTag.getStartOffset());
+        assertEquals(57, aTag.getEndOffset());
+        
+        //check the comment element
+        DocumentElement comment = aTag.getElement(0);
+        assertEquals("comment", comment.getName());
+        assertEquals(XMLDocumentModelProvider.XML_COMMENT, comment.getType());
+        assertEquals(0, comment.getElementCount()); //check has not children
+        assertEquals(aTag, comment.getParentElement());
+        //check boundaries
+        assertEquals(30, comment.getStartOffset());
+        assertEquals(49, comment.getEndOffset());
+        
+        //test comment content update
+        //add-listen to model
+        final Vector modifiedEls = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementChanged(DocumentElement de) {
+                modifiedEls.add(de);
+            }
+        });
+        //add-listen to element
+        final Vector commentModifications = new Vector();
+        comment.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void contentChanged(DocumentElementEvent de) {
+                commentModifications.add(de);
+            }
+        });
+        doc1.insertString(36,"big ",null);
+        Thread.sleep(1000); //wait for the model update (started after 500ms)
+        
+        assertEquals(1, modifiedEls.size()); //one model change event fired
+        assertEquals(1, commentModifications.size()); //one change event fired
+        
+        
+    }
     
     private void initDoc1() throws BadLocationException {
         /*
