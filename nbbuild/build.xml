@@ -1685,6 +1685,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <input addproperty="module">Select a top-level module (e.g. "java") to display results for:</input>
     <property name="listfile" location="${nbroot}/${module}/l10n.list"/>
     <echo>${listfile}:1: Matches follow... (click on hyperlinks from IDE!)</echo>
+    <echo>(warning: 'exclude' directives not honored here yet)</echo><!-- XXX use filtersets or something to fix -->
     <apply parallel="false" executable="sh">
         <arg value="-c"/>
         <arg value="echo $0:1"/>
