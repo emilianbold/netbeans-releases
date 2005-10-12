@@ -5,3 +5,6 @@
 
 1.0.5:	NBM needs restart, otherwise a race condition can cause NPE (#66452)
 	More robust menu positioning (#64531)
+	Don't show channel switching button if there is only one switchable
+        channel (#64545)
+
