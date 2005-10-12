@@ -83,7 +83,7 @@ public class HTMLFormatter extends ExtFormatter {
                         token = token.getPrevious();
                     } while(token != null && token.getTokenID() != HTMLTokenContext.TAG_OPEN);
                     
-                    if(token != null) {
+                    if(token != null && !sup.isSingletonTag(token)) {
                         //found an open tag => test whether it has a matching close tag between endOffset and the open tag offset
                         //if so, do not increase the indentation
                         int[] match = sup.findMatchingBlock(token.getOffset(), false);
