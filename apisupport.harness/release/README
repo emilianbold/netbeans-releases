@@ -171,6 +171,10 @@ defines:
 
     p2=...path.../myplatform
 
+Note that the ZIP will currently contain S1's ${app.name} as its top-level dir,
+so you can either move the unpacked files up one dir, or use the dir p2/s1name
+as the actual platform location.
+
 3. Now configure S2 to use P2 as its platform. If an absolute path, you can use
 the Platform Manager, else for relative paths see the preceding section.
 

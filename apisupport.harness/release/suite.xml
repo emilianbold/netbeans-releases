@@ -102,13 +102,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
         <mkdir dir="dist"/>
         <zip destfile="dist/${app.name}.zip">
-            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="bin"/>
-            <zipfileset dir="${build.launcher.dir}/etc/" prefix="etc"/>
-            <zipfileset dir="${netbeans.dest.dir}" filemode="755">
+            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="${app.name}/bin"/>
+            <zipfileset dir="${build.launcher.dir}/etc/" prefix="${app.name}/etc"/>
+            <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${app.name}">
                 <include name="**/lib/nbexec*"/>
             </zipfileset>
                 
-            <zipfileset dir="${netbeans.dest.dir}">
+            <zipfileset dir="${netbeans.dest.dir}" prefix="${app.name}">
                 <and>
                     <not>
                         <filename name="**/lib/nbexec*"/>
@@ -117,8 +117,9 @@ Microsystems, Inc. All Rights Reserved.
                 </and>
             </zipfileset>
             
-            <zipfileset dir="${cluster}" prefix="${app.name}/" >
-                <exclude name="config/Modules/*.xml_hidden" />
+            <!-- Yes, the doubled app.name is a bit ugly, but better than the alternative; cf. #66441: -->
+            <zipfileset dir="${cluster}" prefix="${app.name}/${app.name}">
+                <exclude name="config/Modules/*.xml_hidden"/>
             </zipfileset>
             
         </zip>
