@@ -1467,8 +1467,19 @@ class JavaCodeGenerator extends CodeGenerator {
 		setterVariable = getComponentInvokeString(comp, true);
 	    }
 	
-	    if( prop.getCurrentEditor() instanceof BeanPropertyEditor ) {		    		    		   		    						
-		generatePropertyBeanSetterCode(prop, setterVariable, initCodeWriter);		
+	    Object value = null;
+	    try {
+		value = prop.getValue();    		    
+	    } catch (IllegalAccessException ex) {
+		ErrorManager.getDefault().notify(ex); // should not happen
+		return;	    
+	    } catch (InvocationTargetException ex) {    	    
+		ErrorManager.getDefault().notify(ex); // should not happen
+		return;                                      	
+	    }
+	    
+	    if( prop.getCurrentEditor() instanceof BeanPropertyEditor && value != null) {		    		    		   		    						
+		generatePropertyBeanSetterCode(prop, value, setterVariable, initCodeWriter);		
 	    } else if ((javaStr = prop.getWholeSetterCode()) != null) {
                 initCodeWriter.write(javaStr);
                 if (!javaStr.endsWith("\n")) // NOI18N
@@ -1507,27 +1518,18 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void generatePropertyBeanSetterCode(FormProperty prop, 
-						  String setterVariable, 
-						  Writer initCodeWriter) 
+    private void generatePropertyBeanSetterCode(FormProperty prop, 	
+						Object value,
+						String setterVariable, 						
+						Writer initCodeWriter) 
 	throws IOException
     {
 	
 	FormProperty[] properties = null;
 	Class propertyType = null;
-	Object value = null;
-	
-	try {
-	    value = prop.getValue();    	
-	    propertyType = prop.getRealValue().getClass();	   	
-	} catch (IllegalAccessException ex) {
-	    ErrorManager.getDefault().notify(ex); // should not happen
-	    return;	    
-	} catch (InvocationTargetException ex) {    	    
-	    ErrorManager.getDefault().notify(ex); // should not happen
-	    return;                                      	
-	}	
-	 
+	Object realValue = prop.getRealValue(value);
+	propertyType = realValue.getClass();	   
+			    
 	prop.getCurrentEditor().setValue(value);
 	BeanPropertyEditor beanPropertyEditor = (BeanPropertyEditor) prop.getCurrentEditor();	    		    
 	properties = (FormProperty[]) beanPropertyEditor.getProperties();	    
