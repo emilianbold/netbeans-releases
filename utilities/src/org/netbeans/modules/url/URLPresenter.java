@@ -90,7 +90,7 @@ final class URLPresenter implements Presenter.Menu,
         if (useIcons) {
             // set the presenter's icon:
             Image icon = Utilities.loadImage(
-                    "org/netbeans/modules/url/urlObject.gif");              //NOI18N
+                    "org/netbeans/modules/url/urlObject.png");              //NOI18N
             try {
                 FileObject file = dataObject.getPrimaryFile();
                 FileSystem.Status fsStatus = file.getFileSystem().getStatus();

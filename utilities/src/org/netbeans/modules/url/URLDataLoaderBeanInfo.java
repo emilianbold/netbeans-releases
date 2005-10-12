@@ -47,7 +47,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
      * @return returns the URL loader's icon
      */
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/url/urlObject.gif"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/url/urlObject.png"); // NOI18N
     }
 
 }
