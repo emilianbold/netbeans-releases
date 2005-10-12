@@ -840,6 +840,12 @@ public abstract class CLIHandler extends Object {
                     
                     // spans new request handler
                     new Server(s, key, block, handlers, failOnUnknownOptions);
+                } catch (InterruptedIOException ex) {
+                    if (socket != null) {
+                        ex.printStackTrace();
+                    }
+                    // otherwise ignore, we've just been asked by the stopServer
+                    // to stop
                 } catch (java.net.SocketException ex) {
                     if (socket != null) {
                         ex.printStackTrace();
