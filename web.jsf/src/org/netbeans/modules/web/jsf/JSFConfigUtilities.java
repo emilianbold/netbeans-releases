@@ -204,10 +204,15 @@ public class JSFConfigUtilities {
             WebModule wm = WebModule.getWebModule(dd);
             FileObject documentBase = wm.getDocumentBase();
             FileObject config;
-            FileObject[] files = new FileObject [sFiles.length];
-            for (int i = 0; i < sFiles.length; i++)
-                files[i] = documentBase.getFileObject(sFiles[i]);
-            return files;
+            ArrayList files = new ArrayList();
+            FileObject file;
+            for (int i = 0; i < sFiles.length; i++){
+                file = documentBase.getFileObject(sFiles[i]);
+                if (file != null)
+                    files.add(file);
+            }
+            
+            return (FileObject[])files.toArray(new FileObject[files.size()]);
         }
         return new FileObject [0];
     }
