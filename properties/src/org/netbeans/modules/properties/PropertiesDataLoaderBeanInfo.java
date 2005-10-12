@@ -70,7 +70,7 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
      * @return returns the properties loader's icon */
     public Image getIcon(final int type) {
         if((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/properties/propertiesObject.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/properties/propertiesObject.png"); // NOI18N
         } else {
             return Utilities.loadImage("org/netbeans/modules/properties/propertiesObject32.gif"); // NOI18N
         }
