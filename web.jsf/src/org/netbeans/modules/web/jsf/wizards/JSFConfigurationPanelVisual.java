@@ -33,9 +33,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
         if (customizer){
-            tURLPattern.setEnabled(false);
-            cbValidate.setEnabled(false);
-            cbVerify.setEnabled(false);
+            enableComponents(false);
         }
     }
     
