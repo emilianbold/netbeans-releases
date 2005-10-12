@@ -2,3 +2,4 @@
 	fixed memory leak #63910
 
 1.0.3:	Removed obsolete workaround from FilesystemExplorerPanel
+	Add "Share Project" action to the project node (#64510)

@@ -82,23 +82,12 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.resources.Bundle"/>
                 <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareFilesAction.instance" />
             </folder>
-        </folder>        
+        </folder>
 
-        <!--
-	<folder name="Menu">
-		<folder name="Help">
-			<folder name="HelpShortcuts">
-				
-				<attr name="org-netbeans-modules-collab-channel-chat-mainpage.xml/org-netbeans-modules-collab-channel-filesharing-mainpage.xml" boolvalue="true"/>
-				
-				<file name="org-netbeans-modules-collab-channel-filesharing-mainpage.xml" url="help-main-ref.xml" >
-					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.resources.Bundle"/>
-					<attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>                          
-				</file>                                  
-				
-				<attr name="org-netbeans-modules-collab-channel-filesharing-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
-			</folder>
-		</folder>
-	</folder>    
-	-->
+        <folder name="Projects" >
+	    <folder name="Actions" >
+                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance" />
+                <attr name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-ProjectCvsMenuItem.instance" boolvalue="true"/>
+            </folder>
+        </folder>
 </filesystem>
