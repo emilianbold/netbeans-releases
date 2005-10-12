@@ -36,6 +36,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -95,6 +96,10 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             return info.getDisplayName();
         }
         
+        public String getShortDescription() {
+            return NbBundle.getMessage(SuiteLogicalView.class, "HINT_suite_project_root_node", FileUtil.getFileDisplayName(suite.getProjectDirectory()));
+        }
+        
         public Action[] getActions(boolean context) {
             return SuiteActions.getProjectActions(suite);
         }
@@ -114,7 +119,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 fireDisplayNameChange(null, getDisplayName());
             }
         }
-        
+
     }
     
     private static Children createRootChildren(final SuiteProject suite) {
