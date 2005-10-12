@@ -63,7 +63,24 @@ public class SunResourceDataLoader extends UniFileLoader {
         setExtensions(extensions);
     }
     
+    protected String actionsContext () {
+        return "Loaders/xml/sun-resource/Actions/"; // NOI18N
+    }
+    
+    static SystemAction[] standardActions;
+    
     protected SystemAction[] defaultActions() {
+        if (standardActions != null)
+            return standardActions;
+        synchronized (SunResourceDataLoader.class) {
+            if (standardActions == null) {
+                standardActions = createDefaultActions();
+            }
+        }
+        return standardActions;
+    }
+    
+    private SystemAction[] createDefaultActions() {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
             SystemAction.get(RegisterAction.class),
