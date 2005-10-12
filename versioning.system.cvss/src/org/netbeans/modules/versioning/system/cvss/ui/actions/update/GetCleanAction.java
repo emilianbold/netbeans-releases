@@ -79,14 +79,17 @@ public class GetCleanAction extends AbstractSystemAction {
     }
     
     private void revertModifications() {
-        ExecutorGroup group = new ExecutorGroup("Reverting");
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Progress"));
         try {
-            group.progress("Preparing");
+            group.progress(NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_ProgressPrepare"));
             FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             File [] files = cache.listFiles(getContext(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 rollback(file, VersionsCache.REVISION_BASE, group);
+            }
+            for (int i = 0; i < files.length; i++) {
+                refresh(files[i]);
             }
         } finally {
             group.executed();
@@ -100,13 +103,20 @@ public class GetCleanAction extends AbstractSystemAction {
      * 
      * @param file the file to overwrite
      * @param revision revision to get
-     * @param group that carries shared state. Note that this group must not be executed later on. 
      */ 
     public static void rollback(File file, String revision) {
         if (!confirmed(file, revision)) return;
         rollback(file, revision, null);
+        refresh(file);
     }
     
+    private static void refresh(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            fo.refresh();
+        }
+    }
+
     private static void rollback(File file, String revision, ExecutorGroup group) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
@@ -123,10 +133,6 @@ public class GetCleanAction extends AbstractSystemAction {
                 if (entry != null && entry.isUserFileToBeRemoved()) {
                     entry.setRevision(entry.getRevision().substring(1));
                     ah.setEntry(file, entry);
-                }
-                FileObject fo = FileUtil.toFileObject(file);
-                if (fo != null) {
-                    fo.refresh();
                 }
                 cache.refresh(file, revision == VersionsCache.REVISION_BASE ? FileStatusCache.REPOSITORY_STATUS_UPTODATE : FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } else {
