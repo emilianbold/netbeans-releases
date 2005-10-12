@@ -104,7 +104,7 @@ public class CVSRootStepOperator extends WizardOperator {
      */
     public JButtonOperator btEdit() {
         if (_btEdit==null) {
-            _btEdit = new JButtonOperator(this, Bundle.getString(
+            _btEdit = new JButtonOperator(this, Bundle.getStringTrimmed(
                     "org.netbeans.modules.versioning.system.cvss.ui.wizards.Bundle", "BK1105"));
         }
         return _btEdit;
