@@ -106,12 +106,13 @@ public class DefaultSizeAction extends NodeAction {
                     visualMetaComp = parent;
                     parent = parent.getParentContainer();
                 }
-                if ((parent != null && parent.getLayoutSupport() == null)
+                if (FormUtils.isInTopDesignComponent(metacomp) &&
+                    ((parent != null && parent.getLayoutSupport() == null)
                     || (visualMetaComp instanceof RADVisualContainer
                         && ((RADVisualContainer)visualMetaComp).getLayoutSupport() == null
                         && (!(visualMetaComp instanceof RADVisualFormContainer)
                             || ((RADVisualFormContainer)visualMetaComp).getFormSizePolicy()
-                                 != RADVisualFormContainer.GEN_BOUNDS)))
+                                 != RADVisualFormContainer.GEN_BOUNDS))))
                     return visualMetaComp;
             }
         }

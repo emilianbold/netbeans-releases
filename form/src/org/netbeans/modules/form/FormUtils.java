@@ -1080,7 +1080,8 @@ public class FormUtils
                         visComp = visCont;
                         visCont = visCont.getParentContainer();
                     }
-                    if ((visCont!= null) && (visCont.getLayoutSupport() == null)) {
+
+                    if (isInTopDesignComponent(visComp) && (visCont!= null) && (visCont.getLayoutSupport() == null)) {
                         components.add(visComp);
                     } else {
                         return null;
@@ -1091,5 +1092,15 @@ public class FormUtils
             }
         }
         return components;
-    }    
+    }
+
+    public static boolean isInTopDesignComponent(RADComponent comp) {
+        FormDesigner designer = FormEditor.getFormDesigner(comp.getFormModel());
+        RADVisualComponent topDesigned = designer.getTopDesignComponent();
+        while ((comp != null) && (comp != topDesigned)) {
+            comp = comp.getParentComponent();
+        }
+        return (comp == topDesigned);
+    }
+
 }
