@@ -170,6 +170,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(jPanel1, gridBagConstraints);
 
+        moveUp.setMnemonic(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "LBL_MoveUp_MNE").charAt(0));
         moveUp.setText(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "LBL_ClasspathPanel_Move_Up"));
         moveUp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -186,6 +187,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         add(moveUp, gridBagConstraints);
         moveUp.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/freeform/ui/Bundle").getString("AD_ClasspathPanel_noveUp"));
 
+        moveDown.setMnemonic(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "LBL_MoveDown_MNE").charAt(0));
         moveDown.setText(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "LBL_ClasspathPanel_Move_Down"));
         moveDown.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
