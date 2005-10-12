@@ -212,11 +212,12 @@ public class DDDataObject extends  DDMultiViewDataObject
 
     private void parseDocument(boolean updateWebApp) throws IOException {
         try {
+            InputSource inputSource = new InputSource(createReader());
             // preparsing
-            SAXParseException error = DDUtils.parse(new InputSource(createReader()));
+            SAXParseException error = DDUtils.parse(inputSource);
             setSaxError(error);
 
-            String version = DDUtils.getVersion(new InputSource(createReader()));
+            String version = DDUtils.getVersion(inputSource);
             // creating model
             WebAppProxy app = new WebAppProxy(org.netbeans.modules.j2ee.dd.impl.common.DDUtils.createWebApp(
                     createInputStream(), version), version);
