@@ -6,14 +6,15 @@ import org.openide.loaders.*;
 import org.openide.ErrorManager;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.Writer;
+import java.io.StringWriter;
 
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 
 import org.netbeans.modules.xml.multiview.test.bookmodel.*;
+import org.netbeans.modules.schema2beans.Schema2BeansException;
 
 /**
  *
@@ -142,16 +143,13 @@ public class BookDataObject extends XmlMultiViewDataObject {
                 return;
             }
             try {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                Writer out = new StringWriter();
                 ((Book) model).write(out);
                 out.close();
-                OutputStream outputStream = getDataCache().createOutputStream(lock, modify);
-                try {
-                    outputStream.write(out.toByteArray());
-                } finally {
-                    outputStream.close();
-                }
+                getDataCache().setData(lock, out.toString(), modify);
             } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch (Schema2BeansException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }

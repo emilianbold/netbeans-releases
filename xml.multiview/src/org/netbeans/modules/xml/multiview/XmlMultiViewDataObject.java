@@ -25,14 +25,13 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.io.ReaderInputStream;
+import org.openide.util.NbBundle;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Enumeration;
-import java.util.Arrays;
 import java.util.Date;
 import java.lang.ref.WeakReference;
 
@@ -52,6 +51,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private org.xml.sax.SAXException saxError;
 
     private final DataCache dataCache = new DataCache();
+    private EncodingHelper encodingHelper = new EncodingHelper();
     private transient long timeStamp = 0;
     private transient WeakReference lockReference;
 
@@ -61,7 +61,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
-            getEditorSupport().saveDocument();
+            boolean save = acceptEncoding();
+            if (save) {
+                getEditorSupport().saveDocument();
+            }
         }
     };
 
@@ -246,13 +249,51 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
     protected abstract String getPrefixMark();
 
+    boolean acceptEncoding() throws IOException {
+        encodingHelper.resetEncoding();
+        DataCache dataCache = getDataCache();
+        String s = dataCache.getStringData();
+        String encoding = encodingHelper.detectEncoding(s.getBytes());
+        if (!encodingHelper.getEncoding().equals(encoding)) {
+            Object result = showChangeEncodingDialog(encoding);
+            if (NotifyDescriptor.YES_OPTION.equals(result)) {
+                dataCache.setData(encodingHelper.setDefaultEncoding(s));
+            } else if (NotifyDescriptor.NO_OPTION.equals(result)) {
+                showUsingDifferentEncodingMessage(encoding);
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void showUsingDifferentEncodingMessage(String encoding) {
+        String message = NbBundle.getMessage(XmlMultiViewDataObject.class, "TEXT_TREAT_USING_DIFFERENT_ENCODING", encoding,
+                encodingHelper.getEncoding());
+        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
+        descriptor.setTitle(getPrimaryFile().getPath());
+        DialogDisplayer.getDefault().notify(descriptor);
+    }
+
+    private Object showChangeEncodingDialog(String encoding) {
+        String message = NbBundle.getMessage(Utils.class, "TEXT_CHANGE_DECLARED_ENCODING", encoding,
+                encodingHelper.getEncoding());
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message, getPrimaryFile().getPath(),
+                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(descriptor);
+    }
+
+    public EncodingHelper getEncodingHelper() {
+        return encodingHelper;
+    }
+
     public DataCache getDataCache() {
         return dataCache;
     }
 
     public class DataCache {
 
-        private transient byte[] buffer = null;
+        private transient String buffer = null;
         private long fileTime = 0;
 
         public void loadData() {
@@ -265,35 +306,67 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 loadData(file, dataLock);
             } catch (IOException e) {
                 if (buffer == null) {
-                    buffer = new byte[0];
+                    buffer = ""; //NOI18N
                 }
             }
         }
 
         public void loadData(FileObject file, FileLock dataLock) throws IOException {
             try {
-                InputStream inputStream = getEditorSupport().getXmlEnv().getFileInputStream();
-                byte[] buffer;
+                String encoding = encodingHelper.detectEncoding(new BufferedInputStream(file.getInputStream()));
+                if (!encodingHelper.getEncoding().equals(encoding)) {
+                    showUsingDifferentEncodingMessage(encoding);
+                }
+                Reader reader = new InputStreamReader(file.getInputStream(), encodingHelper.getEncoding());
                 long time;
+                StringBuffer sb = new StringBuffer(5000);
                 try {
                     time = file.lastModified().getTime();
-                    int size = (int) file.getSize();
-                    buffer = new byte[size];
-                    inputStream.read(buffer);
+                    int i;
+                    while ((i = reader.read()) != -1) {
+                        sb.append((char) i);
+                    }
                 } finally {
-                    inputStream.close();
+                    reader.close();
                 }
-                this.buffer = null;
+                buffer = null;
                 fileTime = time;
-                setData(dataLock, buffer, true);
+                setData(dataLock, sb.toString(), true);
             } finally {
                 dataLock.releaseLock();
             }
         }
 
+        public void setData(FileLock lock, String s, boolean modify) throws IOException {
+            testLock(lock);
+            boolean modified = isModified() || modify;
+            long oldTimeStamp = timeStamp;
+            if (setData(s)) {
+                if (!modified) {
+                    saveData(lock);
+                    firePropertyChange(PROPERTY_DATA_UPDATED, new Long(oldTimeStamp), new Long(timeStamp));
+                } else {
+                    firePropertyChange(PROPERTY_DATA_MODIFIED, new Long(oldTimeStamp), new Long(timeStamp));
+                }
+            }
+        }
+
+        private boolean setData(String s) {
+            if (s.equals(buffer)) {
+                return false;
+            }
+            buffer = s;
+            long newTimeStamp = new Date().getTime();
+            if (newTimeStamp <= timeStamp) {
+                newTimeStamp = timeStamp + 1;
+            }
+            timeStamp = newTimeStamp;
+            fileTime = 0;
+            return true;
+        }
+
         public synchronized void saveData(FileLock dataLock) {
-            FileObject file = getPrimaryFile();
-            if (fileTime == file.lastModified().getTime()) {
+            if (buffer == null || fileTime == getPrimaryFile().lastModified().getTime()) {
                 return;
             }
 
@@ -301,17 +374,18 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 XmlMultiViewEditorSupport editorSupport = getEditorSupport();
                 if (editorSupport.getDocument() == null) {
                     XmlMultiViewEditorSupport.XmlEnv xmlEnv = editorSupport.getXmlEnv();
-                    OutputStream outputStream = xmlEnv.getFileOutputStream();
+                    OutputStream outputStream = getPrimaryFile().getOutputStream(xmlEnv.takeLock());
+                    Writer writer = new OutputStreamWriter(outputStream, encodingHelper.getEncoding());
                     try {
-                        outputStream.write(buffer);
+                        writer.write(buffer);
                     } finally {
-                        outputStream.close();
+                        writer.close();
                         xmlEnv.unmarkModified();
+                        resetFileTime();
                     }
                 } else {
                     editorSupport.saveDocument(dataLock);
                 }
-                fileTime = file.lastModified().getTime();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -334,40 +408,24 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             return l;
         }
 
-        public byte[] getData() {
+        public String getStringData() {
             if (buffer == null) {
                 loadData();
             }
             return buffer;
         }
 
-        public void setData(FileLock lock, byte[] data, boolean modify) throws IOException {
-            testLock(lock);
-            boolean modified = isModified() || modify;
-            long oldTimeStamp = timeStamp;
-            if (setData(data)) {
-                if (!modified) {
-                    saveData(lock);
-                    firePropertyChange(PROPERTY_DATA_UPDATED, new Long(oldTimeStamp), new Long(timeStamp));
-                } else {
-                    firePropertyChange(PROPERTY_DATA_MODIFIED, new Long(oldTimeStamp), new Long(timeStamp));
-                }
+        public byte[] getData() {
+            try {
+                return getStringData().getBytes(encodingHelper.getEncoding());
+            } catch (UnsupportedEncodingException e) {
+                return null;  // should not happen
             }
         }
 
-
-        private boolean setData(byte[] data) {
-            if (Arrays.equals(buffer, data)) {
-                return false;
-            }
-            buffer = data;
-            long newTimeStamp = new Date().getTime();
-            if (newTimeStamp <= timeStamp) {
-                newTimeStamp = timeStamp + 1;
-            }
-            timeStamp = newTimeStamp;
-            fileTime = 0;
-            return true;
+        public void setData(FileLock lock, byte[] data, boolean modify) throws IOException {
+            encodingHelper.detectEncoding(data);
+            setData(lock, new String(data, encodingHelper.getEncoding()), modify);
         }
 
         public long getTimeStamp() {
@@ -375,7 +433,17 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
 
         public InputStream createInputStream() {
-            return new ByteArrayInputStream(getData());
+            try {
+                encodingHelper.detectEncoding(getStringData().getBytes());
+                return new ReaderInputStream(new StringReader(getStringData()), encodingHelper.getEncoding());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        public Reader createReader() throws IOException {
+            return new StringReader(getStringData());
         }
 
         public OutputStream createOutputStream() throws IOException {
@@ -398,6 +466,33 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 public void close() throws IOException {
                     super.close();
                     setData(dataLock, toByteArray(), modify);
+                    if (!modify) {
+                        dataCache.saveData(dataLock);
+                    }
+                }
+            };
+        }
+
+        public Writer createWriter() throws IOException {
+            final FileLock dataLock = lock();
+            return new StringWriter() {
+                public void close() throws IOException {
+                    try {
+                        super.close();
+                        setData(dataLock, toString(), true);
+                    } finally {
+                        dataLock.releaseLock();
+                    }
+                }
+            };
+        }
+
+        public Writer createWriter(final FileLock dataLock, final boolean modify) throws IOException {
+            testLock(dataLock);
+            return new StringWriter() {
+                public void close() throws IOException {
+                    super.close();
+                    setData(dataLock, toString(), modify);
                     if (!modify) {
                         dataCache.saveData(dataLock);
                     }

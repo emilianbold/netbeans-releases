@@ -15,18 +15,19 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 import org.openide.filesystems.FileLock;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.Reader;
 
 /**
  * @author pfiala
  */
 public interface DDProviderDataObject {
     /**
-     * Provides InputStream to save binary data.
-     * @return the InputStream
+     * Provides Reader to save binary data.
+     * @return the Reader
+     * @throws IOException
      */
-    InputStream createInputStream();
+    Reader createReader() throws IOException;
 
     /**
      * Locks binary data if possible.

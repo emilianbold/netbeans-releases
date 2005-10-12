@@ -19,6 +19,7 @@ import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Common;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -36,6 +37,9 @@ import org.xml.sax.SAXNotSupportedException;
 import org.apache.xerces.parsers.DOMParser;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.BufferedInputStream;
 import java.util.Map;
 import java.util.HashMap;
 import java.net.URL;
@@ -80,6 +84,7 @@ public final class DDProvider {
                 return getDDRoot((DDProviderDataObject) dataObject);
             }
         } catch (DataObjectNotFoundException e) {
+            return null; // should not occur
         }
         EjbJarProxy ejbJarProxy = getFromCache(fo);
         if (ejbJarProxy != null) {
@@ -96,7 +101,7 @@ public final class DDProvider {
     private synchronized EjbJar getDDRoot(final DDProviderDataObject ddProviderDataObject) throws java.io.IOException {
         EjbJarProxy ejbJarProxy = getFromCache(ddProviderDataObject) ;
         if (ejbJarProxy == null) {
-            ejbJarProxy = DDUtils.createEjbJarProxy(ddProviderDataObject.createInputStream());
+            ejbJarProxy = DDUtils.createEjbJarProxy(ddProviderDataObject.createReader());
             putToCache(ddProviderDataObject, ejbJarProxy);
         }
         return ejbJarProxy;
@@ -273,7 +278,11 @@ public final class DDProvider {
             try {
                 EjbJarProxy ejbJarProxy = getFromCache(fo);
                 if (ejbJarProxy != null) {
-                    DDUtils.merge(ejbJarProxy, fo.getInputStream());
+                    String encoding = EncodingUtil.detectEncoding(new BufferedInputStream(fo.getInputStream()));
+                    if (encoding == null) {
+                        encoding = "UTF8";
+                    }
+                    DDUtils.merge(ejbJarProxy, new InputStreamReader(fo.getInputStream(), encoding));
                 }
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);

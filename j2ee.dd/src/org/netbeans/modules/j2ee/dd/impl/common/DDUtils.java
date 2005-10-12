@@ -22,6 +22,7 @@ import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
 
 /**
@@ -29,8 +30,15 @@ import java.math.BigDecimal;
  */
 public class DDUtils {
     public static EjbJarProxy createEjbJarProxy(InputStream inputStream) throws IOException {
+        return createEjbJarProxy(new InputSource(inputStream));
+    }
+
+    public static EjbJarProxy createEjbJarProxy(Reader reader) throws IOException {
+        return createEjbJarProxy(new InputSource(reader));
+    }
+
+    public static EjbJarProxy createEjbJarProxy(InputSource inputSource) throws IOException {
         try {
-            InputSource inputSource = new InputSource(inputStream);
             return (EjbJarProxy) DDProvider.getDefault().getDDRoot(inputSource);
         } catch (SAXException ex) {
             // XXX lets throw an exception here
@@ -46,9 +54,10 @@ public class DDUtils {
         }
     }
 
-    public static void merge(EjbJarProxy ejbJarProxy, InputStream is) {
+
+    public static void merge(EjbJarProxy ejbJarProxy, Reader reader) {
         try {
-            EjbJarProxy newEjbJarProxy = createEjbJarProxy(is);
+            EjbJarProxy newEjbJarProxy = createEjbJarProxy(reader);
             if (newEjbJarProxy.getStatus() == EjbJar.STATE_INVALID_UNPARSABLE) {
                 ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
                 ejbJarProxy.setProxyVersion(null);

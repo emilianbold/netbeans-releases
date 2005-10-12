@@ -30,6 +30,7 @@ import org.openide.util.NbBundle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Reader;
 import java.util.Date;
 import java.lang.ref.WeakReference;
 
@@ -71,6 +72,10 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
 
     public InputStream createInputStream() {
         return getDataCache().createInputStream();
+    }
+
+    public Reader createReader() throws IOException {
+        return getDataCache().createReader();
     }
 
     public void writeModel(RootInterface model) throws IOException {
@@ -222,7 +227,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
         protected void updateDataFromModel(Object model, FileLock lock, boolean modify) {
             String newDocument = generateDocumentFromModel((RootInterface) model);
             try {
-                getDataCache().setData(lock, newDocument.getBytes(), modify);
+                getDataCache().setData(lock, newDocument, modify);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }

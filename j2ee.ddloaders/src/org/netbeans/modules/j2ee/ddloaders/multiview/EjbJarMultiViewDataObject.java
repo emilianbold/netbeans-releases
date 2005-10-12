@@ -206,6 +206,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         try {
             dataObject.setValid(false);
         } catch (PropertyVetoException e) {
+            // should not occur
         }
         return dataObject;
     }
@@ -313,9 +314,8 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         FileObject fo = fileEvent.getFile();
         String resourceName = getPackageName(fo);
         if (resourceName != null) {
-            boolean foundElement = false;
             if (newFileNames == null) {
-                foundElement = fireEvent(null, resourceName, DDChangeEvent.EJB_DELETED);
+                fireEvent(null, resourceName, DDChangeEvent.EJB_DELETED);
             } else {
                 Ejb[] ejbs = getEjbJar().getEnterpriseBeans().getEjbs();
                 for (int i = 0; i < ejbs.length; i++) {
@@ -326,12 +326,8 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                             }
                             deletedEjbNames.add(resourceName);
                         }
-                        foundElement = true;
                         break;
                     }
-                }
-                if (foundElement) {
-                    return;
                 }
             }
         }
@@ -366,13 +362,13 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                 }
             }
         } else {
-            DDUtils.merge(ejbJar, createInputStream());
+            DDUtils.merge(ejbJar, createReader());
         }
         setSaxError(ejbJar.getError());
     }
 
     protected void validateDocument() throws IOException {
-        setSaxError(DDUtils.createEjbJarProxy(createInputStream()).getError());
+        setSaxError(DDUtils.createEjbJarProxy(createReader()).getError());
     }
 
     private void setEjbJar(EjbJarProxy newEjbJar) {
@@ -571,7 +567,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
 
     private boolean fireEvent(String oldResourceName, String resourceName, int eventType) {
         boolean elementFound = false;
-        String resource = null;
+        String resource;
         int specificEventType = -1;
         if (eventType == DDChangeEvent.EJB_CHANGED) {
             resource = oldResourceName;
