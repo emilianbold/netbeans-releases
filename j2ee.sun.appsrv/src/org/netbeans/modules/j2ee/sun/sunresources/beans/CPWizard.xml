@@ -25,7 +25,7 @@
                 <tag-item>sql-server</tag-item>
                 <tag-item>sybase2</tag-item>
                 <tag-item>cloudscape</tag-item>
-                <tag-item>informax</tag-item>
+                <tag-item>informix</tag-item>
                 <tag-item>mysql</tag-item>
                 <tag-item>other</tag-item>
             </tag>            
@@ -96,7 +96,7 @@
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>db2</option-name>
-                    <conditional-value>COM.ibm.db2.jdbc.DB2DataSource</conditional-value>
+                    <conditional-value>com.ibm.db2.jdbc.DB2DataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>merant1</option-name>
@@ -128,15 +128,15 @@
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>cloudscape</option-name>
-                    <conditional-value>COM.cloudscape.core.BasicDataSource</conditional-value>
+                    <conditional-value>com.cloudscape.core.BasicDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>informax</option-name>
+                    <option-name>informix</option-name>
                     <conditional-value>com.informix.jdbcx.IfxDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>mysql</option-name>
-                    <conditional-value>org.gjt.mm.mysql.jdbc2.optional.MysqlDataSource</conditional-value>
+                    <conditional-value>com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>jdbc-odbc-bridge</option-name>
@@ -183,7 +183,7 @@
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>db2</option-name>
-                    <conditional-value>COM.ibm.db2.jdbc.DB2XADataSource</conditional-value>
+                    <conditional-value>com.ibm.db2.jdbc.DB2XADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>merant1</option-name>
@@ -215,15 +215,15 @@
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>cloudscape</option-name>
-                    <conditional-value>COM.cloudscape.core.XADataSource</conditional-value>
+                    <conditional-value>com.cloudscape.core.XADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>informax</option-name>
+                    <option-name>informix</option-name>
                     <conditional-value>com.informix.jdbcx.IfxXADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>mysql</option-name>
-                    <conditional-value>org.gjt.mm.mysql.jdbc2.optional.MysqlXaDataSource</conditional-value>
+                    <conditional-value>com.mysql.jdbc.jdbc2.optional.MysqlXaConnectionPoolDataSource</conditional-value>
                 </option-value-pair>
             </field-value>
         </field>
@@ -283,12 +283,12 @@
                     <conditional-value>jdbc:cloudscape:#DB$</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>informax</option-name>
+                    <option-name>informix</option-name>
                     <conditional-value>jdbc:informix-sqli://#HOST$:#PORT$/#DB$:INFORMIXSERVER=#SERVER_NAME$</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>mysql</option-name>
-                    <conditional-value>jdbc:mysql://#HOST$:#PORT$/#DB$</conditional-value>
+                    <conditional-value>jdbc:mysql://#HOST$:#PORT$/#DB$?relaxAutoCommit="true"</conditional-value>
                 </option-value-pair>
             </field-value>
         </field>
