@@ -282,14 +282,18 @@ public class XMLUtilTest extends NbTestCase {
     
     /** cf. #62006 */
     public void testIndentation2() throws Exception {
+        // XXX currently it seems that the Tiger/Mustang serializer adds an extra \n after DOCTYPE, for no apparent reason!
+        // While the Mantis serializer inserts a useless line break in the middle...
+        // so we don't check formatting on that part.
+        // Also serializers may arbitrarily reorder the doctype, so don't even look at it (just make sure it is there).
+        String doctype = "<!DOCTYPE p PUBLIC \"random DTD\" \"" + XMLUtilTest.class.getResource("random.dtd") + "\">\n";
         String data =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                doctype +
                 "<!--\n" +
                 "Some license or whatever.\n" +
                 "-->\n" +
                 "<?stylesheet location=\"here\"?>\n" +
-                "<!DOCTYPE p PUBLIC \"random DTD\" \"" + XMLUtilTest.class.getResource("random.dtd") + "\">\n" +
-                "\n" + // XXX currently it seems that the serializer adds an extra \n after DOCTYPE, for no apparent reason!
                 "<p>\n" +
                 "    <t/>\n" +
                 "    <c>\n" +
@@ -307,7 +311,20 @@ public class XMLUtilTest extends NbTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
         String data2 = baos.toString().replaceAll("\r\n", "\n");
-        assertEquals("identity replacement should not mess up indentation in \n" + data2, data, data2);
+        //System.err.println("normalized data:\n" + ignoreSpaceChanges(data, doctype) + "\nnormalized data2:\n" + ignoreSpaceChanges(data2, doctype));
+        assertEquals("identity replacement should not mess up indentation in \n" + data2, ignoreSpaceChanges(data, doctype), ignoreSpaceChanges(data2, doctype));
+    }
+    private static String ignoreSpaceChanges(String text, String fuzzy) {
+        // Yes this is confusing!
+        // Inner regexp:
+        // Input: <!DOCTYPE p PUBLIC ...>\n
+        // Output: \Q<!DOCTYPE\E\s+\Qp\E\s+\QPUBLIC...>\E\s+\Q\E
+        // Outer regexp:
+        // Input: stuff\n<!DOCTYPE p\nPUBLIC ...>\n\nmore stuff
+        // Output: stuff\n<!DOCTYPE p PUBLIC ...>\nmore stuff
+        String regexp = "\\Q" + fuzzy.replaceAll("\\s+", "\\\\E\\\\s+\\\\Q") + "\\E";
+        //System.err.println("regexp='" + regexp + "' text='" + text + "' fuzzy='" + fuzzy + "' result='" + text.replaceFirst(regexp, "") + "'");
+        return text.replaceFirst(regexp, "");
     }
     
     public void testSignificantWhitespace() throws Exception {
