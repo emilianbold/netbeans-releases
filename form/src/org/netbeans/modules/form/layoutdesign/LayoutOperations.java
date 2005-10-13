@@ -1061,8 +1061,12 @@ class LayoutOperations implements LayoutConstants {
             parent = interval;
             if (parent.getSubIntervalCount() > 1) {
                 LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
+                seq.getCurrentSpace().set(dimension,
+                    (alignment == LEADING) ? pos : interval.getCurrentSpace().positions[dimension][TRAILING],
+                    (alignment == LEADING) ? interval.getCurrentSpace().positions[dimension][LEADING] : pos);
                 layoutModel.addInterval(seq, parent, -1);
                 interval = new LayoutInterval(PARALLEL);
+                interval.getCurrentSpace().set(dimension, parent.getCurrentSpace());
                 layoutModel.addInterval(interval, seq, 0);
                 while (parent.getSubIntervalCount() > 1) {
                     layoutModel.addInterval(layoutModel.removeInterval(parent, 0), interval, -1);
@@ -1078,6 +1082,9 @@ class LayoutOperations implements LayoutConstants {
                 }
                 else {
                     LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
+                    seq.getCurrentSpace().set(dimension,
+                        (alignment == LEADING) ? pos : interval.getCurrentSpace().positions[dimension][TRAILING],
+                        (alignment == LEADING) ? interval.getCurrentSpace().positions[dimension][LEADING] : pos);
                     layoutModel.addInterval(seq, parent, -1);
                     layoutModel.removeInterval(interval);
                     layoutModel.addInterval(interval, seq, -1);
@@ -1104,6 +1111,9 @@ class LayoutOperations implements LayoutConstants {
             LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
             int idx = layoutModel.removeInterval(interval);
             seq.setAlignment(interval.getAlignment());
+            seq.getCurrentSpace().set(dimension,
+                (alignment == LEADING) ? pos : interval.getCurrentSpace().positions[dimension][TRAILING],
+                (alignment == LEADING) ? interval.getCurrentSpace().positions[dimension][LEADING] : pos);
             layoutModel.addInterval(seq, parent, idx);
             layoutModel.setIntervalAlignment(interval, DEFAULT);
             layoutModel.addInterval(interval, seq, 0);
