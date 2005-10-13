@@ -25,7 +25,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
 
@@ -42,26 +42,22 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     public TypingInEditor(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
-        /*
         expectedTime = 10;
         WAIT_AFTER_OPEN = 0;
         WAIT_AFTER_PREPARE = 0;
         WAIT_AFTER_CLOSE = 0;
         repeat = 100;
-        */
     }
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
-        /*
         expectedTime = 10;
         repeat = 100;
         WAIT_AFTER_OPEN = 0;
         WAIT_AFTER_PREPARE = 0;
         WAIT_AFTER_CLOSE = 0;
-        */
     }
     
     private EditorOperator editorOperator;
@@ -71,25 +67,25 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     protected void turnOff() {
         // set large font size
         Class kitClass = JavaKit.class;
-        BaseOptions options = BaseOptions.getOptions (kitClass);
+        BaseOptions options = BaseOptions.getOptions(kitClass);
         if (options instanceof JavaOptions) {
             fontSize = ((JavaOptions)options).getFontSize();
             ((JavaOptions)options).setFontSize(20);
         }
         // turn off the error hightlighting feature
         parsingErrors = JavaSettings.getDefault().getParsingErrors();
-        JavaSettings.getDefault().setParsingErrors(0);        
+        JavaSettings.getDefault().setParsingErrors(0);
     }
     
     protected void turnBack() {
         // set back the original font size
         Class kitClass = JavaKit.class;
-        BaseOptions options = BaseOptions.getOptions (kitClass);
+        BaseOptions options = BaseOptions.getOptions(kitClass);
         if (options instanceof JavaOptions) {
             ((JavaOptions)options).setFontSize(fontSize);
         }
         // set the modified properties back to default
-        JavaSettings.getDefault().setParsingErrors(parsingErrors);        
+        JavaSettings.getDefault().setParsingErrors(parsingErrors);
     }
     
     public void initialize() {
@@ -100,10 +96,10 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
             BaseCaret thebasecaret = (BaseCaret) thecaret;
             setAreaToFilter (thebasecaret.x-20, thebasecaret.y-20, thebasecaret.width+40, thebasecaret.height+40);
         }
-        */
+         */
         repaintManager().setOnlyEditor(true);
         setJavaEditorCaretFilteringOn();
-
+        
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorWindowOperator().getEditor("Main.java");
@@ -122,10 +118,10 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     
     public void prepare() {
         // do nothing
-   }
+    }
     
     public ComponentOperator open(){
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_A)).perform(editorOperator);
+        new Action(null, null, new Shortcut(KeyEvent.VK_A)).perform(editorOperator);
         return null;
     }
     
@@ -139,5 +135,9 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         repaintManager().setOnlyEditor(false);
         super.shutdown();
     }
-
+    
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new TypingInEditor("measureTime", "Type a character in Editor"));
+    }
 }

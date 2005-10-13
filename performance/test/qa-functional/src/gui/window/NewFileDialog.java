@@ -28,13 +28,13 @@ public class NewFileDialog extends org.netbeans.performance.test.utilities.Perfo
     /** Creates a new instance of NewFileDialog */
     public NewFileDialog(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 1821; // 4.1 : 1614, N/A, 1821, 1752, 1182, 1297
     }
     
     /** Creates a new instance of NewFileDialog */
     public NewFileDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 1821; // 4.1 : 1614, N/A, 1821, 1752, 1182, 1297
     }
     
     public void prepare() {
