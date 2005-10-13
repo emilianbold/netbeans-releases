@@ -333,7 +333,7 @@ public class Annotator {
      * will act on currently activated nodes.
      */ 
     public static Action [] getActions() {
-        File [] files = Utils.getCurrentContext().getFiles();
+        File [] files = Utils.getCurrentContext(null).getFiles();
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
         if (onlyFolders(files)) {
             return new Action [] {
@@ -371,7 +371,7 @@ public class Annotator {
                 new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
                 null,
                 new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
-                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible() ? 
+                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ? 
                                         loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
                                         loc.getString("CTL_PopupMenuItem_ShowAnnotations")),
                 new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory")),

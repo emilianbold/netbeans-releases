@@ -21,6 +21,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import java.io.File;
@@ -52,16 +53,16 @@ public class ResolveConflictsAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
-    public void performCvsAction(ActionEvent ev) {
-        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(getContext(), FileInformation.STATUS_VERSIONED_CONFLICT).getNodes();
-        if (nodes.length == 0) {
+    public void performCvsAction(Node[] nodes) {
+        CvsFileNode [] fileNodes = CvsVersioningSystem.getInstance().getFileTableModel(getContext(nodes), FileInformation.STATUS_VERSIONED_CONFLICT).getNodes();
+        if (fileNodes.length == 0) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflicts")));
             return;
         }
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        for (int i = 0; i < nodes.length; i++) {
-            File file = nodes[i].getFile();
+        for (int i = 0; i < fileNodes.length; i++) {
+            File file = fileNodes[i].getFile();
             FileInformation info = cache.getStatus(file);
             Entry entry = info.getEntry(file);
             if (entry == null) {

@@ -19,6 +19,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
@@ -39,7 +40,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
 
     public static final int LOCALLY_DELETABLE_MASK = FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(Node[] nodes) {
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt"));
         descriptor.setTitle(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title"));
         descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
@@ -50,7 +51,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
             return;
         }
 
-        final File [] files = getContext().getFiles();
+        final File [] files = getContext(nodes).getFiles();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 async(files);

@@ -28,6 +28,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -56,8 +57,8 @@ public class BranchAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void performCvsAction(ActionEvent ev) {
-        Context context = getContext();
+    public void performCvsAction(Node[] nodes) {
+        Context context = getContext(nodes);
 
         String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"),
                                      new Object[] { getContextDisplayName() });

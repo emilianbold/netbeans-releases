@@ -28,6 +28,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -60,8 +61,8 @@ public class MergeBranchAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    public void performCvsAction(ActionEvent ev) {
-        Context context = getContext();
+    public void performCvsAction(Node[] nodes) {
+        Context context = getContext(nodes);
 
         String title = MessageFormat.format(NbBundle.getBundle(MergeBranchAction.class).getString("CTL_MergeBranchDialog_Title"), 
                                          new Object[] { getContextDisplayName() });

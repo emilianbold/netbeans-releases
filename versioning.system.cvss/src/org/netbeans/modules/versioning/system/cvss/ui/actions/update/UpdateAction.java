@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 
 import org.openide.util.NbBundle;
+import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
@@ -45,11 +46,11 @@ public class UpdateAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(Node[] nodes) {
 
         ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(UpdateAction.class, "BK0001"));
         group.progress("Preparing");
-        Context context = getContext();
+        Context context = getContext(nodes);
         GlobalOptions options = null;
         if (context.getExclusions().size() > 0) {
             options = CvsVersioningSystem.createGlobalOptions();

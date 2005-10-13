@@ -17,6 +17,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
@@ -177,8 +178,8 @@ public class CommitAction extends AbstractSystemAction {
         commit.setEnabled(true);
     }
 
-    public void performCvsAction(ActionEvent ev) {
-        invokeCommit(getContextDisplayName(), getContext());
+    public void performCvsAction(Node[] nodes) {
+        invokeCommit(getContextDisplayName(), getContext(nodes));
     }
     
     private static void copy(CommitCommand c1, CommitCommand c2) {

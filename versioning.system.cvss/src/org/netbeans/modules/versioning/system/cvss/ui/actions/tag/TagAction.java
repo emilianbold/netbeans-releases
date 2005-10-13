@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
@@ -55,8 +56,8 @@ public class TagAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    public void performCvsAction(ActionEvent ev) {
-        File [] roots = getContext().getFiles();
+    public void performCvsAction(Node[] nodes) {
+        File [] roots = getContext(nodes).getFiles();
                 
         TagCommand cmd = new TagCommand();
         copy (cmd, commandTemplate);

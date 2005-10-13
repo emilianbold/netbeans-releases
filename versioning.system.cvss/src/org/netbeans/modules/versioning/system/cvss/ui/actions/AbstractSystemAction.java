@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions;
 
 import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -40,7 +41,7 @@ import java.awt.event.ActionEvent;
  * 
  * @author Maros Sandor
  */
-public abstract class AbstractSystemAction extends SystemAction {
+public abstract class AbstractSystemAction extends NodeAction {
 
     /**
      * @return bundle key base name
@@ -57,14 +58,36 @@ public abstract class AbstractSystemAction extends SystemAction {
      * Synchronizes memory modificatios with disk and calls
      * {@link  #performCvsAction}.
      */
-    public final void actionPerformed(ActionEvent ev) {
-        // TODO try to save files in invocation context only
+    protected void performAction(Node[] nodes) {
         LifecycleManager.getDefault().saveAll();
-        performCvsAction(ev);
+        performCvsAction(nodes);
     }
 
-    protected abstract void performCvsAction(ActionEvent e);
+    protected boolean enable(Node[] nodes) {
+        return getContext(nodes).getRootFiles().length > 0;
+    }
 
+    protected abstract void performCvsAction(Node[] nodes);
+
+    /** Be sure nobody overwrites */
+    public final boolean isEnabled() {
+        return super.isEnabled();
+    }
+
+    /** Be sure nobody overwrites */
+    public final void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+    }
+
+    /** Be sure nobody overwrites */
+    public final void actionPerformed(ActionEvent event) {
+        super.actionPerformed(event);
+    }
+
+    /** Be sure nobody overwrites */
+    public final void performAction() {
+        super.performAction();
+    }
 
     /**
      * Display name, it seeks action class bundle for:
@@ -82,7 +105,7 @@ public abstract class AbstractSystemAction extends SystemAction {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -146,7 +169,7 @@ public abstract class AbstractSystemAction extends SystemAction {
      */ 
     public String getContextDisplayName() {
         // TODO: reuse this code in getName() 
-        File [] nodes = Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -202,14 +225,10 @@ public abstract class AbstractSystemAction extends SystemAction {
         return new HelpCtx(this.getClass());
     }
 
-    protected Context getContext() {
-        return Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus());
+    protected Context getContext(Node[] nodes) {
+        return Utils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus());
     }
     
-    public boolean isEnabled() {
-        return getContext().getRootFiles().length > 0;
-    }
-
     protected int getFileEnabledStatus() {
         return ~0;
     }

@@ -27,6 +27,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -59,16 +60,16 @@ public class SwitchBranchAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(final Node[] nodes) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                switchBranch();
+                switchBranch(nodes);
             }
         });
     }
     
-    private void switchBranch() {
-        Context context = getContext();
+    private void switchBranch(Node[] nodes) {
+        Context context = getContext(nodes);
 
         String title = MessageFormat.format(NbBundle.getBundle(SwitchBranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
                                          new Object[] { getContextDisplayName() });

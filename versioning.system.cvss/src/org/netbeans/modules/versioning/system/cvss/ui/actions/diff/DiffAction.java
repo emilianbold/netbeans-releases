@@ -19,6 +19,7 @@ import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
+import org.openide.nodes.Node;
 
 import java.io.File;
 import java.awt.event.ActionEvent;
@@ -49,10 +50,10 @@ public class DiffAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(Node[] nodes) {
         ExecutorGroup group = new ExecutorGroup("Diffing");
         group.progress("Preparing");
-        Context context = getContext();
+        Context context = getContext(nodes);
         DiffExecutor executor = new DiffExecutor(context, getContextDisplayName());
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         File [] files = context.getFiles();

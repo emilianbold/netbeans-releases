@@ -21,6 +21,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.util.NbBundle;
+import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -46,9 +47,9 @@ public class SearchHistoryAction extends AbstractSystemAction  {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(Node[] nodes) {
         String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName());
-        openHistory(getContext(), title);
+        openHistory(getContext(nodes), title);
     }
 
     private void openHistory(final Context context, final String title) {

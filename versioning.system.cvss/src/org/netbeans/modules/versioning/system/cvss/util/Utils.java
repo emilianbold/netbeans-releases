@@ -61,11 +61,14 @@ public class Utils {
      * nodes represent their underlying files or folders. Project nodes are represented by their source groups. Other
      * logical nodes must provide FileObjects in their Lookup.
      *   
-     * @return File [] array of activated files 
+     * @return File [] array of activated files
+     * @param nodes or null (then taken from windowsystem, it may be wrong on editor tabs #66700).
      */ 
-    public static Context getCurrentContext() {
+    public static Context getCurrentContext(Node[] nodes) {
         int nodesSerial = activatedNodesSerial;
-        Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
+        if (nodes == null) {
+            nodes = TopComponent.getRegistry().getActivatedNodes();
+        }
         if (currentContextSerial == nodesSerial) return contextCached;
         List files = new ArrayList(nodes.length);
         List rootFiles = new ArrayList(nodes.length);
@@ -98,12 +101,13 @@ public class Utils {
      * nodes represent their underlying files or folders. Project nodes are represented by their source groups. Other
      * logical nodes must provide FileObjects in their Lookup.
      *
-     * @param includingFileStatus if any activated file does not have this CVS status, an empty array is returned   
-     * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned   
+     * @param nodes null (then taken from windowsystem, it may be wrong on editor tabs #66700).
+     * @param includingFileStatus if any activated file does not have this CVS status, an empty array is returned
+     * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned
      * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
      */ 
-    public static Context getCurrentContext(int includingFileStatus, int includingFolderStatus) {
-        Context context = getCurrentContext();
+    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
+        Context context = getCurrentContext(nodes);
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         File [] files = context.getRootFiles();
         for (int i = 0; i < files.length; i++) {

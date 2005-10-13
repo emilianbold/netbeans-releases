@@ -293,7 +293,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
         item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
-                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible() ? 
+                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
                                                actionsLoc.getString("CTL_PopupMenuItem_HideAnnotations") : 
                                                actionsLoc.getString("CTL_PopupMenuItem_ShowAnnotations")));
         Mnemonics.setLocalizedText(item, item.getText());
@@ -307,7 +307,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         boolean allLocallyNew = true;
         boolean allLocallyDeleted = true;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getCurrentContext().getFiles();
+        File [] files = Utils.getCurrentContext(nodes).getFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation info = cache.getStatus(file);

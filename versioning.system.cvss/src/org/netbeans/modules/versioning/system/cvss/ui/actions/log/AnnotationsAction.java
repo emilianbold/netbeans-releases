@@ -45,15 +45,15 @@ import java.io.IOException;
 public class AnnotationsAction extends AbstractSystemAction {
 
     protected String getBaseName() {
-        if (visible()) {
+        if (visible(null)) {
             return "CTL_MenuItem_HideAnnotations";  // NOI18N
         } else {
             return "CTL_MenuItem_Annotations"; // NOI18N
         }
     }
 
-    public boolean isEnabled() {
-        return super.isEnabled() && activatedEditorCookie() != null;
+    public boolean enabled(Node[] nodes) {
+        return super.isEnabled() && activatedEditorCookie(nodes) != null;
     }
 
     protected int getFileEnabledStatus() {
@@ -64,14 +64,14 @@ public class AnnotationsAction extends AbstractSystemAction {
         return 0;
     }
 
-    public void performCvsAction(ActionEvent ev) {
-        if (visible()) {
-            JEditorPane pane = activatedEditorPane();
+    public void performCvsAction(Node[] nodes) {
+        if (visible(nodes)) {
+            JEditorPane pane = activatedEditorPane(nodes);
             AnnotationBarManager.hideAnnotationBar(pane);
         } else {
-            EditorCookie ec = activatedEditorCookie();
+            EditorCookie ec = activatedEditorCookie(nodes);
             if (ec != null) {
-                File file = activatedFile();
+                File file = activatedFile(nodes);
                 CvsVersioningSystem cvss = CvsVersioningSystem.getInstance();
                 AdminHandler entries = cvss.getAdminHandler();
 
@@ -132,8 +132,11 @@ public class AnnotationsAction extends AbstractSystemAction {
         }
     }
 
-    public boolean visible() {
-        JEditorPane currentPane = activatedEditorPane();
+    /**
+     * @param nodes or null (then taken from windowsystem, it may be wrong on editor tabs #66700).
+     */
+    public boolean visible(Node[] nodes) {
+        JEditorPane currentPane = activatedEditorPane(nodes);
         return AnnotationBarManager.annotationBarVisible(currentPane);
     }
 
@@ -141,8 +144,8 @@ public class AnnotationsAction extends AbstractSystemAction {
      * @return active editor pane or null if selected node
      * does not have any or more nodes selected.
      */
-    private JEditorPane activatedEditorPane() {
-        EditorCookie ec = activatedEditorCookie();
+    private JEditorPane activatedEditorPane(Node[] nodes) {
+        EditorCookie ec = activatedEditorCookie(nodes);
         if (ec != null) {
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes != null && panes.length > 0) {
@@ -152,8 +155,10 @@ public class AnnotationsAction extends AbstractSystemAction {
         return null;
     }
 
-    private EditorCookie activatedEditorCookie() {
-        Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+    private EditorCookie activatedEditorCookie(Node[] nodes) {
+        if (nodes == null) {
+            nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        }
         if (nodes.length == 1) {
             Node node = nodes[0];
             return (EditorCookie) node.getCookie(EditorCookie.class);
@@ -161,8 +166,7 @@ public class AnnotationsAction extends AbstractSystemAction {
         return null;
     }
 
-    private File activatedFile() {
-        Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+    private File activatedFile(Node[] nodes) {
         if (nodes.length == 1) {
             Node node = nodes[0];
             DataObject dobj = (DataObject) node.getCookie(DataObject.class);

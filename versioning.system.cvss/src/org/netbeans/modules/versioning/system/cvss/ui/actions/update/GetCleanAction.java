@@ -23,6 +23,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 
@@ -50,11 +51,11 @@ public class GetCleanAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(final Node[] nodes) {
         if (!confirmed(null, null)) return;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                revertModifications();
+                revertModifications(nodes);
             }
         });
     }
@@ -78,12 +79,12 @@ public class GetCleanAction extends AbstractSystemAction {
         return option == NotifyDescriptor.YES_OPTION;
     }
     
-    private void revertModifications() {
+    private void revertModifications(Node[] nodes) {
         ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Progress"));
         try {
             group.progress(NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_ProgressPrepare"));
             FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-            File [] files = cache.listFiles(getContext(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
+            File [] files = cache.listFiles(getContext(nodes), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 rollback(file, VersionsCache.REVISION_BASE, group);

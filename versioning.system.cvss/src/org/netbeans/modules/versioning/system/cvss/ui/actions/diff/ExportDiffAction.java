@@ -30,6 +30,7 @@ import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
@@ -73,19 +74,19 @@ public class ExportDiffAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public boolean isEnabled() {
+    public boolean enabled(Node[] nodes) {
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             return true;
         }
 
-        return TopComponent.getRegistry().getActivatedNodes().length == 1
+        return nodes.length == 1
             && super.isEnabled()
             && Lookup.getDefault().lookup(DiffProvider.class) != null
-            && getContext().getRootFiles().length == 1;
+            && getContext(nodes).getRootFiles().length == 1;
     }
 
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(final Node[] nodes) {
 
         // reevaluate fast enablement logic guess
 
@@ -94,7 +95,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            Context context = getContext();
+            Context context = getContext(nodes);
             File [] files = DiffExecutor.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             noop = files.length == 0;
         }
@@ -139,13 +140,13 @@ public class ExportDiffAction extends AbstractSystemAction {
             final File out = destination;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    async(out);
+                    async(nodes, out);
                 }
             });
         }
     }
 
-    private void async(File destination) {
+    private void async(Node[] nodes, File destination) {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
@@ -169,7 +170,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                     }
                 }
             } else {
-                Context context = getContext();
+                Context context = getContext(nodes);
                 root = context.getRootFiles()[0];
                 if (root.isFile()) {
                     root = root.getParentFile();

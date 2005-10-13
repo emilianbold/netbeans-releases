@@ -18,6 +18,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
+import org.openide.nodes.Node;
 
 import java.io.File;
 import java.awt.event.ActionEvent;
@@ -49,7 +50,7 @@ public class IgnoreAction extends AbstractSystemAction {
     public int getActionStatus() {
         int actionStatus = -1;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getCurrentContext().getFiles();
+        File [] files = Utils.getCurrentContext(null).getFiles();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().equals(".cvsignore")) {
                 actionStatus = UNDEFINED;
@@ -72,16 +73,16 @@ public class IgnoreAction extends AbstractSystemAction {
         return CvsVersioningSystem.getInstance().isInCvsIgnore(file);
     }
 
-    public boolean isEnabled() {
+    public boolean enabled(Node[] nodes) {
         return getActionStatus() != UNDEFINED;
     }
 
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(Node[] nodes) {
         int actionStatus = getActionStatus();
         if (actionStatus == IGNORING) {
-            CvsVersioningSystem.getInstance().setIgnored(Utils.getCurrentContext().getFiles());
+            CvsVersioningSystem.getInstance().setIgnored(Utils.getCurrentContext(nodes).getFiles());
         } else if (actionStatus == UNIGNORING) {
-            CvsVersioningSystem.getInstance().setNotignored(Utils.getCurrentContext().getFiles());
+            CvsVersioningSystem.getInstance().setNotignored(Utils.getCurrentContext(nodes).getFiles());
         } else {
             throw new RuntimeException("Invalid action status: " + actionStatus);
         }

@@ -18,6 +18,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
+import org.openide.nodes.Node;
 
 import java.awt.event.ActionEvent;
 import java.awt.*;
@@ -39,12 +40,12 @@ public class StatusAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void performCvsAction(ActionEvent ev) {
+    public void performCvsAction(Node[] nodes) {
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
         stc.setContext(null);
         stc.open();
 
-        Context ctx = Utils.getCurrentContext();
+        Context ctx = Utils.getCurrentContext(nodes);
 
         stc.setContentTitle(getContextDisplayName());
         stc.setContext(ctx);
