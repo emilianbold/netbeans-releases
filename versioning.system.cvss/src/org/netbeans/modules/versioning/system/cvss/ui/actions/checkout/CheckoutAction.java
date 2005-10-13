@@ -17,6 +17,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
 import org.netbeans.modules.versioning.system.cvss.executor.CheckoutExecutor;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
@@ -27,8 +28,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
@@ -181,7 +180,10 @@ public final class CheckoutAction extends SystemAction {
             }
 
             List checkedOutProjects = new LinkedList();
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(workingFolder));
+            File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
+            // checkout creates new folders and cache must be aware of them
+            refreshRecursively(normalizedWorkingFolder);
+            FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
             if (fo != null) {
                 String name = NbBundle.getMessage(CheckoutAction.class, "BK1007");
                 executor.getGroup().progress(name);
@@ -258,6 +260,17 @@ public final class CheckoutAction extends SystemAction {
                     dialog.setVisible(true);
                 }
             });
+        }
+
+        /**
+         * Refreshes statuses of this folder and all its parent folders up to filesystem root.
+         * 
+         * @param folder folder to refresh
+         */ 
+        private void refreshRecursively(File folder) {
+            if (folder == null) return;
+            refreshRecursively(folder.getParentFile());
+            CvsVersioningSystem.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
 
         public void actionPerformed(ActionEvent e) {
