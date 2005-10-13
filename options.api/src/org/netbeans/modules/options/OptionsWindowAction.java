@@ -254,13 +254,7 @@ public class OptionsWindowAction extends AbstractAction {
             dialog = null;
         }
 
-        public void windowDeactivated (WindowEvent e) {
-            log.log ("Options Dialog - windowDeactivated " + dialog); //NOI18N
-            if (dialog == null) return;
-            optionsPanel.cancel ();
-            dialog = null;
-        }
-
+        public void windowDeactivated (WindowEvent e) {}
         public void windowOpened (WindowEvent e) {}
         public void windowClosing (WindowEvent e) {}
         public void windowIconified (WindowEvent e) {}
@@ -273,7 +267,8 @@ public class OptionsWindowAction extends AbstractAction {
             RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
                     log.log ("Options Dialog - Back to modern."); //NOI18N
-                    actionPerformed (new ActionEvent (this, 0, "Open"));
+                    OptionsWindowAction.this.actionPerformed 
+                        (new ActionEvent (this, 0, "Open"));
                 }
             });
         }
