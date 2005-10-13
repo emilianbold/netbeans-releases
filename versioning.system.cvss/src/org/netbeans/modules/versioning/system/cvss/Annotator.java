@@ -350,6 +350,8 @@ public class Annotator {
                 null,
                 new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory")),
                 null,
+                new SystemActionBridge(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean")),
+                new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts")),
                 new SystemActionBridge(SystemAction.get(IgnoreAction.class),
                                        ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus() == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
