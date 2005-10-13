@@ -88,6 +88,9 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
 
     private ExecutorGroup group;
 
+    /** t9y */
+    boolean t9yRetryFlag;
+
     /**
      * Creates execution environment for given command.
      * @param cvs
@@ -276,7 +279,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
      */
     public void commandEnqueued(CommandRunnable commandRunnable) {
         this.commandRunnable = commandRunnable;
-        group.enqueued(cvs.getClientRuntime(cmd, options), commandRunnable);
+        group.enqueued(cvs.getClientRuntime(cmd, options), this);
         group.addCancellable(commandRunnable);
     }
 
@@ -358,7 +361,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                     }
                 }
 
-                group.finished(clientRuntime, commandRunnable);
+                group.finished(clientRuntime, this);
             }
         }
     }

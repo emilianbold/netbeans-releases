@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.Client;
+import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
@@ -38,6 +39,8 @@ class CommandRunnable implements Runnable, Cancellable {
     private Thread              interruptibleThread;
     private ExecutorSupport     support;
 
+    private static boolean      testRetry = Boolean.getBoolean("netbeans.debug.cvs.io.retry");  // NOI18N
+
     public CommandRunnable(Client client, GlobalOptions options, Command cmd, ExecutorSupport support) {
         this.client = client;
         this.options = options;
@@ -58,6 +61,11 @@ class CommandRunnable implements Runnable, Cancellable {
                 counterUpdater.initTask(counterTask);
                 try {
                     counterTask.schedule(500);
+                    if (testRetry && support.t9yRetryFlag == false) {
+                        support.t9yRetryFlag = true;
+                        String msg = "Testing retry logic. Retry attempt will be OK. (-Dnetbeans.debug.cvs.io.retry=true)"; // NOI18N
+                        throw new AuthenticationException(msg, msg);
+                    }
                     client.executeCommand(cmd, options);
                 } catch (Throwable e) {
                     failure = e;
