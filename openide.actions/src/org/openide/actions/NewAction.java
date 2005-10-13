@@ -150,6 +150,9 @@ public final class NewAction extends NodeAction {
          * directly from top component's selected nodes
          */
         private Lookup lookup;
+        
+        private Node prevNode;
+        private NewType[] prevTypes;
 
         ActSubMenuModel(Lookup lookup) {
             this.lookup = lookup;
@@ -167,7 +170,12 @@ public final class NewAction extends NodeAction {
                         Node n = (Node) item.getInstance();
 
                         if (n != null) {
-                            return n.getNewTypes();
+                            if (n == prevNode && prevTypes != null) {
+                                return prevTypes;
+                            }
+                            prevNode = n;
+                            prevTypes = n.getNewTypes();
+                            return prevTypes;
                         }
                     }
                 }
