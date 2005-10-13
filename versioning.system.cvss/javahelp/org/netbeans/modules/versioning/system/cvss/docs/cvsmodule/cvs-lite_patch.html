@@ -17,12 +17,12 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>Patch files enable software developers who are not sharing a common
 repository to distribute and integrate changes that have been made to
-the code without requiring the files to be edited manually. The IDE
+the code. The IDE
 enables you to create and apply patches that update copies of source
-files. </p>
+files so that you do not have to incorporate the changes manually. </p>
 <a name="CreatePatch"></a>
 <h4>To create a patch file of the differences between a locally
-modified copy of a source and the repository revision:</h4>
+modified copy of a file and the repository version:</h4>
 <ol>
   <li>Select the file or folder for which you want to create a patch in
 the Projects, Files, or Favorites window. </li>
@@ -35,6 +35,12 @@ you want to save the patch. </li>
 differences between the source file versions. </p>
   </li>
 </ol>
+<ul>
+  <li>Note that the Export Diff
+Patch command is only available on files for which either the local or
+remote copies have changes which have not alreaady been merged.<br>
+  </li>
+</ul>
 <!--<h4>To create a patch file of the differences between two repository revisions
         of a source file:</h4>
         <ol>
@@ -94,6 +100,16 @@ differences between the source file versions. </p>
             or folder contains the changes from the patch file after using the Apply
             Patch command.
         </li></ol>-->
+<h4>To apply a patch:</h4>
+<!--<ol>
+  <li>Select the file or folder that you want to apply a patch to in
+the Projects, Files, or Favorites window. </li>
+  <li>Choose CVS&nbsp;&gt; . </li>
+  <li> <br>
+  </li>
+  <li><br>
+  </li>
+</ol>-->
 <ul class="note">
   <li>Because patches on folders use relative paths to the files within
 them, folder patches must be applied on the same folder node that the
