@@ -114,10 +114,6 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
      */
     private Map commitMessages;
 
-    private final Set errorStripeAnnotations = new HashSet();
-    // controls the performance of the annotation fetching process
-    private int annotationsPerfomanceLimit = Integer.MAX_VALUE;
-
     /**
      * Represents text that should be displayed in
      * visible bar with yet <code>null</code> elementAnnotations.
@@ -505,7 +501,10 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         // handle locally modified lines
         AnnotateLine al = getAnnotateLine(line);
         if (al == null) {
-            detachStripeAnnotations();
+            AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+            if (amp != null) {
+                amp.setMarks(Collections.EMPTY_LIST);
+            }
             clearRecentFeedback();
             if (recentRevision != null) {
                 recentRevision = null;
@@ -520,68 +519,36 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
             recentRevision = revision;
             repaint();
 
-            // error stripe support
-            detachStripeAnnotations();
-
-            DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-            if (dobj != null) {
-                LineCookie lineCookie = (LineCookie) dobj.getCookie(LineCookie.class);
-                if (lineCookie != null) {
-                    Set annotations = new HashSet();
-                    Line.Set lines = lineCookie.getLineSet();
-
-                    // I cannot affort to lock elementAnnotations for long time
-                    // it's accessed from editor thread too
-                    Iterator it2;
-                    synchronized(elementAnnotations) {
-                        it2 = new HashSet(elementAnnotations.entrySet()).iterator();
-                    }
-                    while (it2.hasNext()) {
-                        Map.Entry next = (Map.Entry) it2.next();                        
-                        AnnotateLine annotateLine = (AnnotateLine) next.getValue();
-                        if (revision.equals(annotateLine.getRevision())) {
-                            Element element = (Element) next.getKey();
-                            if (elementAnnotations.containsKey(element) == false) {
-                                continue;
-                            }
-                            int elementOffset = element.getStartOffset();
-                            int lineNumber = NbDocument.findLineNumber((StyledDocument)doc, elementOffset);
-                            Line currentLine = lines.getCurrent(lineNumber);
-                            CvsAnnotation ann = new CvsAnnotation(revision, currentLine);
-                            annotations.add(ann);
+            AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+            if (amp != null) {
+            
+                List marks = new ArrayList(elementAnnotations.size());
+                // I cannot affort to lock elementAnnotations for long time
+                // it's accessed from editor thread too
+                Iterator it2;
+                synchronized(elementAnnotations) {
+                    it2 = new HashSet(elementAnnotations.entrySet()).iterator();
+                }
+                while (it2.hasNext()) {
+                    Map.Entry next = (Map.Entry) it2.next();                        
+                    AnnotateLine annotateLine = (AnnotateLine) next.getValue();
+                    if (revision.equals(annotateLine.getRevision())) {
+                        Element element = (Element) next.getKey();
+                        if (elementAnnotations.containsKey(element) == false) {
+                            continue;
                         }
-
-                        if (Thread.interrupted()) {
-                            clearRecentFeedback();
-                            return;
-                        }
+                        int elementOffset = element.getStartOffset();
+                        int lineNumber = NbDocument.findLineNumber((StyledDocument)doc, elementOffset);
+                        AnnotationMark mark = new AnnotationMark(lineNumber, revision);
+                        marks.add(mark);
                     }
 
-                    // do not trust annotations implementation scalability
-                    // explictly monitor its performance and do not overload it
-                    if (annotations.size() < annotationsPerfomanceLimit) {
-                        long startTime = System.currentTimeMillis();
-                        Iterator it = annotations.iterator();
-                        int counter = 0;
-                        while (it.hasNext()) {
-                            CvsAnnotation cvsAnnotation = (CvsAnnotation) it.next();
-                            cvsAnnotation.attach();
-                            errorStripeAnnotations.add(cvsAnnotation);
-                            counter++;
-                            long ms = System.currentTimeMillis() - startTime;
-                            if (ms > 703) {  // 0.7 sec
-                                annotationsPerfomanceLimit = counter;
-                                ErrorManager.getDefault().log(ErrorManager.WARNING, "#59721 should be reopened: " + counter + " of " + annotations.size() + " annotations attached in " + ms + "ms. Setting performance limit.");  // NOI18N
-                                break;
-                            }
-
-                            if (Thread.interrupted()) {
-                                clearRecentFeedback();
-                                return;
-                            }
-                        }
+                    if (Thread.interrupted()) {
+                        clearRecentFeedback();
+                        return;
                     }
                 }
+                amp.setMarks(marks);
             }
         }
 
@@ -598,18 +565,6 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         };
     }
     
-    /**
-     * Detaches all annotations.
-     */
-    private void detachStripeAnnotations() {
-        Iterator it = errorStripeAnnotations.iterator();
-        while (it.hasNext()) {
-            Annotation next = (Annotation) it.next();
-            next.detach();
-            it.remove();
-        }
-    }
-
     /**
      * Clears the status bar if it contains the latest status message
      * displayed by this annotation bar.
@@ -691,8 +646,11 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         if(latestAnnotationTask != null) {
             latestAnnotationTask.cancel();
         }
-        detachStripeAnnotations();
-        annotationsPerfomanceLimit = Integer.MAX_VALUE;
+        AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+        if (amp != null) {
+            amp.setMarks(Collections.EMPTY_LIST);
+        }
+
         clearRecentFeedback();
     }
 

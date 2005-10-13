@@ -270,6 +270,17 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-versioning-system-cvss-Annotation.xml" url="cvs_annotation.xml"/>
         </folder>
+        
+        
+        <folder name="text">
+            <folder name="base">
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationMarkInstaller.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.annotate.AnnotationMarkInstaller"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>        
     </folder>
 
 </filesystem>
