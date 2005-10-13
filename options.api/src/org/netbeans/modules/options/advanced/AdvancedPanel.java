@@ -13,39 +13,19 @@
 
 package org.netbeans.modules.options.advanced;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyEditorManager;
-import java.util.ArrayList;
 import java.util.Iterator;
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.modules.options.ui.TabbedPanel;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
-import org.openide.awt.Mnemonics;
-import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -86,7 +66,6 @@ public final class AdvancedPanel extends JPanel {
             "p:g");     // rows
         PanelBuilder builder = new PanelBuilder (layout, this);
         CellConstraints cc = new CellConstraints ();
-        CellConstraints lc = new CellConstraints ();
         builder.add (scrollPane, cc.xy (1, 1, "f,f"));
         
         int preferredWith = 0;
@@ -100,23 +79,6 @@ public final class AdvancedPanel extends JPanel {
             );
         }
         setPreferredSize (new Dimension (preferredWith, 100));
-    }
-    
-    private static String loc (String key) {
-        return NbBundle.getMessage (AdvancedPanel.class, key);
-    }
-    
-    private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c, 
-                loc (key)
-            );
-        else
-            Mnemonics.setLocalizedText (
-                (JLabel) c, 
-                loc (key)
-            );
     }
     
     public void update () {

@@ -13,19 +13,14 @@
 
 package org.netbeans.modules.options;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.KeyStroke;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-
-import org.openide.util.Utilities;
 
 
 /**

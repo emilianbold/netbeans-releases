@@ -14,7 +14,6 @@ package org.netbeans.modules.options.ui;
 
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JLabel;

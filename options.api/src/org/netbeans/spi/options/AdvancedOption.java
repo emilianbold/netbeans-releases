@@ -13,9 +13,6 @@
 
 package org.netbeans.spi.options;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-
 
 /**
  * Implementation of this class represents one category (like "Ant" 

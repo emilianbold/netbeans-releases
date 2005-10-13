@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.options.advanced;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.spi.options.OptionsCategory;
 import org.openide.util.NbBundle;
 
