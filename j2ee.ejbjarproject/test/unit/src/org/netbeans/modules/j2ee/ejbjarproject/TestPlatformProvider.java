@@ -39,7 +39,7 @@ public final class TestPlatformProvider implements JavaPlatformProvider {
 
     public TestPlatformProvider (ClassPath defaultPlatformBootClassPath, ClassPath explicitPlatformBootClassPath) {
         this.support = new PropertyChangeSupport (this);
-        this.defaultPlatform = new TestPlatform("DefaultPlatform", defaultPlatformBootClassPath);
+        this.defaultPlatform = new TestPlatform("default_platform", defaultPlatformBootClassPath);
         this.explicitPlatform = new TestPlatform("ExplicitPlatform", explicitPlatformBootClassPath);
     }
 
