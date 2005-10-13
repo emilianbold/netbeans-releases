@@ -150,7 +150,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
                 Icon icon = closeIcon.obtainIcon(iconPath);
                 int iconWidth = icon.getIconWidth();
                 int space4Icon = iconWidth + (2 * ICON_X_PAD) + space4Pin + 4;
-                txtWidth = width - space4Icon;
+                txtWidth = width - space4Icon - TXT_X_PAD;
                 getCloseIconRect(tempRect, index);
                 icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
             } else {
