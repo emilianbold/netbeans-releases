@@ -156,19 +156,59 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
         javaAbbrevMap.put("tds", "Thread.dumpStack();"); // NOI18N
         
         // Code templates
+        javaAbbrevMap.put("dowhile", // NOI18N
+                "do {\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
+                + "} while (${condition});" // NOI18N
+        );
+        
         javaAbbrevMap.put("forc", // NOI18N
-                "for (Iterator ${it} = ${collection instanceof=\"java.util.Collection\"}.iterator();"
-                + " ${it}.hasNext();) {\n"
-                + "    ${Object} ${elem} = (${Object}) ${it}.next();\n"
-                + "    ${cursor}\n"
+                "for (Iterator ${it} = ${collection instanceof=\"java.util.Collection\"}.iterator();" // NOI18N
+                + " ${it}.hasNext();) {\n" // NOI18N
+                + "    ${Object} ${elem} = (${Object}) ${it}.next();\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
                 + "}"
         );
 
-        javaAbbrevMap.put("fori", // NOI18N
-                "for (int ${i index} = 0; ${i} < ${arr array}.length; ${i}++) {\n"
-                + "    ${cursor}\n"
+        javaAbbrevMap.put("fore", // NOI18N
+                "for (${Object} ${elem} : ${iterable}) {\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
                 + "}"
         );
+        
+        javaAbbrevMap.put("fori", // NOI18N
+                "for (int ${i index} = 0; ${i} < ${arr array}.length; ${i}++) {\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
+                + "}" // NOI18N
+        );
+        
+        javaAbbrevMap.put("ifelse", // NOI18N
+                "if (${condition}) {\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
+                + "} else {\n" // NOI18N
+                + "\n" // NOI18N
+                + "}" // NOI18N
+        );
+        
+        javaAbbrevMap.put("newo", // NOI18N
+                "${Object} ${name} = new ${Object}(${args});" // NOI18N
+        );
+        
+        javaAbbrevMap.put("trycatch", // NOI18N
+                "try {\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
+                + "} catch (${Exception} e) {\n" // NOI18N
+                + "\n" // NOI18N
+                + "}" // NOI18N
+        );
+        
+        javaAbbrevMap.put("whilei", // NOI18N
+                "while (${it}.hasNext()) {\n" // NOI18N
+                + "    ${Object} ${elem} = (${Object}) ${it}.next();\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
+                + "}"
+        );
+        
         
         return javaAbbrevMap;
     }
