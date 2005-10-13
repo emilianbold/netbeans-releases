@@ -131,7 +131,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 Icon icon = closeIcon.obtainIcon(iconPath);
                 int iconWidth = icon.getIconWidth();
                 int space4Icon = iconWidth + 2 * ICON_X_PAD + space4pin;
-                txtWidth = width - 2 * TXT_X_PAD - space4Icon;
+                txtWidth = width - TXT_X_PAD - space4Icon;
                 getCloseIconRect(tempRect, index);
                 icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
             } else {
