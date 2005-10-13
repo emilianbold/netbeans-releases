@@ -510,7 +510,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
 	
     private void init2 (FileObject fo) {
-        if (fo.getName ().equals ("Defaults") && fo.isFolder () &&
+        if (fo.getNameExt ().equals ("Defaults") && fo.isFolder () &&
             fo.getFileObject (HIGHLIGHTING_FILE_NAME) != null
         )
             addFontColorsProfile (fo, true); // Editors/ProfileName/Defaults/editorColoring.xml
@@ -555,7 +555,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     private void addFontColorsProfile (FileObject fo, boolean systemProfile) {
-        String profile = fo.getParent ().getName ();
+        String profile = fo.getParent ().getNameExt ();
         String bundleName = (String) fo.getParent ().getAttribute 
             ("SystemFileSystem.localizingBundle");
         String locProfile = profile;
@@ -568,7 +568,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     private void addKeyMapProfile (FileObject fo, boolean systemProfile) {
-        String profile = fo.getName ();
+        String profile = fo.getNameExt ();
         if (profile.equals ("base")) profile = "NetBeans";
         String bundleName = (String) fo.getAttribute 
             ("SystemFileSystem.localizingBundle");
