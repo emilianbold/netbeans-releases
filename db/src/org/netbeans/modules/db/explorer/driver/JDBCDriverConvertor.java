@@ -22,6 +22,8 @@ import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -115,53 +117,56 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         return (type.isAssignableFrom(JDBCDriver.class));
     }
 
-    public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
+    public Object instanceCreate() throws IOException, ClassNotFoundException {
         synchronized (this) {
             Object o = refDriver.get();
-            if (o != null)
+            if (o != null) {
                 return o;
-            Handler handler = new Handler();
-            try {
-                XMLReader reader = XMLUtil.createXMLReader();
-                InputSource is = new InputSource(holder.getPrimaryFile().getInputStream());
-                is.setSystemId(holder.getPrimaryFile().getURL().toExternalForm());
-                reader.setContentHandler(handler);
-                reader.setErrorHandler(handler);
-                reader.setEntityResolver(EntityCatalog.getDefault());
-
-                reader.parse(is);
-            } catch (SAXException ex) {
-                Exception x = ex.getException();
-                ex.printStackTrace();
-                if (x instanceof java.io.IOException)
-                    throw (IOException)x;
-                else
-                    throw new java.io.IOException(ex.getMessage());
             }
 
-            JDBCDriver inst = createDriver(handler);
-            refDriver = new WeakReference(inst);
-            return inst;
+            try {
+                JDBCDriver inst = readDriverFromFile(holder.getPrimaryFile());
+                refDriver = new WeakReference(inst);
+                return inst;
+            } catch (MalformedURLException e) {
+                IOException newEx = new IOException(e.getMessage());
+                newEx.initCause(e);
+                throw newEx;
+            }
         }
     }
     
-    // Other
+    private static JDBCDriver readDriverFromFile(FileObject fo) throws IOException, MalformedURLException {
+        Handler handler = new Handler();
+        
+        // parse the XM file
+        try {
+            XMLReader reader = XMLUtil.createXMLReader();
+            InputSource is = new InputSource(fo.getInputStream());
+            is.setSystemId(fo.getURL().toExternalForm());
+            reader.setContentHandler(handler);
+            reader.setErrorHandler(handler);
+            reader.setEntityResolver(EntityCatalog.getDefault());
 
-    private static JDBCDriver createDriver(Handler handler) {
+            reader.parse(is);
+        } catch (SAXException ex) {
+            throw new IOException(ex.getMessage());
+        }
+        
+        // read the driver from the handler
         URL[] urls = new URL[handler.urls.size()];
         int j = 0;
         for (Iterator i = handler.urls.iterator(); i.hasNext(); j++) {
-            try {
-                urls[j] = new URL((String)i.next());
-            } catch (MalformedURLException exc) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-            }
+            urls[j] = new URL((String)i.next());
         }
         if (checkClassPathDrivers(handler.clazz, urls) == false) {
             return null;
         }
+        
         return JDBCDriver.create(handler.name, handler.clazz, urls);
     }
+    
+    // Other
 
     /**
      * Creates the XML file describing the specified JDBC driver.
@@ -190,11 +195,39 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         FileObject[] children = oldRoot.getChildren();
         for (int i = 0; i < children.length; i++) {
             try {
-                FileUtil.moveFile(children[i], newRoot, children[i].getName());
+                JDBCDriver drv = readDriverFromFile(children[i]);
+                URL[] urls = drv.getURLs();
+                for (int j = 0; j < urls.length; j++) {
+                    urls[j] = encodeURL(urls[j]);
+                }
+                create(drv);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            try {
+                children[i].delete();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                // what can we do?
             }
         }
+    }
+    
+    /**
+     * Encode an URL to be a valid URI. Be careful that this method will happily
+     * encode an already encoded URL! Use only on URLs which are not encoded.
+     */
+    static URL encodeURL(URL url) throws MalformedURLException, URISyntaxException {
+        String urlString = url.toExternalForm();
+        int colon = urlString.indexOf(':');
+        int pound = urlString.indexOf('#');
+        String part = null;
+        String fragment = null;
+        
+        part = urlString.substring(colon + 1, pound != -1 ? pound : urlString.length());
+        if (pound != -1) {
+            fragment = urlString.substring(pound + 1, urlString.length());
+        }
+        return new URI(url.getProtocol(), part, fragment).toURL();
     }
     
     /**

@@ -15,7 +15,9 @@ package org.netbeans.modules.db.explorer.driver;
 
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Collection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.test.DOMCompare;
@@ -108,13 +110,21 @@ public class JDBCDriverConvertorTest extends TestBase {
         assertEquals(1, instances.size()); 
     }
     
+    public void testEncodeURL() throws Exception {
+        assertEquals(new URL("file:///test%20file#fragment"), JDBCDriverConvertor.encodeURL(new URL("file:///test file#fragment")));
+        assertEquals(new URL("file:///test%20file"), JDBCDriverConvertor.encodeURL(new URL("file:///test file")));
+    }
+    
     public void testImportOldDrivers() throws Exception {
+        final String UNENCODED_URL = "file:///foo 1.jar";
+        
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject oldRoot = sfs.findResource(JDBCDriverConvertor.OLD_DRIVERS_PATH);
         if (oldRoot == null) {
             oldRoot = FileUtil.createFolder(sfs.getRoot(), JDBCDriverConvertor.OLD_DRIVERS_PATH);
         }
-        createDriverFile("testdriver.xml", oldRoot);
+        URL[] urls = new URL[] { new URL(UNENCODED_URL) };
+        createDriverFile("testdriver.xml", oldRoot, urls);
         
         JDBCDriverConvertor.importOldDrivers();
         
@@ -126,7 +136,9 @@ public class JDBCDriverConvertorTest extends TestBase {
         FolderLookup lookup = new FolderLookup(DataFolder.findFolder(newRoot));
         Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(JDBCDriver.class));
         Collection instances = result.allInstances();
-        assertEquals(1, instances.size()); 
+        JDBCDriver drv = (JDBCDriver)instances.iterator().next();
+        System.out.println(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)));
+        assertEquals(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)), drv.getURLs()[0]);
     }
     
     private FileObject getDriversFolder() {
@@ -134,6 +146,14 @@ public class JDBCDriverConvertorTest extends TestBase {
     }
     
     private static FileObject createDriverFile(String name, FileObject folder) throws Exception {
+        URL[] urls = new URL[] {
+            new URL("file:///foo1.jar"),
+            new URL("file:///foo2.jar"),
+        };
+        return createDriverFile(name, folder, urls);
+    }
+    
+    private static FileObject createDriverFile(String name, FileObject folder, URL[] urls) throws Exception {
         FileObject fo = folder.createData(name);
         FileLock lock = fo.lock();
         try {
@@ -145,8 +165,9 @@ public class JDBCDriverConvertorTest extends TestBase {
                 writer.write("<name value='Foo Driver'/>");
                 writer.write("<class value='org.foo.FooDriver'/>");
                 writer.write("<urls>");
-                writer.write("<url value='file:///foo1.jar'/>");
-                writer.write("<url value='file:///foo2.jar'/>");
+                for (int i = 0; i < urls.length; i++) {
+                    writer.write("<url value='" + urls[i].toExternalForm() + "'/>");
+                }
                 writer.write("</urls>");
                 writer.write("</driver>");
             } finally {
