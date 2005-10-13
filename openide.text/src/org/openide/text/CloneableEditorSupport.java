@@ -2315,8 +2315,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (Env.PROP_TIME.equals(ev.getPropertyName())) {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();
+                
+                ERR.log("PROP_TIME new value: " + time);
+                ERR.log("       lastSaveTime: " + lastSaveTime);
+                
+                boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime));
+                ERR.log("             reload: " + reload);
 
-                if ((lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime))) {
+                if (reload) {
                     //#32777 - set externallyModified to true because file was externally modified
                     externallyModified = true;
 
