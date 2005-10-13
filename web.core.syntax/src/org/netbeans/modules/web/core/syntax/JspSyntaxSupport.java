@@ -1376,7 +1376,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
             prevNonNullToken = search;
             search = search.getNext();
-        } while(token != null);
+        } while(search != null);
         if(end == null) {
             //comment to the end of the file - may happed
             end = prevNonNullToken; //last non-null token
