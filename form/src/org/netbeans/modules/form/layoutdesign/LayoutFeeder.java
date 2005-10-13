@@ -1803,14 +1803,17 @@ class LayoutFeeder implements LayoutConstants {
     private void analyzeSequential(LayoutInterval group, List inclusions) {
         boolean inSequence = false;
         boolean parallelWithSequence = false;
-        int index = 0;
+        int index = -1;
         int distance = Integer.MAX_VALUE;
         int ortDistance = Integer.MAX_VALUE;
 
         for (int i=0,n=group.getSubIntervalCount(); i < n; i++) {
             LayoutInterval sub = group.getSubInterval(i);
-            if (sub.isEmptySpace())
+            if (sub.isEmptySpace()) {
+                if (index == i)
+                    index++;
                 continue;
+            }
 
             LayoutRegion subSpace = sub.getCurrentSpace();
 
@@ -1880,7 +1883,8 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 else { // intervals before this one are irrelevant
                     parallelWithSequence = false;
-                    index = i + 1;
+                    if (aEdge == LEADING)
+                        index = i + 1;
                 }
             }
             else { // no orthogonal overlap, moreover in vertical dimension located parallelly
@@ -1896,8 +1900,11 @@ class LayoutFeeder implements LayoutConstants {
                 distance = -1; // preferred distance
             }
             IncludeDesc iDesc = addInclusion(group, parallelWithSequence, distance, ortDistance, inclusions);
-            if (iDesc != null)
+            if (iDesc != null) {
+                if (index == -1)
+                    index = aEdge == LEADING ? 0 : group.getSubIntervalCount();
                 iDesc.index = index;
+            }
         }
     }
 
@@ -2210,23 +2217,27 @@ class LayoutFeeder implements LayoutConstants {
         updateReplacedOriginalGroup(commonGroup, commonSeq);
 
         // 5th create groups of merged content around the adding component
+        LayoutInterval sideGroupLeading = null;
+        LayoutInterval sideGroupTrailing = null;
         if (!separatedLeading.isEmpty()) {
             int checkCount = commonSeq.getSubIntervalCount(); // remember ...
-            LayoutInterval sideGroup = operations.addGroupContent(
+            sideGroupLeading = operations.addGroupContent(
                     separatedLeading, commonSeq, index, dimension, LEADING); //, mainEffectiveAlign
-            if (sideGroup != null) {
-                sideGroup.getCurrentSpace().set(dimension, borderPos[LEADING], neighborPos[LEADING]);
-                operations.optimizeGaps(sideGroup, dimension);
-            }
             index += commonSeq.getSubIntervalCount() - checkCount;
         }
         if (!separatedTrailing.isEmpty()) {
-            LayoutInterval sideGroup = operations.addGroupContent(
+            sideGroupTrailing = operations.addGroupContent(
                     separatedTrailing, commonSeq, index, dimension, TRAILING); //, mainEffectiveAlign
-            if (sideGroup != null) {
-                sideGroup.getCurrentSpace().set(dimension, neighborPos[TRAILING], borderPos[TRAILING]);
-                operations.optimizeGaps(sideGroup, dimension);
-            }
+        }
+        if (sideGroupLeading != null) {
+            int checkCount = commonSeq.getSubIntervalCount(); // remember ...
+            sideGroupLeading.getCurrentSpace().set(dimension, borderPos[LEADING], neighborPos[LEADING]);
+            operations.optimizeGaps(sideGroupLeading, dimension);
+            index += commonSeq.getSubIntervalCount() - checkCount;
+        }
+        if (sideGroupTrailing != null) {
+            sideGroupTrailing.getCurrentSpace().set(dimension, neighborPos[TRAILING], borderPos[TRAILING]);
+            operations.optimizeGaps(sideGroupTrailing, dimension);
         }
 
         // 6th adjust the final inclusion
@@ -2454,13 +2465,14 @@ class LayoutFeeder implements LayoutConstants {
                     parGroup = new LayoutInterval(PARALLEL);
                     LayoutInterval parSeq = new LayoutInterval(SEQUENTIAL);
                     layoutModel.addInterval(parSeq, parGroup, 0);
+                    parGroup.getCurrentSpace().set(dimension,
+                            LayoutUtils.getVisualPosition(commonGroup.getSubInterval(startIndex), dimension, LEADING),
+                            LayoutUtils.getVisualPosition(commonGroup.getSubInterval(endIndex), dimension, TRAILING));
                     int i = startIndex;
                     while (i <= endIndex) {
                         LayoutInterval li = layoutModel.removeInterval(commonGroup, i);
                         endIndex--;
                         layoutModel.addInterval(li, parSeq, -1);
-                        if (!li.isEmptySpace())
-                            parGroup.getCurrentSpace().expand(li.getCurrentSpace(), dimension);
                     }
                     layoutModel.addInterval(parGroup, commonGroup, startIndex);
                 }
@@ -2694,7 +2706,10 @@ class LayoutFeeder implements LayoutConstants {
     private static boolean canSubstAlignWithParent(LayoutInterval interval, int dimension, int alignment, boolean placedAtBorderEnough) {
         LayoutInterval parent = LayoutInterval.getFirstParent(interval, PARALLEL);
         boolean aligned = LayoutInterval.isAlignedAtBorder(interval, parent, alignment);
-        if (!aligned && LayoutInterval.isPlacedAtBorder(interval, parent, dimension, alignment)) {
+        if (!aligned
+            && LayoutInterval.getDirectNeighbor(interval, alignment, false) == null
+            && LayoutInterval.isPlacedAtBorder(interval, parent, dimension, alignment))
+        {   // not aligned, but touching parallel group border
             aligned = placedAtBorderEnough
                       || LayoutInterval.getDirectNeighbor(parent, alignment, true) != null
                       || LayoutInterval.isClosedGroup(parent, alignment);
