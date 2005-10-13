@@ -107,25 +107,26 @@ public class HTMLCompletionQuery implements CompletionQuery {
                             index--;
                     } else
                         index = -1;
+                    
                     // if not find first tag with a letter
-                    while (index == -1 && prevv != null){
-                        while (prevv != null
-                                && ((!sup.isTag(prevv)
-                                && prevv.getTokenID().getNumericID() != HTMLTokenContext.ARGUMENT_ID)
-                                || prevv.getImage().trim().equals(">"))){ // NOI18N
-                            prevv = prevv.getPrevious();
-                        }
-                        if (prevv != null){
+                    do {
+                        if(prevv.getTokenID() == HTMLTokenContext.TAG_OPEN
+                            || prevv.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
+                            //found open or close tag text
+                            //scan the tag image for letters (I am not sure whether 
+                            //the first character always has to be a letter)
                             prevvImage = prevv.getImage();
-                            index = 0;
-                            while (index < prevvImage.length() && !Character.isLetter(prevvImage.charAt(index)))
-                                index++;
-                            if (index == prevvImage.length()){
-                                index = -1;
-                                prevv = prevv.getPrevious();
+                            for(int i = 0;i < prevvImage.length(); i++) {
+                                char ch = prevvImage.charAt(i);
+                                if(Character.isLetter(ch)) {
+                                    index = i;
+                                    break;
+                                }
                             }
                         }
-                    }
+                        prevv = prevv.getPrevious();
+                    } while(prevv != null && index == -1);
+                    
                     // is there a previous tag with a letter?
                     if (prevv != null && index != -1){
                         lowerCase = !Character.isUpperCase(prevvImage.charAt(index));
