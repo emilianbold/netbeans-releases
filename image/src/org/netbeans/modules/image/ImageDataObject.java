@@ -49,7 +49,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     static final long serialVersionUID = -6035788991669336965L;
 
     /** Base for image resource. */
-    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject"; // NOI18N
+    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject.png"; // NOI18N
     
     /** Open support for this image data object. */
     private transient ImageOpenSupport openSupport;
@@ -158,7 +158,8 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         /** Constructs image node. */
         public ImageNode(ImageDataObject obj) {
             super(obj, Children.LEAF);
-            setIconBase(IMAGE_ICON_BASE);
+            //setIconBase(IMAGE_ICON_BASE);
+            setIconBaseWithExtension(IMAGE_ICON_BASE);
             setDefaultAction (SystemAction.get (OpenAction.class));
         }
         
