@@ -27,8 +27,9 @@ individual files. </li>
 contained within your project, folder, and package nodes. </li>
   <li><b>Versioning window.</b> Provides a real-time list of all of the
 changed, removed, new, and out-of-date files in selected directories. </li>
-  <li><strong>Annotations.</strong> Displays commit date, author, and revision
-  	information in the left margin of files open in the editor window. </li>
+  <li><strong>Annotations.</strong> Displays commit message, author, date, and
+  	revision number information in the left margin of files open in the editor
+  	window. </li>
 </ul>
 <p>The Versioning window displays versioned files using the following
 color coding and font styles:
@@ -129,8 +130,22 @@ to project, package and directory icons:
 <h3>Tracking Changes in the Versioning Window <a name="monitor"></a></h3>
 <p>The Versioning window presents a real-time view of the changes in
 selected directories. It opens at the bottom of the IDE whenever you
-view changes.  To open the Versioning window, choose CVS &gt; Show All Changes.
-Alternately, you can right-click any project, directory,
+view changes made in version-controlled files.  By default, the Versioning window
+	displays a list of all modified  files within the selected package or folder.
+	Using the filter buttons in the toolbar, you can limit the list of displayed
+	files to either locally or remotely modified files. The Versioning window
+	toolbar also includes buttons that enable you to invoke the most common CVS
+	tasks on all files displayed in the list. </p>
+<p>The following CVS commands are available in the Versioning window: </p>
+<ul>
+  <li><b>Refresh Status.</b></li>
+  <li><b>Diff All.</b></li>
+  <li><b>Update All.</b></li>
+  <li><strong>Commit All.</strong></li>
+</ul>
+<p>To open the Versioning window,
+	choose CVS &gt; Show
+All Changes. Alternately, you can right-click any project, directory,
 or file that is in a CVS working directory and choose CVS &gt; Show Changes.</p>
 <table>
   <tbody>
