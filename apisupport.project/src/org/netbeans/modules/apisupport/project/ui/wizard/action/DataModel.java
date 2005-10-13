@@ -303,13 +303,25 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.className = className;
     }
     
-    void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public String getClassName() {
+        return className;
+    }
+    
+    void setDisplayName(String display) {
+        this.displayName = display;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
     }
     
     void setIconPath(String origIconPath) {
         reset();
         this.origIconPath = origIconPath;
+    }
+    
+    public String getIconPath() {
+        return origIconPath;
     }
     
     public void setPackageName(String pkg) {

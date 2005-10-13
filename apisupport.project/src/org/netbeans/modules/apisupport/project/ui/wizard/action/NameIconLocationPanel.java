@@ -43,6 +43,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private static final String NONE_LABEL =
             NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None");
     
+    private DocumentListener updateListener;
     /** Creates new NameIconLocationPanel */
     public NameIconLocationPanel(final WizardDescriptor setting, final DataModel data) {
         super(setting);
@@ -50,13 +51,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         initComponents();
 	initAccessibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
-        className.select(0, className.getText().length());
-        DocumentListener updateListener = new UIUtil.DocumentAdapter() {
+        updateListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
                 storeBaseData();
             }
         };
+    }
+    
+    private void addListeners() {
         className.getDocument().addDocumentListener(updateListener);
         displayName.getDocument().addDocumentListener(updateListener);
         Component editorComp = packageName.getEditor().getEditorComponent();
@@ -65,22 +68,50 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         }
     }
     
+    private void removeListeners() {
+        className.getDocument().removeDocumentListener(updateListener);
+        displayName.getDocument().removeDocumentListener(updateListener);
+        Component editorComp = packageName.getEditor().getEditorComponent();
+        if (editorComp instanceof JTextComponent) {
+            ((JTextComponent) editorComp).getDocument().removeDocumentListener(updateListener);
+        }
+    }
+    
     protected String getPanelName() {
         return getMessage("LBL_NameIconLocation_Title"); // NOI18N
     }
     
     protected void storeToDataModel() {
+        removeListeners();
         storeBaseData();
     }
     
     protected void readFromDataModel() {
-        updateData();
+        loadData();
+        addListeners();
     }
     
-    private void updateData() {
+    private void loadData() {
         if (data.getPackageName() != null) {
             packageName.setSelectedItem(data.getPackageName());
+        } else {
+            data.setPackageName(packageName.getSelectedItem().toString());
         }
+        if (data.getIconPath() == null) {
+            data.setIconPath(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None"));
+        }
+        if (data.getClassName() == null) {
+            data.setClassName(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_SampleClassName"));
+        }
+        if (data.getDisplayName() == null) {
+            data.setDisplayName(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel"));
+        }
+        icon.setText(data.getIconPath());
+        className.setText(data.getClassName());
+        className.select(0, className.getText().length());
+        displayName.setText(data.getDisplayName());
+        // this is somewhat evil because it regenerates the files and expects package/name etc to be filled in data..
+        storeBaseData();
         CreatedModifiedFiles files = data.getCreatedModifiedFiles();
         createdFiles.setText(UIUtil.generateTextAreaContent(files.getCreatedPaths()));
         modifiedFiles.setText(UIUtil.generateTextAreaContent(files.getModifiedPaths()));
@@ -100,7 +131,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void checkValidity() {
-        String pName = packageName.getEditor().getItem().toString().trim();
+        String pName = packageName.getEditor().getItem() == null ? "" : packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassName())) {
             setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier")); // NOI18N
         } else if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) {
@@ -168,7 +199,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
         add(classNameTxt, gridBagConstraints);
 
-        className.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_SampleClassName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -187,7 +217,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
         add(displayNameTxt, gridBagConstraints);
 
-        displayName.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -207,7 +236,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         add(iconTxt, gridBagConstraints);
 
         icon.setEditable(false);
-        icon.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
