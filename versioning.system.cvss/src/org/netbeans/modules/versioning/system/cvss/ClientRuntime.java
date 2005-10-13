@@ -173,7 +173,12 @@ public class ClientRuntime {
         log.getOut().write("\n");
         log.setFocusTaken(false);
     }
-    
+
+    public void flushLog() {
+        log.getOut().close();
+    }
+
+
     private File[] getCommandFiles(Command cmd) {
         if (cmd instanceof AddCommand) {
             AddCommand c = (AddCommand) cmd;
