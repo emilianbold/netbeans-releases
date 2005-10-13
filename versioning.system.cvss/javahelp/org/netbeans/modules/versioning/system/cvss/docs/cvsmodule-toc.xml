@@ -11,21 +11,21 @@
           <tocitem text="Working with Version Control">
               <tocitem text="About CVS" target="cvs-lite_about" />
               <tocitem text="Working with CVS" target="cvs-lite_overview" /> 
-              <tocitem text="Using CVS in the IDE" target="cvs-lite_using" /> 
-              <tocitem text="Using CVS with IDE Projects" target="cvs-lite_project-system" /> 
+              <tocitem text="Using CVS with the IDE" target="cvs-lite_using" /> 
               <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
+              <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
               
               <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" /> 
               <tocitem text="Updating Files in a Local Working Directory" target="cvs-lite_updating" />
-              <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
               <tocitem text="Comparing File Revisions" target="cvs-lite_diff" /> 
-              <tocitem text="Merging File Revisions" target="cvs-lite_merge" /> 
-              <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
-              <tocitem text="Creating and Applying a Patch" target="cvs-lite_patch" />              
-              
-              <!--<tocitem text="Reverting Changes" target="cvs-lite_revert" />-->
-              <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
+              <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
+              <tocitem text="Reverting Changes" target="cvs-lite_revert" />            
+              <tocitem text="Placing Project Metadata Under Version Control" target="cvs-lite_project-system" />               
+
               <tocitem text="Working with Branches" target="cvs-lite_branches" />  
+              <tocitem text="Merging File Revisions from a Branch" target="cvs-lite_merge" /> 
+              <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
+              <tocitem text="Creating and Applying a Patch" target="cvs-lite_patch" />  
                 
               <tocitem text="Setting Up CVS" target="cvs-lite_setup" />                  
               <tocitem text="CVS Tasks: Quick Reference" target="cvs-lite_quickref" /> 
