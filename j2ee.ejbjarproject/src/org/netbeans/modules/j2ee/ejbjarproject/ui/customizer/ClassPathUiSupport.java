@@ -189,15 +189,17 @@ public class ClassPathUiSupport {
     public static int[] addJarFiles( DefaultListModel listModel, int[] indices, File files[], boolean includeInDeployment ) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[files.length];
-        for( int i = 0; i < files.length; i++ ) {
+        for( int i = 0, delta = 0; i+delta < files.length; ) {            
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( files[i], null, includeInDeployment );
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( files[i+delta], null, includeInDeployment );
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
-                indexes[i] = current;
+                indexes[delta + i] = current;
+                i++;
             }
             else {
-                indexes[i] = listModel.indexOf( item );
+                indexes[i + delta] = listModel.indexOf( item );
+                delta++;
             }            
         }
         return indexes;
