@@ -33,6 +33,7 @@ import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
+import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -42,7 +43,7 @@ import org.openide.filesystems.FileObject;
  * @author Jaroslav Tulach
  */
 public class GenerateJNLPApplicationTest extends TestBase {
-    
+    private ErrorManager err;
     private SuiteProject suite;
     
     public GenerateJNLPApplicationTest(String name) {
@@ -61,6 +62,8 @@ public class GenerateJNLPApplicationTest extends TestBase {
         
         SuiteProjectGeneratorTest.openProject(suite);
         proj.open();
+        
+        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
     }
     
     public void testBuildTheJNLPAppWhenAppNamePropIsNotSet() {
@@ -111,6 +114,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
             "");
         ep.setProperty("jnlp.servlet.jar", someJar.toString());
         org.netbeans.modules.apisupport.project.Util.storeProperties(x, ep);
+        err.log("Properties stored");
         
         SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("Provider is here");
@@ -118,11 +122,17 @@ public class GenerateJNLPApplicationTest extends TestBase {
         List l = Arrays.asList(p.getSupportedActions());
         assertTrue("We support build-jnlp: " + l, l.contains("build-jnlp"));
         
-        DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
+        DialogDisplayerImpl.returnFromNotify(null);
+        err.log("invoking build-jnlp");
         ExecutorTask task = p.invokeActionImpl("build-jnlp", suite.getLookup());
+        err.log("Invocation started");
         
         assertNotNull("Task was started", task);
+        err.log("Waiting for task to finish");
+        task.waitFinished();
+        err.log("Checking the result");
         assertEquals("Finished ok", 0, task.result());
+        err.log("Testing the content of the directory");
         
         org.openide.filesystems.FileObject[] arr = suite.getProjectDirectory().getChildren();
         List subobj = new ArrayList (Arrays.asList(arr));

@@ -36,7 +36,6 @@ public class DialogDisplayerImpl extends DialogDisplayer {
         Assert.assertEquals("My class", DialogDisplayerImpl.class, o.getClass());
         
         Assert.assertNull("No previous value", toReturn);
-        Assert.assertNotNull("Cannot have null return value", value);
         toReturn = value;
     }
 
