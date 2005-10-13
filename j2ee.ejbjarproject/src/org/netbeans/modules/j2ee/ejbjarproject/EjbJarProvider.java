@@ -98,11 +98,18 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
 
     public FileObject findDeploymentConfigurationFile(String name) {
-        return getMetaInf().getFileObject(name);
+        FileObject metaInf = getMetaInf();
+        if (metaInf == null) {
+            return null;
+        }
+        return getFileObject(name);
     }
     
     public File getDeploymentConfigurationFile(String name) {
         FileObject moduleFolder = getMetaInf();
+        if (moduleFolder == null) {
+            return null;
+        }
         File configFolder = FileUtil.toFile(moduleFolder);
         return new File(configFolder, name);
     }
@@ -191,7 +198,11 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     
     private EjbJar getEjbJar() {
         try {
-            return DDProvider.getDefault().getDDRoot(getDeploymentDescriptor());
+            FileObject ejbJarXml = getDeploymentDescriptor();
+            if (ejbJarXml == null) {
+                return null;
+            }
+            return DDProvider.getDefault().getDDRoot(ejbJarXml);
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
         }
