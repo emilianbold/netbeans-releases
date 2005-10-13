@@ -369,7 +369,7 @@ public class Controller { //XXX public only for debug access to logging code
                         ex.printStackTrace();
                     }
                 }
-                FindDialogPanel.showFindDialog(new FindActionListener (win, tab, findNextAction, findPreviousAction, copyAction), str);
+                FindDialogPanel.showFindDialog(tab.getFindActionListener(findNextAction, findPreviousAction, copyAction), str);
                 break;
             case ACTION_FINDNEXT:
                 findNext (tab);
@@ -452,62 +452,7 @@ public class Controller { //XXX public only for debug access to logging code
         }
     }
 
-    /**
-     * An action listener which listens to the default button of the find
-     * dialog.
-     */
-    private static class FindActionListener implements ActionListener {
-        OutputTab tab;
-        Action findNextAction;
-        Action findPreviousAction;
-        Action copyAction;
-        FindActionListener (OutputWindow win, OutputTab tab, Action findNextAction, Action findPreviousAction, Action copyAction) {
-            this.tab = tab;
-            this.findNextAction = findNextAction;
-            this.findPreviousAction = findPreviousAction;
-            this.copyAction = copyAction;
-        }
 
-        public void actionPerformed(ActionEvent e) {
-            FindDialogPanel panel = (FindDialogPanel)
-                SwingUtilities.getAncestorOfClass(FindDialogPanel.class,
-                (JComponent) e.getSource());
-            if (panel == null) {
-                //dialog disposed
-                panel = (FindDialogPanel) ((JComponent)
-                    e.getSource()).getClientProperty("panel"); //NOI18N
-            }
-
-/*          //XXX the code below may actually be correct - pending discussion
-            int pos = tab.getOutputPane().getCaretPos();
-            if (pos >= tab.getOutputPane().getLength() || pos < 0) {
-                pos = 0;
-            }
-            */
-            int pos = 0;
-            String s = panel.getPattern();
-            if (s == null || s.length() == 0) {
-                Toolkit.getDefaultToolkit().beep();
-                if (log)
-                    log("Find string is null");
-                return;
-            }
-            OutWriter out = tab.getIO().out();
-            if (out != null) {
-                Matcher matcher = out.getLines().find(s);
-                if (matcher != null && matcher.find(pos)) {
-                    int start = matcher.start();
-                    int end = matcher.end();
-                    tab.getOutputPane().setSelection(start, end);
-                    findNextAction.setEnabled(true);
-                    findPreviousAction.setEnabled(true);
-                    copyAction.setEnabled(true);
-                    panel.getTopLevelAncestor().setVisible(false);
-                    tab.requestFocus();
-                }
-            }
-        }
-    }
 
     /**
      * Find the next match for the previous search contents, starting at
@@ -518,6 +463,10 @@ public class Controller { //XXX public only for debug access to logging code
     private void findNext (OutputTab tab) {
         OutWriter out = tab.getIO().out();
         if (out != null) {
+            String lastPattern = FindDialogPanel.getPanel().getPattern();
+            if (lastPattern != null) {
+                out.getLines().find(lastPattern);
+            }            
             Matcher matcher = out.getLines().getForwardMatcher();
             int pos = tab.getOutputPane().getCaretPos();
             if (pos >= tab.getOutputPane().getLength() || pos < 0) {
@@ -542,6 +491,10 @@ public class Controller { //XXX public only for debug access to logging code
     private void findPrevious (OutputTab tab) {
         OutWriter out = tab.getIO().out();
         if (out != null) {
+            String lastPattern = FindDialogPanel.getPanel().getPattern();
+            if (lastPattern != null) {
+                out.getLines().find(lastPattern);
+            }
             Matcher matcher = out.getLines().getReverseMatcher();
 
             int length = tab.getOutputPane().getLength();
@@ -576,8 +529,8 @@ public class Controller { //XXX public only for debug access to logging code
             boolean enable = len > 0;
             findAction.setEnabled (enable);
             OutWriter out = tab.getIO().out();
-            findNextAction.setEnabled (out != null && out.getLines().getForwardMatcher() != null);
-            findPreviousAction.setEnabled (out != null && out.getLines().getForwardMatcher() != null);
+//            findNextAction.setEnabled (out != null && out.getLines().getForwardMatcher() != null);
+//            findPreviousAction.setEnabled (out != null && out.getLines().getForwardMatcher() != null);
             saveAsAction.setEnabled (enable);
             selectAllAction.setEnabled(enable);
             copyAction.setEnabled(pane.hasSelection());

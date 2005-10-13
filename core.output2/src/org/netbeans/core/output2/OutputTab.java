@@ -15,6 +15,12 @@ package org.netbeans.core.output2;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.regex.Matcher;
+import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
@@ -200,4 +206,69 @@ final class OutputTab extends AbstractOutputTab {
         }
         return false;
     }
+    
+    ActionListener getFindActionListener(Action next, Action prev, Action copy) {
+        if (findActionListener == null) {
+            findActionListener = new FindActionListener(this, next, prev, copy);
+        }
+        return findActionListener;
+    }
+    
+    private ActionListener findActionListener;
+    
+    /**
+     * An action listener which listens to the default button of the find
+     * dialog.
+     */
+    static class FindActionListener implements ActionListener {
+        OutputTab tab;
+        Action findNextAction;
+        Action findPreviousAction;
+        Action copyAction;
+        FindActionListener(OutputTab tab, Action findNextAction, Action findPreviousAction, Action copyAction) {
+            this.tab = tab;
+            this.findNextAction = findNextAction;
+            this.findPreviousAction = findPreviousAction;
+            this.copyAction = copyAction;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FindDialogPanel panel = (FindDialogPanel)
+                SwingUtilities.getAncestorOfClass(FindDialogPanel.class,
+                (JComponent) e.getSource());
+            if (panel == null) {
+                //dialog disposed
+                panel = (FindDialogPanel) ((JComponent)
+                    e.getSource()).getClientProperty("panel"); //NOI18N
+            }
+
+/*          //XXX the code below may actually be correct - pending discussion
+            int pos = tab.getOutputPane().getCaretPos();
+            if (pos >= tab.getOutputPane().getLength() || pos < 0) {
+                pos = 0;
+            }
+            */
+            int pos = 0;
+            String s = panel.getPattern();
+            if (s == null || s.length() == 0) {
+                Toolkit.getDefaultToolkit().beep();
+
+                return;
+            }
+            OutWriter out = tab.getIO().out();
+            if (out != null && !out.isDisposed()) {
+                Matcher matcher = out.getLines().find(s);
+                if (matcher != null && matcher.find(pos)) {
+                    int start = matcher.start();
+                    int end = matcher.end();
+                    tab.getOutputPane().setSelection(start, end);
+                    findNextAction.setEnabled(true);
+                    findPreviousAction.setEnabled(true);
+                    copyAction.setEnabled(true);
+                    panel.getTopLevelAncestor().setVisible(false);
+                    tab.requestFocus();
+                }
+            }
+        }
+    }    
 }
