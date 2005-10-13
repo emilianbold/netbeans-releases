@@ -30,6 +30,7 @@ import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormDesigner;
 import org.netbeans.modules.javacore.api.JavaModel;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -214,6 +215,7 @@ public class LayoutTestUtils implements LayoutConstants {
 	    FileObject fo = targetFolder.createData(formFO.getName() + "Test-ExpectedEndModel", "txt"); //NOI18N
 	    fw = new FileWriter(FileUtil.toFile(fo));
 	    fw.write(lm.dump(idToNameMap));
+	    StatusDisplayer.getDefault().setStatusText("The test was successfully written: " + fo.getPath());
 	} catch (IOException ex) {
 	    ex.printStackTrace();
 	    return;
