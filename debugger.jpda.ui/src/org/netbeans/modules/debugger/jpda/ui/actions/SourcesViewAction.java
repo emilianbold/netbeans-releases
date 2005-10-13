@@ -22,7 +22,6 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
 import org.netbeans.modules.debugger.jpda.ui.views.SourcesView;
-import org.netbeans.modules.debugger.ui.views.CallStackView;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
