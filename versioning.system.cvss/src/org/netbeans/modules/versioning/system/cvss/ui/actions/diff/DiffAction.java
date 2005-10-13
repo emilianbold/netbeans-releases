@@ -66,4 +66,9 @@ public class DiffAction extends AbstractSystemAction {
         }
         executor.showRemoteDiff(group);
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }

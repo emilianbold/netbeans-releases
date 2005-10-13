@@ -181,6 +181,10 @@ public class CommitAction extends AbstractSystemAction {
     public void performCvsAction(Node[] nodes) {
         invokeCommit(getContextDisplayName(), getContext(nodes));
     }
+
+    protected boolean asynchronous() {
+        return false;
+    }
     
     private static void copy(CommitCommand c1, CommitCommand c2) {
         c1.setMessage(c2.getMessage());

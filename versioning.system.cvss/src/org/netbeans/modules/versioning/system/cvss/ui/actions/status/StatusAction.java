@@ -52,4 +52,9 @@ public class StatusAction extends AbstractSystemAction {
         stc.requestActive();
         stc.performRefreshAction();
     }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }

@@ -93,7 +93,11 @@ public class MergeBranchAction extends AbstractSystemAction {
        
         RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings));
     }
- 
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
     /**
      * Runnable that executes actions specified in the MergeBranch settings panel.
      */ 

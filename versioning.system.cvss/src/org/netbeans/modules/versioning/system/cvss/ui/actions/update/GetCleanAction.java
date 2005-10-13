@@ -50,7 +50,11 @@ public class GetCleanAction extends AbstractSystemAction {
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
-    
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
     public void performCvsAction(final Node[] nodes) {
         if (!confirmed(null, null)) return;
         RequestProcessor.getDefault().post(new Runnable() {

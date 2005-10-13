@@ -74,4 +74,9 @@ public class ResolveConflictsAction extends AbstractSystemAction {
             }
         }
     }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+    
 }

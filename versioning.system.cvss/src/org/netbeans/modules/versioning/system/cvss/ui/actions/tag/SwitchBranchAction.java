@@ -67,7 +67,11 @@ public class SwitchBranchAction extends AbstractSystemAction {
             }
         });
     }
-    
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
     private void switchBranch(Node[] nodes) {
         Context context = getContext(nodes);
 

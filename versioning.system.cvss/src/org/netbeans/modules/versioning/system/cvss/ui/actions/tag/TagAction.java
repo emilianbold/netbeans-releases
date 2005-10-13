@@ -81,6 +81,10 @@ public class TagAction extends AbstractSystemAction {
         group.addExecutors(TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
         group.execute();
     }
+
+    protected boolean asynchronous() {
+        return false;
+    }
     
     private void copy(TagCommand c1, TagCommand c2) {
         c1.setTag(c2.getTag());

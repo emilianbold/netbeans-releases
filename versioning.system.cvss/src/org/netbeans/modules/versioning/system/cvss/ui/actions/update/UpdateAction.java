@@ -78,4 +78,9 @@ public class UpdateAction extends AbstractSystemAction {
         }
         group.execute();
     }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+    
 }

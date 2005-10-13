@@ -146,6 +146,10 @@ public class ExportDiffAction extends AbstractSystemAction {
         }
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     private void async(Node[] nodes, File destination) {
         boolean success = false;
         OutputStream out = null;

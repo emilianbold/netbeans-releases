@@ -87,4 +87,9 @@ public class IgnoreAction extends AbstractSystemAction {
             throw new RuntimeException("Invalid action status: " + actionStatus);
         }
     }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }

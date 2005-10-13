@@ -67,6 +67,10 @@ public final class DeleteLocalAction extends AbstractSystemAction {
         return "Delete";  // NOI18M
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     public void async(File[] files) {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];

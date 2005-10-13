@@ -46,7 +46,11 @@ public class SearchHistoryAction extends AbstractSystemAction  {
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
-    
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
     public void performCvsAction(Node[] nodes) {
         String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName());
         openHistory(getContext(nodes), title);

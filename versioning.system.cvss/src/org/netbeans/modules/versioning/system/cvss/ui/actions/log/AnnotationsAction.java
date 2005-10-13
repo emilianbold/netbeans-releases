@@ -64,6 +64,10 @@ public class AnnotationsAction extends AbstractSystemAction {
         return 0;
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
     public void performCvsAction(Node[] nodes) {
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);

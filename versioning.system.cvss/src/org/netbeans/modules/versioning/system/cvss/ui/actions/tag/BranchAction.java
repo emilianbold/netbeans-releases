@@ -57,6 +57,10 @@ public class BranchAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     public void performCvsAction(Node[] nodes) {
         Context context = getContext(nodes);
 
