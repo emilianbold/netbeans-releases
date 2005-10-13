@@ -1104,6 +1104,48 @@ public class RequestProcessorTest extends NbTestCase {
         
     }
     
+    public void testTaskFinishedOnCancelFiredAfterTaskHasReallyFinished() throws Exception {
+        RequestProcessor rp = new RequestProcessor("Cancellable", 1, true);
+        
+        class X implements Runnable {
+            
+            volatile boolean reallyFinished = false;
+            
+            public synchronized void run() {
+                notifyAll();
+                
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    // interrupted by Task.cancel()
+                }
+                
+                notifyAll();
+                
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                }
+                
+                reallyFinished = true;
+            }
+        }
+        
+        final X x = new X();
+        synchronized (x) {
+            RequestProcessor.Task t = rp.post(x);
+            t.addTaskListener(new TaskListener() {
+                public void taskFinished(Task t) {
+                    assertTrue(x.reallyFinished);
+                }
+            });
+            x.wait();
+            t.cancel();
+            x.wait();
+            x.notifyAll();
+        }
+    }
+    
     private static void doGc (int count, Reference toClear) {
         java.util.ArrayList l = new java.util.ArrayList (count);
         while (count-- > 0) {
