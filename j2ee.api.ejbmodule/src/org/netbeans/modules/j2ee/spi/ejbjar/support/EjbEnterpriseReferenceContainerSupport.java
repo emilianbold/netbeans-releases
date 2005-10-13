@@ -207,8 +207,11 @@ public final class EjbEnterpriseReferenceContainerSupport {
                 if (javax.sql.DataSource.class.getName().equals(ref.getResType())) {
                     ResourceRef[] refs = ejbs[bean].getResourceRef();
                     for (int i=0; i < refs.length; i++) {
+			String newDefaultDescription = ref.getDefaultDescription();
+			String existingDefaultDescription = refs[i].getDefaultDescription();
+			boolean canCompareDefDesc = (newDefaultDescription != null && existingDefaultDescription != null);
                         if (javax.sql.DataSource.class.getName().equals(refs[i].getResType()) &&
-                                ref.getDefaultDescription().equals(refs[i].getDefaultDescription()) && 
+                                (canCompareDefDesc ? newDefaultDescription.equals(existingDefaultDescription) : true) && 
                                     ref.getResRefName().equals(refs[i].getResRefName())) {
                             return true;
                         }

@@ -166,8 +166,12 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
              WebApp wa = getWebApp();
              ResourceRef[] refs = wa.getResourceRef();
              for (int i=0; i < refs.length; i++) {
-                 if (javax.sql.DataSource.class.getName().equals(refs[i].getResType()) &&
-                     ref.getDefaultDescription().equals(refs[i].getDefaultDescription())) {
+		String newDefaultDescription = ref.getDefaultDescription();
+		String existingDefaultDescription = refs[i].getDefaultDescription();
+		boolean canCompareDefDesc = (newDefaultDescription != null && existingDefaultDescription != null);
+		if (javax.sql.DataSource.class.getName().equals(refs[i].getResType()) &&
+			(canCompareDefDesc ? newDefaultDescription.equals(existingDefaultDescription) : true) && 
+			    ref.getResRefName().equals(refs[i].getResRefName())) {
                      return refs[i].getResRefName();
                  }
              }
