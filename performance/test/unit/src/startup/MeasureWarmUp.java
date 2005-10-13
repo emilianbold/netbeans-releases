@@ -166,12 +166,6 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
             //read log file until "Warmup started"
             while((readLine = br.readLine())!= null && readLine.indexOf(warmup_started)==-1);
             
-            //read first value
-            if((readLine = br.readLine())!=null && (begin=readLine.indexOf(warmup))!=-1) {
-                s_time = getTime(readLine);
-                name = readLine.substring(begin+warmup.length(), readLine.indexOf(" ",begin+warmup.length()));
-            }
-            
             //start to parse
             while((readLine = br.readLine())!=null){
                 try {
@@ -179,7 +173,7 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
                         n_time = getTime(readLine);
                         n_name = readLine.substring(begin+warmup.length(), readLine.indexOf(" ",begin+warmup.length()));
                         
-                        if (s_time != 0) {
+                        if (s_time != 0) { // only if this isn't the very first line 
                             value = n_time - s_time;
                             measuredValues.put(name, new Long(value));
                         }
