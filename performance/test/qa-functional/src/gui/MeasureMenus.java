@@ -30,7 +30,7 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testFileMenu", "File main menu"));
         suite.addTest(new MainMenu("testEditMenu", "Edit main menu"));
         suite.addTest(new MainMenu("testViewMenu", "View main menu"));
-        suite.addTest(new MainMenu("testGoToMenu", "GoTo main menu"));
+        suite.addTest(new MainMenu("testNavigateMenu", "Navigate main menu"));
         suite.addTest(new MainMenu("testSourceMenu", "Source main menu"));
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
@@ -50,10 +50,10 @@ public class MeasureMenus  {
         //suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
         //suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
-        suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
+        //suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debug main menu"));
         //suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
-        suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
+        //suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
         
         suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "JSE Project node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenuProjects", "Source Packages node popup in Projects View"));

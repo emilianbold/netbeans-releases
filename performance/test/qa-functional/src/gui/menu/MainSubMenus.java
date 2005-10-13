@@ -42,6 +42,8 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     
     private EditorOperator editor;
     
+    private static final int repeat_original = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue(); // initialize original value
+    
     /** Creates a new instance of MainSubMenus */
     public MainSubMenus(String testName) {
         super(testName);
@@ -118,9 +120,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     private void testSubMenu(String mainMenu, String subMenu){
         mainMenuPath = mainMenu;
         subMenuPath = subMenu;
-        repeat = 1; // only first use is interesting
         doMeasurement();
-        repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue(); // initialize original value
     }
     
     private void testSubMenu(String bundle, String mainMenu, String subMenu) {
@@ -161,6 +161,16 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         
         if(editor != null)
             editor.close();
+    }
+    
+    public void setUp () {
+        super.setUp();
+        repeat = 1; // only first use is interesting
+    }
+    
+    public void tearDown() {
+        super.tearDown();
+        repeat = repeat_original; // initialize original value
     }
     
     /** Test could be executed internaly in IDE without XTest

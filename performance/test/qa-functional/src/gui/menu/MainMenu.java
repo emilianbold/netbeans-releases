@@ -65,7 +65,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         suite.addTest(new MainMenu("testFileMenu", "File main menu"));
         suite.addTest(new MainMenu("testEditMenu", "Edit main menu"));
         suite.addTest(new MainMenu("testViewMenu", "View main menu"));
-        suite.addTest(new MainMenu("testGoToMenu", "GoTo main menu"));
+        suite.addTest(new MainMenu("testNavigateMenu", "Navigate main menu"));
         suite.addTest(new MainMenu("testSourceMenu", "Source main menu"));
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
@@ -89,7 +89,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         testMenuWithJava("org.netbeans.core.Bundle","Menu/View");
     }
     
-    public void testGoToMenu(){
+    public void testNavigateMenu(){
         testMenuWithJava("org.netbeans.core.Bundle","Menu/GoTo");
     }
     
