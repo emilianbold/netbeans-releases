@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 /**
  * Ejbs contained within a module
@@ -129,7 +130,11 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
     }
 
     public void propertyChange(PropertyChangeEvent pce) {
-        updateKeys();
+	SwingUtilities.invokeLater(new Runnable() {
+	    public void run() {
+		updateKeys();
+	    }
+	});
     }
 
     private void addKeyValues(List keyContainer, List beans) {
