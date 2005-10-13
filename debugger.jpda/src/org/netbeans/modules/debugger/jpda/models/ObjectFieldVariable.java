@@ -25,7 +25,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 /**
  * @author   Jan Jancura
  */
-public class ObjectFieldVariable extends FieldVariable 
+class ObjectFieldVariable extends FieldVariable 
 implements ObjectVariable {
         
 

@@ -23,7 +23,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 /**
  * @author   Jan Jancura
  */
-public class ObjectLocalVariable extends Local implements 
+class ObjectLocalVariable extends Local implements 
 org.netbeans.api.debugger.jpda.ObjectVariable {
     
     

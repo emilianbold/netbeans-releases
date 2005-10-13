@@ -324,7 +324,7 @@ public class LocalsTreeModel implements TreeModel {
     
     public Variable getVariable (Value v) {
         if (v instanceof ObjectReference)
-            return new ObjectVariable (
+            return new AbstractVariable (
                 this,
                 (ObjectReference) v,
                 null

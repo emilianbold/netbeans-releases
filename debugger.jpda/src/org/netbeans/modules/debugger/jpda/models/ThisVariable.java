@@ -20,7 +20,7 @@ import org.netbeans.api.debugger.jpda.This;
 /**
  * @author   Jan Jancura
  */
-public class ThisVariable extends AbstractVariable implements This {
+class ThisVariable extends AbstractVariable implements This {
 
     ThisVariable (
         LocalsTreeModel model,

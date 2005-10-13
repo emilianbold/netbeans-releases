@@ -24,7 +24,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 /**
  * @author   Jan Jancura
  */
-public class FieldVariable extends AbstractVariable implements 
+class FieldVariable extends AbstractVariable implements 
 org.netbeans.api.debugger.jpda.Field {
         
     protected Field field;

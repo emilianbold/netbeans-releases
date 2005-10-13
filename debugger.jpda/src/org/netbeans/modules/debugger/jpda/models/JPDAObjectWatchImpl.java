@@ -33,7 +33,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
  * @author   Jan Jancura
  */
 
-public class JPDAObjectWatchImpl extends AbstractVariable implements JPDAWatch,
+class JPDAObjectWatchImpl extends AbstractVariable implements JPDAWatch,
 ObjectVariable {
 
     private WatchesModel        model;

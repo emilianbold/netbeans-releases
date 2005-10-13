@@ -24,7 +24,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 /**
  * @author   Jan Jancura
  */
-public class Local extends AbstractVariable implements 
+class Local extends AbstractVariable implements 
 org.netbeans.api.debugger.jpda.LocalVariable {
         
     protected LocalVariable     local;

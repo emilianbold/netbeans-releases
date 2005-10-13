@@ -22,7 +22,7 @@ import org.netbeans.api.debugger.jpda.Super;
 /**
  * @author   Jan Jancura
  */
-public class SuperVariable extends AbstractVariable implements Super {
+class SuperVariable extends AbstractVariable implements Super {
 
     // init ....................................................................
     private ClassType classType;

@@ -34,7 +34,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 /**
  * @author   Jan Jancura
  */
-public class AbstractVariable implements ObjectVariable {
+class AbstractVariable implements ObjectVariable {
 
     private Value           value;
     private LocalsTreeModel model;
@@ -57,7 +57,8 @@ public class AbstractVariable implements ObjectVariable {
             this.id = Integer.toString(super.hashCode());
     }
 
-    AbstractVariable (LocalsTreeModel model, Value value, String genericSignature, String id) {
+    AbstractVariable (LocalsTreeModel model, Value value, String genericSignature,
+                      String id) {
         this.model = model;
         this.value = value;
         try {
@@ -339,8 +340,7 @@ public class AbstractVariable implements ObjectVariable {
             
             // 4) encapsulate result
             if (v instanceof ObjectReference)
-                return new org.netbeans.modules.debugger.jpda.models.
-                    ObjectVariable (
+                return new AbstractVariable ( // It's also ObjectVariable
                         getModel (),
                         (ObjectReference) v,
                         id + method + "^"
@@ -581,6 +581,10 @@ public class AbstractVariable implements ObjectVariable {
                 or
             );
         return new FieldVariable (this.getModel(), v, f, parentID, or);
+    }
+    
+    public String toString () {
+        return "ObjectVariable ";
     }
     
     private static String convertToStringInitializer (String s) {
