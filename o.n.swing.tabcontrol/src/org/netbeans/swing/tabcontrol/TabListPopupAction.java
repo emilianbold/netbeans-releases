@@ -66,7 +66,7 @@ public class TabListPopupAction extends AbstractAction {
         SwitcherTableItem[] items = new SwitcherTableItem[tabs.size()];
         int i = 0;
         int selIdx = displayer.getSelectionModel().getSelectedIndex();
-        TabData selectedTab = displayer.getModel().getTab(selIdx);
+        TabData selectedTab = selIdx >= 0 ? displayer.getModel().getTab(selIdx) : null;
         for (Iterator it = tabs.iterator(); it.hasNext(); ) {
             TabData tab = (TabData) it.next();
             items[i++] = new SwitcherTableItem(
