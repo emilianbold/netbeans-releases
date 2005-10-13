@@ -1313,6 +1313,8 @@ class LayoutFeeder implements LayoutConstants {
                         if (!toPar.isSequential()) {
                             toPar = new LayoutInterval(SEQUENTIAL);
                             layoutModel.addInterval(toPar, lower.getParent(), layoutModel.removeInterval(lower));
+                            layoutModel.setIntervalAlignment(toPar, lower.getRawAlignment());
+                            layoutModel.setIntervalAlignment(lower, DEFAULT);
                             layoutModel.addInterval(lower, toPar, 0);
                         }
                         layoutModel.addInterval(endGap, toPar, alignment==LEADING ? 0 : -1);
