@@ -19,8 +19,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.ObjectStreamException;
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -382,30 +380,30 @@ public class DatabaseConnection implements DBConnection {
 
         try {
             propertySupport.firePropertyChange("connecting", null, null);
-            Connection connection;
-            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
-            
 
             // For Java Studio Enterprise.
             getOpenConnection().enable();
             startRuntimes();
             
-            // TODO: maybe this should be really 1, not 0?
-            if (drvs.length == 0) {
-                Class.forName(drv);
-                connection = DriverManager.getConnection(db, dbprops);
-            } else {
-                int drvIndex = 0;
-                for (int i = 0; i < drvs.length; i++)
+            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
+            JDBCDriver useDriver = null;
+
+            if (drvs.length != 0) {
+                useDriver = drvs[0];
+                for (int i = 0; i < drvs.length; i++) {
                     if (drvs[i].getName().equals(getDriverName())) {
-                        drvIndex = i;
+                        useDriver = drvs[i];
                         break;
                     }
-                DbURLClassLoader l = new DbURLClassLoader(drvs[drvIndex].getURLs());
-                Class c = Class.forName(drv, true, l);
-                Driver d = (Driver) c.newInstance();
-                connection = d.connect(db, dbprops);
+                }
+            } else {
+                // will be loaded through DriverManager, make sure it is loaded
+                Class.forName(drv);
             }
+
+            Connection connection = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
+            setConnection(connection);
+            
             propertySupport.firePropertyChange("connected", null, null);
             
             // For Java Studio Enterprise.
@@ -470,29 +468,28 @@ public class DatabaseConnection implements DBConnection {
                     // For Java Studio Enterprise.
                     getOpenConnection().enable();
 
-                    Connection connection;
-                    JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
-
                     // For Java Studio Enterprise.
                     getOpenConnection().enable();
                     startRuntimes();
-
-                    if (drvs.length == 0) {
-                        Class.forName(drv);
-                        connection = DriverManager.getConnection(db, dbprops);
-                    } else {
-                        int drvIndex = 0;
-                        for (int i = 0; i < drvs.length; i++)
+                    
+                    JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
+                    JDBCDriver useDriver = null;
+                    
+                    if (drvs.length != 0) {
+                        useDriver = drvs[0];
+                        for (int i = 0; i < drvs.length; i++) {
                             if (drvs[i].getName().equals(getDriverName())) {
-                                drvIndex = i;
+                                useDriver = drvs[i];
                                 break;
                             }
-                        DbURLClassLoader l = new DbURLClassLoader(drvs[drvIndex].getURLs());
-                        Class c = Class.forName(drv, true, l);
-                        Driver d = (Driver) c.newInstance();
-                        connection = d.connect(db, dbprops);
+                        }
+                    } else {
+                        // will be loaded through DriverManager, make sure it is loaded
+                        Class.forName(drv);
                     }
-                    setConnection(connection);
+                    
+                    setConnection(DbDriverManager.getDefault().getConnection(db, dbprops, useDriver));
+                        
                     propertySupport.firePropertyChange("connected", null, null);
 
                     // For Java Studio Enterprise.
