@@ -313,11 +313,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
         public void loadData(FileObject file, FileLock dataLock) throws IOException {
             try {
-                String encoding = encodingHelper.detectEncoding(new BufferedInputStream(file.getInputStream()));
+                BufferedInputStream inputStream = new BufferedInputStream(file.getInputStream());
+                String encoding = encodingHelper.detectEncoding(inputStream);
                 if (!encodingHelper.getEncoding().equals(encoding)) {
                     showUsingDifferentEncodingMessage(encoding);
                 }
-                Reader reader = new InputStreamReader(file.getInputStream(), encodingHelper.getEncoding());
+                Reader reader = new InputStreamReader(inputStream, encodingHelper.getEncoding());
                 long time;
                 StringBuffer sb = new StringBuffer(5000);
                 try {
