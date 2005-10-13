@@ -137,7 +137,6 @@ public class JDBCDriverConvertorTest extends TestBase {
         Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(JDBCDriver.class));
         Collection instances = result.allInstances();
         JDBCDriver drv = (JDBCDriver)instances.iterator().next();
-        System.out.println(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)));
         assertEquals(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)), drv.getURLs()[0]);
     }
     
