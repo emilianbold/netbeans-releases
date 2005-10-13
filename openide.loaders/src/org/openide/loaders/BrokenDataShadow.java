@@ -17,7 +17,6 @@ import java.io.*;
 import java.text.MessageFormat;
 import java.lang.reflect.*;
 import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
@@ -71,48 +70,22 @@ final class BrokenDataShadow extends MultiDataObject {
         
     /** Map of <String(nameoffileobject), DataShadow> */
     private static Map allDataShadows;
-    /** ReferenceQueue for collected DataShadows */
-    private static ReferenceQueue rqueue;
     
     private static final long serialVersionUID = -3046981691235483810L;
     
     /** Getter for the Set that contains all DataShadows. */
-    private static synchronized Map getDataShadowsSet() {
+    static synchronized Map getDataShadowsSet() {
        if (allDataShadows == null) {
            allDataShadows = new HashMap();
        }
         return allDataShadows;
     }
     
-    /** Getter for the ReferenceQueue that contains WeakReferences
-     * for discarded DataShadows
-     */
-    private static synchronized ReferenceQueue getRqueue() {
-        if (rqueue == null) {
-            rqueue = new ReferenceQueue();
-        }
-        return rqueue;
-    }
-    
-    /** Removes WeakReference of collected DataShadows. */
-    private static void checkQueue() {
-        if (rqueue == null) {
-            return;
-        }
-        
-        Reference ref = rqueue.poll();
-        while (ref != null) {
-           getDataShadowsSet().remove(ref);
-           ref = rqueue.poll();
-        }
-    }
-    
     private static synchronized void enqueueBrokenDataShadow(BrokenDataShadow ds) {
-        checkQueue();
         Map m = getDataShadowsSet ();
         
         String prim = ds.getUrl().toExternalForm();
-        Reference ref = DataShadow.createReference(ds, getRqueue());
+        Reference ref = new DataShadow.DSWeakReference(ds);
         Set s = (Set)m.get (prim);
         if (s == null) {
             s = java.util.Collections.singleton (ref);

@@ -27,9 +27,9 @@ import org.netbeans.junit.*;
  *
  * @author  Vita Stejskal, Jesse Glick
  */
-public class DataFolderTest extends NbTestCase {
+public class DataFolderTest extends LoggingTestCaseHid {
     private ArrayList hold = new ArrayList();
-
+    
     /** Creates new DataFolderTest */
     public DataFolderTest (String name) {
         super (name);

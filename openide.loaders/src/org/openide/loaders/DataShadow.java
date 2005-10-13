@@ -86,8 +86,6 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     /** Map of all <FileObject, Set<DataShadow>>. Where the file object
      Is the original file */
     private static Map allDataShadows;
-    /** ReferenceQueue for collected DataShadows */
-    private static ReferenceQueue rqueue;
     
     private static Mutex MUTEX = new Mutex ();
 
@@ -99,42 +97,11 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         return allDataShadows;
     }
     
-    /** Getter for the ReferenceQueue that contains WeakReferences
-     * for discarded DataShadows
-     */
-    private static synchronized ReferenceQueue getRqueue() {
-        if (rqueue == null) {
-            rqueue = new ReferenceQueue();
-        }
-        return rqueue;
-    }
-    
-    /** Removes WeakReference of collected DataShadows. */
-    private static void checkQueue() {
-        if (rqueue == null) {
-            return;
-        }
-        
-        Reference ref = rqueue.poll();
-        while (ref != null) {
-            synchronized (getDataShadowsSet ()) {
-                getDataShadowsSet().remove(ref);
-            }
-            ref = rqueue.poll();
-        }
-    }
-    
-    /** Creates WeakReference for given DataShadow */
-    static Reference createReference(DataObject ds, ReferenceQueue q) {
-        return new DSWeakReference(ds, q);
-    }
-    
     private static synchronized void enqueueDataShadow(DataShadow ds) {
-        checkQueue();
         Map m = getDataShadowsSet ();
         
         FileObject prim = ds.getOriginal ().getPrimaryFile ();
-        Reference ref = createReference(ds, getRqueue());
+        Reference ref = new DSWeakReference(ds);
         Set s = (Set)m.get (prim);
         if (s == null) {
             s = Collections.singleton (ref);
@@ -657,11 +624,12 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             throw e;
         }
     }
+    
+    private static RequestProcessor RP = new RequestProcessor("DataShadow validity check");
 
     private static void updateShadowOriginal(final DataShadow shadow) {
         final FileObject primary = shadow.original.getPrimaryFile ();
-
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run () {
                 DataObject newOrig;
 
@@ -677,7 +645,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     checkValidity (new OperationEvent (shadow.original));
                 }
             }
-        }, 100);
+        }, 100, Thread.MIN_PRIORITY);
     }
     
     protected DataObject handleCopy (DataFolder f) throws IOException {
@@ -1122,12 +1090,13 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }
     }
     
-    static final class DSWeakReference extends WeakReference {
+    static final class DSWeakReference extends WeakReference 
+    implements Runnable {
         private int hash;
         private FileObject original;
         
-        DSWeakReference(DataObject o, ReferenceQueue rqueue) {
-            super(o, rqueue);
+        DSWeakReference(DataObject o) {
+            super(o, org.openide.util.Utilities.activeReferenceQueue());
             this.hash = o.hashCode();
             if (o instanceof DataShadow) {
                 DataShadow s = (DataShadow)o;
@@ -1151,6 +1120,18 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
             
             return false;
+        }
+
+        public void run() {
+            if (original != null) {
+                synchronized (getDataShadowsSet ()) {
+                    getDataShadowsSet().remove(original);
+                }            
+            } else {
+                synchronized (BrokenDataShadow.getDataShadowsSet()) {
+                    BrokenDataShadow.getDataShadowsSet().remove(this);
+                }
+            }
         }
     }
 }

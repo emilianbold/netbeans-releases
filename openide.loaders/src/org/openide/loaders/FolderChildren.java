@@ -65,12 +65,12 @@ implements PropertyChangeListener, ChangeListener {
     * @param f folder to display content of
     * @param filter filter of objects
     */
-    public FolderChildren (DataFolder f, DataFilter filter) {
+    public FolderChildren(DataFolder f, DataFilter filter) {
         this.folder = f;
         this.filter = filter;
-	this.refreshRunnable = new ChildrenRefreshRunnable();
-	this.refreshTask = refRP.create(refreshRunnable);
-        this.listener = org.openide.util.WeakListeners.propertyChange (this, folder);
+        this.refreshRunnable = new ChildrenRefreshRunnable();
+        this.refreshTask = refRP.create(refreshRunnable);
+        this.listener = org.openide.util.WeakListeners.propertyChange(this, folder);
         err = ErrorManager.getDefault().getInstance("org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.')); // NOI18N
         if (!err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err = null;
@@ -245,6 +245,9 @@ implements PropertyChangeListener, ChangeListener {
                 return;
             }
             ch = folder.getChildren();
+            if (err != null) {
+                err.log("Children computed");
+            }
             Object []keys = new Object[ch.length];
             for (int i = 0; i < keys.length; i++) {
                 keys[i] = new Pair(ch[i].getPrimaryFile());
@@ -257,12 +260,19 @@ implements PropertyChangeListener, ChangeListener {
                     refreshKey( keys[i] );
                 }
             }
+            
+            if (!active) {
+                clear();
+            }
         }
         
         /** stop holding the references to the data objects. After
          * calling this they can be GCed again.
          */
         public void clear() {
+            if (err != null) {
+                err.log("Clearing the reference to children"); // NOI18N
+            }
             ch = null;
         }
     }
