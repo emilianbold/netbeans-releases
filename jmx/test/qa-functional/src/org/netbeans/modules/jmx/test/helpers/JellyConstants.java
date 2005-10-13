@@ -17,9 +17,9 @@ package org.netbeans.modules.jmx.test.helpers;
 public class JellyConstants {
     
    //tempo modes
-   public static final String NONE = "";
-   public static final String DEBUG = "";
-   public static final String NOMINAL = "";
+   public static final String NONE = "NONE";
+   public static final String DEBUG = "DEBUG";
+   public static final String NOMINAL = "NOMINAL";
     
    //Package 
    public static final String PROJECT_NAME = "JMXTESTMBeanFunctionalTest";
