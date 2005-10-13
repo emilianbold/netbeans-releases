@@ -576,7 +576,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             }
             body.append(");\n"); // NOI18N
         } else {
-            body.append("\n// TODO add your own implementation\n\n"); // NOI18N
+            body.append("\n//TODO add your own implementation\n\n"); // NOI18N
             if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
                 body.append("return " +  // NOI18N
                         WizardHelpers.getDefaultValue(operation.getReturnTypeName()) +
