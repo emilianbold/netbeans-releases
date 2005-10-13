@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -38,20 +39,34 @@ public final class SQLExecuteHelper {
         List/*<ResultSet>*/ resultSetList = new ArrayList();
                 
         for (int i = 0; i < statements.length; i++) {
-            Statement stmt = conn.createStatement();
-            statementList.add(stmt);
-            
             String sql = removeComments(statements[i]).trim();
             if (LOG) {
                 LOGGER.log(ErrorManager.INFORMATIONAL, "Executing: " + sql); // NOI18N
             }
             
             String sqlType = sql.substring(0, Math.min(6, sql.length())).toUpperCase();
-            if ("SELECT".equals(sqlType)) { // NOI18N
-                ResultSet rs = stmt.executeQuery(sql);
-                resultSetList.add(rs);
+            ResultSet rs = null;
+            
+            // XXX detect procedures call better
+            // will be fixed when we support the execution of multiple statements
+            if (sqlType.startsWith("{")) { // NOI18N
+                CallableStatement stmt = conn.prepareCall(sql);
+                statementList.add(stmt);
+                if (stmt.execute()) {
+                    rs = stmt.getResultSet();
+                }
             } else {
-                stmt.executeUpdate(sql);
+                Statement stmt = conn.createStatement();
+                statementList.add(stmt);
+                if ("SELECT".equals(sqlType)) { // NOI18N
+                    rs = stmt.executeQuery(sql);
+                } else {
+                    stmt.executeUpdate(sql);
+                }
+            }
+            
+            if (rs != null) {
+                resultSetList.add(rs);
             }
         }
         
