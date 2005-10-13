@@ -36,11 +36,11 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <subpackages>com.jcraft.jsch</subpackages>
+                <package>com.jcraft.jsch</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jsch-0.1.20.jar</runtime-relative-path>
-                <binary-origin>../external/jsch-0.1.20.jar</binary-origin>
+                <runtime-relative-path>ext/jsch-0.1.23.jar</runtime-relative-path>
+                <binary-origin>../external/jsch-0.1.23.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
