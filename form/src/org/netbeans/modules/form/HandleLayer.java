@@ -23,14 +23,21 @@ import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.NodeTransfer;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
@@ -433,10 +440,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         } else if (((keyCode == KeyEvent.VK_S)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
             FileObject formFile = formDO.getFormFile();
-            SaveCookie saveCookie = (SaveCookie)formDO.getCookie(SaveCookie.class);
+	
+	    SaveCookie saveCookie = (SaveCookie)formDO.getCookie(SaveCookie.class);
             try {
                 if (saveCookie != null) saveCookie.save();
-                formFile.copy(formFile.getParent(), formFile.getName() + "Test-StartingForm", formFile.getExt()); //NOI18N
+                formFile.copy(LayoutTestUtils.getTargetFolder(formFile), 
+			    formFile.getName() + "Test-StartingForm", 
+			    formFile.getExt()); //NOI18N
 		savedIdCounter = RADComponent.getIdCounter() - 1;
             } catch (IOException ioe) {
                 //TODO

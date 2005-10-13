@@ -20,6 +20,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.*;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.jmi.javamodel.UnresolvedClass;
@@ -186,12 +190,28 @@ public class LayoutTestUtils implements LayoutConstants {
         
     }
     
+    public static FileObject getTargetFolder(FileObject file) {
+	FileObject targetFolder = file.getParent();
+	try {
+	    FileObject folder = file.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getFileObject("data/goldenfiles"); //NOI18N
+	    if (folder != null) {
+		targetFolder = folder;
+	    }
+	} catch (NullPointerException npe) {
+	    // just ignore, it means the path doesn't exist
+	}
+	return targetFolder;
+    }
+    
     public static void writeTest(FormDesigner fd, FormDataObject formDO, Map idToNameMap, LayoutModel lm, int idCounter) {
 	FileObject formFO = formDO.getFormFile();
+
 	fd.getLayoutDesigner().dumpTestcode(formDO, idToNameMap, idCounter);
+
 	FileWriter fw = null;
 	try {
-	    FileObject fo = formFO.getParent().createData(formFO.getName() + "Test-ExpectedEndModel", "txt"); //NOI18N
+	    FileObject targetFolder = getTargetFolder(formFO);
+	    FileObject fo = targetFolder.createData(formFO.getName() + "Test-ExpectedEndModel", "txt"); //NOI18N
 	    fw = new FileWriter(FileUtil.toFile(fo));
 	    fw.write(lm.dump(idToNameMap));
 	} catch (IOException ex) {
