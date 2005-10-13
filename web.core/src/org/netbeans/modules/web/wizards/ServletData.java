@@ -211,7 +211,46 @@ class ServletData extends DeployData {
     String[] getUrlMappings() { 
 	if(urlMappings == null) return new String[0]; 
 	return urlMappings; 
-    } 
+    }
+    
+    String createDDServletName(String className) {
+        if (webApp==null) return null;
+        String result = className;
+        Servlet servlet = (Servlet) webApp.findBeanByName("Servlet","ServletName",result); //NOI18N
+        while (servlet!=null) {
+            result = findNextId(result);
+            servlet = (Servlet) webApp.findBeanByName("Servlet","ServletName",result); //NOI18N
+        }
+        setName(result);
+        return result;
+    }
+    
+    void createDDServletMapping(String servletName) {
+        if (webApp==null) return;
+        String result = "/"+servletName;
+        ServletMapping mapping = (ServletMapping) webApp.findBeanByName("ServletMapping","UrlPattern",result); //NOI18N
+        while (mapping!=null) {
+            result = findNextId(result);
+            mapping = (ServletMapping) webApp.findBeanByName("ServletMapping","UrlPattern",result); //NOI18N
+        }
+        urlMappings = new String[]{result};
+    }
+    
+    /** Compute the next proper value for the id
+     */
+    private String findNextId(String id) {
+        char ch = id.charAt(id.length()-1);
+        String result=null;
+        if (Character.isDigit(ch)) {
+            String lastDigit = id.substring(id.length()-1);
+            int num = new Integer(lastDigit).intValue()+1;
+            result=id.substring(0,id.length()-1)+Integer.valueOf(num).toString();
+        } else {
+            return result=id+"_1"; //NOI18N
+        }
+        return result;
+    }
+    
 
     String getUrlMappingsAsString() { 
 
@@ -243,13 +282,8 @@ class ServletData extends DeployData {
 	    list.add(mapping); 
 	} 
 
-	urlMappings = new String[list.size()]; 
-	Iterator it = list.iterator(); 
-	int index = 0; 
-	while(it.hasNext()) { 
-	    urlMappings[index] = (String)it.next(); 
-	    ++index; 
-	} 
+	urlMappings = new String[list.size()];
+        list.toArray(urlMappings);
     } 
 
     String[][] getInitParams() { 

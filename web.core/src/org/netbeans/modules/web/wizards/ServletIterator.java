@@ -19,7 +19,12 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -92,7 +97,7 @@ public class ServletIterator implements TemplateWizard.Iterator {
 	if(fileType == FileType.SERVLET) { 
 	    panels = new WizardDescriptor.Panel[] {
                 //wizard.targetChooser (),
-                createPackageChooserPanel(wizard,null),
+                new FinishableProxyWizardPanel(createPackageChooserPanel(wizard,null)),
 		ServletPanel.createServletPanel((TargetEvaluator)evaluator, wizard) 
 	    };
 	}
@@ -150,17 +155,7 @@ public class ServletIterator implements TemplateWizard.Iterator {
         
         FileObject dir = Templates.getTargetFolder( wizard );
         DataFolder df = DataFolder.findFolder( dir );
-        /*
-        ClassPath classPath = ClassPath.getClassPath(fo,ClassPath.SOURCE);
-        if (classPath==null || !"src".equals(classPath.findOwnerRoot(fo).getName())) {//NOI18N
-            String mes = java.text.MessageFormat.format (
-                    NbBundle.getMessage (ServletIterator.class, "TXT_wrongFolderForClass"),
-                    new Object [] {FileType.SERVLET.equals(fileType)?"Servlet":"Filter"}); //NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
-            org.openide.DialogDisplayer.getDefault().notify(desc);
-            return null;
-        }
-        */
+
         FileObject template = Templates.getTemplate( wizard );
         if (FileType.FILTER.equals(fileType) && ((WrapperSelection)customPanel).isWrapper()) {
             template = Templates.getTemplate( wizard );
@@ -183,69 +178,31 @@ public class ServletIterator implements TemplateWizard.Iterator {
 
 	if(debug) log("\tcreate dd entries"); //NOI18N
 	
-	// Check if the user has entered any configuration data
-        /*
-	if(index == 0) { 
-	    if(debug) log("\tUser finished on first panel"); //NOI18N
-            System.out.println("folderName="+wizard.getTargetFolder().getName());
-	    if(deployData.getClassName().length() == 0) {
-		deployData.setClassName(te.getClassName());
-                System.out.println("1");
+        // needed to be able to finish ServletWizard from the second panel
+        if (deployData.getClassName().length()==0) {
+            String targetName = wizard.getTargetName();
+            FileObject targetFolder = Templates.getTargetFolder(wizard);
+            String packageName = null;
+            Project project = Templates.getProject( wizard );
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            for (int i = 0; i < groups.length && packageName == null; i++) {
+                if (WebModule.getWebModule (groups [i].getRootFolder ()) != null) {
+                    packageName = FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
+                }
             }
-            
-	    if(deployData instanceof ServletData) { 
-		if(((ServletData)deployData).getName().length() == 0) 
-		    ((ServletData)deployData).setName(te.getFileName());
-		if(!((ServletData)deployData).isNameUnique()) 
-		    ((ServletData)deployData).setName(te.getClassName()); 
-		((ServletData)deployData).parseUrlMappingString("/" + //NOI18N
-							    te.getFileName()); 
-	    }
-	}
-        */
-	deployData.createDDEntries(); 
+            if (packageName!=null)
+                packageName = packageName.replace('/','.');
+            else packageName="";
+            // compute (and set) the servlet-class 
+            deployData.setClassName(packageName.length()==0?targetName:packageName+"."+targetName);
+            // compute (and set) the servlet-name and url-pattern 
+            String servletName = ((ServletData)deployData).createDDServletName(targetName);
+            ((ServletData)deployData).createDDServletMapping(servletName);
+        } 
+        deployData.createDDEntries();
 
 	if(debug) log("\tURI param"); //NOI18N
-
-	//If any of the mappings don't contain wild cards, we give it
-	//to the servlet as an execution parameter. 
-	
-	// PENDING - this hangs so commenting out for now... 
-        /*
-	if(fileType == FileType.SERVLET) { 
-
-	    if(debug) log("\tAttempt to set the execution parameter"); //NOI18N
-
-	    String[] mappings = ((ServletData)deployData).getUrlMappings(); 
-	    char[] c; 
-	    boolean bad; 
-
-	    for(int i=0; i<mappings.length; ++i) {
-		
-		bad = false; 
-
-		c = mappings[i].toCharArray(); 
-		if(debug) log("\tChecking " + mappings[i]); //NOI18N
-		for(int j=0; j<c.length; ++j) { 
-		    if(c[j] == '*' || c[j] == '?') { 
-			if(debug) log("\t unsuitable");//NOI18N
-			bad = true; 
-			break; 
-		    }
-		} 
-		if(bad) continue; 
-		if(debug) log("\t...suitable");//NOI18N
-		try { 
-		    ((ServletDataObject)(result.getCookie(ServletDataObject.class))).setURIParameter(mappings[i]); 
-		}
-		catch(Exception ex) {
-		    if(debug) log("\tFailed"); 
-		    ex.printStackTrace(); 
-		}
-		break; 
-	    }
-	    if(debug) log("\tdone URI param"); //NOI18N
-	}*/
         return Collections.singleton(dobj);
     } 
 
