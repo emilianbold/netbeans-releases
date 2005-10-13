@@ -32,6 +32,7 @@ import startup.MeasureIDEStartupTime.ThreadReader;
 public class MeasureWarmUp extends MeasureIDEStartupTime {
     
     protected static final String warmup = "Warmup running ";
+    protected static final String warmup_started = "Warmup started";
     protected static final String warmup_finished = "Warmup finished, took ";
     
     /** Define testcase
@@ -158,17 +159,40 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(measuredFile));
-            String readLine, name="", value="";
+            String readLine, name="", n_name="";
+            long value, s_time=0, n_time=0;
             int begin;
+            
+            //read log file until "Warmup started"
+            while((readLine = br.readLine())!= null && readLine.indexOf(warmup_started)==-1);
+            
+            //read first value
+            if((readLine = br.readLine())!=null && (begin=readLine.indexOf(warmup))!=-1) {
+                s_time = getTime(readLine);
+                name = readLine.substring(begin+warmup.length(), readLine.indexOf(" ",begin+warmup.length()));
+            }
+            
+            //start to parse
             while((readLine = br.readLine())!=null){
                 try {
                     if((begin=readLine.indexOf(warmup))!=-1){ // @10741 - Warmup running org.netbeans.core.ui.DnDWarmUpTask dT=53
-                        name = readLine.substring(begin+warmup.length(), readLine.indexOf(" ",begin+warmup.length()));
-                        value = readLine.substring(readLine.indexOf("=")+1);
-                        measuredValues.put(name, new Long(value));
+                        n_time = getTime(readLine);
+                        n_name = readLine.substring(begin+warmup.length(), readLine.indexOf(" ",begin+warmup.length()));
+                        
+                        if (s_time != 0) {
+                            value = n_time - s_time;
+                            measuredValues.put(name, new Long(value));
+                        }
+                        
+                        s_time = n_time;
+                        name = n_name;
                     }else if((begin=readLine.indexOf(warmup_finished))!=-1){ // @12059 - Warmup finished, took 1459ms
+                        n_time = getTime(readLine);
+                        value = n_time - s_time;
+                        measuredValues.put(name, new Long(value));
+                        
                         name = "Warmup finished";
-                        value = readLine.substring(readLine.indexOf("took ")+"took ".length(),readLine.indexOf("ms"));
+                        value = Long.parseLong(readLine.substring(readLine.indexOf("took ")+"took ".length(),readLine.indexOf("ms")));
                         measuredValues.put(name, new Long(value));
                     }
                 } catch (NumberFormatException nfe) {
@@ -191,5 +215,25 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
             }
         }
     }
+    
+    /**
+     * Parse start time for the next warmup task
+     */
+    protected static long getTime(String line){
+        if(line.indexOf("@")!=-1 && line.indexOf("-")!=-1)
+            return Long.parseLong(line.substring(line.indexOf("@")+1,line.indexOf("-")).trim()); 
+        return 0;
+    }
+ 
+/*
+@25078 - Warmup started
+  @25078 - Warmup running org.netbeans.modules.java.JavaWarmUpTask dT=0
+  @25187 - Warmup running org.netbeans.core.ui.warmup.ContextMenuWarmUpTask dT=109
+  @25281 - Warmup running org.netbeans.core.ui.warmup.DnDWarmUpTask dT=94
+  @25281 - Warmup running org.netbeans.core.ui.warmup.MenuWarmUpTask dT=0
+  @28406 - Warmup running org.netbeans.modules.editor.EditorWarmUpTask dT=3125
+  @30141 - Warmup running org.netbeans.modules.java.editor.JavaEditorWarmUpTask dT=1735
+@31172 - Warmup finished, took 6094ms
+*/     
     
 }
