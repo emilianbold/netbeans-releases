@@ -405,6 +405,10 @@ public class CallEjbPanel extends javax.swing.JPanel {
             
             // if local ref is used, modules must be in same module or J2EE application
             DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
+	    if (dataObject == null) {
+		setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NoSourcesForBean")); //NOI18N
+		return false;
+	    }
             Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
             if (!isRemoteInterfaceSelected() && 
                 !nodeProject.equals(project) && 

@@ -32,6 +32,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -136,8 +137,15 @@ public class SendJMSMessageAction extends NodeAction {
         FileObject srcFile = JavaModel.getFileObject(jc.getResource());
         Project project = FileOwnerQuery.getOwner(srcFile);
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
-	String serverId = j2eeModuleProvider.getServerInstanceID();
-	if (!Deployment.getDefault().getJ2eePlatform(serverId).getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+	String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
+	if (serverInstanceId == null) {
+	    return true;
+	}
+	J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+	if (platform == null) {
+	    return true;
+	}
+	if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
 	    return false;
 	}
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();

@@ -32,6 +32,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -204,8 +205,15 @@ public class SendEmailAction extends NodeAction {
         Project project = FileOwnerQuery.getOwner(srcFile);
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
         Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
-	String serverId = j2eeModuleProvider.getServerInstanceID();
-	if (!Deployment.getDefault().getJ2eePlatform(serverId).getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+	String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
+	if (serverInstanceId == null) {
+	    return true;
+	}
+	J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+	if (platform == null) {
+	    return true;
+	}
+	if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
 	    return false;
 	}
         return jc == null ? false : !jc.isInterface();
