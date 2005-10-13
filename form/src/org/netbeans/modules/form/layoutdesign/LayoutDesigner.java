@@ -41,6 +41,8 @@ public class LayoutDesigner implements LayoutConstants {
     private List move2 = new ArrayList();
     private boolean isMoving = false;
     
+    private Point lastMovePoint = new Point(0, 0);
+    
     private LayoutModel layoutModel;
 
     private VisualMapper visualMapper;
@@ -456,7 +458,11 @@ public class LayoutDesigner implements LayoutConstants {
                      boolean lockDimension,
                      Rectangle[] bounds)
     {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+	
+	int x = (p != null) ? p.x : 0;
+	int y = (p != null) ? p.y : 0;
+
+	if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
             // this terrible code here is to store only two last move() calls
             if (!isMoving) {
                 isMoving = true;
@@ -464,10 +470,14 @@ public class LayoutDesigner implements LayoutConstants {
                 beforeMove = new ArrayList();
                 beforeMove.addAll(testCode);
                 testCode = new ArrayList();
+		lastMovePoint = new Point(0,0);
             }
 
-            move1 = move2;
-            testCode0 = testCode;
+	    if (!((x == lastMovePoint.x) && (y == lastMovePoint.y))) {
+		lastMovePoint = new Point(x, y);
+                move1 = move2;
+		testCode0 = testCode;
+	    }
 
             move2 = new ArrayList();
             move2.add("// > MOVE");
@@ -479,7 +489,7 @@ public class LayoutDesigner implements LayoutConstants {
 
         if (!dragger.isResizing() && (!lockDimension || dragger.getTargetContainer() == null)) {
 	    if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-		em.log("Asking for container id: " + containerId); //NOI18N		
+		em.log("Asking for container id: " + containerId); //NOI18N
 	    }
             dragger.setTargetContainer(layoutModel.getLayoutComponent(containerId));
         }
@@ -500,10 +510,9 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("move: " + p + ", " + containerId + ", " + autoPositioning + ", " + lockDimension + ", " + bounds); //NOI18N
+            em.log("move: point(" + x + ", " + y + "), " + containerId + ", " + autoPositioning + ", " + lockDimension + ", " + bounds); //NOI18N
             move2.add("{"); //NOI18N
-            move2.add("Point p = new Point(" + new Double(p.getX()).intValue() + "," +  //NOI18N
-		    new Double(p.getY()).intValue() + ");"); //NOI18N
+            move2.add("Point p = new Point(" + x + "," + y + ");"); //NOI18N
             LayoutTestUtils.writeString(move2, "containerId", containerId); //NOI18N
             move2.add("boolean autoPositioning = " + autoPositioning + ";"); //NOI18N
             move2.add("boolean lockDimension = " + lockDimension + ";"); //NOI18N
