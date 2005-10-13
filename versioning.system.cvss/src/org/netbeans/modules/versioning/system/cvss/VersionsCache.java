@@ -80,6 +80,12 @@ public class VersionsCache {
         if (revision == REVISION_BASE) {
             revision = getBaseRevision(baseFile);
         }
+        if (revision.equals(REVISION_HEAD)) {
+            Entry entry = CvsVersioningSystem.getInstance().getAdminHandler().getEntry(baseFile);
+            if (entry != null && entry.getTag() != null) {
+                revision = entry.getTag();
+            }
+        }
         File file = getCachedRevision(baseFile, revision);
         if (file != null) return file;
         file = checkoutRemoteFile(baseFile, revision, group);
@@ -135,7 +141,7 @@ public class VersionsCache {
     }
 
     private boolean isVolatile(String revision) {
-        return REVISION_HEAD.equals(revision);
+        return revision.indexOf('.') == -1;
     }
 
     private String getBaseRevision(File file) throws IOException {
@@ -182,7 +188,7 @@ public class VersionsCache {
         cmd.setRecursive(false);
         cmd.setModule(repositoryPath);
         cmd.setPipeToOutput(true);
-        if (!revision.equals(REVISION_HEAD)) cmd.setCheckoutByRevision(revision);
+        cmd.setCheckoutByRevision(revision);
         String msg  = NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName());
         cmd.setDisplayName(msg);
 
