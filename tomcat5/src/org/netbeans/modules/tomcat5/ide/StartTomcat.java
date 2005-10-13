@@ -20,6 +20,8 @@ import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.platform.JavaPlatform;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
@@ -27,20 +29,26 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.tomcat5.*;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
+import org.netbeans.modules.tomcat5.util.Utils;
 
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.netbeans.modules.tomcat5.util.EditableProperties;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
-
 
 /** Extension to Deployment API that enables starting of Tomcat.
  *
@@ -317,6 +325,15 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             }
             
             currentServerPort = tm.getServerPort(); // remember the server port
+            JavaPlatform platform = mode == MODE_PROFILE ? profilerSettings.getJavaPlatform()
+                                                         : getJavaPlatform();
+            String jdkVersion = platform.getSpecification().getVersion().toString();
+            
+            if (tm.isBundledTomcat()) {
+                // work-arounding problems caused by the compatibility pack when running on 1.5
+                // ensure that the catalina class loader is set properly
+                patchCatalinaProperties(tp.getCatalinaDir(), "1.4".equals(jdkVersion)); // NOI18N
+            }
             
             if ((mode == MODE_DEBUG) && (command == CommandType.START)) {
 
@@ -346,13 +363,16 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     p = pd.exec (
                         new TomcatFormat(startupScript, homeDir),
                         new String[] {
-                            "JAVA_HOME="        + getJavaHome(getJavaPlatform()), // NOI18N
+                            "JAVA_HOME="        + getJavaHome(platform), // NOI18N
                             "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
                             "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
                             "JPDA_TRANSPORT="   + transport,        // NOI18N
                             "JPDA_ADDRESS="     + address,          // NOI18N
                             "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
-                            "CATALINA_BASE="    + baseDir.getAbsolutePath()     // NOI18N
+                            "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
+                            // this is used in the setclasspath.sb/bat script for work-arounding 
+                            // problems caused by the compatibility pack when running on 1.5
+                            "NB_TOMCAT_JDK="    + jdkVersion   // NOI18N
                         },
                         true,
                         new File (homeDir, "bin") // NOI18N
@@ -385,14 +405,16 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     for (int i = 0; i < profJvmArgs.length; i++) {
                         catalinaOpts.append(profJvmArgs[i]).append(" "); // NOI18N
                     }
-                    JavaPlatform platform = profilerSettings.getJavaPlatform();
                     String[] defaultEnv = new String[] {
                         "JAVA_HOME="        + getJavaHome(platform),        // NOI18N
                         "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
                         "JAVA_OPTS="        + tp.getJavaOpts(),             // NOI18N
                         "CATALINA_OPTS="    + catalinaOpts.toString(),      // NOI18N
                         "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
-                        "CATALINA_BASE="    + baseDir.getAbsolutePath()     // NOI18N
+                        "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
+                        // this is used in the setclasspath.sb/bat script for work-arounding 
+                        // problems caused by the compatibility pack when running on 1.5
+                        "NB_TOMCAT_JDK="    + jdkVersion       // NOI18N
                     };
                     String[] profEnv = profilerSettings.getEnv();
                     // merge Tomcat and profiler env properties
@@ -437,11 +459,14 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     Process p = pd.exec (
                         new TomcatFormat (startupScript, homeDir),
                         new String[] { 
-                            "JAVA_HOME="        + getJavaHome(getJavaPlatform()),   // NOI18N
+                            "JAVA_HOME="        + getJavaHome(platform),   // NOI18N
                             "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
                             "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
                             "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
-                            "CATALINA_BASE="    + baseDir.getAbsolutePath()     // NOI18N
+                            "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
+                            // this is used in the setclasspath.sb/bat script for work-arounding 
+                            // problems caused by the compatibility pack when running on 1.5
+                            "NB_TOMCAT_JDK="    + jdkVersion       // NOI18N
                         },
                         true,
                         new File (homeDir, "bin")
@@ -472,7 +497,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailed" : "MSG_StopFailed", 
                                          StateType.FAILED);
             }
-        }
+        }    
         
         /**
          * Fires command progress event of action type <code>ActionType.EXECUTE</code>.
@@ -673,10 +698,9 @@ public final class StartTomcat extends StartServer implements ProgressObject {
         if (tp.getCustomScript()) {
             return new File(tp.getScriptPath());
         }
-        String javaVersion = (String)getJavaPlatform().getSystemProperties().get("java.vm.version"); // NOI18N
         // use catalina50.sh/bat for Tomcat 5.0 on jdk1.5
         if (tm.getTomcatVersion() == TomcatManager.TOMCAT_50 
-             && javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
+             && "1.5".equals(getJavaPlatform().getSpecification().getVersion().toString())) {  // NOI18N
             String startupScript = Utilities.isWindows() ? CATALINA_50_BAT : CATALINA_50_SH;
             File scriptFile = new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N
             if (scriptFile.exists()) {
@@ -689,6 +713,83 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     
     private JavaPlatform getJavaPlatform() {
         return tm.getTomcatProperties().getJavaPlatform();
+    }
+    
+    /** enable/disable ${catalina.home}/common/endorsed/*.jar in the catalina class
+     loader in the catalina.properties file */
+    private void patchCatalinaProperties(File catalinaBase, final boolean endorsedEnabled) {
+        File catalinaProp = new File(catalinaBase, "conf/catalina.properties"); // NOI18N
+        FileObject catalinaPropFO = FileUtil.toFileObject(catalinaProp);
+        if (catalinaPropFO == null) {
+            return; // catalina.properties does not exist, can't do anything
+        }
+        DataObject dataObject = null;           
+        EditableProperties props = new EditableProperties();
+        InputStream is = null;
+        try {
+            is = new BufferedInputStream(catalinaPropFO.getInputStream());
+            props.load(is);
+            String COMMON_LOADER = "common.loader"; // NOI18N
+            String commonLoader = props.getProperty(COMMON_LOADER);
+            if (commonLoader != null) {
+                String COMMON_ENDORSED = "${catalina.home}/common/endorsed/*.jar"; // NOI18N 
+                int idx = commonLoader.indexOf(COMMON_ENDORSED);
+                if (endorsedEnabled) {
+                    if (idx == -1) { // common/endorsed/*.jar is not present, add it
+                        String COMMON_LIB = "${catalina.home}/common/lib/*.jar"; // NOI18N
+                        int commonLibIdx = commonLoader.indexOf(COMMON_LIB);
+                        StringBuffer sb = new StringBuffer(commonLibIdx == -1 
+                                ? commonLoader 
+                                : commonLoader.substring(0, commonLibIdx));
+                        if (commonLibIdx != -1) {
+                            sb.append(COMMON_ENDORSED).append(',').append(commonLoader.substring(commonLibIdx));
+                        } else {
+                            if (commonLoader.trim().length() != 0) {
+                                sb.append(',');
+                            }
+                            sb.append(COMMON_ENDORSED);
+                        }
+                        props.setProperty(COMMON_LOADER, sb.toString());
+                    } else {
+                        return;
+                    }
+                } else {
+                    if (idx != -1) { // common/endorsed/*.jar is present, remove it
+                        String strBefore = commonLoader.substring(0, idx);
+                        int commaIdx = strBefore.lastIndexOf(',');
+                        StringBuffer sb = new StringBuffer(commonLoader.substring(0, commaIdx == -1 ? idx : commaIdx));
+                        String strAfter = commonLoader.substring(idx + COMMON_ENDORSED.length());
+                        if (commaIdx == -1) {
+                            // we have to cut off the trailing comman after the endorsed lib
+                            int trailingCommaIdx = strAfter.indexOf(',');
+                            if (trailingCommaIdx != -1) {
+                                strAfter = strAfter.substring(trailingCommaIdx + 1);
+                            }
+                        }
+                        sb.append(strAfter);
+                        props.setProperty(COMMON_LOADER, sb.toString());
+                    } else {
+                        return;
+                    }
+                }
+                is.close();
+                is = null;
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                props.store(out);
+                Utils.saveDoc(catalinaPropFO, out);
+            }
+        } catch (FileNotFoundException fnfe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fnfe);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ioe) { // no op 
+                }
+            }
+        }
     }
     
     /** Utility class that just "consumes" the input stream - #58554 workaround
