@@ -40,8 +40,9 @@ final class MIMESupport extends Object {
      * to be as effective as any other more complex caching due to typical
      * access pattern from DataSystems.
      */
-    private static FileObject lastFo;
-    private static CachedFileObject lastCfo;
+    private static final WeakReference EMPTY = new WeakReference(null);
+    private static WeakReference lastFo = EMPTY;
+    private static WeakReference lastCfo = EMPTY;
     private static Object lock = new Object();
 
     private MIMESupport() {
@@ -64,23 +65,24 @@ final class MIMESupport extends Object {
 
         try {
             synchronized (lock) {
+                CachedFileObject lcfo = (CachedFileObject)lastCfo.get();
                 if (
-                    (lastCfo == null) || (fo != lastFo) ||
-                        (fo.lastModified().getTime() != lastCfo.lastModified().getTime())
+                    (lcfo == null) || (fo != lastFo.get()) ||
+                        (fo.lastModified().getTime() != lcfo.lastModified().getTime())
                 ) {
                     cfo = new CachedFileObject(fo);
                 } else {
-                    cfo = lastCfo;
+                    cfo = lcfo;
                 }
 
-                lastCfo = null;
+                lastCfo = EMPTY;
             }
 
             return cfo.getMIMEType(def);
         } finally {
             synchronized (lock) {
-                lastFo = fo;
-                lastCfo = cfo;
+                lastFo = new WeakReference(fo);
+                lastCfo = new WeakReference(cfo);
             }
         }
     }
