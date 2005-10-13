@@ -17,6 +17,7 @@ import java.util.*;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.ErrorManager;
 
 import org.openide.nodes.*;
 
@@ -67,6 +68,15 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
         List keys = Collections.EMPTY_LIST;
 
         Project p = FileOwnerQuery.getOwner(model.getProjectDirectory());
+        //#62823 debug
+        if(p == null) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, 
+                    new IllegalStateException("FileOwnerQuery.getOwner("+ model.getProjectDirectory() + ") returned null. " + 
+                    "Please report this with the situation description to issue #62823 " + 
+                    "(http://www.netbeans.org/issues/show_bug.cgi?id=62823)."));
+            return ;
+        }
+        
         EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
         EarProjectProperties epp = ep.getProjectProperties();
         Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
