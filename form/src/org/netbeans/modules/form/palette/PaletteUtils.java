@@ -110,7 +110,7 @@ public final class PaletteUtils {
     }
     
     static Node getPaletteNode() {
-        return (Node)getPalette().getRoot().lookup( Node.class );
+        return getPaletteDataFolder().getNodeDelegate();
     }
     
     public static PaletteController getPalette() {
@@ -156,7 +156,9 @@ public final class PaletteUtils {
         if( null == item ) {
             getPalette().clearSelection();
         } else {
-            Node[] categories = getCategoryNodes( getPaletteNode(), false, true );
+            // This is not the node returned by getPaletteNode()!
+            Node paletteNode = (Node)getPalette().getRoot().lookup(Node.class);
+            Node[] categories = getCategoryNodes(paletteNode, false, true);
             for( int i=0; i<categories.length; i++ ) {
                 Node[] items = getItemNodes( categories[i], true );
                 for( int j=0; j<items.length; j++ ) {
