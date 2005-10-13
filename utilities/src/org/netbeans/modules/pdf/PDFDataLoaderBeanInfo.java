@@ -45,7 +45,7 @@ public class PDFDataLoaderBeanInfo extends SimpleBeanInfo {
 
     /** Gets icon. Overrides superclass method. */
     public Image getIcon (int type) {
-        return Utilities.loadImage("org/netbeans/modules/pdf/PDFDataIcon.gif"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/pdf/PDFDataIcon.png"); // NOI18N
     }
 
 }
