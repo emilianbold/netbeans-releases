@@ -16,11 +16,15 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.ErrorManager;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * Plugin Properties Singleton class
@@ -202,4 +206,13 @@ public class WLPluginProperties {
         return this.installLocation;
     }
     
+    private static final String J2SE_PLATFORM_VERSION = "1.5"; // NOI18N
+    
+    public static boolean runningOnCorrectJdk() {
+        SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion();
+        // test just JDK 1.5 for now, because WL 9.0 requires it. Future releases may come with another requirements.
+        if (J2SE_PLATFORM_VERSION.equals(defPlatVersion.toString()))
+            return true;
+        return false;
+    }
 }

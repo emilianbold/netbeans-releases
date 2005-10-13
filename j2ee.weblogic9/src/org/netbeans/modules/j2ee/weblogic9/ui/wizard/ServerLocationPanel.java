@@ -19,9 +19,13 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 
 import org.openide.*;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.*;
 
 /**
@@ -105,7 +109,14 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
     public boolean isValid() {
         // clear the error message
         wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "");
-        
+
+        // test if IDE is run on correct JDK version
+        if (!WLPluginProperties.runningOnCorrectJdk()) {
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_JDK");
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg); // NOI18N
+            return false;
+        }
+                
         // check for the validity of the entered installation directory
         // if it's invalid, return false
         File serverRoot = new File (locationField.getText());
