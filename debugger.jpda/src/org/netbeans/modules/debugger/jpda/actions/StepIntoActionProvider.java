@@ -199,7 +199,8 @@ implements Executor, PropertyChangeListener {
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
-                ErrorManager.getDefault().notify(e);
+                //ErrorManager.getDefault().notify(e);
+                // This may happen while debugging a free form project 
             }
 
             boolean stop = getCompoundSmartSteppingListener ().stopHere 
