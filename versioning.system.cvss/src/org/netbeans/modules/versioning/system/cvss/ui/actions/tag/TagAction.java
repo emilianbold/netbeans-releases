@@ -14,18 +14,18 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
-import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 
+import javax.swing.*;
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.text.MessageFormat;
 
@@ -65,13 +65,25 @@ public class TagAction extends AbstractSystemAction {
         String title = MessageFormat.format(NbBundle.getBundle(TagAction.class).getString("CTL_TagDialog_Title"), 
                                          new Object[] { getContextDisplayName() });
         
-        TagSettings settings = new TagSettings();
+        TagSettings settings = new TagSettings(roots);
         settings.setCommand(cmd);
-        DialogDescriptor descriptor = new DialogDescriptor(settings, title); 
+        
+        JButton tag = new JButton(NbBundle.getMessage(TagAction.class, "CTL_TagDialog_Action_Tag"));
+        tag.setToolTipText(NbBundle.getMessage(TagAction.class,  "TT_TagDialog_Action_Tag"));
+        DialogDescriptor descriptor = new DialogDescriptor(
+                settings,
+                title,
+                true,
+                new Object [] { tag, DialogDescriptor.CANCEL_OPTION },
+                tag,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(TagAction.class),
+                null);
+        descriptor.setClosingOptions(null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TagAction.class, "ACSD_TagDialog"));
         dialog.setVisible(true);
-        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
+        if (descriptor.getValue() != tag) return;
 
         settings.updateCommand(cmd);
         copy(commandTemplate, cmd);

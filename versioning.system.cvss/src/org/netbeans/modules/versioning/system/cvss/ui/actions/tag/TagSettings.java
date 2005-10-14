@@ -14,6 +14,14 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
+import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.lib.cvsclient.admin.AdminHandler;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
+
+import java.io.IOException;
+import java.io.File;
 
 /**
  * Settings panel for the Tag command.
@@ -22,7 +30,10 @@ import org.netbeans.lib.cvsclient.command.tag.TagCommand;
  */
 public class TagSettings extends javax.swing.JPanel {
     
-    public TagSettings() {
+    private final File[] roots;
+
+    public TagSettings(File [] roots) {
+        this.roots = roots;
         initComponents();
     }
     
@@ -51,6 +62,7 @@ public class TagSettings extends javax.swing.JPanel {
         cbMoveTag = new javax.swing.JCheckBox();
         nameLabel = new javax.swing.JLabel();
         tfName = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -94,6 +106,7 @@ public class TagSettings extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         add(nameLabel, gridBagConstraints);
 
+        tfName.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -102,8 +115,44 @@ public class TagSettings extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(tfName, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BrowseTag"));
+        jButton1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BrowseTag"));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onBrowseTag(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        add(jButton1, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void onBrowseTag(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseTag
+        String module = null;
+        CVSRoot root = null;
+        for (int i = 0; i < roots.length; i++) {
+            try {
+                root = CVSRoot.parse(Utils.getCVSRootFor(roots[i]));
+                AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
+                module = ah.getRepositoryForDirectory(roots[i].getAbsolutePath(), "").substring(1);
+            } catch (IOException e) {
+                // no root for this file, try next
+            }
+        }
+        if (root == null) {
+            return;
+        }
+        BranchSelector selector = new BranchSelector();
+        String tag = selector.selectTag(root, module, null);
+        if (tag != null) {
+            tfName.setText(tag);
+        }
+    }//GEN-LAST:event_onBrowseTag
 
     private void cbCheckModifiedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCheckModifiedActionPerformed
         // TODO add your handling code here:
@@ -113,6 +162,7 @@ public class TagSettings extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbCheckModified;
     private javax.swing.JCheckBox cbMoveTag;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField tfName;
     // End of variables declaration//GEN-END:variables
