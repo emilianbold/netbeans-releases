@@ -41,23 +41,27 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName) {
         super(testName);
+        /*
         expectedTime = UI_RESPONSE;
         expectedTime = 10;
         WAIT_AFTER_OPEN = 0;
         WAIT_AFTER_PREPARE = 0;
         WAIT_AFTER_CLOSE = 0;
         repeat = 100;
+         */
     }
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName, String performanceDataName) {
         super(testName, performanceDataName);
+        /*
         expectedTime = UI_RESPONSE;
         expectedTime = 10;
         repeat = 100;
         WAIT_AFTER_OPEN = 0;
         WAIT_AFTER_PREPARE = 0;
         WAIT_AFTER_CLOSE = 0;
+         */
     }
     
     private EditorOperator editorOperator;
