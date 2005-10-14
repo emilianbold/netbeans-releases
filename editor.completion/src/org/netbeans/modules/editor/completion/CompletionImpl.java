@@ -594,6 +594,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
      */
     private boolean hideCompletionPane() {
         completionAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
+        pleaseWaitTimer.stop();
         boolean hidePerformed = layout.hideCompletion();
         if (hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
             hideDocumentation();
