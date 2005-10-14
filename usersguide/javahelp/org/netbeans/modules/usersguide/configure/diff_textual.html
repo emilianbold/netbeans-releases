@@ -40,7 +40,8 @@
             <li>In Classic View of the Options window, expand IDE Configuration &gt; Server and External Tools Settings &gt; Diff and Merge Types.</li>
             <li>Expand the Diff Engines node to set properties to configure the following:
                 <ul>
-                    <li><b>Command-line Diff.</b> Click the ellipsis (...) button to specify any diff command options (for example, <tt>diff -b</tt>) to be used when running the diff command from the command line in the IDE.</li>
+                    <li><b>Command-line Diff.</b> Click the ellipsis button (...) to specify any diff command options (for example, <tt>diff -b</tt>) to be used when running the diff command from a command-line executable in the IDE.
+                    Diff options are not availabe when using the built-in diff engine.</li>
                     <li><b>Built-in Diff Engine.</b> No properties are available.</li>
                 </ul>
             </li>
@@ -49,7 +50,8 @@
                     <li><b>Textual Diff Viewer.</b> You can enable or disable Context Mode and specify the number of lines of context to display. 
 		    If Context Mode is selected, the specified number of lines of context are displayed around differences in the textual diff.</li> 
                     <li><b>Graphical Diff Viewer.</b> You can modify the default background highlight colors for changed text in the graphical diff viewer.
-                    Click the ellipsis (...) button to specify the color.</li>
+                    Click the ellipsis button (...) to specify the color.</li>
+		    <!-- TODO : this may not apply to cvs lite diff. need to confirm --> 
                 </ul>
             </li>
             <li>Expand the Diff Services node to set properties to configure the following:
