@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.Collator;
@@ -27,6 +28,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -36,9 +38,11 @@ import java.util.zip.ZipEntry;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -75,18 +79,25 @@ public final class NbPlatform implements Comparable {
     public static SortedSet/*<NbPlatform>*/ getPlatforms() {
         if (platforms == null) {
             platforms = new TreeSet();
-            // XXX should this be using globalPropertyProvider instead (so properties can refer to one another)?
-            EditableProperties p = PropertyUtils.getGlobalProperties();
+            Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.globalPropertyProvider(), new PropertyProvider[0]).getProperties();
+            boolean foundDefault = false;
             Iterator keys = p.keySet().iterator();
             while (keys.hasNext()) {
                 String key = (String) keys.next();
                 if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_DEST_DIR_SUFFIX)) {
                     String id = key.substring(PLATFORM_PREFIX.length(), key.length() - PLATFORM_DEST_DIR_SUFFIX.length());
-                    String label = p.getProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
-                    String destdir = p.getProperty(key);
-                    String sources = p.getProperty(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
-                    String javadoc = p.getProperty(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
+                    String label = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
+                    String destdir = (String) p.get(key);
+                    String sources = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
+                    String javadoc = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
                     platforms.add(new NbPlatform(id, label, FileUtil.normalizeFile(new File(destdir)), findURLs(sources), findURLs(javadoc)));
+                    foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
+                }
+            }
+            if (!foundDefault) {
+                File loc = defaultPlatformLocation();
+                if (loc != null) {
+                    platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, new URL[0], new URL[0]));
                 }
             }
         }
@@ -101,6 +112,59 @@ public final class NbPlatform implements Comparable {
         return NbPlatform.getPlatformByID(PLATFORM_ID_DEFAULT);
     }
     
+    /**
+     * Get the location of the default platform, or null.
+     */
+    public static File defaultPlatformLocation() {
+        // XXX cache the result?
+        // Semi-arbitrary platform6 component.
+        File bootJar = InstalledFileLocator.getDefault().locate("lib/boot.jar", "org.netbeans.bootstrap", false); // NOI18N
+        if (bootJar == null) {
+            return null;
+        }
+        // Semi-arbitrary harness component.
+        File suiteXml = InstalledFileLocator.getDefault().locate("suite.xml", "org.netbeans.modules.apisupport.harness", false); // NOI18N
+        if (suiteXml == null) {
+            return null;
+        }
+        File loc = suiteXml.getParentFile().getParentFile();
+        if (!loc.equals(bootJar.getParentFile().getParentFile().getParentFile())) {
+            // Unusual installation structure, punt.
+            return null;
+        }
+        // Looks good.
+        return FileUtil.normalizeFile(loc);
+    }
+    
+    /**
+     * Get any sources which should by default be associated with the default platform.
+     */
+    private static URL[] defaultPlatformSources(File loc) {
+        if (loc.getName().equals("netbeans") && loc.getParentFile().getName().equals("nbbuild")) { // NOI18N
+            try {
+                return new URL[] {loc.getParentFile().getParentFile().toURI().toURL()};
+            } catch (MalformedURLException e) {
+                assert false : e;
+            }
+        }
+        return new URL[0];
+    }
+
+    /**
+     * Get any Javadoc which should by default be associated with the default platform.
+     */
+    private static URL[] defaultPlatformJavadoc() {
+        File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
+        if (apidocsZip != null) {
+            try {
+                return new URL[] {FileUtil.normalizeFile(apidocsZip).toURI().toURL()};
+            } catch (MalformedURLException e) {
+                assert false : e;
+            }
+        }
+        return new URL[0];
+    }
+
     /**
      * Find a platform by its ID.
      * @param id an ID (as in {@link #getID})
@@ -315,7 +379,17 @@ public final class NbPlatform implements Comparable {
      * @return a list of source root URLs (may be empty but not null)
      */
     public URL[] getSourceRoots() {
-        return sourceRoots;
+        if (sourceRoots.length == 0 && isDefault()) {
+            return defaultPlatformSources(getDestDir());
+        } else {
+            return sourceRoots;
+        }
+    }
+    
+    private void maybeUpdateDefaultPlatformSources() {
+        if (sourceRoots.length == 0 && isDefault()) {
+            sourceRoots = defaultPlatformSources(getDestDir());
+        }
     }
 
     /**
@@ -324,6 +398,7 @@ public final class NbPlatform implements Comparable {
      * PropertyUtils#putGlobalProperties})
      */
     public void addSourceRoot(URL root) throws IOException {
+        maybeUpdateDefaultPlatformSources();
         URL[] newSourceRoots = new URL[sourceRoots.length + 1];
         System.arraycopy(sourceRoots, 0, newSourceRoots, 0, sourceRoots.length);
         newSourceRoots[sourceRoots.length] = root;
@@ -336,6 +411,7 @@ public final class NbPlatform implements Comparable {
      * PropertyUtils#putGlobalProperties})
      */
     public void removeSourceRoots(URL[] urlsToRemove) throws IOException {
+        maybeUpdateDefaultPlatformSources();
         Collection newSources = new ArrayList(Arrays.asList(sourceRoots));
         newSources.removeAll(Arrays.asList(urlsToRemove));
         URL[] sources = new URL[newSources.size()];
@@ -343,6 +419,7 @@ public final class NbPlatform implements Comparable {
     }
     
     public void moveSourceRootUp(int indexToUp) throws IOException {
+        maybeUpdateDefaultPlatformSources();
         if (indexToUp <= 0) {
             return; // nothing needs to be done
         }
@@ -354,6 +431,7 @@ public final class NbPlatform implements Comparable {
     }
     
     public void moveSourceRootDown(int indexToDown) throws IOException {
+        maybeUpdateDefaultPlatformSources();
         if (indexToDown >= (sourceRoots.length - 1)) {
             return; // nothing needs to be done
         }
@@ -380,7 +458,17 @@ public final class NbPlatform implements Comparable {
      * @return a list of Javadoc root URLs (may be empty but not null)
      */
     public URL[] getJavadocRoots() {
-        return javadocRoots;
+        if (javadocRoots.length == 0 && isDefault()) {
+            return defaultPlatformJavadoc();
+        } else {
+            return javadocRoots;
+        }
+    }
+
+    private void maybeUpdateDefaultPlatformJavadoc() {
+        if (javadocRoots.length == 0 && isDefault()) {
+            javadocRoots = defaultPlatformJavadoc();
+        }
     }
 
     /**
@@ -389,6 +477,7 @@ public final class NbPlatform implements Comparable {
      * PropertyUtils#putGlobalProperties})
      */
     public void addJavadocRoot(URL root) throws IOException {
+        maybeUpdateDefaultPlatformJavadoc();
         URL[] newJavadocRoots = new URL[javadocRoots.length + 1];
         System.arraycopy(javadocRoots, 0, newJavadocRoots, 0, javadocRoots.length);
         newJavadocRoots[javadocRoots.length] = root;
@@ -401,6 +490,7 @@ public final class NbPlatform implements Comparable {
      * {@link PropertyUtils#putGlobalProperties})
      */
     public void removeJavadocRoots(URL[] urlsToRemove) throws IOException {
+        maybeUpdateDefaultPlatformJavadoc();
         Collection newJavadocs = new ArrayList(Arrays.asList(javadocRoots));
         newJavadocs.removeAll(Arrays.asList(urlsToRemove));
         URL[] javadocs = new URL[newJavadocs.size()];
@@ -408,6 +498,7 @@ public final class NbPlatform implements Comparable {
     }
     
     public void moveJavadocRootUp(int indexToUp) throws IOException {
+        maybeUpdateDefaultPlatformJavadoc();
         if (indexToUp <= 0) {
             return; // nothing needs to be done
         }
@@ -419,6 +510,7 @@ public final class NbPlatform implements Comparable {
     }
     
     public void moveJavadocRootDown(int indexToDown) throws IOException {
+        maybeUpdateDefaultPlatformJavadoc();
         if (indexToDown >= (javadocRoots.length - 1)) {
             return; // nothing needs to be done
         }
@@ -486,6 +578,7 @@ public final class NbPlatform implements Comparable {
     public File getSourceLocationOfModule(File jar) {
         if (listsForSources == null) {
             listsForSources = new ArrayList();
+            URL[] sourceRoots = getSourceRoots();
             for (int i = 0; i < sourceRoots.length; i++) {
                 URL u = sourceRoots[i];
                 if (!u.getProtocol().equals("file")) { // NOI18N
@@ -638,6 +731,7 @@ public final class NbPlatform implements Comparable {
                                 (!lastPiece.equals("nb") && Arrays.asList(Locale.getISOLanguages()).contains(lastPiece))) { // NOI18N
                             // Probably a localization, not a branding... so skip it. (We want to show English only.)
                             // But hardcode support for branding 'nb' since this is also Norwegian Bokmal, apparently!
+                            // XXX should this try to use Locale.getDefault() localization if possible?
                             continue;
                         }
                         jf = new JarFile(new File(coreLocaleDir, name));
