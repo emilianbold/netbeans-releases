@@ -78,7 +78,7 @@ public class StopAction extends NodeAction {
     private static boolean enableImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (si == null) {
+            if (si == null || !si.canStartServer()) {
                 return false;
             }
             int state = si.getServerState();

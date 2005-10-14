@@ -78,7 +78,7 @@ public class StartAction extends NodeAction {
     private static boolean enableImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (si == null || si.getServerState() != ServerInstance.STATE_STOPPED) {
+            if (si == null || !si.canStartServer() || si.getServerState() != ServerInstance.STATE_STOPPED) {
                 return false;
             }
         }
