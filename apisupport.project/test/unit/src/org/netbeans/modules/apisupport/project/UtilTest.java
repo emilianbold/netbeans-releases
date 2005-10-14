@@ -18,19 +18,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.zip.CRC32;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
@@ -102,7 +97,6 @@ public class UtilTest extends TestBase {
             clearWorkDir();
             File dir = getWorkDir();
             Manifest mani = new Manifest();
-            mani.getMainAttributes().putValue("Manifest-Version", "1.0");
             mani.getMainAttributes().putValue("OpenIDE-Module-Localizing-Bundle", "pack/age/Bundle.properties");
             // Start with an unlocalized source project.
             File src = new File(dir, "src");
@@ -127,7 +121,7 @@ public class UtilTest extends TestBase {
             assertEquals("Long Japanese text...", info.getLongDescription());
             // Now try it on JAR files.
             f = new File(dir, "noloc.jar");
-            writeJar(f, Collections.singletonMap("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo"), mani);
+            createJar(f, Collections.singletonMap("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo"), mani);
             info = Util.findLocalizedBundleInfoFromJAR(f);
             assertEquals("Foo", info.getDisplayName());
             assertNull(info.getShortDescription());
@@ -135,43 +129,19 @@ public class UtilTest extends TestBase {
             Map/*<String,String>*/ contents = new HashMap();
             contents.put("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo\nOpenIDE-Module-Short-Description=short");
             contents.put("pack/age/Bundle_ja_JP.properties", "OpenIDE-Module-Name=Foo Nihon");
-            writeJar(f, contents, mani);
+            createJar(f, contents, mani);
             info = Util.findLocalizedBundleInfoFromJAR(f);
             assertEquals("Foo Nihon", info.getDisplayName());
             assertEquals("short", info.getShortDescription());
             f = new File(dir, "externalloc.jar");
-            writeJar(f, Collections.singletonMap("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo\nOpenIDE-Module-Short-Description=short"), mani);
+            createJar(f, Collections.singletonMap("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo\nOpenIDE-Module-Short-Description=short"), mani);
             File f2 = new File(dir, "locale" + File.separatorChar + "externalloc_ja.jar");
-            f2.getParentFile().mkdirs();
-            writeJar(f2, Collections.singletonMap("pack/age/Bundle_ja.properties", "OpenIDE-Module-Short-Description=short Japanese"), new Manifest());
+            createJar(f2, Collections.singletonMap("pack/age/Bundle_ja.properties", "OpenIDE-Module-Short-Description=short Japanese"), new Manifest());
             info = Util.findLocalizedBundleInfoFromJAR(f);
             assertEquals("Foo", info.getDisplayName());
             assertEquals("the meat of #64782", "short Japanese", info.getShortDescription());
         } finally {
             Locale.setDefault(orig);
-        }
-    }
-    
-    private static void writeJar(File jar, Map/*<String,String>*/ contents, Manifest manifest) throws IOException {
-        OutputStream os = new FileOutputStream(jar);
-        try {
-            JarOutputStream jos = new JarOutputStream(os, manifest);
-            Iterator it = contents.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                String path = (String) entry.getKey();
-                byte[] data = ((String) entry.getValue()).getBytes("UTF-8");
-                JarEntry je = new JarEntry(path);
-                je.setSize(data.length);
-                CRC32 crc = new CRC32();
-                crc.update(data);
-                je.setCrc(crc.getValue());
-                jos.putNextEntry(je);
-                jos.write(data);
-            }
-            jos.close();
-        } finally {
-            os.close();
         }
     }
     

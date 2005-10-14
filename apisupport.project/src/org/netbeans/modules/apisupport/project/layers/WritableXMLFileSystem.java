@@ -265,14 +265,14 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         TreeAttribute attr = el.getAttribute("url"); // NOI18N
         if (attr != null) {
             try {
-                URL u = LayerUtils.currentify(new URL(location, attr.getValue()), suffix, classpath);
-                URLConnection conn = u.openConnection();
+                URL[] u = LayerUtils.currentify(new URL(location, attr.getValue()), suffix, classpath);
+                URLConnection conn = u[0].openConnection();
                 conn.connect();
                 InputStream is = conn.getInputStream();
                 byte[] buf = new byte[conn.getContentLength()];
                 if (is.read(buf) != buf.length) throw new IOException("wrong content length"); // NOI18N
                 // Also listen to changes in it.
-                FileObject fo = URLMapper.findFileObject(u);
+                FileObject fo = URLMapper.findFileObject(u[0]);
                 if (fo != null) {
                     fo.removeFileChangeListener(fileChangeListener);
                     fo.addFileChangeListener(fileChangeListener);

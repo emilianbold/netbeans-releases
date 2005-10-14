@@ -15,6 +15,10 @@ package org.netbeans.modules.apisupport.project.layers;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -237,6 +241,41 @@ public class LayerUtilsTest extends LayerTestBase {
         //System.err.println("items in Menu/Edit: " + java.util.Arrays.asList(fs.findResource("Menu/Edit").getChildren()));
         assertDisplayName(fs, "right display name for non-action with only menu presenter", "Menu/Edit/org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance", "Find Selection");
          */
+    }
+    
+    public void testSystemFilesystemLocalizedNamesI18N() throws Exception {
+        Locale orig = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.JAPAN);
+            File platformDir = new File(getWorkDir(), "testPlatform");
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().putValue("OpenIDE-Module", "platform.module");
+            mf.getMainAttributes().putValue("OpenIDE-Module-Layer", "platform/module/layer.xml");
+            Map/*<String,String>*/ contents = new HashMap();
+            contents.put("platform/module/Bundle.properties", "folder/file=English");
+            contents.put("platform/module/layer.xml", "<filesystem><folder name=\"folder\"><file name=\"file\"><attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"platform.module.Bundle\"/></file></folder></filesystem>");
+            TestBase.createJar(new File(platformDir, "cluster/modules/platform-module.jar".replace('/', File.separatorChar)), contents, mf);
+            mf = new Manifest();
+            contents = new HashMap();
+            contents.put("platform/module/Bundle_ja.properties", "folder/file=Japanese");
+            TestBase.createJar(new File(platformDir, "cluster/modules/locale/platform-module_ja.jar".replace('/', File.separatorChar)), contents, mf);
+            NbPlatform.addPlatform("testplatform", platformDir, "Test Platform");
+            File suiteDir = new File(getWorkDir(), "testSuite");
+            SuiteProjectGenerator.createSuiteProject(suiteDir, "testplatform");
+            File moduleDir = new File(suiteDir, "testModule");
+            NbModuleProjectGenerator.createSuiteComponentModule(
+                    moduleDir,
+                    "test.module",
+                    "module",
+                    "test/module/resources/Bundle.properties",
+                    "test/module/resources/layer.xml",
+                    suiteDir);
+            NbModuleProject module = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
+            FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module);
+            assertDisplayName(fs, "#64779: localized platform filename", "folder/file", "Japanese");
+        } finally {
+            Locale.setDefault(orig);
+        }
     }
     
     public void testSystemFilesystemNetBeansOrgProject() throws Exception {

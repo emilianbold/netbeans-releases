@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -81,10 +82,15 @@ public class LayerUtils {
     
     private LayerUtils() {}
     
-    /** translates nbres: into nbrescurr: for internal use... */
-    static URL currentify(URL u, String suffix, ClassPath cp) {
+    /**
+     * Translates nbres: into nbrescurr: for internal use.
+     * Returns an array of one or more URLs.
+     * May just be original URL, but will try to produce URLs corresponding to real files.
+     * If there is a suffix, may produce several, most specific first.
+     */
+    static URL[] currentify(URL u, String suffix, ClassPath cp) {
         if (cp == null) {
-            return u;
+            return new URL[] {u};
         }
         try {
             if (u.getProtocol().equals("nbres")) { // NOI18N
@@ -92,9 +98,10 @@ public class LayerUtils {
                 if (path.startsWith("/")) path = path.substring(1); // NOI18N
                 FileObject fo = cp.findResource(path);
                 if (fo != null) {
-                    return fo.getURL();
+                    return new URL[] {fo.getURL()};
                 }
             } else if (u.getProtocol().equals("nbresloc")) { // NOI18N
+                List/*<URL>*/ urls = new ArrayList();
                 String path = u.getFile();
                 if (path.startsWith("/")) path = path.substring(1); // NOI18N
                 int idx = path.lastIndexOf('/');
@@ -126,14 +133,17 @@ public class LayerUtils {
                     String trypath = folder + name + trysuffix + ext;
                     FileObject fo = cp.findResource(trypath);
                     if (fo != null) {
-                        return fo.getURL();
+                        urls.add(fo.getURL());
                     }
+                }
+                if (!urls.isEmpty()) {
+                    return (URL[]) urls.toArray(new URL[urls.size()]);
                 }
             }
         } catch (FileStateInvalidException fsie) {
             Util.err.notify(ErrorManager.WARNING, fsie);
         }
-        return u;
+        return new URL[] {u};
     }
     
     // E.g. for name 'foo_f4j_ce_ja', should produce list:
@@ -705,6 +715,24 @@ public class LayerUtils {
         while (it.hasNext()) {
             File jar = (File) it.next();
             roots.add(FileUtil.getArchiveRoot(jar.toURI().toURL()));
+            File locale = new File(jar.getParentFile(), "locale"); // NOI18N
+            if (locale.isDirectory()) {
+                String n = jar.getName();
+                int x = n.lastIndexOf('.');
+                if (x == -1) {
+                    x = n.length();
+                }
+                String base = n.substring(0, x);
+                String ext = n.substring(x);
+                String[] variants = locale.list();
+                if (variants != null) {
+                    for (int i = 0; i < variants.length; i++) {
+                        if (variants[i].startsWith(base) && variants[i].endsWith(ext) && variants[i].charAt(x) == '_') {
+                            roots.add(FileUtil.getArchiveRoot(new File(locale, variants[i]).toURI().toURL()));
+                        }
+                    }
+                }
+            }
         }
         // XXX in principle, could add CP extensions from modules... but probably not necessary
         return ClassPathSupport.createClassPath((URL[]) roots.toArray(new URL[roots.size()]));
@@ -727,8 +755,8 @@ public class LayerUtils {
                 super(layers);
                 status = new BadgingSupport(this);
                 status.setClasspath(cp);
+                status.setSuffix("_" + Locale.getDefault());
                 // XXX listening?
-                // XXX loc/branding suffix?
             }
             public FileSystem.Status getStatus() {
                 return status;

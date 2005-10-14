@@ -25,9 +25,14 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.zip.CRC32;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -353,6 +358,37 @@ public abstract class TestBase extends NbTestCase {
                 suiteDir); // suite directory
         return (NbModuleProject) ProjectManager.getDefault().findProject(
                 FileUtil.toFileObject(prjDirF));
+    }
+
+    /**
+     * Create a fresh JAR file.
+     * @param jar the file to create
+     * @param contents keys are JAR entry paths, values are text contents (will be written in UTF-8)
+     * @param manifest a manifest to store
+     */
+    public static void createJar(File jar, Map/*<String,String>*/ contents, Manifest manifest) throws IOException {
+        manifest.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+        jar.getParentFile().mkdirs();
+        OutputStream os = new FileOutputStream(jar);
+        try {
+            JarOutputStream jos = new JarOutputStream(os, manifest);
+            Iterator it = contents.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry) it.next();
+                String path = (String) entry.getKey();
+                byte[] data = ((String) entry.getValue()).getBytes("UTF-8");
+                JarEntry je = new JarEntry(path);
+                je.setSize(data.length);
+                CRC32 crc = new CRC32();
+                crc.update(data);
+                je.setCrc(crc.getValue());
+                jos.putNextEntry(je);
+                jos.write(data);
+            }
+            jos.close();
+        } finally {
+            os.close();
+        }
     }
     
 }

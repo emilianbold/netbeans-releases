@@ -105,18 +105,19 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             String bundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
             if (bundleName != null) {
                 try {
-                    URL u = LayerUtils.currentify(new URL("nbresloc:/" + // NOI18N
+                    URL[] u = LayerUtils.currentify(new URL("nbresloc:/" + // NOI18N
                             bundleName.replace('.', '/') +
                             ".properties"), // NOI18N
                             suffix, cp);
-                    InputStream is = u.openStream();
+                    for (int i = 0; i < u.length; i++) {
+                    InputStream is = u[i].openStream();
                     try {
                         Properties p = new Properties();
                         p.load(is);
                         String key = fo.getPath();
                         String val = p.getProperty(key);
                         // Listen to changes in the origin file if any...
-                        FileObject ufo = URLMapper.findFileObject(u);
+                        FileObject ufo = URLMapper.findFileObject(u[i]);
                         if (ufo != null) {
                             ufo.removeFileChangeListener(fileChangeListener);
                             ufo.addFileChangeListener(fileChangeListener);
@@ -135,6 +136,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                         // if null, fine--normal for key to not be found
                     } finally {
                         is.close();
+                    }
                     }
                 } catch (IOException ioe) {
                     // For debugging; SFS will rather notify a problem separately...
@@ -229,13 +231,13 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
             if (value != null) {
                 try {
-                    URL u = LayerUtils.currentify((URL) value, suffix, cp);
-                    FileObject ufo = URLMapper.findFileObject(u);
+                    URL[] u = LayerUtils.currentify((URL) value, suffix, cp);
+                    FileObject ufo = URLMapper.findFileObject(u[0]);
                     if (ufo != null) {
                         ufo.removeFileChangeListener(fileChangeListener);
                         ufo.addFileChangeListener(fileChangeListener);
                     }
-                    return Toolkit.getDefaultToolkit().getImage(u);
+                    return Toolkit.getDefaultToolkit().getImage(u[0]);
                 } catch (Exception e) {
                     //e.printStackTrace(LayerDataNode.getErr());
                     Util.err.notify(ErrorManager.INFORMATIONAL, e);
