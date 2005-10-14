@@ -18,6 +18,7 @@ import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
+import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -27,7 +28,6 @@ import org.openide.nodes.Node;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -130,6 +130,16 @@ public class GetCleanAction extends AbstractSystemAction {
             entry = ah.getEntry(file);
         } catch (IOException e) {
             // non-fatal, we have no entry for this file
+        }
+        if (entry == null) {
+            // handling 'move away file.txt, it is in the way'
+            file.delete();
+            UpdateCommand cmd = new UpdateCommand();
+            cmd.setFiles(new File [] { file });
+            UpdateExecutor executor = UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null)[0];
+            group.addExecutor(executor);
+            executor.execute();
+            return;
         }
         try {
             File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision, group);
