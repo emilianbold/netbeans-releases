@@ -145,7 +145,7 @@ public class NewProject extends BasicAction {
                                             firstProject = p;
                                         }
                                         // It is a project, so open it
-                                        OpenProjectList.getDefault().open(p);
+                                        OpenProjectList.getDefault().open(new Project[] {p}, false, true);
                                         if (setFirstMainFinal && !mainProjectSet) {
                                             OpenProjectList.getDefault().setMainProject( p );
                                             mainProjectSet = true;

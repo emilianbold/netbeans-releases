@@ -77,7 +77,7 @@ public class OpenSubprojects extends NodeAction {
         for( int i = 0; i < activatedNodes.length; i++ ) {
             Project p = (Project)activatedNodes[i].getLookup().lookup( Project.class );
             if ( p != null ) {
-                OpenProjectList.getDefault().open( p, true );
+                OpenProjectList.getDefault().open(new Project[] {p}, true, true);
             }
         }
         

@@ -13,6 +13,10 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -32,6 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -40,6 +48,8 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -50,6 +60,12 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  * List of projects open in the GUI.
@@ -140,46 +156,98 @@ public final class OpenProjectList {
     }
 
     public void open( Project[] projects, boolean openSubprojects ) {
-        
+	open(projects, openSubprojects, false);
+    }
+    
+    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously ) {
+	if (asynchronously) {
+	    final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
+	    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+	    final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true);
+	    
+	    dialog.getContentPane().add(new OpeningProjectPanel(handle));
+	    dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
+	    dialog.pack();
+	    
+	    Rectangle bounds = mainWindow.getBounds();
+	    
+	    int middleX = bounds.x + bounds.width / 2;
+	    int middleY = bounds.y + bounds.height / 2;
+	    
+	    Dimension size = dialog.getPreferredSize();
+	    
+	    dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+	    
+	    RequestProcessor.getDefault().post(new Runnable() {
+		public void run() {
+		    try {
+			doOpen(projects, openSubprojects, handle);
+		    } finally {
+			SwingUtilities.invokeLater(new Runnable() {
+			    public void run() {
+				dialog.setVisible(false);
+			    }
+			});
+		    }
+		}
+	    });
+	    
+	    dialog.setVisible(true);
+	} else {
+	    doOpen(projects, openSubprojects, null);
+	}
+    }
+    
+    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle) {
         boolean recentProjectsChanged = false;
-        
+        int  maxWork = 1000;
+        int  workPerProject = maxWork / projects.length;
         Collection projectsOpened = new LinkedHashSet(); // Collects all project opened by the call
-                                                       
-        synchronized ( this ) {
-            Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
-            for (int i=0; i<projects.length; i++) {
-                assert projects[i] != null : "Projects can't be null";
-                
-                if ( !openProjects.contains( projects[i] ) ) {
-                    openProjects.add( projects[i] );
-                    recentProjectsChanged = recentProjects.remove( projects[i] );
-                    projectsOpened.add( projects[i] );
-                    
-                }
-                if ( openSubprojects ) {
-                    recentProjectsChanged |= openSubprojects(projects[i], projectsOpened, subprojectsCache);
-                }
+        
+	if (handle != null) {
+	    handle.start(maxWork);
+	    handle.progress(0);
+	}
+        
+        Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
+        
+        for (int i=0; i<projects.length; i++) {
+            assert projects[i] != null : "Projects can't be null";
+            
+            recentProjectsChanged |= doOpenProject(projects[i]);
+            
+            if ( openSubprojects ) {
+                recentProjectsChanged |= openSubprojects(projects[i], projectsOpened, subprojectsCache, handle, i * workPerProject, (i + 1) * workPerProject);
             }
+            
+	    if (handle != null) {
+		handle.progress((i + 1) * workPerProject);
+	    }
+        }
+        
+        synchronized ( this ) {
             saveProjectList( openProjects );
             if ( recentProjectsChanged ) {
                 recentProjects.save();
             }
         }
         
-        // Notify projects opened
-        for( Iterator it = projectsOpened.iterator(); it.hasNext(); ) {
-            notifyOpened( (Project)it.next() );
-        }
+	if (handle != null) {
+	    handle.finish();
+	}
         
-        // Open project files
-        for( Iterator it = projectsOpened.iterator(); it.hasNext(); ) {
-            ProjectUtilities.openProjectFiles( (Project)it.next() );
-        }
+        final boolean recentProjectsChangedCopy = recentProjectsChanged;
         
-        pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
-        if ( recentProjectsChanged ) {
-            pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
-        }
+        Mutex.EVENT.readAccess(new Action() {
+            public Object run() {
+                pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
+                if ( recentProjectsChangedCopy ) {
+                    pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
+                }
+                
+                return null;
+            }
+        });
     }
        
     public void close( Project projects[] ) {
@@ -438,7 +506,7 @@ public final class OpenProjectList {
     /** Will recursively open subprojects of given project.
      * @return True if the recent projects list has changed
      */
-    private synchronized boolean openSubprojects(Project p, Collection projectsOpened, Map/*<Project,Set<Project>>*/ subprojectsCache) {
+    private boolean openSubprojects(Project p, Collection projectsOpened, Map/*<Project,Set<Project>>*/ subprojectsCache, ProgressHandle handle, int start, int end) {
         Set/*<Project>*/ subprojects = (Set) subprojectsCache.get(p);
         if (subprojects == null) {
             SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
@@ -450,19 +518,49 @@ public final class OpenProjectList {
             subprojectsCache.put(p, subprojects);
         }
         
+        int workToDo = end - start;
+        int workPerProject = subprojects.size() > 0 ? workToDo / subprojects.size() : 0;
+        int tick = workPerProject;
+        int current = start;
         boolean recentProjectsChanged = false;
+        int doneProjects = 0;
         
         for (Iterator/*<Project>*/ it = subprojects.iterator(); it.hasNext(); ) {
-            Project sp = (Project)it.next(); 
-            if ( !openProjects.contains( sp ) ) {
-                openProjects.add( sp );
-                recentProjectsChanged |= recentProjects.remove( sp );
-                projectsOpened.add( sp );
-            }
-            recentProjectsChanged |= openSubprojects(sp, projectsOpened, subprojectsCache);
+            Project sp = (Project)it.next();
+            
+            recentProjectsChanged |= doOpenProject(sp);
+            recentProjectsChanged |= openSubprojects(sp, projectsOpened, subprojectsCache, handle, current, current + tick);
+            doneProjects++;
+            current += tick;
+        }
+        
+        if (handle != null && end > start) {
+            handle.progress(end);
         }
         
         return recentProjectsChanged;
+    }
+    
+    private synchronized boolean doOpenProject(final Project p) {
+        if (!openProjects.contains(p)) {
+            openProjects.add(p);
+            
+            final boolean recentProjectsChanged = recentProjects.remove(p);
+
+            // Notify projects opened
+            notifyOpened(p);
+                    
+	    Mutex.EVENT.readAccess(new Runnable() {
+		public void run() {
+		    // Open project files
+		    ProjectUtilities.openProjectFiles(p);
+		}
+	    });
+            
+            return recentProjectsChanged;
+        }
+        
+        return false;
     }
     
     private static List loadProjectList() {               

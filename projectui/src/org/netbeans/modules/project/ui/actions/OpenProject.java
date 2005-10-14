@@ -85,7 +85,8 @@ public class OpenProject extends BasicAction {
                     projects.toArray( projectsArray );
                     OpenProjectList.getDefault().open( 
                         projectsArray,                    // Put the project into OpenProjectList
-                        opls.isOpenSubprojects() );       // And optionaly open subprojects
+                        opls.isOpenSubprojects(),         // And optionaly open subprojects
+			true);                            // open asynchronously
                     if ( opls.isOpenAsMain() && projectsArray.length == 1 ) {
                         // Set main project if selected
                         OpenProjectList.getDefault().setMainProject( projectsArray[0] );
