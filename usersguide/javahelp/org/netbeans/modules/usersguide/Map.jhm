@@ -83,8 +83,6 @@
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_testing.html" />
-<!-- Form Editor Connection Wizard : F1 and Help button-->
-<mapID target="gui.connecting.source" url="gui/gui_connectionwizard.html" />
 
 
 <mapID target="beans.intro" url="beans/intro.html" />
@@ -487,7 +485,7 @@ under Print Settings in the Options window)
 <!-- Options | Editing | Java Sources | Override Methods :-->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
-<!--CSH for GUI/Form Editor:-->
+<!--CSH for GUI Builder:-->
 
 <!-- csh page for event handler dialog box :-->
 <mapID target="gui.csh.handlers" url="gui/gui_manageevents.html" />
@@ -501,9 +499,16 @@ under Print Settings in the Options window)
 <mapID target="gui.formeditor" url="pending.html" />
 <mapID target="gui.options.component-palette" url="pending.html" />
 <mapID target="gui.components.palette" url="pending.html" />
-
 <mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
 
+<!-- Form Editor Connection Wizard : F1 and Help button-->
+<mapID target="gui.connecting.source" url="gui/gui_connectionwizard.html" />
+
+<!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
+<mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
+<mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
+<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
+<mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
 
 <!-- To Do window help :-->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
@@ -592,12 +597,6 @@ under Print Settings in the Options window)
     
   <!--Remove ID; issue 54895:-->
    <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
-
-   <!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
-   <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
 
 <!--remove 6 IDs ; issue Issue 54893 filed -->  
    <mapID target="org.netbeans.editor.ActionFactory$FormatAction" url="pending.html" />
