@@ -66,7 +66,7 @@ final class ViewHierarchy {
     /** */
     private final Map view2accessor = new HashMap(10);
     
-    private final MainWindow mainWindow = new MainWindow();
+    private MainWindow mainWindow;
 
     private final MainWindowListener mainWindowListener;
     
@@ -86,6 +86,9 @@ final class ViewHierarchy {
     }
     
     public MainWindow getMainWindow() {
+        if (mainWindow == null) {
+            mainWindow = new MainWindow();
+        }
         return mainWindow;
     }
     
