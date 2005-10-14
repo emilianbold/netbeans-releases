@@ -39,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="all openide code unit tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/openide/actions/*Test.class"/>
                 <include name="org/openide/awt/*Test.class"/>
                 <include name="org/openide/execution/*Test.class"/>
                 <include name="org/openide/explorer/*Test.class"/>
@@ -56,7 +55,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>                                         
                 <!-- #39613, nbfs protocol is internally inconsistent: -->
                 <exclude name="org/openide/filesystems/XMLFileSystemTest.class/testGetURL"/>
-                <include name="org/openide/modules/*.class"/>
                 <include name="org/openide/loaders/*.class"/>                
                 <!-- pending fix template wizard -->
                 <exclude name="org/openide/loaders/TemplateWizardTest.class/testNextOnIterImplWithNotification"/>
