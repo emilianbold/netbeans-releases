@@ -17,6 +17,7 @@ import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffSetupSource;
 
 import java.awt.BorderLayout;
 import java.io.File;
@@ -27,7 +28,7 @@ import java.util.*;
  *  
  * @author Maros Sandor
  */
-public class SearchHistoryTopComponent extends TopComponent {
+public class SearchHistoryTopComponent extends TopComponent implements DiffSetupSource {
     
     private SearchHistoryPanel shp;
 
@@ -75,5 +76,12 @@ public class SearchHistoryTopComponent extends TopComponent {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
-    
+
+    public Collection getSetups() {
+        return shp.getSetups();
+    }
+
+    public String getSetupDisplayName() {
+        return getDisplayName();
+    }
 }

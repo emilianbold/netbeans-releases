@@ -22,6 +22,8 @@ import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffSetupSource;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 
 import javax.swing.*;
@@ -39,7 +41,7 @@ import java.awt.Dimension;
  *
  * @author Maros Sandor
  */
-class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener {
+class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener, DiffSetupSource {
 
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
@@ -304,6 +306,53 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         tbDiff.setSelected(true);
         refreshComponents(true);
         diffView.select(container);
+    }
+
+    /**
+     * Return diff setup describing shown history.
+     * It return empty collection on non-atomic
+     * revision ranges. XXX move this logic to clients?
+     */
+    public Collection getSetups() {
+        if (dispResults == null) {
+            return Collections.EMPTY_SET;
+        }
+        List setups = new ArrayList(dispResults.size());
+        Iterator it = dispResults.iterator();
+        while (it.hasNext()) {
+            ResultsContainer entry = (ResultsContainer) it.next();
+            File file = entry.getHeader().getFile();
+
+            boolean atomicRange = true;
+            String prev = null;
+            List revisions = entry.getRevisions();
+            Iterator revs = revisions.iterator();
+            while (revs.hasNext()) {
+                DispRevision revision = (DispRevision) revs.next();
+                String rev = revision.getRevision().getNumber();
+                if (prev != null) {
+                    if (prev.equals(Utils.previousRevision(rev)) == false) {
+                        atomicRange = false;
+                        break;
+                    }
+                }
+                prev = rev;
+            }
+
+            if (atomicRange == false) {
+                return Collections.EMPTY_SET;
+            }
+
+            String eldest = entry.getEldestRevision();
+            String newest = entry.getNewestRevision();
+            Setup setup = new Setup(file, eldest, newest);
+            setups.add(setup);
+        }
+        return setups;
+    }
+
+    public String getSetupDisplayName() {
+        return null;
     }
 
     static class ResultsContainer {

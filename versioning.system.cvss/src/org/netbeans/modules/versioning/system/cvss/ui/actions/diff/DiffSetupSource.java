@@ -30,7 +30,12 @@ public interface DiffSetupSource {
     /**
      * Access actually user-visible diff setup.
      *
-     * @return read-only setups copy never <code>null</code>
+     * @return read-only {@link Setup}s copy never <code>null</code>
      */
     Collection getSetups();
+
+    /**
+     * Prefered display name or null.
+     */
+    String getSetupDisplayName();
 }

@@ -162,6 +162,12 @@ public class DiffExecutor {
             return mainPanel.getSetups();
         }
 
+        public String getSetupDisplayName() {
+            DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
+            return mainPanel.getSetupDisplayName();
+
+        }
+
         public void setGroup(ExecutorGroup group) {
             DiffMainPanel mainPanel = ((DiffMainPanel) getComponent(0));
             mainPanel.setGroup(group);

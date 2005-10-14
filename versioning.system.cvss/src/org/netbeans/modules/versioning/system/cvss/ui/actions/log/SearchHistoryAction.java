@@ -24,7 +24,6 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.*;
 import java.io.File;
 
@@ -60,7 +59,7 @@ public class SearchHistoryAction extends AbstractSystemAction  {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
-                tc.setName(title);
+                tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
                 File [] files = context.getFiles();
@@ -99,7 +98,7 @@ public class SearchHistoryAction extends AbstractSystemAction  {
         }
         SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context, commitMessage, username, from, to);
         String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", title);
-        tc.setName(tcTitle);
+        tc.setDisplayName(tcTitle);
         tc.open();
         tc.requestActive();
         tc.search();

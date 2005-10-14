@@ -29,7 +29,7 @@ import java.text.MessageFormat;
  * 
  * @author Maros Sandor
  */
-class Setup {
+public final class Setup {
     
     public static final int DIFFTYPE_LOCAL     = 0;
     public static final int DIFFTYPE_REMOTE    = 1;
@@ -106,7 +106,11 @@ class Setup {
         title = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(baseFile, info);
     }
 
-    /** Text file setup for arbitrary revisions. */
+    /**
+     * Text file setup for arbitrary revisions.
+     * @param firstRevision first revision or <code>null</code> for inital.
+     * @param secondRevision second revision
+     */
     public Setup(File baseFile, String firstRevision, String secondRevision) {
         this.baseFile = baseFile;
         this.firstRevision = firstRevision;

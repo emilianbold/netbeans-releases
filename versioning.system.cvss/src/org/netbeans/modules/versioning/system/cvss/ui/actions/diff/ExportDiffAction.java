@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
@@ -68,6 +69,21 @@ public class ExportDiffAction extends AbstractSystemAction {
 
     protected String getBaseName() {
         return "CTL_MenuItem_ExportDiff";
+    }
+
+    /**
+     * First look for DiffSetupSource name then for super (context name).
+     */
+    public String getName() {
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        if (activated instanceof DiffSetupSource) {
+            String setupName = ((DiffSetupSource)activated).getSetupDisplayName();
+            if (setupName != null) {
+                return NbBundle.getMessage(this.getClass(), getBaseName() + "_Context",  // NOI18N
+                                            setupName);
+            }
+        }
+        return super.getName();
     }
 
     protected int getFileEnabledStatus() {
@@ -154,7 +170,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
-        ProgressHandle progress = ProgressHandleFactory.createHandle("Exporting diff");
+        ExecutorGroup group = new ExecutorGroup("Exporting diff");
         try {
 
             // prepare setups and common parent - root
@@ -169,8 +185,18 @@ public class ExportDiffAction extends AbstractSystemAction {
                 while (it.hasNext()) {
                     Setup setup = (Setup) it.next();
                     File candidate = setup.getBaseFile().getParentFile();
-                    if (root == null || candidate.getAbsolutePath().startsWith(root.getAbsolutePath())) {
+                    if (root == null || root.getAbsolutePath().startsWith(candidate.getAbsolutePath())) {
                         root = candidate;
+                    } else {
+                        File parent = candidate.getParentFile();
+                        while (parent != null) {
+                            if (root.getAbsolutePath().startsWith(parent.getAbsolutePath())) {
+                                root = parent;
+                                break;
+                            }
+                            parent = parent.getParentFile();
+                        }
+                        assert parent != null : "Can not locate common root:\n file1=" + candidate.getAbsolutePath() + "\n file2=" + root.getAbsolutePath(); // NOI18N
                     }
                 }
             } else {
@@ -195,13 +221,13 @@ public class ExportDiffAction extends AbstractSystemAction {
             out.write(("# This patch can be applied using context Tools: Patch action on respective folder." + sep).getBytes("utf8"));  // NOI18N
             out.write(("# Above lines and this line are ignored by the patching process." + sep).getBytes("utf8"));  // NOI18N
 
-            progress.start(setups.size() + 1);
+
             Iterator it = setups.iterator();
             int i = 0;
             while (it.hasNext()) {
                 Setup setup = (Setup) it.next();
                 File file = setup.getBaseFile();
-                progress.progress(file.getName(), i++);
+                group.progress(file.getName());
 
                 String index = "Index: ";   // NOI18N
                 String rootPath = root.getAbsolutePath();
@@ -210,7 +236,8 @@ public class ExportDiffAction extends AbstractSystemAction {
                     index += filePath.substring(rootPath.length() + 1).replace(File.separatorChar, '/') + sep;
                     out.write(index.getBytes("utf8")); // NOI18N
                 }
-                exportDiff(setup, out);
+                exportDiff(group, setup, out);
+                i++;
             }
 
             exportedFiles = i;
@@ -220,7 +247,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);   // stack trace to log
             ErrorManager.getDefault().notify(ErrorManager.USER, ex);  // message to user
         } finally {
-            progress.finish();
+            group.executed();
             if (out != null) {
                 try {
                     out.flush();
@@ -242,7 +269,8 @@ public class ExportDiffAction extends AbstractSystemAction {
 
 
     /** Writes contextual diff into given stream.*/
-    private void exportDiff(Setup setup, OutputStream out) throws IOException {
+    private void exportDiff(ExecutorGroup group, Setup setup, OutputStream out) throws IOException {
+        setup.initSources(group);
         DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         Reader r1 = setup.getFirstSource().createReader();
         if (r1 == null) r1 = new StringReader("");
