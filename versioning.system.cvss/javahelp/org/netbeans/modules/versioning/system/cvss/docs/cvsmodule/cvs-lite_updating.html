@@ -14,12 +14,31 @@
 </head>
 <body>
 <h2>Updating Files in a Local Working Directory</h2>
-<p>Prior to committing changes made to local copies of files, it is
-important to update so that any changes made in the remote repository
-copies are incorporated.<br>
+<p>Updating files prior to committing changes made to local copies of
+files is important to avoid merge conflicts and ensure that any changes
+made in the remote repository are incorporated locally.
 </p>
-<br>
-<!--<p>Updating Projects (Update Project with Dependencies)-->
+To update a local version of a file:<br>
+<ol>
+  <li>Right-click the file and choose CVS &gt; Update. </li>
+  <p>The IDE incorporates any changes existing in the repository
+version of the file. </p>
+</ol>
+<h3>Updating Projects with Dependencies<br>
+</h3>
+<p>If you are working on a project for which there are other required
+projects, you can update both the main project and all dependent
+projects using the IDE's Update with Dependencies command.<br>
+</p>
+<p>To update an entire project and all dependent projects:<br>
+</p>
+<ol>
+  <li>Right-click the project and choose CVS &gt; Update with
+Dependencies. </li>
+  <p>The IDE incorporates any changes existing in the repository
+version of all of the projects with the local copies. </p>
+</ol>
+<p></p>
 <dl>
   <dt> <a name="seealso">See Also</a></dt>
   <dd> <a href="./cvs-lite_overview.html">Working with CVS </a></dd>
