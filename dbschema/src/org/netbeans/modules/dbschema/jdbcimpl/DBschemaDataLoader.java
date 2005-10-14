@@ -45,27 +45,12 @@ public class DBschemaDataLoader extends UniFileLoader {
         ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
         return bundle.getString("ObjectName");
     }
-
-    protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get (FileSystemAction.class),
-            SystemAction.get (RecaptureSchemaAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            SystemAction.get (RenameAction.class),
-            null,
-            SystemAction.get (ToolsAction.class),
-            null,
-            SystemAction.get (PropertiesAction.class),
-        };
+    
+    protected String actionsContext() {
+        return "Loaders/text/x-dbschema/Actions"; // NOI18N
     }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new DBschemaDataObject (primaryFile, this);
     }
-
 }
