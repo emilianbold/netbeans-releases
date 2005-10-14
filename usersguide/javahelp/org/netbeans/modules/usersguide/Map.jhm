@@ -57,6 +57,7 @@
 <mapID target="files.elements" url="files/files_elements.html" />
 
 <!--begin GUI Form Editor section-->
+
 <mapID target="gui.about" url="gui/gui_about.html" />
 <mapID target="gui.overview" url="gui/gui_overview.html" />
 <mapID target="gui.quickref" url="gui/gui_quickref.html" />
@@ -78,8 +79,7 @@
 <mapID target="gui.connectionwizard" url="gui/gui_connectionwizard.html" />
 <mapID target="gui.mdi" url="gui/gui_creatingmdi.html" />
 
-<!--gui.configuring is also CSH ID for Options | Editing | Form Editor Settings :-->
-<mapID target="gui.configuring" url="gui/gui_configuring.html" />
+<mapID target="gui.config" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_testing.html" />
@@ -479,7 +479,6 @@ under Print Settings in the Options window)
 <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/debug_callstack.html"/>
 <mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_pop.html"/>
 
-
 <!--TODO - add mappings for debug dialog topics-->
 
 <!-- Options | Editing | Java Sources | Override Methods :-->
@@ -491,7 +490,6 @@ under Print Settings in the Options window)
 <mapID target="gui.csh.handlers" url="gui/gui_manageevents.html" />
 <!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
-
 <!--TODO - map these 6 to appropriate form topics or have removed-->
 <mapID target="gui.modes" url="pending.html" />
 <mapID target="gui.components.inplace-editing" url="pending.html" />
@@ -500,15 +498,15 @@ under Print Settings in the Options window)
 <mapID target="gui.options.component-palette" url="pending.html" />
 <mapID target="gui.components.palette" url="pending.html" />
 <mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
-
-<!-- Form Editor Connection Wizard : F1 and Help button-->
+<!-- GUI Builder Connection Wizard : F1 and Help button-->
 <mapID target="gui.connecting.source" url="gui/gui_connectionwizard.html" />
-
 <!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
 <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
 <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
 <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
 <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
+<!--CSH ID for Options | Editing | Form Editor Settings :-->
+<mapID target="gui.configuring" url="gui/gui_configuring.html" />
 
 <!-- To Do window help :-->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />

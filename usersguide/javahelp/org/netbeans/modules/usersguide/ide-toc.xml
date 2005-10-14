@@ -316,7 +316,7 @@
     <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
     <tocitem text="Testing a Form" target="gui.testing" />    
     <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
-    <tocitem text="Configuring the Form Editor" target="gui.configuring" />
+    <tocitem text="Configuring the Form Editor" target="gui.config" />
   </tocitem>
 
 <!--begin Ant section-->
