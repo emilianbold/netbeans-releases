@@ -233,11 +233,11 @@ ChangeListener, ActionListener {
                 tfStatementIndent.setValue 
                         (model.getJavaFormatStatementContinuationIndent ());
                 listen = true;
+
+                // update preview
+                updatePreview ();
             }
         });
-        
-        // update preview
-        updatePreview ();
     }
     
     public void applyChanges () {
