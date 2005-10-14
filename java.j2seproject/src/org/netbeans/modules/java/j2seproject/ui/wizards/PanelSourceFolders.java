@@ -177,7 +177,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
                     Object obj = en.nextElement ();
                     assert obj instanceof FileObject : "Instance of FileObject: " + obj; // NOI18N
                     FileObject fo = (FileObject) obj;
-                    found = "class".equals (fo.getExt ()); // NOI18N
+                    found = "class".equals (fo.getExt ()) && !fo.isVirtual(); // NOI18N
                 }
             }
         }
