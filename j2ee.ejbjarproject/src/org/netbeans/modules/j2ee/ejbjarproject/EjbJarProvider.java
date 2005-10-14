@@ -102,7 +102,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         if (metaInf == null) {
             return null;
         }
-        return getFileObject(name);
+        return metaInf.getFileObject(name);
     }
     
     public File getDeploymentConfigurationFile(String name) {
