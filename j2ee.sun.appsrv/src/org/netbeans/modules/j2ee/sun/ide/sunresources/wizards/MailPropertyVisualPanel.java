@@ -89,15 +89,13 @@ public class MailPropertyVisualPanel extends javax.swing.JPanel implements Wizar
         setPreferredSize(new java.awt.Dimension(627, 305));
         getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("TITLE_MailPropertyPanel"));
         getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("MailPropertyPanel_Description"));
-        descriptionTextArea.setBackground(new java.awt.Color(204, 204, 204));
         descriptionTextArea.setEditable(false);
-        descriptionTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
         descriptionTextArea.setLineWrap(true);
         descriptionTextArea.setText(NbBundle.getMessage(MailPropertyVisualPanel.class, "MailPropertyPanel_Description", this.helper.getData().getString(__JndiName)));
-        descriptionTextArea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
+        descriptionTextArea.setWrapStyleWord(true);
         descriptionTextArea.setMinimumSize(new java.awt.Dimension(500, 17));
+        descriptionTextArea.setOpaque(false);
         descriptionTextArea.setPreferredSize(new java.awt.Dimension(500, 17));
-        descriptionTextArea.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
