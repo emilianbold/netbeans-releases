@@ -53,6 +53,8 @@ public final class AquaLFCustoms extends LFCustoms {
                 "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
                  SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
 
+                EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(18, 0, 18, 0),
+
             }; //NOI18N
         } else {
             result = new Object[] {
@@ -60,6 +62,8 @@ public final class AquaLFCustoms extends LFCustoms {
                 "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
                 "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
                  SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
+		
+                EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(18, 0, 18, 0),
             }; 
         }
         return result;

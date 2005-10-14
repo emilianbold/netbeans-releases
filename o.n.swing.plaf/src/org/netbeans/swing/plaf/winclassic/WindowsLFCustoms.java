@@ -81,6 +81,7 @@ public final class WindowsLFCustoms extends LFCustoms {
                 //"MonoSpaced", causing all accessible dialogs to have monospaced text
                 "TextArea.font", new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize)), //NOI18N
                         
+                EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(17, 0, 17, 0),
                         
             };
         } else {
@@ -90,6 +91,8 @@ public final class WindowsLFCustoms extends LFCustoms {
                 //Work around a bug in windows which sets the text area font to
                 //"MonoSpaced", causing all accessible dialogs to have monospaced text
                 "TextArea.font", new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize)), //NOI18N
+                
+                EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(17, 0, 17, 0),
             };
         }
             

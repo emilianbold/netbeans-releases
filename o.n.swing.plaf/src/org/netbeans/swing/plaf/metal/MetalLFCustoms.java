@@ -53,6 +53,7 @@ public final class MetalLFCustoms extends LFCustoms {
             "textInactiveText", Color.GRAY, //NOI18N
             // #61395        
             SPINNERFONT, controlFont,        
+            EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(16, 0, 16, 0),
         }; 
         return result;
     }

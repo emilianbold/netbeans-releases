@@ -203,6 +203,7 @@ public abstract class LFCustoms {
     protected static final String EDITOR_STATUS_RIGHT_BORDER = "Nb.Editor.Status.rightBorder"; //NOI18N
     protected static final String EDITOR_STATUS_ONLYONEBORDER = "Nb.Editor.Status.onlyOneBorder"; //NOI18N
     protected static final String EDITOR_TOOLBAR_BORDER = "Nb.Editor.Toolbar.border"; //NOI18N
+    protected static final String EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS = "Nb.Editor.ErrorStripe.ScrollBar.Insets"; //NOI18N
 
     //Explorer
     protected static final String EXPLORER_STATUS_BORDER = "Nb.Explorer.Status.border"; //NOI18N
