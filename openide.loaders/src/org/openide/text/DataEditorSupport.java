@@ -341,7 +341,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** did we warned about the size of the file?
          */
         private transient boolean warned;
-        
+
         /** Constructor.
         * @param obj this support should be associated with
         */
@@ -533,18 +533,23 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** Called from the <code>EnvListener</code>.
          * The components are going to be closed anyway and in case of
          * modified document its asked before if to save the change. */
-        private void fileRemoved(boolean canBeVetoed) {
+        final void fileRemoved(boolean canBeVetoed) {
+            /* JST: Do not do anything here, as there will be new call from
+               the DataObject.markInvalid0
+             
             if (canBeVetoed) {
                 try {
                     // Causes the 'Save' dialog to show if necessary.
                     fireVetoableChange(Env.PROP_VALID, Boolean.TRUE, Boolean.FALSE);
                 } catch(PropertyVetoException pve) {
-                    // Ignore it and close anyway. File doesn't exist anymore.
+                    // ok vetoed, keep the window open, but continue to veto for ever
+                    // any subsequent veto messages from the data object
                 }
             }
             
             // Closes the components.
             firePropertyChange(Env.PROP_VALID, Boolean.TRUE, Boolean.FALSE);            
+             */
         }
         
         public CloneableOpenSupport findCloneableOpenSupport() {
@@ -591,9 +596,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             
             fo.removeFileChangeListener(this);
             
-            // #30210 - when edited file was deleted the "Do you want to save changes"
-            // dialog should not be shown 
-            env.fileRemoved(false);
+            env.fileRemoved(true);
             fo.addFileChangeListener(this);
         }
         
