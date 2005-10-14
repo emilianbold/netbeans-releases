@@ -63,7 +63,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private ButtonModel lastSelectedType;
     private static String lastSelectedSuite;
     private boolean wasLocationUpdate;
-    private static boolean wasSuiteModuleSelected = true;
     private boolean moduleTypeGroupAttached = true;
     private boolean mainProjectTouched;
     
@@ -83,25 +82,19 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
-                suiteModule.setSelected(wasSuiteModuleSelected);
-                if (wasSuiteModuleSelected) {
-                    locationValue.setText((String) moduleSuiteValue.getSelectedItem());
-                    mainProject.setSelected(false);
-                } else {
-                    locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
-                }
+                suiteModule.setSelected(true);
+                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                mainProject.setSelected(false);
             } else {
                 locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
             }
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
             moduleSuite.setText(getMessage("LBL_Add_to_Suite")); // NOI18N
-            suiteModule.setSelected(wasSuiteModuleSelected);
+            suiteModule.setSelected(true);
             suiteModule.setVisible(false);
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
-                if (wasSuiteModuleSelected) {
-                    locationValue.setText((String) moduleSuiteValue.getSelectedItem());
-                }
+                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
             }
             platform.setVisible(false);
             platformValue.setVisible(false);
