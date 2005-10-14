@@ -12,16 +12,13 @@
  */
 
 package org.netbeans.api.db.explorer;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.openide.ErrorManager;
 
 /**
  * Provides access to the list of connections in the Database Explorer.
@@ -171,7 +168,12 @@ public final class ConnectionManager {
         if (!ConnectionList.getDefault().contains(dbconn.getDelegate())) {
             throw new IllegalStateException("This connection is not added to the ConnectionManager."); // NOI18N
         }
-        dbconn.getDelegate().disconnect();
+        try {
+            dbconn.getDelegate().disconnect();
+        } catch (DatabaseException e) {
+            // XXX maybe shouldn't catch the exception
+            ErrorManager.getDefault().notify(e);
+        }
     }
     
     /**

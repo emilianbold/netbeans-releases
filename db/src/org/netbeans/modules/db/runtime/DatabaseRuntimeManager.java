@@ -12,6 +12,8 @@
  */
 
 package org.netbeans.modules.db.runtime;
+
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +66,11 @@ public final class DatabaseRuntimeManager {
         return DEFAULT;
     }
     
+    public DatabaseRuntime[] getRuntimes() {
+        Collection runtimes = result.allInstances();
+        return (DatabaseRuntime[])runtimes.toArray(new DatabaseRuntime[runtimes.size()]);
+    }
+    
     /**
      * Returns the runtimes registered for the specified JDBC driver.
      *
@@ -89,18 +96,6 @@ public final class DatabaseRuntimeManager {
             }
         }
         return (DatabaseRuntime[])runtimeList.toArray(new DatabaseRuntime[runtimeList.size()]);
-    }
-    
-    /**
-     * Stops the running runtimes.
-     */
-    public void stopRuntimes() {
-        for (Iterator i = result.allInstances().iterator(); i.hasNext();) {
-            DatabaseRuntime runtime = (DatabaseRuntime)i.next();
-            if (runtime.isRunning()) {
-                runtime.stop();
-            }
-        }
     }
     
     private synchronized Lookup.Result getLookupResult() {

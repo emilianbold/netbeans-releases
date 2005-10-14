@@ -749,14 +749,10 @@ public class DatabaseConnection implements DBConnection {
         return null;
     }
     
-    public void disconnect() {
-        try {
-            ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-            if (cni != null && cni.getConnection() != null) {
-                cni.disconnect();
-            }
-        } catch (DatabaseException e) {
-            ErrorManager.getDefault().notify(e);
+    public void disconnect() throws DatabaseException {
+        ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+        if (cni != null && cni.getConnection() != null) {
+            cni.disconnect();
         }
     }
     
