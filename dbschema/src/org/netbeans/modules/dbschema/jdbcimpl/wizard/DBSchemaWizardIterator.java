@@ -17,11 +17,14 @@ import java.io.IOException;
 import java.util.*;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectManager;
 
 import org.openide.loaders.TemplateWizard;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 
 /** Iterator implementation which can iterate through two
 * panels which forms dbschema template wizard
@@ -54,6 +57,7 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
     }
 
     public Set instantiate(TemplateWizard wiz) throws IOException {
+        System.out.println(wiz.getTargetFolder());
         myData.setName(wiz.getTargetName());
         myData.setDestinationPackage(wiz.getTargetFolder());
         
@@ -101,6 +105,7 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
 
     public void initialize(TemplateWizard wizard) {
         wizardInstance = wizard;
+        setConfFilesTarget();
         String[] prop = (String[]) wizard.getProperty("WizardPanel_contentData"); // NOI18N
         String[] stepsNames = new String[] {
             wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2") ? bundle.getString("TargetLocation") :
@@ -155,4 +160,30 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
         }
     }
 
+    private void setConfFilesTarget() {
+        DataFolder target = null;
+        try {
+            target = wizardInstance.getTargetFolder();
+        } catch (IOException e) {
+            // what can we do?
+            return;
+        }
+        FileObject targetFO = target.getPrimaryFile();
+        try {
+            if (ProjectManager.getDefault().findProject(targetFO) == null) {
+                return;
+            }
+        } catch (IOException e) {
+            // what can we do?
+            return;
+        }
+        
+        FileObject newTargetFO = targetFO.getFileObject("src/conf"); // NOI18N
+        if (newTargetFO == null || !newTargetFO.isValid()) {
+            return;
+        }
+
+        DataFolder newTarget = DataFolder.findFolder(newTargetFO);
+        wizardInstance.setTargetFolder(newTarget);
+    }
 }
