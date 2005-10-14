@@ -11,7 +11,7 @@
           <tocitem text="Working with Version Control">
               <tocitem text="About CVS" target="cvs-lite_about" />
               <tocitem text="Working with CVS" target="cvs-lite_overview" /> 
-              <tocitem text="Using CVS with the IDE" target="cvs-lite_using" /> 
+              <tocitem text="Using CVS with the IDE" target="cvs-lite_workingwith" /> 
               <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
               <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
               
@@ -20,7 +20,7 @@
               <tocitem text="Comparing File Revisions in CVS" target="cvs-lite_diff" /> 
               <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
               <tocitem text="Reverting CVS Changes" target="cvs-lite_revert" />            
-              <tocitem text="Placing Project Metadata Under Version Control" target="cvs-lite_project-system" />               
+              <tocitem text="Placing Project Metadata Under Version Control" target="cvs-lite_projects" />               
 
               <tocitem text="Working with Branches" target="cvs-lite_branches" />  
               <tocitem text="Merging File Revisions from a Branch" target="cvs-lite_merge" /> 
