@@ -237,7 +237,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         final boolean visible = isToolBarVisible();        
         final boolean keyBindingsChanged = 
                 evt!=null && 
-                SettingsNames.KEY_BINDING_LIST.equals(evt.getSettingName());
+                SettingsNames.KEY_BINDING_LIST.equals(evt.getSettingName()) &&
+                evt.getKitClass() == Utilities.getKitClass(editorUI.getComponent());
         Runnable r = new Runnable() {
                 public void run() {
                     if (visible) {
