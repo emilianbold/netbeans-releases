@@ -42,9 +42,8 @@ public abstract class AttributeValueSupport extends Object {
     public static AttributeValueSupport getSupport(boolean tag, String longName, String attrName) {
         if (supports == null)
             initialize();
-        return (AttributeValueSupport)supports.get(
-            new AttributeValueSupport.Default (tag, longName, attrName)
-        );
+        AttributeValueSupport support = new AttributeValueSupport.Default (tag, longName, attrName);
+        return (AttributeValueSupport)supports.get(support);
     }
     
     private static void initialize() {
@@ -99,22 +98,21 @@ public abstract class AttributeValueSupport extends Object {
         putSupport(new AttrSupports.ScopeSupport(true, "jsp:invoke", "scope")); // NOI18N
         // PENDING - add supports for known attributes
         
-        // jsp:dirictive.page
-        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:dirictive.page", "import")); // NOI18N
-        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:dirictive.page", "extends")); // NOI18N
-        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:dirictive.page", "session")); // NOI18N
-        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:dirictive.page", "autoFlush")); // NOI18N
-        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:dirictive.page", "isThreadSafe")); // NOI18N
-        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:dirictive.page", "isErrorPage")); // NOI18N
-        putSupport(new AttrSupports.FilenameSupport (true, "jsp:dirictive.page", "errorPage")); //NOI18N
-        putSupport(new AttrSupports.EncodingSupport(true, "jsp:dirictive.page", "pageEncoding")); // NOI18N
-        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:dirictive.page", "isELIgnored")); // NOI18N
+        // jsp:directive.page
+        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:directive.page", "import")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:directive.page", "extends")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "session")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "autoFlush")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isThreadSafe")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isErrorPage")); // NOI18N
+        putSupport(new AttrSupports.FilenameSupport (true, "jsp:directive.page", "errorPage")); //NOI18N
+        putSupport(new AttrSupports.EncodingSupport(true, "jsp:directive.page", "pageEncoding")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isELIgnored")); // NOI18N
         
         putSupport(new AttrSupports.YesNoTrueFalseSupport(true, "jsp:output", "omit-xml-declaration")); // NOI18N
         putSupport(new AttrSupports.RootVersionSupport(true, "jsp:root", "version")); // NOI18N
         putSupport(new AttrSupports.PluginTypeSupport(true, "jsp:plugin", "type")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:attribute", "trim")); // NOI18N
-        
         
     }
     
