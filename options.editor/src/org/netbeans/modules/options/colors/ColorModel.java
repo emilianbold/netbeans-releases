@@ -72,8 +72,6 @@ public class ColorModel {
     static final String         ALL_LANGUAGES = "All Languages";
     static final String         HIGHLIGHTING_LANGUAGE = "Highlighting";
     
-    private static Map          backMap = new HashMap ();
-    
     private EditorSettings      editorSettings = EditorSettings.getDefault ();
     
     
@@ -159,7 +157,6 @@ public class ColorModel {
 	Collection /*<Category>*/ annotations
     ) {
 	Iterator it = annotations.iterator ();
-	Map annotationMap = new HashMap ();
 	//S ystem.out.println("ColorModelImpl.setAnnotations ");
 	while (it.hasNext ()) {
 	    AttributeSet category = (AttributeSet) it.next ();

@@ -92,7 +92,6 @@ PropertyChangeListener {
     private ColorComboBox	backgroundColorChooser = new ColorComboBox ();
     private ColorComboBox	waveUnderlinedColorChooser = new ColorComboBox ();
  
-    private FontAndColorsPanel  fontAndColorsPanel;
     private boolean		listen = false;
     private String              currentScheme;
     private Map                 schemes = new HashMap ();
@@ -102,7 +101,6 @@ PropertyChangeListener {
     
     /** Creates new form FontAndColorsPanel */
     public AnnotationsPanel (FontAndColorsPanel fontAndColorsPanel) {
-        this.fontAndColorsPanel = fontAndColorsPanel;
         
         // 1) init components
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
@@ -200,19 +198,6 @@ PropertyChangeListener {
     private static String loc (String key) {
         return NbBundle.getMessage (SyntaxColoringPanel.class, key);
     }
-    
-    private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c, 
-                loc (key)
-            );
-        else
-            Mnemonics.setLocalizedText (
-                (JLabel) c, 
-                loc (key)
-            );
-    }
 
     private void updateData () {
         Vector annotations = getAnnotations (currentScheme);
@@ -272,17 +257,5 @@ PropertyChangeListener {
             schemes.put (scheme, new Vector (l));
         }
         return (Vector) schemes.get (scheme);
-    }
-    
-    private String fontToString (Font f) {
-	StringBuffer sb = new StringBuffer ();
-	sb.append (f.getName ()).
-	    append (' ').
-	    append (f.getSize ());
-	if (f.isBold ())
-	    sb.append (' ').append (loc ("Bold"));
-	if (f.isItalic ())
-	    sb.append (' ').append (loc ("Italic"));
-	return sb.toString ();
     }
 }

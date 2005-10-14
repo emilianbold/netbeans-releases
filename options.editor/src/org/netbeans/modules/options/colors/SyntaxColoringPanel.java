@@ -69,7 +69,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
@@ -386,19 +385,6 @@ PropertyChangeListener {
     
     private static String loc (String key) {
         return NbBundle.getMessage (SyntaxColoringPanel.class, key);
-    }
-    
-    private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c, 
-                loc (key)
-            );
-        else
-            Mnemonics.setLocalizedText (
-                (JLabel) c, 
-                loc (key)
-            );
     }
 
     /**

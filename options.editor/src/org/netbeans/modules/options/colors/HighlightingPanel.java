@@ -99,7 +99,6 @@ PropertyChangeListener {
 //    private JPanel              previewPanel;
 //    private Preview             preview;
  
-    private FontAndColorsPanel  fontAndColorsPanel;
     private ColorModel          colorModel = null;
     private boolean		listen = false;
     private String              currentProfile;
@@ -112,7 +111,6 @@ PropertyChangeListener {
     
     /** Creates new form FontAndColorsPanel */
     public HighlightingPanel (FontAndColorsPanel fontAndColorsPanel) {
-        this.fontAndColorsPanel = fontAndColorsPanel;
 
         // 1) init components
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
@@ -220,9 +218,6 @@ PropertyChangeListener {
         if (colorModel == null) {
             colorModel = new ColorModel ();
             currentProfile = colorModel.getCurrentProfile ();
-            Component component = colorModel.getEditorPreviewComponent  ();
-//            preview = (Preview) component;
-//            previewPanel.add (component, "Center");
             listen = false;
             setCurrentProfile (currentProfile);
             lCategories.setListData (getCategories (currentProfile));
@@ -256,14 +251,7 @@ PropertyChangeListener {
             profileToCategories.put (currentProfile, new Vector (categories));
             toBeSaved.add (currentProfile);
         }
-        Vector categories = getCategories (currentProfile);
         refreshUI ();
-//        preview.setParameters (
-//            ColorModel.HIGHLIGHTING_LANGUAGE,
-//            fontAndColorsPanel.getDefaults (),
-//            getCategories (currentProfile),
-//            fontAndColorsPanel.getSyntaxColorings ()
-//        );
     }
 
     void deleteProfile (String profile) {
@@ -284,19 +272,6 @@ PropertyChangeListener {
     
     private static String loc (String key) {
         return NbBundle.getMessage (SyntaxColoringPanel.class, key);
-    }
-    
-    private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c, 
-                loc (key)
-            );
-        else
-            Mnemonics.setLocalizedText (
-                (JLabel) c, 
-                loc (key)
-            );
     }
 
     private void updateData () {
