@@ -38,6 +38,7 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
@@ -723,24 +724,30 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             //timeStampCheckingRunning = current;
             return runningState;
             }
-        runningState = false; // simpleConnect(getHost(),getPort());
+        boolean newrunningState = false; 
         timeStampCheckingRunning = current;
         
-        try {
-
-           Target[] t= getTargets();
+        try {          
+            
+            Target[] t= getTargets();
             if (t != null) {
                 if (t.length==0)
-                    runningState = false;
+                    newrunningState = false;
                 else
                     
-                    runningState = true;
-            }  
+                    newrunningState = true;
+            }
+
            //System.out.println("isRunning" +runningState);
         } catch (Throwable /*IllegalStateException*/ e) {
-            runningState  =false;
+            newrunningState  =false;
             //System.out.println(" bisRunning" +runningState);
        }
+        if(newrunningState!=runningState){
+            // state changed
+            new DeploymentManagerProperties(this).refreshServerInstance();
+        }
+        runningState = newrunningState;
         if ((runningState)&&(nonAdminPortNumber == null)){
             try{
       //  System.out.println("inrunning get admin port number"+(System.currentTimeMillis()-current));
