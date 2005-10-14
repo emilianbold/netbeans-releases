@@ -314,5 +314,6 @@ public final class NbPlatformCustomizer extends JPanel {
         plfFolderValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_plfFolderValue"));
         plfNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_plfNameValue"));
         removeButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_removeButton"));
+        addButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_addButton"));
     }
 }

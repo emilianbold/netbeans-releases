@@ -37,6 +37,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     public PlatformChooserVisualPanel(WizardDescriptor setting) {
         super(setting);
         initComponents();
+        initAccessibility();
         platformChooser.setAcceptAllFileFilterUsed(false);
         platformChooser.setFileFilter(new FileFilter() {
             public boolean accept(File f)  {
@@ -143,4 +144,10 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     private javax.swing.JTextField plafLabelValue;
     private javax.swing.JFileChooser platformChooser;
     // End of variables declaration//GEN-END:variables
+
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_PlatformChooserVisualPanel"));        
+        plafLabelValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_plafLabelValue"));
+    }
+    
 }
