@@ -299,7 +299,6 @@ public class ProgressHandleTest extends NbTestCase {
  * test switching in non-status bar component
  */
     public void testSwitch() {
-        
         final int WAIT = 1500;
         
         class MyFrame extends JFrame implements Runnable {
@@ -324,7 +323,8 @@ public class ProgressHandleTest extends NbTestCase {
         
         handle.start();
         
-        SwingUtilities.invokeLater(new MyFrame(component));
+        MyFrame frm = new MyFrame(component);
+        SwingUtilities.invokeLater(frm);
         
         try {
             Thread.sleep(WAIT);
@@ -344,10 +344,24 @@ public class ProgressHandleTest extends NbTestCase {
 
         assertFalse("The progress bar is still indeterminate!", ((NbProgressBar)component).isIndeterminate());
         handle.finish();
+        frm.setVisible(false);
+        frm.dispose();
     }    
 
     protected boolean runInEQ() {
         return false;
+    }
+
+    
+    public void testManyWorkUnits () {
+        int units = 500000;
+        int step = 500;
+        proghandle.start (units * step);
+        for (int i = 200; i < units; i = i+ 50) {
+            proghandle.progress (i * step);
+            assertTrue(handle.getPercentageDone() >= 0);
+        }
+        proghandle.finish (); 
     }
     
     
