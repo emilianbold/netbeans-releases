@@ -50,7 +50,7 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     public static NbTestSuite suite() {
         
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateAttributeWrapperMBean("createClass"));
+        //suite.addTest(new CreateAttributeWrapperMBean("createClass"));
         suite.addTest(new CreateAttributeWrapperMBean("constructTest13MBean"));
         suite.addTest(new CreateAttributeWrapperMBean("constructTest14MBean"));
         
@@ -172,14 +172,15 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         node.select();
         
         EditorOperator eo = new EditorOperator(fileName);
-        eo.deleteLine(17);
-        eo.deleteLine(17);
-        eo.deleteLine(17);
-        eo.deleteLine(17);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
         eo.setCaretPositionToLine(17);
   
         eo.insert(createWrapperClass(fileName));
-        eo.deleteLine(60);
+
         eo.save();
     }
      
@@ -270,6 +271,7 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         JellyToolsHelper.changeCheckBoxSelection(JellyConstants.EXISTINGCLASS_CBX, nfwo, true);
         assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.EXISTINGCLASS_CBX, nfwo));
         assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.EXISTINGCLASS_TXT, nfwo));
+        JellyToolsHelper.tempo(1000);
         JellyToolsHelper.setTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo, mbean.getClassToWrap());
         assertEquals(mbean.getClassToWrap(), 
                 JellyToolsHelper.getTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo));
