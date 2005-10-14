@@ -170,7 +170,7 @@ public final class ModuleList {
         File nbdestdir = new File(root, DEST_DIR_IN_NETBEANS_ORG);
         Map/*<String,Entry>*/ entries = new HashMap();
         doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, root, nbdestdir, null);
-        return new ModuleList(entries);
+        return new ModuleList(entries, root);
     }
     
     private static final Set/*<String>*/ EXCLUDED_DIR_NAMES = new HashSet();
@@ -380,7 +380,7 @@ public final class ModuleList {
         return merge(new ModuleList[] {
             findOrCreateModuleListFromSuiteWithoutBinaries(root, nbdestdir, eval),
             findOrCreateModuleListFromBinaries(nbdestdir),
-        });
+        }, root);
     }
     
     private static ModuleList findOrCreateModuleListFromSuiteWithoutBinaries(File root, File nbdestdir, PropertyEvaluator eval) throws IOException {
@@ -396,7 +396,7 @@ public final class ModuleList {
                     Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
-            sources = new ModuleList(entries);
+            sources = new ModuleList(entries, root);
             sourceLists.put(root, sources);
         }
         return sources;
@@ -478,10 +478,10 @@ public final class ModuleList {
             if (entries.isEmpty()) {
                 throw new IOException("No module in " + basedir); // NOI18N
             }
-            sources = new ModuleList(entries);
+            sources = new ModuleList(entries, basedir);
             sourceLists.put(basedir, sources);
         }
-        return merge(new ModuleList[] {sources, binaries});
+        return merge(new ModuleList[] {sources, binaries}, basedir);
     }
     
     static ModuleList findOrCreateModuleListFromBinaries(File root) throws IOException {
@@ -526,7 +526,7 @@ public final class ModuleList {
                     ManifestManager mm = ManifestManager.getInstanceFromJAR(m);
                     String codenamebase = mm.getCodeNameBase();
                     if (codenamebase == null) {
-                            continue;
+                        continue;
                     }
                     String cp = mm.getClassPath();
                     File[] exts;
@@ -551,7 +551,7 @@ public final class ModuleList {
                 }
             }
         }
-        return new ModuleList(entries);
+        return new ModuleList(entries, root);
     }
     
     /**
@@ -803,19 +803,23 @@ public final class ModuleList {
     /** all module entries, indexed by cnb */
     private final Map/*<String,Entry>*/ entries;
     
-    private ModuleList(Map/*<String,Entry>*/ entries) {
+    /** originally passed top-level dir, for debugging */
+    private final File home;
+    
+    private ModuleList(Map/*<String,Entry>*/ entries, File home) {
         this.entries = entries;
+        this.home = home;
     }
     
     public String toString() {
-        return "ModuleList" + entries.values(); // NOI18N
+        return "ModuleList[" + home + "]" + entries.values(); // NOI18N
     }
     
     /**
      * Merge a bunch of module lists into one.
      * In case of conflict (by CNB), earlier entries take precedence.
      */
-    private static ModuleList merge(ModuleList[] lists) {
+    private static ModuleList merge(ModuleList[] lists, File home) {
         Map/*<String,Entry>*/ entries = new HashMap();
         for (int i = 0; i < lists.length; i++) {
             Iterator it = lists[i].entries.entrySet().iterator();
@@ -827,7 +831,7 @@ public final class ModuleList {
                 }
             }
         }
-        return new ModuleList(entries);
+        return new ModuleList(entries, home);
     }
     
     /**

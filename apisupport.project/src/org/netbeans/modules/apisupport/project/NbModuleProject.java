@@ -312,7 +312,7 @@ public final class NbModuleProject implements Project {
             }
         }
         ModuleEntry thisEntry = ml.getEntry(getCodeNameBase());
-        assert thisEntry != null : "Cannot find myself";
+        assert thisEntry != null : "Cannot find my own entry (" + getCodeNameBase() + ") in " + ml;
         if (nbroot != null) {
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
             stock.put("netbeans.dest.dir", thisEntry.getDestDir().getAbsolutePath()); // NOI18N
