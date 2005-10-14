@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
         <selector id="editor_javadoc_files" >
             <or>
                 <filename name="src/**/*.java" />
-                <filename name="libsrc/**/*.java" />
             </or>
         </selector>
 
@@ -28,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javadoc.base" location="${basedir}"/>
         <property name="javadoc.name" value="${code.name.base.dashes}"/>
         <property name="javadoc.title" value="Editor Module API"/>
-		<property name="javadoc.packages" value="org.netbeans.editor,org.netbeans.editor.ext,org.netbeans.modules.editor,org.netbeans.modules.editor.options"/>
+		<property name="javadoc.packages" value="org.netbeans.modules.editor,org.netbeans.modules.editor.options"/>
         <property name="javadoc.classpath" refid="cp"/>
         <property name="javadoc.src" value="../../editor"/>
         <property name="javadoc.files" value="editor_javadoc_files" />
