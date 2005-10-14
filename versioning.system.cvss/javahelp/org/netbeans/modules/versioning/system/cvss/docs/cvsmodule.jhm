@@ -26,7 +26,7 @@
 	<mapID target="cvs-lite_mergeresolve" url="cvsmodule/cvs-lite_mergeresolve.html" />
 	<mapID target="cvs-lite_patch" url="cvsmodule/cvs-lite_patch.html" />
 	
-	<!--<mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_revert.html" />-->
+	<mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_revert.html" />
 	<mapID target="cvs-lite_histories" url="cvsmodule/cvs-lite_histories.html" />
 	<mapID target="cvs-lite_branches" url="cvsmodule/cvs-lite_branches.html" />
 	
