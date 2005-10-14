@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="modules" value="apisupport/apidocs"/>
             <property name="fixedmodules" value="${config.fixedmodules.javadoc}"/>
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
+            <property name="javadoc.skip.brokenlinks.check" value="true" />
         </ant>
         <mkdir dir="${docs.dir}"/>
         <zip zipfile="${docs.zip}" compress="true">
