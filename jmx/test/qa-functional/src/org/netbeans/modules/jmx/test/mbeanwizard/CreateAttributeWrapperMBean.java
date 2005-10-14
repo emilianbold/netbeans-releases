@@ -50,7 +50,7 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     public static NbTestSuite suite() {
         
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new CreateAttributeWrapperMBean("createClass"));
+        suite.addTest(new CreateAttributeWrapperMBean("createClass"));
         suite.addTest(new CreateAttributeWrapperMBean("constructTest13MBean"));
         suite.addTest(new CreateAttributeWrapperMBean("constructTest14MBean"));
         
