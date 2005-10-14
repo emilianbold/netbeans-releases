@@ -273,6 +273,7 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.EXISTINGCLASS_TXT, nfwo));
         JellyToolsHelper.tempo(1000);
         JellyToolsHelper.setTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo, mbean.getClassToWrap());
+        JellyToolsHelper.tempo(1000);
         assertEquals(mbean.getClassToWrap(), 
                 JellyToolsHelper.getTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo));
         
@@ -282,9 +283,10 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
         assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
         assertFalse(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.PREREGPARAM_CBX, nfwo));
-        
+        JellyToolsHelper.tempo(1000);
         JellyToolsHelper.setTextFieldContent(JellyConstants.MBEANDESCR_TXT, nfwo,
                 mbean.getMBeanComment());
+        JellyToolsHelper.tempo(1000);
         assertEquals(mbean.getMBeanComment(), JellyToolsHelper.getTextFieldContent(
                 JellyConstants.MBEANDESCR_TXT, nfwo));
         
