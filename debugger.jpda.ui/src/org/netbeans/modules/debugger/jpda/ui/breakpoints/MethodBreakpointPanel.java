@@ -77,7 +77,10 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             cbAllMethods.setSelected (true);
             tfMethodName.setEnabled (false);
         } else {
-            tfMethodName.setText (b.getMethodName ());
+            if (b.getMethodName().equals(tfClassName.getText()))
+                tfMethodName.setText ("<init>");
+            else
+                tfMethodName.setText (b.getMethodName ());
         }
         
 //        cbInnerClasses.setSelected (b.getApplyToAnonymousInnerClasses ());
