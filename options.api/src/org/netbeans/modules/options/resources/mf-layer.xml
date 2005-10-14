@@ -25,6 +25,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-options-OptionsWindowAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-OptionsWindowAction.instance"/>
             </file>
+            <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance_hidden"/>
+            <file name="org-netbeans-core-actions-OptionsAction.instance_hidden"/>
         </folder>
     </folder>
     <folder name="OptionsDialog">

@@ -187,6 +187,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator2.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
+            <attr name="Separator2.instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
+            <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-OptionsAction.instance"/>
         </folder> 
 
         <folder name="Window">
