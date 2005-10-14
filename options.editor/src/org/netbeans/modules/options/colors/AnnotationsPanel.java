@@ -147,15 +147,12 @@ PropertyChangeListener {
     }
     
     void update () {
-        if (colorModel == null) {
-            // first update
-            listen = false;
-            colorModel = new ColorModel ();
-            currentScheme = colorModel.getCurrentProfile ();
-            lCategories.setListData (getAnnotations (currentScheme));
-            refreshUI ();
-            listen = true;
-        }
+        listen = false;
+        colorModel = new ColorModel ();
+        currentScheme = colorModel.getCurrentProfile ();
+        lCategories.setListData (getAnnotations (currentScheme));
+        refreshUI ();
+        listen = true;
         changed = false;
     }
     

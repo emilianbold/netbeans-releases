@@ -215,15 +215,13 @@ PropertyChangeListener {
     }
     
     void update () {
-        if (colorModel == null) {
-            colorModel = new ColorModel ();
-            currentProfile = colorModel.getCurrentProfile ();
-            listen = false;
-            setCurrentProfile (currentProfile);
-            lCategories.setListData (getCategories (currentProfile));
-            refreshUI ();	
-            listen = true;
-        }
+        colorModel = new ColorModel ();
+        currentProfile = colorModel.getCurrentProfile ();
+        listen = false;
+        setCurrentProfile (currentProfile);
+        lCategories.setListData (getCategories (currentProfile));
+        refreshUI ();	
+        listen = true;
         changed = false;
     }
     

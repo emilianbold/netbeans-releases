@@ -154,18 +154,17 @@ ActionListener {
         syntaxColoringPanel.update ();
         annotationsPanel.update ();
         
-        if (colorModel == null) {
-            colorModel = new ColorModel ();
-            currentProfile = colorModel.getCurrentProfile ();
+        colorModel = new ColorModel ();
+        currentProfile = colorModel.getCurrentProfile ();
 
-            // init schemes
-            listen = false;
-            Iterator it = colorModel.getProfiles ().iterator ();
-            while (it.hasNext ())
-                cbProfiles.addItem (it.next ());
-            listen = true;
-            cbProfiles.setSelectedItem (currentProfile);
-        }
+        // init schemes
+        listen = false;
+        Iterator it = colorModel.getProfiles ().iterator ();
+        cbProfiles.removeAllItems ();
+        while (it.hasNext ())
+            cbProfiles.addItem (it.next ());
+        listen = true;
+        cbProfiles.setSelectedItem (currentProfile);
     }
     
     

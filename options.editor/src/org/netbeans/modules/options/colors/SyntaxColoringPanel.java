@@ -276,27 +276,26 @@ PropertyChangeListener {
     }
     
     void update () {
-	if (colorModel == null) {
-            // first update
-            colorModel = new ColorModel ();
-            currentProfile = colorModel.getCurrentProfile ();
-            currentLanguage = (String) colorModel.getLanguages ().
-                iterator ().next ();
-            Component component = colorModel.getSyntaxColoringPreviewComponent 
-                (currentLanguage);
-            preview = (Preview) component;
-            previewPanel.add ("Center", component);
-            listen = false;
-            List languages = new ArrayList 
-                (colorModel.getLanguages ());
-            Collections.sort (languages, new LanguagesComparator ());
-            Iterator it = languages.iterator ();
-            while (it.hasNext ())
-                cbLanguages.addItem (it.next ());
-            listen = true;
-            cbLanguages.setSelectedIndex (0);
-            lCategories.setSelectedIndex (0);
-        }
+        colorModel = new ColorModel ();
+        currentProfile = colorModel.getCurrentProfile ();
+        currentLanguage = (String) colorModel.getLanguages ().
+            iterator ().next ();
+        Component component = colorModel.getSyntaxColoringPreviewComponent 
+            (currentLanguage);
+        preview = (Preview) component;
+        previewPanel.removeAll ();
+        previewPanel.add ("Center", component);
+        listen = false;
+        List languages = new ArrayList 
+            (colorModel.getLanguages ());
+        Collections.sort (languages, new LanguagesComparator ());
+        Iterator it = languages.iterator ();
+        cbLanguages.removeAllItems ();
+        while (it.hasNext ())
+            cbLanguages.addItem (it.next ());
+        listen = true;
+        cbLanguages.setSelectedIndex (0);
+        lCategories.setSelectedIndex (0);
         changed = false;
     }
     
