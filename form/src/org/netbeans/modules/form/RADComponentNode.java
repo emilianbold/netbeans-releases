@@ -120,15 +120,8 @@ public class RADComponentNode extends FormNode
         return component.getNewTypes();
     }
 
-    /** Get the default action for this node.
-     * This action can but need not be one from the list returned
-     * from {@link #getActions}. If so, the popup menu returned from {@link #getContextMenu}
-     * is encouraged to highlight the action.
-     *
-     * @return default action, or <code>null</code> if there should be none
-     */
-    public SystemAction getDefaultAction() {
-        if (component instanceof RADVisualContainer && !getFormModel().isFreeDesignDefaultLayout())
+    public Action getPreferredAction() {
+        if (component instanceof RADVisualContainer)
             return SystemAction.get(EditContainerAction.class);
 //        if (component.getEventHandlers().getDefaultEvent() != null)
         return SystemAction.get(DefaultRADAction.class);
@@ -187,14 +180,10 @@ public class RADComponentNode extends FormNode
 
                 if (component instanceof RADVisualContainer) {
                     if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
-                        // PENDING [possibility to change the designed container temporarily disabled in new layout]
-                        if (!getFormModel().isFreeDesignDefaultLayout()) {
-                            actions.add(SystemAction.get(EditContainerAction.class));
-                            if (topComp != null && component != topComp) {
-                                actions.add(SystemAction.get(EditFormAction.class));
-                            }
+                        actions.add(SystemAction.get(EditContainerAction.class));
+                        if (topComp != null && component != topComp) {
+                            actions.add(SystemAction.get(EditFormAction.class));
                         }
-
                         actions.add(SystemAction.get(SelectLayoutAction.class));
                         actions.add(SystemAction.get(CustomizeLayoutAction.class));
                     }

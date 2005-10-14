@@ -552,99 +552,98 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // -------
     // designer size
 
-    Dimension getStoredDesignerSize() {
-        RADComponent metacomp = topDesignComponent; //formModel.getTopRADComponent()
-        if (metacomp instanceof RADVisualFormContainer) {
-            return ((RADVisualFormContainer)metacomp).getDesignerSize();
-        }
-        else if (metacomp != null) {
-            return (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
-        }
-        else return null;
+    Dimension getDesignerSize() {
+        return componentLayer.getDesignerSize();
     }
 
-    void setStoredDesignerSize(Dimension size) {
-        RADComponent metacomp = topDesignComponent; //formModel.getTopRADComponent()
-        if (metacomp instanceof RADVisualFormContainer)
-            ((RADVisualFormContainer)metacomp).setDesignerSize(size);
-        else if (metacomp != null) {
-            Dimension old = (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
-            metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
-            getFormModel().fireSyntheticPropertyChanged(metacomp, FormDesigner.PROP_DESIGNER_SIZE, old, size);
+    void setDesignerSize(Dimension size, Dimension oldSize) {
+        if (topDesignComponent instanceof RADVisualFormContainer) {
+            ((RADVisualFormContainer)topDesignComponent).setDesignerSize(size);
         }
-    }
-
-    private void setupDesignerSize() {
-        RADVisualFormContainer formCont = topDesignComponent instanceof RADVisualFormContainer ?
-                                          (RADVisualFormContainer) topDesignComponent : null;
-        boolean explicitSize =
-                formCont == null
-                || formCont.getFormSizePolicy() == RADVisualFormContainer.GEN_BOUNDS
-                || !formModel.isFreeDesignDefaultLayout();
-//                topDesignComponent instanceof RADVisualContainer
-//                 && ((RADVisualContainer)topDesignComponent).getLayoutSupport() == null
-
-        Dimension size = null;
-        if (explicitSize) {
-            if (formCont != null)
-                size = formCont.getDesignerSize();
-            if (size == null)
-                size = (Dimension) topDesignComponent.getAuxValue(PROP_DESIGNER_SIZE);
-            if (size == null)
-                size = new Dimension(400, 300);
-        }
-
-        Dimension setSize = componentLayer.setDesignerSize(size);
-        // passed null results in preferred size computation
-
-        if (formCont != null)
-            formCont.setDesignerSizeImpl(setSize); // 'Impl' to avoid change firing in FormModel
-        else // not a visual container
-            topDesignComponent.setAuxValue(PROP_DESIGNER_SIZE, setSize);
-    }
-
-    private void checkDesignerSize() {
-        if (formModel.isFreeDesignDefaultLayout() &&
-            topDesignComponent instanceof RADVisualFormContainer)
-        {   // visual container with natural layout (in free design)
-            RADVisualFormContainer formCont = (RADVisualFormContainer) topDesignComponent;
-            if (formCont.getFormSizePolicy() != RADVisualFormContainer.GEN_BOUNDS) {
-                // form size not defined explicitly - check minimum size
-                Dimension designerSize = new Dimension(componentLayer.getDesignerSize());
-                Dimension minSize = ((Component)getComponent(topDesignComponent)).getMinimumSize();
-                boolean corrected = false;
-                if (designerSize.width < minSize.width) {
-                    designerSize.width = minSize.width;
-                    corrected = true;
-                }
-                if (designerSize.height < minSize.height) {
-                    designerSize.height = minSize.height;
-                    corrected = true;
-                }
-                if (corrected) {
-                    // hack: we need the size correction in the undo/redo
-                    if (formModel.isCompoundEditInProgress()) {
-                        FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
-                        ev.setComponentAndContainer(formCont, null);
-                        ev.setProperty(PROP_DESIGNER_SIZE, formCont.getDesignerSize(), designerSize);
-                        formModel.addUndoableEdit(ev.getUndoableEdit());
-                    }
-
-                    componentLayer.setDesignerSize(designerSize);
-                    formCont.setDesignerSizeImpl(designerSize);
-                }
+        else if (topDesignComponent != null) {
+            if (topDesignComponent == formModel.getTopRADComponent()) {
+                oldSize = (Dimension) topDesignComponent.getAuxValue(PROP_DESIGNER_SIZE);
+                topDesignComponent.setAuxValue(PROP_DESIGNER_SIZE, size);
             }
+            if (oldSize == null)
+                oldSize = getDesignerSize();
+
+            getFormModel().fireSyntheticPropertyChanged(topDesignComponent,
+                    FormDesigner.PROP_DESIGNER_SIZE, oldSize, size);
         }
     }
 
     public void resetDesignerSize() {
-        if (topDesignComponent instanceof RADVisualFormContainer) {
-            RADVisualFormContainer formCont = (RADVisualFormContainer) topDesignComponent;
-            if (formCont.getFormSizePolicy() != RADVisualFormContainer.GEN_BOUNDS)
-            {   // have the designer size derived from the top container pref. size
-                formCont.setDesignerSize(null);
+        setDesignerSize(null, null);
+    }
+
+    void storeDesignerSize(Dimension size) { // without firing model change
+        if (topDesignComponent instanceof RADVisualFormContainer)
+            ((RADVisualFormContainer)topDesignComponent).setDesignerSizeImpl(size);
+        else if (topDesignComponent == formModel.getTopRADComponent()) // root not a visual container
+            topDesignComponent.setAuxValue(PROP_DESIGNER_SIZE, size);
+    }
+
+    private void setupDesignerSize() {
+        Dimension size = null;
+        RADVisualFormContainer formCont = topDesignComponent instanceof RADVisualFormContainer ?
+                                          (RADVisualFormContainer) topDesignComponent : null;
+        if (formCont == null
+            || formCont.getFormSizePolicy() == RADVisualFormContainer.GEN_BOUNDS
+            || (!formModel.isFreeDesignDefaultLayout() && !isFreeDesignContainer()))
+        {   // try to obtain stored designer size
+            if (formCont != null)
+                size = formCont.getDesignerSize();
+            if (size == null)
+                size = (Dimension) topDesignComponent.getAuxValue(PROP_DESIGNER_SIZE);
+            if (size == null
+                && (!formModel.isFreeDesignDefaultLayout()
+                     || topDesignComponent == formModel.getTopRADComponent()))
+            {   // use default size if no stored size is available and
+                // old layout form or top design comp is root in the form (but not a container)
+                size = new Dimension(400, 300);
             }
         }
+
+        Dimension setSize = componentLayer.setDesignerSize(size); // null computes preferred size
+        storeDesignerSize(setSize);
+    }
+
+    private void checkDesignerSize() {
+        if ((formModel.isFreeDesignDefaultLayout() || isFreeDesignContainer())
+            && (!(topDesignComponent instanceof RADVisualFormContainer)
+                || ((RADVisualFormContainer)topDesignComponent).getFormSizePolicy() != RADVisualFormContainer.GEN_BOUNDS))
+        {   // new layout container defining designer size
+            // designer size not defined explicitly - check minimum size
+            Dimension designerSize = new Dimension(getDesignerSize());
+            Dimension minSize = ((Component)getComponent(topDesignComponent)).getMinimumSize();
+            boolean corrected = false;
+            if (designerSize.width < minSize.width) {
+                designerSize.width = minSize.width;
+                corrected = true;
+            }
+            if (designerSize.height < minSize.height) {
+                designerSize.height = minSize.height;
+                corrected = true;
+            }
+            if (corrected) {
+                // hack: we need the size correction in the undo/redo
+                if (formModel.isCompoundEditInProgress()) {
+                    FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
+                    ev.setComponentAndContainer(topDesignComponent, null);
+                    ev.setProperty(PROP_DESIGNER_SIZE, getDesignerSize(), designerSize);
+                    formModel.addUndoableEdit(ev.getUndoableEdit());
+                }
+
+                componentLayer.setDesignerSize(designerSize);
+                storeDesignerSize(designerSize);
+            }
+        }
+    }
+
+    private boolean isFreeDesignContainer() {
+        return topDesignComponent instanceof RADVisualContainer
+               && ((RADVisualContainer)topDesignComponent).getLayoutSupport() == null;
     }
 
     // ---------
@@ -1772,12 +1771,20 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         public void run() {
             if (events == null) {
+                Object originalVisualComp = replicator.getClonedComponent(topDesignComponent);
+                Dimension originalSize =  originalVisualComp instanceof Component ?
+                    ((Component)originalVisualComp).getSize() : null;
+
                 replicator.setTopMetaComponent(topDesignComponent);
                 Component formClone = (Component) replicator.createClone();
                 if (formClone != null) {
                     formClone.setVisible(true);
                     componentLayer.setTopDesignComponent(formClone);
-                    setupDesignerSize();
+                    if (originalSize != null) {
+                        componentLayer.setDesignerSize(originalSize);
+                        checkDesignerSize();
+                    }
+                    else setupDesignerSize();
                     if (getLayoutDesigner() != null)
                         getLayoutDesigner().externalSizeChangeHappened();
                     updateComponentLayer(false);
@@ -1868,7 +1875,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         deriveDesignerSize = false;
                         updateDone = true;
                     }
-                    else { // null size means the designer size should be computed based on content
+                    else { // null size to compute designer size based on content (from resetDesignerSize)
                         deriveDesignerSize = true;
                         updateDone = true;
                     }

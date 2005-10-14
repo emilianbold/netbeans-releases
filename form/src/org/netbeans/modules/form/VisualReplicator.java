@@ -125,6 +125,7 @@ public class VisualReplicator { //implements VisualMapper
         topMetaComponent = metacomponent;
         idToClone.clear();
         cloneToId.clear();
+        layoutBuilders.clear();
     }
 
     public int getDesignRestrictions() {

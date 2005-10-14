@@ -218,6 +218,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         Object comp = formDesigner.getComponent(metacomp);
         if (!(comp instanceof Component))
             return;
+        if (metacomp == formDesigner.getTopDesignComponent())
+            return;
 
         Component component = (Component) comp;
         Component parent = component.getParent();
@@ -1257,7 +1259,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     int h = Integer.parseInt(txt.substring(i, n));
                     if (w >= 0 && h >= 0) {
                         size = new Dimension(w ,h);
-                        formDesigner.setStoredDesignerSize(size);
+                        formDesigner.setDesignerSize(size, null);
                         setToolTipText(null);
                         setCursor(Cursor.getDefaultCursor());
                     }
@@ -1813,7 +1815,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         final RADVisualContainer getSourceContainer() {
-            return (movingComponents == null) ? null : movingComponents[0].getParentContainer();
+            return movingComponents != null && formDesigner.getTopDesignComponent() != movingComponents[0] ?
+                   movingComponents[0].getParentContainer() : null;
         }
 
         final boolean isTopComponent() {
@@ -2230,6 +2233,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     // for resizing existing components
     private class ResizeComponentDrag extends ComponentDrag {
         private int resizeType;
+        private Dimension originalSize;
 
         private ComponentDragger oldDragger; // drags components in the old layout support
 
@@ -2243,22 +2247,23 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         void init() {
-            RADVisualContainer metacont = getSourceContainer();
+            RADVisualContainer sourceCont = getSourceContainer();
             if (isTopComponent()) {
                 LayoutModel layoutModel = getLayoutModel();
                 newDrag = layoutModel != null
                           && layoutModel.getLayoutComponent(movingComponents[0].getId()) != null;
                 oldDrag = !newDrag;
                 fixedTarget = null;
+                originalSize = formDesigner.getComponentLayer().getDesignerSize();
             }
-            else if (metacont != null) {
-                if (metacont.getLayoutSupport() == null) {
+            else if (sourceCont != null) {
+                if (sourceCont.getLayoutSupport() == null) {
                     newDrag = true;
                 }
                 else {
                     oldDrag = true;
                 }
-                fixedTarget = metacont;
+                fixedTarget = sourceCont;
             }
 
             if (newDrag) { // new layout support
@@ -2294,7 +2299,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
 
                 formDesigner.getLayoutDesigner().startResizing(
-                    compIds, originalBounds, hotSpot, res);
+                    compIds, originalBounds, hotSpot, res, sourceCont != null);
 
                 // convert back to HandleLayer
                 for (int i=0; i < originalBounds.length; i++) {
@@ -2352,23 +2357,21 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
                 if (isTopComponent()) {
-                    Dimension size = new Dimension(movingBounds[0].width, movingBounds[0].height);
-                    formDesigner.setStoredDesignerSize(size);
+                    formDesigner.setDesignerSize(new Dimension(movingBounds[0].width, movingBounds[0].height),
+                                                 originalSize);
                 }
             }
             else { // resizing canceled
                 formDesigner.getLayoutDesigner().endMoving(false);
 
                 if (isTopComponent()) {
-                    Dimension prevSize = formDesigner.getStoredDesignerSize();
+                    // just revert ComponentLayer's designer size (don't need to go through FormDesigner)
                     ComponentLayer compLayer = formDesigner.getComponentLayer();
-                    if (!compLayer.getDesignerSize().equals(prevSize)) {
-                        // restore the previous designer size 	 
-                        compLayer.setDesignerSize(prevSize);
+                    if (!compLayer.getDesignerSize().equals(originalSize)) {
+                        compLayer.setDesignerSize(originalSize);
                         compLayer.revalidate();
                     }
                     compLayer.repaint();
-//                    formDesigner.updateContainerLayout((RADVisualContainer)formDesigner.getTopDesignComponent(), false);
                 }
                 else { // add resized component back
                     formDesigner.updateContainerLayout(getSourceContainer(), false);

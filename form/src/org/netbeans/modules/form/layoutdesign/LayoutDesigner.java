@@ -382,7 +382,8 @@ public class LayoutDesigner implements LayoutConstants {
     public void startResizing(String[] compIds,
                               Rectangle[] bounds,
                               Point hotspot,
-                              int[] resizeEdges)
+                              int[] resizeEdges,
+                              boolean inLayout)
     {
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
             em.log("startResizing: " + compIds + ", " + bounds + ", " + hotspot + ", " + resizeEdges); //NOI18N
@@ -409,7 +410,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         prepareDragger(comps, bounds, hotspot, edges);
-        dragger.setTargetContainer(comps[0].getParent());
+        dragger.setTargetContainer(inLayout ? comps[0].getParent() : null);
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
             testCode.add("// < START RESIZING"); //NOI18N
 	}
