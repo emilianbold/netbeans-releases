@@ -171,15 +171,14 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         node.select();
         
         EditorOperator eo = new EditorOperator(fileName);
-        eo.deleteLine(17);
-        eo.deleteLine(17);
-        eo.deleteLine(17);
-        eo.deleteLine(17);
-        eo.setCaretPositionToLine(17);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.setCaretPositionToLine(16);
   
         eo.insert(createWrapperClass(fileName));
-        eo.deleteLine(33);
-        eo.deleteLine(34);
         eo.save();
     }
      
