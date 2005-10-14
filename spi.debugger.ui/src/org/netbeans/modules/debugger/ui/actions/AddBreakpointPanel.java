@@ -86,12 +86,13 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         }
         
         initComponents ();
-        if (def != null) 
+        if (def != null) {
+            cbCathegory.setSelectedItem(def);
             selectCathegory (def);
-        else
-        if (breakpointTypes.size () > 0)
-            selectCathegory (((BreakpointType) breakpointTypes.get (0)).
-                getCategoryDisplayName ());
+        } else if (breakpointTypes.size () > 0) {
+            cbCathegory.setSelectedIndex(0);
+            selectCathegory ((String) cbCathegory.getSelectedItem ());
+        }
     }
 
 
