@@ -71,6 +71,21 @@ public class AttrSupports extends Object {
         
     }
     
+     public static class PluginTypeSupport extends AttributeValueSupport.Default {
+        
+        public PluginTypeSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
+        }
+        
+        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList list = new ArrayList();
+            list.add("bean");    // NOI18N
+            list.add("applet");           // NOI18N
+            return list;
+        }
+        
+    }
+    
     public static class VariableScopeSupport extends AttributeValueSupport.Default {
         
         public VariableScopeSupport(boolean tag, String longName, String attrName) {

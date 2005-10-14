@@ -111,8 +111,11 @@ public abstract class AttributeValueSupport extends Object {
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:dirictive.page", "isELIgnored")); // NOI18N
         
         putSupport(new AttrSupports.YesNoTrueFalseSupport(true, "jsp:output", "omit-xml-declaration")); // NOI18N
-        
         putSupport(new AttrSupports.RootVersionSupport(true, "jsp:root", "version")); // NOI18N
+        putSupport(new AttrSupports.PluginTypeSupport(true, "jsp:plugin", "type")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:attribute", "trim")); // NOI18N
+        
+        
     }
     
     protected boolean tag;
