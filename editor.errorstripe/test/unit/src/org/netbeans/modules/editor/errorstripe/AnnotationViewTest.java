@@ -83,9 +83,10 @@ public class AnnotationViewTest extends NbTestCase {
         performTest(new Action() {
             public void test(AnnotationView aView, BaseDocument document) throws Exception {
                 int[] last = new int[] {-1, -1};
+		int topOffset = aView.topOffset();
                 
-                for (double pos = AnnotationView.HEIGHT_OFFSET; pos < (aView.getHeight() - AnnotationView.HEIGHT_LOWER_OFFSET); pos = pos + 1) {
-                    int[] current = aView.viewToModel(pos);
+                for (double pos = 0; pos < aView.getUsableHeight(); pos = pos + 1) {
+                    int[] current = aView.viewToModel(pos + topOffset);
                     
                     if (current == null)
                         continue;
@@ -103,9 +104,10 @@ public class AnnotationViewTest extends NbTestCase {
             public void test(AnnotationView aView, BaseDocument document) throws Exception {
                 Mark mark = null;
                 boolean wasMark = false;
+		int topOffset = aView.topOffset();
                 
-                for (double pos = AnnotationView.HEIGHT_OFFSET; pos < (aView.getHeight() - AnnotationView.HEIGHT_LOWER_OFFSET); pos = pos + 1) {
-                    Mark newMark = aView.getMarkForPoint(pos);
+                for (double pos = 0; pos < aView.getUsableHeight(); pos = pos + 1) {
+                    Mark newMark = aView.getMarkForPoint(pos + topOffset);
                     
                     if (newMark != null && mark!= null) {
                         assertTrue(newMark == mark);

@@ -14,9 +14,11 @@
 package org.netbeans.modules.editor.errorstripe;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -28,6 +30,7 @@ import java.text.MessageFormat;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -69,7 +72,6 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     /*package private*/ static final int PIXELS_FOR_LINE = 3/*height / lines*/;
     /*package private*/ static final int LINE_SEPARATOR_SIZE = 1/*2*/;
     /*package private*/ static final int HEIGHT_OFFSET = 20;
-    /*package private*/ static final int HEIGHT_LOWER_OFFSET = 10;
     
     /*package private*/ static final int UPPER_HANDLE = 4;
     /*package private*/ static final int LOWER_HANDLE = 4;
@@ -162,7 +164,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         g.setColor(color);
         
         int x = (THICKNESS - STATUS_BOX_SIZE) / 2;
-        int y = (HEIGHT_OFFSET - STATUS_BOX_SIZE) / 2;
+        int y = (topOffset() - STATUS_BOX_SIZE) / 2;
         
         g.fillRect(x, y, STATUS_BOX_SIZE, STATUS_BOX_SIZE);
         
@@ -179,7 +181,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     private void drawInProgressGlobalStatus(Graphics g, Color color) {
         int x = (THICKNESS - STATUS_BOX_SIZE) / 2;
-        int y = (HEIGHT_OFFSET - STATUS_BOX_SIZE) / 2;
+        int y = (topOffset() - STATUS_BOX_SIZE) / 2;
 	
         busyIcon.paintIcon(this, g, x, y); // NOI18N
 	
@@ -379,8 +381,40 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         return pane.getUI().getRootView(pane).getPreferredSpan(View.Y_AXIS);
     }
     
-    private double getUsableHeight() {
-        return getHeight() - HEIGHT_OFFSET - HEIGHT_LOWER_OFFSET;
+    double getUsableHeight() {
+        //fix for issue #54080:
+        //find the scrollpane which contains the pane:
+        Component scrollPaneCandidade = pane.getParent();
+        
+        if (scrollPaneCandidade != null && !(scrollPaneCandidade instanceof JScrollPane)) {
+            scrollPaneCandidade = scrollPaneCandidade.getParent();
+        }
+        
+        Insets scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
+        
+        if (scrollPaneCandidade == null || !(scrollPaneCandidade instanceof JScrollPane) || scrollBar == null) {
+            //no help for #54080:
+            return getHeight() - HEIGHT_OFFSET;
+        }
+        
+        JScrollPane scrollPane = (JScrollPane) scrollPaneCandidade;
+        int visibleHeight = scrollPane.getViewport().getExtentSize().height;
+        
+        int topButton = topOffset();
+        int bottomButton = scrollBar.bottom;
+        
+        return visibleHeight - topButton - bottomButton;
+    }
+    
+    int topOffset() {
+        Insets scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
+        
+        if (scrollBar == null) {
+            //no help for #54080:
+            return HEIGHT_OFFSET;
+        }
+        
+        return (HEIGHT_OFFSET > scrollBar.top ? HEIGHT_OFFSET : scrollBar.top) + PIXELS_FOR_LINE;
     }
     
     private int[] modelToViewCache = null;
@@ -449,13 +483,13 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             
             if (getComponentHeight() <= getUsableHeight()) {
                 //1:1 mapping:
-                return r + HEIGHT_OFFSET;
+                return r + topOffset();
             } else {
                 double position = r / getComponentHeight();
                 int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
                 int    block = (int) (position * blocksCount);
                 
-                return block * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + HEIGHT_OFFSET;
+                return block * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + topOffset();
             }
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
@@ -469,7 +503,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         try {
             if (getComponentHeight() <= getUsableHeight()) {
                 //1:1 mapping:
-                int positionOffset = pane.viewToModel(new Point(1, (int) (offset - HEIGHT_OFFSET)));
+                int positionOffset = pane.viewToModel(new Point(1, (int) (offset - topOffset())));
                 int line = Utilities.getLineOffset(doc, positionOffset);
                 
                 if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
@@ -484,7 +518,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                 return getLinesSpan(line);
             } else {
                 int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
-                int    block = (int) ((offset - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
+                int    block = (int) ((offset - topOffset()) / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
                 double yPos = (getComponentHeight() * block) / blocksCount;
                 
                 if (yPos == (int) yPos)
@@ -640,7 +674,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         }
         int y = event.getY();
         
-        if (y <= HEIGHT_OFFSET) {
+        if (y <= topOffset()) {
             int[] errWar = data.computeErrorsAndWarnings();
             int errors = errWar[0];
             int warnings = errWar[1];
