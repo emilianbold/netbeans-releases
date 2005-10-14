@@ -40,6 +40,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
     // annotation for current line
     private transient Object                currentPC;
+    private transient Object                currentPCLock = new Object();
+    private transient boolean               currentPCSet = false;
     private JPDAThread                      currentThread;
     private JPDADebugger                    currentDebugger;
 
@@ -107,15 +109,21 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         // 1) no current thread => remove annotations
         if ( (currentThread == null) ||
              (currentDebugger.getState () != JPDADebugger.STATE_STOPPED) ) {
+            synchronized (currentPCLock) {
+                currentPCSet = false; // The annotation is goint to be removed
+            }
             removeAnnotations ();
             return;
         }
         
         // 2) get call stack & Line
-        CallStackFrame[] stack = new CallStackFrame [0];
+        CallStackFrame[] stack;
         try {
             stack = currentThread.getCallStack ();
         } catch (AbsentInformationException ex) {
+            synchronized (currentPCLock) {
+                currentPCSet = false; // The annotation is goint to be removed
+            }
             removeAnnotations ();
             return;
         }
@@ -131,16 +139,21 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 (null, SourcePath.class);
 
         // 3) annotate current line & stack
+        synchronized (currentPCLock) {
+            currentPCSet = true; // The annotation is goint to be set
+        }
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 // show current line
-                if (currentPC != null)
-                    EditorContextBridge.removeAnnotation (currentPC);
-                if (csf != null && sourcePath != null && currentThread != null) {
-                    
-                    sourcePath.showSource (csf, language);
-                    // annotate current line
-                    currentPC = sourcePath.annotate (currentThread, language);
+                synchronized (currentPCLock) {
+                    if (currentPC != null)
+                        EditorContextBridge.removeAnnotation (currentPC);
+                    if (csf != null && sourcePath != null && currentThread != null) {
+
+                        sourcePath.showSource (csf, language);
+                        // annotate current line
+                        currentPC = sourcePath.annotate (currentThread, language);
+                    }
                 }
             }
         });
@@ -148,78 +161,105 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     }
 
 
-    // do not need synchronization, called from AWTThread!!!!
+    // do not need synchronization, called in a 1-way RP
     private HashMap               stackAnnotations = new HashMap ();
+    
+    private RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher");
 
     // currently waiting / running refresh task
     // there is at most one
-    private RequestProcessor.Task task;
+    private RequestProcessor.Task taskRemove;
+    private RequestProcessor.Task taskAnnotate;
+    private CallStackFrame[] stackToAnnotate;
+    private SourcePath sourcePathToAnnotate;
 
     private void removeAnnotations () {
-        if (task != null) {
-            // cancel old task
-            task.cancel ();
-            task = null;
-        }
-        task = RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                if (currentPC != null)
-                    EditorContextBridge.removeAnnotation (currentPC);
-                currentPC = null;
-                Iterator i = stackAnnotations.values ().iterator ();
-                while (i.hasNext ())
-                    EditorContextBridge.removeAnnotation (i.next ());
-                stackAnnotations.clear ();
+        synchronized (rp) {
+            if (taskRemove == null) {
+                taskRemove = rp.create (new Runnable () {
+                    public void run () {
+                        synchronized (currentPCLock) {
+                            if (currentPCSet) {
+                                // Keep the set PC
+                                return ;
+                            }
+                            if (currentPC != null)
+                                EditorContextBridge.removeAnnotation (currentPC);
+                            currentPC = null;
+                        }
+                        Iterator i = stackAnnotations.values ().iterator ();
+                        while (i.hasNext ())
+                            EditorContextBridge.removeAnnotation (i.next ());
+                        stackAnnotations.clear ();
+                    }
+                });
             }
-        }, 500);
+        }
+        taskRemove.schedule(500);
     }
 
     private void annotateCallStack (
-        final CallStackFrame[] stack,
-        final SourcePath sourcePath
+        CallStackFrame[] stack,
+        SourcePath sourcePath
     ) {
-        if (task != null) {
-            // cancel old task
-            task.cancel ();
-            task = null;
-        }
-        task = RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                HashMap newAnnotations = new HashMap ();
-                int i, k = stack.length;
-                for (i = 1; i < k; i++) {
-
-                    // 1) check Line
-                    String language = stack[i].getDefaultStratum();                    
-                    String resourceName = EditorContextBridge.getRelativePath
-                        (stack [i], language);
-                    int lineNumber = stack [i].getLineNumber (language);
-                    String line = resourceName + lineNumber;
-
-                    // 2) line already annotated?
-                    if (newAnnotations.containsKey (line))
-                        continue;
-
-                    // 3) line has been annotated?
-                    Object da = stackAnnotations.remove (line);
-                    if (da == null) {
-                        // line has not been annotated -> create annotation
-                        da = sourcePath.annotate (stack [i], language);
-                    }
-
-                    // 4) add new line to hashMap
-                    if (da != null)
-                        newAnnotations.put (line, da);
-                } // for
-
-                // delete old anotations
-                Iterator iter = stackAnnotations.values ().iterator ();
-                while (iter.hasNext ())
-                    EditorContextBridge.removeAnnotation (
-                        iter.next ()
-                    );
-                stackAnnotations = newAnnotations;
+        synchronized (rp) {
+            if (taskRemove != null) {
+                taskRemove.cancel();
             }
-        }, 500);
+            this.stackToAnnotate = stack;
+            this.sourcePathToAnnotate = sourcePath;
+            if (taskAnnotate == null) {
+                taskAnnotate = rp.post (new Runnable () {
+                    public void run () {
+                        CallStackFrame[] stack;
+                        SourcePath sourcePath;
+                        synchronized (rp) {
+                            if (stackToAnnotate == null) {
+                                return ; // Nothing to do
+                            }
+                            stack = stackToAnnotate;
+                            sourcePath = sourcePathToAnnotate;
+                            stackToAnnotate = null;
+                            sourcePathToAnnotate = null;
+                        }
+                        HashMap newAnnotations = new HashMap ();
+                        int i, k = stack.length;
+                        for (i = 1; i < k; i++) {
+
+                            // 1) check Line
+                            String language = stack[i].getDefaultStratum();                    
+                            String resourceName = EditorContextBridge.getRelativePath
+                                (stack[i], language);
+                            int lineNumber = stack[i].getLineNumber (language);
+                            String line = resourceName + lineNumber;
+
+                            // 2) line already annotated?
+                            if (newAnnotations.containsKey (line))
+                                continue;
+
+                            // 3) line has been annotated?
+                            Object da = stackAnnotations.remove (line);
+                            if (da == null) {
+                                // line has not been annotated -> create annotation
+                                da = sourcePath.annotate (stack[i], language);
+                            }
+
+                            // 4) add new line to hashMap
+                            if (da != null)
+                                newAnnotations.put (line, da);
+                        } // for
+
+                        // delete old anotations
+                        Iterator iter = stackAnnotations.values ().iterator ();
+                        while (iter.hasNext ())
+                            EditorContextBridge.removeAnnotation (
+                                iter.next ()
+                            );
+                        stackAnnotations = newAnnotations;
+                    }
+                });
+            }
+        }
+        taskAnnotate.schedule(500);
     }
 }
