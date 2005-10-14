@@ -184,7 +184,7 @@ class SplashUISupport {
             colorMap.put(Color.GRAY,       loc("Gray"));          //NOI18N
             colorMap.put(Color.GREEN,      loc("Green"));         //NOI18N
             colorMap.put(Color.LIGHT_GRAY, loc("Light_Gray"));    //NOI18N
-            colorMap.put(Color.MAGENTA,    loc("Magneta"));       //NOI18N
+            colorMap.put(Color.MAGENTA,    loc("Magenta"));       //NOI18N
             colorMap.put(Color.ORANGE,     loc("Orange"));        //NOI18N
             colorMap.put(Color.PINK,       loc("Pink"));          //NOI18N
             colorMap.put(Color.RED,        loc("Red"));           //NOI18N
