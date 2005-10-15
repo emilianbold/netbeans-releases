@@ -15,7 +15,7 @@ is divided into following sections:
   - cleanup
 
 -->
-<project name="EJBModule1-impl" default="build" basedir=".." xmlns:ejbjarproject3="http://www.netbeans.org/ns/j2ee-ejbjarproject/3" xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2" xmlns:ejbjarproject1="http://www.netbeans.org/ns/j2ee-ejbjarproject/1">
+<project xmlns:ejbjarproject3="http://www.netbeans.org/ns/j2ee-ejbjarproject/3" xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2" xmlns:ejbjarproject1="http://www.netbeans.org/ns/j2ee-ejbjarproject/1" name="EJBModule1-impl" default="build" basedir="..">
     <target name="default" depends="dist,javadoc" description="Build whole project."/>
     <!-- 
     ======================
@@ -30,7 +30,7 @@ is divided into following sections:
         <property file="nbproject/private/private.properties"/>
     </target>
     <target name="-init-userdir" depends="-pre-init,-init-private">
-        <property name="user.properties.file" location="${netbeans.user}/build.properties"/>
+        <property location="${netbeans.user}/build.properties" name="user.properties.file"/>
     </target>
     <target name="-init-user" depends="-pre-init,-init-private,-init-userdir">
         <property file="${user.properties.file}"/>
@@ -41,9 +41,9 @@ is divided into following sections:
     <target name="-do-init" depends="-pre-init,-init-private,-init-userdir,-init-user,-init-project,-init-macrodef-property">
         <!-- The two properties below are usually overridden -->
         <!-- by the active platform. Just a fallback. -->
-        <property name="default.javac.source" value="1.4"/>
-        <property name="default.javac.target" value="1.4"/>
-        <property name="runmain.jvmargs" value=""/>
+        <property value="1.4" name="default.javac.source"/>
+        <property value="1.4" name="default.javac.target"/>
+        <property value="" name="runmain.jvmargs"/>
         <condition property="have.tests">
             <or>
                 <available file="${test.src.dir}"/>
@@ -63,11 +63,11 @@ is divided into following sections:
         <condition property="no.javadoc.preview">
             <isfalse value="${javadoc.preview}"/>
         </condition>
-        <available file="${meta.inf}/MANIFEST.MF" property="has.custom.manifest"/>
-        <condition property="classes.dir" value="${build.ear.classes.dir}">
+        <available property="has.custom.manifest" file="${meta.inf}/MANIFEST.MF"/>
+        <condition value="${build.ear.classes.dir}" property="classes.dir">
             <isset property="dist.ear.dir"/>
         </condition>
-        <property name="classes.dir" value="${build.classes.dir}"/>
+        <property value="${build.classes.dir}" name="classes.dir"/>
         <condition property="no.deps">
             <and>
                 <istrue value="${no.dependencies}"/>
@@ -99,7 +99,7 @@ is divided into following sections:
             <attribute name="name"/>
             <attribute name="value"/>
             <sequential>
-                <property name="@{name}" value="${@{value}}"/>
+                <property value="${@{value}}" name="@{name}"/>
             </sequential>
         </macrodef>
     </target>
@@ -111,7 +111,7 @@ is divided into following sections:
             <attribute name="debug" default="${javac.debug}"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <property name="javac.compilerargs" value=""/>
+                <property value="" name="javac.compilerargs"/>
                 <javac srcdir="@{srcdir}" destdir="@{destdir}" debug="@{debug}" deprecation="${javac.deprecation}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
                     <classpath>
                         <path path="@{classpath}"/>
@@ -136,9 +136,9 @@ is divided into following sections:
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="test-sys-prop."/>
-                        <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                        <mapper to="*" from="test-sys-prop.*" type="glob"/>
                     </syspropertyset>
-                    <formatter type="brief" usefile="false"/>
+                    <formatter usefile="false" type="brief"/>
                     <formatter type="xml"/>
                 </junit>
             </sequential>
@@ -149,14 +149,14 @@ is divided into following sections:
             <attribute name="classname" default="${main.class}"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <java fork="true" classname="@{classname}">
+                <java classname="@{classname}" fork="true">
                     <jvmarg line="${runmain.jvmargs}"/>
                     <classpath>
                         <path path="${build.classes.dir}:${javac.classpath}:${j2ee.platform.classpath}"/>
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                        <mapper to="*" from="run-sys-prop.*" type="glob"/>
                     </syspropertyset>
                     <customize/>
                 </java>
@@ -168,7 +168,7 @@ is divided into following sections:
             <attribute name="name" default="${main.class}"/>
             <attribute name="classpath" default="${debug.classpath}"/>
             <sequential>
-                <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{name}">
+                <nbjpdastart name="@{name}" addressproperty="jpda.address" transport="dt_socket">
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
@@ -179,7 +179,7 @@ is divided into following sections:
             <attribute name="dir" default="${build.classes.dir}"/>
             <sequential>
                 <nbjpdareload>
-                    <fileset includes="${fix.includes}*.class" dir="@{dir}"/>
+                    <fileset dir="@{dir}" includes="${fix.includes}*.class"/>
                 </nbjpdareload>
             </sequential>
         </macrodef>
@@ -190,7 +190,7 @@ is divided into following sections:
             <attribute name="classpath" default="${debug.classpath}"/>
             <attribute name="args" default="${application.args}"/>
             <sequential>
-                <java fork="true" classname="@{classname}">
+                <java classname="@{classname}" fork="true">
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xnoagent"/>
                     <jvmarg value="-Djava.compiler=none"/>
@@ -212,6 +212,20 @@ is divided into following sections:
     <target name="-deps-module-jar" depends="init" if="no.dist.ear.dir" unless="no.deps"/>
     <target name="-deps-ear-jar" depends="init" if="dist.ear.dir" unless="no.deps"/>
     <target name="deps-jar" depends="init, -deps-module-jar, -deps-ear-jar"/>
+    <target depends="init" name="wscompile-init">
+        <taskdef classname="com.sun.xml.rpc.tools.ant.Wscompile" name="wscompile">
+            <classpath path="${wscompile.classpath}"/>
+        </taskdef>
+        <mkdir dir="${classes.dir}/META-INF/wsdl"/>
+        <mkdir dir="${build.generated.dir}/wsclient"/>
+        <mkdir dir="${build.generated.dir}/wsservice"/>
+        <mkdir dir="${build.generated.dir}/wsbinary"/>
+        <mkdir dir="${meta.inf}/wsdl"/>
+    </target>
+    <target name="fromwsdl-noop"/>
+    <target depends="wscompile-init" name="NewWebService_wscompile">
+        <wscompile sourceBase="${build.generated.dir}/wsservice" features="${wscompile.service.NewWebService.features}" config="${NewWebService.config.name}" mapping="${classes.dir}/META-INF/${NewWebService.mapping}" classpath="${wscompile.classpath}:${classes.dir}:${javac.classpath}" nonClassDir="${classes.dir}/META-INF/wsdl" verbose="true" xPrintStackTrace="true" base="${build.generated.dir}/wsbinary" keep="true" fork="true" define="true"/>
+    </target>
     <target name="-pre-pre-compile" depends="init,deps-jar">
         <mkdir dir="${build.classes.dir}"/>
         <mkdir dir="${build.ear.classes.dir}"/>
@@ -220,16 +234,20 @@ is divided into following sections:
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="library-inclusion-in-archive" depends="compile"/>
-    <target name="library-inclusion-in-manifest" depends="compile">
-        <manifest file="${build.ear.classes.dir}/META-INF/MANIFEST.MF" mode="update"/>
+    <target depends="compile" name="library-inclusion-in-archive"/>
+    <target depends="compile" name="library-inclusion-in-manifest">
+        <manifest mode="update" file="${build.ear.classes.dir}/META-INF/MANIFEST.MF"/>
     </target>
     <target name="-copy-meta-inf">
         <copy todir="${classes.dir}">
-            <fileset dir="${meta.inf}" includes="**/*.dbschema"/>
+            <fileset includes="**/*.dbschema" dir="${meta.inf}"/>
         </copy>
         <copy todir="${classes.dir}/META-INF">
-            <fileset dir="${meta.inf}" excludes="**/*.dbschema ${meta.inf.excludes}"/>
+            <fileset excludes="**/*.dbschema ${meta.inf.excludes}" dir="${meta.inf}"/>
+        </copy>
+        <!--For web services, refresh ejb-jar.xml and sun-ejb-jar.xml-->
+        <copy overwrite="true" todir="${classes.dir}">
+            <fileset dir="${meta.inf}" includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml"/>
         </copy>
     </target>
     <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile,-copy-meta-inf" if="have.sources">
@@ -238,7 +256,7 @@ is divided into following sections:
             <fileset dir="${src.dir}" excludes="${build.classes.excludes}"/>
         </copy>
     </target>
-    <target name="-post-compile">
+    <target name="-post-compile" depends="NewWebService_wscompile">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
@@ -270,24 +288,24 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="-do-dist-with-manifest" depends="init,compile,-pre-dist,library-inclusion-in-archive" if="has.custom.manifest">
-        <dirname property="dist.jar.dir" file="${dist.jar}"/>
+        <dirname file="${dist.jar}" property="dist.jar.dir"/>
         <mkdir dir="${dist.jar.dir}"/>
-        <jar jarfile="${dist.jar}" compress="${jar.compress}" manifest="${build.classes.dir}/META-INF/MANIFEST.MF">
+        <jar manifest="${build.classes.dir}/META-INF/MANIFEST.MF" compress="${jar.compress}" jarfile="${dist.jar}">
             <fileset dir="${build.classes.dir}"/>
         </jar>
     </target>
     <target name="-do-dist-without-manifest" depends="init,compile,-pre-dist,library-inclusion-in-archive" unless="has.custom.manifest">
-        <dirname property="dist.jar.dir" file="${dist.jar}"/>
+        <dirname file="${dist.jar}" property="dist.jar.dir"/>
         <mkdir dir="${dist.jar.dir}"/>
-        <jar jarfile="${dist.jar}" compress="${jar.compress}">
+        <jar compress="${jar.compress}" jarfile="${dist.jar}">
             <fileset dir="${build.classes.dir}"/>
         </jar>
     </target>
-    <target name="-do-dist" depends="init,compile,-pre-dist,library-inclusion-in-archive, -do-dist-without-manifest, -do-dist-with-manifest"/>
+    <target depends="init,compile,-pre-dist,library-inclusion-in-archive, -do-dist-without-manifest, -do-dist-with-manifest" name="-do-dist"/>
     <target name="-do-ear-dist" depends="init,compile,-pre-dist,library-inclusion-in-manifest">
-        <dirname property="dist.jar.dir" file="${dist.ear.jar}"/>
+        <dirname file="${dist.ear.jar}" property="dist.jar.dir"/>
         <mkdir dir="${dist.jar.dir}"/>
-        <jar jarfile="${dist.ear.jar}" compress="${jar.compress}" manifest="${build.ear.classes.dir}/META-INF/MANIFEST.MF">
+        <jar manifest="${build.ear.classes.dir}/META-INF/MANIFEST.MF" compress="${jar.compress}" jarfile="${dist.ear.jar}">
             <fileset dir="${build.ear.classes.dir}"/>
         </jar>
     </target>
@@ -304,10 +322,10 @@ is divided into following sections:
     -->
     <target name="run" depends="run-deploy" description="Deploy to server."/>
     <target name="-init-deploy">
-        <property name="include.jar.manifest" value=""/>
+        <property value="" name="include.jar.manifest"/>
     </target>
     <target name="run-deploy" depends="init,-init-deploy,compile,library-inclusion-in-archive,dist">
-        <nbdeploy debugmode="false" forceRedeploy="${forceRedeploy}"/>
+        <nbdeploy forceRedeploy="${forceRedeploy}" debugmode="false"/>
     </target>
     <target name="verify" depends="dist">
         <nbverify file="${dist.jar}"/>
@@ -322,8 +340,8 @@ is divided into following sections:
     =================
     -->
     <target name="debug" description="Debug project in IDE." depends="init,compile,dist" if="netbeans.home">
-        <nbdeploy debugmode="true" clientUrlPart="${client.urlPart}"/>
-        <nbjpdaconnect name="${name}" host="${jpda.host}" address="${jpda.address}" transport="${jpda.transport}">
+        <nbdeploy clientUrlPart="${client.urlPart}" debugmode="true"/>
+        <nbjpdaconnect transport="${jpda.transport}" address="${jpda.address}" host="${jpda.host}" name="${name}">
             <classpath>
                 <path path="${debug.classpath}"/>
             </classpath>
@@ -334,7 +352,7 @@ is divided into following sections:
     </target>
     <target name="-pre-debug-fix" depends="init">
         <fail unless="fix.includes">Must set fix.includes</fail>
-        <property name="javac.includes" value="${fix.includes}.java"/>
+        <property value="${fix.includes}.java" name="javac.includes"/>
     </target>
     <target name="-do-debug-fix" if="netbeans.home" depends="init,-pre-debug-fix,compile-single">
         <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
@@ -347,7 +365,7 @@ is divided into following sections:
     -->
     <target name="javadoc-build" depends="init">
         <mkdir dir="${dist.javadoc.dir}"/>
-        <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}" failonerror="true" useexternalfile="true">
+        <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}" additionalparam="${javadoc.additionalparam}" failonerror="true" useexternalfile="true">
             <classpath>
                 <path path="${javac.classpath}:${j2ee.platform.classpath}"/>
             </classpath>
@@ -436,10 +454,10 @@ is divided into following sections:
     -->
     <target name="-debug-start-debuggee-test" if="have.tests" depends="init,compile-test">
         <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-        <ejbjarproject1:debug classname="junit.textui.TestRunner" classpath="${debug.test.classpath}" args="${test.class}"/>
+        <ejbjarproject1:debug args="${test.class}" classpath="${debug.test.classpath}" classname="junit.textui.TestRunner"/>
     </target>
     <target name="-debug-start-debugger-test" if="netbeans.home+have.tests" depends="init,compile-test">
-        <ejbjarproject1:nbjpdastart name="${test.class}" classpath="${debug.test.classpath}"/>
+        <ejbjarproject1:nbjpdastart classpath="${debug.test.classpath}" name="${test.class}"/>
     </target>
     <target name="debug-test" depends="init,compile-test,-debug-start-debugger-test,-debug-start-debuggee-test"/>
     <target name="-do-debug-fix-test" if="netbeans.home" depends="init,-pre-debug-fix,compile-test-single">
