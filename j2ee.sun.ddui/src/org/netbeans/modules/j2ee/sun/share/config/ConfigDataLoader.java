@@ -129,7 +129,13 @@ public class ConfigDataLoader extends UniFileLoader implements FileChangeListene
                         }
                     }
                 } else { // look for secondary FO 
-                    return projectModule.findDeploymentConfigurationFile(secondaryName);
+                    FileObject secondaryFO = projectModule.findDeploymentConfigurationFile(secondaryName);
+                    if(secondaryFO != null) {
+                        File secondary = FileUtil.toFile(secondaryFO);
+                        if (secondary != null && secondary.equals(FileUtil.toFile(fo))) {
+                            return fo;
+                        }
+                    }
                 }
             }
         }
