@@ -473,24 +473,24 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
 
     }
-    
-    /** Enable to access Active element 
+
+    /** Enable to access Active element
      */
     public ToolBarMultiViewElement getActiveMVElement() {
         return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
 
     private Ejb getEjbFromEjbClass(String ejbClassName) {
-        Ejb returnValue = null;
-        Ejb[] ejbs = getEjbJar().getEnterpriseBeans().getEjbs();
-        for (int i = 0; i < ejbs.length; i++) {
-            if (ejbs[i].getEjbClass() != null &&
-                    ejbs[i].getEjbClass().equals(ejbClassName)) {
-                returnValue = ejbs[i];
-                break;
+        EnterpriseBeans enterpriseBeans = getEjbJar().getEnterpriseBeans();
+        if(enterpriseBeans != null) {
+            Ejb[] ejbs = enterpriseBeans.getEjbs();
+            for (int i = 0; i < ejbs.length; i++) {
+                if (ejbs[i].getEjbClass() != null && ejbs[i].getEjbClass().equals(ejbClassName)) {
+                    return ejbs[i];
+                }
             }
         }
-        return returnValue;
+        return null;
     }
 
     private int getBeanInterfaceType(String interfaceName) {
