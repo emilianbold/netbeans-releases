@@ -468,10 +468,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     protected String preferredID() {
         Class clazz = getClass();
 
-        if (warnedTCPIClasses.add(clazz)) {
+        if (getPersistenceType() != PERSISTENCE_NEVER && warnedTCPIClasses.add(clazz)) {
             ErrorManager.getDefault().log(
-                ErrorManager.WARNING, "Warning: " + clazz.getName() + " should override preferredID()"
-            ); //NOI18N
+                ErrorManager.WARNING, "Warning: " + clazz.getName() + " should override preferredID()"  //NOI18N
+            ); 
         }
 
         String name = getName();
