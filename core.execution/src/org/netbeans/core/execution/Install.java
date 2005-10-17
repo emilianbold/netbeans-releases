@@ -38,6 +38,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.text.DefaultEditorKit;
@@ -294,6 +295,8 @@ public class Install extends ModuleInstall {
             cons.insets = new Insets(2, 11, 0, 12);
 
             ListView view = new ListView();
+            //#66881
+            view.setBorder(UIManager.getBorder("Nb.ScrollPane.border"));
             label.setLabelFor(view);
 
             add(view, cons);
