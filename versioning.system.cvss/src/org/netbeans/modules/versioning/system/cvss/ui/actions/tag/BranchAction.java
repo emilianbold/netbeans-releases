@@ -31,7 +31,6 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
@@ -107,7 +106,7 @@ public class BranchAction extends AbstractSystemAction {
         public void run() {
             ExecutorGroup group = new ExecutorGroup("Creating Branch");
             if (settings.isTaggingBase()) {
-                group.addExecutors(tag(context.getFiles(), settings.computeBaseTagName()));
+                group.addExecutors(tag(context.getFiles(), settings.getBaseTagName()));
                 group.addBarrier(null);
             }
             group.addExecutors(branch(context.getFiles(), settings.getBranchName()));

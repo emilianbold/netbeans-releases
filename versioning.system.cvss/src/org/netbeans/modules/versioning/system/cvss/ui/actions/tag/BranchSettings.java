@@ -84,13 +84,17 @@ class BranchSettings extends javax.swing.JPanel {
         return tfName.getText();
     }
 
+    public String getBaseTagName() {
+        return tfBaseTagName.getText();
+    }
+    
     public void saveSettings() {
         CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.tagBase", cbTagBase.isSelected());
         CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.checkout", cbCheckoutBranch.isSelected());
         CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.branchName", tfName.getText());
     }
 
-    public String computeBaseTagName() {
+    private String computeBaseTagName() {
         return tfName.getText() + "_root";
     }
     
