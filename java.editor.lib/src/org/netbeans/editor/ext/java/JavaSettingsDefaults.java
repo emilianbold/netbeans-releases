@@ -194,6 +194,12 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
                 "${Object} ${name} = new ${Object}(${args});" // NOI18N
         );
         
+        javaAbbrevMap.put("psvm", // NOI18N
+                "public static void main(String[] args) {\n" // NOI18N
+                + "    ${cursor}\n" // NOI18N
+                + "}"
+        );
+        
         javaAbbrevMap.put("trycatch", // NOI18N
                 "try {\n" // NOI18N
                 + "    ${cursor}\n" // NOI18N
