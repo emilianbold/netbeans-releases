@@ -279,7 +279,7 @@ public class OptionsPanel extends JPanel {
         invalidate ();
         validate ();
         repaint ();
-        firePropertyChange ("helpCtx", null, null);
+        firePropertyChange ("buran" + PanelController.PROP_HELP_CTX, null, null);
     }
     
     HelpCtx getHelpCtx () {
