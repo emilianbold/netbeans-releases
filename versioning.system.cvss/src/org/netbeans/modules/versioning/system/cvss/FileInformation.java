@@ -290,7 +290,8 @@ public class FileInformation implements Serializable {
     }
 
     /**
-     * Two FileInformation objects are equal if their status contants are equal. CVS Entries are not tested. 
+     * Two FileInformation objects are equal if their status contants are equal AND they both reperesent a file (or
+     * both represent a directory) AND Entries they cache are equal. 
      *  
      * @param o other object
      * @return true if status constants of both object are equal, false otherwise
@@ -311,10 +312,9 @@ public class FileInformation implements Serializable {
      */ 
     private static boolean entriesEqual(Entry e1, Entry e2) {
         if (e2 == null) return false;
-        if (e1.getStickyInformation() != e2.getStickyInformation() && 
-                e1.getStickyInformation() != null && !e1.getStickyInformation().equals(e2.getStickyInformation())) return false;
         if (!e1.getRevision().equals(e2.getRevision())) return false;
-        return true;
+        return e1.getStickyInformation() == e2.getStickyInformation() || 
+                e1.getStickyInformation() != null && e1.getStickyInformation().equals(e2.getStickyInformation());
     }
 
     public int hashCode() {
