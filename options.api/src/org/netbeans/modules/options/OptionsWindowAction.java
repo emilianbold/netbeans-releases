@@ -166,26 +166,30 @@ public class OptionsWindowAction extends AbstractAction {
                 // listener is called twice ...
             if (e.getSource () == bOK) {
                 log.log ("Options Dialog - Ok pressed."); //NOI18N
-                dialog.dispose ();
+                Dialog d = dialog;
+                dialog = null;
+                d.dispose ();
                 RequestProcessor.getDefault ().post (new Runnable () {
                    public void run () {
                         optionsPanel.save ();
                    } 
                 });
-                dialog = null;
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION) {
                 log.log ("Options Dialog - Cancel pressed."); //NOI18N
-                dialog.dispose ();
+                Dialog d = dialog;
+                dialog = null;
+                d.dispose ();
                 RequestProcessor.getDefault ().post (new Runnable () {
                    public void run () {
                         optionsPanel.cancel ();
                    } 
                 });
-                dialog = null;
             } else
             if (e.getSource () == bClassic) {
                 log.log ("Options Dialog - Classic pressed."); //NOI18N
+                Dialog d = dialog;
+                dialog = null;
                 if (optionsPanel.isChanged ()) {
                     Confirmation descriptor = new Confirmation (
                         loc ("CTL_Some_values_changed"), 
@@ -195,14 +199,14 @@ public class OptionsWindowAction extends AbstractAction {
                     if (DialogDisplayer.getDefault ().notify (descriptor) ==
                         NotifyDescriptor.OK_OPTION
                     ) {
-                        dialog.dispose ();
+                        d.dispose ();
                         RequestProcessor.getDefault ().post (new Runnable () {
                            public void run () {
                                 optionsPanel.save ();
                            } 
                         });
                     } else {
-                        dialog.dispose ();
+                        d.dispose ();
                         RequestProcessor.getDefault ().post (new Runnable () {
                            public void run () {
                                 optionsPanel.cancel ();
@@ -210,14 +214,13 @@ public class OptionsWindowAction extends AbstractAction {
                         });
                     }
                 } else {
-                    dialog.dispose ();
+                    d.dispose ();
                     RequestProcessor.getDefault ().post (new Runnable () {
                        public void run () {
                             optionsPanel.cancel ();
                        } 
                     });
                 }
-                dialog = null;
                 try {
                     ClassLoader cl = (ClassLoader) Lookup.getDefault ().
                         lookup (ClassLoader.class);
@@ -247,9 +250,9 @@ public class OptionsWindowAction extends AbstractAction {
             this.optionsPanel = optionsPanel;
         }
         
-        public void windowClosed (WindowEvent e) {
-            log.log ("Options Dialog - windowClosed " + dialog); //NOI18N
+        public void windowClosing (WindowEvent e) {
             if (dialog == null) return;
+            log.log ("Options Dialog - windowClosed "); //NOI18N
             RequestProcessor.getDefault ().post (new Runnable () {
                public void run () {
                     optionsPanel.cancel ();
@@ -258,9 +261,9 @@ public class OptionsWindowAction extends AbstractAction {
             dialog = null;
         }
 
+        public void windowClosed (WindowEvent e) {}
         public void windowDeactivated (WindowEvent e) {}
         public void windowOpened (WindowEvent e) {}
-        public void windowClosing (WindowEvent e) {}
         public void windowIconified (WindowEvent e) {}
         public void windowDeiconified (WindowEvent e) {}
         public void windowActivated (WindowEvent e) {}
