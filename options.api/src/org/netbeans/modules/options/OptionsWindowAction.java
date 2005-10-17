@@ -167,13 +167,21 @@ public class OptionsWindowAction extends AbstractAction {
             if (e.getSource () == bOK) {
                 log.log ("Options Dialog - Ok pressed."); //NOI18N
                 dialog.dispose ();
-                optionsPanel.save ();
+                RequestProcessor.getDefault ().post (new Runnable () {
+                   public void run () {
+                        optionsPanel.save ();
+                   } 
+                });
                 dialog = null;
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION) {
                 log.log ("Options Dialog - Cancel pressed."); //NOI18N
                 dialog.dispose ();
-                optionsPanel.cancel ();
+                RequestProcessor.getDefault ().post (new Runnable () {
+                   public void run () {
+                        optionsPanel.cancel ();
+                   } 
+                });
                 dialog = null;
             } else
             if (e.getSource () == bClassic) {
@@ -188,14 +196,26 @@ public class OptionsWindowAction extends AbstractAction {
                         NotifyDescriptor.OK_OPTION
                     ) {
                         dialog.dispose ();
-                        optionsPanel.save ();
+                        RequestProcessor.getDefault ().post (new Runnable () {
+                           public void run () {
+                                optionsPanel.save ();
+                           } 
+                        });
                     } else {
                         dialog.dispose ();
-                        optionsPanel.cancel ();
+                        RequestProcessor.getDefault ().post (new Runnable () {
+                           public void run () {
+                                optionsPanel.cancel ();
+                           } 
+                        });
                     }
                 } else {
                     dialog.dispose ();
-                    optionsPanel.cancel ();
+                    RequestProcessor.getDefault ().post (new Runnable () {
+                       public void run () {
+                            optionsPanel.cancel ();
+                       } 
+                    });
                 }
                 dialog = null;
                 try {
@@ -230,7 +250,11 @@ public class OptionsWindowAction extends AbstractAction {
         public void windowClosed (WindowEvent e) {
             log.log ("Options Dialog - windowClosed " + dialog); //NOI18N
             if (dialog == null) return;
-            optionsPanel.cancel ();
+            RequestProcessor.getDefault ().post (new Runnable () {
+               public void run () {
+                    optionsPanel.cancel ();
+               } 
+            });
             dialog = null;
         }
 
