@@ -1530,13 +1530,14 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 layoutModel.addInterval(group, parParent, -1);
             }
-            if (alignment == LEADING || alignment == TRAILING) {
-                int alignPos = toAlignWith.getCurrentSpace().positions[dimension][alignment];
-                int outerPos = parParent.getCurrentSpace().positions[dimension][alignment^1];
-                group.getCurrentSpace().set(dimension,
-                                            alignment == LEADING ? alignPos : outerPos,
-                                            alignment == LEADING ? outerPos : alignPos);
-            }
+        }
+        if (alignment == LEADING || alignment == TRAILING) {
+            int alignPos = toAlignWith.getCurrentSpace().positions[dimension][alignment];
+            int outerPos = parParent.getCurrentSpace().positions[dimension][alignment^1];
+            int otherPos = interval.getCurrentSpace().positions[dimension][alignment^1];
+            group.getCurrentSpace().set(dimension,
+                                        alignment == LEADING ? alignPos : Math.min(outerPos, otherPos),
+                                        alignment == LEADING ? Math.max(outerPos, otherPos) : alignPos);
         }
 
         // add the intervals and their separated neighbors to the aligned group
@@ -1612,6 +1613,7 @@ class LayoutFeeder implements LayoutConstants {
                                        LayoutInterval toAlignWith,
                                        int alignment)
     {
+        assert group.isParallel() && (alignment == LEADING || alignment == TRAILING);
         LayoutInterval aligned1 = toAlignWith;
         while (aligned1.getParent() != group) {
             aligned1 = aligned1.getParent();
@@ -1631,7 +1633,10 @@ class LayoutFeeder implements LayoutConstants {
                     break;
                 }
             }
-            if (!contentResizing) { // interval resized according to non-resizing content
+            if (!contentResizing
+                && (aligned1.getAlignment() == (alignment^1)
+                    || LayoutRegion.sameSpace(aligned1.getCurrentSpace(), group.getCurrentSpace(), dimension)))
+            {   // interval resized according to non-resizing content
                 operations.suppressGroupResizing(group);
             }
             if (!LayoutInterval.canResize(group)) {
@@ -2380,21 +2385,21 @@ class LayoutFeeder implements LayoutConstants {
             return true;
 
         LayoutInterval commonGroup;
-        boolean subNeighbor;
+        boolean nextTo;
         if (iDesc1.parent.isParentOf(iDesc2.parent)) {
             commonGroup = iDesc1.parent;
-            subNeighbor = iDesc1.neighbor != null;
+            nextTo = iDesc1.neighbor != null || iDesc2.snappedNextTo != null;
         }
         else if (iDesc2.parent.isParentOf(iDesc1.parent)) {
             commonGroup = iDesc2.parent;
-            subNeighbor = iDesc2.neighbor != null;
+            nextTo = iDesc2.neighbor != null || iDesc1.snappedNextTo != null;
         }
         else {
             commonGroup = LayoutInterval.getFirstParent(iDesc1.parent, SEQUENTIAL);
-            subNeighbor = false;
+            nextTo = false;
         }
 
-        if (commonGroup.isSequential() || subNeighbor) {
+        if (commonGroup.isSequential() || nextTo) {
             // inclusions in common sequence or the upper inclusion has the lower as neighbor
             if (iDesc1.alignment == TRAILING) {
                 IncludeDesc temp = iDesc1;
@@ -2753,19 +2758,20 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    private static boolean isBorderInclusion(IncludeDesc iDesc) {
+    private boolean isBorderInclusion(IncludeDesc iDesc) {
         if (iDesc.alignment != LEADING && iDesc.alignment != TRAILING)
             return false;
 
-        LayoutInterval neighbor = iDesc.parent.isSequential() ? iDesc.parent : iDesc.neighbor;
-        if (neighbor == null)
-            return true;
-        if (iDesc.alignment == TRAILING)
-            return iDesc.index == 0;
-        else { // LEADING
-            int count = neighbor.isSequential() ? neighbor.getSubIntervalCount() : 1;
-            return iDesc.index >= count;
+        if (iDesc.parent.isSequential()) {
+            int startIndex = iDesc.alignment == LEADING ? iDesc.index : 0;
+            int endIndex = iDesc.alignment == LEADING ? iDesc.parent.getSubIntervalCount() - 1 : iDesc.index - 1;
+            return startIndex > endIndex
+                   || !LayoutUtils.contentOverlap(addingSpace, iDesc.parent, startIndex, endIndex, dimension^1);
         }
+
+        return iDesc.neighbor == null
+               || (iDesc.alignment == LEADING && iDesc.index >= 1)
+               || (iDesc.alignment == TRAILING && iDesc.index == 0);
     }
 
     private static int getAddDirection(LayoutRegion adding,
