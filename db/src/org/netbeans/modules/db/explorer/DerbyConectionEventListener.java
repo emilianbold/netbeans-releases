@@ -34,7 +34,8 @@ public class DerbyConectionEventListener {
     
     private static final DerbyConectionEventListener DEFAULT = new DerbyConectionEventListener();
     
-    private static final String DERBY_SYSTEM_HOME = "derby.system.home";
+    private static final String DERBY_DATABASE_FORCE_LOCK = "derby.database.forceDatabaseLock"; // NOI18N
+    private static final String DERBY_SYSTEM_HOME = "derby.system.home"; // NOI18N
     private static final String DERBY_SYSTEM_SHUTDOWN_STATE = "XJ015"; // NOI18N
     
     public static DerbyConectionEventListener getDefault() {
@@ -47,8 +48,15 @@ public class DerbyConectionEventListener {
      * @param dbconn the database connection.
      */
     public void beforeConnect(DatabaseConnection dbconn) {
+        if (!dbconn.getDriver().equals("org.apache.derby.jdbc.EmbeddedDriver")) { // NOI18N
+            return;
+        }
+        
         // force the database lock -- useful on Linux, see issue 63957
-        System.setProperty("derby.database.forceDatabaseLock", "true"); // NOI18N
+        if (System.getProperty(DERBY_DATABASE_FORCE_LOCK) == null) {
+            System.setProperty(DERBY_DATABASE_FORCE_LOCK, "true"); // NOI18N
+        }
+        
         // set the system directory, see issue 64316
         if (System.getProperty(DERBY_SYSTEM_HOME) == null) { // NOI18N
             File derbySystemHome = new File(System.getProperty("netbeans.user"), "derby"); // NOI18N
