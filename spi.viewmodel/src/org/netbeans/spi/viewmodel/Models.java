@@ -443,7 +443,7 @@ public final class Models {
             int i, k = ns.length;
             for (i = 0; i < k; i++)
                 if (!performer.isEnabled (
-                    ns[0].getLookup().lookup(Object.class)
+                    ns[i].getLookup().lookup(Object.class)
                  )) return false;
             return true;
         }
@@ -453,7 +453,7 @@ public final class Models {
             int i, k = ns.length;
             IdentityHashMap h = new IdentityHashMap ();
             for (i = 0; i < k; i++) {
-                Object node = ns[0].getLookup().lookup(Object.class);
+                Object node = ns[i].getLookup().lookup(Object.class);
                 Action[] as = ns [i].getActions (false);
                 int j, jj = as.length;
                 for (j = 0; j < jj; j++)
