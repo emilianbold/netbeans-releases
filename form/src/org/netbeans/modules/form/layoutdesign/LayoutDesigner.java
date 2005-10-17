@@ -2936,6 +2936,11 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     private void findContainerResizingGap(LayoutInterval rootInterval, int dimension) {
+        if (!LayoutInterval.wantResize(rootInterval) && // See issue 66849
+            (LayoutInterval.getIntervalCurrentSize(rootInterval, dimension) != prefSizeOfInterval(rootInterval))) {
+            // Resizing gap would change the layout
+            return;
+        }
         // find gap for container resizing
         int gapPosition = TRAILING;
         LayoutInterval resGap = findContainerResizingGap(rootInterval, dimension, gapPosition);
