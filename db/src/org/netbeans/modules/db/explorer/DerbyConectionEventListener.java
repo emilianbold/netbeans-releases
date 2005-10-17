@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.db.explorer;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -33,6 +34,7 @@ public class DerbyConectionEventListener {
     
     private static final DerbyConectionEventListener DEFAULT = new DerbyConectionEventListener();
     
+    private static final String DERBY_SYSTEM_HOME = "derby.system.home";
     private static final String DERBY_SYSTEM_SHUTDOWN_STATE = "XJ015"; // NOI18N
     
     public static DerbyConectionEventListener getDefault() {
@@ -47,6 +49,12 @@ public class DerbyConectionEventListener {
     public void beforeConnect(DatabaseConnection dbconn) {
         // force the database lock -- useful on Linux, see issue 63957
         System.setProperty("derby.database.forceDatabaseLock", "true"); // NOI18N
+        // set the system directory, see issue 64316
+        if (System.getProperty(DERBY_SYSTEM_HOME) == null) { // NOI18N
+            File derbySystemHome = new File(System.getProperty("netbeans.user"), "derby"); // NOI18N
+            derbySystemHome.mkdirs();
+            System.setProperty(DERBY_SYSTEM_HOME, derbySystemHome.getAbsolutePath()); // NOI18N
+        }
     }
     
     /**
