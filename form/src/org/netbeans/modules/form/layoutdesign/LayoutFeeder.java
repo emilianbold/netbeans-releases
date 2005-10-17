@@ -1642,7 +1642,7 @@ class LayoutFeeder implements LayoutConstants {
             if (!LayoutInterval.canResize(group)) {
                 layoutModel.changeIntervalAttribute(aligned2, LayoutInterval.ATTRIBUTE_FILL, true);
                 // the aligning component should not have explicit size
-                if (resizingOp && interval.isComponent()) {
+                if (resizingOp && aligned2.isComponent()) {
                     java.awt.Dimension prefSize = operations.getMapper()
                             .getComponentPreferredSize(interval.getComponent().getId());
                     int pref = dimension == HORIZONTAL ? prefSize.width : prefSize.height;
@@ -2685,6 +2685,9 @@ class LayoutFeeder implements LayoutConstants {
      *         allows parallel align with 'interval'
      */
     private boolean canAlignWith(LayoutInterval interval, LayoutInterval group, int alignment) {
+        if (group.isSequential())
+            group = group.getParent();
+
         if (interval == group)
             return true; // can align to group border from inside
 
