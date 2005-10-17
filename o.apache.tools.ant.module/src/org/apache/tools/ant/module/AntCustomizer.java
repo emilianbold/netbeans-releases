@@ -196,7 +196,6 @@ ActionListener {
     }
     
     void applyChanges () {
-        if (!changed) return;
         AntSettings settings = AntSettings.getDefault ();
         String antHome = tfAntHome.getText ().trim ();
         if (settings.getAntHome () == null &&
@@ -220,13 +219,14 @@ ActionListener {
             settings.setProperties (properties);
         if (!settings.getExtraClasspath ().equals (classpath))
             settings.setExtraClasspath (classpath);
+        changed = false;
     }
     
     void cancel () {
-        if (!changed) return;
         AntSettings settings = AntSettings.getDefault ();
         if (settings.getAntHome () != originalAntHome)
             settings.setAntHome (originalAntHome);
+        changed = false;
     }
     
     boolean dataValid () {
