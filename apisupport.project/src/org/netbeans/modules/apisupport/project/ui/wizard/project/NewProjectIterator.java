@@ -262,6 +262,12 @@ public class NewProjectIterator extends BasicWizardIterator {
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewProjectIterator.class.getResource("templateWizardPanel.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(panelName, template, replaceTokens));
+
+        final String formName = getRelativePath(project, packageName,
+                name, "PanelVisual.form"); //NOI18N
+        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+        template = NewProjectIterator.class.getResource("templatePanelVisual.frmx");//NOI18N
+        fileChanges.add(fileChanges.createFileWithSubstitutions(formName, template, replaceTokens));
         
         final String panelVisName = getRelativePath(project, packageName,
                 name, "PanelVisual.java"); //NOI18N
