@@ -667,12 +667,16 @@ public class LayoutModel implements LayoutConstants {
         
         private LayoutInterval prefixByGap(LayoutInterval interval, int size) {
             if (size > 0) {
-                LayoutInterval group = new LayoutInterval(SEQUENTIAL);
                 LayoutInterval gap = new LayoutInterval(SINGLE);
                 gap.setSize(size);
-                addInterval(gap, group, -1);
-                addInterval(interval, group, -1);
-                interval = group;
+                if (interval.isSequential()) {
+                    addInterval(gap, interval, 0);
+                } else {
+                    LayoutInterval group = new LayoutInterval(SEQUENTIAL);
+                    addInterval(gap, group, -1);
+                    addInterval(interval, group, -1);
+                    interval = group;
+                }
             }
             return interval;
         }
