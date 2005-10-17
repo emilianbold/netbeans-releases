@@ -589,11 +589,11 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         }
 
         public Component getLastComponent(Container focusCycleRoot) {
-            return defaultPolicy.getLastComponent(focusCycleRoot);
+            return compList[compList.length - 1];
         }
 
         public Component getFirstComponent(Container focusCycleRoot) {
-            return defaultPolicy.getFirstComponent(focusCycleRoot);
+            return compList[0];
         }
 
         public Component getDefaultComponent(Container focusCycleRoot) {
