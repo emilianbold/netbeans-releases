@@ -90,8 +90,17 @@ public final class LayoutComponent implements LayoutConstants {
 
     public LayoutComponent(String id, boolean isContainer, int initialWidth, int initialHeight) {
         this(id, isContainer);
-        layoutIntervals[HORIZONTAL].setPreferredSize(initialWidth);
-        layoutIntervals[VERTICAL].setPreferredSize(initialHeight);
+        if (isContainer) {
+            for (int i=0; i < DIM_COUNT; i++) {
+                LayoutInterval gap = new LayoutInterval(SINGLE);
+                gap.setSizes(0, i==HORIZONTAL ? initialWidth : initialHeight, Short.MAX_VALUE);
+                layoutRoots[i].add(gap, 0);
+            }
+        }
+        else {
+            layoutIntervals[HORIZONTAL].setPreferredSize(initialWidth);
+            layoutIntervals[VERTICAL].setPreferredSize(initialHeight);
+        }
     }
 
     void setLayoutInterval(LayoutInterval interval, int dimension) {

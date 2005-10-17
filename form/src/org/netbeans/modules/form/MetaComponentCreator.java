@@ -214,11 +214,11 @@ public class MetaComponentCreator {
                 boolean isContainer = shouldBeLayoutContainer(preMetaComp);
                 
                 Dimension initialSize = prepareDefaultLayoutSize(
-                        (Component)preMetaComp.getBeanInstance(), isContainer);
+                        (Component)preMetaComp.getBeanInstance(), preMetaComp instanceof RADVisualContainer);
                 
                 LayoutDesigner ld = FormEditor.getFormDesigner(formModel).getLayoutDesigner();
                 if (ld.em.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    if (initialSize == null || isContainer) {
+                    if (initialSize == null) {
                         ld.testCode.add("lc = new LayoutComponent(${" + preMetaComp.getId() + "}, " + isContainer + ");"); //NOI18N
                     } else {
                         ld.testCode.add("lc = new LayoutComponent(${" + preMetaComp.getId() + "}, " + isContainer + ", " + //NOI18N 
@@ -226,7 +226,7 @@ public class MetaComponentCreator {
                     } 
                 }
                 
-                preLayoutComp = initialSize == null || isContainer ?
+                preLayoutComp = initialSize == null ?
                     new LayoutComponent(preMetaComp.getId(), isContainer) :
                     new LayoutComponent(preMetaComp.getId(), isContainer,
                                         initialSize.width, initialSize.height);
@@ -1433,25 +1433,33 @@ public class MetaComponentCreator {
     }
 
     private Dimension prepareDefaultLayoutSize(Component comp, boolean isContainer) {
-        int width;
-        int height;
-        if (isContainer) {
+        int width = -1;
+        int height = -1;
+        if (comp instanceof JToolBar) {
+            width = 100;
+            height = 25;
+        }
+        else if (isContainer) {
             Dimension pref = comp.getPreferredSize();
             if (pref.width < 16 && pref.height < 12) {
                 width = 100;
                 height = 100;
             }
             else {
-                return null;
+                Dimension designerSize = FormEditor.getFormDesigner(formModel).getDesignerSize();
+                if (pref.width > designerSize.width || pref.height > designerSize.height) {
+                    width = Math.min(pref.width, designerSize.width - 25);
+                    height = Math.min(pref.height, designerSize.height - 25);
+                }
             }
         }
         else if (comp instanceof JSeparator) {
             width = 50;
             height = 10;
         }
-        else {
+
+        if (width < 0 || height < 0)
             return null;
-        }
 
         Dimension size = new Dimension(width, height);
         if (comp instanceof JComponent) {
