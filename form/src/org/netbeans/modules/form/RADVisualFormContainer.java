@@ -136,7 +136,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     private boolean shouldPersistDesignerSize() {
         // don't persist designer size if form size is defined (persisted)
         // and neither for free design forms
-        return getFormSizePolicy() != GEN_BOUNDS && !getFormModel().isFreeDesignDefaultLayout();
+        return getFormSizePolicy() != GEN_BOUNDS && (getLayoutSupport() != null);
     }
 
     Dimension setDesignerSizeImpl(Dimension value) {

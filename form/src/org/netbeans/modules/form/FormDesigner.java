@@ -590,7 +590,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                           (RADVisualFormContainer) topDesignComponent : null;
         if (formCont == null
             || formCont.getFormSizePolicy() == RADVisualFormContainer.GEN_BOUNDS
-            || (!formModel.isFreeDesignDefaultLayout() && !isFreeDesignContainer()))
+            || !isFreeDesignContainer())
         {   // try to obtain stored designer size
             if (formCont != null)
                 size = formCont.getDesignerSize();
