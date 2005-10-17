@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -87,7 +87,7 @@ public final class ModuleManager {
                     try {
                         classLoaderPatches.add(new JarFile(f));
                     } catch (IOException ioe) {
-                        Util.err.notify(ioe);
+                        Util.err.notify(new Exception("Problematic file: "+f, ioe));
                     }
                 }
             }
