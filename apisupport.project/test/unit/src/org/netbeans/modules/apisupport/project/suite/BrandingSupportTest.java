@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuitePropertiesTest;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -47,7 +48,7 @@ public class BrandingSupportTest extends TestBase {
         SuiteProject suitePrj = (SuiteProject) ProjectManager.getDefault().findProject(fo);
         assertNotNull(suitePrj);
         
-        instance = BrandingSupport.getInstance(suitePrj);
+        instance = BrandingSupport.getInstance(SuitePropertiesTest.getSuiteProperties(suitePrj));
         
     }
     

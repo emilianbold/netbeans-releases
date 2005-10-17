@@ -227,7 +227,7 @@ public class BasicBrandingModel {
     private BrandingSupport getBranding() {
         if (branding == null) {
             try {
-                branding = BrandingSupport.getInstance((SuiteProject)suiteProps.getProject());
+                branding = BrandingSupport.getInstance(suiteProps);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
                 throw new IllegalStateException(ex.getLocalizedMessage());
@@ -290,29 +290,35 @@ public class BasicBrandingModel {
                 "org.netbeans.core",//NOI18N
                 "org/netbeans/core/ui/Bundle.properties" ,//NOI18N
                 "LBL_ProductInformation");//NOI18N
+        assert productInformation != null;
         
         mainWindowTitle = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties", // NOI18N
                 "CTL_MainWindow_Title");//NOI18N
+        assert mainWindowTitle != null;
         
         mainWindowTitleNoProject = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties",//NOI18N
                 "CTL_MainWindow_Title_No_Project");//NOI18N
+        assert mainWindowTitleNoProject != null;
         
         currentVersion = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "currentVersion");//NOI18N
+        assert currentVersion != null;
         
         icon = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/frame48.gif");//NOI18N
+        assert icon != null;
         
         splash = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/splash.gif");//NOI18N
+        assert splash != null;
         
         // init of splash keys
         
@@ -320,51 +326,61 @@ public class BasicBrandingModel {
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SPLASH_WIDTH");//NOI18N
+        assert splashWidth != null;
         
         splashHeight = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SPLASH_HEIGHT");//NOI18N
+        assert splashHeight != null;
         
         splashShowProgressBar = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashShowProgressBar");//NOI18N
+        assert splashShowProgressBar != null;
         
         splashRunningTextFontSize= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashRunningTextFontSize");//NOI18N
+        assert splashRunningTextFontSize!= null;
         
         splashProgressBarBounds= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarBounds");//NOI18N
+        assert splashProgressBarBounds!= null;
         
         splashRunningTextBounds= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashRunningTextBounds");//NOI18N
+        assert splashRunningTextBounds!= null;
         
         splashRunningTextColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashRunningTextColor");//NOI18N
+        assert splashRunningTextColor!= null;
         
         splashProgressBarColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarColor");//NOI18N
+        assert splashProgressBarColor!= null;
         
         splashProgressBarEdgeColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarEdgeColor");//NOI18N
+        assert splashProgressBarEdgeColor!= null;
         
         splashProgressBarCornerColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarCornerColor");//NOI18N
+        assert splashProgressBarCornerColor!= null;
         
         splashKeys.clear();
         /*splashKeys.add("SPLASH_WIDTH");//NOI18N BundleKey: SPLASH_WIDTH: 398

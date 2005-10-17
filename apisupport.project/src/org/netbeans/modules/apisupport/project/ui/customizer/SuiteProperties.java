@@ -86,7 +86,7 @@ public final class SuiteProperties extends ModuleProperties {
         firePropertiesRefreshed();
     }
     
-    SuiteProject getProject() {
+    public SuiteProject getProject() {
         return project;
     }
     
@@ -94,7 +94,7 @@ public final class SuiteProperties extends ModuleProperties {
         return Collections.EMPTY_MAP; // no default value (yet)
     }
     
-    NbPlatform getActivePlatform() {
+    public NbPlatform getActivePlatform() {
         if (activePlatform == null) {
             Util.err.log("Platform " + activePlatform + " was presuambly removed. Switching to default."); // NOI18N
             activePlatform = NbPlatform.getDefaultPlatform();

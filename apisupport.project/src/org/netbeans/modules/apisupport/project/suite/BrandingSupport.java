@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -45,6 +46,7 @@ import org.openide.util.Utilities;
  */
 public final class BrandingSupport {
     private final SuiteProject suiteProject;
+    private SuiteProperties suiteProperties;    
     private Set brandedModules = null;
     private Set brandedBundleKeys = null;
     private Set brandedFiles = null;
@@ -54,20 +56,19 @@ public final class BrandingSupport {
     
     private static final String NAME_OF_BRANDING_FOLDER="branding";//NOI18N
     private static final String BUNDLE_NAME = "Bundle.properties"; //NOI18N
-    
-    public static BrandingSupport getInstance(final SuiteProject suiteProject) throws IOException {
-        BrandingSupport retval = new BrandingSupport(suiteProject);
-        retval.init();
-        
-        return retval;
+
+    public static BrandingSupport getInstance(final SuiteProperties suiteProperties) throws IOException {
+        return new BrandingSupport(suiteProperties);
     }
-    
-    private BrandingSupport(final SuiteProject suiteProject) {
-        this.suiteProject = suiteProject;
+        
+    private BrandingSupport(final SuiteProperties suiteProperties) throws IOException {
+        this.suiteProperties = suiteProperties;
+        this.suiteProject = suiteProperties.getProject();
         File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
         assert suiteDir != null && suiteDir.exists();
         brandingDir = new File(suiteDir,NAME_OF_BRANDING_FOLDER);//NOI18N
-    }
+        init();        
+    }        
     
     /**
      * @return the project directory beneath which everything in the project lies
@@ -223,17 +224,22 @@ public final class BrandingSupport {
     }
     
     private ModuleEntry getModuleEntry(final String moduleCodeNameBase) {
-        NbPlatform platform = suiteProject.getActivePlatform();
-        if (platform == null) {
-            return null;
-        }
+        NbPlatform platform;
+        platform = getActivePlatform();
         for (Iterator it = Arrays.asList(platform.getModules()).iterator(); it.hasNext();) {
             ModuleEntry entry = (ModuleEntry)it.next();
             if (entry.getCodeNameBase().equals(moduleCodeNameBase)) {
                 return entry;
             }
         }
+        
         return null;
+    }
+
+    private NbPlatform getActivePlatform() {
+        NbPlatform retval = suiteProperties.getActivePlatform();
+        assert retval != null && retval.isValid();
+        return retval;
     }
     
     public void brandFile(final BrandedFile bFile) throws IOException {
@@ -322,7 +328,7 @@ public final class BrandingSupport {
     }
     
     private void init() throws IOException {
-        NbPlatform newPlatform = suiteProject.getActivePlatform();
+        NbPlatform newPlatform = getActivePlatform();
         
         if (brandedModules == null || !newPlatform.equals(platform)) {
             brandedModules = new HashSet();

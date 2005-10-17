@@ -53,7 +53,7 @@ public class SuitePropertiesTest extends TestBase {
         super.setUp();
     }
     
-    static SuiteProperties getSuiteProperties(SuiteProject suite) throws IOException {
+    public static SuiteProperties getSuiteProperties(SuiteProject suite) throws IOException {
         SubprojectProvider spp = getSubProjectProvider(suite);
         Set/*<Project>*/ subModules = spp.getSubprojects();
         SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
