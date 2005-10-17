@@ -317,9 +317,18 @@ NodeActionsProviderFilter, Constants {
                 (variable, new NumericDisplaySettings (how));
             fireModelChanged ();
         }
+        
+        private void fireModelChanged () {
+            if (listeners == null) return;
+            ModelEvent evt = new ModelEvent.TableValueChanged(this, variable, null);
+            for (Iterator i = listeners.iterator (); i.hasNext ();) {
+                ModelListener listener = (ModelListener) i.next ();
+                listener.modelChanged (evt);
+            }
+        }
     }
 
-
+    
     private static class NumericDisplaySettings {
 
         public static final int DECIMAL        = 0;
@@ -339,11 +348,4 @@ NodeActionsProviderFilter, Constants {
         }
     }
 
-    private void fireModelChanged () {
-        if (listeners == null) return;
-        for (Iterator i = listeners.iterator (); i.hasNext ();) {
-            ModelListener listener = (ModelListener) i.next ();
-            listener.modelChanged (null);
-        }
-    }
 }
