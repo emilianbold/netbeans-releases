@@ -150,11 +150,13 @@ ActionListener {
     // other methods ...........................................................
     
     void update () {
-        highlightingPanel.update ();
-        syntaxColoringPanel.update ();
-        annotationsPanel.update ();
+        if (colorModel == null)
+            colorModel = new ColorModel ();
         
-        colorModel = new ColorModel ();
+        highlightingPanel.update (colorModel);
+        syntaxColoringPanel.update (colorModel);
+        annotationsPanel.update (colorModel);
+        
         currentProfile = colorModel.getCurrentProfile ();
 
         // init schemes
@@ -178,6 +180,9 @@ ActionListener {
     }
     
     void cancel () {
+        highlightingPanel.cancel ();
+        syntaxColoringPanel.cancel ();
+        annotationsPanel.cancel ();
     }
     
     boolean dataValid () {

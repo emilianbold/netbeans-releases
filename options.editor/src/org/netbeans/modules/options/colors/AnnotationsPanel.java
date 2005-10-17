@@ -146,13 +146,19 @@ PropertyChangeListener {
         updateData ();
     }
     
-    void update () {
+    void update (ColorModel colorModel) {
+        this.colorModel = colorModel;
         listen = false;
-        colorModel = new ColorModel ();
         currentScheme = colorModel.getCurrentProfile ();
         lCategories.setListData (getAnnotations (currentScheme));
         refreshUI ();
         listen = true;
+        changed = false;
+    }
+    
+    void cancel () {
+        toBeSaved = new HashSet ();
+        schemes = new HashMap ();
         changed = false;
     }
     

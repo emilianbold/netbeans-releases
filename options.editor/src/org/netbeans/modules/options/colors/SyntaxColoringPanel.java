@@ -275,8 +275,8 @@ PropertyChangeListener {
         changed = true;
     }
     
-    void update () {
-        colorModel = new ColorModel ();
+    void update (ColorModel colorModel) {
+        this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
         currentLanguage = (String) colorModel.getLanguages ().
             iterator ().next ();
@@ -296,6 +296,12 @@ PropertyChangeListener {
         listen = true;
         cbLanguages.setSelectedIndex (0);
         lCategories.setSelectedIndex (0);
+        changed = false;
+    }
+    
+    void cancel () {
+        toBeSaved = new HashMap ();
+        profiles = new HashMap ();
         changed = false;
     }
     

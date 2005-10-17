@@ -214,14 +214,20 @@ PropertyChangeListener {
         changed = true;
     }
     
-    void update () {
-        colorModel = new ColorModel ();
+    void update (ColorModel colorModel) {
+        this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
         listen = false;
         setCurrentProfile (currentProfile);
         lCategories.setListData (getCategories (currentProfile));
         refreshUI ();	
         listen = true;
+        changed = false;
+    }
+    
+    void cancel () {
+        toBeSaved = new HashSet ();
+        profileToCategories = new HashMap ();        
         changed = false;
     }
     
