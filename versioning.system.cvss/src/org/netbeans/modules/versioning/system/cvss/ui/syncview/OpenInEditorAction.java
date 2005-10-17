@@ -70,7 +70,7 @@ public class OpenInEditorAction extends AbstractAction {
     }
     
     private boolean openByCookie(Node.Cookie cookie, Class cookieClass) {
-        if ((cookieClass == EditorCookie.Observable.class)
+        if ((cookieClass == EditorCookie.class)
                 || (cookieClass == EditorCookie.Observable.class)) {
             ((EditorCookie) cookie).open();
         } else if (cookieClass == OpenCookie.class) {
