@@ -303,7 +303,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
 
                 //PATCH #52209
-                if (frame.isObsolete ()) {
+                if (frame.isObsolete () && canPopFrames()) {
                     frame.popFrame ();
                     setState (STATE_RUNNING);
                     updateCurrentCallStackFrame (t);
