@@ -17,10 +17,13 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.WeakHashMap;
 import org.netbeans.api.db.explorer.JDBCDriver;
 
 /**
@@ -49,6 +52,11 @@ public class DbDriverManager {
     
     private Set registeredDrivers;
     
+    /**
+     * Maps each connection to the driver used to create that connection.
+     */
+    private Map/*<Connection, Driver>*/ conn2Driver = new WeakHashMap();
+    
     private DbDriverManager() {
     }
     
@@ -75,17 +83,50 @@ public class DbDriverManager {
             if (conn == null) {
                 throw createDriverNotFoundException();
             }
+            synchronized (conn2Driver) {
+                conn2Driver.put(conn, driver);
+            }
             return conn;
         }
         
         // try to find a connection using DriverManager 
         try {
-            return DriverManager.getConnection(databaseURL, props);
+            Connection conn = DriverManager.getConnection(databaseURL, props);
+            synchronized (conn2Driver) {
+                conn2Driver.put(conn, driver);
+            }
+            return conn;
         } catch (SQLException e) {
             // ignore it, we throw our own exceptions
         }
         
         throw createDriverNotFoundException();
+    }
+    
+    /**
+     * Returns a connection coming from the same driver as the conn parameter.
+     */
+    public Connection getSameDriverConnection(Connection existingConn, String databaseURL, Properties props) throws SQLException {
+        if (existingConn == null) {
+            throw new NullPointerException();
+        }
+        Driver driver = null;
+        synchronized (conn2Driver) {
+            if (!conn2Driver.containsKey(existingConn)) {
+                throw new IllegalArgumentException("A connection not obtained through DbDriverManager was passed."); // NOI18N
+            }
+            driver = (Driver)conn2Driver.get(existingConn);
+        }
+        if (driver != null) {
+            Connection newConn = driver.connect(databaseURL, props);
+            if (newConn == null) {
+                throw new SQLException("Unable to connect using existingConn's original driver", "08001"); // NOI18N
+            }
+            conn2Driver.put(newConn, driver);
+            return newConn;
+        } else {
+            return DriverManager.getConnection(databaseURL, props);
+        }
     }
     
     /**

@@ -130,7 +130,16 @@ public class ConnectAction extends DatabaseAction {
                     if (exc instanceof ClassNotFoundException) {
                         message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
                     } else {
-                        message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); //NOI18N
+                        StringBuffer buffer = new StringBuffer();
+                        buffer.append(MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()})); //NOI18N
+                        if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
+                            SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
+                            while (sqlEx != null) {
+                                buffer.append("\n\n" + sqlEx.getMessage()); // NOI18N
+                                sqlEx = sqlEx.getNextException();
+                            }
+                        }
+                        message = buffer.toString();
                     }
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }

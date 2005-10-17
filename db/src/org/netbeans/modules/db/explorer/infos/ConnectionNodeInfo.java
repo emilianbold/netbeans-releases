@@ -28,6 +28,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DerbyConectionEventListener;
 
 //commented out for 3.6 release, need to solve for next Studio release
 //import org.netbeans.modules.db.explorer.PointbasePlus;
@@ -160,6 +161,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     public void disconnect() throws DatabaseException {
         Connection connection = getConnection();
         if (connection != null) {
+            String message = null;
             try {
                 connection.close();
                 setConnection(null); // fires change
@@ -167,7 +169,13 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
                 
-                String message = MessageFormat.format(bundle().getString("EXC_ConnectionIsBroken"), new String[] {exc.getMessage()}); // NOI18N
+                message = MessageFormat.format(bundle().getString("EXC_ConnectionIsBroken"), new String[] {exc.getMessage()}); // NOI18N
+            }
+            
+            // XXX hack for Derby
+            DerbyConectionEventListener.getDefault().afterDisconnect(getDatabaseConnection(), connection);
+            
+            if (message != null) {
                 throw new DatabaseException(message);
             }
         }

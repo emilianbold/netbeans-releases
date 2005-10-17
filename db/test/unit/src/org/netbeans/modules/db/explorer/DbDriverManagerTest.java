@@ -97,8 +97,9 @@ public class DbDriverManagerTest extends TestBase {
 
     /**
      * Tests the driver priority if there are multiple drivers which accept the same URL.
+     * Also tests the getSameDriverConnection() method.
      */
-    public void testGetConnectionPriority() throws Exception {
+    public void testGetConnection() throws Exception {
         // register a driver to DriverManager
         Driver ddm = new DriverImpl(DriverImpl.DEFAULT_URL);
         DriverManager.registerDriver(ddm);
@@ -110,21 +111,39 @@ public class DbDriverManagerTest extends TestBase {
                 // create a JDBC driver
                 JDBCDriver drv = createJDBCDriver();
 
-                Connection conn;
+                Connection conn, newConn;
 
                 // the drivers registered with DbDriverManager have the greatest priority
                 conn = DbDriverManager.getDefault().getConnection(DriverImpl.DEFAULT_URL, new Properties(), drv);
                 assertSame(dreg, ((ConnectionEx)conn).getDriver());
+                // also test the getSameDriverConnection() method
+                newConn = DbDriverManager.getDefault().getSameDriverConnection(conn, DriverImpl.DEFAULT_URL, new Properties());
+                assertSame(((ConnectionEx)conn).getDriver(), ((ConnectionEx)newConn).getDriver());
 
                 // if nothing registered, try to load a driver from the JDBCDriver URLs 
                 DbDriverManager.getDefault().deregisterDriver(dreg);
                 conn = DbDriverManager.getDefault().getConnection(DriverImpl.DEFAULT_URL, new Properties(), drv);
                 assertNotSame(dreg, ((ConnectionEx)conn).getDriver());
                 assertNotSame(ddm, ((ConnectionEx)conn).getDriver());
+                // also test the getSameDriverConnection() method
+                newConn = DbDriverManager.getDefault().getSameDriverConnection(conn, DriverImpl.DEFAULT_URL, new Properties());
+                assertSame(((ConnectionEx)conn).getDriver(), ((ConnectionEx)newConn).getDriver());
 
                 // if no JDBCDriver, try DriverManager
                 conn = DbDriverManager.getDefault().getConnection(DriverImpl.DEFAULT_URL, new Properties(), null);
                 assertSame(ddm, ((ConnectionEx)conn).getDriver());
+                // also test the getSameDriverConnection() method
+                newConn = DbDriverManager.getDefault().getSameDriverConnection(conn, DriverImpl.DEFAULT_URL, new Properties());
+                assertSame(((ConnectionEx)conn).getDriver(), ((ConnectionEx)newConn).getDriver());
+                
+                // test if getSameDriverConnection() throws IAE when passed a conn not obtained from DbDriverManager
+                conn = dreg.connect(DriverImpl.DEFAULT_URL, new Properties());
+                try {
+                    DbDriverManager.getDefault().getSameDriverConnection(conn, DriverImpl.DEFAULT_URL, new Properties());
+                    fail();
+                } catch (IllegalArgumentException e) {
+                    // ok
+                }
             } finally {
                 DbDriverManager.getDefault().deregisterDriver(dreg);
             }
@@ -197,9 +216,14 @@ public class DbDriverManagerTest extends TestBase {
         public Connection connect(String url, Properties info) throws SQLException {
             return (Connection)Proxy.newProxyInstance(DriverImpl.class.getClassLoader(), new Class[] { ConnectionEx.class }, new InvocationHandler() {
                 public Object invoke(Object proxy, Method m, Object[] args) {
-                    if (m.getName().equals("getDriver")) {
+                    String methodName = m.getName();
+                    if (methodName.equals("getDriver")) {
                         return DriverImpl.this;
-                    } 
+                    } else if (methodName.equals("hashCode")) {
+                        return new Integer(System.identityHashCode(proxy));
+                    } else if (methodName.equals("equals")) {
+                        return Boolean.valueOf(proxy == args[0]);
+                    }
                     return null;
                 }
             });

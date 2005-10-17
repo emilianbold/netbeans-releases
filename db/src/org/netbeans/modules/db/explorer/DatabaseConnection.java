@@ -385,6 +385,9 @@ public class DatabaseConnection implements DBConnection {
             getOpenConnection().enable();
             startRuntimes();
             
+            // hack for Derby
+            DerbyConectionEventListener.getDefault().beforeConnect(this);
+            
             JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
             JDBCDriver useDriver = null;
 
@@ -471,6 +474,9 @@ public class DatabaseConnection implements DBConnection {
                     // For Java Studio Enterprise.
                     getOpenConnection().enable();
                     startRuntimes();
+                    
+                    // hack for Derby
+                    DerbyConectionEventListener.getDefault().beforeConnect(DatabaseConnection.this);
                     
                     JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
                     JDBCDriver useDriver = null;
