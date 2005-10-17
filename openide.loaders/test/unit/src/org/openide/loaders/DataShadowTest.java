@@ -25,14 +25,13 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.FolderInstanceTest.ErrManager;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 /** Test things about shadows and broken shadows, etc.
  * @author Jaroslav Tulach
  */
-public class DataShadowTest extends NbTestCase 
+public class DataShadowTest extends LoggingTestCaseHid
 implements java.net.URLStreamHandlerFactory {
     /** original object */
     private DataObject original;
@@ -45,7 +44,6 @@ implements java.net.URLStreamHandlerFactory {
     
     static {
         // to handle nbfs urls...
-        System.setProperty("org.openide.util.Lookup", "org.openide.loaders.FolderInstanceTest$Lkp");
         java.net.URL.setURLStreamHandlerFactory (new DataShadowTest (null));
     }
     
@@ -76,20 +74,8 @@ implements java.net.URLStreamHandlerFactory {
         
         
         assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
-        ErrManager.resetMessages();
-        ErrManager.log = getLog ();
         
         err = ErrManager.getDefault().getInstance(getName());
-    }
-    
-    protected void runTest () throws Throwable {
-        try {
-            super.runTest ();
-        } catch (AssertionFailedError err) {
-            AssertionFailedError n = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
-            n.initCause (err);
-            throw n;
-        }
     }
     
     public java.net.URLStreamHandler createURLStreamHandler(String protocol) {

@@ -27,11 +27,7 @@ import org.openide.util.*;
 import org.netbeans.junit.*;
 import java.util.Enumeration;
 
-public class FolderInstanceTest extends NbTestCase {
-    static {
-        System.setProperty("org.openide.util.Lookup", "org.openide.loaders.FolderInstanceTest$Lkp");
-    }
-
+public class FolderInstanceTest extends LoggingTestCaseHid {
     private org.openide.ErrorManager err;
     
     public FolderInstanceTest() {
@@ -49,6 +45,8 @@ public class FolderInstanceTest extends NbTestCase {
     }
     
     protected void setUp () throws Exception {
+        registerIntoLookup(new Pool());
+        
         DataLoaderPool pool = DataLoaderPool.getDefault ();
         assertNotNull (pool);
         assertEquals (Pool.class, pool.getClass ());
@@ -64,22 +62,10 @@ public class FolderInstanceTest extends NbTestCase {
         
         
         assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
-        ErrManager.resetMessages();
-        ErrManager.log = getLog ();
-        
-        err = ErrManager.getDefault().getInstance(getName());
+       
+        err = ErrManager.getDefault().getInstance("TEST-" + getName());
     }
 
-    protected void runTest () throws Throwable {
-        try {
-            super.runTest ();
-        } catch (AssertionFailedError err) {
-            AssertionFailedError n = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
-            n.initCause (err);
-            throw n;
-        }
-    }
-    
     /** Checks whether only necessary listeners are attached to the objects.
      * Initial object does not have a cookie.
      */
@@ -516,10 +502,10 @@ public class FolderInstanceTest extends NbTestCase {
             InvCheckFolderInstance icfi = new InvCheckFolderInstance(f);
             assertTrue(icfi.ok);
             assertEquals(new Integer(0), icfi.instanceCreate());
-            log ("sample1: " + DataObject.find(lfs.findResource(names[0])));
+            err.log ("sample1: " + DataObject.find(lfs.findResource(names[0])));
             Pool.setExtra(l);
             try {
-                log ("sample2: " + DataObject.find(lfs.findResource(names[0])));
+                err.log ("sample2: " + DataObject.find(lfs.findResource(names[0])));
                 assertTrue(icfi.ok);
                 /*
                 Thread.sleep(100);
@@ -538,23 +524,26 @@ public class FolderInstanceTest extends NbTestCase {
                 //Thread.sleep(sleep);
                 //assertTrue(icfi.ok);
             } finally {
+                err.log("begining to clear the pool");
                 Pool.setExtra(null);
+                err.log("clearing pool is finished");
             }
-            log ("sample3: " + DataObject.find(lfs.findResource(names[0])));
-            log ("sample4: " + DataFolder.findFolder(lfs.findResource(names[0]).getParent ()).getChildren()[0]);
+            err.log ("sample3: " + DataObject.find(lfs.findResource(names[0])));
+            err.log ("sample4: " + DataFolder.findFolder(lfs.findResource(names[0]).getParent ()).getChildren()[0]);
             assertTrue(icfi.ok);
             Object instance = null;
             for (int i = 0; i < 1; i++) {
                 Thread.sleep(sleep);
-                log ("getting the instance: " + i);
+                err.log ("getting the instance: " + i);
                 instance = icfi.instanceCreate();
-                log ("instance is here (" + i + "): " + instance);
+                err.log ("instance is here (" + i + "): " + instance);
                 
                 if (new Integer (0).equals (instance)) {
                     break;
                 }
             }
             assertEquals(new Integer(0), instance);
+            err.log("passed the usual failing point");
             //Thread.sleep(sleep);
             assertTrue(icfi.ok);
             Pool.setExtra(l);
@@ -587,7 +576,7 @@ public class FolderInstanceTest extends NbTestCase {
         }
         protected Object createInstance(InstanceCookie[] cookies) throws IOException, ClassNotFoundException {
             // Whatever, irrelevant.
-            log ("new createInstance: " + cookies.length);
+            err.log ("new createInstance: " + cookies.length);
             return new Integer(cookies.length);
         }
         protected InstanceCookie acceptDataObject(DataObject o) {
@@ -597,20 +586,20 @@ public class FolderInstanceTest extends NbTestCase {
                 return null;
             }
             if (o instanceof DataLoaderOrigTest.SimpleDataObject) {
-                log ("got a simpledataobject");
+                err.log ("got a simpledataobject");
                 // Simulate some computation here:
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException ie) {}
                 return new InstanceSupport.Instance("ignore");
             } else {
-                log ("got a " + o);
+                err.log ("got a " + o);
                 return null;
             }
         }
         // For faithfulness to the original:
         protected Task postCreationTask (Runnable run) {
-            log ("postCreationTask");
+            err.log ("postCreationTask");
             return new AWTTask (run);
         }
     }
@@ -624,18 +613,18 @@ public class FolderInstanceTest extends NbTestCase {
             if (!executed) {
                 super.run ();
                 executed = true;
-                log ("AWTTask executed");
+                err.log ("AWTTask executed");
             }
         }
         public void waitFinished () {
-            log ("AWTTask waitFinished");
+            err.log ("AWTTask waitFinished");
             if (SwingUtilities.isEventDispatchThread ()) {
-                log ("AWTTask waitFinished on AWT thread");
+                err.log ("AWTTask waitFinished on AWT thread");
                 run ();
-                log ("AWTTask waitFinished on AWT thread done");
+                err.log ("AWTTask waitFinished on AWT thread done");
             } else {
                 super.waitFinished ();
-                log ("AWTTask waitFinished done");
+                err.log ("AWTTask waitFinished done");
             }
         }
     }
@@ -659,7 +648,7 @@ public class FolderInstanceTest extends NbTestCase {
         }
     }
     
-    private static final class Pool extends org.openide.loaders.DataLoaderPool {
+    static final class Pool extends org.openide.loaders.DataLoaderPool {
         private static DataLoader extra;
         
         
@@ -684,69 +673,4 @@ public class FolderInstanceTest extends NbTestCase {
             p.fireChangeEvent (new javax.swing.event.ChangeEvent (p));
         }
     }
-    
-    public void log (String msg) {
-        synchronized (ErrManager.messages) {
-            ErrManager.messages.append(getName ());
-            ErrManager.messages.append("-");
-            ErrManager.messages.append(msg);
-            ErrManager.messages.append('\n');
-        }
-    }
-
-    static final class ErrManager extends org.openide.ErrorManager {
-        static final StringBuffer messages = new StringBuffer();
-        static int nOfMessages;
-        static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
-        /** setup in setUp */
-        static java.io.PrintStream log = System.err;
-        
-        private String prefix;
-        
-        public ErrManager () {
-            prefix = "";
-        }
-        
-        private ErrManager (String pr) {
-            this.prefix = pr;
-        }
-        
-        static void resetMessages() {
-            messages.delete(0, ErrManager.messages.length());
-            nOfMessages = 0;
-        }
-        
-        public void log(int severity, String s) {
-            synchronized (ErrManager.messages) {
-                nOfMessages++;
-                messages.append('['); log.print ('[');
-                messages.append(prefix); log.print (prefix);
-                messages.append("] - "); log.print ("] - ");
-                messages.append(s); log.println (s);
-                messages.append('\n'); 
-            }
-        }
-        
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance(String name) {
-            return new ErrManager (name);
-        }
-        
-        public void notify(int severity, Throwable t) {}
-    }
-    
 }

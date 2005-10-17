@@ -32,17 +32,13 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jaroslav Tulach
  */
-public class OperationListenerTest extends NbTestCase 
+public class OperationListenerTest extends LoggingTestCaseHid
 implements OperationListener {
     private ArrayList events = new ArrayList ();
     private FileSystem fs;
     private DataLoaderPool pool;
     private org.openide.ErrorManager err;
     
-    static {
-        System.setProperty("org.openide.util.Lookup", "org.openide.loaders.OperationListenerTest$Lkp");
-    }
-
     /** Creates the test */
     public OperationListenerTest(String name) {
         super(name);
@@ -50,6 +46,8 @@ implements OperationListener {
     
     // For each test setup a FileSystem and DataObjects
     protected void setUp() throws Exception {
+        registerIntoLookup(new Pool());
+        
         String fsstruct [] = new String [] {
             "source/A.attr", 
             "B.attr",
@@ -58,9 +56,6 @@ implements OperationListener {
         };
         TestUtilHid.destroyLocalFileSystem (getName());
         fs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
-        
-        assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
-        ErrManager.resetMessages();
         
         err = ErrManager.getDefault().getInstance("TEST-" + getName());
         
@@ -322,18 +317,6 @@ implements OperationListener {
         
     }
     
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp() {
-            this(new org.openide.util.lookup.InstanceContent());
-        }
-        
-        private Lkp(org.openide.util.lookup.InstanceContent ic) {
-            super(ic);
-            ic.add(new ErrManager());
-            ic.add(new Pool ());
-        }
-    }
-    
     private static final class Pool extends DataLoaderPool {
         private static DataLoader extra;
         
@@ -352,54 +335,4 @@ implements OperationListener {
             p.fireChangeEvent(new ChangeEvent(p));
         }
     }
-
-    private static final class ErrManager extends org.openide.ErrorManager {
-        static final StringBuffer messages = new StringBuffer();
-        static int nOfMessages;
-        static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
-        
-        private String prefix;
-        
-        public ErrManager() {
-            this("");
-        }
-        
-        private ErrManager(String p) {
-            this.prefix = p;
-        }
-        
-        static void resetMessages() {
-            messages.delete(0, ErrManager.messages.length());
-            nOfMessages = 0;
-        }
-        
-        public void log(int severity, String s) {
-            nOfMessages++;
-            messages.append(prefix);
-            messages.append(severity + DELIMITER + s);
-            messages.append('\n');
-        }
-        
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance(String name) {
-            return new ErrManager(prefix + name);
-        }
-        
-        public void notify(int severity, Throwable t) {}
-    }
-    
 }

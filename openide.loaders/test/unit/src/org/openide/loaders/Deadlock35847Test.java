@@ -25,7 +25,7 @@ import java.beans.PropertyChangeListener;
 /** Simulates the deadlock from issue 35847.
  * @author Jaroslav Tulach
  */
-public class Deadlock35847Test extends NbTestCase {
+public class Deadlock35847Test extends LoggingTestCaseHid {
     
     public Deadlock35847Test(String name) {
         super(name);

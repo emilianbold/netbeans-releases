@@ -1201,8 +1201,12 @@ implements ChangeListener {
                 if (log) {
                     err.log ("will do refreshAllFolders: "+ s.size ()); // NOI18N
                 }
-                if ( s.size() > 1 )
-                    getPOOL().refreshAllFolders ();
+                
+                getPOOL().refreshAllFolders ();
+                
+                if (log) {
+                    err.log ("refreshAllFolders done"); // NOI18N
+                }
             }
         }
         
