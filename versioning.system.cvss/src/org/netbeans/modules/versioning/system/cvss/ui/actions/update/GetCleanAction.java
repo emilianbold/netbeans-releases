@@ -39,7 +39,7 @@ import java.io.IOException;
 public class GetCleanAction extends AbstractSystemAction {
 
     protected String getBaseName() {
-        return "CTL_MenuItem_GetClean";
+        return "CTL_MenuItem_GetClean";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
@@ -152,7 +152,7 @@ public class GetCleanAction extends AbstractSystemAction {
                 cache.refresh(file, revision == VersionsCache.REVISION_BASE ? FileStatusCache.REPOSITORY_STATUS_UPTODATE : FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } else {
                 // locally delete? NOt yet there seems to be bug in checkout -p
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Unable to checkout " + file.getName());
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Unable to checkout " + file.getName()); // NOI18N
                 cleanFile.getName(); // raise compatability NPE
             }
         } catch (Exception e) {

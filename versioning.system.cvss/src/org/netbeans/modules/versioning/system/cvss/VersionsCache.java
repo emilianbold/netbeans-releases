@@ -27,6 +27,7 @@ import java.io.*;
  * Takes care about retrieving various revisions of a file and caching them locally. 
  * HEAD revisions are not cached.
  * TODO: Files are never deleted from cache, should we address this? 
+ * TODO: cache dead files
  * 
  * @author Maros Sandor
  */

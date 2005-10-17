@@ -35,7 +35,7 @@ import java.io.File;
 public class UpdateAction extends AbstractSystemAction {
     
     protected String getBaseName() {
-        return "CTL_MenuItem_Update";
+        return "CTL_MenuItem_Update";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
@@ -48,8 +48,8 @@ public class UpdateAction extends AbstractSystemAction {
 
     public void performCvsAction(Node[] nodes) {
 
-        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(UpdateAction.class, "BK0001"));
-        group.progress("Preparing");
+        ExecutorGroup group = new ExecutorGroup(getRunningName());
+        group.progress(NbBundle.getMessage(UpdateAction.class, "BK1001"));
         Context context = getContext(nodes);
         GlobalOptions options = null;
         if (context.getExclusions().size() > 0) {

@@ -108,7 +108,7 @@ public final class CheckoutAction extends SystemAction {
         if (moduleString == null || moduleString.length() == 0) {
             moduleString = ".";  // NOI18N
         }
-        StringTokenizer tokenizer = new StringTokenizer(moduleString, ",;");  // NOi18N
+        StringTokenizer tokenizer = new StringTokenizer(moduleString, ",;");  // NOI18N
         if (tokenizer.countTokens() == 1) {
             cmd.setModule(moduleString);
         } else {
@@ -142,7 +142,7 @@ public final class CheckoutAction extends SystemAction {
         boolean execute = false;
         if (group == null) {
             execute = true;
-            group = new ExecutorGroup("Checking out");
+            group = new ExecutorGroup(NbBundle.getMessage(CheckoutAction.class, "BK1013"));
         }
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
         group.addExecutor(executor);
@@ -190,7 +190,7 @@ public final class CheckoutAction extends SystemAction {
                 Iterator it = executor.getExpandedModules().iterator();
                 while (it.hasNext()) {
                     String module = (String) it.next();
-                    if (".".equals(module)) {
+                    if (".".equals(module)) {  // NOI18N
                         checkedOutProjects = ProjectUtilities.scanForProjects(fo);
                         break;
                     } else {
@@ -295,7 +295,7 @@ public final class CheckoutAction extends SystemAction {
                                 }
                             } catch (IOException e1) {
                                 ErrorManager err = ErrorManager.getDefault();
-                                err.annotate(e1, "Can not find project for " + projectFolder);
+                                err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK1014", projectFolder));
                                 err.notify(e1);
                             }
                         }

@@ -83,7 +83,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      */
     public void progress(String details) {
         if (progressHandle == null) {
-            progressHandle = ProgressHandleFactory.createHandle(name + "...", this, this);
+            progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ExecutorGroup.class, "BK2001", name), this, this);
             progressHandle.start();
         }
 
@@ -369,16 +369,16 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
     void increaseDataCounter(long bytes) {
         dataCounter += bytes;
         if (progressHandle != null) {  // dangling event from zombie worker thread
-            progressHandle.progress("" + name + " " + format(dataCounter));
+            progressHandle.progress(NbBundle.getMessage(ExecutorGroup.class, "BK2002", name, format(dataCounter)));
         }
     }
 
     private static String format(long counter) {
         if (counter < 1024*16) {
-            return "" + counter + " bytes";
+            return NbBundle.getMessage(ExecutorGroup.class, "BK2003", new Long(counter));
         }
         counter /= 1024;
-        return "" + counter + " kbytes";
+        return NbBundle.getMessage(ExecutorGroup.class, "BK2004", new Long(counter));
 
         // do not go to megabytes as user want to see CHANGING number
         // it can be solved by average speed in last 5sec, as it drops to zero

@@ -50,7 +50,7 @@ public class MergeBranchAction extends AbstractSystemAction {
                     | FileInformation.STATUS_VERSIONED_UPTODATE;
     
     protected String getBaseName() {
-        return "CTL_MenuItem_MergeBranch";
+        return "CTL_MenuItem_MergeBranch"; // NOI18N
     }
 
     protected int getFileEnabledStatus() {
@@ -91,7 +91,7 @@ public class MergeBranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
        
-        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings));
+        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings, getRunningName()));
     }
 
     protected boolean asynchronous() {
@@ -106,16 +106,18 @@ public class MergeBranchAction extends AbstractSystemAction {
         private final Context context;
         private final MergeBranchPanel settings;
         private String temporaryTag;
+        private String name;
 
-        public MergeBranchExecutor(Context context, MergeBranchPanel settings) {
+        public MergeBranchExecutor(Context context, MergeBranchPanel settings, String name) {
             this.context = context;
             this.settings = settings;
+            this.name = name;
         }
 
         public void run() {
-            final ExecutorGroup group = new ExecutorGroup("Merging");
+            final ExecutorGroup group = new ExecutorGroup(name);
             if (settings.isTaggingAfterMerge()) {
-                temporaryTag = settings.getAfterMergeTagName() + "_tempheadmarker";
+                temporaryTag = settings.getAfterMergeTagName() + "_tempheadmarker";  // NOI18N
                 final ExecutorSupport[] tmpTagging = tagHeadTemporary();
                 group.addExecutors(tmpTagging);
                 Runnable cleanup = new Runnable() {
@@ -145,7 +147,7 @@ public class MergeBranchAction extends AbstractSystemAction {
         private UpdateExecutor [] update() {
             UpdateCommand cmd = new UpdateCommand();
 
-            String branchName = settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName();
+            String branchName = settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName();  // NOI18N
             String headTag = temporaryTag != null ? temporaryTag : branchName; 
 
             GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
@@ -186,7 +188,7 @@ public class MergeBranchAction extends AbstractSystemAction {
             RtagCommand cmd = new RtagCommand();
         
             cmd.setOverrideExistingTag(true);
-            cmd.setTagByRevision(settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName());
+            cmd.setTagByRevision(settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName());  // NOI18N
             cmd.setTag(temporaryTag);
 
             return RTagExecutor.splitCommand(cmd, context.getFiles(), null);

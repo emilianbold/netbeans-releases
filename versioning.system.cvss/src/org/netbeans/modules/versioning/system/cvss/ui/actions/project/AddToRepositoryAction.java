@@ -141,7 +141,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                         cvsRoot = r.readLine();
                     } catch (IOException e) {
                         ErrorManager err = ErrorManager.getDefault();
-                        err.annotate(e, "Cannot read CVS/Root");
+                        err.annotate(e, NbBundle.getMessage(AddToRepositoryAction.class, "BK0016"));
                         err.notify(e);
                     } finally {
                         if (r != null) {
@@ -157,7 +157,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                         cvsRepository = r.readLine();
                     } catch (IOException e) {
                         ErrorManager err = ErrorManager.getDefault();
-                        err.annotate(e, "Cannot read CVS/Repository");
+                        err.annotate(e, NbBundle.getMessage(AddToRepositoryAction.class, "BK0017"));
                         err.notify(e);
                     } finally {
                         if (r != null) {
@@ -178,7 +178,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
 
                 String prefModule;
                 if (cvsRepository != null) {
-                    prefModule = cvsRepository + "/" + importDirectory.getName();
+                    prefModule = cvsRepository + "/" + importDirectory.getName();  // NOI18N
                 } else {
                     prefModule = importDirectory.getName();
                 }
@@ -192,9 +192,9 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                         }
                 );
                 wizard.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);  // NOI18N
-                wizard.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);  // NOi18N
-                wizard.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);  // NOi18N
-                wizard.setTitleFormat(new MessageFormat("{0}"));
+                wizard.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);  // NOI18N
+                wizard.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);  // NOI18N
+                wizard.setTitleFormat(new MessageFormat("{0}"));  // NOI18N
                 String title = NbBundle.getMessage(AddToRepositoryAction.class, "BK0007");
                 wizard.setTitle(title);
 
@@ -214,17 +214,17 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         boolean checkout = importStep.getCheckout();
         String logMessage = importStep.getMessage();
         String module = importStep.getModule();
-        String vendorTag = "default_vendor";
-        String releaseTag = "default_release";
+        String vendorTag = "default_vendor"; // NOI18N
+        String releaseTag = "default_release"; // NOI18N
         String selectedRoot = repositoryStep.getCvsRoot();
         String folder = importStep.getFolder();
         File dir = new File(folder);
 
         HistorySettings.addRecent(HistorySettings.PROP_CVS_ROOTS, selectedRoot);
 
-        ExecutorGroup group = new ExecutorGroup("Importing");
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(AddToRepositoryAction.class, "BK0019"));
         try {
-            group.progress("Preparing .cvsignore");
+            group.progress(NbBundle.getMessage(AddToRepositoryAction.class, "BK0020"));
             final Thread thread = Thread.currentThread();
             group.addCancellable(new Cancellable() {
                 public boolean cancel() {
@@ -236,7 +236,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         } catch (IOException e) {
             group.executed();
             ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not generate .cvsignore for unshareable files!");
+            err.annotate(e, NbBundle.getMessage(AddToRepositoryAction.class, "BK0021"));
             err.notify(e);
             return;
         }
@@ -486,20 +486,20 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
 
         File file = new File(importPanel.folderTextField.getText());
         valid &= file.isDirectory();
-        if (!valid) return "Folder must exist";
+        if (!valid) return NbBundle.getMessage(AddToRepositoryAction.class, "BK0022");
 
-        valid &= (new File(file, "CVS").exists()) == false;
-        if (!valid) return "Folder seems to be already versioned";
+        valid &= (new File(file, "CVS").exists()) == false; // NOI18N
+        if (!valid) return NbBundle.getMessage(AddToRepositoryAction.class, "BK0023");
 
         valid &= importPanel.commentTextArea.getText().trim().length() > 0;
-        if (!valid) return "Import message required";
+        if (!valid) return NbBundle.getMessage(AddToRepositoryAction.class, "BK0024");
 
         String module = importPanel.moduleTextField.getText().trim();
         valid &= module.length() > 0;
-        if (!valid) return "Specify repository module";
-        valid &= module.indexOf(" ") == -1;  // NOI18N
+        if (!valid) return NbBundle.getMessage(AddToRepositoryAction.class, "BK0025");
+        valid &= module.indexOf(" ") == -1;  // NOI18N // NOI18N
         valid &= ".".equals(module.trim()) == false;  // NOI18N
-        if (!valid) return "Invalid repository module name";
+        if (!valid) return NbBundle.getMessage(AddToRepositoryAction.class, "BK0026");
 
         return null;
     }

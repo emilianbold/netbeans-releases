@@ -51,10 +51,6 @@ import java.io.File;
  */
 class SynchronizePanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, VersioningListener, ActionListener {
     
-    public static final String VAR_ENVIRONMENT_PREFIX = "ENVIRONMENT_VAR_";
-    public static final String VAR_ENVIRONMENT_REMOVE_PREFIX = "ENVIRONMENT_REMOVE_VAR_";
-    public static final String VAR_EXPERT_MODE = "EXPERT_MODE"; // NOI18N
-    
     private ExplorerManager             explorerManager;
     private final CvsSynchronizeTopComponent parentTopComponent;
     private final CvsVersioningSystem   cvs;
@@ -67,7 +63,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private Thread                      refreshViewThread;
     private ExecutorGroup               refreshCommandGroup;
 
-    private static final RequestProcessor   rp = new RequestProcessor("CVS-VersioningView", 1);
+    private static final RequestProcessor   rp = new RequestProcessor("CVS-VersioningView", 1);  // NOI18N
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
 
@@ -267,7 +263,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
     private void onCommitAction() {
-        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), context);
+        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), context, null);
     }
     
     /**
@@ -302,8 +298,8 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
     private void onDiffAction() {
-        ExecutorGroup group = new ExecutorGroup("Diffing");
-        group.progress("Preparing");
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SynchronizePanel.class, "BK0003"));
+        group.progress(NbBundle.getMessage(SynchronizePanel.class, "BK0004"));
         DiffExecutor exec = new DiffExecutor(context, parentTopComponent.getContentTitle());
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             exec.showLocalDiff(group);

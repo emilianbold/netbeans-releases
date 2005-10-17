@@ -49,7 +49,7 @@ public class BranchAction extends AbstractSystemAction {
                     | FileInformation.STATUS_VERSIONED_UPTODATE;
     
     protected String getBaseName() {
-        return "CTL_MenuItem_Branch";
+        return "CTL_MenuItem_Branch";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
@@ -82,7 +82,7 @@ public class BranchAction extends AbstractSystemAction {
                 null);
         descriptor.setClosingOptions(null);
 
-        settings.putClientProperty("org.openide.DialogDescriptor", descriptor);
+        settings.putClientProperty("org.openide.DialogDescriptor", descriptor);  // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BranchAction.class,  "ACSD_BranchDialog"));
         dialog.setVisible(true);
@@ -90,21 +90,23 @@ public class BranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
 
-        RequestProcessor.getDefault().post(new BranchExecutor(context, settings));
+        RequestProcessor.getDefault().post(new BranchExecutor(context, settings, getRunningName()));
     }
     
     private static class BranchExecutor implements Runnable {
 
         private final Context context;
         private final BranchSettings settings;
+        private final String name;
 
-        public BranchExecutor(Context context, BranchSettings settings) {
+        public BranchExecutor(Context context, BranchSettings settings, String name) {
             this.context = context;
             this.settings = settings;
+            this.name = name;
         }
 
         public void run() {
-            ExecutorGroup group = new ExecutorGroup("Creating Branch");
+            ExecutorGroup group = new ExecutorGroup(name);
             if (settings.isTaggingBase()) {
                 group.addExecutors(tag(context.getFiles(), settings.getBaseTagName()));
                 group.addBarrier(null);

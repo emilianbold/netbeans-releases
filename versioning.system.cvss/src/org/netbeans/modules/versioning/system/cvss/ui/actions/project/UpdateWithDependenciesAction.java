@@ -60,9 +60,9 @@ public final class UpdateWithDependenciesAction extends SystemAction {
 
     private void async(Node[] nodes) {
 
-        ExecutorGroup group = new ExecutorGroup("Updating with Dependencies");
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(UpdateWithDependenciesAction.class, "BK2001"));
         try {
-            group.progress("Preparing Update");
+            group.progress(NbBundle.getMessage(UpdateWithDependenciesAction.class, "BK2002"));
 
             Set projects = new HashSet();
             Set contexts = new LinkedHashSet();
@@ -151,7 +151,7 @@ public final class UpdateWithDependenciesAction extends SystemAction {
             File file = (File) it.next();
             File probe = null;
             if (file.isDirectory()) {
-                probe = new File(file, "CVS/Repository");  // NOi18N
+                probe = new File(file, "CVS/Repository");  // NOI18N
             }
             if (file.isFile()) {
                 probe = new File(file.getParentFile(), "CVS/Repository");  // NOI18N

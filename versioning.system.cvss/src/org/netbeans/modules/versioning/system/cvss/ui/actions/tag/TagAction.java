@@ -89,7 +89,7 @@ public class TagAction extends AbstractSystemAction {
         copy(commandTemplate, cmd);
         cmd.setFiles(roots);
 
-        ExecutorGroup group = new ExecutorGroup("Tagging");
+        ExecutorGroup group = new ExecutorGroup(getRunningName());
         group.addExecutors(TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
         group.execute();
     }

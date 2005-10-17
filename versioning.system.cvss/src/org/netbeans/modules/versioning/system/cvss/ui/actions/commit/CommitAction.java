@@ -52,7 +52,7 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     protected String getBaseName() {
-        return "CTL_MenuItem_Commit";
+        return "CTL_MenuItem_Commit";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
@@ -66,7 +66,7 @@ public class CommitAction extends AbstractSystemAction {
     /**
      * Shows commit dialog UI and handles selected option.
      */
-    public static void invokeCommit(String contentTitle, Context context) {
+    public static void invokeCommit(String contentTitle, Context context, String runningName) {
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         if (CvsVersioningSystem.getInstance().getFileTableModel(context, FileInformation.STATUS_LOCAL_CHANGE).getNodes().length == 0) {
             JOptionPane.showMessageDialog(null, loc.getString("MSG_NoFilesToCommit_Prompt"), 
@@ -102,8 +102,8 @@ public class CommitAction extends AbstractSystemAction {
             }
         });
         setupNodes(settings, context);
-        settings.putClientProperty("contentTitle", contentTitle);
-        settings.putClientProperty("DialogDescriptor", descriptor);
+        settings.putClientProperty("contentTitle", contentTitle);  // NOI18N
+        settings.putClientProperty("DialogDescriptor", descriptor); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));
         dialog.setVisible(true);
@@ -112,7 +112,10 @@ public class CommitAction extends AbstractSystemAction {
 
         settings.updateCommand(cmd);
         copy(commandTemplate, cmd);
-        ExecutorGroup group = new ExecutorGroup("Commiting");
+        if (runningName == null) {
+            runningName = NbBundle.getMessage(CommitAction.class, "BK0002");
+        }
+        ExecutorGroup group = new ExecutorGroup(runningName);
         addCommit(group, settings);
         group.execute();
     }
@@ -143,7 +146,7 @@ public class CommitAction extends AbstractSystemAction {
                 String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ? 
                         loc.getString("MSG_CommitForm_ErrorConflicts") :
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
-                settings.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");
+                settings.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
             }
             stickyTags.add(Utils.getSticky(file.getNode().getFile()));
@@ -157,24 +160,24 @@ public class CommitAction extends AbstractSystemAction {
                                                 CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
         }
         
-        String contentTitle = (String) settings.getClientProperty("contentTitle");
-        DialogDescriptor dd = (DialogDescriptor) settings.getClientProperty("DialogDescriptor");
+        String contentTitle = (String) settings.getClientProperty("contentTitle"); // NOI18N
+        DialogDescriptor dd = (DialogDescriptor) settings.getClientProperty("DialogDescriptor"); // NOI18N
         String errorLabel;
         if (stickyTags.size() <= 1) {
             String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next(); 
             if (stickyTag == null) {
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
-                errorLabel = "";
+                errorLabel = ""; // NOI18N
             } else {
                 stickyTag = stickyTag.substring(1);
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag }));
                 String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag });
-                errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>";
+                errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>"; // NOI18N
             }
         } else {
             dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle }));
             String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
-            errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>";
+            errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
         }
         if (!conflicts) {
             settings.setErrorLabel(errorLabel);
@@ -183,7 +186,7 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(Node[] nodes) {
-        invokeCommit(getContextDisplayName(), getContext(nodes));
+        invokeCommit(getContextDisplayName(), getContext(nodes), getRunningName());
     }
 
     protected boolean asynchronous() {

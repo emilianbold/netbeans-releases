@@ -100,7 +100,26 @@ public abstract class AbstractSystemAction extends NodeAction {
      * </ul>
      */
     public String getName() {
-        String baseName = getBaseName();
+        return getName(""); // NOI18N
+    }
+    
+
+    /**
+     * Running action display name, it seeks action class bundle for:
+     * <ul>
+     *   <li><code>getBaseName() + "Running"</code> key
+     *   <li><code>getBaseName() + "Running_Context"</code> key for one selected file
+     *   <li><code>getBaseName() + "Running_Context_Multiple"</code> key for multiple selected files
+     *   <li><code>getBaseName() + "Running_Project"</code> key for one selected project
+     *   <li><code>getBaseName() + "Running_Projects"</code> key for multiple selected projects
+     * </ul>
+     */    
+    public String getRunningName() {
+        return getName("Running"); // NOI18N
+    }
+        
+    private String getName(String role) {
+        String baseName = getBaseName() + role;
         if (!isEnabled()) {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }

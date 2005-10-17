@@ -68,7 +68,7 @@ public class ExportDiffAction extends AbstractSystemAction {
     }
 
     protected String getBaseName() {
-        return "CTL_MenuItem_ExportDiff";
+        return "CTL_MenuItem_ExportDiff";  // NOI18N
     }
 
     /**
@@ -116,7 +116,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             noop = files.length == 0;
         }
         if (noop) {
-            NotifyDescriptor msg = new NotifyDescriptor.Message("In selected context there is nothing to export!", NotifyDescriptor.INFORMATION_MESSAGE);
+            NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(ExportDiffAction.class, "BK3001"), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
             return;
         }
@@ -135,7 +135,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
             }
             public String getDescription() {
-                return "Patch Files (*.diff, *.patch)";
+                return NbBundle.getMessage(ExportDiffAction.class, "BK3002");
             }
         });
         
@@ -170,7 +170,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
-        ExecutorGroup group = new ExecutorGroup("Exporting diff");
+        ExecutorGroup group = new ExecutorGroup(getRunningName());
         try {
 
             // prepare setups and common parent - root
@@ -243,7 +243,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             exportedFiles = i;
             success = true;
         } catch (IOException ex) {
-            ErrorManager.getDefault().annotate(ex, "Diff patch export failed!");
+            ErrorManager.getDefault().annotate(ex, NbBundle.getMessage(ExportDiffAction.class, "BK3003"));
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);   // stack trace to log
             ErrorManager.getDefault().notify(ErrorManager.USER, ex);  // message to user
         } finally {
@@ -256,7 +256,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                 }
             }
             if (success) {
-                StatusDisplayer.getDefault().setStatusText("Diff patch exported " + exportedFiles + " diffs.");
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExportDiffAction.class, "BK3004", new Integer(exportedFiles)));
                 if (exportedFiles == 0) {
                     destination.delete();
                 }
@@ -273,17 +273,17 @@ public class ExportDiffAction extends AbstractSystemAction {
         setup.initSources(group);
         DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         Reader r1 = setup.getFirstSource().createReader();
-        if (r1 == null) r1 = new StringReader("");
+        if (r1 == null) r1 = new StringReader("");  // NOI18N
         Reader r2 = setup.getSecondSource().createReader();
-        if (r2 == null) r2 = new StringReader("");
+        if (r2 == null) r2 = new StringReader("");  // NOI18N
         Difference[] differences = diff.computeDiff(r1, r2);
 
         File file = setup.getBaseFile();
         String name = file.getAbsolutePath();
         r1 = setup.getFirstSource().createReader();
-        if (r1 == null) r1 = new StringReader("");
+        if (r1 == null) r1 = new StringReader(""); // NOI18N
         r2 = setup.getSecondSource().createReader();
-        if (r2 == null) r2 = new StringReader("");
+        if (r2 == null) r2 = new StringReader(""); // NOI18N
         TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
             name, // + " " + setup.getFirstSource().getTitle(), // NOI18N
             name, // + " " + setup.getSecondSource().getTitle(),  // NOI18N

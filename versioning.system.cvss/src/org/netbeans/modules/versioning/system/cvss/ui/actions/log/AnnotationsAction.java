@@ -19,6 +19,7 @@ import org.openide.loaders.DataObject;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import org.openide.cookies.EditorCookie;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
@@ -102,7 +103,7 @@ public class AnnotationsAction extends AbstractSystemAction {
                     File[] cmdFiles = new File[] {file};
                     annotate.setFiles(cmdFiles);
 
-                    ExecutorGroup group = new ExecutorGroup("Loading Annotations");
+                    ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(AnnotationsAction.class, "BK0001"));
 
                     AnnotationsExecutor executor = new AnnotationsExecutor(cvss, annotate);
                     executor.addLogOutputListener(ab);
@@ -129,7 +130,7 @@ public class AnnotationsAction extends AbstractSystemAction {
                     group.execute();
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not load revision of " + file);
+                    err.annotate(e, NbBundle.getMessage(AnnotationsAction.class, "BK0002", file));
                     err.notify(e);
                 }
             }

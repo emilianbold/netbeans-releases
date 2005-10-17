@@ -27,6 +27,7 @@ import java.util.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import org.openide.util.NbBundle;
 
 /**
  * Executes searches in Search History panel.
@@ -35,14 +36,14 @@ import java.text.SimpleDateFormat;
  */
 class SearchExecutor implements Runnable {
 
-    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
     
-    private static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    private static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");  // NOI18N
     private static final DateFormat [] dateFormats = new DateFormat[] {
         fullDateFormat,
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),  // NOI18N
         simpleDateFormat,
-        new SimpleDateFormat("yyyy-MM-dd"),
+        new SimpleDateFormat("yyyy-MM-dd"), // NOI18N
     };
     
     private final SearchHistoryPanel    master;
@@ -81,22 +82,22 @@ class SearchExecutor implements Runnable {
         LogCommand lcmd = new LogCommand();
 
         if (fromDate != null || toDate != null) {
-            String dateFilter = "";
+            String dateFilter = ""; // NOI18N
             if (fromDate != null) {
                 dateFilter = fullDateFormat.format(fromDate);
             }
-            dateFilter += "<=";
+            dateFilter += "<="; // NOI18N
             if (toDate != null) {
                 dateFilter += fullDateFormat.format(toDate);
             }
             rcmd.setDateFilter(dateFilter);
             lcmd.setDateFilter(dateFilter);
         } else if (from != null || to != null) {
-            String revFilter = "";
+            String revFilter = ""; // NOI18N
             if (from != null) {
                 revFilter = from;
             }
-            revFilter += ":";
+            revFilter += ":"; // NOI18N
             if (to != null) {
                 revFilter += to;
             }
@@ -108,7 +109,7 @@ class SearchExecutor implements Runnable {
         rcmd.setUserFilter(criteria.getUsername());
         lcmd.setUserFilter(criteria.getUsername());
 
-        ExecutorGroup group = new ExecutorGroup("Searching History");
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SearchExecutor.class, "BK0001"));
         RLogExecutor [] rexecutors;
         if (folders.length > 0) {
             rexecutors = RLogExecutor.splitCommand(rcmd, folders, null);

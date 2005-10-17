@@ -53,7 +53,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
                     | FileInformation.STATUS_VERSIONED_UPTODATE;
     
     protected String getBaseName() {
-        return "CTL_MenuItem_SwitchBranch";
+        return "CTL_MenuItem_SwitchBranch";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
@@ -119,7 +119,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
 
         // Special treatment for Locally New folders. Ww cannot switch them to branch with the Update command.
         // Workaround: add the folder to CVS, then manually create CVS/Tag inside
-        ExecutorGroup group = new ExecutorGroup("Switching to Branch");
+        ExecutorGroup group = new ExecutorGroup(getRunningName());
         if (newFolders.size() > 0) {
             AddCommand acmd = new AddCommand();
             final File [] files = (File[]) newFolders.toArray(new File[newFolders.size()]);
@@ -178,16 +178,16 @@ public class SwitchBranchAction extends AbstractSystemAction {
      * @throws IOException if some I/O operation fails
      */ 
     private void setSticky(File file, String sticky) throws IOException {
-        File tag = new File(file, "CVS/Tag");
+        File tag = new File(file, "CVS/Tag");  // NOI18N
         tag.delete();
         if ("HEAD".equals(sticky)) {  // NOI18N
             return;
         }
         if (sticky != null) {
             FileWriter w = new FileWriter(tag);
-            w.write("T");
+            w.write("T");  // NOI18N
             w.write(sticky);
-            w.write(System.getProperty("line.separator"));
+            w.write(System.getProperty("line.separator")); // NOI18N
             w.close();
         }
     }

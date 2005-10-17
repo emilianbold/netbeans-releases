@@ -23,6 +23,7 @@ import org.openide.nodes.Node;
 
 import java.io.File;
 import java.awt.event.ActionEvent;
+import org.openide.util.NbBundle;
 
 /**
  * Show differencies between the current working copy and repository version we started from. 
@@ -43,7 +44,7 @@ public class DiffAction extends AbstractSystemAction {
     }
 
     protected String getBaseName() {
-        return "CTL_MenuItem_Diff";
+        return "CTL_MenuItem_Diff";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
@@ -51,8 +52,8 @@ public class DiffAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(Node[] nodes) {
-        ExecutorGroup group = new ExecutorGroup("Diffing");
-        group.progress("Preparing");
+        ExecutorGroup group = new ExecutorGroup(getRunningName());
+        group.progress(NbBundle.getMessage(DiffAction.class, "BK1001"));
         Context context = getContext(nodes);
         DiffExecutor executor = new DiffExecutor(context, getContextDisplayName());
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
