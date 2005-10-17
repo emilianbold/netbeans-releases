@@ -1351,6 +1351,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         ERR.log("post-reload task posting to AWT"); // NOI18N
                         Runnable run = new Runnable() {
                                 public void run() {
+                                    if (doc == null) {
+                                        return;
+                                    }
                                     if (panes != null) {
                                         for (int i = 0; i < panes.length; i++) {
                                             // #26407 Adjusts caret position,
