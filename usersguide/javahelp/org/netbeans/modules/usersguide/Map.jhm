@@ -529,22 +529,22 @@ under Print Settings in the Options window)
 <!-- Refactoring CSH :-->
 
 <!--Find Usages dialog:-->
-<mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/findUsages-CSH.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/csh/findUsages-CSH.html" /> 
 <!--Rename-->
 <!--displays Rename Class or Rename Package dialog box after in-place rename of class or package-->
-<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/renameClass.html" />  
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/csh/rename-code-for-changed-file_db.html" />  
 <!--these four display Rename dialog box when you choose Refactor | Rename on a Projects/Files node or on code element in Source Editor-->
-<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Method" url="refactor/renameField.html" />
-<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Field" url="refactor/renameField.html" />
-<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaClass" url="refactor/renameClass.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Method" url="refactor/csh/rename-code-for-changed-file_db.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Field" url="refactor/csh/rename-code-for-changed-file_db.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaClass" url="refactor/csh/rename-code-for-changed-file_db.html" />
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaPackage" url="refactor/renameClass.html" />
 <!--Move Multiple Classes dialog box - either from Move Classes command or after manual move-->
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassesUI" url="refactor/moveClass.html" />  
 <!--Move Single Class:-->
-<mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/moveClass.html" /> 
-<mapID target="org.netbeans.modules.refactoring.ui.EncapsulateFieldUI" url="refactor/encapsulateField.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/csh/move-class_db.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.EncapsulateFieldUI" url="refactor/csh/encapsulate-fields_db.html" /> 
 <!--Change Method Parameters: -->
-<mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/changeParameters.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/csh/change-method-parameters_db.html" /> 
 <!--Extract Method: -->
 <mapID target="org.netbeans.modules.refactoring.ui.ExtractMethodRefactoringUI" url="tbd.html" /> 
 <!--Extract Interface dialog box -->
@@ -565,7 +565,7 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.refactoring.ui.InnerToOuterRefactoringUI" url="tbd.html" /> 
 
 <!--Preview Refactoring window: -->
-<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/previewWindow.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/csh/previewWindow.html" /> 
 
   <!--this ID is the one the ID calls if someone presses F1 in an area where there 
   is no help ID assigned. The pending.html file provides the disclaimer that no 
