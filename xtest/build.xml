@@ -96,6 +96,11 @@ Microsystems, Inc. All Rights Reserved.
   <target name="makedist">
      <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
      <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
+     <antcall target="zipdist"/>
+  </target>
+
+  <target name="zipdist">
+      <!-- Zip already built xtest distribution. -->
      <zip zipfile="xtest-distribution.zip">     
 	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties,**/*.dylib"/>
         <zipfileset dir="plugins" prefix="plugins" includes="**"/>
@@ -165,13 +170,24 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="pes" target="clean"/>
   </target>
  
-  <!-- extension for building distribution with existing netbeans build -->
-  <target name="makedist-simple" depends="netbeans">
-     <zip zipfile="xtest-distribution.zip">     
-	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties,**/*.dylib"/>
-        <zipfileset dir="plugins" prefix="plugins" includes="**"/>
-        <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
-        <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
-     </zip>
+  <!-- Build distribution against existing netbeans build. You can set 
+       -Dnetbeans.dest.dir to point to custom location. -->
+  <target name="makedist-simple" depends="call-bootstrap">
+     <antcall target="netbeans">
+         <param name="scan.binaries" value="true"/>
+     </antcall>    
+     <antcall target="zipdist"/>
   </target>
+  
+    <!-- Calls bootstrap target from nbbuild/build.xml to satisfy that nbantext.jar is ready -->
+    <target name="call-bootstrap" depends="check-bootstrap" unless="bootstrap-ready">
+        <ant dir="${nb_all}/nbbuild" target="bootstrap"/>
+    </target>
+
+    <!-- Checks nbantext.jar is up to date -->
+    <target name="check-bootstrap">
+        <uptodate targetfile="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready">
+            <srcfiles dir= "${nb_all}/nbbuild/antsrc"/>
+        </uptodate>
+    </target>
 </project>
