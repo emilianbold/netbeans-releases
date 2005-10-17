@@ -14,6 +14,7 @@
 package org.netbeans.modules.tomcat5.wizard;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -72,6 +73,24 @@ class InstallPanelVisual extends javax.swing.JPanel {
         };
         jTextFieldHomeDir.getDocument().addDocumentListener(updateListener);
         jTextFieldBaseDir.getDocument().addDocumentListener(updateListener);
+        addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                // if JWSDP installed, disable the catalina base directory
+                if (isJWSDP()) {
+                    if (jCheckBoxShared.isEnabled()) {
+                        jCheckBoxShared.setEnabled(false);
+                        setBaseEnabled(false);
+                    }
+                } else {
+                    if (!jCheckBoxShared.isEnabled()) {
+                        jCheckBoxShared.setEnabled(true);
+                        if (jCheckBoxShared.isSelected()) {
+                            setBaseEnabled(true);
+                        }
+                    }
+                }
+            }
+        });
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -330,10 +349,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
     }//GEN-LAST:event_jButtonHomeBrowseActionPerformed
 
     private void jCheckBoxSharedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxSharedActionPerformed
-        boolean selected = jCheckBoxShared.isSelected();
-        jLabelBaseDir.setEnabled(selected);
-        jTextFieldBaseDir.setEnabled(selected);
-        jButtonBaseBrowse.setEnabled(selected);
+        setBaseEnabled(jCheckBoxShared.isSelected());
         fireChange();
     }//GEN-LAST:event_jCheckBoxSharedActionPerformed
     
@@ -355,7 +371,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
         
         url += "home=" + jTextFieldHomeDir.getText();       // NOI18N
         
-        if (jCheckBoxShared.isSelected()) {
+        if (jCheckBoxShared.isEnabled() && jCheckBoxShared.isSelected()) {
             url += ":base=" + jTextFieldBaseDir.getText();  // NOI18N
         }
         
@@ -411,16 +427,35 @@ class InstallPanelVisual extends javax.swing.JPanel {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_InvalidHomeDir");
             return false;
         }
-        if (!jCheckBoxShared.isSelected() && !isServerXmlValid(new File(homeDir, SERVER_XML))) {
+        if ((!jCheckBoxShared.isEnabled() || !jCheckBoxShared.isSelected()) && !isServerXmlValid(new File(homeDir, SERVER_XML))) {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_CorruptedHomeServerXml");
             return false;
         }
         return true;
     }
     
+    /** Is it Tomcat with the JWSDP installed? Does it contain the jwsdp-shared folder? */
+    private boolean isJWSDP() {
+        if (isHomeValid()) {
+            File homeDir = getHomeDir();
+            if (homeDir != null && homeDir.exists()) {
+                File files[] = homeDir.listFiles(new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        if ("jwsdp-shared".equals(name)) { // NOI18N
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                return files.length != 0 ? true : false;
+            }
+        }
+        return false;
+    }
+    
     private boolean isBaseValid() {        
         // catalina base
-        if (jCheckBoxShared.isSelected()) {
+        if (jCheckBoxShared.isEnabled() && jCheckBoxShared.isSelected()) {
             String base = jTextFieldBaseDir.getText();
             if (base.length() == 0) {
                 errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_SpecifyBaseDir");
@@ -454,11 +489,19 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     private boolean isAlreadyRegistered() {
         if (InstanceProperties.getInstanceProperties(getUrl()) != null) {
-            errorMessage = NbBundle.getMessage(InstallPanelVisual.class, jCheckBoxShared.isSelected() 
-                    ? "MSG_AlreadyRegisteredBase" : "MSG_AlreadyRegisteredHome");
+            errorMessage = NbBundle.getMessage(InstallPanelVisual.class, 
+                                jCheckBoxShared.isEnabled() && jCheckBoxShared.isSelected() 
+                                    ? "MSG_AlreadyRegisteredBase" 
+                                    : "MSG_AlreadyRegisteredHome");
             return true;
         }
         return false;
+    }
+    
+    private void setBaseEnabled(boolean enabled) {
+        jLabelBaseDir.setEnabled(enabled);
+        jTextFieldBaseDir.setEnabled(enabled);
+        jButtonBaseBrowse.setEnabled(enabled);
     }
     
     public boolean isValid() {
