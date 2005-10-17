@@ -141,7 +141,9 @@ class Operators implements JavaParserConstants {
                 if (right == null)
                     return vm.mirrorOf(operator.kind == NE);
                 if (right instanceof ObjectReference)
-                    return vm.mirrorOf(right.equals(left));
+                    if (operator.kind == EQ)
+                        return vm.mirrorOf(right.equals(left));
+                    else return vm.mirrorOf( ! right.equals(left));
             }
         }
 
