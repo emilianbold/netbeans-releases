@@ -305,12 +305,17 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
         return true;
     }
 
+    //#63842: stopCellEditing can be called second time when a new dialog window
+    //opens while the property is being updated (causing the editor to loose input focus)
+    private boolean inStopCellEditing = false;
+    
     public boolean stopCellEditing() {
         if (PropUtils.isLoggable(SheetCellEditor.class)) {
             PropUtils.log(SheetCellEditor.class, "SheetCellEditor.StopCellEditing", true); //NOI18N
         }
 
-        if (inplaceEditor != null) {
+        if (inplaceEditor != null && !inStopCellEditing ) {
+            inStopCellEditing = true;
             try {
                 Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
 
@@ -391,6 +396,7 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
             } finally {
                 setInplaceEditor(null);
                 reusableEnv.clear();
+                inStopCellEditing = false;
             }
 
             return true;
