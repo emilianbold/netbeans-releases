@@ -36,9 +36,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -90,6 +88,44 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
         jPanel2.setLayout(new ToolbarLayout());
+
+        parent.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView");
+        parent.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView");
+        parent.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView");
+        parent.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView");
+
+        getActionMap().put("prevInnerView", new AbstractAction("") {
+            public void actionPerformed(ActionEvent e) {
+                onNextInnerView();
+            }
+        });
+        getActionMap().put("nextInnerView", new AbstractAction("") {
+            public void actionPerformed(ActionEvent e) {
+                onPrevInnerView();
+            }
+        });
+    }
+
+    private void onPrevInnerView() {
+        if (tgbLocal.isSelected()) {
+            tgbRemote.setSelected(true);
+        } else if (tgbRemote.isSelected()) {
+            tgbAll.setSelected(true);
+        } else {
+            tgbLocal.setSelected(true);
+        }
+        onDisplayedStatusChanged();
+    }
+
+    private void onNextInnerView() {
+        if (tgbLocal.isSelected()) {
+            tgbAll.setSelected(true);
+        } else if (tgbRemote.isSelected()) {
+            tgbLocal.setSelected(true);
+        } else {
+            tgbRemote.setSelected(true);
+        }
+        onDisplayedStatusChanged();
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
