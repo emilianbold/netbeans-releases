@@ -219,6 +219,8 @@ public class LayerUtils {
         } else if (ext.equals(".java")) { // NOI18N
             ext = "_java"; // NOI18N
         } else if (XML_LIKE_TYPES.contains(ext)) {
+            String upper = ext.substring(1,2).toUpperCase();
+            base = base + upper + ext.substring(2);
             ext = ".xml"; // NOI18N
         }
         String name = base + ext;
