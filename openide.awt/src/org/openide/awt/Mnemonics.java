@@ -56,23 +56,26 @@ public final class Mnemonics extends Object {
             setMnemonic(item, 0);
         } else {
             setText(item, text.substring(0, i) + text.substring(i + 1));
-
-            char ch = text.charAt(i + 1);
-
-            if (((ch >= 'A') && (ch <= 'Z')) || ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9'))) {
-                // it's latin character or arabic digit,
-                // setting it as mnemonics
-                setMnemonic(item, ch);
-
-                // If it's something like "Save &As", we need to set another
-                // mnemonic index (at least under 1.4 or later)
-                // see #29676
-                setMnemonicIndex(item, i);
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                setMnemonic(item, 0);
             } else {
-                // it's non-latin, getting the latin correspondance
-                int latinCode = getLatinKeycode(ch);
-                setMnemonic(item, latinCode);
-                setMnemonicIndex(item, i);
+                char ch = text.charAt(i + 1);
+                
+                if (((ch >= 'A') && (ch <= 'Z')) || ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9'))) {
+                    // it's latin character or arabic digit,
+                    // setting it as mnemonics
+                    setMnemonic(item, ch);
+                    
+                    // If it's something like "Save &As", we need to set another
+                    // mnemonic index (at least under 1.4 or later)
+                    // see #29676
+                    setMnemonicIndex(item, i);
+                } else {
+                    // it's non-latin, getting the latin correspondance
+                    int latinCode = getLatinKeycode(ch);
+                    setMnemonic(item, latinCode);
+                    setMnemonicIndex(item, i);
+                }
             }
         }
     }
