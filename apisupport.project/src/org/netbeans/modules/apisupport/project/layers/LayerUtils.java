@@ -211,7 +211,9 @@ public class LayerUtils {
      */
     public static String findGeneratedName(FileObject parent, String layerPath) {
         Matcher m = Pattern.compile("(.+/)?([^/.]+)(\\.[^/]+)?").matcher(layerPath); // NOI18N
-        assert m.matches() : layerPath;
+        if (!m.matches()) {
+            throw new IllegalArgumentException(layerPath);
+        }
         String base = m.group(2);
         String ext = m.group(3);
         if (ext == null) {
@@ -219,7 +221,7 @@ public class LayerUtils {
         } else if (ext.equals(".java")) { // NOI18N
             ext = "_java"; // NOI18N
         } else if (XML_LIKE_TYPES.contains(ext)) {
-            String upper = ext.substring(1,2).toUpperCase();
+            String upper = ext.substring(1,2).toUpperCase(Locale.ENGLISH);
             base = base + upper + ext.substring(2);
             ext = ".xml"; // NOI18N
         }
