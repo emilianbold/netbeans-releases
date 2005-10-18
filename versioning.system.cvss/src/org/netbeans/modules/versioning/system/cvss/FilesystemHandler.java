@@ -281,12 +281,16 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      * @param entry
      */ 
     private void cvsRemoveLocally(AdminHandler ah, File file, Entry entry) {
-        entry.setRevision("-" + entry.getRevision());
-        entry.setConflict(Entry.DUMMY_TIMESTAMP);
         try {
-            ah.setEntry(file, entry);
+            if (entry.isNewUserFile()) {
+                ah.removeEntry(file);
+            } else {
+                entry.setRevision("-" + entry.getRevision());
+                entry.setConflict(Entry.DUMMY_TIMESTAMP);
+                ah.setEntry(file, entry);
+            }
         } catch (IOException e) {
-            // failed to set entry, the file will be probably resurrected during update
+            // failed to set/remove entry, there is no way to recover from this
         }
     }
 
