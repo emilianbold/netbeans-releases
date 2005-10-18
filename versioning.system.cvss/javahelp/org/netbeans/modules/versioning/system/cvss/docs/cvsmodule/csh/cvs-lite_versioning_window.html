@@ -8,14 +8,46 @@
 -->
 <html>
     <head>
-        <title>CVS: Versioning Window</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+	<title>CVS: Versioning Window</title>
+	<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>CVS: Versioning Window</h2>
-        <p>Coming Soon...</p><br>
-        
-        <hr>
-        <small><a href="../../credits.html">Legal Notices</a></small>
+	<h2>CVS: Versioning Window</h2>
+	<p><small><a href="#seealso">See Also</a></small></p>
+	<p>The Versioning window presents a real-time view of the changes in
+	selected directories. It opens at the bottom of the IDE whenever you
+	view changes made in version-controlled files.</p>
+	<p>To open the Versioning window, choose CVS &gt; Show
+	All Changes. Alternately, you can right-click any project, directory,
+	or file that is in a CVS working directory and choose CVS &gt; Show
+	Changes.</p>
+
+	<p>By default, the
+	Versioning window displays a list of all modified files within the
+	selected package or folder. Using the filter buttons in the toolbar,
+	you can limit the list of displayed files to either locally or remotely
+	modified files. 
+	You can click the column headings above the listed files to sort the files.</p>
+	<p>The Versioning window toolbar also includes buttons that enable you to invoke the most common CVS tasks on all files displayed in the list.
+	The following CVS commands are available in the toolbar of the Versioning window: </p>
+	<ul>
+	    <li><b>Refresh Status.</b></li>
+	    <li><b>Diff All.</b></li>
+	    <li><b>Update All.</b></li>
+	    <li><b>Commit All.</b></li>
+	</ul>
+
+	<p>You can access CVS commands in the Versioning window by right-clicking the file and choosing a command in the pop-up window.
+	You can also specify files that you want to exclude from a commit or to ignore altogether by righ-clicking the file and then choosing Exclude from Commit or Ignore.
+	<p><b>Notes:</b></p>
+	<ul class="note"><li>You can also exclude files from a commit in the Commit dialog box.</li>
+	<li>You can select multiple files in the Versioning window by holding down the Ctrl key and selecting the files.</li></ul>
+
+	<dl>
+	    <dt> <a name="seealso">See Also</a></dt>
+	    <dd> <a href="../cvs-lite_commit.html">Committing Local Changes to a Remote Repository</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../../credits.html">Legal Notices</a></small>
     </body>
 </html>
