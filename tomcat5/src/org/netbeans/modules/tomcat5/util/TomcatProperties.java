@@ -397,17 +397,21 @@ public class TomcatProperties {
         String path = ip.getProperty(PROP_JAVADOCS);
         if (path == null) {                
             ArrayList list = new ArrayList();
-            // tomcat docs
-            File tomcatDoc = new File(homeDir, "webapps/tomcat-docs"); // NOI18N
-            if (!tomcatDoc.exists()) {
-                tomcatDoc = InstalledFileLocator.getDefault().locate("docs/j2eeri-1_4-doc-api.zip", null, false); // NOI18N
-            }
             try {                
-                if (tomcatDoc.exists()) {
-                    list.add(Utils.fileToUrl(tomcatDoc));
-                }                
+                // tomcat docs
+                File jspApiDoc = new File(homeDir, "webapps/tomcat-docs/jspapi"); // NOI18N
+                File servletApiDoc = new File(homeDir, "webapps/tomcat-docs/servletapi"); // NOI18N
+                if (jspApiDoc.exists() && servletApiDoc.exists()) {
+                    list.add(Utils.fileToUrl(jspApiDoc));
+                    list.add(Utils.fileToUrl(servletApiDoc));
+                } else {
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/j2eeri-1_4-doc-api.zip", null, false); // NOI18N
+                    if (j2eeDoc.exists()) {
+                        list.add(Utils.fileToUrl(j2eeDoc));
+                    }
+                }
                 // jwsdp docs
-                File docs = new File(homeDir, "docs"); // NOI18N
+                File docs = new File(homeDir, "docs/api"); // NOI18N
                 if (docs.exists()) {
                     list.add(Utils.fileToUrl(docs));
                 }
