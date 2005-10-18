@@ -53,7 +53,7 @@ public class AnnotationsAction extends AbstractSystemAction {
         }
     }
 
-    public boolean enabled(Node[] nodes) {
+    public boolean enable(Node[] nodes) {
         return super.isEnabled() && activatedEditorCookie(nodes) != null;
     }
 

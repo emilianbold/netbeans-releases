@@ -90,7 +90,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public boolean enabled(Node[] nodes) {
+    public boolean enable(Node[] nodes) {
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             return true;
