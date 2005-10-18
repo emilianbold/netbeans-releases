@@ -228,16 +228,20 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     
     private synchronized void throwCache () {
         //Unregister itself from classpaths, not interested in events
-        for (Iterator it = this.classpaths.iterator(); it.hasNext();) {
-            ClassPath cp = (ClassPath) it.next ();
-            cp.removePropertyChangeListener(this);
-            it.remove ();
+        if (this.classpaths != null) {
+            for (Iterator it = this.classpaths.iterator(); it.hasNext();) {
+                ClassPath cp = (ClassPath) it.next ();
+                cp.removePropertyChangeListener(this);
+                it.remove ();
+            }
         }
         //Unregister itself from results, not interested in events
-        for (Iterator it = this.results.iterator(); it.hasNext();) {
-            JavadocForBinaryQuery.Result result = (JavadocForBinaryQuery.Result) it.next ();
-            result.removeChangeListener (this);
-            it.remove ();
+        if (this.results != null) {
+            for (Iterator it = this.results.iterator(); it.hasNext();) {
+                JavadocForBinaryQuery.Result result = (JavadocForBinaryQuery.Result) it.next ();
+                result.removeChangeListener (this);
+                it.remove ();
+            }
         }
         //Unregister listener from docRoots
         if (this.docRoots != null) {
