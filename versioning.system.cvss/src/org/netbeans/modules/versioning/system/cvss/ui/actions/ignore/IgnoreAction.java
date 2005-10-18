@@ -73,7 +73,7 @@ public class IgnoreAction extends AbstractSystemAction {
         return CvsVersioningSystem.getInstance().isInCvsIgnore(file);
     }
 
-    public boolean enabled(Node[] nodes) {
+    protected boolean enable(Node[] nodes) {
         return getActionStatus() != UNDEFINED;
     }
 
