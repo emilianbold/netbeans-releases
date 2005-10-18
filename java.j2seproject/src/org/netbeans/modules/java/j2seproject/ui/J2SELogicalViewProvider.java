@@ -360,7 +360,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                     fileSystemListeners.put(fs, fsl);
                 } catch (FileStateInvalidException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not get " + fo + " filesystem, ignoring..."); // NO18N
+                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NO18N
                     err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
@@ -373,6 +373,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             } catch (CharConversionException ex) {
                 return dispName;
             }
+            // XXX text colors should be taken from UIManager, not hard-coded!
             return broken || illegalState ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
         
