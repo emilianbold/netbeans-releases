@@ -47,6 +47,8 @@ public class NbPlatformTest extends TestBase {
         assertEquals(new HashSet(Arrays.asList(new NbPlatform[] {def, custom})), platforms);
         assertEquals("right default platform by dest dir", def, NbPlatform.getPlatformByDestDir(file("nbbuild/netbeans")));
         assertEquals("right custom platform by dest dir", custom, NbPlatform.getPlatformByDestDir(file(extexamplesF, "suite3/nbplatform")));
+        assertFalse("bogus platform is not valid", NbPlatform.getPlatformByDestDir(file("nbbuild")).isValid());
+        assertFalse("bogus platform is not default", NbPlatform.getPlatformByDestDir(file("nbbuild")).isDefault());
         assertEquals("right dest dir for default platform", file("nbbuild/netbeans"), def.getDestDir());
         assertEquals("right dest dir for custom platform", file(extexamplesF, "suite3/nbplatform"), custom.getDestDir());
         assertEquals("right name for default platform", NbPlatform.PLATFORM_ID_DEFAULT, def.getID());

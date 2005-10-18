@@ -333,7 +333,7 @@ public final class NbPlatform implements Comparable {
      * @return true for the one default platform
      */
     public boolean isDefault() {
-        return id.equals(PLATFORM_ID_DEFAULT);
+        return PLATFORM_ID_DEFAULT.equals(id);
     }
 
     /**
