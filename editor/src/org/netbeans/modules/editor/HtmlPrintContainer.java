@@ -62,6 +62,7 @@ public class HtmlPrintContainer implements PrintContainer {
     private static final String ESC_GT = "&gt;";        //NOI18N
     private static final String ESC_AMP = "&amp;";      //NOI18N
     private static final String ESC_QUOT = "&quot;";    //NOI18N
+    private static final String ESC_APOS = "&apos;";    //NOI18N
     private static final char   ZERO    = '0';          //NOI18N
     private static final char   DOT = '.';              //NOI18N
     private static final String STYLE_PREFIX = "ST";    //NOI18N
@@ -184,6 +185,10 @@ public class HtmlPrintContainer implements PrintContainer {
                 boolHolder[0]|=true;
             }
             else if (buffer[i] =='\'') {    //NOI18N
+                result.append(ESC_APOS);
+                boolHolder[0]|=true;
+            }
+            else if (buffer[i] =='\"') {    //NOI18N
                 result.append(ESC_QUOT);
                 boolHolder[0]|=true;
             }
