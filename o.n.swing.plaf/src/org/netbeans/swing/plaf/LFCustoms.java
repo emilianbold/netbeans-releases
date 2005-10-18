@@ -240,9 +240,7 @@ public abstract class LFCustoms {
     protected static final String PROPSHEET_ROWHEIGHT = "netbeans.ps.rowheight"; //NOI18N
 
     //General
-    //XXX find out who is using these and normalize this
-    protected static final String ERROR_FOREGROUND = "nb.errorColor"; //NOI18N
-    protected static final String ERROR_FOREGROUND2 = "nb.errorForeground"; //NOI18N
+    protected static final String ERROR_FOREGROUND = "nb.errorForeground"; //NOI18N
 
     //Tab control
     protected static final String EDITOR_TABBED_CONTAINER_UI = "TabbedContainerUI"; //NOI18N

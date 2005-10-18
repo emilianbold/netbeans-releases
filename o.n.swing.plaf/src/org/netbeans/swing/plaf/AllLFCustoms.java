@@ -31,7 +31,6 @@ final class AllLFCustoms extends LFCustoms {
         Object[] uiDefaults = {
 
             ERROR_FOREGROUND, errorColor,
-            ERROR_FOREGROUND2, errorColor,
 
 
             //Tab control in case of unknown look and feel

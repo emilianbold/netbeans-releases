@@ -445,7 +445,7 @@ final class PropUtils {
      * a default (currently Color.RED) will be used */
     static Color getErrorColor() {
         //allow theme.xml to override error color
-        Color result = UIManager.getColor("nb.errorColor"); //NOI18N
+        Color result = UIManager.getColor("nb.errorForeground"); //NOI18N
 
         if (result == null) {
             result = Color.RED;
