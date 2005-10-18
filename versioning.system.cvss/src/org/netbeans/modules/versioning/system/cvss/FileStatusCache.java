@@ -213,7 +213,7 @@ public class FileStatusCache {
             // no entry for this file
         }
         FileInformation fi = createFileInformation(file, entry, repositoryStatus);
-        if (fi.equals(current)) return fi;
+        if (equivalent(fi, current)) return fi;
         // do not include uptodate files into cache, missing directories must be included
         if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
             return fi;
@@ -243,6 +243,33 @@ public class FileStatusCache {
         return fi;
     }
 
+    /**
+     * Two FileInformation objects are equivalent if their status contants are equal AND they both reperesent a file (or
+     * both represent a directory) AND Entries they cache, if they can be compared, are equal. 
+     *  
+     * @param other object to compare to
+     * @return true if status constants of both object are equal, false otherwise
+     */ 
+    private static boolean equivalent(FileInformation main, FileInformation other) {
+        if (other == null || main.getStatus() != other.getStatus() || main.isDirectory() != other.isDirectory()) return false;
+        Entry e1 = main.getEntry(null);
+        Entry e2 = other.getEntry(null);
+        return e1 == e2 || e1 == null || e2 == null || equal(e1, e2);
+    }
+
+    /**
+     * Replacement for missing Entry.equals(). It is implemented as a separate method to maintain compatibility.
+     * 
+     * @param e1 first entry to compare
+     * @param e2 second Entry to compare
+     * @return true if supplied entries contain equivalent information
+     */ 
+    private static boolean equal(Entry e1, Entry e2) {
+        if (!e1.getRevision().equals(e2.getRevision())) return false;
+        return e1.getStickyInformation() == e2.getStickyInformation() || 
+                e1.getStickyInformation() != null && e1.getStickyInformation().equals(e2.getStickyInformation());
+    }
+    
     private boolean needRecursiveRefresh(FileInformation fi, FileInformation current) {
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED || 
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return true;

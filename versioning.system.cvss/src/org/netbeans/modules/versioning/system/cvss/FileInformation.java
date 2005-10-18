@@ -272,12 +272,13 @@ public class FileInformation implements Serializable {
     /**
      * Retrieves file's CVS Entry.
      *
-     * @param file file this information belongs to
+     * @param file file this information belongs to or null if you do not want the entry to be read from disk 
+     * in case it is not loaded yet
      * @return Entry parsed entry form the CVS/Entries file or null if the file does not exist,
      * is not versioned or its Entry is invalid
      */
     public Entry getEntry(File file) {
-        if (cvsEntry == null) readEntry(file);
+        if (cvsEntry == null && file != null) readEntry(file);
         return cvsEntry;
     }
     
@@ -287,38 +288,6 @@ public class FileInformation implements Serializable {
         } catch (IOException e) {
             // no entry for this file, ignore
         }
-    }
-
-    /**
-     * Two FileInformation objects are equal if their status contants are equal AND they both reperesent a file (or
-     * both represent a directory) AND Entries they cache are equal. 
-     *  
-     * @param o other object
-     * @return true if status constants of both object are equal, false otherwise
-     */ 
-    public boolean equals(Object o) {
-        if (!(o instanceof FileInformation)) return false;
-        FileInformation other = (FileInformation) o;
-        if (status != other.status || isDirectory != other.isDirectory) return false;
-        return cvsEntry == other.cvsEntry || cvsEntry != null && entriesEqual(cvsEntry, other.cvsEntry); 
-    }
-
-    /**
-     * Replacement for missing Entry.equals(). It is implemented as a separate method to maintain compatibility.
-     * 
-     * @param e1 first entry to compare
-     * @param e2 second Entry to compare
-     * @return true if supplied entries contain equivalent information
-     */ 
-    private static boolean entriesEqual(Entry e1, Entry e2) {
-        if (e2 == null) return false;
-        if (!e1.getRevision().equals(e2.getRevision())) return false;
-        return e1.getStickyInformation() == e2.getStickyInformation() || 
-                e1.getStickyInformation() != null && e1.getStickyInformation().equals(e2.getStickyInformation());
-    }
-
-    public int hashCode() {
-        return status;
     }
 
     /**
