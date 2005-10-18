@@ -36,25 +36,28 @@ import org.openide.util.Utilities;
  */
 final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
-    private DataModel data;
-    
     private static final String ENTER_LABEL =
             NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel");
     private static final String NONE_LABEL =
             NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None");
     
+    private DataModel data;
     private DocumentListener updateListener;
+    
     /** Creates new NameIconLocationPanel */
     public NameIconLocationPanel(final WizardDescriptor setting, final DataModel data) {
         super(setting);
         this.data = data;
         initComponents();
-	initAccessibility();
+        initAccessibility();
+        if (data.getPackageName() != null) {
+            packageName.setSelectedItem(data.getPackageName());
+        }
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
+        className.select(0, className.getText().length());
         updateListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                checkValidity();
-                storeBaseData();
+                updateData();
             }
         };
     }
@@ -87,30 +90,11 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected void readFromDataModel() {
-        loadData();
+        updateData();
         addListeners();
     }
     
-    private void loadData() {
-        if (data.getPackageName() != null) {
-            packageName.setSelectedItem(data.getPackageName());
-        } else {
-            data.setPackageName(packageName.getSelectedItem().toString());
-        }
-        if (data.getIconPath() == null) {
-            data.setIconPath(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None"));
-        }
-        if (data.getClassName() == null) {
-            data.setClassName(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_SampleClassName"));
-        }
-        if (data.getDisplayName() == null) {
-            data.setDisplayName(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel"));
-        }
-        icon.setText(data.getIconPath());
-        className.setText(data.getClassName());
-        className.select(0, className.getText().length());
-        displayName.setText(data.getDisplayName());
-        // this is somewhat evil because it regenerates the files and expects package/name etc to be filled in data..
+    private void updateData() {
         storeBaseData();
         CreatedModifiedFiles files = data.getCreatedModifiedFiles();
         createdFiles.setText(UIUtil.generateTextAreaContent(files.getCreatedPaths()));
@@ -140,7 +124,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("MSG_ClassAlreadyExists")); // NOI18N
         } else if (data.isToolbarEnabled() && getIconPath() == null) {
             setErrorMessage(getMessage("MSG_IconRequiredForToolbar")); // NOI18N
-        } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) { 
+        } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
             setErrorMessage(getMessage("ERR_Package_Invalid")); // NOI18N
         } else {
             setErrorMessage(null);
@@ -199,6 +183,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
         add(classNameTxt, gridBagConstraints);
 
+        className.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_SampleClassName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -217,6 +202,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
         add(displayNameTxt, gridBagConstraints);
 
+        displayName.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -236,6 +222,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         add(iconTxt, gridBagConstraints);
 
         icon.setEditable(false);
+        icon.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -355,8 +342,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             icon.setText(file.getAbsolutePath());
-            checkValidity();
-            storeBaseData();
+            updateData();
         }
     }//GEN-LAST:event_iconButtonActionPerformed
     
@@ -378,9 +364,9 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JTextField project;
     private javax.swing.JLabel projectTxt;
     // End of variables declaration//GEN-END:variables
-   
+    
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));
         className.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ClassName"));
         createdFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFiles"));
         displayName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
@@ -389,5 +375,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         modifiedFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFiles"));
         packageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PackageName"));
         project.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Project"));
-    }        
+    }
+    
 }
