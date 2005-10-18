@@ -214,7 +214,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (container != null) {
             String eldest = container.getEldestRevision();
             if (eldest == null) {
-                eldest = ((LogInformation.Revision) container.getRevisions().get(container.getRevisions().size() - 1)).getNumber();
+                eldest = ((SearchHistoryPanel.DispRevision) container.getRevisions().get(container.getRevisions().size() - 1)).getRevision().getNumber();
             }
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_Diff", eldest, container.getNewestRevision())) {
                 public void actionPerformed(ActionEvent e) {
