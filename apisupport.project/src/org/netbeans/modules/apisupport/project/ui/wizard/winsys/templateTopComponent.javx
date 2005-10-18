@@ -9,6 +9,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+import org.openide.ErrorManager;
 
 /**
  * Top component which displays something.
@@ -48,12 +50,27 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     /**
      * Gets default instance. Don't use directly, it reserved for '.settings' file only,
      * i.e. deserialization routines, otherwise you can get non-deserialized instance.
+     * To obtain the singleton instance, use the <code>findInstance()</code> method
      */
     public static synchronized @@TEMPLATENAME@@TopComponent getDefault() {
         if (instance == null) {
             instance = new @@TEMPLATENAME@@TopComponent();
         }
         return instance;
+    }
+
+    /**
+     * The method to use for obtaining the @@TEMPLATENAME@@TopComponent instance. Never call getDefault() directly!
+     *
+     */
+
+    public static synchronized @@TEMPLATENAME@@TopComponent findInstance() {
+        TopComponent win = WindowManager.getDefault().findTopComponent("@@TEMPLATENAME@@TopComponent");
+        if (win == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find @@TEMPLATENAME@@ component. It will not be located properly in the window system.");
+            return getDefault();
+        }
+        return (@@TEMPLATENAME@@TopComponent)win;
     }
 
     public int getPersistenceType() {
