@@ -40,12 +40,10 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbxAdd;
     private javax.swing.JComboBox cmbGroup;
-    private javax.swing.JLabel groupLabel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton rbAccept;
     private javax.swing.JRadioButton rbDeny;
-
     // End of variables declaration//GEN-END:variables
     private CollabPrincipal subscriber;
     private String subscriberName;
@@ -63,10 +61,6 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
             cbxAdd.setVisible(false);
             cmbGroup.setVisible(false);
         }
-
-        //		rbAccept.setVisible(false);
-        //		rbDeny.setVisible(false);
-        groupLabel.setVisible(false);
 
         ContactGroup[] groups = session.getContactGroups();
 
@@ -91,11 +85,6 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
                 this, NbBundle.getMessage(AuthSubscriptionForm.class, "TITLE_AuthSubscriptionForm")
             ); // NOI18N
 
-        //		String acceptOption=NbBundle.getMessage(AuthSubscriptionForm.class,
-        //			"LBL_AuthSubscriptionForm_AcceptOption");
-        //		String denyOption=NbBundle.getMessage(AuthSubscriptionForm.class,
-        //			"LBL_AuthSubscriptionForm_DenyOption");
-        //		descriptor.setOptions(new Object[] {acceptOption, denyOption});
         descriptor.setOptions(new Object[] { DialogDescriptor.OK_OPTION });
         descriptor.setClosingOptions(null);
         descriptor.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
@@ -169,16 +158,15 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         rbDeny = new javax.swing.JRadioButton();
         cbxAdd = new javax.swing.JCheckBox();
         cmbGroup = new javax.swing.JComboBox();
-        groupLabel = new javax.swing.JLabel();
+
+        FormListener formListener = new FormListener();
 
         setLayout(new java.awt.BorderLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 0, 5)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 0, 5));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText(
-            NbBundle.getMessage(AuthSubscriptionForm.class, "LBL_AuthSubscriptionForm_Subscriber", subscriberName)
-        );
+        jLabel2.setText(NbBundle.getMessage(AuthSubscriptionForm.class, "LBL_AuthSubscriptionForm_Subscriber", subscriberName));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -188,18 +176,8 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
 
         buttonGroup1.add(rbAccept);
         rbAccept.setSelected(true);
-        rbAccept.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "BTN_AuthSubscriptionForm_Accept"
-            )
-        );
-        rbAccept.addItemListener(
-            new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                    rbAcceptItemStateChanged(evt);
-                }
-            }
-        );
+        rbAccept.setText(org.openide.util.NbBundle.getMessage(AuthSubscriptionForm.class, "BTN_AuthSubscriptionForm_Accept"));
+        rbAccept.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -210,18 +188,8 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         jPanel1.add(rbAccept, gridBagConstraints);
 
         buttonGroup1.add(rbDeny);
-        rbDeny.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "BTN_AuthSubscriptionForm_Deny"
-            )
-        );
-        rbDeny.addItemListener(
-            new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                    rbDenyItemStateChanged(evt);
-                }
-            }
-        );
+        rbDeny.setText(org.openide.util.NbBundle.getMessage(AuthSubscriptionForm.class, "BTN_AuthSubscriptionForm_Deny"));
+        rbDeny.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -231,16 +199,8 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         jPanel1.add(rbDeny, gridBagConstraints);
 
         cbxAdd.setSelected(true);
-        cbxAdd.setText(
-            NbBundle.getMessage(AuthSubscriptionForm.class, "CBX_AuthSubscriptionForm_AddTo", subscriberName)
-        );
-        cbxAdd.addItemListener(
-            new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                    cbxAddItemStateChanged(evt);
-                }
-            }
-        );
+        cbxAdd.setText(NbBundle.getMessage(AuthSubscriptionForm.class, "CBX_AuthSubscriptionForm_AddTo", subscriberName));
+        cbxAdd.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
@@ -249,56 +209,49 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         jPanel1.add(cbxAdd, gridBagConstraints);
 
         cmbGroup.setPreferredSize(new java.awt.Dimension(100, 19));
-        cmbGroup.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         jPanel1.add(cmbGroup, gridBagConstraints);
 
-        groupLabel.setLabelFor(cmbGroup);
-        groupLabel.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "LBL_AddContactForm_AddContactTo"
-            )
-        );
-        groupLabel.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
-        jPanel1.add(groupLabel, gridBagConstraints);
-
         add(jPanel1, java.awt.BorderLayout.NORTH);
+
     }
 
-    // </editor-fold>//GEN-END:initComponents
-    private void rbDenyItemStateChanged(java.awt.event.ItemEvent evt) { //GEN-FIRST:event_rbDenyItemStateChanged
+    // Code for dispatching events from components to event handlers.
 
+    private class FormListener implements java.awt.event.ItemListener {
+        public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            if (evt.getSource() == rbAccept) {
+                AuthSubscriptionForm.this.rbAcceptItemStateChanged(evt);
+            }
+            else if (evt.getSource() == rbDeny) {
+                AuthSubscriptionForm.this.rbDenyItemStateChanged(evt);
+            }
+            else if (evt.getSource() == cbxAdd) {
+                AuthSubscriptionForm.this.cbxAddItemStateChanged(evt);
+            }
+        }
+    }
+    // </editor-fold>//GEN-END:initComponents
+    private void rbDenyItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbDenyItemStateChanged
         if (rbDeny.isSelected()) {
             cbxAdd.setEnabled(false);
-        } else {
-            cbxAdd.setEnabled(true);
-            cbxAdd.setSelected(true);
+            cmbGroup.setEnabled(false);
         }
-    } //GEN-LAST:event_rbDenyItemStateChanged
+    }//GEN-LAST:event_rbDenyItemStateChanged
 
-    private void cbxAddItemStateChanged(java.awt.event.ItemEvent evt) { //GEN-FIRST:event_cbxAddItemStateChanged
+    private void cbxAddItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbxAddItemStateChanged
+        cmbGroup.setEnabled(cbxAdd.isSelected());
+    }//GEN-LAST:event_cbxAddItemStateChanged
 
-        if (cbxAdd.isSelected()) {
-            groupLabel.enable();
-            cmbGroup.enable();
-        } else {
-            groupLabel.disable();
-            cmbGroup.disable();
-        }
-
-        updateUI();
-    } //GEN-LAST:event_cbxAddItemStateChanged
-
-    private void rbAcceptItemStateChanged(java.awt.event.ItemEvent evt) { //GEN-FIRST:event_rbAcceptItemStateChanged
+    private void rbAcceptItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbAcceptItemStateChanged
 
         if (rbAccept.isSelected()) {
             cbxAdd.setEnabled(true);
             cbxAdd.setSelected(true);
+            cmbGroup.setEnabled(true);
         }
-    } //GEN-LAST:event_rbAcceptItemStateChanged
+    }//GEN-LAST:event_rbAcceptItemStateChanged
 }
