@@ -493,6 +493,7 @@ public class ProjectXMLManagerTest extends TestBase {
         }
         f.setNamespaceAware(true);
         f.setValidating(true);
+        System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration", "org.apache.xerces.parsers.XML11Configuration");// XXX #66967
         SAXParser p = f.newSAXParser();
         p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage",
                 "http://www.w3.org/2001/XMLSchema");
