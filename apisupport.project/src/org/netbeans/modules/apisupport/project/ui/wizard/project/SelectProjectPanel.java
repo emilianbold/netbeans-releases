@@ -49,7 +49,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-	initAccessibility();
+        initAccessibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle"));
         loadComboBox();
         comProject.addItemListener(new ItemListener() {
@@ -112,7 +112,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void btnProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectActionPerformed
         JFileChooser chooser = ProjectChooser.projectChooser();
         int res = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this));
@@ -170,7 +170,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
         }
         Sources srcs = ProjectUtils.getSources(sel.getProject()); // #63247: don't use lookup directly
         if (srcs.getSourceGroups(Sources.TYPE_GENERIC).length > 1) {
-            setErrorMessage(getMessage("MSG_NoExternalRoots")); 
+            setErrorMessage(getMessage("MSG_NoExternalRoots"));
             return;
         }
         setErrorMessage(null);
@@ -185,7 +185,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
     }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectProjectPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectProjectPanel"));
         btnProject.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_btnProject"));
         comProject.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_comProject"));
     }
@@ -203,7 +203,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
         ComboWrapper(String text) {
             this.text = text;
         }
-         
+        
         ComboWrapper(Project project) {
             proj = project;
         }

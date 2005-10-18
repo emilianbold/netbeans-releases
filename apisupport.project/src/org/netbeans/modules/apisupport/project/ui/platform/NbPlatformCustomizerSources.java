@@ -38,7 +38,7 @@ final class NbPlatformCustomizerSources extends JPanel {
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerSources() {
         initComponents();
-	initAccessibility();
+        initAccessibility();
         sourceList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -231,7 +231,7 @@ final class NbPlatformCustomizerSources extends JPanel {
     private javax.swing.JList sourceList;
     private javax.swing.JScrollPane sourceSP;
     // End of variables declaration//GEN-END:variables
-
+    
     private void initAccessibility() {
         addFolderButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_addFolderButton"));
         sourceList.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_sourceList"));
@@ -241,8 +241,7 @@ final class NbPlatformCustomizerSources extends JPanel {
     }
     
     private String getMessage(String key) {
-	return NbBundle.getMessage(NbPlatformCustomizerSources.class, key);
+        return NbBundle.getMessage(NbPlatformCustomizerSources.class, key);
     }
-    
     
 }

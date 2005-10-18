@@ -110,22 +110,19 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
         <file name="org-netbeans-modules-apisupport-project-ui-ModuleUI.settings" url="moduleui.settings"/>
-   
-      <folder name="JavaHelp">
-         <!-- Merge after J2EE Help: -->
-         <attr name="org-netbeans-modules-j2ee-helpset.xml/org-netbeans-modules-apisupport-project-helpset.xml" boolvalue="true"/>
-         <file name="org-netbeans-modules-apisupport-project-helpset.xml" url="helpset-decl.xml"/>
-         <!-- Merge before 3rd party help: -->
-	 <attr name="org-netbeans-modules-apisupport-project-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
-      </folder>
-      
-      <folder name="Hidden">
-          <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
-          <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance_hidden"/>
-          <!-- Otherwise retain original ordering: -->
-          <attr name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance" boolvalue="true"/>
-      </folder>
-      
+        <folder name="JavaHelp">
+            <!-- Merge after J2EE Help: -->
+            <attr name="org-netbeans-modules-j2ee-helpset.xml/org-netbeans-modules-apisupport-project-helpset.xml" boolvalue="true"/>
+            <file name="org-netbeans-modules-apisupport-project-helpset.xml" url="helpset-decl.xml"/>
+            <!-- Merge before 3rd party help: -->
+            <attr name="org-netbeans-modules-apisupport-project-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+        </folder>
+        <folder name="Hidden">
+            <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
+            <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance_hidden"/>
+            <!-- Otherwise retain original ordering: -->
+            <attr name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance" boolvalue="true"/>
+        </folder>
     </folder>
     
     <folder name="Plugins">

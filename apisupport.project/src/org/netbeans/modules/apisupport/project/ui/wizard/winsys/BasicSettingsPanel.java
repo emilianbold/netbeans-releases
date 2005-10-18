@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +40,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-	initAccessibility();
+        initAccessibility();
         setupCombo();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_TCWizardTitle"));
     }
@@ -82,9 +83,9 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
             FileObject[] fos = foRoot.getChildren();
             Collection col = new ArrayList();
             for (int i=0; i < fos.length; i++) {
-               if (fos[i].isData() && "wsmode".equals(fos[i].getExt())) { //NOI18N
-                   col.add(fos[i].getName());
-               } 
+                if (fos[i].isData() && "wsmode".equals(fos[i].getExt())) { //NOI18N
+                    col.add(fos[i].getName());
+                }
             }
             modes = (String[])col.toArray(new String[col.size()]);
         } catch (IOException exc) {
@@ -177,11 +178,11 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     private javax.swing.JComboBox comMode;
     private javax.swing.JLabel lblMode;
     // End of variables declaration//GEN-END:variables
-
+    
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicSettingsPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicSettingsPanel"));
         cbOpenedOnStart.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_OpenOnStart"));
         comMode.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Mode"));
-    }         
+    }
     
 }

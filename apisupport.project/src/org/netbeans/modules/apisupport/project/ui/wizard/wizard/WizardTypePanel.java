@@ -28,8 +28,8 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     
     private DataModel data;
     private boolean firstTime = true;
-	private boolean lastStaticValue = true;
-	    
+    private boolean lastStaticValue = true;
+    
     public WizardTypePanel(final WizardDescriptor setting, final DataModel data) {
         super(setting);
         this.data = data;
@@ -215,7 +215,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-	
+    
 	private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
         boolean isCustom = custom.isSelected();
         statik.setEnabled(isCustom);

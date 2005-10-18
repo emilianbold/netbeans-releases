@@ -70,7 +70,7 @@ public final class NbPlatformCustomizer extends JPanel {
      */
     private  NbPlatformCustomizer() {
         initComponents();
-	initAccessibility();
+        initAccessibility();
         if (platformsList.getModel().getSize() > 0) {
             platformsList.setSelectedIndex(0);
             sourcesTab = new NbPlatformCustomizerSources();

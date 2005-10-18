@@ -40,7 +40,7 @@ final class NbPlatformCustomizerModules extends JPanel {
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerModules() {
         initComponents();
-	initAccessibility();
+        initAccessibility();
     }
     
     void setPlatform(final NbPlatform plaf) {
@@ -106,14 +106,13 @@ final class NbPlatformCustomizerModules extends JPanel {
     private javax.swing.JList moduleList;
     private javax.swing.JScrollPane moduleSP;
     // End of variables declaration//GEN-END:variables
-
+    
     private void initAccessibility() {
         moduleList.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_moduleList"));
     }
     
     private String getMessage(String key) {
-	return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, key);
+        return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, key);
     }
     
-
 }

@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
 
 import java.io.File;
-import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -41,7 +40,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-	initAccessibility();
+        initAccessibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_TCWizardTitle")); // NOI18N
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
@@ -289,7 +288,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     // </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));
         comPackageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PackageName"));
         txtIcon.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Icon"));
         txtPrefix.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Prefix"));
@@ -297,7 +296,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         txtProjectName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ProjectName"));
         createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFilesValue"));
         modifiedFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFilesValue"));
-    }    
+    }
     
     private void btnIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIconActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser();

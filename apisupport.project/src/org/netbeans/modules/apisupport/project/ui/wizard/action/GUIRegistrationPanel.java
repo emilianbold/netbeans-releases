@@ -88,9 +88,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-	initAccesibility();
+        initAccesibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
-	
+        
         menu.addPopupMenuListener(new PML(menu, menuPosition));
         toolbar.addPopupMenuListener(new PML(toolbar, toolbarPosition));
         ftContentType.addPopupMenuListener(new PML(ftContentType, ftPosition));

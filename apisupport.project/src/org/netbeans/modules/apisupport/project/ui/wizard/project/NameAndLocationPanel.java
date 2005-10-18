@@ -14,18 +14,14 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
-import java.util.regex.Pattern;
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -36,15 +32,15 @@ import org.openide.util.Utilities;
  * @author Milos Kleint
  */
 final class NameAndLocationPanel extends BasicWizardIterator.Panel {
-
+    
     private NewProjectIterator.DataModel data;
-
+    
     /** Creates new NameAndLocationPanel */
     public NameAndLocationPanel(WizardDescriptor setting, NewProjectIterator.DataModel data) {
         super(setting);
         this.data = data;
         initComponents();
-	initAccessibility();
+        initAccessibility();
         Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle")); // NOI18N
         modifiedFilesValue.setBackground(lblBgr);
@@ -297,7 +293,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     // </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));
         comPackageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PackageName"));
         comCategory.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Category"));
         txtDisplayName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
@@ -305,7 +301,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         txtProjectName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ProjectName"));
         createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFilesValue"));
         modifiedFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFilesValue"));
-    }         
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comCategory;
