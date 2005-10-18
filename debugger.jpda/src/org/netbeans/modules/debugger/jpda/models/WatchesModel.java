@@ -246,7 +246,7 @@ public class WatchesModel implements TreeModel {
                     Expression.LANGUAGE_JAVA_1_5
                 );
             } catch (ParseException e) {
-                setEvaluated(new JPDAWatchImpl(model, w, e));
+                setEvaluated(new JPDAWatchImpl(model, w, e, this));
             }
         }
         
@@ -330,9 +330,9 @@ public class WatchesModel implements TreeModel {
                 Value v = debugger.evaluateIn (expr);
                 if (v instanceof ObjectReference)
                     jw = new JPDAObjectWatchImpl (model, w, (ObjectReference) v);
-                jw = new JPDAWatchImpl (model, w, v);
+                jw = new JPDAWatchImpl (model, w, v, this);
             } catch (InvalidExpressionException e) {
-                jw = new JPDAWatchImpl (model, w, e);
+                jw = new JPDAWatchImpl (model, w, e, this);
             } finally {
                 setEvaluated(jw);
                 synchronized (evaluating) {

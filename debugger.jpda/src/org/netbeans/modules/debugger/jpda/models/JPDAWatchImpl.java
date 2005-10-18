@@ -34,9 +34,10 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     private WatchesModel        model;
     private Watch               watch;
     private String              exceptionDescription;
+    private java.lang.ref.Reference nodeRef;
     
     
-    JPDAWatchImpl (WatchesModel model, Watch watch, Value v) {
+    JPDAWatchImpl (WatchesModel model, Watch watch, Value v, Object node) {
         super (
             model.getLocalsTreeModel (), 
             v, 
@@ -45,12 +46,14 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         );
         this.model = model;
         this.watch = watch;
+        this.nodeRef = new java.lang.ref.WeakReference(node);
     }
     
     JPDAWatchImpl (
         WatchesModel model, 
         Watch watch, 
-        Exception exception
+        Exception exception,
+        Object node
     ) {
         super (
             model.getLocalsTreeModel (), 
@@ -62,6 +65,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         this.exceptionDescription = exception.getLocalizedMessage ();
         if (exceptionDescription == null)
             exceptionDescription = exception.getMessage ();
+        this.nodeRef = new java.lang.ref.WeakReference(node);
     }
     
     /**
@@ -112,7 +116,10 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         // set new value to this model
         setInnerValue (value);
         // refresh tree
-        model.fireTableValueChangedChanged (this, null);
+        Object node = nodeRef.get();
+        if (node != null) {
+            model.fireTableValueChangedChanged (node, null);
+        }
     }
     
     protected void setInnerValue (Value v) {
