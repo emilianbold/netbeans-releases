@@ -63,7 +63,7 @@ public class SuiteProjectGenerator {
     private static void createSuiteProjectXML(FileObject projectDir) throws IOException {
         ProjectXMLManager.generateEmptySuiteTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
-                projectDir.getName());
+                projectDir.getNameExt());
     }
     
     private static void createPlatformProperties(FileObject projectDir, String platformID) throws IOException {
