@@ -1614,7 +1614,7 @@ final class PropUtils {
         }
 
         public java.awt.Component getCustomEditor() {
-            return null; //ed.getCustomEditor();
+            return ed.getCustomEditor();
         }
 
         public String getJavaInitializationString() {
@@ -1663,7 +1663,7 @@ final class PropUtils {
         }
 
         public boolean supportsCustomEditor() {
-            return false;
+            return ed.supportsCustomEditor();
         }
     }
 
