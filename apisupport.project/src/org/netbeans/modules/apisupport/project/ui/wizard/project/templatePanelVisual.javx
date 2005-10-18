@@ -56,7 +56,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         setLayout(new java.awt.GridBagLayout());
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, "Project &Name :");
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, "Project &Name:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -70,7 +70,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         add(projectNameTextField, gridBagConstraints);
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, "Project &Location :");
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, "Project &Location:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -103,7 +103,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         add(browseButton, gridBagConstraints);
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, "Project Folder :");
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, "Project Folder:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

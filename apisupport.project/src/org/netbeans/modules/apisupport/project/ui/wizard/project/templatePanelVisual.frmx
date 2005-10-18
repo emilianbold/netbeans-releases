@@ -15,7 +15,7 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="projectNameTextField"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Project &amp;Name :"/>
+        <Property name="text" type="java.lang.String" value="Project &amp;Name:"/>
       </Properties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -38,7 +38,7 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="projectLocationTextField"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Project &amp;Location :"/>
+        <Property name="text" type="java.lang.String" value="Project &amp;Location:"/>
       </Properties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -75,7 +75,7 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="createdFolderTextField"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Project Folder :"/>
+        <Property name="text" type="java.lang.String" value="Project Folder:"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
