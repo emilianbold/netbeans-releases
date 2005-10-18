@@ -270,6 +270,12 @@ final class ProjectProperties {
                         f.delete();
                     }
                 }
+            } catch (IOException e) {
+                if (_lock[0] != null) {
+                    // Release it now, since no one else will.
+                    _lock[0].releaseLock();
+                }
+                throw e;
             } finally {
                 writing = false;
             }
