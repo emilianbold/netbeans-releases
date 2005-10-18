@@ -496,10 +496,16 @@ public class CmpRelationshipsDialogHelper {
 
         private final JLabel errorLabel;
         private final DialogDescriptor dialogDescriptor;
+        protected JMIUtils.ClassPathScanHelper classPathScanHelper;
 
         public DialogListener(JLabel errorLabel, DialogDescriptor dialogDescriptor) {
             this.errorLabel = errorLabel;
             this.dialogDescriptor = dialogDescriptor;
+            classPathScanHelper = new JMIUtils.ClassPathScanHelper() {
+                public void scanFinished() {
+                    validateFields();
+                }
+            };
         }
 
         public void changedUpdate(DocumentEvent e) {
@@ -522,7 +528,9 @@ public class CmpRelationshipsDialogHelper {
 
             final String roleNameA = roleA.getRoleName();
             final String roleNameB = roleB.getRoleName();
-            if (roleNameA != null && roleNameA.equals(roleNameB)) {
+            if (classPathScanHelper.isScanInProgress()) {
+                errorLabel.setText(Utils.getBundleMessage("LBL_ScanningInProgress"));
+            } else if (roleNameA != null && roleNameA.equals(roleNameB)) {
                 errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));
                 dialogDescriptor.setValid(false);
             } else {
