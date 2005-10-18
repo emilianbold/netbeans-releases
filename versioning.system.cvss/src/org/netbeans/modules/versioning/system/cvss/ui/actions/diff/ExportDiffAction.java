@@ -20,8 +20,6 @@ import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.windows.WindowManager;
 import org.openide.windows.TopComponent;
@@ -36,7 +34,6 @@ import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
 import java.io.*;
-import java.awt.event.ActionEvent;
 import java.util.*;
 
 /**
@@ -97,7 +94,6 @@ public class ExportDiffAction extends AbstractSystemAction {
         }
 
         return nodes.length == 1
-            && super.isEnabled()
             && Lookup.getDefault().lookup(DiffProvider.class) != null
             && getContext(nodes).getRootFiles().length == 1;
     }

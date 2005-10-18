@@ -54,7 +54,7 @@ public class AnnotationsAction extends AbstractSystemAction {
     }
 
     public boolean enable(Node[] nodes) {
-        return super.isEnabled() && activatedEditorCookie(nodes) != null;
+        return activatedEditorCookie(nodes) != null;
     }
 
     protected int getFileEnabledStatus() {
