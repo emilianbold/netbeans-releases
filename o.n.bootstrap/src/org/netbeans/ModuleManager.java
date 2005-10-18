@@ -87,7 +87,8 @@ public final class ModuleManager {
                     try {
                         classLoaderPatches.add(new JarFile(f));
                     } catch (IOException ioe) {
-                        Util.err.notify(new Exception("Problematic file: "+f, ioe));
+                        Util.err.annotate(ioe, ErrorManager.UNKNOWN, "Problematic file: " + f, null, null, null);
+                        Util.err.notify(ioe);
                     }
                 }
             }
