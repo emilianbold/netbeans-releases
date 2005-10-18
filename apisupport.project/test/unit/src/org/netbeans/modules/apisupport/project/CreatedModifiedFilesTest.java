@@ -333,14 +333,14 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                 cmf.getModifiedPaths());
         assertRelativePaths(
                 new String[] {
-                    "src/org/example/module1/resources/org-example-module1-LocalizedAndTokened.xml",
-                    "src/org/example/module1/resources/org-example-module1-Other.xml",
-                    "src/org/example/module1/resources/org-example-module1-Tokenized.xml"
+                    "src/org/example/module1/resources/org-example-module1-LocalizedAndTokenedSettings.xml",
+                    "src/org/example/module1/resources/org-example-module1-OtherSettings.xml",
+                    "src/org/example/module1/resources/org-example-module1-TokenizedSettings.xml"
                 },
                 cmf.getCreatedPaths());
         cmf.run();
 
-        assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/src/org/example/module1/resources/org-example-module1-Tokenized.xml"));
+        assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/src/org/example/module1/resources/org-example-module1-TokenizedSettings.xml"));
 
         // check layer content
         String[] supposedContent = new String[] {
@@ -353,12 +353,12 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                     "</folder>",
                     "</folder>",
                     "<folder name=\"Services\">",
-                    "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"org-example-module1-LocalizedAndTokened.xml\">",
+                    "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"org-example-module1-LocalizedAndTokenedSettings.xml\">",
                     "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
                     "</file>",
                     "<file name=\"org-example-module1-Module1UI.settings\"/>",
-                    "<file name=\"org-example-module1-Other.settings\" url=\"org-example-module1-Other.xml\"/>",
-                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"org-example-module1-Tokenized.xml\"/>",
+                    "<file name=\"org-example-module1-Other.settings\" url=\"org-example-module1-OtherSettings.xml\"/>",
+                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"org-example-module1-TokenizedSettings.xml\"/>",
                     "</folder>",
                     "</filesystem>"
         };

@@ -177,7 +177,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         xml =
                 "    <folder name=\"Services\">\n" +
                 // *.settings are also potentially dangerous in module sources, so rename them.
-                "        <file name=\"foo.settings\" url=\"foo.xml\"/>\n" +
+                "        <file name=\"foo.settings\" url=\"fooSettings.xml\"/>\n" +
                 "    </folder>\n" +
                 "    <folder name=\"Templates\">\n" +
                 "        <folder name=\"Other\">\n" +
@@ -194,7 +194,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("right XML written for remaining files", xml, l.write());
         m.put("Foo_1_java", "unrelated stuff");
         m.put("Bar.xml", "unrelated XML stuff");
-        m.put("foo.xml", "scary stuff");
+        m.put("fooSettings.xml", "scary stuff");
         assertEquals("right external files", m, l.files());
         l = new Layer("", Collections.singletonMap("file.txt", "existing stuff"));
         fs = l.read();
