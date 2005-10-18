@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
@@ -256,7 +257,7 @@ public final class SuiteUtils {
         // adjust suite project's properties
         File projectDirF = FileUtil.toFile(subModule.getProjectDirectory());
         File suiteDirF = suiteProps.getProjectDirectoryFile();
-        String projectPropKey = "project." + projectDirF.getName(); // NOI18N
+        String projectPropKey = "project." + ProjectUtils.getInformation(subModule).getName(); // NOI18N
         if (CollocationQuery.areCollocated(projectDirF, suiteDirF)) {
             suiteProps.setProperty(projectPropKey,
                     PropertyUtils.relativizeFile(suiteDirF, projectDirF));

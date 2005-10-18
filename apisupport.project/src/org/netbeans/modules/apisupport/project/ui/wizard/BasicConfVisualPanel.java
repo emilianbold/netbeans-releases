@@ -13,11 +13,22 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,16 +90,19 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicConfVisualPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicConfVisualPanel"));
         bundleValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BundleValue"));
         codeNameBaseValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CodeNameBaseValue"));
-        displayNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayNameValue"));        
-        layerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_LayerValue"));        
-    }    
+        displayNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayNameValue"));
+        layerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_LayerValue"));
+    }
     
     private void checkCodeNameBase() {
         if (!isValidCodeNameBase(getCodeNameBaseValue())) {
-            setErrorMessage(getMessage("MSG_InvalidCNB")); // NOI18N
+            setErrorMessage(getMessage("MSG_InvalidCNB"));
+        } else if (data.isSuiteComponent() && cnbIsAlreadyInSuite(data.getSuiteRoot(), getCodeNameBaseValue())) {
+            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", 
+                    getCodeNameBaseValue()));
         } else {
             setErrorMessage(null);
             // update layer and bundle from the cnb
@@ -162,6 +176,25 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     
     private String getLayerValue() {
         return layerValue.getText().trim();
+    }
+    
+    private boolean cnbIsAlreadyInSuite(String suiteDir, String cnb) {
+        boolean result = false;
+        FileObject suiteDirFO = FileUtil.toFileObject(new File(suiteDir));
+        try {
+            Project suite = ProjectManager.getDefault().findProject(suiteDirFO);
+            SubprojectProvider sp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+            for (Iterator it = sp.getSubprojects().iterator(); it.hasNext();) {
+                Project p = (Project) it.next();
+                if (ProjectUtils.getInformation(p).getName().equals(cnb)) {
+                    result = true;
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return result;
     }
     
     // Stolen from java/project PackageViewChildren.isValidPackageName()

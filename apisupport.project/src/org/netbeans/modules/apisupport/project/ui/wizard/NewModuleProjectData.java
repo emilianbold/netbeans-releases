@@ -56,6 +56,10 @@ final class NewModuleProjectData {
         return standalone;
     }
     
+    boolean isSuiteComponent() {
+        return !isNetBeansOrg() && !isStandalone();
+    }
+    
     String getProjectName() {
         return projectName;
     }

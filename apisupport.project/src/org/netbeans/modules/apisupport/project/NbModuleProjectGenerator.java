@@ -85,7 +85,7 @@ public class NbModuleProjectGenerator {
         createBundle(dirFO, bundlePath, name);
         createLayerInSrc(dirFO, layerPath);
         createEmptyTestDir(dirFO);
-        appendToSuite(dirFO, suiteDir);
+        appendToSuite(cnb, dirFO, suiteDir);
         ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
@@ -162,7 +162,7 @@ public class NbModuleProjectGenerator {
         createSuiteProperties(dirFO, suiteDir);
         createManifest(dirFO, cnb, bundlePath, null);
         createBundle(dirFO, bundlePath, name);
-        appendToSuite(dirFO, suiteDir);
+        appendToSuite(cnb, dirFO, suiteDir);
         
         // write down the nbproject/properties file
         FileObject bundleFO = createFileObject(
@@ -278,7 +278,7 @@ public class NbModuleProjectGenerator {
      * absolute and uses either <em>nbproject/project.properties</em> or
      * <em>nbproject/private/private.properties</em> appropriately.
      */
-    private static void appendToSuite(FileObject projectDir, File suiteDir) throws IOException {
+    private static void appendToSuite(String cnb, FileObject projectDir, File suiteDir) throws IOException {
         File projectDirF = FileUtil.toFile(projectDir);
         File suiteGlobalPropsFile = new File(suiteDir, "nbproject/project.properties"); // NOI18N
         FileObject suiteGlobalPropFO;
@@ -288,7 +288,7 @@ public class NbModuleProjectGenerator {
             suiteGlobalPropFO = createFileObject(suiteGlobalPropsFile);
         }
         EditableProperties globalProps = Util.loadProperties(suiteGlobalPropFO);
-        String projectPropKey = "project." + projectDirF.getName(); // NOI18N
+        String projectPropKey = "project." + cnb; // NOI18N
         if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
             globalProps.setProperty(projectPropKey,
                     PropertyUtils.relativizeFile(suiteDir, projectDirF));
@@ -454,4 +454,5 @@ public class NbModuleProjectGenerator {
         return createFileObject(
                 FileUtil.toFileObject(parent), fileToCreate.getName());
     }
+    
 }
