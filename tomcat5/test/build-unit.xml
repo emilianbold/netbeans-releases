@@ -38,4 +38,11 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
     </target-->
     
+    <target name="runidetest">
+        <property name="xtest.ide.use.classloader" value="org.netbeans.modules.tomcat5"/>
+        <executeTests  pluginName="ide">
+            <classpath/>
+        </executeTests>
+    </target>
+    
 </project>
