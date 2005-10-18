@@ -216,11 +216,14 @@ public class DbDriverManagerTest extends TestBase {
         public Connection connect(String url, Properties info) throws SQLException {
             return (Connection)Proxy.newProxyInstance(DriverImpl.class.getClassLoader(), new Class[] { ConnectionEx.class }, new InvocationHandler() {
                 public Object invoke(Object proxy, Method m, Object[] args) {
+                    System.out.println("Proxy " + System.identityHashCode(proxy) + ": called " + m.getName());
                     String methodName = m.getName();
                     if (methodName.equals("getDriver")) {
                         return DriverImpl.this;
                     } else if (methodName.equals("hashCode")) {
-                        return new Integer(System.identityHashCode(proxy));
+                        Integer i = new Integer(System.identityHashCode(proxy));
+                        System.out.println("Returning " + i);
+                        return i;
                     } else if (methodName.equals("equals")) {
                         return Boolean.valueOf(proxy == args[0]);
                     }
