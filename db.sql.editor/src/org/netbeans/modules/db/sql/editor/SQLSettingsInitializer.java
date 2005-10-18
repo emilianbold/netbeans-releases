@@ -114,31 +114,16 @@ public class SQLSettingsInitializer extends Settings.AbstractInitializer {
                                 null, 
                                 Color.red.darker(), 
                                 null);
-                    case SQLTokenContext.INCOMPLETE_STRING_ID:
-                        return new Coloring(
-                                null, 
-                                Color.white, 
-                                Color.red);
                     case SQLTokenContext.IDENTIFIER_ID:
                         return new Coloring(
                                 null, 
                                 Color.blue, 
                                 null);
-                    case SQLTokenContext.INVALID_CHARACTER_ID:
-                        return new Coloring(
-                                null, 
-                                Color.white, 
-                                Color.red);
                     case SQLTokenContext.OPERATOR_ID:
                         return new Coloring(
                                 null, 
                                 Color.black, 
                                 null);
-                    case SQLTokenContext.INVALID_COMMENT_END_ID:
-                        return new Coloring(
-                                null, 
-                                Color.white, 
-                                Color.red);
                     case SQLTokenContext.INT_LITERAL_ID:
                     case SQLTokenContext.DOUBLE_LITERAL_ID:
                         return new Coloring(
@@ -151,6 +136,11 @@ public class SQLSettingsInitializer extends Settings.AbstractInitializer {
                                 Coloring.FONT_MODE_APPLY_STYLE, 
                                 Color.blue.darker().darker(), 
                                 null);
+                    case SQLTokenContext.ERRORS_ID:
+                        return new Coloring(
+                                null, 
+                                Color.black, 
+                                Color.pink);
                 }
 
             } else { 

@@ -29,23 +29,28 @@ import org.netbeans.editor.Utilities;
 
 public class SQLTokenContext extends TokenContext {
 
-    // Token categories
+    // Numeric-ids for token categories
+    public static final int ERRORS_ID = 0; // errors
 
     // Numeric-ids for token-ids
-    public static final int WHITESPACE_ID = 0; // inside white space
-    public static final int LINE_COMMENT_ID = 1; // inside line comment --
-    public static final int BLOCK_COMMENT_ID = 2; // inside block comment /* ... */
-    public static final int STRING_ID = 3; // inside string constant
-    public static final int INCOMPLETE_STRING_ID = 4; // inside string constant after '
-    public static final int IDENTIFIER_ID = 5; // inside identifier
-    public static final int OPERATOR_ID = 6; // slash char
-    public static final int INVALID_CHARACTER_ID = 7; // after '='
-    public static final int INVALID_COMMENT_END_ID = 8; // after '0'
-    public static final int INT_LITERAL_ID = 9; // integer number
-    public static final int DOUBLE_LITERAL_ID = 10; // double number
-    public static final int DOT_ID = 11; // after '.'
-    public static final int KEYWORD_ID = 12;
-
+    public static final int WHITESPACE_ID = ERRORS_ID + 1; // inside white space
+    public static final int LINE_COMMENT_ID = WHITESPACE_ID + 1; // inside line comment --
+    public static final int BLOCK_COMMENT_ID = LINE_COMMENT_ID + 1; // inside block comment /* ... */
+    public static final int STRING_ID = BLOCK_COMMENT_ID + 1; // inside string constant
+    public static final int INCOMPLETE_STRING_ID = STRING_ID + 1; // inside string constant after '
+    public static final int IDENTIFIER_ID = INCOMPLETE_STRING_ID + 1; // inside identifier
+    public static final int OPERATOR_ID = IDENTIFIER_ID + 1; // slash char
+    public static final int INVALID_CHARACTER_ID = OPERATOR_ID + 1; // after '='
+    public static final int INVALID_COMMENT_END_ID = INVALID_CHARACTER_ID + 1; // after '0'
+    public static final int INT_LITERAL_ID = INVALID_COMMENT_END_ID + 1; // integer number
+    public static final int DOUBLE_LITERAL_ID = INT_LITERAL_ID + 1; // double number
+    public static final int DOT_ID = DOUBLE_LITERAL_ID + 1; // after '.'
+    public static final int KEYWORD_ID = DOT_ID + 1;
+    
+    // Token categories
+    public static final BaseTokenCategory ERRORS = 
+            new BaseTokenCategory("errors", ERRORS_ID); // NOI18N
+    
     // Token-ids
     public static final BaseTokenID WHITESPACE = 
             new BaseTokenID( "whitespace", WHITESPACE_ID ); // NOI18N
@@ -56,15 +61,15 @@ public class SQLTokenContext extends TokenContext {
     public static final BaseTokenID STRING = 
             new BaseTokenID( "string-literal", STRING_ID ); // NOI18N
     public static final BaseTokenID INCOMPLETE_STRING = 
-            new BaseTokenID( "incomplete-string-literal", INCOMPLETE_STRING_ID ); // NOI18N
+            new BaseTokenID( "incomplete-string-literal", INCOMPLETE_STRING_ID, ERRORS ); // NOI18N
     public static final BaseTokenID IDENTIFIER = 
             new BaseTokenID( "identifier", IDENTIFIER_ID ); // NOI18N
     public static final BaseTokenID OPERATOR = 
             new BaseTokenID( "operator", OPERATOR_ID ); // NOI18N
     public static final BaseTokenID INVALID_CHARACTER = 
-            new BaseTokenID( "invalid-character", INVALID_CHARACTER_ID ); // NOI18N
+            new BaseTokenID( "invalid-character", INVALID_CHARACTER_ID, ERRORS ); // NOI18N
     public static final BaseTokenID INVALID_COMMENT_END = 
-            new BaseTokenID( "invalid-comment-end", INVALID_COMMENT_END_ID ); // NOI18N
+            new BaseTokenID( "invalid-comment-end", INVALID_COMMENT_END_ID, ERRORS ); // NOI18N
     public static final BaseTokenID INT_LITERAL = 
             new BaseTokenID( "int-literal", INT_LITERAL_ID ); // NOI18N
     public static final BaseTokenID DOUBLE_LITERAL = 
