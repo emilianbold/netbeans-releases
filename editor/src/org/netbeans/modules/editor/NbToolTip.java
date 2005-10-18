@@ -190,7 +190,7 @@ public class NbToolTip extends FileChangeAdapter {
                     BaseDocument doc = Utilities.getDocument(target);
                     if (doc != null) {
                         DataObject dob = NbEditorUtilities.getDataObject(doc);
-                        if (dob != null) {
+                        if (dob != null && dob.isValid()) {
                             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
                             if (ec != null) {
                                 StyledDocument openedDoc;
