@@ -96,7 +96,7 @@ public final class SuiteProperties extends ModuleProperties {
     
     public NbPlatform getActivePlatform() {
         if (activePlatform == null) {
-            Util.err.log("Platform " + activePlatform + " was presuambly removed. Switching to default."); // NOI18N
+            Util.err.log("Platform " + activePlatform + " not found; switching to default");
             activePlatform = NbPlatform.getDefaultPlatform();
         }
         return activePlatform;
