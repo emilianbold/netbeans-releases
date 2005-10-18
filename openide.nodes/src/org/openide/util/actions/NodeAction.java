@@ -550,7 +550,7 @@ OUTER:
         }
 
         public boolean isEnabled() {
-            return delegate.enable(nodes());
+            return enabled;
         }
 
         public void setEnabled(boolean b) {
@@ -559,10 +559,8 @@ OUTER:
         public void resultChanged(LookupEvent ev) {
             boolean newEnabled = delegate.enable(nodes());
 
-            if (newEnabled != enabled) {
-                support.firePropertyChange(PROP_ENABLED, enabled, newEnabled);
-                enabled = newEnabled;
-            }
+            support.firePropertyChange(PROP_ENABLED, enabled, newEnabled);
+            enabled = newEnabled;
         }
 
         public JMenuItem getMenuPresenter() {
