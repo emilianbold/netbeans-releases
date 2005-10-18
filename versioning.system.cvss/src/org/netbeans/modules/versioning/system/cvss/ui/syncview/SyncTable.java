@@ -130,6 +130,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.setDefaultRenderer(Node.Property.class, new SyncTableCellRenderer());
         table.getSelectionModel().addListSelectionListener(this);
         table.addAncestorListener(this);
+        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SyncTable.class, "ACSN_VersioningTable"));
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SyncTable.class, "ACSD_VersioningTable"));
         setColumns(new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH });
     }
 
