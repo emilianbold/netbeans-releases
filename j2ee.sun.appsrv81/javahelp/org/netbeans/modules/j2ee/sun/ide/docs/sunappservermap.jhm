@@ -5,6 +5,7 @@
     <mapID target="credits"             			url="credits.html" />
     <mapID target="aboutplugin"      				url="general/aboutplugin.html" />
     <mapID target="register_appserver"                          url="general/register_appserver.html" />
+    <mapID target="viewing_appserver"				url="general/viewing_SJS.html" />
     <mapID target="def_connpool"      				url="general/def_connpool.html" />
     <mapID target="def_jdbcresource"      			url="general/def_jdbcresource.html" />
     <mapID target="def_persistence"      			url="general/def_persistence.html" />
