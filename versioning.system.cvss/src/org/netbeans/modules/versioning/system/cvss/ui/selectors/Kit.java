@@ -63,6 +63,7 @@ public final class Kit implements Client.Factory {
     }
 
     public static void deleteRecursively(File file) {
+        if (file == null) return;
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             for (int i = 0; i < files.length; i++) {

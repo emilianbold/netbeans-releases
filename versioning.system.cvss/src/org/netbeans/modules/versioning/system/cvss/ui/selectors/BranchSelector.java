@@ -23,6 +23,8 @@ import org.netbeans.lib.cvsclient.command.CommandException;
 import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
@@ -34,6 +36,7 @@ import org.openide.nodes.NodeAcceptor;
 import java.util.*;
 import java.util.List;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Allows to select branches for given repository path,
@@ -45,14 +48,30 @@ public final class BranchSelector implements Runnable {
     private CVSRoot root;
 
     private String module;
-    
+
+    private File file;
+
     private ProxyDescriptor proxyDescriptor;
 
     private Node rootNode;
     private BranchNodeChildren rootKids;
 
     /**
-     * Selects tag or branch. Shows modal UI.
+s     * Selects tag or branch for versioned files. Shows modal UI.
+     *
+     * @param file versioned file or folder
+     * @return selected tag or <code>null</code> on cancel.
+     */
+    public String selectTag(File file, ProxyDescriptor proxy) {
+
+        this.file = file;
+        this.proxyDescriptor = proxy;
+
+        return showSelector();
+    }
+
+    /**
+     * Selects tag or branch for not yet locally checked out files.
      *
      * @param root repository
      * @param module hint where to look for the first cvs_loggable file
@@ -67,6 +86,12 @@ public final class BranchSelector implements Runnable {
         this.root = root;
         this.module = module;
         this.proxyDescriptor = proxy;
+
+        return showSelector();
+    }
+
+    private String showSelector() {
+
         rootKids = new BranchNodeChildren();
         rootNode = new AbstractNode(rootKids);
 
@@ -78,12 +103,12 @@ public final class BranchSelector implements Runnable {
             op.setIconsVisible(false);
             op.setRootVisible(false);
             op.setHelpCtx(new HelpCtx(BranchSelector.class));
-            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2012"), 
-                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2013"), 
-                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_BranchSelect"), 
-                                        rootNode, 
-                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSN_BranchesTree"), 
-                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_BranchesTree"), 
+            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2012"),
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2013"),
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_BranchSelect"),
+                                        rootNode,
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSN_BranchesTree"),
+                                        org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_BranchesTree"),
                                         new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length != 1) return false;
@@ -102,65 +127,100 @@ public final class BranchSelector implements Runnable {
     /** Background runnable*/
     public void run() {
 
-        // netbeans.org rlog does not work, we need to create some sort of fake log command
-
-        File checkoutFolder = Kit.createTmpFolder();
-        if (checkoutFolder == null) {
-            error(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2015"));
-            return;
-        }
-
         GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
-        gtx.setCVSRoot(root.toString());  // XXX why is it needed? Client already knows, who is definitive source of cvs root?
+        if (root != null) {
+            gtx.setCVSRoot(root.toString());  // XXX why is it needed? Client already knows, who is definitive source of cvs root?
+        }
+        File checkoutFolder = null;
         try {
-            CheckoutCommand checkout = new CheckoutCommand();
-            checkout.setRecursive(false);
 
-            // non recursive operation doe snot work with "." module
-            // #58208 so here a random one is choosen
-            if (".".equals(module)) {  // NOI18N
+            File[] files;
+            File localPath;
+            if (file == null) {
+                // netbeans.org rlog does not work, we need to create some sort of fake log command
+
+                checkoutFolder = Kit.createTmpFolder();
+                if (checkoutFolder == null) {
+                    error(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2015"));
+                    return;
+                }
+
+                CheckoutCommand checkout = new CheckoutCommand();
+                checkout.setRecursive(false);
+
+                // non recursive operation doe snot work with "." module
+                // #58208 so here a random one is choosen
+                if (".".equals(module)) {  // NOI18N
+                    Client client = Kit.createClient(root, proxyDescriptor);
+                    List l = ModuleSelector.listRepositoryPath(client, root, "");  // NOI18N
+                    Iterator it = l.iterator();
+                    int max = l.size();
+                    int counter = max;
+                    Random random = new Random();
+                    while (counter-- > 0) {
+                        int rnd = random.nextInt(max);
+                        String path = (String) l.get(rnd);
+                        if ("CVSROOT".equals(path)) continue;  // NOI18N
+                        module = path;
+                        break;
+                    }
+                }
+                checkout.setModule(module);
+                File[] checkoutFiles = new File[] {checkoutFolder};
+                checkout.setFiles(checkoutFiles);
+
                 Client client = Kit.createClient(root, proxyDescriptor);
-                List l = ModuleSelector.listRepositoryPath(client, root, "");  // NOI18N
-                Iterator it = l.iterator();
-                int max = l.size();
-                int counter = max;
-                Random random = new Random();
-                while (counter-- > 0) {
-                    int rnd = random.nextInt(max);
-                    String path = (String) l.get(rnd);
-                    if ("CVSROOT".equals(path)) continue;  // NOI18N
-                    module = path;
+                client.setLocalPath(checkoutFolder.getAbsolutePath());
+                client.executeCommand(checkout, gtx);
+
+                files = checkoutFolder.listFiles();
+                localPath = checkoutFolder;
+
+                // seek for the first non-administrative file
+                for (int i = 0; i<files.length; i++) {
+                    if (files[i].isFile()) continue;
+                    if ("CVSROOT".equals(files[i].getName())) continue;  // NOI18N
+                    files = files[i].listFiles();
                     break;
                 }
-            }
-            checkout.setModule(module);
-            File[] files = new File[] {checkoutFolder};
-            checkout.setFiles(files);
 
-            Client client = Kit.createClient(root, proxyDescriptor);
-            client.setLocalPath(checkoutFolder.getAbsolutePath());
-            client.executeCommand(checkout, gtx);
+            } else {
+                if (file.isDirectory()) {
+                    files = file.listFiles();
+                    localPath = file;
+                } else {
+                    files = new File[] {file};
+                    localPath = file.getParentFile();
+                }
+            }
+
+            List logFiles = new ArrayList(files.length);
+            for (int i = 0; i<files.length; i++) {
+                if (files[i].isDirectory()) continue;
+                FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(files[i]);
+                if ((info.getStatus() & FileInformation.STATUS_IN_REPOSITORY) != 0) {
+                    logFiles.add(files[i]);
+                }
+            }
 
             // extract tags using log
             LogCommand log = new LogCommand();
             log.setHeaderOnly(true);
-
-            // seek for the first non-administrative file
-            files = checkoutFolder.listFiles();
-            for (int i = 0; i<files.length; i++) {
-                if (files[i].isFile()) continue;
-                if ("CVSROOT".equals(files[i].getName())) continue;  // NOI18N
-                files = files[i].listFiles();
-                break;
+            File[] cmdFiles = (File[]) logFiles.toArray(new File[logFiles.size()]);
+            log.setFiles(cmdFiles);
+            if (root == null) {
+                for (int i = 0; i<cmdFiles.length; i++) {
+                    try {
+                        root = CVSRoot.parse(Utils.getCVSRootFor(cmdFiles[i]));  // raises exception
+                        break;
+                    } catch (IOException e) {
+                        ErrorManager err = ErrorManager.getDefault();
+                        err.annotate(e, "Can not find CVSROOT for " + cmdFiles[i]);
+                        err.notify(e);
+                    }
+                }
             }
-            for (int i = 0; i<files.length; i++) {
-                if (files[i].isDirectory()) continue;
-                if (".cvsignore".equals(files[i].getName())) continue;  // NOI18N
-                File[] logFiles = new File[] {files[i]};
-                log.setFiles(logFiles);
-                break;
-            }
-            client = Kit.createClient(root, proxyDescriptor);
+            Client client = Kit.createClient(root, proxyDescriptor);
             
             final Set tags = new TreeSet();
             final Set branches = new TreeSet();
@@ -198,7 +258,7 @@ public final class BranchSelector implements Runnable {
                 }
             });
             
-            client.setLocalPath(checkoutFolder.getAbsolutePath());
+            client.setLocalPath(localPath.getAbsolutePath());
             client.executeCommand(log, gtx);
             tagsLoaded(branches, tags);
             Kit.deleteRecursively(checkoutFolder);

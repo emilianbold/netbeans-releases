@@ -133,24 +133,18 @@ public class TagSettings extends javax.swing.JPanel {
     // </editor-fold>//GEN-END:initComponents
 
     private void onBrowseTag(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseTag
-        String module = null;
-        CVSRoot root = null;
         for (int i = 0; i < roots.length; i++) {
             try {
-                root = CVSRoot.parse(Utils.getCVSRootFor(roots[i]));
-                AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
-                module = ah.getRepositoryForDirectory(roots[i].getAbsolutePath(), "").substring(1);
+                CVSRoot.parse(Utils.getCVSRootFor(roots[i]));  // raises exception
+                BranchSelector selector = new BranchSelector();
+                String tag = selector.selectTag(roots[i], null);
+                if (tag != null) {
+                    tfName.setText(tag);
+                }
+                return;
             } catch (IOException e) {
                 // no root for this file, try next
             }
-        }
-        if (root == null) {
-            return;
-        }
-        BranchSelector selector = new BranchSelector();
-        String tag = selector.selectTag(root, module, null);
-        if (tag != null) {
-            tfName.setText(tag);
         }
     }//GEN-LAST:event_onBrowseTag
 
