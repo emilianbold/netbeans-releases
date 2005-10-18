@@ -18,27 +18,26 @@ import java.util.Map;
 import javax.swing.ComboBoxModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 
 /**
  * @author Martin Krauskopf
  */
-public class UIUtilTest extends TestBase {
+public class UIUtilTest extends LayerTestBase {
     
     public UIUtilTest(String testName) {
         super(testName);
     }
-
+    
     protected void setUp() throws Exception {
-        clearWorkDir();
         super.setUp();
+        TestBase.initializeBuildProperties(getWorkDir());
     }
     
     /**
      * Test of createLayerPresenterComboModel method, of class org.netbeans.modules.apisupport.project.ui.UIUtil.
      */
     public void testCreateLayerPresenterComboModel() throws Exception {
-        System.out.println("createLayerPresenterComboModel");
-        
         Project project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         Map excludes = new HashMap();
         excludes.put("template", Boolean.TRUE);
