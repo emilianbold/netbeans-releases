@@ -146,6 +146,7 @@ class CustomEditorAction extends AbstractAction {
 
         Cursor cur = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
         curComp.setCursor(cur);
+        try { //#64007 start - reset cursor in case of a runtime exception
 
         //            customEditing = true;
         Object partialValue = invoker.getPartialValue();
@@ -301,7 +302,9 @@ class CustomEditorAction extends AbstractAction {
             PropUtils.removeExternallyEdited(p);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
-        } finally {
+        }
+        
+        } finally { //#64007 end - reset cursor in case of a runtime exception
             curComp.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
