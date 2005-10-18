@@ -87,7 +87,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         // check if the file name can be created
         FileObject template = Templates.getTemplate( wizard );
 
-        String errorMessage = ProjectUtilities.canUseFileName (gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), template.getExt ());
+        String errorMessage = ProjectUtilities.canUseFileName (gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), template.getExt (), isFolder);
         wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
 
         return errorMessage == null;
@@ -156,7 +156,6 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             String name = gui.getTargetName ();
             if (name.indexOf ('/') > 0) { // NOI18N
                 name = name.substring (name.lastIndexOf ('/') + 1);
-                System.out.println("name: " + name);
             }
             
             Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI () );

@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -234,13 +235,32 @@ public class ProjectUtilities {
      * @param folderName name of the folder relative to target folder (null or /-separated)
      * @param newObjectName name of created file
      * @param extension extension of created file
+     * @param allowFileSeparator if '/' (and possibly other file separator, see {@link FileUtil#createFolder FileUtil#createFolder})
+     *                           is allowed in the newObjectName
      * @return localized error message or null if all right
      */    
-    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
+    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension, boolean allowFileSeparator) {
         assert newObjectName != null; // SimpleTargetChooserPanel.isValid returns false if it is... XXX should it use an error label instead?
 
-        if (newObjectName.indexOf('/') != -1 || newObjectName.indexOf('\\') != -1) {
-            return NbBundle.getMessage(ProjectUtilities.class, "MSG_not_valid_filename", newObjectName);
+        boolean allowSlash = false;
+        boolean allowBackslash = false;
+        int errorVariant = 0;
+        
+        if (allowFileSeparator) {
+            if (File.separatorChar == '\\') {
+                errorVariant = 3;
+                allowSlash = allowBackslash = true;
+            } else {
+                errorVariant = 1;
+                allowSlash = true;
+            }
+        }
+        
+        if ((!allowSlash && newObjectName.indexOf('/') != -1) || (!allowBackslash && newObjectName.indexOf('\\') != -1)) {
+            //if errorVariant == 3, the test above should never be true:
+            assert errorVariant == 0 || errorVariant == 1 : "Invalid error variant: " + errorVariant;
+            
+            return NbBundle.getMessage(ProjectUtilities.class, "MSG_not_valid_filename", newObjectName, new Integer(errorVariant));
         }
         
         // test whether the selected folder on selected filesystem already exists
