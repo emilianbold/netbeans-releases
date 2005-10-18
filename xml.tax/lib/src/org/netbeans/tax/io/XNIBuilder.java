@@ -108,7 +108,20 @@ public final class XNIBuilder implements TreeBuilder {
             buildXML = false;
         }
         
-        XMLBuilder builder = this.new XMLBuilder (buildXML);
+        XMLBuilder builder;
+        // XXX hack for #66967: override JRE's configuration since it breaks external Xerces
+        String key = "org.apache.xerces.xni.parser.XMLParserConfiguration";
+        String orig = System.getProperty(key);
+        System.setProperty(key, "org.apache.xerces.parsers.XML11Configuration");
+        try {
+            builder = this.new XMLBuilder (buildXML);
+        } finally {
+            if (orig != null) {
+                System.setProperty(key, orig);
+            } else {
+                System.getProperties().remove(key);
+            }
+        }
         
         try {
             final String SAX_FEATURE = "http://xml.org/sax/features/"; // NOI18N
