@@ -450,7 +450,9 @@ public final class ProjectManager {
             assert p != null;
             mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
-                    assert proj2Factory.get(p) != null;
+                    if (!proj2Factory.containsKey(p)) {
+                        throw new IllegalStateException("An attempt to call ProjectState.markModified on a deleted project: " + p.getProjectDirectory()); // NOI18N
+                    }
                     modifiedProjects.add(p);
                     return null;
                 }
@@ -462,7 +464,7 @@ public final class ProjectManager {
             mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     if (proj2Factory.get(p) == null) {
-                        throw new IllegalStateException("An attempt to call notifyDeleted more than once. Project: " + p.getProjectDirectory());
+                        throw new IllegalStateException("An attempt to call notifyDeleted more than once. Project: " + p.getProjectDirectory()); // NOI18N
                     }
                     
                     dir2Proj.remove(p.getProjectDirectory());
@@ -499,7 +501,7 @@ public final class ProjectManager {
             public Object run() {
                 synchronized (dir2Proj) {
                     if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this); // NOI18N
+                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
                     }
                 }
                 return Boolean.valueOf(modifiedProjects.contains(p));
@@ -528,7 +530,7 @@ public final class ProjectManager {
             mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this); // NOI18N
+                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
                     }
                     if (modifiedProjects.contains(p)) {
                         ProjectFactory f = (ProjectFactory)proj2Factory.get(p);
@@ -556,6 +558,7 @@ public final class ProjectManager {
                     while (it.hasNext()) {
                         Project p = (Project)it.next();
                         ProjectFactory f = (ProjectFactory)proj2Factory.get(p);
+                        assert f != null : p;
                         f.saveProject(p);
                         it.remove();
                     }

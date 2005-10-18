@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.util.WeakHashMap;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -117,6 +118,9 @@ class PersistentBookmarks {
     }
     
     static void saveProjectBookmarks(Project prj) {
+        if (!ProjectManager.getDefault().isValid(prj)) {
+            return; // cannot modify it now anyway
+        }
         FileBookmarksMap fileBookmarksMap = findBookmarksMap(prj);
         if (fileBookmarksMap != null && fileBookmarksMap.isModified()) {
             saveBookmarksMap(prj, fileBookmarksMap);
