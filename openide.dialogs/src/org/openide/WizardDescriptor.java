@@ -19,7 +19,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.WeakSet;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -56,7 +55,6 @@ import javax.accessibility.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
-
 
 /**
  * Implements a basic "wizard" GUI system.
@@ -509,7 +507,7 @@ public class WizardDescriptor extends DialogDescriptor {
     * @param name name of the property
     * @param value value of property
     */
-    public void putProperty(final String name, Object value) {
+    public void putProperty(final String name, final Object value) {
         Object oldValue = null;
 
         synchronized (this) {
@@ -535,10 +533,12 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         if (PROP_ERROR_MESSAGE.equals(name)) {
-            WizardPanel wp = wizardPanel;
-
-            if (wp != null) {
-                wp.setErrorMessage((String) ((value == null) ? " " : value)); //NOI18N
+            if (wizardPanel != null) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        wizardPanel.setErrorMessage((String) ((value == null) ? " " : value), (nextButton.isEnabled () || finishButton.isEnabled ()) ? Boolean.TRUE : Boolean.FALSE); //NOI18N
+                    }
+                });
             }
         }
     }
@@ -1119,7 +1119,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 } catch (WizardValidationException wve) {
                     // cannot continue, notify user
                     if (wizardPanel != null) {
-                        wizardPanel.setErrorMessage(wve.getLocalizedMessage());
+                        wizardPanel.setErrorMessage(wve.getLocalizedMessage(), Boolean.FALSE);
                     }
 
                     // focus source of this problem
@@ -1578,7 +1578,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Action listener */
         public void actionPerformed(ActionEvent ev) {
             if (wizardPanel != null) {
-                wizardPanel.setErrorMessage(" "); //NOI18N
+                wizardPanel.setErrorMessage(" ", null); //NOI18N
             }
 
             if (ev.getSource() == nextButton) {
@@ -1980,6 +1980,8 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Selected index of content */
         private int selectedIndex;
         private javax.swing.JLabel m_lblMessage;
+        private Color nbErrorForeground;
+        private Color nbWarningForeground;
 
         /** Creates new <CODE>WizardPanel<CODE>.
          * @param contentDisplayed whether content will be displayed in the left pane
@@ -2036,16 +2038,17 @@ public class WizardDescriptor extends DialogDescriptor {
             rightPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 11, 11));
             panelName.setLabelFor(labelPanel);
 
-            Color c = javax.swing.UIManager.getColor("nb.errorForeground"); //NOI18N
-
-            if (c == null) {
-                c = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
+            nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
+            if (nbErrorForeground == null) {
+                nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
             }
+            
+            nbWarningForeground = UIManager.getColor ("Label.foreground");
 
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 11));
             m_lblMessage = new javax.swing.JLabel("  "); //NOI18N
-            m_lblMessage.setForeground(c);
+            m_lblMessage.setForeground (nbErrorForeground);
             errorPanel.add(m_lblMessage, BorderLayout.CENTER);
 
             JPanel fullRightPanel = new JPanel(new BorderLayout());
@@ -2061,14 +2064,22 @@ public class WizardDescriptor extends DialogDescriptor {
             add(sep, BorderLayout.SOUTH);
         }
 
-        public void setErrorMessage(String msg) {
-            m_lblMessage.setText(msg);
-
-            if ((msg != null) && (msg.trim().length() > 0)) {
-                m_lblMessage.setToolTipText(msg);
+        public void setErrorMessage(String msg, Boolean canContinue) {
+            m_lblMessage.setForeground(nbErrorForeground);
+            if (msg != null && msg.trim ().length () > 0 && canContinue != null) {
+                if (canContinue.booleanValue ()) {
+                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/openide/resources/warning.gif"))); // NOI18N
+                    m_lblMessage.setForeground (nbWarningForeground);
+                } else {
+                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/openide/resources/error.gif"))); // NOI18N
+                }
+                m_lblMessage.setToolTipText (msg);
             } else {
-                m_lblMessage.setToolTipText(null);
+                m_lblMessage.setIcon (null);
+                m_lblMessage.setToolTipText (null);
             }
+            
+            m_lblMessage.setText(msg);
         }
 
         /** Creates content panel.
