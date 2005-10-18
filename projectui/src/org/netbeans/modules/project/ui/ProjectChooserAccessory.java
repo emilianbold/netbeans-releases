@@ -13,11 +13,13 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.text.Collator;
 import java.text.MessageFormat;
@@ -34,6 +36,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
@@ -42,6 +45,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -258,6 +262,36 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 
                 // Disable all components in accessory
                 setAccessoryEnablement( false, 0 );
+                
+                // But, in case it is a load error, show that:
+                if (projectDirs.length == 1 && projectDirs[0] != null) {
+                    File dir = FileUtil.normalizeFile(projectDirs[0]);
+                    FileObject fo = FileUtil.toFileObject(dir);
+                    if (fo != null && fo.isFolder()) {
+                        try {
+                            ProjectManager.getDefault().findProject(fo);
+                        } catch (IOException x) {
+                            String msg = x.toString();
+                            ErrorManager.Annotation[] anns = ErrorManager.getDefault().findAnnotations(x);
+                            for (int i = 0; i < anns.length; i++) {
+                                if (anns[i].getLocalizedMessage() != null) {
+                                    msg = anns[i].getLocalizedMessage();
+                                    break;
+                                }
+                            }
+                            jTextFieldProjectName.setText(msg);
+                            jTextFieldProjectName.setCaretPosition(0);
+                            // Currently seems to be blue, at least on Ocean & GTK:
+                            Color error = UIManager.getColor("nb.errorForeground"); // NOI18N
+                            if (error != null) {
+                                jTextFieldProjectName.setForeground(error);
+                            }
+                            // Only so it can be focussed and message scrolled accessibly:
+                            jLabelProjectName.setEnabled(true);
+                            jTextFieldProjectName.setEnabled(true);
+                        }
+                    }
+                }
             }
                         
         }
@@ -313,6 +347,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     private void setAccessoryEnablement( boolean enable, int numberOfProjects ) {
         jLabelProjectName.setEnabled( enable );
         jTextFieldProjectName.setEnabled( enable );
+        jTextFieldProjectName.setForeground(/* i.e. L&F default */null);
         jCheckBoxSubprojects.setEnabled( enable );
         jScrollPaneSubprojects.setEnabled( enable );
 

@@ -30,11 +30,13 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -146,7 +148,11 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         try {
             projectXml = XMLUtil.parse(new InputSource(projectDiskFile.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
         } catch (SAXException e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
+            IOException ioe = (IOException) new IOException(projectDiskFile + ": " + e.toString()).initCause(e);
+            ErrorManager.getDefault().annotate(ioe, NbBundle.getMessage(AntBasedProjectFactorySingleton.class,
+                                                                        "AntBasedProjectFactorySingleton.parseError",
+                                                                        projectDiskFile.getAbsolutePath(), e.getMessage()));
+            throw ioe;
         }
         Element projectEl = projectXml.getDocumentElement();
         if (!"project".equals(projectEl.getLocalName()) || !PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
