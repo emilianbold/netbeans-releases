@@ -33,6 +33,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.openide.util.MutexException;
 
 public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     
@@ -68,7 +69,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
-                        public Object run() throws Exception {
+                        public Object run() throws IOException {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
                             List resources = cs.itemsList( raw );
@@ -86,14 +87,8 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                         }
                     }
             )).booleanValue();
-        } catch (Exception e) {
-            if (e instanceof IOException) {
-                throw (IOException) e;
-            }
-            else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
-            }
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
     }
 

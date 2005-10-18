@@ -7,26 +7,33 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.Enumeration;
 import org.netbeans.modules.masterfs.filebasedfs.Statistics;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
-
-import java.io.*;
-import java.util.Date;
-import java.util.Enumeration;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
+import org.openide.util.NbBundle;
 
 /**
  * @author rm111737
  */
-
 final class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
     private long lastModified = -1;
@@ -37,7 +44,7 @@ final class FileObj extends BaseFileObj {
         setLastModified(System.currentTimeMillis());
     }
     
-    public final java.io.OutputStream getOutputStream(final org.openide.filesystems.FileLock lock) throws java.io.IOException {
+    public final OutputStream getOutputStream(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
 
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
@@ -57,12 +64,17 @@ final class FileObj extends BaseFileObj {
             if (closable != null) {
                 closable.close();
             }
+            if (!f.canWrite()) {
+                // Duh, it's read-only.
+                String msg = NbBundle.getMessage(FileObj.class, "FileObj.readOnlyFile", f.getAbsolutePath());
+                ErrorManager.getDefault().annotate(e, ErrorManager.USER, null, msg, null, null);
+            }
             throw e;
         }
         return retVal;
     }
 
-    public final java.io.InputStream getInputStream() throws java.io.FileNotFoundException {
+    public final InputStream getInputStream() throws FileNotFoundException {
         final File f = getFileName().getFile();
                         
         InputStream inputStream;
