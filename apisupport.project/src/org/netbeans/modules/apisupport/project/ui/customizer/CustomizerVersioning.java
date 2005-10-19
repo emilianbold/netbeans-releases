@@ -13,13 +13,16 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Dialog;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -29,6 +32,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -506,17 +510,38 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     }//GEN-LAST:event_removeFriend
     
     private void addFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriend
-        NotifyDescriptor.InputLine desc =  new NotifyDescriptor.InputLine(
-                getMessage("LBL_FriendToBeAdded"), // NOI18N
-                getMessage("CTL_AddNewFriend_Title"));  // NOI18N
-        DialogDisplayer.getDefault().notify(desc);
-        if (desc.getValue() == DialogDescriptor.OK_OPTION) {
-            String pkgToAdd = desc.getInputText().trim();
-            if (!"".equals(pkgToAdd)) {
-                getFriendModel().addFriend(pkgToAdd);
-                friendsList.setSelectedValue(pkgToAdd, true);
+        AddFriendPanel addFriend = new AddFriendPanel(getProperties());
+        DialogDescriptor descriptor = new DialogDescriptor(addFriend, getMessage("CTL_AddNewFriend_Title"));
+        descriptor.setHelpCtx(new HelpCtx(AddFriendPanel.class));
+        final JButton okButton = new JButton(getMessage("CTL_OK"));
+        JButton cancel = new JButton(getMessage("CTL_Cancel"));
+        okButton.setEnabled(false);
+        Object[] options = new Object[] { okButton , cancel };
+        descriptor.setOptions(options);
+        descriptor.setClosingOptions(options);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+        addFriend.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent pce) {
+                if (pce.getPropertyName() == AddFriendPanel.DATA_LOADED_PROPERTY) {
+                    d.pack();
+                    d.setLocationRelativeTo(null);
+                } else if (pce.getPropertyName() == AddFriendPanel.VALID_PROPERTY) {
+                    okButton.setEnabled(((Boolean) pce.getNewValue()).booleanValue());
+                }
             }
+        });
+        d.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_AddNewFriend_Title"));
+        okButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_OK"));
+        cancel.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_Cancel"));
+        d.pack();
+        d.setLocationRelativeTo(null);
+        d.setVisible(true);
+        if (descriptor.getValue().equals(okButton)) {
+            String newFriendCNB = addFriend.getFriendCNB();
+            getFriendModel().addFriend(newFriendCNB);
+            friendsList.setSelectedValue(newFriendCNB, true);
         }
+        d.dispose();
         friendsList.requestFocus();
         checkForm();
     }//GEN-LAST:event_addFriend

@@ -32,7 +32,9 @@ import java.util.TreeSet;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
@@ -48,6 +50,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -168,7 +171,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         friendListModel = null;
         requiredTokensListModel = null;
         projectXMLManager = null;
-        if (moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
+        if (isSuiteComponent()) {
             assert getSuiteDirectory() != null;
             ModuleList.refreshSuiteModuleList(getSuiteDirectory());
         }
@@ -216,6 +219,18 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     File getSuiteDirectory() {
         return suiteProvider != null ? suiteProvider.getSuiteDirectory() : null;
+    }
+    
+    /** Call only for suite component modules. */
+    SuiteProject getSuite() {
+        assert isSuiteComponent();
+        SuiteProject suite = null;
+        try {
+            suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getSuiteDirectory()));
+        } catch (IOException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return suite;
     }
     
     // ---- READ ONLY end
@@ -303,6 +318,10 @@ public final class SingleModuleProperties extends ModuleProperties {
         return moduleType == NbModuleTypeProvider.NETBEANS_ORG;
     }
     
+    boolean isSuiteComponent() {
+        return moduleType == NbModuleTypeProvider.SUITE_COMPONENT;
+    }
+    
     boolean dependingOnImplDependency() {
         Set/*<ModuleDependency>*/ deps = getDependenciesListModel().getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
@@ -373,27 +392,20 @@ public final class SingleModuleProperties extends ModuleProperties {
             reloadModuleListInfo();
         }
         SortedSet/*<ModuleDependency>*/ result = null;
-        if (filterExcludedModules && getSuiteDirectory() != null) {
-            try {
-                SuiteProject suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getSuiteDirectory()));
-                if (suite != null) {
-                    String[] disableModules = SuiteProperties.getArrayProperty(
-                            suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
-                    String[] disableClusters = SuiteProperties.getArrayProperty(
-                            suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
-                    SortedSet/*<ModuleDependency>*/ filtered = new TreeSet(universeDependencies);
-                    for (Iterator it = filtered.iterator(); it.hasNext();) {
-                        ModuleDependency dep = (ModuleDependency) it.next();
-                        if (isExcluded(dep.getModuleEntry(), disableModules, disableClusters)) {
-                            it.remove();
-                        }
-                    }
-                    result = Collections.unmodifiableSortedSet(filtered);
+        if (filterExcludedModules && isSuiteComponent()) {
+            SuiteProject suite = getSuite();
+            String[] disableModules = SuiteProperties.getArrayProperty(
+                    suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
+            String[] disableClusters = SuiteProperties.getArrayProperty(
+                    suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
+            SortedSet/*<ModuleDependency>*/ filtered = new TreeSet(universeDependencies);
+            for (Iterator it = filtered.iterator(); it.hasNext();) {
+                ModuleDependency dep = (ModuleDependency) it.next();
+                if (isExcluded(dep.getModuleEntry(), disableModules, disableClusters)) {
+                    it.remove();
                 }
-            } catch (IOException e) {
-                // module will be included
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
+            result = Collections.unmodifiableSortedSet(filtered);
         }
         if (result == null) {
             result = universeDependencies;
@@ -405,6 +417,32 @@ public final class SingleModuleProperties extends ModuleProperties {
             final String[] disableModules, final String[] disableClusters) {
         return Arrays.binarySearch(disableModules, me.getCodeNameBase()) >= 0 ||
                 Arrays.binarySearch(disableClusters, me.getClusterDirectory().getName()) >= 0;
+    }
+    
+    /**
+     * Returns sorted arrays of CNBs of available friends for this module.
+     */
+    String[] getAvailableFriends() {
+        SortedSet set = new TreeSet();
+        if (isSuiteComponent()) {
+            SuiteProject suite = getSuite();
+            SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+            Set/*<Project>*/ subModules = spp.getSubprojects();
+            for (Iterator it = subModules.iterator(); it.hasNext();) {
+                Project prj = (Project) it.next();
+                String cnb = ProjectUtils.getInformation(prj).getName();
+                if (!getCodeNameBase().equals(cnb)) {
+                    set.add(cnb);
+                }
+            }
+        } else if (isNetBeansOrg()) {
+            SortedSet/*<ModuleDependency>*/ deps = getUniverseDependencies(false);
+            for (Iterator it = deps.iterator(); it.hasNext();) {
+                ModuleDependency dep = (ModuleDependency) it.next();
+                set.add(dep.getModuleEntry().getCodeNameBase());
+            }
+        } // else standalone module - leave empty (see the UI spec)
+        return (String[]) set.toArray(new String[0]);
     }
     
     FriendListModel getFriendListModel() {

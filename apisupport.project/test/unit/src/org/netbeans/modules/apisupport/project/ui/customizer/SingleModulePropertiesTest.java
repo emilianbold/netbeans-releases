@@ -324,6 +324,26 @@ public class SingleModulePropertiesTest extends TestBase {
         }
     }
     
+    public void testGetAvailableFriends() throws Exception {
+        // standalone
+        NbModuleProject standAlone = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        SingleModuleProperties props = loadProperties(standAlone);
+        assertEquals("There are no friends for standalone module.", 0, props.getAvailableFriends().length);
+        
+        // suitecomponent
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        NbModuleProject component1 = TestBase.generateSuiteComponent(suite1, "component1");
+        NbModuleProject component2 = TestBase.generateSuiteComponent(suite1, "component2");
+        NbModuleProject component3 = TestBase.generateSuiteComponent(suite1, "component3");
+        props = loadProperties(component2);
+        assertEquals("There are two available friends for component2.", 2, props.getAvailableFriends().length);
+        
+        // netbeans.org
+        Project javaProject = ProjectManager.getDefault().findProject(nbroot.getFileObject("java/project"));
+        props = loadProperties((NbModuleProject) javaProject);
+        assertTrue("There are two available friends for component2.", props.getAvailableFriends().length > 50);
+    }
+    
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
 //        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),
