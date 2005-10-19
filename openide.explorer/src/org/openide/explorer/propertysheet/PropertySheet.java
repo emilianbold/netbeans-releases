@@ -1309,6 +1309,7 @@ public class PropertySheet extends JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         String nm = evt.getPropertyName();
+                        /*
                         if (Node.PROP_COOKIE.equals(nm) || // weed out frequently abused property changes
                                 Node.PROP_ICON.equals(nm) || Node.PROP_PARENT_NODE.equals(nm) ||
                                 Node.PROP_OPENED_ICON.equals(nm) || Node.PROP_LEAF.equals(nm)) {
@@ -1327,8 +1328,10 @@ public class PropertySheet extends JPanel {
                                 table.fireChange();
                                 infoPanel.getBottomComponent().repaint();
                             }
-                            */
-                        } else if (nm == null) {
+                            
+                        } else 
+                         */
+                        if (nm == null) {
                             if (currNode != null) {
                                 setCurrentNode(currNode);
                             }
