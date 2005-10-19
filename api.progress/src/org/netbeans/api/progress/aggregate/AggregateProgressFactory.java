@@ -14,6 +14,7 @@
 package org.netbeans.api.progress.aggregate;
 
 import javax.swing.Action;
+import javax.swing.JComponent;
 import org.netbeans.progress.module.InternalHandle;
 import org.openide.util.Cancellable;
 
@@ -65,6 +66,15 @@ public final class AggregateProgressFactory {
     public static AggregateProgressHandle createSystemHandle(String displayName, ProgressContributor[] contributors, 
                                                        Cancellable allowToCancel, Action linkOutput) {
         return new AggregateProgressHandle(displayName, contributors, allowToCancel, linkOutput, true);
+    }  
+    
+    /**
+     * Get the progress bar component for use in custom dialogs, the task won't 
+     * show in the progress bar anymore.
+     * @return the component to use in custom UI.
+     */
+    public static JComponent createProgressComponent(AggregateProgressHandle handle) {
+        return handle.extractComponent();
     }    
     
 }

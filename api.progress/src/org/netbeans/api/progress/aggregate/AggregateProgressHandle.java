@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
@@ -203,4 +204,11 @@ public final class AggregateProgressHandle {
     public void setMonitor(ProgressMonitor monitor) {
         this.monitor = monitor;
     }
+    
+   /**
+     * have the component in custom location, don't include in the status bar.
+     */
+    JComponent extractComponent() {
+        return ProgressHandleFactory.createProgressComponent(handle);
+    }    
 }
