@@ -385,8 +385,19 @@ public class DataEditorSupport extends CloneableEditorSupport {
             
             boolean lockAgain;
             if (fileLock != null) {
-                fileLock.releaseLock ();
-                lockAgain = true;
+// <> NB #61818 In case the lock was not active (isValid() == false), the new lock was taken,
+// which seems to be incorrect. There is taken a lock on new file, while it there wasn't on the old one.
+//                fileLock.releaseLock ();
+//                lockAgain = true;
+// =====
+                if(fileLock.isValid()) {
+                    fileLock.releaseLock ();
+                    lockAgain = true;
+                } else {
+                    fileLock = null;
+                    lockAgain = false;
+                }
+// </>
             } else {
                 lockAgain = false;
             }
