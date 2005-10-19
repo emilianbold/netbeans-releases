@@ -169,7 +169,7 @@ public final class JavaHyperlinkProvider implements HyperlinkProvider {
             
             TokenID token = nbJavaSup.getTokenID(offset);
             
-            if (token == JavaTokenContext.IDENTIFIER)
+            if (token == JavaTokenContext.IDENTIFIER || token == JavaTokenContext.THIS || token == JavaTokenContext.SUPER)
                 return true;
             
             return false;
