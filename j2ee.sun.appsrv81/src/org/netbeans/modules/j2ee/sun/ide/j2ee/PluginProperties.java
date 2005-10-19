@@ -552,37 +552,44 @@ public class PluginProperties  {
         } catch (Exception e){
             //either the file does not exist or not available. No big deal, we continue ands NB will popup the request dialog.
         }
-        try {
-            // Go to the conf dir
-            File confDir = new File(platformRoot.getAbsolutePath()+"/domains/domain1/config");
-            // if it is writable
-            if (confDir.exists() && confDir.isDirectory() && confDir.canWrite()) {
-                // try to get the host/port data
-                String hp = getHostPort(platformRoot, new File(confDir,"domain.xml"));//NOI18N
-                if (hp==null){
-                    // if we did not get the data out of domain.xml; use a default
-                    hp ="localhost:4848";
+        // Go to the conf dir
+        File domains = new File(platformRoot.getAbsolutePath()+"/domains");
+        if (domains.exists() && domains.isDirectory() ) {
+            File[] domainsList= domains.listFiles();
+            if(domainsList==null)
+                return;
+            for (int i=0;i<domainsList.length;i++){
+                
+                try {
+                    
+                    File confDir = new File(domainsList[i].getAbsolutePath()+"/config");
+                    // if it is writable
+                    if (confDir.exists() && confDir.isDirectory() && confDir.canWrite()) {
+                        // try to get the host/port data
+                        String hp = getHostPort(platformRoot, new File(confDir,"domain.xml"));//NOI18N
+                        if (hp!=null){
+                            
+                            
+                            String dmUrl = "["+platformRoot.getAbsolutePath()+"]" +SunURIManager.SUNSERVERSURI+hp; //NOI18N
+                            String displayName = NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name");
+                            if (i!=0) {//not the first one, but other possible domains
+                                displayName = domainsList[i].getName();
+                            }
+                            InstanceProperties instanceProperties = InstanceProperties.createInstanceProperties(dmUrl, username, password, displayName);
+                            instanceProperties.setProperty("displayName", displayName);
+                            instanceProperties.setProperty("DOMAIN", domainsList[i].getName());
+                            //  The LOCATION is the domains directory, not the install root now...
+                            instanceProperties.setProperty("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains"+File.separator);
+                        }
+                    }
+                } catch (InstanceCreationException e){
+                    ///  Util.showInformation(e.getLocalizedMessage(), NbBundle.getMessage(RegisterServerAction.class, "LBL_RegServerFailed"));
                 }
-                String dmUrl = "["+platformRoot.getAbsolutePath()+"]" +SunURIManager.SUNSERVERSURI+hp; //NOI18N
-                String displayName = NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name");
-                if (null == displayName) {
-                    displayName = hp;
-                }
-                InstanceProperties instanceProperties = InstanceProperties.createInstanceProperties(dmUrl, username, password, displayName);
-                instanceProperties.setProperty("displayName", displayName);
-                instanceProperties.setProperty("DOMAIN", "domain1");
-                //  The LOCATION is the domains directory, not the install root now...
-                instanceProperties.setProperty("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains"+File.separator);
-            } else {
-                // TODO: tell the user we did not register the "default instance"
-                // this is hard since most of the time doing UI stuff in this class
-                // causes dead-locks.
             }
-            
-        }catch (InstanceCreationException e){
-            ///  Util.showInformation(e.getLocalizedMessage(), NbBundle.getMessage(RegisterServerAction.class, "LBL_RegServerFailed"));
         }
-    }
+            
+            
+        }
     private static String getHostPort(File serverroot, File domainXml){
         String adminHostPort = null;
         try{
