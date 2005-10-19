@@ -56,7 +56,7 @@
 <mapID target="files.runtime" url="files/files_runtime.html" />
 <mapID target="files.elements" url="files/files_elements.html" />
 
-<!--begin GUI Form Editor section-->
+<!--begin GUI Builder section-->
 
 <mapID target="gui.about" url="gui/gui_about.html" />
 <mapID target="gui.overview" url="gui/gui_overview.html" />
