@@ -193,9 +193,13 @@ ActionListener {
         cbVerbosity.setSelectedIndex (settings.getVerbosity () - 1);
         lAntVersion.setText ("(" + settings.getAntVersion () + ")");
         changed = false;
+        initialized = true;
     }
     
+    private boolean initialized = false;
+    
     void applyChanges () {
+        if (!initialized) return;
         AntSettings settings = AntSettings.getDefault ();
         String antHome = tfAntHome.getText ().trim ();
         if (settings.getAntHome () == null &&
