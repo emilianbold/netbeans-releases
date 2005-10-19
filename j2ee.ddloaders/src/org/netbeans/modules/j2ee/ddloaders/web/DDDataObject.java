@@ -211,29 +211,31 @@ public class DDDataObject extends  DDMultiViewDataObject
     }
 
     private void parseDocument(boolean updateWebApp) throws IOException {
+        WebAppProxy webAppProxy = (WebAppProxy) webApp;
         try {
-            InputSource inputSource = new InputSource(createReader());
             // preparsing
-            SAXParseException error = DDUtils.parse(inputSource);
+            SAXParseException error = DDUtils.parse(new InputSource(createReader()));
             setSaxError(error);
 
-            String version = DDUtils.getVersion(inputSource);
+            String version = DDUtils.getVersion(new InputSource(createReader()));
             // creating model
             WebAppProxy app = new WebAppProxy(org.netbeans.modules.j2ee.dd.impl.common.DDUtils.createWebApp(
                     createInputStream(), version), version);
             if (updateWebApp) {
-                if (((WebAppProxy) webApp).getOriginal() != null) {
+                if (version.equals(webAppProxy.getVersion()) && webAppProxy.getOriginal() != null) {
                     webApp.merge(app, WebApp.MERGE_UPDATE);
+                } else if (app.getOriginal() != null) {
+                    webApp = webAppProxy = app;
                 }
             }
-            ((WebAppProxy) webApp).setStatus(error != null ? WebApp.STATE_INVALID_PARSABLE : WebApp.STATE_VALID);
-            ((WebAppProxy) webApp).setError(error);
+            webAppProxy.setStatus(error != null ? WebApp.STATE_INVALID_PARSABLE : WebApp.STATE_VALID);
+            webAppProxy.setError(error);
         } catch (SAXException ex) {
-            ((WebAppProxy) webApp).setStatus(WebApp.STATE_INVALID_UNPARSABLE);
+            webAppProxy.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
             if (ex instanceof SAXParseException) {
-                ((WebAppProxy) webApp).setError((SAXParseException) ex);
+                webAppProxy.setError((SAXParseException) ex);
             } else if (ex.getException() instanceof SAXParseException) {
-                ((WebAppProxy) webApp).setError((SAXParseException) ex.getException());
+                webAppProxy.setError((SAXParseException) ex.getException());
             }
             setSaxError(ex);
         }
