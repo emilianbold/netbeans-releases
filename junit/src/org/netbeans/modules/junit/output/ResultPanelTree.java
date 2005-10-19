@@ -75,9 +75,9 @@ final class ResultPanelTree extends JPanel
 
         accessCtx = getAccessibleContext();
         accessCtx.setAccessibleName(
-               NbBundle.getMessage(getClass(), "ACSD_ResultPanelTree"));//NOI18N
-        accessCtx.setAccessibleDescription(
                NbBundle.getMessage(getClass(), "ACSN_ResultPanelTree"));//NOI18N
+        accessCtx.setAccessibleDescription(
+               NbBundle.getMessage(getClass(), "ACSD_ResultPanelTree"));//NOI18N
 
         accessCtx = treeView.getHorizontalScrollBar().getAccessibleContext();
         accessCtx.setAccessibleName(
