@@ -386,8 +386,12 @@ public class DocumentationScrollPane extends JScrollPane {
         
         public void hyperlinkUpdate(HyperlinkEvent e) {
             if (e != null && HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                if (e.getDescription() != null) {
-                    setData(currentDocumentation.resolveLink(e.getDescription()));
+                String desc = e.getDescription();
+                if (desc != null) {
+                    CompletionDocumentation doc = currentDocumentation.resolveLink(desc);
+                    if (doc!=null){
+                        setData(doc);
+                    }
                 }                    
             }
         }
