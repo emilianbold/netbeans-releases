@@ -5,12 +5,12 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.ErrorManager;
 
 /**
  * Top component which displays something.
@@ -20,8 +20,10 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     private static final long serialVersionUID = 1L;
 
     private static @@TEMPLATENAME@@TopComponent instance;
-    // path to the icon used by the component and it's open action.
+    /** path to the icon used by the component and its open action */
 @@COMMENTICON@@    static final String ICON_PATH = "@@ICONPATH@@";
+
+    private static final String PREFERRED_ID = "@@TEMPLATENAME@@TopComponent";
 
     private @@TEMPLATENAME@@TopComponent() {
         initComponents();
@@ -48,9 +50,9 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * Gets default instance. Don't use directly, it reserved for '.settings' file only,
-     * i.e. deserialization routines, otherwise you can get non-deserialized instance.
-     * To obtain the singleton instance, use the <code>findInstance()</code> method
+     * Gets default instance. Do not use directly: reserved for *.settings files only,
+     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
+     * To obtain the singleton instance, use {@link findInstance}.
      */
     public static synchronized @@TEMPLATENAME@@TopComponent getDefault() {
         if (instance == null) {
@@ -60,12 +62,10 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     }
 
     /**
-     * The method to use for obtaining the @@TEMPLATENAME@@TopComponent instance. Never call getDefault() directly!
-     *
+     * Obtain the @@TEMPLATENAME@@TopComponent instance. Never call {@link #getDefault} directly!
      */
-
     public static synchronized @@TEMPLATENAME@@TopComponent findInstance() {
-        TopComponent win = WindowManager.getDefault().findTopComponent("@@TEMPLATENAME@@TopComponent");
+        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find @@TEMPLATENAME@@ component. It will not be located properly in the window system.");
             return getDefault();
@@ -73,7 +73,7 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
         if (win instanceof @@TEMPLATENAME@@TopComponent) {
             return (@@TEMPLATENAME@@TopComponent)win;
         }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "There seem to be multiple components with the '@@TEMPLATENAME@@TopComponent' ID. That is a potential source of errors and unexpected behavior.");
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "There seem to be multiple components with the '" + PREFERRED_ID + "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
     }
 
@@ -95,7 +95,7 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     }
 
     protected String preferredID() {
-        return "@@TEMPLATENAME@@TopComponent";
+        return PREFERRED_ID;
     }
 
     final static class ResolvableHelper implements Serializable {
