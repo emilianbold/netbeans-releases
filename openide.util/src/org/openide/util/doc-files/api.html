@@ -115,29 +115,21 @@ and helper implementations in
 
 <div class="nonnormative">
 
-While service types are a useful abstraction for things like script types,
-they are not flexible enough to handle all of the
-IDE's needs for registering and finding services. For one thing, the
-IDE is moving toward installation of services via XML layer rather
-than manifest, and service types are normally defined via manifest.
-Layer-based installation is more flexible in many ways. Also, many
-things need to be registered that practically cannot be subclasses of
-<code>ServiceType</code>, and there is no particular reason to make
-this restriction; similarly, <code>ServiceType</code> registration is
-oriented towards registering service classes, whereas in many cases it
-is necessary to use one implementing class with many instances.
-Finally, a more generic registration system was desired in order to
-simplify the APIs and make it easier to implement some APIs
-independently of the others.
+The whole NetBeans platform is moving toward 
+installation of services via XML layer or <code>META-INF/services</code>.
+Layer-based installation is more flexible in many ways. 
 
-<p>These considerations gave rise to the <em>lookup</em> system first
+<p>The need for having a standard interface to access such
+registrations 
+gave rise to the <em>lookup</em> system first
 introduced in NetBeans 3.2 and expanded upon for NetBeans 3.3. The
 center of this API from the client perspective is very simple - you
 can look up a class, and get an instance of that class (or a
 collection of them). The service provider side of it is more complex
-but useful lookup implementations are already provided in the IDE
-core; for common cases you can register an object into lookup just by
-adding one simple file to an XML layer.
+but useful lookup implementations are already provided in the 
+core system; for common cases you can register an object into lookup just by
+adding one simple file to an XML layer or <code>META-INF/services/classname</code>
+in your module JAR file.
 
 <p>This section of the Services API will first discuss what
 <em>instances</em> are and how to create them from files, as this is
@@ -150,9 +142,7 @@ standard instance lookup works and how it relates to JDK's
 standard for service provider registration</a>. 
 Lookup templates, which separate the
 provision of instances from the provision of categories, will be
-explained. Finally, a note is made of the compatibility system which
-ensures that older manifest-installed services (such as service types)
-are available via lookup transparently.
+explained. 
 
 </div>
 
