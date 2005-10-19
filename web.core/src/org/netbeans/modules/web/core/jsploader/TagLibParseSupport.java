@@ -110,7 +110,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         WebModule wm = WebModule.getWebModule(fo);
         if (wm != null){
             FileObject wmRoot = wm.getDocumentBase();
-            if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
+            if (wmRoot != null && (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo))) {
                 return wm;
             }
         }
