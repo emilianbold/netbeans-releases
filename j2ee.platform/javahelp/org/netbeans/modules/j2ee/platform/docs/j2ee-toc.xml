@@ -115,7 +115,8 @@
 	  <tocitem text="Accessing a Custom Tag from a JSP Page" target="jsp_usetaglib"/>
           <tocitem text="Accessing an Applet from a JSP Page" target="jsp_useapplet"/>
 	  <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
-          <tocitem text="Compiling a JSP File" target="jsp_compile" />
+	  <tocitem text="Compiling a JSP File" target="jsp_compile" />
+	  <tocitem text="Enabling JDK 1.5 Compilation Support for Tomcat" target="jsp_compilation_tomcat"/>
           <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
           <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
           <tocitem text="Running a JSP File" target="jsp_run" />

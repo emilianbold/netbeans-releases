@@ -60,6 +60,7 @@
 		<mapID target="jsp_encoding_request" url="web/create/jsp/jsp_encoding_request.html" />
 		<mapID target="jsp_encoding_response" url="web/create/jsp/jsp_encoding_response.html" />
 <mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
+<mapID target="jsp_compilation_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_enable_1.5.html" />
 		<!-- End of "Create/JSP" subsection -->
 		<!-- Start of "Create/Listener" subsection -->
        		<mapID target="about_listener" url="web/create/listener/about_listener.html" />
