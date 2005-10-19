@@ -195,13 +195,11 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
             }
 
             List logFiles = new ArrayList(files.length);
-            for (int i = 0; i<files.length; i++) {
-                if (files[i].isDirectory()) continue;
-                FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(files[i]);
-                if ((info.getStatus() & FileInformation.STATUS_IN_REPOSITORY) != 0) {
-                    logFiles.add(files[i]);
-                }
+            fillLogFiles(files, logFiles);
+            if (logFiles.isEmpty()) {
+                return;
             }
+
 
             // extract tags using log
             LogCommand log = new LogCommand();
@@ -273,6 +271,36 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
         } finally {
             Kit.deleteRecursively(checkoutFolder);
         }
+    }
+
+    /**
+     * Try to recursively locate at least one versioned file.
+     */
+    private void fillLogFiles(File[] files, List logFiles) {
+
+        if (files == null) {
+            return;
+        }
+
+        if (logFiles.isEmpty() == false) {
+            return;
+        }
+
+        for (int i = 0; i<files.length; i++) {
+            if (files[i].isFile()) {
+                FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(files[i]);
+                if ((info.getStatus() & FileInformation.STATUS_IN_REPOSITORY) != 0) {
+                    logFiles.add(files[i]);
+                }
+            }
+        }
+
+        for (int i = 0; i<files.length; i++) {
+            if (files[i].isDirectory()) {
+                fillLogFiles(files[i].listFiles(), logFiles);  // RESURSION
+            }
+        }
+
     }
 
     /**
