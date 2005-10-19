@@ -63,6 +63,7 @@ final class AddModulePanel extends JPanel {
     AddModulePanel(final SingleModuleProperties props) {
         this.props = props;
         initComponents();
+        initAccessibility();
         fillUpUniverseModules();
         moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(true));
         moduleList.addListSelectionListener(new ListSelectionListener() {
@@ -238,6 +239,16 @@ final class AddModulePanel extends JPanel {
                 compute.run();
             }
         }
+    }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddModulePanel.class, "ACS_AddModuleDependency"));
+        filterValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddModulePanel.class, "ACS_LBL_Filter"));
+        moduleList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddModulePanel.class, "ACS_CTL_ModuleList"));
+        moduleSP.getVerticalScrollBar().getAccessibleContext().setAccessibleName("ACS_CTL_ModuleListVerticalScroll");
+        moduleSP.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription("ACSD_CTL_ModuleListVerticalScroll");
+        moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleName("ACS_CTL_ModuleListHorizontalScroll");
+        moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleDescription("ACSD_CTL_ModuleListHorizontalScroll");
     }
     
     /** This method is called from within the constructor to
