@@ -214,4 +214,12 @@ public class UtilTest extends TestBase {
         assertNotNull("url was found", url);
     }
     
+    public void testIsValidCodeNameBase() throws Exception {
+        assertFalse(Util.isValidCodeNameBase("a.b,c"));
+        assertFalse(Util.isValidCodeNameBase(""));
+        assertFalse(Util.isValidCodeNameBase("a.b.1"));
+        assertTrue(Util.isValidCodeNameBase("a"));
+        assertTrue(Util.isValidCodeNameBase("a.b.c1"));
+    }
+    
 }

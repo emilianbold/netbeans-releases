@@ -244,6 +244,41 @@ public class Util {
         return normalizedCNB.toString().replaceAll("\\.$", ""); // NOI18N
     }
     
+    // Stolen/Inspired from java/project PackageViewChildren.isValidPackageName()
+    public static boolean isValidCodeNameBase(String name) {
+        if (name.length() == 0) {
+            return false;
+        }
+        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (!delimExpected) {
+                if (namePart.equals(".")) { //NOI18N
+                    return false;
+                }
+                for (int i=0; i< namePart.length(); i++) {
+                    char c = namePart.charAt(i);
+                    if (i == 0) {
+                        if (!Character.isJavaIdentifierStart(c)) {
+                            return false;
+                        }
+                    } else {
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                if (!namePart.equals(".")) { //NOI18N
+                    return false;
+                }
+            }
+            delimExpected = !delimExpected;
+        }
+        return delimExpected;
+    }
+    
     /**
      * Search for an appropriate localized bundle (i.e.
      * OpenIDE-Module-Localizing-Bundle) entry in the given

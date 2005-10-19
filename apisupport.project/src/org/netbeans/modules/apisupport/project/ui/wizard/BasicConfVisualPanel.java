@@ -16,7 +16,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -98,7 +97,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     private void checkCodeNameBase() {
-        if (!isValidCodeNameBase(getCodeNameBaseValue())) {
+        if (!Util.isValidCodeNameBase(getCodeNameBaseValue())) {
             setErrorMessage(getMessage("MSG_InvalidCNB"));
         } else if (data.isSuiteComponent() && cnbIsAlreadyInSuite(data.getSuiteRoot(), getCodeNameBaseValue())) {
             setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", 
@@ -195,44 +194,6 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
         return result;
-    }
-    
-    // Stolen from java/project PackageViewChildren.isValidPackageName()
-    // XXX probably should be solved with some regular expression but spec. for
-    // exact format is not probably known
-    private static boolean isValidCodeNameBase(String name) {
-        if (name.length() == 0) {
-            //Fast check of default pkg
-            return true;
-        }
-        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
-        boolean delimExpected = false;
-        while (tk.hasMoreTokens()) {
-            String namePart = tk.nextToken();
-            if (!delimExpected) {
-                if (namePart.equals(".")) { //NOI18N
-                    return false;
-                }
-                for (int i=0; i< namePart.length(); i++) {
-                    char c = namePart.charAt(i);
-                    if (i == 0) {
-                        if (!Character.isJavaIdentifierStart(c)) {
-                            return false;
-                        }
-                    } else {
-                        if (!Character.isJavaIdentifierPart(c)) {
-                            return false;
-                        }
-                    }
-                }
-            } else {
-                if (!namePart.equals(".")) { //NOI18N
-                    return false;
-                }
-            }
-            delimExpected = !delimExpected;
-        }
-        return delimExpected;
     }
     
     public void addNotify() {
