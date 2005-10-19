@@ -206,7 +206,7 @@
       <tocitem text="Internationalizing a Single File" target="internation.singlefile" />
       <tocitem text="Internationalizing a Set of Files With the Internationalization Wizard" target="internation.wizard" />
       <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
-      <tocitem text="Setting an Internationalizated String With the Form Editor" target="internation.formed" />
+      <tocitem text="Setting an Internationalizated String With the GUI Builder" target="internation.formed" />
       <tocitem text="Testing a  Bundle for Internationalized Strings" target="internation.testing" />
       <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
       <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
