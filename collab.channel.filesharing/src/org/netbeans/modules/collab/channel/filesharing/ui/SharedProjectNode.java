@@ -44,6 +44,7 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
     ////////////////////////////////////////////////////////////////////////////
     private Node originalNode;
     private boolean isLocal = false;
+    private boolean isFolder = true;
     private FilesharingContext context = null;
     private String displayName = null;
     private Image badge;
@@ -65,7 +66,7 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
         this.originalNode = node;
         this.isLocal = isLocal;
         this.context = context;
-        setDisplayName(displayName, node);
+        init(displayName, node);
     }
 
     /**
@@ -77,8 +78,15 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
         this.originalNode = node;
         this.isLocal = isLocal;
         this.context = context;
-        setDisplayName(node.getName(), node);
+        init(node.getName(), node);
     }
+
+    private void init(String displayName, Node node) {
+         DataObject d = (DataObject)node.getCookie(DataObject.class);
+         if(d!=null && d.getPrimaryFile()!=null && d.getPrimaryFile().isData())
+                 this.isFolder=false;
+         setDisplayName(displayName, node);
+    } 
 
     private void setDisplayName(String name, Node node) {
         this.displayName = name;
@@ -89,7 +97,7 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
 
         DataObject d = (DataObject) node.getCookie(DataObject.class);
 
-        if ((d.getPrimaryFile() != null) && d.getPrimaryFile().isData()) {
+        if (!this.isFolder) {
             displayName = d.getPrimaryFile().getNameExt();
         }
 
@@ -181,7 +189,7 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
             }
         }
 
-        if (isLocal) {
+        if (isLocal && !isFolder) {
             newActions.add(new UnShareFileAction(this.context, this));
         }
 
