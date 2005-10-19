@@ -605,9 +605,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png")));
         jToolBar1.add(bNext);
+        bNext.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("ACSN_NextDifference"));
 
         bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png")));
         jToolBar1.add(bPrev);
+        bPrev.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("ACSN_PrevDifference"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
