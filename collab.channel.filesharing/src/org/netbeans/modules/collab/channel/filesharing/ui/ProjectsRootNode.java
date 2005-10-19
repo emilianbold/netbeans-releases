@@ -207,7 +207,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
                             getChildren(d.getPrimaryFile(), dragDataObjects, skipProjectFolder);
                         }
                     } else {
-                        Debug.out.println("leaf not a file/folder: " + d.getName());
+                        Debug.out.println("leaf not a file/folder: " + d);
                     }
                 } else {
                     Debug.out.println("non leaf: " + dragNodes[0].getName());
