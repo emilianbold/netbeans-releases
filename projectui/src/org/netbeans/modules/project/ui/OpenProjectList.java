@@ -456,8 +456,15 @@ public final class OpenProjectList {
                         result.add( p );
                     }
                 }       
-                catch ( IOException e ) {
-                    // Ignore invalid folders
+                catch ( Throwable t ) {
+                    //something bad happened during loading the project.
+                    //log the problem, but allow the other projects to be load
+                    //see issue #65900
+                    if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath) t;
+                    }
+                    
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                 }
             }
         }
