@@ -172,5 +172,10 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         String port = ip.getProperty(JBInstantiatingIterator.PROPERTY_PORT);
         return  HTTP_HEADER + host + ":" + port + "/"; // NOI18N
     }    
+    
+    public JBDeploymentManager getDeploymentManager() {
+        return deploymentManager;
+    }
+    
 }
 

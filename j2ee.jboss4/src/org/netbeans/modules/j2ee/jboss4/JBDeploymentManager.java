@@ -11,6 +11,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.jboss4;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.config.WarDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import org.netbeans.modules.j2ee.jboss4.ide.JBLogWriter;
@@ -48,6 +52,13 @@ public class JBDeploymentManager implements DeploymentManager {
     
     // ide specific data
     private JBLogWriter logWriter;
+    
+    /** 
+     * Stores information about running instances. instance is represented by its InstanceProperties,
+     *  running state by Boolean.TRUE, stopped state Boolean.FALSE.
+     * WeakHashMap should guarantee erasing of an unregistered server instance bcs instance properties are also removed along with instance.
+     */
+    private static Map/*<InstanceProperties, Boolean>*/ propertiesToIsRunning = Collections.synchronizedMap(new WeakHashMap());
     
     /** Creates a new instance of JBDeploymentManager */
     public JBDeploymentManager(DeploymentManager dm, String uri, String username, String password) {
@@ -97,6 +108,27 @@ public class JBDeploymentManager implements DeploymentManager {
         this.logWriter = logWriter;
     }
 
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // IDE data methods
+    ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns true if the given instance properties are present in the map and value equals true.
+     * Otherwise return false.
+     */
+    public static boolean isRunningLastCheck(InstanceProperties ip) {
+        boolean isRunning = propertiesToIsRunning.containsKey(ip) && propertiesToIsRunning.get(ip).equals(Boolean.TRUE);
+        return isRunning;
+    }
+    
+    /**
+     * Stores state of an instance represented by InstanceProperties.
+     */
+    public static void setRunningLastCheck(InstanceProperties ip, Boolean isRunning) {
+        assert(ip != null);
+        propertiesToIsRunning.put(ip, isRunning);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // DeploymentManager Implementation
     ////////////////////////////////////////////////////////////////////////////

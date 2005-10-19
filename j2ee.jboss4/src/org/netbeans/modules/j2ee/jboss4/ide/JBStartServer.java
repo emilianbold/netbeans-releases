@@ -191,11 +191,17 @@ public class JBStartServer extends StartServer implements ProgressObject{
         //     String host = dm.getHost();
         //   int port = dm.getPort();
         
-        if (!isReallyRunning()){
-            return false;
+        String url = dm.getUrl();
+
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+        if (ip == null) {
+            return false; // finish, it looks like this server instance has been unregistered
         }
         
-        String url = dm.getUrl();
+        if (!isReallyRunning()){
+            dm.setRunningLastCheck(ip, Boolean.FALSE);
+            return false;
+        }
         
         // Show log if server started and log not shown
         // create an output tab for the server output
@@ -204,10 +210,6 @@ public class JBStartServer extends StartServer implements ProgressObject{
             io.select();
         }
         
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
-        if (ip == null) {
-            return false; // finish, it looks like this server instance has been unregistered
-        }
         
         String logFileName = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) + File.separator+"log"+ File.separator+"server.log" ;//NOI18N
         File logFile = new File(logFileName);
@@ -223,9 +225,11 @@ public class JBStartServer extends StartServer implements ProgressObject{
             }
 
         }else{
+            dm.setRunningLastCheck(ip, Boolean.FALSE);
             return false;
         }
         
+        dm.setRunningLastCheck(ip, Boolean.TRUE);
         return true;
     }
     
