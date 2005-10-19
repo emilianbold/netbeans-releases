@@ -40,6 +40,7 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.DiffProvider;
+import org.netbeans.spi.diff.DiffVisualizer;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 
@@ -93,6 +94,17 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
     }
     
     public DiffViewImpl(StreamSource ss1, StreamSource ss2) throws IOException {
+        Lookup.Result dv = Lookup.getDefault().lookup(new Lookup.Template(DiffVisualizer.class));
+        Collection c = dv.allInstances();
+        for (Iterator i = c.iterator(); i.hasNext();) {
+            Object o = i.next();
+            if (o instanceof GraphicalDiffVisualizer) {
+                GraphicalDiffVisualizer gdv = (GraphicalDiffVisualizer) o;
+                colorAdded = gdv.getColorAdded();
+                colorChanged = gdv.getColorChanged();
+                colorMissing = gdv.getColorMissing();
+            }
+        }
         Reader r1 = ss1.createReader();
         Reader r2 = ss2.createReader();
         String title1 = ss1.getTitle();
