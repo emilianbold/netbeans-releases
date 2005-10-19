@@ -428,10 +428,16 @@ public class WebAppProxy implements WebApp {
     }
 
     public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface bean, int mode) {
-        if (webApp!=null) {
-            if (bean instanceof WebAppProxy)
-                webApp.merge(((WebAppProxy)bean).getOriginal(), mode);
-            else webApp.merge(bean, mode);
+        if (bean instanceof WebApp) {
+            WebApp otherWebApp = bean instanceof WebAppProxy ? ((WebAppProxy)bean).getOriginal() : ((WebApp) bean);
+            if (otherWebApp != null) {
+                if (webApp != null && version != null && version.equals(otherWebApp.getVersion())) {
+                    webApp.merge(otherWebApp, mode);
+                } else {
+                    webApp= otherWebApp;
+                    version = otherWebApp.getVersion();
+                }
+            }
         }
     }
 
