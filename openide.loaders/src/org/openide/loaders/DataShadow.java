@@ -627,9 +627,11 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     
     private static RequestProcessor RP = new RequestProcessor("DataShadow validity check");
 
-    private static void updateShadowOriginal(final DataShadow shadow) {
-        final FileObject primary = shadow.original.getPrimaryFile ();
-        RP.post(new Runnable() {
+    private static void updateShadowOriginal(DataShadow shadow) {
+        class Updator implements Runnable {
+            DataShadow sh;
+            FileObject primary;
+            
             public void run () {
                 DataObject newOrig;
 
@@ -640,12 +642,19 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                 }
 
                 if (newOrig != null) {
-                    shadow.setOriginal (newOrig);
+                    sh.setOriginal (newOrig);
                 } else {
-                    checkValidity (new OperationEvent (shadow.original));
+                    checkValidity (new OperationEvent (sh.original));
                 }
+                
+                primary = null;
+                sh = null;
             }
-        }, 100, Thread.MIN_PRIORITY);
+        }
+        Updator u = new Updator();
+        u.sh = shadow;
+        u.primary = u.sh.original.getPrimaryFile ();
+        RP.post(u, 100, Thread.MIN_PRIORITY);
     }
     
     protected DataObject handleCopy (DataFolder f) throws IOException {
