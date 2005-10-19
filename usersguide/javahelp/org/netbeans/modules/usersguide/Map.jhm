@@ -506,7 +506,7 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
 <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
 <!--CSH ID for Options | Editing | Form Editor Settings :-->
-<mapID target="gui.configuring" url="gui/gui_configuring.html" />
+<mapID target="gui.configuring" url="gui/csh/gui_options_window.html" />
 
 <!-- To Do window help :-->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
