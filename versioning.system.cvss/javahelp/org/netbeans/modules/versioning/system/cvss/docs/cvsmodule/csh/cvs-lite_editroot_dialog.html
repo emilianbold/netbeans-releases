@@ -8,15 +8,42 @@
 -->
 <html>
     <head>
-        <title>CVS: Edit Root Dialog</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+	<title>CVS: CVS Root Dialog</title>
+	<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>CVS: Edit Root Dialog</h2>
-        <p>Use this dialog box to change the CVS root when you are checking out files from the repository.
-You get to this dialog box when you </p><br>
+	<h2>CVS: CVS Root Dialog</h2>
+	<p>Use this dialog box to specify the CVS root for the repository when checking out files from the repository or importing files into the repository.
+	<p>You can access this dialog box by clicking the Edit button in the CVS Root panel of the CVS Checkout wizard or the CVS Import Project wizard.</p>
+	
+	<ul>
+	    <li><b>Access Method.</b> Select one of the following access methods from the drop-down list according to your type of CVS access.
+	    <ul>
+		<li><b>pserv</b> Select this type if you are connecting to CVS pserver repositories.</li>
+		<li><b>ext</b></li> Select this type if you are connecting to a CVS repository using SSH, etc.</li>
+		<li><b>local</b></li> Select this type for protocol access to a local CVS repository. This type requires an external CVS executable.</li>
+		<li><b>fork</b></li> Select this type for direct access to a local CVS repository. This type requires an external CVS executable.</li>
+	    
+	    </ul>
+	    </li>
+	    <li><b>User.</b> Enter the username for the repository.</li>
+	    <li><b>Host.</b> Enter the host name of the repository.</li>
+	    <li><b>Port.</b> Enter the port number, if necessary.</li>
+	    <li><b>Repository Path.</b> Enter the path to the repository.</li>
+	</ul>
         
-        <hr>
-        <small><a href="../../credits.html">Legal Notices</a></small>
+	<dl>
+	    <dt>
+	    <a name="seealso">See Also</a></dt>
+	    <dd> <a href="../cvs-lite_checkout.html">Checking Out Files from a Remote Repository</a></dd> 
+	    <dd> <a href="../cvs-lite_setup.html">Setting Up CVS</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../../credits.html">Legal Notices</a></small>
+	<table cellpadding="50" border="0">
+	    <tr>
+		<td>&nbsp;</td>
+	    </tr>
+	</table> 
     </body>
 </html>

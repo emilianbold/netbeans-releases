@@ -14,10 +14,25 @@
     <body>
 	<h2>CVS: Diff Viewer</h2>
 	<p><small><a href="#seealso">See Also</a></small></p>
-	<p>The IDE's Graphical Diff Viewer enables you to compare different
-	versions of a file side by side using color coding to emphasize the
-	differences between the files being compared. </p><br>
-        
+	<p>The IDE's Graphical Diff Viewer enables you to <a href="../cvs-lite_diff.html">compare file
+	revisions</a> of a file side by side using color coding to emphasize the
+	differences between the files being compared.</p>
+	<p>You access the Diff Viewer when you right-click a version-controlled file or folder and choose CVS &gt; Diff.<p>
+	<p>The toolbar in the Diff Viewer enables you to do the following actions:</p>
+	<ul>
+	    <li><b>Choose the modified files displayed.</b>. You can choose which file revisions are being compared. 
+	    When you choose Remote vs Local, the Diff Viewer compares the locally modified file to the revision in the repository.
+	    When you choose Local, the Diff Viewer compares the local base file to the locally modified revision.
+	    When you choose Remote, the Diff Viewer compares the revisions in the repository.</li>
+	    <li><b>Choose the files displayed.</b> If you are running the diff command on multiple files, you can use the drop-down list to choose which diff is displayed.</li>
+	    <li><b>Locate the next and previous modification.</b> Use the previous (<img src="images/diff-prev.png" alt="Last difference button" height="16" width="16">) and next (<img src="images/diff-next.png" alt="Next difference button" height="16"
+	    width="16">) difference buttons to navigate among the differences in the file. </li> 
+	    <li><b>Refresh the diff.</b> You can refresh the status and update files using the Refresh Diff button (<img src="images/refresh.png" alt="Last difference button" height="16" width="16">).</li>
+	    <li><b>Update file.</b> You can update the status and update files using the Update button (<img src="images/update.png" alt="Last difference button" height="16" width="16">).</li>
+	    <li><b>Commit file.</b> You	can commit your changes using the Commit button (<img src="images/commit.png" alt="Last difference button" height="16" width="16">).</li>
+	</ul>
+	<p></p>
+ 
 	<dl>
 	    <dt> <a name="seealso">See Also</a></dt>
 	    <dd> <a href="../cvs-lite_diff.html">Comparing File Revisions in CVS</a></dd>

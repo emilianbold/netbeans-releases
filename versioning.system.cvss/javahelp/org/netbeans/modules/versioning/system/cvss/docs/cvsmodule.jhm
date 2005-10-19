@@ -42,7 +42,7 @@
 
 	<!-- first panel of Import wizard has same id as first panel of checkout - CVS Root panel -->
         <!-- CSH for 2nd panel of Import wizard -->
-        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep " url="cvsmodule/csh/cvs-lite_import_wizard_p2.html" />
+        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="cvsmodule/csh/cvs-lite_import_wizard_p2.html" />
 
 	<!-- CSH topics for dialogs in wizards -->
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CvsRootPanel" url="cvsmodule/csh/cvs-lite_editroot_dialog.html" />
