@@ -110,7 +110,7 @@ public class JBDeploymentManager implements DeploymentManager {
 
     
     ////////////////////////////////////////////////////////////////////////////
-    // IDE data methods
+    // Methods for retrieving server instance state
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Returns true if the given instance properties are present in the map and value equals true.
