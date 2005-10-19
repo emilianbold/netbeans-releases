@@ -67,42 +67,45 @@ public final class DDProvider {
      * @return WebApp object - root of the deployment descriptor bean graph
      */
     public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
-
-        WebAppProxy webApp = getFromCache (fo);
-        if (webApp!=null) return webApp;
-        
+        if (fo == null) {
+            return null;
+        }
+        WebAppProxy webApp = getFromCache(fo);
+        if (webApp != null) {
+            return webApp;
+        }
 
         fo.addFileChangeListener(fileChangeListener);
-        
-        String version=null;
+
+        String version = null;
         SAXParseException error = null;
         try {
-            WebApp original = getOriginalFromCache (fo);
+            WebApp original = getOriginalFromCache(fo);
             if (original == null) {
                 version = getVersion(fo.getInputStream());
                 // preparsing
                 error = parse(fo);
                 original = DDUtils.createWebApp(fo.getInputStream(), version);
-                baseBeanMap.put(fo.getURL(), new WeakReference (original));
+                baseBeanMap.put(fo.getURL(), new WeakReference(original));
             } else {
-                version = original.getVersion ();
-                error = (SAXParseException) errorMap.get (fo.getURL ());
+                version = original.getVersion();
+                error = (SAXParseException) errorMap.get(fo.getURL());
             }
-            webApp=new WebAppProxy(original,version);
-            if (error!=null) {
+            webApp = new WebAppProxy(original, version);
+            if (error != null) {
                 webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
                 webApp.setError(error);
             }
         } catch (SAXException ex) {
-            webApp = new WebAppProxy(null,version);
+            webApp = new WebAppProxy(null, version);
             webApp.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
             if (ex instanceof SAXParseException) {
-                webApp.setError((SAXParseException)ex);
-            } else if ( ex.getException() instanceof SAXParseException) {
-                webApp.setError((SAXParseException)ex.getException());
+                webApp.setError((SAXParseException) ex);
+            } else if (ex.getException() instanceof SAXParseException) {
+                webApp.setError((SAXParseException) ex.getException());
             }
         }
-        ddMap.put(fo.getURL(), new WeakReference (webApp));
+        ddMap.put(fo.getURL(), new WeakReference(webApp));
         return webApp;
     }
 
@@ -119,13 +122,16 @@ public final class DDProvider {
     }
 
     private WebAppProxy getFromCache (FileObject fo) throws java.io.IOException {
-        WeakReference wr = (WeakReference) ddMap.get(fo.getURL ());
+        if (fo == null) {
+            return null;
+        }
+        WeakReference wr = (WeakReference) ddMap.get(fo.getURL());
         if (wr == null) {
             return null;
         }
-        WebAppProxy webApp = (WebAppProxy) wr.get ();
+        WebAppProxy webApp = (WebAppProxy) wr.get();
         if (webApp == null) {
-            ddMap.remove (fo.getURL ());
+            ddMap.remove(fo.getURL());
         }
         return webApp;
     }

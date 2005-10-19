@@ -118,7 +118,10 @@ public class JSFConfigUtilities {
         // PENDING - must be more declarative.
         try{
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            return (Servlet)webApp.findBeanByName("Servlet","ServletName","Faces Servlet"); //NOI18N
+            if (webApp == null) {
+                return null;
+            }
+            return (Servlet)webApp.findBeanByName("Servlet","ServletName","Faces Servlet"); //NOI18N;
         } catch (java.io.IOException e) {
             return null;
         }
