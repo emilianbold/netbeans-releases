@@ -14,6 +14,8 @@
 package org.netbeans.modules.j2ee.sun.api;
 
 
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 /**
  *
  * @author Nitya Doraisamy
@@ -39,7 +41,10 @@ public interface InstrumentAVK {
      *in AVK plugin
      *Runs report tool and then launches browser with generated report
      */
-    public void generateReport(); 
+    public void generateReport();
     
-    
+     /* Show Dialog Descriptor to choose between Static / Dynamic Verification
+      * @return : static / dynamic / none
+      */
+    public boolean createAVKSupport(DeploymentManager dm, J2eeModuleProvider target);
 }
