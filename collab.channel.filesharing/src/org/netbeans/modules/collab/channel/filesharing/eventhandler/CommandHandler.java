@@ -91,14 +91,9 @@ public class CommandHandler extends FilesharingEventHandler {
             handleMsg(collabBean, messageOriginator, isUserSame);
         } else {
             boolean skipSend = skipSendMessage(eventID);
-
-            if (skipSend) {
-                return;
-            }
-
             CCollab collab = constructMsg(evContext);
 
-            if (collab != null) {
+            if (collab != null && !skipSend) {
                 sendMessage(collab);
             }
         }
@@ -475,14 +470,20 @@ public class CommandHandler extends FilesharingEventHandler {
 
         String fileName = renameFile.getFileName();
         final String newFileName = renameFile.getToFileName();
+        doRenameFile(fileName, newFileName);
+    }
+    
+    private boolean doRenameFile(final String fromFileName, final String newFileName) {
 
-        if ((fileName == null) || fileName.trim().equals("")) {
-            return;
+        if ((fromFileName == null) || fromFileName.trim().equals("")) {
+            return false;
         }
 
-        final CollabFileHandler fh = getContext().getSharedFileGroupManager().getFileHandler(fileName);
-        Debug.out.println("old File: " + fileName);
-        Debug.out.println("new File: " + newFileName);
+        Debug.out.println("old File: "+fromFileName);
+ 	Debug.out.println("new File: "+newFileName);   
+        
+        final CollabFileHandler fh = getContext().getSharedFileGroupManager().getFileHandler(fromFileName);
+        if (fh == null) return false;
 
         try {
             getCollabFilesystem().runAtomicAction(
@@ -529,6 +530,7 @@ public class CommandHandler extends FilesharingEventHandler {
             Debug.out.println("File Link Rename::ex: " + th);
             th.printStackTrace(Debug.out);
         }
+        return true;
     }
 
     /**
