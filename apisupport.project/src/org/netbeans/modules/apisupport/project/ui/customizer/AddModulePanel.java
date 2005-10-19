@@ -158,7 +158,7 @@ final class AddModulePanel extends JPanel {
             doc.insertString(doc.getLength(), "\n\n", null); // NOI18N
             Style bold = doc.addStyle(null, null);
             bold.addAttribute(StyleConstants.Bold, Boolean.TRUE);
-            doc.insertString(doc.getLength(), NbBundle.getMessage(AddModulePanel.class, "TEXT_matching_filter_contents"), bold);
+            doc.insertString(doc.getLength(), getMessage("TEXT_matching_filter_contents"), bold);
             doc.insertString(doc.getLength(), "\n", null); // NOI18N
             String filterText = filterValue.getText();
             if (filterText.length() > 0) {
@@ -182,7 +182,7 @@ final class AddModulePanel extends JPanel {
             } else {
                 Style italics = doc.addStyle(null, null);
                 italics.addAttribute(StyleConstants.Italic, Boolean.TRUE);
-                doc.insertString(doc.getLength(), NbBundle.getMessage(AddModulePanel.class, "TEXT_no_filter_specified"), italics);
+                doc.insertString(doc.getLength(), getMessage("TEXT_no_filter_specified"), italics);
             }
             descValue.setCaretPosition(0);
         } catch (BadLocationException e) {
@@ -242,13 +242,17 @@ final class AddModulePanel extends JPanel {
     }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddModulePanel.class, "ACS_AddModuleDependency"));
-        filterValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddModulePanel.class, "ACS_LBL_Filter"));
-        moduleList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddModulePanel.class, "ACS_CTL_ModuleList"));
-        moduleSP.getVerticalScrollBar().getAccessibleContext().setAccessibleName("ACS_CTL_ModuleListVerticalScroll");
-        moduleSP.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription("ACSD_CTL_ModuleListVerticalScroll");
-        moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleName("ACS_CTL_ModuleListHorizontalScroll");
-        moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleDescription("ACSD_CTL_ModuleListHorizontalScroll");
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_AddModuleDependency"));
+        filterValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_Filter"));
+        moduleList.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModuleList"));
+        moduleSP.getVerticalScrollBar().getAccessibleContext().setAccessibleName(getMessage("ACS_CTL_ModuleListVerticalScroll"));
+        moduleSP.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_ModuleListVerticalScroll"));
+        moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleName(getMessage("ACS_CTL_ModuleListHorizontalScroll"));
+        moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_ModuleListHorizontalScroll"));
+    }
+    
+    private String getMessage(String key) {
+        return NbBundle.getMessage(AddModulePanel.class, key);
     }
     
     /** This method is called from within the constructor to
