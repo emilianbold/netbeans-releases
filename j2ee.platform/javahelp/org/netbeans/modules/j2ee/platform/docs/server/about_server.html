@@ -23,7 +23,7 @@
   is fully compliant with the J2EE 1.4 platform. Unlike a regular web server, 
   an application server can run full enterprise applications, enterprise bean 
   modules, and web services. It can also use Container-Managed Persistence (CMP) 
-  to handle communication with a database.</p>
+  entity beans to handle communication with a database.</p>
 <ul class="note">
   <li>You can also configure the Tomcat web server to run web services.</li>
 </ul>
@@ -37,9 +37,8 @@
     your code. The IDE also automatically configures server resources like connection 
     pools and JavaMail resources for this application server.</li>
   <li><b>JBoss Application Server and BEA WebLogic Application Server.</b> The 
-    IDE provides basic support for these application servers. You can start and 
-    stop the server and deploy applications to it. You have to write the server-specific 
-    deployment descriptors and set up the server resources yourself. </li>
+  IDE provides basic support for these application servers. You can start, stop,
+  and debug the servers and deploy applications to them. </li>
 </ul>
 <h3><b>Tomcat Web Server</b> </h3>
 <p>Use this server and its libraries for the following activities: </p>
@@ -64,13 +63,13 @@
   Server and SJS Application Server, both servers are automatically registered 
   in the IDE. You must register all other servers yourself.</p>
 <ul class="note">
-      <li>Only once you have a registered the Sun Java System Application Server 
+      <li>Only once you have registered the Sun Java System Application Server 
         can you begin developing <a href="../enterprise/general/about_ent_apps.html">enterprise 
         applications</a>. </li>
 </ul>
 <p>When a server is registered with the IDE, you can see its node in the Runtime 
-  window under the the Servers node. When you create a project in the New Project 
-  wizard, you must select the server to which you want to deploy your application. 
+  window under the Servers node. When you create a project in the New Project 
+  wizard, you can select the server to which you want to deploy your application. 
   After you create the application, you can change the server by right-clicking 
   the project, choosing Properties, clicking Run, and selecting a different server.</p>
   <dl> 
