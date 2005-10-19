@@ -266,6 +266,19 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             BracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
 
+        protected void replaceSelection(JTextComponent target,  
+                                  int dotPos, 
+                                  Caret caret,
+                                  String str, 
+                                  boolean overwrite) 
+        throws BadLocationException {
+            super.replaceSelection(target, dotPos, caret, str, overwrite);
+            Document doc = target.getDocument();
+            if (doc instanceof BaseDocument){
+                BracketCompletion.charInserted((BaseDocument)doc, caret.getDot()-1, caret, str.charAt(0));
+            }
+        }
+        
     }
 
 
