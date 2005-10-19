@@ -59,6 +59,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_WizardWizardTitle"));
         DocumentListener updateListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 updateData();

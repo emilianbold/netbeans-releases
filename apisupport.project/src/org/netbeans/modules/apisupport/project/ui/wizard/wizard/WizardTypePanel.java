@@ -34,6 +34,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_WizardWizardTitle"));
         numberOfSteps.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
