@@ -39,6 +39,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 
@@ -83,10 +84,15 @@ public class OptionsWindowAction extends AbstractAction {
                 optionsPanel,
                 "Options",
                 false,
-                new Object[] {
-                    bOK,
-                    DialogDescriptor.CANCEL_OPTION
-                },
+                Utilities.getOperatingSystem () == Utilities.OS_MAC ?
+                    new Object[] {
+                        DialogDescriptor.CANCEL_OPTION,
+                        bOK
+                    } :
+                    new Object[] {
+                        bOK,
+                        DialogDescriptor.CANCEL_OPTION
+                    },
                 DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, null, null
             );
