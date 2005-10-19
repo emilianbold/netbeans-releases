@@ -73,7 +73,7 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
         if (win instanceof @@TEMPLATENAME@@TopComponent) {
             return (@@TEMPLATENAME@@TopComponent)win;
         }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "There seem to be multiple Components with the '@@TEMPLATENAME@@TopComponent' id. That's a potential source of errors and unexpected behaviour.");
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "There seem to be multiple components with the '@@TEMPLATENAME@@TopComponent' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
     }
 
