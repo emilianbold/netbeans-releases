@@ -149,11 +149,14 @@ public class ChatChannelImpl extends Object implements ChatCollablet {
      *
      *
      */
-    public boolean handleMessage(CollabMessage message)
-    throws CollabException {
-        // Add the message to the transcript
-        addToTranscript(message);
-        getChangeSupport().firePropertyChange(PROP_MODIFIED, false, true);
+    public boolean handleMessage(final CollabMessage message) {
+        // Add the message to the transcript, but in AWT!
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                addToTranscript(message);
+                getChangeSupport().firePropertyChange(PROP_MODIFIED, false, true);
+            }
+        });
 
         return true;
     }
@@ -166,8 +169,7 @@ public class ChatChannelImpl extends Object implements ChatCollablet {
      *
      *
      */
-    protected void addToTranscript(CollabMessage message)
-    throws CollabException {
+    protected void addToTranscript(CollabMessage message) {
         getChangeSupport().firePropertyChange(PROP_TRANSCRIPT, null, message);
     }
 
