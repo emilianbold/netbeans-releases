@@ -623,7 +623,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     // </editor-fold>//GEN-END:initComponents
     
     private void manageSuitePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageSuitePlatformActionPerformed
-        managePlatform(platformValue);
+        managePlatform(suitePlatformValue);
     }//GEN-LAST:event_manageSuitePlatformActionPerformed
     
     private void mainProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainProjectActionPerformed
