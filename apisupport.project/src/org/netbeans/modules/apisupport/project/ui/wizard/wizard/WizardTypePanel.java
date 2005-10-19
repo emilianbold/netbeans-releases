@@ -34,6 +34,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        initAccessibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_WizardWizardTitle"));
         numberOfSteps.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -83,6 +84,15 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(WizardTypePanel.class);
+    }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_WizardTypePanel"));
+        custom.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Custom"));
+        newFile.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_NewFile"));
+        statik.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Static"));
+        dynamic.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Dynamic"));
+        numberOfStepsTxt.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_NumberOfSteps"));
     }
     
     /** This method is called from within the constructor to
@@ -164,7 +174,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
 
         wizardSteps.add(statik);
         statik.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(statik, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Simple"));
+        org.openide.awt.Mnemonics.setLocalizedText(statik, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Static"));
         statik.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         statik.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -176,7 +186,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         add(statik, gridBagConstraints);
 
         wizardSteps.add(dynamic);
-        org.openide.awt.Mnemonics.setLocalizedText(dynamic, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Variable"));
+        org.openide.awt.Mnemonics.setLocalizedText(dynamic, org.openide.util.NbBundle.getMessage(WizardTypePanel.class, "CTL_Dynamic"));
         dynamic.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         dynamic.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();

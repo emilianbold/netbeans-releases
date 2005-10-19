@@ -59,6 +59,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        initAccessibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_WizardWizardTitle"));
         DocumentListener updateListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -157,6 +158,19 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(NameIconLocationPanel.class);
+    }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameIconLocationPanel"));
+        classNamePrefix.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_ClassNamePrefix"));
+        displayName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_DisplayName"));
+        category.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_Category"));
+        icon.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_Icon"));
+        iconButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_IconBrowse"));
+        project.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_ProjectName"));
+        packageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_PackageName"));
+        createdFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_CreatedFiles"));
+        modifiedFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_ModifiedFiles"));
     }
     
     /** This method is called from within the constructor to
