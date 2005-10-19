@@ -231,8 +231,8 @@ public class Annotator {
     public String annotateNameHtml(String name, Set files, int includeStatus) {
         if (files.size() == 0) return name;
         
-        FileInformation lastInfo = null;
-        File lastFile = null;
+        FileInformation mostImportantInfo = null;
+        File mostImportantFile = null;
         boolean folderAnnotation = false;
         
         for (Iterator i = files.iterator(); i.hasNext();) {
@@ -242,12 +242,10 @@ public class Annotator {
             int status = info.getStatus();
             if ((status & includeStatus) == 0) continue;
             
-            if (lastInfo == null) {
-                lastInfo = info;
-                lastFile = file;
+            if (isMoreImportant(info, mostImportantInfo)) {
+                mostImportantInfo = info;
+                mostImportantFile = file;
                 folderAnnotation = fo.isFolder();
-            } else {
-                if (status != lastInfo.getStatus()) return name;
             }
         }
 
@@ -255,8 +253,16 @@ public class Annotator {
             folderAnnotation = looksLikeLogicalFolder(files);
         }
 
-        if (lastInfo == null) return name;
-        return folderAnnotation ? annotateFolderNameHtml(name, lastInfo, lastFile) : annotateNameHtml(name, lastInfo, lastFile);
+        if (mostImportantInfo == null) return name;
+        return folderAnnotation ? 
+                annotateFolderNameHtml(name, mostImportantInfo, mostImportantFile) : 
+                annotateNameHtml(name, mostImportantInfo, mostImportantFile);
+    }
+
+    private boolean isMoreImportant(FileInformation a, FileInformation b) {
+        if (b == null) return true;
+        if (a == null) return false;
+        return Utils.getComparableStatus(a.getStatus()) < Utils.getComparableStatus(b.getStatus());
     }
 
     public String annotateName(String name, Set files) {
