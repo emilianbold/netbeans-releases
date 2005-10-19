@@ -24,6 +24,7 @@ import javax.enterprise.deploy.spi.exceptions.*;
 
 import org.openide.*;
 import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -176,7 +177,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
         }
         return sb.toString();
     }
-    
+
     /**
      * Save configuration only if the graphical config editor is not opened, mark as
      * modified otherwise.
@@ -234,6 +235,15 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     public void setChanged() {
         needsSave = true;
         autoSave();
+    }
+    
+    public void updateDDRoot(FileObject dd) {
+        if("webservices".equals(dd.getName())) {
+            ModuleDDSupport mds = (ModuleDDSupport) moduleMap.get(ROOT);
+            if(mds != null) {
+                mds.getDDBeanRoot(ModuleDDSupport.filenameToPath(dd.getNameExt(), mds.getType()));
+            }
+        }
     }
     
     public DeploymentConfiguration getDeploymentConfiguration() {

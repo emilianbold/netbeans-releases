@@ -45,12 +45,18 @@ public class DDFilesListener extends AbstractFilesListener {
     public static final File[] EMPTY_FILE_ARRAY = new File[0];
     
     protected File[] getTargetFiles() {
-        if (ddFiles != null)
+        if (ddFiles != null) {
             return ddFiles;
+        }
 
         SourceFileMap sfm = provider.getSourceFileMap();
         FileObject[] roots = sfm.getSourceRoots();
         if (roots == null || roots.length < 1) {
+            ddFiles = EMPTY_FILE_ARRAY;
+            return ddFiles;
+        }
+        
+        if(roots[0] == null) {
             ddFiles = EMPTY_FILE_ARRAY;
             return ddFiles;
         }
@@ -69,8 +75,9 @@ public class DDFilesListener extends AbstractFilesListener {
     }
     
     protected boolean isTarget(FileObject fo) {
-        if (fo == null)
+        if (fo == null) {
             return false;
+        }
         
         getTargetFiles();
         for (int i=0; i<ddFiles.length; i++) {
@@ -82,8 +89,9 @@ public class DDFilesListener extends AbstractFilesListener {
     }
     
     protected boolean isTarget(String fileName) {
-        if (fileName == null)
+        if (fileName == null) {
             return false;
+        }
         
         getTargetFiles();
         for (int i=0; i<ddFiles.length; i++) {
@@ -97,6 +105,7 @@ public class DDFilesListener extends AbstractFilesListener {
     protected void targetCreated(FileObject fo) {
         ConfigurationStorage cs = config.getStorage();
         if (cs != null) {
+            cs.updateDDRoot(fo);
             cs.autoSave();
         }
     }

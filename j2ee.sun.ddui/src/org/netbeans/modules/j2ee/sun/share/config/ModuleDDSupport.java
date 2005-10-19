@@ -118,6 +118,7 @@ public class ModuleDDSupport implements PropertyChangeListener {
         beanMap.put(bean,root);
         weakListener = WeakListeners.propertyChange(this,root.proxy.bean);
         root.proxy.bean.addPropertyChangeListener(weakListener/* this*/);
+
         return root;
     }
 
@@ -214,7 +215,7 @@ public class ModuleDDSupport implements PropertyChangeListener {
                 continue;
             }
             ConfigBeanStorage cbStorage = new ConfigBeanStorage(cb, null, storage);
-            configMap.put(root,cbs);
+            configMap.put(root,cbStorage);
         }
     }
 
@@ -324,6 +325,10 @@ public class ModuleDDSupport implements PropertyChangeListener {
             return null;
         }
         
+        if (beanMap == null) {
+            return null;
+        }
+        
         StandardDDImpl ret = (StandardDDImpl) beanMap.get(bean);
         
         if (ret == null) {
@@ -351,7 +356,7 @@ public class ModuleDDSupport implements PropertyChangeListener {
                 base = new DDProxy(parent.proxy,bean,bean.dtdName(),this);
             }
              **/
-	    if (bean.parent() != null) {
+            if (bean.parent() != null) {
                 ret = new StandardDDImpl(new DDNodeBean(bean,this));
                 beanMap.put(bean,ret);
             }
@@ -529,8 +534,7 @@ public class ModuleDDSupport implements PropertyChangeListener {
             StandardDDImpl eventBean = null;
             if(newValue == null && oldValue instanceof BaseBean) {
                 eventBean = getBean((BaseBean) oldValue);
-            }
-            else {
+            } else {
                 Object eventObj = oldValue != null ? oldValue : newValue;
                 if (!(eventObj instanceof BaseBean)) {
                     eventObj = event.getSource();

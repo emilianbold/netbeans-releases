@@ -106,8 +106,10 @@ public abstract class AbstractFilesListener {
             }
             startListening();
         }
+        
         public void fileDataCreated(FileEvent e) {
             FileObject fo = e.getFile();
+            
             if (isTarget(fo)) {
                 synchronized(fileListeners) {
                     addFileListenerTo(fo);
@@ -135,7 +137,8 @@ public abstract class AbstractFilesListener {
             startListening();
         }
 
-        public void fileAttributeChanged(FileAttributeEvent e) {};
+        public void fileAttributeChanged(FileAttributeEvent e) {
+        }
 
         public void fileChanged(FileEvent e) {
             FileObject fo = e.getFile();
