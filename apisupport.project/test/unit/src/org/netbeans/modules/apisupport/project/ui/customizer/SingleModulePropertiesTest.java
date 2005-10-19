@@ -310,15 +310,17 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().length);
         assertEquals("one public packages in the ModuleEntry", 1, props.getModuleList().getEntry("org.example.module1a").getPublicPackages().length);
     }
-      /** Test is this module doesn't depend on itself */
-    public void test61232() throws Exception {
+    
+    /** Test that a module doesn't offer itself in its dependency list. */
+    public void testThatTheModuleDoesNotOfferItself_61232() throws Exception {
         NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         SingleModuleProperties props = loadProperties(p);
         SortedSet set =  props.getUniverseDependencies(true);
         for (Iterator it = set.iterator() ; it.hasNext() ; ) {
-            ModuleDependency dependency = (ModuleDependency) it.next(); 
+            ModuleDependency dependency = (ModuleDependency) it.next();
             ModuleEntry me = dependency.getModuleEntry();
-            assertFalse(p.getCodeNameBase().equals(me.getCodeNameBase()));
+            assertFalse("module doesn't offer itself in its dependency list: " + p.getCodeNameBase(),
+                    p.getCodeNameBase().equals(me.getCodeNameBase()));
         }
     }
     
