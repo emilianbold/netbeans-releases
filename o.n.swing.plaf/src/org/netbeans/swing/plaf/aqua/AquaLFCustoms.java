@@ -51,6 +51,7 @@ public final class AquaLFCustoms extends LFCustoms {
                 "ComboBox.font", controlFont, 
                 "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
                 "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
+                "PopupMenu.border", BorderFactory.createEmptyBorder(4, 0, 4, 0),
                  SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
 
                 EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(18, 0, 18, 0),
@@ -61,6 +62,7 @@ public final class AquaLFCustoms extends LFCustoms {
                 "controlFont", new GuaranteedValue (new String[] {"Label.font", "Tree.font"}, new FontUIResource("Dialog", Font.PLAIN, 14)).getFont(),
                 "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
                 "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
+                "PopupMenu.border", BorderFactory.createEmptyBorder(4, 0, 4, 0),
                  SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
 		
                 EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(18, 0, 18, 0),
