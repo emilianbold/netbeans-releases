@@ -156,6 +156,9 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
+	//remember last used server
+	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);

@@ -108,6 +108,9 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
             }
         }
 
+	//remember last used server
+	FoldersListSettings.getDefault().setLastUsedServer(servInstID);
+	
         // downgrade the Java platform or src level to 1.4
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);

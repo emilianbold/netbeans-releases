@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -25,6 +26,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -166,12 +168,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 18));
         j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 18));
-        j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                j2eeSpecComboBoxActionPerformed(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -242,13 +238,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
     // </editor-fold>//GEN-END:initComponents
 
-    private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
-
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
-        String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
+        String servInsID = ((ServerIDAdapter) serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex())).getServerID();
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(servInsID);
         Set supportedVersions = j2eePlatform.getSupportedSpecVersions();
         j2eeSpecComboBox.removeAllItems();
@@ -318,16 +310,33 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         for (int i = 0; i < servInstIDs.length; i++) {
             J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
             if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.WAR)) {
-                serverInstanceIDs.add(servInstIDs[i]);
-                serverInstanceComboBox.addItem(Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]));
+		ServerIDAdapter serverIDAdapter = new ServerIDAdapter(servInstIDs[i]);
+                serverInstanceIDs.add(serverIDAdapter);
             }
         }
-        if (serverInstanceIDs.size() > 0) {
-            serverInstanceComboBox.setSelectedIndex(0);
-        } else {
+	
+	Collections.sort(serverInstanceIDs);
+	
+	String lastUsedServerID = FoldersListSettings.getDefault().getLastUsedServer();
+	String serverInst;
+	int idx = -1;
+	for (int i = 0; i < serverInstanceIDs.size(); i++) {
+	    serverInst = ((ServerIDAdapter) serverInstanceIDs.get(i)).getServerID();
+	    serverInstanceComboBox.addItem(Deployment.getDefault().getServerInstanceDisplayName(serverInst));
+	    
+	    if (serverInst.equals(lastUsedServerID))
+		idx = i;
+	    else if (idx == -1 && "J2EE".equals(Deployment.getDefault().getServerID(serverInst))) // NOI18N
+		idx = i;
+	}
+	
+        if (serverInstanceIDs.size() == 0) {
             serverInstanceComboBox.setEnabled(false);
             j2eeSpecComboBox.setEnabled(false);
-        }
+        } else if (idx != -1) {
+	    serverInstanceComboBox.setSelectedIndex(idx);
+	} else 
+            serverInstanceComboBox.setSelectedIndex(0);
     }
     
     private String getSelectedJ2eeSpec() {
@@ -338,8 +347,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     private String getSelectedServer() {
         int idx = serverInstanceComboBox.getSelectedIndex();
-        return idx == -1 ? null 
-                         : (String)serverInstanceIDs.get(idx);
+        return idx == -1 ? null : ((ServerIDAdapter) serverInstanceIDs.get(idx)).getServerID();
     }
     
     private void initJSrcStructureSpecs() {
@@ -384,4 +392,25 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         warningPanel = new J2eeVersionWarningPanel(warningType);
         warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
     }
+    
+    private static class ServerIDAdapter implements Comparable {
+        private String serverID;
+        
+        public ServerIDAdapter(String serverID) {
+            this.serverID = serverID;
+        }
+        
+        public String getServerID() {
+            return serverID;
+        }
+        
+        public String toString() {
+	    return Deployment.getDefault().getServerInstanceDisplayName(serverID);
+        }
+        
+        public int compareTo(Object o) {
+            return toString().compareTo(o.toString());
+        }
+    }
+
 }

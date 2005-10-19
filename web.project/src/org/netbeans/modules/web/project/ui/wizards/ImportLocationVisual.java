@@ -16,6 +16,7 @@ package org.netbeans.modules.web.project.ui.wizards;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -571,7 +572,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
-        String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
+        String servInsID = ((ServerIDAdapter) serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex())).getServerID();
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(servInsID);
         Set supportedVersions = j2eePlatform.getSupportedSpecVersions();
         j2eeSpecComboBox.removeAllItems();
@@ -688,16 +689,33 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         for (int i = 0; i < servInstIDs.length; i++) {
             J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
             if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.WAR)) {
-                serverInstanceIDs.add(servInstIDs[i]);
-                serverInstanceComboBox.addItem(Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]));
+		ServerIDAdapter serverIDAdapter = new ServerIDAdapter(servInstIDs[i]);
+                serverInstanceIDs.add(serverIDAdapter);
             }
         }
-        if (serverInstanceIDs.size() > 0) {
-            serverInstanceComboBox.setSelectedIndex(0);
-        } else {
+	
+	Collections.sort(serverInstanceIDs);
+	
+	String lastUsedServerID = FoldersListSettings.getDefault().getLastUsedServer();
+	String serverInst;
+	int idx = -1;
+	for (int i = 0; i < serverInstanceIDs.size(); i++) {
+	    serverInst = ((ServerIDAdapter) serverInstanceIDs.get(i)).getServerID();
+	    serverInstanceComboBox.addItem(Deployment.getDefault().getServerInstanceDisplayName(serverInst));
+	    
+	    if (serverInst.equals(lastUsedServerID))
+		idx = i;
+	    else if (idx == -1 && "J2EE".equals(Deployment.getDefault().getServerID(serverInst))) // NOI18N
+		idx = i;
+	}
+	
+        if (serverInstanceIDs.size() == 0) {
             serverInstanceComboBox.setEnabled(false);
             j2eeSpecComboBox.setEnabled(false);
-        }
+        } else if (idx != -1) {
+	    serverInstanceComboBox.setSelectedIndex(idx);
+	} else 
+            serverInstanceComboBox.setSelectedIndex(0);
     }
 
     private Project getSelectedEarApplication() {
@@ -731,7 +749,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     
     private String getSelectedServer() {
         int idx = serverInstanceComboBox.getSelectedIndex();
-        return idx == -1 ? null : (String)serverInstanceIDs.get(idx);
+        return idx == -1 ? null : ((ServerIDAdapter) serverInstanceIDs.get(idx)).getServerID();
     }
 
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
@@ -748,4 +766,25 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         warningPanel = new J2eeVersionWarningPanel(warningType);
         warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
     }
+    
+    private static class ServerIDAdapter implements Comparable {
+        private String serverID;
+        
+        public ServerIDAdapter(String serverID) {
+            this.serverID = serverID;
+        }
+        
+        public String getServerID() {
+            return serverID;
+        }
+        
+        public String toString() {
+	    return Deployment.getDefault().getServerInstanceDisplayName(serverID);
+        }
+        
+        public int compareTo(Object o) {
+            return toString().compareTo(o.toString());
+        }
+    }
+
 }
