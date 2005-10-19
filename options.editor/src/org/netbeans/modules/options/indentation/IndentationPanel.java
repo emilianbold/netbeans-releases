@@ -101,7 +101,7 @@ ChangeListener, ActionListener {
         tfStatementIndent.addChangeListener (this);
         tfIndent.setModel (new SpinnerNumberModel (4, 1, 50, 1));
         tfIndent.addChangeListener (this);
-        epPreview.setEditable (false);
+        epPreview.setEnabled (false);
 
         FormLayout layout = new FormLayout (
             "p, 5dlu, 30dlu, 10dlu, p:g", // cols

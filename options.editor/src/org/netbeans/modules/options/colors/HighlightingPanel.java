@@ -136,6 +136,9 @@ PropertyChangeListener {
         effectsColorChooser.addPropertyChangeListener (this);
 //        previewPanel = new JPanel (new BorderLayout ());
 //        previewPanel.setBorder (new EtchedBorder ());
+        JLabel lCategory = new JLabel ();
+        loc (lCategory, "CTL_Category");
+        lCategory.setLabelFor (lCategories);
 
         // 2) define layout
 	FormLayout layout = new FormLayout (
@@ -146,8 +149,8 @@ PropertyChangeListener {
         CellConstraints lc = new CellConstraints ();
         builder = new PanelBuilder (layout, this);
         builder.setDefaultDialogBorder ();
-        builder.addLabel (loc ("CTL_Category"),         lc.xy   (1, 1),
-	                  new JScrollPane (lCategories),cc.xywh (1, 3, 1, 8));
+        builder.add (lCategory,                         lc.xy   (1, 1));
+	builder.add (new JScrollPane (lCategories),     cc.xywh (1, 3, 1, 8));
         builder.addLabel (loc ("CTL_Foreground_label"), lc.xy   (3, 3),
                           foregroundColorChooser,	cc.xyw  (5, 3, 3));
         builder.addLabel (loc ("CTL_Background_label"), lc.xy   (3, 5),
@@ -220,6 +223,7 @@ PropertyChangeListener {
         listen = false;
         setCurrentProfile (currentProfile);
         lCategories.setListData (getCategories (currentProfile));
+        lCategories.setSelectedIndex (0);
         refreshUI ();	
         listen = true;
         changed = false;
@@ -276,6 +280,19 @@ PropertyChangeListener {
     
     private static String loc (String key) {
         return NbBundle.getMessage (SyntaxColoringPanel.class, key);
+    }
+    
+    private static void loc (Component c, String key) {
+        if (c instanceof AbstractButton)
+            Mnemonics.setLocalizedText (
+                (AbstractButton) c, 
+                loc (key)
+            );
+        else
+            Mnemonics.setLocalizedText (
+                (JLabel) c, 
+                loc (key)
+            );
     }
 
     private void updateData () {

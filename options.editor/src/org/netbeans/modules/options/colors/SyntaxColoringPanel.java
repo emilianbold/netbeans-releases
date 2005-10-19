@@ -144,6 +144,12 @@ PropertyChangeListener {
         cbEffects.addActionListener (this);
         effectsColorChooser = new ColorComboBox ();
         effectsColorChooser.addPropertyChangeListener (this);
+        JLabel lCategory = new JLabel ();
+        loc (lCategory, "CTL_Category");
+        lCategory.setLabelFor (lCategories);
+        JLabel lbFont = new JLabel ();
+        loc (lbFont, "CTL_Font");
+        lbFont.setLabelFor (bFont);
 
         previewPanel = new JPanel (new BorderLayout ());
         previewPanel.setBorder (new EtchedBorder ());
@@ -168,11 +174,11 @@ PropertyChangeListener {
 	
 	builder.add (pLanguages,                        cc.xyw (1, 1, 5));
         
-        builder.addLabel (loc ("CTL_Category"),         lc.xy  (1, 3),
-	                  new JScrollPane (lCategories),cc.xywh(1, 5, 1, 9));
+        builder.add (lCategory,                         lc.xy  (1, 3));
+	builder.add (new JScrollPane (lCategories),     cc.xywh(1, 5, 1, 9));
         
-        builder.addLabel (loc ("CTL_Font"),             lc.xy  (3, 5),
-                          tfFont,	                cc.xy  (5, 5));
+        builder.add (lbFont,                            lc.xy  (3, 5));
+        builder.add (tfFont,	                        cc.xy  (5, 5));
         builder.add (bFont,                             cc.xy  (7, 5));
         builder.addLabel (loc ("CTL_Foreground_label"), lc.xy  (3, 7),
                           foregroundColorChooser,	cc.xyw (5, 7, 3));
@@ -295,7 +301,6 @@ PropertyChangeListener {
             cbLanguages.addItem (it.next ());
         listen = true;
         cbLanguages.setSelectedIndex (0);
-        lCategories.setSelectedIndex (0);
         changed = false;
     }
     
@@ -337,6 +342,7 @@ PropertyChangeListener {
             cloneScheme (oldProfile, currentProfile);
         Vector categories = getCategories (currentProfile, currentLanguage);
         lCategories.setListData (categories);
+        lCategories.setSelectedIndex (0);
         refreshUI ();
     }
 
@@ -385,11 +391,25 @@ PropertyChangeListener {
         
         // setup categories list
         lCategories.setListData (getCategories (currentProfile, currentLanguage));
+        lCategories.setSelectedIndex (0);
         refreshUI ();
     }
     
     private static String loc (String key) {
         return NbBundle.getMessage (SyntaxColoringPanel.class, key);
+    }
+    
+    private static void loc (Component c, String key) {
+        if (c instanceof AbstractButton)
+            Mnemonics.setLocalizedText (
+                (AbstractButton) c, 
+                loc (key)
+            );
+        else
+            Mnemonics.setLocalizedText (
+                (JLabel) c, 
+                loc (key)
+            );
     }
 
     /**

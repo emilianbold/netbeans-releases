@@ -184,12 +184,16 @@ public class ColorComboBox extends JComboBox {
                 50, getFontMetrics (ColorComboBox.this.getFont ()).getHeight () + 2
             ));
 	    setOpaque (true);
+            setFocusable (true);
         }
         
         public void paint (Graphics g) {
             Color oldColor = g.getColor ();
             Dimension size = getSize ();
-	    g.setColor (getBackground ());
+            if (isFocusOwner ())
+                g.setColor (SystemColor.textHighlight);
+            else
+                g.setColor (getBackground ());
 	    g.fillRect (0, 0, size.width, size.height);
             int i = (size.height - SIZE) / 2;
             if (value.color != null) {
@@ -199,7 +203,10 @@ public class ColorComboBox extends JComboBox {
                 g.fillRect (i + 1, i + 1, SIZE - 1, SIZE - 1);
             }
             if (value.text != null) {
-                g.setColor (Color.black);
+                if (isFocusOwner ())
+                    g.setColor (SystemColor.textHighlightText);
+                else
+                    g.setColor (getForeground ());
 		if (value.color != null)
 		    g.drawString (value.text, i + SIZE + 5, i + SIZE);
 		else
@@ -216,19 +223,31 @@ public class ColorComboBox extends JComboBox {
 	}
         
         public Component getListCellRendererComponent (
-            JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus
+            JList       list,
+            Object      value,
+            int         index,
+            boolean     isSelected,
+            boolean     cellHasFocus
         ) {
 	    this.value = (Value) value;
 	    setEnabled (list.isEnabled ());
+            setBackground (isSelected ? 
+                SystemColor.textHighlight : SystemColor.text
+            );
+            setForeground (isSelected ? 
+                SystemColor.textHighlightText : SystemColor.textText
+            );
             return this;
         }
         
         public Component getEditorComponent () {
 	    setEnabled (ColorComboBox.this.isEnabled ());
+            setBackground (ColorComboBox.this.isFocusOwner () ? 
+                SystemColor.textHighlight : SystemColor.text
+            );
+            setForeground (ColorComboBox.this.isFocusOwner () ? 
+                SystemColor.textHighlightText : SystemColor.textText
+            );
             return this;
         }
 

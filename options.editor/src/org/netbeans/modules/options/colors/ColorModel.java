@@ -370,7 +370,7 @@ public class ColorModel {
             editorPane.setContentType (internalMimeType);
             document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
-            editorPane.setEditable (false);
+            editorPane.setEnabled (false);
             InputStream is = loadPreviewExample (language);
             if (is == null) {
                 assert true :
