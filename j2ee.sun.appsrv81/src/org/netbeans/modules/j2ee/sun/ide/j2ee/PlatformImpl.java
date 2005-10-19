@@ -183,8 +183,8 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
 
                 l = new ArrayList();
                 l.add(fileToUrl(new File(root, JSF_API_JAR)));
-                l.add(fileToUrl(new File(root, JSF_IMPL_JAR)));
-                l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
+           //     l.add(fileToUrl(new File(root, JSF_IMPL_JAR)));
+           //     l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
                 l.add(fileToUrl(new File(root, ACTIVATION_JAR)));
                 l.add(fileToUrl(new File(root, TAGS_JAR)));
                 l.add(fileToUrl(new File(root, MAIL_JAR)));
@@ -207,7 +207,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                 l.add(fileToUrl(new File(root, "lib/appserv-ws.jar")));
                 l.add(fileToUrl(new File(root, JAXRPC_API_JAR)));
                 l.add(fileToUrl(new File(root, JAXRPC_IMPL_JAR)));
-                l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
+      //          l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
                 libraries.add(lib);
 
