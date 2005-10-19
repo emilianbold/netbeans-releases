@@ -583,7 +583,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             File commonParent = null;
             for (Iterator j = fileBuckets.keySet().iterator(); j.hasNext();) {
                 File key = (File) j.next();
-                commonParent = getCommonParent(parent, key);
+                commonParent = Utils.getCommonParent(parent, key);
                 if (commonParent != null) {
                     fileset = (Set) fileBuckets.get(key);
                     j.remove();
@@ -606,20 +606,6 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             sets[idx++] = (File[]) bucket.toArray(new File[bucket.size()]);
         }
         return sets;
-    }
-
-    private static File getCommonParent(File a, File b) {
-        for (;;) {
-            if (a.equals(b)) {
-                return a;
-            } else if (a.getAbsolutePath().length() > b.getAbsolutePath().length()) {
-                a = a.getParentFile();
-                if (a == null) return null;
-            } else {
-                b = b.getParentFile();
-                if (b == null) return null;
-            }
-        }
     }
 
     /**

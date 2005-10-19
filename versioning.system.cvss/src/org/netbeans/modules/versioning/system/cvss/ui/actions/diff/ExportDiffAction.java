@@ -15,8 +15,10 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.api.diff.Difference;
@@ -92,10 +94,8 @@ public class ExportDiffAction extends AbstractSystemAction {
         if (activated instanceof DiffSetupSource) {
             return true;
         }
-
-        return nodes.length == 1
-            && Lookup.getDefault().lookup(DiffProvider.class) != null
-            && getContext(nodes).getRootFiles().length == 1;
+        return  super.enable(nodes) && 
+                Lookup.getDefault().lookup(DiffProvider.class) != null;
     }
 
     public void performCvsAction(final Node[] nodes) {
@@ -126,6 +126,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             chooser.removeChoosableFileFilter(fileFilter);
 
         }
+        chooser.setCurrentDirectory(new File(CvsModuleConfig.getDefault().getDefaultValue("ExportDiff.saveFolder", System.getProperty("user.home"))));
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
@@ -148,6 +149,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                 File parent = destination.getParentFile();
                 destination = new File(parent, name + ".patch"); // NOI18N
             }
+            CvsModuleConfig.getDefault().setDefaultValue("ExportDiff.saveFolder", destination.getParent());
 
             final File out = destination;
             RequestProcessor.getDefault().post(new Runnable() {
@@ -177,37 +179,30 @@ public class ExportDiffAction extends AbstractSystemAction {
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
                 setups = ((DiffSetupSource) activated).getSetups();
-                Iterator it = setups.iterator();
-                while (it.hasNext()) {
-                    Setup setup = (Setup) it.next();
-                    File candidate = setup.getBaseFile().getParentFile();
-                    if (root == null || root.getAbsolutePath().startsWith(candidate.getAbsolutePath())) {
-                        root = candidate;
-                    } else {
-                        File parent = candidate.getParentFile();
-                        while (parent != null) {
-                            if (root.getAbsolutePath().startsWith(parent.getAbsolutePath())) {
-                                root = parent;
-                                break;
-                            }
-                            parent = parent.getParentFile();
-                        }
-                        assert parent != null : "Can not locate common root:\n file1=" + candidate.getAbsolutePath() + "\n file2=" + root.getAbsolutePath(); // NOI18N
-                    }
+                List setupFiles = new ArrayList(setups.size());
+                for (Iterator i = setups.iterator(); i.hasNext();) {
+                    Setup setup = (Setup) i.next();
+                    setupFiles.add(setup.getBaseFile()); 
                 }
+                root = getCommonParent((File[]) setupFiles.toArray(new File[setupFiles.size()]));
             } else {
                 Context context = getContext(nodes);
-                root = context.getRootFiles()[0];
-                if (root.isFile()) {
-                    root = root.getParentFile();
-                }
                 File [] files = DiffExecutor.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                root = getCommonParent(files);
                 setups = new ArrayList(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
                     Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL);
                     setups.add(setup);
                 }
+            }
+            if (root == null) {
+                NotifyDescriptor nd = new NotifyDescriptor(
+                        NbBundle.getMessage(ExportDiffAction.class, "MSG_BadSelection_Prompt"), 
+                        NbBundle.getMessage(ExportDiffAction.class, "MSG_BadSelection_Title"), 
+                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
             }
 
             String sep = System.getProperty("line.separator"); // NOI18N
@@ -263,6 +258,14 @@ public class ExportDiffAction extends AbstractSystemAction {
         }
     }
 
+    private static File getCommonParent(File [] files) {
+        File root = files[0].getParentFile();
+        for (int i = 1; i < files.length; i++) {
+            root = Utils.getCommonParent(root, files[i]);
+            if (root == null) return null;
+        }
+        return root;
+    }
 
     /** Writes contextual diff into given stream.*/
     private void exportDiff(ExecutorGroup group, Setup setup, OutputStream out) throws IOException {

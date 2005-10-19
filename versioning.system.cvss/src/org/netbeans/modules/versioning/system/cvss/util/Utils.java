@@ -436,6 +436,28 @@ public class Utils {
     }
     
     /**
+     * Searches for common filesystem parent folder for given files.
+     * 
+     * @param a first file
+     * @param b second file
+     * @return File common parent for both input files with the longest filesystem path or null of these files
+     * have not a common parent
+     */ 
+    public static File getCommonParent(File a, File b) {
+        for (;;) {
+            if (a.equals(b)) {
+                return a;
+            } else if (a.getAbsolutePath().length() > b.getAbsolutePath().length()) {
+                a = a.getParentFile();
+                if (a == null) return null;
+            } else {
+                b = b.getParentFile();
+                if (b == null) return null;
+            }
+        }
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
     public static class ByImportanceComparator implements Comparator {
