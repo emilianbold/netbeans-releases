@@ -118,7 +118,7 @@ PropertyChangeListener, KeyListener {
     
     public void insertUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt)) {
+            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 appendTypedText(offset, length);
@@ -130,7 +130,7 @@ PropertyChangeListener, KeyListener {
 
     public void removeUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt)) {
+            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 removeAbbrevText(offset, length);
@@ -170,6 +170,10 @@ PropertyChangeListener, KeyListener {
     
     private boolean isIgnoreModification() {
         return Boolean.TRUE.equals(doc.getProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY));
+    }
+    
+    private boolean isAbbrevDisabled() {
+        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component);
     }
     
     private void checkExpansionKeystroke(KeyEvent evt) {

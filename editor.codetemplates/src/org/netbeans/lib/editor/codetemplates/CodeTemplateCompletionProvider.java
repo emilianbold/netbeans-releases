@@ -43,13 +43,17 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 public final class CodeTemplateCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int type, JTextComponent component) {
-        return new AsyncCompletionTask(new Query(), component);
+        return isAbbrevDisabled(component) ? null : new AsyncCompletionTask(new Query(), component);
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
     }
 
+    private static boolean isAbbrevDisabled(JTextComponent component) {
+        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component);
+    }
+    
     private static final class Query extends AsyncCompletionQuery
     implements ChangeListener {
 
@@ -92,7 +96,7 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                 notify();
             }
         }
-
+        
     }
 
 }
