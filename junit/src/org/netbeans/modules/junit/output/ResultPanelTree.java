@@ -40,7 +40,7 @@ final class ResultPanelTree extends JPanel
     /** root node of the tree */
     private final ReportNode rootNode;
     /** */
-    private final BeanTreeView treeView;
+    private final ResultTreeView treeView;
     /** should the results be filtered (only failures and errors displayed)? */
     private boolean filtered = false;
     /** */
@@ -48,7 +48,7 @@ final class ResultPanelTree extends JPanel
     /** */
     private ChangeEvent changeEvent;
     /** */
-    private final Report report;
+    private Report report;
     /**
      * holds an instance of RegexpUtils so that implementations of nodes
      * displayed in the tree always get the same instance when they ask for one
@@ -56,13 +56,11 @@ final class ResultPanelTree extends JPanel
      */
     private final RegexpUtils regexpUtils = RegexpUtils.getInstance();
 
-    ResultPanelTree(final Report report) {
+    ResultPanelTree() {
         super(new java.awt.BorderLayout());
         
         add(treeView = new ResultTreeView(), java.awt.BorderLayout.CENTER);
         
-        this.report = report;
-
         explorerManager = new ExplorerManager();
         explorerManager.setRootContext(rootNode = createRootNode());
         explorerManager.addPropertyChangeListener(this);
@@ -92,6 +90,19 @@ final class ResultPanelTree extends JPanel
                                    "ACSN_HorizontalScrollbar"));        //NOI18N
 
     }
+    
+    /**
+     */
+    void displayMsg(String msg) {
+        rootNode.displayMsg(msg);
+    }
+    
+    /**
+     */
+    void displayReport(final Report report) {
+        rootNode.setReport(this.report = report);
+        treeView.expandNodes(rootNode);
+    }
 
     /**
      */
@@ -105,7 +116,7 @@ final class ResultPanelTree extends JPanel
     /**
      */
     private ReportNode createRootNode() {
-        return new ReportNode(report);
+        return new ReportNode();
     }
     
     /**

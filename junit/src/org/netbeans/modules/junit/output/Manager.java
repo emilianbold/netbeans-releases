@@ -82,7 +82,7 @@ final class Manager {
     private void sessionStarted(final AntSession session) {
         Mutex.EVENT.writeAccess(new Runnable() {
             public void run() {
-                ResultWindow.getInstance().displayReport(-1, null, true);
+                ResultWindow.getInstance().displayTestRunning(true);
             }
         });
         

@@ -71,6 +71,9 @@ public class ResultWindow extends TopComponent {
         return window;
     }
     
+    /** */
+    private ResultView view;
+    
     
     /** */
     //private final JTabbedPane tabbedPanel;
@@ -141,19 +144,42 @@ public class ResultWindow extends TopComponent {
     
     /**
      */
+    void displayTestRunning(boolean promote) {
+        assert EventQueue.isDispatchThread();
+       
+        if (view == null) {
+            add(view = new ResultView());
+        }
+        view.displayMsg(NbBundle.getMessage(getClass(), "LBL_Running"));//NOI18N
+
+        if (promote) {
+            promote();
+        }
+    }
+    
+    /**
+     */
     void displayReport(final int index, final Report report, boolean promote) {
         assert EventQueue.isDispatchThread();
+        assert report != null;
         
-        final ResultView view = new ResultView(report);
-        //tabbedPanel.add(view);
-        removeAll();
-        add(view, BorderLayout.CENTER);
+        if (view == null) {
+            add(view = new ResultView());
+        }
+        view.displayReport(report);
 //        tabbedPanel.add(new javax.swing.JLabel("Tab " + (tabbedPanel.getTabCount() + 1)));
         
         if (promote) {
-            open();
-            requestVisible();
+            promote();
         }
+    }
+    
+    /**
+     */
+    private void promote() {
+        open();
+        requestVisible();
+        requestActive();
     }
     
     /**

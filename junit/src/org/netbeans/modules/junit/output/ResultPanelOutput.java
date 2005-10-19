@@ -40,7 +40,7 @@ final class ResultPanelOutput extends JScrollPane {
     /**
      * Creates a new instance of ResultPanelOutput
      */
-    ResultPanelOutput(final Report report) {
+    ResultPanelOutput() {
         super();
         
         textPane = new JTextPane();
@@ -55,14 +55,16 @@ final class ResultPanelOutput extends JScrollPane {
         StyleConstants.setFontFamily(outputStyle, "Monospaced");        //NOI18N
         headingStyle = doc.addStyle("heading", outputStyle);            //NOI18N
         StyleConstants.setUnderline(headingStyle, true);
-        
-        
-        displayReport(report);
     }
     
     /**
      */
-    private void displayReport(final Report report) {
+    void displayReport(final Report report) {
+        if (report == null) {
+            clear();
+            return;
+        }
+        
         try {
             doc.insertString(
                     0,
@@ -90,6 +92,16 @@ final class ResultPanelOutput extends JScrollPane {
                         headingStyle);
                 displayText(report.outputErr);
             }
+        } catch (BadLocationException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+        }
+    }
+    
+    /**
+     */
+    void clear() {
+        try {
+            doc.remove(0, doc.getLength());
         } catch (BadLocationException ex) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
         }

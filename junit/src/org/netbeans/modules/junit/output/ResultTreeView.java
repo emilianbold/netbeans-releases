@@ -79,13 +79,12 @@ final class ResultTreeView extends BeanTreeView {
     
     /**
      */
-    public void addNotify() {
-        super.addNotify();
-        
-        final Node rootNode = ExplorerManager.find(this).getRootContext();
-        assert rootNode.getClass() == ReportNode.class;
-        
+    void expandNodes(ReportNode rootNode) {
         Report report = ((ReportNode) rootNode).report;
+        if (report == null) {
+            return;
+        }
+        
         if (report.failures + report.errors <= 5) {
             expandAll();
         } else {

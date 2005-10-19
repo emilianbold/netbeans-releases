@@ -384,10 +384,6 @@ final class JUnitOutputReader {
             }
         }
         
-        if (report == null) {                       //no previous report
-            return;
-        }
-        
         callstackBuffer = null;
         xmlOutputBuffer = null;
         outputBuffer = null;
@@ -395,7 +391,7 @@ final class JUnitOutputReader {
         trouble = null;
         
         if (topReport == null) {
-            topReport = report;
+            topReport = report;         //may be null
         } else {
             topReport.appendReport(report);
         }
