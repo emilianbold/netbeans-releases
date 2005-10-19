@@ -83,6 +83,7 @@ public final class OpenProjectList {
     private static OpenProjectList INSTANCE;
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(OpenProjectList.class.getName());
+    private static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
     
     /** List which holds the open projects */
     private List/*<Project>*/ openProjects;
@@ -160,6 +161,8 @@ public final class OpenProjectList {
     }
     
     public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously ) {
+        long start = System.currentTimeMillis();
+        
 	if (asynchronously) {
 	    final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
 	    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
@@ -178,7 +181,7 @@ public final class OpenProjectList {
 	    
 	    dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
 	    
-	    RequestProcessor.getDefault().post(new Runnable() {
+	    OPENING_RP.post(new Runnable() {
 		public void run() {
 		    try {
 			doOpen(projects, openSubprojects, handle);
@@ -196,6 +199,12 @@ public final class OpenProjectList {
 	} else {
 	    doOpen(projects, openSubprojects, null);
 	}
+        
+        long end = System.currentTimeMillis();
+        
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ERR.log(ErrorManager.INFORMATIONAL, "opening projects took: " + (end - start) + "ms");
+        }
     }
     
     private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle) {
@@ -541,26 +550,29 @@ public final class OpenProjectList {
         return recentProjectsChanged;
     }
     
-    private synchronized boolean doOpenProject(final Project p) {
-        if (!openProjects.contains(p)) {
+    private boolean doOpenProject(final Project p) {
+        boolean recentProjectsChanged;
+        
+        synchronized (this) {
+            if (openProjects.contains(p)) {
+                return false;
+            }
             openProjects.add(p);
             
-            final boolean recentProjectsChanged = recentProjects.remove(p);
-
-            // Notify projects opened
-            notifyOpened(p);
-                    
-	    Mutex.EVENT.readAccess(new Runnable() {
-		public void run() {
-		    // Open project files
-		    ProjectUtilities.openProjectFiles(p);
-		}
-	    });
-            
-            return recentProjectsChanged;
+            recentProjectsChanged = recentProjects.remove(p);
         }
         
-        return false;
+        // Notify projects opened
+        notifyOpened(p);
+        
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                // Open project files
+                ProjectUtilities.openProjectFiles(p);
+            }
+        });
+        
+        return recentProjectsChanged;
     }
     
     private static List loadProjectList() {               
