@@ -69,8 +69,10 @@ public class DDUtils {
             if (newVersion.equals(ejbJarProxy.getVersion())) {// the same version
                 // merging original in proxy EjbJar
                 ejbJarProxy.getOriginal().merge(newOriginal, EjbJar.MERGE_UPDATE);
+            } else {
+                ejbJarProxy.setOriginal(newOriginal);
+                ejbJarProxy.setProxyVersion(newVersion.toString());
             }
-            ejbJarProxy.setProxyVersion(newVersion.toString());
             ejbJarProxy.setStatus(newEjbJarProxy.getStatus());
             ejbJarProxy.setError(newEjbJarProxy.getError());
         } catch (IOException ex) {
