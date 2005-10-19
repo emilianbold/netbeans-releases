@@ -91,17 +91,22 @@ public abstract class OptionsCategory {
         
         
         /**
-         * Component should update its content.
+         * Component should load its data here. This method is called off-line
+         * from RequestProcessor. You should not do any time demanding computing
+         * inside the constructor, because it blocks initialization of 
+         * OptionsDialog. Initialization should be implemented in update method.
          */
 	public abstract void update ();
         
         /**
          * This method is called when Options Dialog "OK" button is pressed.
+         * This method can be called even before update () method is called.
          */
         public abstract void applyChanges ();
         
         /**
          * This method is called when Options Dialog "Cancel" button is pressed.
+         * This method can be called even before update () method is called.
          */
 	public abstract void cancel ();
         
