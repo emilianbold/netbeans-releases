@@ -39,6 +39,7 @@ import java.io.*;
 import java.lang.reflect.*; 
 import java.util.*;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
+
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
  * for the form.
@@ -118,17 +119,29 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private JavaEditor.SimpleSection initComponentsSection;
     private JavaEditor.SimpleSection variablesSection;
-
+       
     private Map constructorProperties;
     private Map containerDependentProperties;
     
     private SwingLayoutCodeGenerator swingGenerator;
 
-    private FormProperty.Filter propertyFilter = new FormProperty.Filter() {
+    private class RADComponentPropertyFilter implements FormProperty.Filter {
+	
+	private final RADComponent comp;
+	public RADComponentPropertyFilter(RADComponent comp) {
+	    this.comp = comp;
+	}
+	
         public boolean accept(FormProperty property) {
+	    	
+	    java.util.List properties = null;		
+	    if(constructorProperties!=null) {
+		properties = (java.util.List) constructorProperties.get(comp);
+	    }	    
+	    
             return (property.isChanged()
-                       && (constructorProperties == null
-                           || constructorProperties.get(property) == null))
+                       && (properties == null
+                           || !properties.contains(property)))
                     || property.getPreCode() != null
                     || property.getPostCode() != null;
         }
@@ -965,7 +978,7 @@ class JavaCodeGenerator extends CodeGenerator {
         catch (IOException e) { // should not happen
             e.printStackTrace();
         }
-    }
+    }   
     
     private void regenerateEventHandlers() {
         // only missing handler methods are generated, existing are left intact
@@ -1213,13 +1226,15 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (constructorProperties == null)
                         constructorProperties = new HashMap();
 
+		    java.util.List usedProperties = new ArrayList(propNames.length);
                     props = new FormProperty[propNames.length];
 
                     for (int i=0; i < propNames.length; i++) {
                         FormProperty prop = comp.getBeanProperty(propNames[i]);
                         props[i] = prop;
-                        constructorProperties.put(prop, prop);
+			usedProperties.add(prop);                        
                     }
+		    constructorProperties.put(comp, usedProperties);
                 }
                 else props = RADComponent.NO_PROPERTIES;
 
@@ -1270,7 +1285,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            Iterator it = comp.getBeanPropertiesIterator(propertyFilter, false);
+            Iterator it = comp.getBeanPropertiesIterator(new RADComponentPropertyFilter(comp), false);
             while (it.hasNext()) {
                 FormProperty prop = (FormProperty) it.next();
 
@@ -1535,21 +1550,22 @@ class JavaCodeGenerator extends CodeGenerator {
 	properties = (FormProperty[]) beanPropertyEditor.getProperties();	    
 	
 	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
-	FormProperty[] creatorProperties = getCreatorProperties(creator, properties);
+	java.util.List creatorProperties = getCreatorProperties(creator, properties);
 															
 	java.util.List remainingProperties = new ArrayList();		
 	if(properties !=null) {
 	    for (int i = 0; i < properties.length; i++) {
-		if( properties[i].isChanged() 
-                    && (constructorProperties == null
-                        || constructorProperties.get(properties[i]) == null) ) 
-		{			    
-		    remainingProperties.add(properties[i]);
+		if( properties[i].isChanged() && 
+	            !creatorProperties.contains(properties[i]) ) 
+		{		    
+		    remainingProperties.add(properties[i]);			
 		}
 	    }					    						
 	}
 
-	String propertyInitializationString = creator.getJavaCreationCode(creatorProperties);	
+	String propertyInitializationString = 
+		creator.getJavaCreationCode(
+		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]));	
 	
 	String javaStr = "";
 	if(remainingProperties.size() == 0) {		    		    
@@ -1564,25 +1580,22 @@ class JavaCodeGenerator extends CodeGenerator {
 		
     }
             
-    private FormProperty[] getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
+    private java.util.List getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
 	String[] propNames = creator.getPropertyNames();	
-	FormProperty[] creatorProperties;
+	java.util.List creatorProperties; 
 	if (propNames.length > 0) {
-	    if (constructorProperties == null) {
-		constructorProperties = new HashMap();		
-	    }
-	    creatorProperties = new FormProperty[propNames.length];		    
+	    creatorProperties = new ArrayList(propNames.length);		    
 	    for (int i=0; i < propNames.length; i++) {
 		for (int j = 0; j < properties.length; j++) {
 		    if(properties[j].getName().equals(propNames[i])) {
-			creatorProperties[i] = properties[j];				
-			constructorProperties.put(properties[j], properties[j]);
+			creatorProperties.add(properties[j]);							
 			break;
 		    }			    			    
 		}                        
 	    }
+	} else {
+	    creatorProperties = new ArrayList(0);
 	}
-	else creatorProperties = new FormProperty[0];		
 	return creatorProperties;
     }
     
@@ -2524,14 +2537,14 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(");\n"); // NOI18N
         }
     }
-
+    
     void regenerateCode() {
         if (!codeUpToDate) {	    
             codeUpToDate = true;
             regenerateVariables();
             regenerateInitComponents();
             ensureMainClassImplementsListeners();
-            FormModel.t("code regenerated"); //NOI18N
+            FormModel.t("code regenerated"); //NOI18N	    
         }
     }
     
@@ -2813,7 +2826,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeUpToDate = false;
 
             if ((!codeUpToDate && toBeSaved) || (isJavaEditorDisplayed())) {
-                regenerateCode();
+		regenerateCode();
             }
 
             if (toBeSaved) {
