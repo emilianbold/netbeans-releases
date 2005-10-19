@@ -121,9 +121,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-what">
-  <p>
-   XXX no answer for arch-what
-  </p>
+  The <api name="org.openide.awt" type="export" category="official"
+  url="@org-openide-awt@/org/openide/awt/package-summary.html" group="java"/>
+  provides API/SPI for UI related aspects of application.
  </answer>
 
 
