@@ -172,7 +172,6 @@ implements Executor {
             LocatableEvent event = (LocatableEvent) ev;
             String className = event.location ().declaringType ().name ();
             ThreadReference tr = event.thread ();
-            JPDAThread t = getDebuggerImpl ().getThread (tr);
             
             // 3) ignore step events in not current threads
             JPDAThreadImpl ct = (JPDAThreadImpl) getDebuggerImpl ().
@@ -215,14 +214,16 @@ implements Executor {
                 System.out.println("SS  SmartSteppingFilter.stopHere (" + 
                     className + ") ? " + fsh
                 );
-            if ( fsh &&
-                 getCompoundSmartSteppingListener ().stopHere 
+            if (fsh) {
+                JPDAThread t = getDebuggerImpl ().getThread (tr);
+                if (getCompoundSmartSteppingListener ().stopHere 
                      (lookupProvider, t, getSmartSteppingFilterImpl ())
-            ) {
-                // YES!
-                getDebuggerImpl ().setStoppedState (tr);
-                //S ystem.out.println("/nStepAction.exec end - do not resume");
-                return false; // do not resume
+                ) {
+                    // YES!
+                    getDebuggerImpl ().setStoppedState (tr);
+                    //S ystem.out.println("/nStepAction.exec end - do not resume");
+                    return false; // do not resume
+                }
             }
 
             // do not stop here -> start smart stepping!

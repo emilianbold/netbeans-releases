@@ -190,7 +190,6 @@ implements Executor, PropertyChangeListener {
             LocatableEvent le = (LocatableEvent) event;
 
             ThreadReference tr = le.thread ();
-            JPDAThread t = getDebuggerImpl ().getThread (tr);
 
             try {
                 if (tr.frame(0).location().method().isSynthetic()) {
@@ -203,6 +202,7 @@ implements Executor, PropertyChangeListener {
                 // This may happen while debugging a free form project 
             }
 
+            JPDAThread t = getDebuggerImpl ().getThread (tr);
             boolean stop = getCompoundSmartSteppingListener ().stopHere 
                                (contextProvider, t, getSmartSteppingFilterImpl ());
             if (stop) {
