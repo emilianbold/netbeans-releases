@@ -125,21 +125,16 @@ class JavaCodeGenerator extends CodeGenerator {
     
     private SwingLayoutCodeGenerator swingGenerator;
 
-    private class RADComponentPropertyFilter implements FormProperty.Filter {
+    private class PropertiesFilter implements FormProperty.Filter {
+		
+	private final java.util.List properties;
 	
-	private final RADComponent comp;
-	public RADComponentPropertyFilter(RADComponent comp) {
-	    this.comp = comp;
+	public PropertiesFilter(java.util.List properties) {
+	    this.properties = properties;
 	}
 	
-        public boolean accept(FormProperty property) {
-	    	
-	    java.util.List properties = null;		
-	    if(constructorProperties!=null) {
-		properties = (java.util.List) constructorProperties.get(comp);
-	    }	    
-	    
-            return (property.isChanged()
+        public boolean accept(FormProperty property) {	    		     
+	    return (property.isChanged()
                        && (properties == null
                            || !properties.contains(property)))
                     || property.getPreCode() != null
@@ -1285,7 +1280,8 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            Iterator it = comp.getBeanPropertiesIterator(new RADComponentPropertyFilter(comp), false);
+	    java.util.List usedProperties = constructorProperties != null ? (java.util.List)constructorProperties.get(comp) : null;
+            Iterator it = comp.getBeanPropertiesIterator(new PropertiesFilter(usedProperties), false);
             while (it.hasNext()) {
                 FormProperty prop = (FormProperty) it.next();
 
