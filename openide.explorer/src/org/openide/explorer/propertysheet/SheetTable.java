@@ -1201,7 +1201,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         lastSelectedRow = ed ? getEditingRow() : getSelectionModel().getAnchorSelectionIndex();
 
         if (ed) {
-            getEditor().cancelCellEditing();
+            getEditor().stopCellEditing();
         }
 
         super.tableChanged(e);
