@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -369,18 +370,12 @@ public class ColorModel {
             editorPane.setContentType (internalMimeType);
             document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
-            editorPane.setEditable (false);            
-            String exampleName = language == ALL_LANGUAGES ?
-                "JavaExample" :
-                language + "Example";
-            InputStream is = getClass ().getResourceAsStream (
-                "/org/netbeans/modules/options/colors/" + exampleName
-            );
+            editorPane.setEditable (false);
+            InputStream is = loadPreviewExample (language);
             if (is == null) {
                 assert true :
                        "Example for " + language + " language not found.";
-                is = getClass ().getResourceAsStream 
-                    ("/org/netbeans/modules/options/colors/JavaExample");
+                is = loadPreviewExample ("Java");
             }
             BufferedReader r = new BufferedReader (new InputStreamReader (is));
             StringBuffer sb = new StringBuffer ();
@@ -396,6 +391,21 @@ public class ColorModel {
             }
         }
         
+        private InputStream loadPreviewExample (String language) {
+            String exampleName = language == ALL_LANGUAGES ?
+                "JavaExample" :
+                language + "Example";
+            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+            FileObject exampleFile = fs.findResource 
+                ("OptionsDialog/PreviewExamples/" + exampleName);
+            try {
+                return exampleFile != null ? 
+                    exampleFile.getInputStream () : null;
+            } catch (FileNotFoundException fnfe) {
+                return null;
+            }
+        }
+
         private String languageToInternalMimeType (String language) {
             String mimeType = (
                 language == HIGHLIGHTING_LANGUAGE || 
