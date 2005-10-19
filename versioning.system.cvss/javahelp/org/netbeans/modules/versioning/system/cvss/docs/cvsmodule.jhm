@@ -10,29 +10,28 @@
 
 	<mapID target="credits" url="credits.html" />
 
-	<!--<mapID target="ctx_cvsmoduleintro" url="cvsmodule/ctx_cvsmoduleintro.html" />-->
-        
 	<mapID target="cvs-lite_about" url="cvsmodule/cvs-lite_about.html" />
 	<mapID target="cvs-lite_overview" url="cvsmodule/cvs-lite_overview.html" />
+	<mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />        
 	<mapID target="cvs-lite_using" url="cvsmodule/cvs-lite_using.html" />
-	<mapID target="cvs-lite_projects" url="cvsmodule/cvs-lite_project-system.html" />
 	<mapID target="cvs-lite_status" url="cvsmodule/cvs-lite_status.html" />
+	<mapID target="cvs-lite_histories" url="cvsmodule/cvs-lite_histories.html" />        
+	<mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" />        
 
 	<mapID target="cvs-lite_checkout" url="cvsmodule/cvs-lite_checkout.html" />
 	<mapID target="cvs-lite_updating" url="cvsmodule/cvs-lite_updating.html" />
-	<mapID target="cvs-lite_commit" url="cvsmodule/cvs-lite_commit.html" />
 	<mapID target="cvs-lite_diff" url="cvsmodule/cvs-lite_diff.html" />
+	<mapID target="cvs-lite_commit" url="cvsmodule/cvs-lite_commit.html" />
+	<mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_reverting.html" />        
+	<mapID target="cvs-lite_projects" url="cvsmodule/cvs-lite_project-system.html" />
+
+	<mapID target="cvs-lite_branches" url="cvsmodule/cvs-lite_branches.html" />        
 	<mapID target="cvs-lite_merge" url="cvsmodule/cvs-lite_merge.html" />
 	<mapID target="cvs-lite_mergeresolve" url="cvsmodule/cvs-lite_mergeresolve.html" />
 	<mapID target="cvs-lite_patch" url="cvsmodule/cvs-lite_patch.html" />
-	
-	<mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_reverting.html" />
-	<mapID target="cvs-lite_histories" url="cvsmodule/cvs-lite_histories.html" />
-	<mapID target="cvs-lite_branches" url="cvsmodule/cvs-lite_branches.html" />
-	
-	<mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" />
-	<mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />
         
+	<mapID target="cvs-lite_non-cvs" url="cvsmodule/cvs-lite_non-cvs.html" />        
+
 <!-- CSH topics -->
 
 	<!-- CSH topics for wizards -->

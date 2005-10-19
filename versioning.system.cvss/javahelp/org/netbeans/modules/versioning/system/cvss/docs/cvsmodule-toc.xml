@@ -27,7 +27,9 @@
               <tocitem text="Working with Branches" target="cvs-lite_branches" />  
               <tocitem text="Merging File Revisions from a Branch" target="cvs-lite_merge" /> 
               <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
-              <tocitem text="Creating and Applying a Patch" target="cvs-lite_patch" />  
-              </tocitem>
+              <tocitem text="Creating and Applying a Patch" target="cvs-lite_patch" />
+  
+              <tocitem text="Working with Other Version Control Systems" target="cvs-lite_non-cvs" />                
+          </tocitem>
       </tocitem>
 </toc>
