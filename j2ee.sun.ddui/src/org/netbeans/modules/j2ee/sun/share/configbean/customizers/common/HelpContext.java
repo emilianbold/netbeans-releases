@@ -44,6 +44,7 @@ public class HelpContext {
 	public static final String HELP_CACHE_MAPPING_CONSTRAINT_POPUP = "AS_CFG_WebAppCacheMappingConstraintField";
 	public static final String HELP_CACHE_MAPPING_CONSTRAINT_VALUE_POPUP = "AS_CFG_WebAppCacheMappingConstraintFieldValue";
 	public static final String HELP_SERVLET_SERVICE_ENDPOINT_POPUP = "AS_CFG_ServletWebServiceEndpoint";
+	public static final String HELP_SERVICE_ENDPOINT_POPUP = "AS_CFG_WebServiceEndpoint";
 	public static final String HELP_SERVICE_CALL_PROPERTY_POPUP = "AS_CFG_ServiceRefCallProperty";
 	public static final String HELP_SERVICE_PORT_STUB_PROPERTY_POPUP = "AS_CFG_ServiceRefPortInfoStubProperty";
 	public static final String HELP_SERVICE_PORT_CALL_PROPERTY_POPUP = "AS_CFG_ServiceRefPortInfoCallProperty";
