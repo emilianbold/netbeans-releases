@@ -33,14 +33,10 @@ import org.openide.util.Mutex;
  *
  * @author Jiri Rechtacek
  */
-public class DataFolderIndexTest extends NbTestCase {
+public class DataFolderIndexTest extends LoggingTestCaseHid {
     DataFolder df;
     FileObject fo;
     
-    static {
-        System.setProperty("org.openide.util.Lookup", "org.openide.loaders.DataFolderIndexTest$Lkp");
-    }
-
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
@@ -49,9 +45,8 @@ public class DataFolderIndexTest extends NbTestCase {
     }
     
     protected void setUp () throws Exception {
-        if (!(org.openide.util.Lookup.getDefault() instanceof Lkp)) {
-            fail("We need our Lkp: " + org.openide.util.Lookup.getDefault());
-        }
+        registerIntoLookup(new ErrManager());
+        registerIntoLookup(new Pool ());    
 
 		FileObject old = Repository.getDefault ().getDefaultFileSystem ().findResource ("TestTemplates");
 		if (old != null) {
@@ -154,17 +149,6 @@ public class DataFolderIndexTest extends NbTestCase {
             assertEquals ("Node " + arr [0] + " has as same position in Node's Index [" + Arrays.asList (fromNode.getNodes ()) + "]" +
                     "as in folder's Index [" + Arrays.asList (fromFolder.getNodes ()) + "].",
                     fromFolder.indexOf (arr [i]), fromNode.indexOf (arr [i]));
-        }
-    }
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp() {
-            this(new org.openide.util.lookup.InstanceContent());
-        }
-        
-        private Lkp(org.openide.util.lookup.InstanceContent ic) {
-            super(ic);
-            ic.add(new ErrManager());
-            ic.add(new Pool ());
         }
     }
     
