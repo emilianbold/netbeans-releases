@@ -38,6 +38,7 @@ public class SuiteProjectTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        TestBase.initializeBuildProperties(getWorkDir());
     }
     
     public void testProjectInformation() throws Exception {
