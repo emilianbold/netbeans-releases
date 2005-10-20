@@ -67,14 +67,6 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 	private GenericTableModel propertiesModel;
 	private GenericTablePanel propertiesPanel;
 
-    // Table for editing Property idempotent url patterns
-    private GenericTableModel idempotentUrlPatternModel;
-    private GenericTablePanel idempotentUrlPatternPanel;
-
-    // Listens for changes to the default list of charsets
-    private ParameterEncodingPanel parameterEncodingPanel;
-    private PropertyChangeListener parameterEncodingChangeListener;
-    
     // true if AS 8.1+ fields are visible.
     private boolean as81FeaturesVisible;
     
@@ -301,25 +293,6 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
             
 		as81FeaturesVisible = true;
         
-        /** Add parameter encoding panel.
-         */
-        parameterEncodingPanel = new ParameterEncodingPanel();
-
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0;
-        gridBagConstraints.insets = new Insets(0,0,0,0); //new Insets(4, 4, 4, 4);
-        add(parameterEncodingPanel, gridBagConstraints);		
-
-        parameterEncodingChangeListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent pce) {
-                String newValue = (String) pce.getNewValue();
-                updateParameterEncoding(pce.getPropertyName(), newValue);
-            }
-        };
-        
 		/** Add call properties table panel :
 		 *  TableEntry list has three properties: Name, Value, Description
 		 */
@@ -338,7 +311,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 			DynamicPropertyPanel.class, HelpContext.HELP_WEBAPP_JSPCONFIG_POPUP,
 			PropertyListMapping.getPropertyList(PropertyListMapping.WEBAPP_JSPCONFIG_PROPERTIES));
 		
-        gridBagConstraints = new GridBagConstraints();
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -360,43 +333,14 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
 		add(propertiesPanel, gridBagConstraints);
-                
-        // add idempotentUrlPattern table
-        tableColumns = new ArrayList(2);
-        tableColumns.add(new GenericTableModel.AttributeEntry(SunWebApp.IDEMPOTENT_URL_PATTERN, "UrlPattern", // NOI18N 
-            webappBundle, "UrlPattern", true, false)); // NOI18N
-        tableColumns.add(new GenericTableModel.AttributeEntry(SunWebApp.IDEMPOTENT_URL_PATTERN, "NumOfRetries", // NOI18N 
-            webappBundle, "NumOfRetries", true, false)); // NOI18N
-        
-        idempotentUrlPatternModel = new GenericTableModel(SunWebApp.IDEMPOTENT_URL_PATTERN, tableColumns);
-        idempotentUrlPatternPanel = new GenericTablePanel(idempotentUrlPatternModel, 
-            webappBundle, "IdempotentUrlPatterns", // NOI18N - property name
-            HelpContext.HELP_WEBAPP_IDEMPOTENTURLPATTERN_POPUP);
-        idempotentUrlPatternPanel.setHeadingMnemonic(webappBundle.getString("MNE_IdempotentUrlPatterns").charAt(0)); // NOI18N
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-        add(idempotentUrlPatternPanel, gridBagConstraints);		
 	}
 	
 	public void addListeners() {
 		jspConfigModel.addTableModelListener(this);
 		propertiesModel.addTableModelListener(this);
-		idempotentUrlPatternModel.addTableModelListener(this);
-		parameterEncodingPanel.addPropertyChangeListener(ParameterEncodingPanel.PROP_DEFAULT_CHARSET, parameterEncodingChangeListener);
-		parameterEncodingPanel.addPropertyChangeListener(ParameterEncodingPanel.PROP_FORM_HINT_FIELD, parameterEncodingChangeListener);
-		parameterEncodingPanel.addListeners();
 	}
 	
 	public void removeListeners() {
-		parameterEncodingPanel.removeListeners();
-		parameterEncodingPanel.removePropertyChangeListener(ParameterEncodingPanel.PROP_DEFAULT_CHARSET, parameterEncodingChangeListener);
-		parameterEncodingPanel.removePropertyChangeListener(ParameterEncodingPanel.PROP_FORM_HINT_FIELD, parameterEncodingChangeListener);
-		idempotentUrlPatternModel.removeTableModelListener(this);
 		propertiesModel.removeTableModelListener(this);
 		jspConfigModel.removeTableModelListener(this);
 	}
@@ -435,8 +379,6 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
             showAS81Fields();
     		jTxtContextRoot.setText(bean.getContextRoot());
             jTxtErrorUrl.setText(bean.getErrorUrl());
-    		parameterEncodingPanel.initFields(bean.getAppServerVersion(), bean.getDefaultCharset(), bean.getFormHintField(), true);
-    		idempotentUrlPatternPanel.setModelBaseBean(bean.getIdempotentUrlPattern());
         } else {
             hideAS81Fields();
         }
@@ -453,28 +395,6 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
             jLblErrorUrl.setVisible(true);
             jTxtErrorUrl.setVisible(true);
             
-            GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-            gridBagConstraints.fill = GridBagConstraints.BOTH;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.weighty = 1.0;
-            gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-            
-            int jcpIndex = BaseCustomizer.getComponentIndex(this, jspConfigPanel);
-            if(jcpIndex != -1) {
-                add(parameterEncodingPanel, gridBagConstraints, jcpIndex);
-            } else {
-                add(parameterEncodingPanel, gridBagConstraints);
-            }
-            
-            gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-            gridBagConstraints.fill = GridBagConstraints.BOTH;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.weighty = 1.0;
-            gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-            add(idempotentUrlPatternPanel, gridBagConstraints);
-            
             as81FeaturesVisible = true;
         }
     }
@@ -485,27 +405,11 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
             jTxtContextRoot.setVisible(false);
             jLblErrorUrl.setVisible(false);
             jTxtErrorUrl.setVisible(false);
-            remove(parameterEncodingPanel);
-            remove(idempotentUrlPatternPanel);
             
             as81FeaturesVisible = false;
         }
     }
 	
-    private void updateParameterEncoding(String propName, String newValue) {
-        WebAppRoot bean = masterPanel.getBean();
-        if(bean != null) {
-            try {
-                if(ParameterEncodingPanel.PROP_DEFAULT_CHARSET.equals(propName)) {
-                    bean.setDefaultCharset(newValue);
-                } else if(ParameterEncodingPanel.PROP_FORM_HINT_FIELD.equals(propName)) {
-                    bean.setFormHintField(newValue);
-                }
-            } catch(PropertyVetoException ex) {
-            }
-        }
-    }
-    
 	/** ----------------------------------------------------------------------- 
 	 *  Implementation of javax.swing.event.TableModelListener
 	 */
@@ -523,9 +427,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 //					bean.setJspConfig((JspConfig) jspConfigModel.getDataBaseBean());
 				} else if(eventSource == propertiesModel) {
 					bean.setProperties(propertiesModel.getData());
-				} else if(eventSource == idempotentUrlPatternModel) {
-                                    // Nothing to do, same deal as JspConfig
-                                }
+				}
 				
 				// Force property change to be issued by the bean
 				bean.setDirty();
@@ -534,7 +436,4 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 			}
 		}
 	}
-
-        
-        
 }

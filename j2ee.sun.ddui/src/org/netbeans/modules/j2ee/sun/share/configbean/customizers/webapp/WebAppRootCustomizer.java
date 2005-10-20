@@ -19,21 +19,11 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp;
 
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.Iterator;
-
-import java.beans.Customizer;
-import java.beans.PropertyVetoException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
@@ -41,9 +31,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.ServletVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.ErrorMessageDB;
 import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerTitlePanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
-
 
 /**
  *
@@ -53,19 +41,24 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	
 	public static final String CACHE_HELPER_LIST_CHANGED = "CacheHelperListChanged"; //NOI18N
 	public static final String SERVLET_LIST_CHANGED = "ServletListChanged"; //NOI18N
-        public static final String SERVICE_REF_LIST_CHANGED = "ServiceRefListChanged"; //NOI18N
-        public static final String RESOURCE_REF_LIST_CHANGED = "ResourceRefListChanged"; //NOI18N
+	public static final String SERVICE_REF_LIST_CHANGED = "ServiceRefListChanged"; //NOI18N
+	public static final String RESOURCE_REF_LIST_CHANGED = "ResourceRefListChanged"; //NOI18N
 
 	
 	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 		
-	private static final int NUM_SERVLET24_PANELS = 2;
-	private static final int SERVICE_TAB_INDEX = 2;
+	private static final int NUM_SERVLET24_PANELS = 1;
+	private static final int NUM_AS81_PANELS = 1;
+	private static final int PROPERTIES_TAB_INDEX = 1;
+	private static final int MESSAGE_TAB_INDEX = 3;
 	
 	private WebAppRoot theBean;
 	private boolean servlet24FeaturesVisible;
 	
+    // true if AS 8.1+ fields are visible.
+    private boolean as81FeaturesVisible;
+    
 	/** Creates new form WebAppRootCustomizer */
 	public WebAppRootCustomizer() {
 		initComponents();
@@ -113,13 +106,15 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
     // End of variables declaration//GEN-END:variables
 
 	private WebAppGeneralPanel generalPanel;
+    private WebAppPropertiesPanel propertiesPanel;
 	private WebAppSessionConfigPanel sessionConfigPanel;
-	private WebAppServicesPanel servicesPanel;
 	private WebAppMessagesPanel messagesPanel;
 	private WebAppLocalePanel localeMappingPanel;
 	private WebAppCachePanel cachePanel;
 	
 	private void initUserComponents() {
+		as81FeaturesVisible = true;
+        
 		// Add title panel
 		addTitlePanel(webappBundle.getString("TITLE_SunWebApplication"));	// NOI18N
 		getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_SunWebApplication"));	// NOI18N
@@ -130,14 +125,15 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		webAppTabbedPanel.addTab(webappBundle.getString("GENERAL_TAB"), generalPanel);	// NOI18N
 
 		// Add session configuration panel
+		propertiesPanel = new WebAppPropertiesPanel(this);
+		webAppTabbedPanel.addTab(webappBundle.getString("PROPERTIES_TAB"), propertiesPanel);	// NOI18N
+
+		// Add session configuration panel
 		sessionConfigPanel = new WebAppSessionConfigPanel(this);
 		webAppTabbedPanel.addTab(webappBundle.getString("SESSION_CONFIG_TAB"), sessionConfigPanel);	// NOI18N
 
-		// Add services & messages panels
+		// Add messages panel
 		servlet24FeaturesVisible = true;
-		servicesPanel = new WebAppServicesPanel(this);
-		webAppTabbedPanel.addTab(webappBundle.getString("SERVICES_TAB"), servicesPanel);	// NOI18N
-
 		messagesPanel = new WebAppMessagesPanel(this);
 		webAppTabbedPanel.addTab(webappBundle.getString("MESSAGES_TAB"), messagesPanel);	// NOI18N
 		
@@ -155,11 +151,18 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	
 	protected void initFields() {
 		generalPanel.initFields(theBean);
-		sessionConfigPanel.initFields(theBean);
 		
+        if(ASDDVersion.SUN_APPSERVER_8_1.compareTo(theBean.getAppServerVersion()) <= 0) {
+            showAS81Panels();
+            propertiesPanel.initFields(theBean);
+        } else {
+            hideAS81Panels();
+        }
+        
+		sessionConfigPanel.initFields(theBean);
+        
 		if(theBean.getJ2EEModuleVersion().compareTo(ServletVersion.SERVLET_2_4) >= 0) {
 			showServlet24Panels();
-			servicesPanel.initFields(theBean);
 			messagesPanel.initFields(theBean);
 		} else {
 			hideServlet24Panels();
@@ -171,30 +174,40 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	
 	private void showServlet24Panels() {
 		if(!servlet24FeaturesVisible) {
-			// Put messages panel in first, it'll get kicked to the correct index
-			// by the next insert of the services panel.
 			webAppTabbedPanel.insertTab(webappBundle.getString("MESSAGES_TAB"),	// NOI18N
-				null, messagesPanel, null, SERVICE_TAB_INDEX);
-			webAppTabbedPanel.insertTab(webappBundle.getString("SERVICES_TAB"),	// NOI18N
-				null, servicesPanel, null, SERVICE_TAB_INDEX);
+				null, messagesPanel, null, getMessagesTabIndex());
 			servlet24FeaturesVisible = true;
 		}
 	}
 	
 	private void hideServlet24Panels() {
 		if(servlet24FeaturesVisible) {
-			webAppTabbedPanel.removeTabAt(SERVICE_TAB_INDEX);	// Remove services panel
-			webAppTabbedPanel.removeTabAt(SERVICE_TAB_INDEX);	// Now essages panel due to above line
+			webAppTabbedPanel.removeTabAt(getMessagesTabIndex());	// Remove messages panel
 			servlet24FeaturesVisible = false;
 		}
 	}
-	
+    
+    private void showAS81Panels() {
+        if(!as81FeaturesVisible) {
+			webAppTabbedPanel.insertTab(webappBundle.getString("PROPERTIES_TAB"),	// NOI18N
+				null, propertiesPanel, null, PROPERTIES_TAB_INDEX);
+			as81FeaturesVisible = true;
+        }
+    }
+    
+	private void hideAS81Panels() {
+        if(as81FeaturesVisible) {
+			webAppTabbedPanel.removeTabAt(PROPERTIES_TAB_INDEX); // Remove properties panel
+			as81FeaturesVisible = false;
+        }
+    }
+    
 	public void addListeners() {
 		super.addListeners();
 		
 		generalPanel.addListeners();
+        propertiesPanel.addListeners();
 		sessionConfigPanel.addListeners();
-		servicesPanel.addListeners();
 		messagesPanel.addListeners();
 		localeMappingPanel.addListeners();
 		cachePanel.addListeners();
@@ -208,8 +221,8 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		cachePanel.removeListeners();
 		localeMappingPanel.removeListeners();
 		messagesPanel.removeListeners();
-		servicesPanel.removeListeners();
 		sessionConfigPanel.removeListeners();
+        propertiesPanel.removeListeners();
 		generalPanel.removeListeners();
 		
 		theBean.removePropertyChangeListener(this);
@@ -242,14 +255,28 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		
 		return result;
 	}
+    
+    private int getMessagesTabIndex() {
+        int result = MESSAGE_TAB_INDEX;
+        if(!as81FeaturesVisible) {
+            result -= 1;
+        }
+        return result;
+    }
 	
 	private int getAdjustedTabIndex() {
 		// Determine which tab has focus.
 		int selectedTabIndex = webAppTabbedPanel.getSelectedIndex();
 		
 		// Adjust tab index to normalize tab indices of tabs that come after
+		// the AS 8.1 specific panels, in case they are not showing.
+        if(!as81FeaturesVisible && selectedTabIndex >= PROPERTIES_TAB_INDEX) {
+            selectedTabIndex += NUM_AS81_PANELS;
+        }
+        
+		// Adjust tab index to normalize tab indices of tabs that come after
 		// the Servlet 2.4 specific panels, in case they are not showing.
-		if(!servlet24FeaturesVisible && selectedTabIndex >= SERVICE_TAB_INDEX) {
+		if(!servlet24FeaturesVisible && selectedTabIndex >= MESSAGE_TAB_INDEX) {
 			selectedTabIndex += NUM_SERVLET24_PANELS;
 		}
 		
@@ -262,7 +289,7 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	 * @return String representing the current active help ID for this customizer 
 	 */
 	public String getHelpId() {
-		String result = "AS_CFG_WebAppGeneral";	// NOI18N
+		String result = "AS_CFG_WebAppGeneral"; // NOI18N
 		
 		// Determine which tab has focus and return help context for that tab.
 		switch(getAdjustedTabIndex()) {
@@ -270,16 +297,16 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 				result = cachePanel.getHelpId();
 				break;
 			case 4:
-				result = "AS_CFG_WebAppLocale";	// NOI18N
+				result = "AS_CFG_WebAppLocale"; // NOI18N
 				break;
 			case 3:
-				result = "AS_CFG_WebAppMessages";	// NOI18N
+				result = "AS_CFG_WebAppMessages"; // NOI18N
 				break;
 			case 2:
-				result = "AS_CFG_WebAppServices";	// NOI18N
+				result = sessionConfigPanel.getHelpId();
 				break;
 			case 1:
-				result = sessionConfigPanel.getHelpId();
+				result = "AS_CFG_WebAppProperties"; // NOI18N
 				break;
 		}
 		
@@ -300,9 +327,9 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 			case 3:
 				return ValidationError.PARTITION_WEB_MESSAGES;
 			case 2:
-				return ValidationError.PARTITION_WEB_SERVICES;
-			case 1:
 				return sessionConfigPanel.getPartition();
+			case 1:
+				return ValidationError.PARTITION_WEB_PROPERTIES;
 			default:
 				return ValidationError.PARTITION_WEB_GENERAL;
 		}
