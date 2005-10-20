@@ -78,16 +78,6 @@ implements OperationListener {
 //        AddLoaderManuallyHid.addRemoveLoader (BLoader.getLoader (BLoader.class), false);
     }
     
-    protected void runTest () throws Throwable {
-        try {
-            super.runTest ();
-        } catch (AssertionFailedError err) {
-            AssertionFailedError n = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
-            n.initCause (err);
-            throw n;
-        }
-    }
-    
     //
     // Tests
     //
