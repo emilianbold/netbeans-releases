@@ -142,6 +142,10 @@ public class Annotator {
         } else {
             textAnnotation = "";
         }
+        if (textAnnotation.length() > 0) {
+            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation);
+        }
+        
         switch (status) {
         case FileInformation.STATUS_UNKNOWN:
         case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
@@ -193,6 +197,10 @@ public class Annotator {
         } else {
             textAnnotation = "";
         }
+        if (textAnnotation.length() > 0) {
+            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation);
+        }
+        
         switch (status) {
         case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
         case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
@@ -203,10 +211,10 @@ public class Annotator {
         case FileInformation.STATUS_VERSIONED_MERGE:
         case FileInformation.STATUS_UNKNOWN:
         case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-        case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
-        case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
         case FileInformation.STATUS_VERSIONED_CONFLICT:
             return name;
+        case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
+        case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
         case FileInformation.STATUS_VERSIONED_UPTODATE:
             return uptodateFormat.format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
