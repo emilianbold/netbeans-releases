@@ -34,8 +34,6 @@ import org.netbeans.modules.j2ee.sun.share.configbean.SessionEjb;
 public abstract class SessionEjbCustomizer extends EjbCustomizer 
             implements TableModelListener {
 
-    private WebserviceEndpointPanel websrvcEndpointPanel;
-
     /** Creates a new instance of SessionEjbCustomizer */
 	public SessionEjbCustomizer() {
 	}
@@ -45,14 +43,6 @@ public abstract class SessionEjbCustomizer extends EjbCustomizer
 
 
     protected void addTabbedBeanPanels() {
-        WebserviceEndpointModel websrvcEndpointModel = 
-            new WebserviceEndpointModel();
-        websrvcEndpointModel.addTableModelListener(this);
-        websrvcEndpointPanel = new WebserviceEndpointPanel(websrvcEndpointModel);
-        websrvcEndpointPanel.getAccessibleContext().setAccessibleName(bundle.getString("WebserviceEndpoint_Acsbl_Name"));       //NOI18N
-        websrvcEndpointPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("WebserviceEndpoint_Acsbl_Desc"));      //NOI18N
-        tabbedPanel.addTab(bundle.getString("LBL_WebserviceEndpoint"), // NOI18N
-            websrvcEndpointPanel);
     }
 
 
@@ -61,8 +51,6 @@ public abstract class SessionEjbCustomizer extends EjbCustomizer
             assert(false);
         }
         SessionEjb sessionEjb = (SessionEjb)theBean;
-        websrvcEndpointPanel.setModel(sessionEjb,
-            sessionEjb.getWebserviceEndpoint());
     }
 
 

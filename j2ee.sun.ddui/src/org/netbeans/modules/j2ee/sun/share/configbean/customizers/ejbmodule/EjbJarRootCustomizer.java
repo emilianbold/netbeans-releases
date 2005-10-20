@@ -48,7 +48,6 @@ public class EjbJarRootCustomizer extends BeanCustomizer
 
     private EjbJarRoot theBean;
     private MessageDestinationPanel msgDstnPanel;
-    private WebserviceDescriptionPanel websrvcDescPanel;
     private PmDescriptorPanel pmDescptrPanel;
     private PropertyPanel cmpPropertyPanel;
     private PropertyPanel schmaGnrtrPropPanel;
@@ -94,15 +93,6 @@ public class EjbJarRootCustomizer extends BeanCustomizer
         msgDstnPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("MessageDestination_Acsbl_Desc"));      //NOI18N
         tabbedPanel.addTab(bundle.getString("LBL_MessageDestination"), // NOI18N
             msgDstnPanel);
-
-        WebserviceDescriptionModel websrvcDescModel = 
-            new WebserviceDescriptionModel();
-        websrvcDescModel.addTableModelListener(this);
-        websrvcDescPanel = new WebserviceDescriptionPanel(websrvcDescModel);
-        websrvcDescPanel.getAccessibleContext().setAccessibleName(bundle.getString("WebserviceDescription_Acsbl_Name"));             //NOI18N
-        websrvcDescPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("WebserviceDescription_Acsbl_Desc"));      //NOI18N
-        tabbedPanel.addTab(bundle.getString("LBL_WebserviceDescription"), // NOI18N
-            websrvcDescPanel);
 
         PmDescriptorModel pmDescptrModel =  new PmDescriptorModel();
         pmDescptrModel.addTableModelListener(this);
@@ -201,14 +191,11 @@ public class EjbJarRootCustomizer extends BeanCustomizer
         uniqueIdTextField.setText(theBean.getUniqueId());
         uniqueIdTextField.setEditable(false);
         
-        //initialize messageDestination webserviceDescription cmpresource 
+        //initialize messageDestination cmpresource 
         //pmdescriptors
         msgDstnPanel.setModel(theBean,
             theBean.getMessageDestination());
 
-        websrvcDescPanel.setModel(theBean,
-            theBean.getWebserviceDescription());
-        
         setPmDescriptorsValues();
 
         setCmpResourceValues();
