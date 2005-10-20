@@ -12,16 +12,14 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
-import java.text.MessageFormat;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-
 import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
+
+import org.netbeans.modules.j2ee.sun.share.config.DDRoot;
+import org.openide.ErrorManager;
 
 
 /**
@@ -60,8 +58,42 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 	}
 	
 	public DConfigBean getDConfigBean(DDBeanRoot dDBeanRoot) {
-		// webservices.xml gets requested here.
-		return null;
+        if(null == dDBeanRoot) {
+            throw new IllegalArgumentException(bundle.getString("ERR_DDBeanIsNull"));
+        }
+        
+        if(null == dDBeanRoot.getXpath()) {
+            throw new IllegalArgumentException(bundle.getString("ERR_DDBeanHasNullXpath"));
+        }
+        
+        BaseRoot rootDCBean = null;
+        
+        if(dDBeanRoot.getXpath().equals("/webservices")) {
+            SunONEDeploymentConfiguration config = getConfig();
+
+            // If DDBean is not from our internal tree, normalize it to one that is.
+            if(!(dDBeanRoot instanceof DDRoot)) {
+                // If the root cache is empty, then it is likely that 
+                assert config.getDCBRootCache().entrySet().size() > 0 : "No DDBeanRoots have been cached.  No way to normalize " + dDBeanRoot;
+                dDBeanRoot = config.getStorage().normalizeDDBeanRoot(dDBeanRoot);
+            }
+
+            rootDCBean = (BaseRoot) config.getDCBRootCache().get(dDBeanRoot);
+
+            if(null == rootDCBean) {
+                try {
+                    rootDCBean = new WebServices();
+                    rootDCBean.init(dDBeanRoot, config, dDBeanRoot);
+                    config.getDCBCache().put(dDBeanRoot, rootDCBean);
+                    config.getDCBRootCache().put(dDBeanRoot, rootDCBean);
+                } catch(ConfigurationException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    rootDCBean = null;
+                }
+            }
+        }
+        
+        return rootDCBean;
 	}
 
 	public String getComponentName() {

@@ -226,11 +226,11 @@ public class ServletRef extends Base {
 					sg.setPrincipalName(principalName);
 				}
 				
-				WebserviceEndpoint [] wsEndpoints = (WebserviceEndpoint []) 
-					Utils.listToArray(getWebServiceEndpoints(), WebserviceEndpoint.class);
-				if(wsEndpoints != null) {
-					sg.setWebserviceEndpoint(wsEndpoints);
-				}				
+//				WebserviceEndpoint [] wsEndpoints = (WebserviceEndpoint []) 
+//					Utils.listToArray(getWebServiceEndpoints(), WebserviceEndpoint.class);
+//				if(wsEndpoints != null) {
+//					sg.setWebserviceEndpoint(wsEndpoints);
+//				}				
 
 				return sg;
 			}

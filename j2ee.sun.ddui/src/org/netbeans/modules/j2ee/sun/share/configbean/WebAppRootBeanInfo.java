@@ -20,7 +20,7 @@ public class WebAppRootBeanInfo extends SimpleBeanInfo {
     // Bean descriptor//GEN-FIRST:BeanDescriptor
     /*lazy BeanDescriptor*/
     private static BeanDescriptor getBdescriptor(){
-        BeanDescriptor beanDescriptor = new BeanDescriptor  ( WebAppRoot.class , org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.WebAppRootCustomizer.class );
+        BeanDescriptor beanDescriptor = new BeanDescriptor  ( org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class , org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.WebAppRootCustomizer.class );
         beanDescriptor.setDisplayName ( "WARDisplayName" );
         beanDescriptor.setShortDescription ( "WARShortDescription" );//GEN-HEADEREND:BeanDescriptor
 		
@@ -46,19 +46,19 @@ public class WebAppRootBeanInfo extends SimpleBeanInfo {
         PropertyDescriptor[] properties = new PropertyDescriptor[9];
     
         try {
-            properties[PROPERTY_classLoader] = new PropertyDescriptor ( "classLoader", WebAppRoot.class, "isClassLoader", "setClassLoader" );
+            properties[PROPERTY_classLoader] = new PropertyDescriptor ( "classLoader", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "isClassLoader", "setClassLoader" );
             properties[PROPERTY_classLoader].setExpert ( true );
-            properties[PROPERTY_contextRoot] = new PropertyDescriptor ( "contextRoot", WebAppRoot.class, "getContextRoot", "setContextRoot" );
-            properties[PROPERTY_delegate] = new PropertyDescriptor ( "delegate", WebAppRoot.class, "isDelegate", "setDelegate" );
-            properties[PROPERTY_extraClassPath] = new PropertyDescriptor ( "extraClassPath", WebAppRoot.class, "getExtraClassPath", "setExtraClassPath" );
-            properties[PROPERTY_identity] = new PropertyDescriptor ( "identity", WebAppRoot.class, "getIdentity", "setIdentity" );
-            properties[PROPERTY_jspConfig] = new PropertyDescriptor ( "jspConfig", WebAppRoot.class, "getJspConfig", "setJspConfig" );
+            properties[PROPERTY_contextRoot] = new PropertyDescriptor ( "contextRoot", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "getContextRoot", "setContextRoot" );
+            properties[PROPERTY_delegate] = new PropertyDescriptor ( "delegate", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "isDelegate", "setDelegate" );
+            properties[PROPERTY_extraClassPath] = new PropertyDescriptor ( "extraClassPath", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "getExtraClassPath", "setExtraClassPath" );
+            properties[PROPERTY_identity] = new PropertyDescriptor ( "identity", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "getIdentity", "setIdentity" );
+            properties[PROPERTY_jspConfig] = new PropertyDescriptor ( "jspConfig", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "getJspConfig", "setJspConfig" );
             properties[PROPERTY_jspConfig].setPropertyEditorClass ( org.netbeans.modules.j2ee.sun.share.configbean.editors.DummyPropertyEditor.class );
-            properties[PROPERTY_localeCharsetInfo] = new PropertyDescriptor ( "localeCharsetInfo", WebAppRoot.class, "getLocaleCharsetInfo", "setLocaleCharsetInfo" );
-            properties[PROPERTY_property] = new IndexedPropertyDescriptor ( "property", WebAppRoot.class, null, null, "getProperty", null );
+            properties[PROPERTY_localeCharsetInfo] = new PropertyDescriptor ( "localeCharsetInfo", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "getLocaleCharsetInfo", "setLocaleCharsetInfo" );
+            properties[PROPERTY_property] = new IndexedPropertyDescriptor ( "property", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, null, null, "getProperty", null );
             properties[PROPERTY_property].setExpert ( true );
             properties[PROPERTY_property].setPropertyEditorClass ( org.netbeans.modules.j2ee.sun.share.configbean.editors.DummyPropertyEditor.class );
-            properties[PROPERTY_refIdentity] = new PropertyDescriptor ( "refIdentity", WebAppRoot.class, "getRefIdentity", null );
+            properties[PROPERTY_refIdentity] = new PropertyDescriptor ( "refIdentity", org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot.class, "getRefIdentity", null );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 		

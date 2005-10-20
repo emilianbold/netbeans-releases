@@ -18,15 +18,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
 
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
-import javax.enterprise.deploy.model.XpathEvent;
-import javax.enterprise.deploy.spi.DConfigBean;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
@@ -38,7 +33,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.JspConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.web.LocaleCharsetInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
-import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 import org.openide.ErrorManager;
 
 
@@ -74,9 +69,6 @@ import org.openide.ErrorManager;
  *		message-destination : MessageDestination[0,n]
  *			message-destination-name : String
  *			jndi-name : String
- *		webservice-description : WebserviceDescription[0,n]
- *			webservice-description-name : String
- *			wsdl-publish-location : String?
  *
  *
  * @author  Peter Williams
@@ -283,27 +275,27 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					}
 				}
 
-                                if(classLoader != null) {
-                                    if(classLoader.toString().equals("true")){       //NOI18N
-                                        try {
-                                            MyClassLoader webClassLoader = swa.newMyClassLoader();
+                if(classLoader != null) {
+                    if(classLoader.toString().equals("true")){       //NOI18N
+                        try {
+                            MyClassLoader webClassLoader = swa.newMyClassLoader();
 
-                                            if(delegate != null) {
-                                                webClassLoader.setDelegate(Boolean.toString(isDelegate()));
-                                            } else {
-                                                webClassLoader.setDelegate(Boolean.TRUE.toString());
-                                            }
+                            if(delegate != null) {
+                                webClassLoader.setDelegate(Boolean.toString(isDelegate()));
+                            } else {
+                                webClassLoader.setDelegate(Boolean.TRUE.toString());
+                            }
 
-                                            if(Utils.notEmpty(getExtraClassPath())) {
-                                                webClassLoader.setExtraClassPath(getExtraClassPath());
-                                            }
+                            if(Utils.notEmpty(getExtraClassPath())) {
+                                webClassLoader.setExtraClassPath(getExtraClassPath());
+                            }
 
-                                            swa.setMyClassLoader(webClassLoader);
-                                        } catch(VersionNotSupportedException ex) {
-                                            // Should not happen, but we have to catch it for now.
-                                        }
-                                    }
-                                }
+                            swa.setMyClassLoader(webClassLoader);
+                        } catch(VersionNotSupportedException ex) {
+                            // Should not happen, but we have to catch it for now.
+                        }
+                    }
+                }
                                 
 				try {
 					if(Utils.notEmpty(defaultCharset) || Utils.notEmpty(formHintField)) {
@@ -339,12 +331,6 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					Utils.listToArray(getMessageDestinations(), MessageDestination.class);
 				if(msgDests != null) {
 					swa.setMessageDestination(msgDests);
-				}
-				
-				WebserviceDescription [] wsDescrs = (WebserviceDescription []) 
-					Utils.listToArray(getWebServiceDescriptions(), WebserviceDescription.class);
-				if(wsDescrs != null) {
-					swa.setWebserviceDescription(wsDescrs);
 				}
 				
 				if(localeInfo.sizeLocaleCharsetMap() > 0 || 
@@ -467,7 +453,6 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 			
 			properties = Utils.arrayToList(beanGraph.getWebProperty());
 			messageDestinations = Utils.arrayToList(beanGraph.getMessageDestination());
-			webServiceDescriptions = Utils.arrayToList(beanGraph.getWebserviceDescription());
 			
 			// Save any portion of the locale that has been specifie, regardless
 			// of whether it is DTD valid or not (e.g. we could save default locale
@@ -502,17 +487,16 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		contextRoot = null;
 		errorUrl = null;
 		extraClassPath = null;
-                defaultCharset = null;
-                formHintField = null;
+		defaultCharset = null;
+		formHintField = null;
 		idempotentUrlPattern = (SunWebApp) provider.newGraph(SunWebApp.class);
 		jspConfig = beanFactory.createJspConfig();
 		properties = null;
 		messageDestinations = null;
-		webServiceDescriptions = null;
 		localeInfo = beanFactory.createLocaleCharsetInfo();
 
-                classLoader = Boolean.FALSE;
-                delegate = Boolean.FALSE;
+		classLoader = Boolean.FALSE;
+		delegate = Boolean.FALSE;
 	}
 	
 	protected void setDefaultProperties() {
@@ -606,9 +590,6 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	
 	/** Holds list of MessageDestination properties. */
 	private List messageDestinations;
-	
-	/** Holds list of WebServiceDescription properties. */
-	private List webServiceDescriptions;
 	
 	/* Holds value of property LocaleCharsetInfo. */
 	private LocaleCharsetInfo localeInfo;
@@ -945,46 +926,6 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		getVCS().fireVetoableChange("messageDestination", oldMessageDestination, null);	// NOI18N
 		messageDestinations.remove(oldMessageDestination);
 		getPCS().firePropertyChange("messageDestination", oldMessageDestination, null );	// NOI18N
-	}
-	
-	/** Getter for property webserviceDescription.
-	 * @return Value of property webserviceDescription.
-	 *
-	 */
-	public List getWebServiceDescriptions() {
-		return webServiceDescriptions;
-	}
-	
-	public WebserviceDescription getWebServiceDescription(int index) {
-		return (WebserviceDescription) webServiceDescriptions.get(index);
-	}
-	
-	/** Setter for property webserviceDescription.
-	 * @param webserviceDescription New value of property webserviceDescription.
-	 *
-	 * @throws PropertyVetoException
-	 *
-	 */
-    public void setWebServiceDescriptions(List newWebServiceDescriptions) throws java.beans.PropertyVetoException {
-        List oldWebServiceDescriptions = webServiceDescriptions;
-        getVCS().fireVetoableChange("webServiceDescriptions", oldWebServiceDescriptions, newWebServiceDescriptions);	// NOI18N
-        webServiceDescriptions = newWebServiceDescriptions;
-        getPCS().firePropertyChange("webServiceDescriptions", oldWebServiceDescriptions, webServiceDescriptions);	// NOI18N
-    }
-    
-	public void addWebServiceDescription(WebserviceDescription newWebServiceDescription) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("webServiceDescription", null, newWebServiceDescription);	// NOI18N
-		if(webServiceDescriptions == null) {
-			webServiceDescriptions = new ArrayList();
-		}		
-		webServiceDescriptions.add(newWebServiceDescription);
-		getPCS().firePropertyChange("webServiceDescription", null, newWebServiceDescription );	// NOI18N
-	}
-	
-	public void removeWebServiceDescription(WebserviceDescription oldWebServiceDescription) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("webServiceDescription", oldWebServiceDescription, null);	// NOI18N
-		webServiceDescriptions.remove(oldWebServiceDescription);
-		getPCS().firePropertyChange("webServiceDescription", oldWebServiceDescription, null );	// NOI18N
 	}
 	
 	/** Getter for property localeInfo.

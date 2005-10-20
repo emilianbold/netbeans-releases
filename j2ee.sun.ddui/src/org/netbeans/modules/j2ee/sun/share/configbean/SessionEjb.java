@@ -74,12 +74,12 @@ abstract public class SessionEjb extends BaseEjb implements WebserviceOperationL
 		public CommonDDBean getDDSnippet() {
 			Ejb ejb = (Ejb) super.getDDSnippet();
 
-			WebserviceEndpoint[] webSrvcEndPt = getWebserviceEndpoint();
-			if (null != webSrvcEndPt) {
-				for(int i=0; i<webSrvcEndPt.length; i++){
-					ejb.addWebserviceEndpoint((WebserviceEndpoint) webSrvcEndPt[i].clone());
-				}
-			}
+//			WebserviceEndpoint[] webSrvcEndPt = getWebserviceEndpoint();
+//			if (null != webSrvcEndPt) {
+//				for(int i=0; i<webSrvcEndPt.length; i++){
+//					ejb.addWebserviceEndpoint((WebserviceEndpoint) webSrvcEndPt[i].clone());
+//				}
+//			}
 			
 			return ejb;
 		}
@@ -89,9 +89,9 @@ abstract public class SessionEjb extends BaseEjb implements WebserviceOperationL
                         return true;
                     }
 
-                    if ((null != getWebserviceEndpoint()) && (getWebserviceEndpoint().length > 0)) {
-                        return true;
-                    }
+//                    if ((null != getWebserviceEndpoint()) && (getWebserviceEndpoint().length > 0)) {
+//                        return true;
+//                    }
                     return false;
                 }
 	}

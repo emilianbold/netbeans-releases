@@ -78,12 +78,10 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
 import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.plan.DeploymentPlan;
 import org.netbeans.modules.j2ee.sun.share.plan.FileEntry;
-import org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
 import org.netbeans.modules.j2ee.sun.share.config.DDRoot;
 import org.netbeans.modules.j2ee.sun.share.config.DDFilesListener;
 import org.netbeans.modules.j2ee.sun.share.config.StandardDDImpl;
-
 
 
 /** Manages the deployment plan I/O and access for initializing DConfigBeans
@@ -558,8 +556,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
  *			cache.add(dcbroot)
  *		return dcbroot
  */
-        jsr88Logger.entering(this.getClass().toString(), "getDConfigBeanRoot", dDBeanRoot);
-        
         if (null == dDBeanRoot) {
             throw Utils.makeCE("ERR_DDBeanIsNull", null, null);
         }
@@ -589,7 +585,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             }
         }
         
-        jsr88Logger.exiting(this.getClass().toString(), "getDConfigBeanRoot", dDBeanRoot);
         return rootDCBean;
     }
     
@@ -1376,7 +1371,8 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         String uri = getUriForDeployableObject(mod, storage);
         String fname = f.getName();
         // make sure the configuration is "saved"
-        updateContentMap((BaseRoot) getDConfigBeanRoot(storage.normalizeDDBeanRoot(mod.getDDBeanRoot())));
+//        updateContentMap((BaseRoot) getDConfigBeanRoot(storage.normalizeDDBeanRoot(mod.getDDBeanRoot())));
+        updateContentMap(null);
         // create the key
         String key = Utils.getFQNKey(uri,fname);
         // get the bean

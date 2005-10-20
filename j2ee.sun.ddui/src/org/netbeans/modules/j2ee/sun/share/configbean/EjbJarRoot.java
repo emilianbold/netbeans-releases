@@ -24,11 +24,8 @@ import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.XpathEvent;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-
-import org.openide.LifecycleManager;
  
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
@@ -40,7 +37,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SchemaGeneratorProperties;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
-import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
 
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
@@ -65,6 +61,7 @@ import com.sun.jdo.api.persistence.model.jdo.impl.RelationshipElementImpl;
 import com.sun.jdo.api.persistence.model.mapping.MappingFieldElement;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingFieldElementImpl;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingRelationshipElementImpl;
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 // end TODO
 /**
  *
@@ -113,9 +110,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
 	/** Holds value of property messageDestination. */
 	private MessageDestination[] messageDestination;
-
-	/** Holds value of property webserviceDescription. */
-	private WebserviceDescription[] webserviceDescription;    
 
 	/** Holds the value of the cmp mapping info */
 	private MappingContext mappingContext;    
@@ -195,8 +189,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                                 "/ejb-jar/enterprise-beans/message-driven".equals(xpath)) {// NOI18N
 			getPCS().firePropertyChange(EJB_LIST_CHANGED, false, true);
 		}
-
-                //save();
 	} 
 
 
@@ -243,14 +235,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					}
 				}
 
-				WebserviceDescription[] websvcDesc = getWebserviceDescription();
-				if(null != websvcDesc){
-                                        WebserviceDescription clone = null;
-					for(int i=0; i<websvcDesc.length; i++){
-                                                clone = (WebserviceDescription) websvcDesc[i].clone();
-                                                eb.addWebserviceDescription(clone);
-					}
-				}
 				sej.setEnterpriseBeans(eb);
                                 
 				return sej;
@@ -327,7 +311,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		if(child instanceof BaseEjb) {
 			return ((SunEjbJar) bean).getEnterpriseBeans();
 		}
-
+        
 		// All other children require no translation.
 		return bean;
 	}
@@ -437,13 +421,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 						messageDestination = new MessageDestination[msgDestn.length];
 						for(int i=0; i<msgDestn.length; i++){
 							setMessageDestination(i, msgDestn[i]);
-						}
-					}
-					WebserviceDescription[] websvcDesc = eb.getWebserviceDescription();
-					if(null != websvcDesc){
-						webserviceDescription = new WebserviceDescription[websvcDesc.length];
-						for(int i=0; i<websvcDesc.length; i++){
-							setWebserviceDescription(i,websvcDesc[i]);
 						}
 					}
 				} catch(java.beans.PropertyVetoException vetoException){
@@ -753,7 +730,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		pmDescriptors = null;
 		cmpResource = null;
 		messageDestination = null;
-		webserviceDescription = null;
 	}
 
 	protected void setDefaultProperties() {
@@ -851,46 +827,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				}
 			}
 	   }
-
-
-	public void addWebserviceDescription(WebserviceDescription websrvcDesc){
-		if(null == webserviceDescription){
-			webserviceDescription = new WebserviceDescription[1];
-			webserviceDescription[0] = websrvcDesc;
-		} else {
-			WebserviceDescription[] tempWebsrvcDesc = new
-				WebserviceDescription[webserviceDescription.length + 1];
-			for(int i=0; i<webserviceDescription.length; i++){
-				tempWebsrvcDesc[i] = webserviceDescription[i];
-			}
-			tempWebsrvcDesc[webserviceDescription.length] = websrvcDesc;
-			webserviceDescription = new 
-				WebserviceDescription[tempWebsrvcDesc.length];
-			for(int i=0; i<tempWebsrvcDesc.length; i++){
-				webserviceDescription[i] = tempWebsrvcDesc[i];
-			}
-	   }
-	}
-
-
-	public void removeWebserviceDescription(WebserviceDescription websrvcDesc){
-		if(null != webserviceDescription){
-			WebserviceDescription[] tempWebsrvcDesc = new
-				WebserviceDescription[webserviceDescription.length - 1];
-			int tempIndex = 0;
-			for(int i=0; i<webserviceDescription.length; i++){
-				if(!webserviceDescription[i].equals(websrvcDesc)){
-					tempWebsrvcDesc[tempIndex] = webserviceDescription[i];
-					tempIndex++;
-				}
-			}
-			webserviceDescription = new 
-				WebserviceDescription[tempWebsrvcDesc.length];
-			for(int i=0; i<tempWebsrvcDesc.length; i++){
-				webserviceDescription[i] = tempWebsrvcDesc[i];
-			}
-		}
-	}
 
 
 	public void addPmDescriptor(PmDescriptor pmDescriptor){
@@ -1088,60 +1024,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}
 
 
-	/** Indexed getter for property webserviceDescription.
-	 * @param index Index of the property.
-	 * @return Value of the property at <CODE>index</CODE>.
-	 *
-	 */
-	public WebserviceDescription getWebserviceDescription(int index) {
-		return this.webserviceDescription[index];
-	}
-
-
-	/** Getter for property webserviceDescription.
-	 * @return Value of property webserviceDescription.
-	 *
-	 */
-	public WebserviceDescription[] getWebserviceDescription() {
-		return this.webserviceDescription;
-	}
-
-
-	/** Indexed setter for property webserviceDescription.
-	 * @param index Index of the property.
-	 * @param webserviceDescription New value of the property at <CODE>index</CODE>.
-	 *
-	 * @throws PropertyVetoException
-	 *
-	 */
-	public void setWebserviceDescription(int index, WebserviceDescription webserviceDescription) throws java.beans.PropertyVetoException {
-		WebserviceDescription oldWebserviceDescription = this.webserviceDescription[index];
-		this.webserviceDescription[index] = webserviceDescription;
-		try {
-			getVCS().fireVetoableChange("webserviceDescription", null, null );
-		}
-		catch(java.beans.PropertyVetoException vetoException ) {
-			this.webserviceDescription[index] = oldWebserviceDescription;
-			throw vetoException;
-		}
-		getPCS().firePropertyChange("webserviceDescription", null, null );
-	}
-
-
-	/** Setter for property webserviceDescription.
-	 * @param webserviceDescription New value of property webserviceDescription.
-	 *
-	 * @throws PropertyVetoException
-	 *
-	 */
-	public void setWebserviceDescription(WebserviceDescription[] webserviceDescription) throws java.beans.PropertyVetoException {
-		WebserviceDescription[] oldWebserviceDescription = this.webserviceDescription;
-		getVCS().fireVetoableChange("webserviceDescription", oldWebserviceDescription, webserviceDescription);
-		this.webserviceDescription = webserviceDescription;
-		getPCS().firePropertyChange("webserviceDescription", oldWebserviceDescription, webserviceDescription);
-	}    
-
-
     // !PW FIXME The code below needs review.  At best, it should not be necessary
     // and at worst, I don't think it belongs here if it needs to exist at all.
     
@@ -1162,7 +1044,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                             if(childBean != null){
                                     //removeDConfigBean(childBean);
                                     getPCS().firePropertyChange(EJB_LIST_CHANGED, false, true);
-                                    //save();
                             }
                         }catch(Exception exception){
                         }
@@ -1287,15 +1168,4 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
 		return ((entity != null) ? entity.getText() : null);
 	}
-
-        private void save(){
-            //Need to find a way to save selectively eg: jndi-name; not everything
-            //Needs to be done after EA1
-            ///
-            LifecycleManager lifecycleManager = LifecycleManager.getDefault();
-            if(lifecycleManager != null){
-                //lifecycleManager.saveAll();
-            }
-            ///
-        }//*/
 }

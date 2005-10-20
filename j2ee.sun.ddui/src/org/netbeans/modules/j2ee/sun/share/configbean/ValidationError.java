@@ -165,16 +165,16 @@ public final class ValidationError implements Comparable {
 	// Partitions for sun-web-app
 	public static final Partition PARTITION_WEB_GENERAL = 
 		new Partition("WebGeneral", 0);	// NOI18N
+	public static final Partition PARTITION_WEB_PROPERTIES = 
+		new Partition("WebProperties", 1);	// NOI18N
 	public static final Partition PARTITION_SESSION_MANAGER = 
-		new Partition("SessionManager", 1, 0);	// NOI18N
+		new Partition("SessionManager", 2, 0);	// NOI18N
 	public static final Partition PARTITION_SESSION_STORE = 
-		new Partition("SessionStore", 1, 1);	// NOI18N
+		new Partition("SessionStore", 2, 1);	// NOI18N
 	public static final Partition PARTITION_SESSION_SESSION = 
-		new Partition("SessionSession", 1, 2);	// NOI18N
+		new Partition("SessionSession", 2, 2);	// NOI18N
 	public static final Partition PARTITION_SESSION_COOKIE = 
-		new Partition("SessionCookie", 1, 3);	// NOI18N
-	public static final Partition PARTITION_WEB_SERVICES = 
-		new Partition("WebServices", 2);	// NOI18N
+		new Partition("SessionCookie", 2, 3);	// NOI18N
 	public static final Partition PARTITION_WEB_MESSAGES = 
 		new Partition("WebMessages", 3);	// NOI18N
 	public static final Partition PARTITION_WEB_LOCALE = 

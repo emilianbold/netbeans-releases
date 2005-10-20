@@ -209,6 +209,10 @@ public class StorageBeanFactory {
     }
     
     // Sun Ejb Jar beans
+    public EnterpriseBeans createEnterpriseBeans() {
+        return sunEjbJar.newEnterpriseBeans();
+    }
+    
     public Ejb createEjb() {
         return enterpriseBeans.newEjb();
     }

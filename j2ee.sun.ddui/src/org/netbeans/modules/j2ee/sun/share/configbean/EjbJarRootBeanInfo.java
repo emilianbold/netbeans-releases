@@ -19,7 +19,7 @@ public class EjbJarRootBeanInfo extends SimpleBeanInfo {
     // Bean descriptor//GEN-FIRST:BeanDescriptor
     /*lazy BeanDescriptor*/
     private static BeanDescriptor getBdescriptor(){
-        BeanDescriptor beanDescriptor = new BeanDescriptor  ( EjbJarRoot.class , org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.EjbJarRootCustomizer.class );//GEN-HEADEREND:BeanDescriptor
+        BeanDescriptor beanDescriptor = new BeanDescriptor  ( org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot.class , org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.EjbJarRootCustomizer.class );//GEN-HEADEREND:BeanDescriptor
 		
 		// Here you can add code for customizing the BeanDescriptor.
 		
@@ -33,25 +33,22 @@ public class EjbJarRootBeanInfo extends SimpleBeanInfo {
     private static final int PROPERTY_name = 3;
     private static final int PROPERTY_pmDescriptors = 4;
     private static final int PROPERTY_refIdentity = 5;
-    private static final int PROPERTY_webserviceDescription = 6;
 
     // Property array 
     /*lazy PropertyDescriptor*/
     private static PropertyDescriptor[] getPdescriptor(){
-        PropertyDescriptor[] properties = new PropertyDescriptor[7];
+        PropertyDescriptor[] properties = new PropertyDescriptor[6];
     
         try {
-            properties[PROPERTY_cmpResource] = new PropertyDescriptor ( "cmpResource", EjbJarRoot.class, "getCmpResource", "setCmpResource" );
+            properties[PROPERTY_cmpResource] = new PropertyDescriptor ( "cmpResource", org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot.class, "getCmpResource", "setCmpResource" );
             properties[PROPERTY_cmpResource].setPropertyEditorClass ( org.netbeans.modules.j2ee.sun.share.configbean.editors.DummyPropertyEditor.class );
-            properties[PROPERTY_identity] = new PropertyDescriptor ( "identity", EjbJarRoot.class, "getIdentity", "setIdentity" );
-            properties[PROPERTY_messageDestination] = new IndexedPropertyDescriptor ( "messageDestination", EjbJarRoot.class, "getMessageDestination", "setMessageDestination", "getMessageDestination", "setMessageDestination" );
+            properties[PROPERTY_identity] = new PropertyDescriptor ( "identity", org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot.class, "getIdentity", "setIdentity" );
+            properties[PROPERTY_messageDestination] = new IndexedPropertyDescriptor ( "messageDestination", org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot.class, "getMessageDestination", "setMessageDestination", "getMessageDestination", "setMessageDestination" );
             properties[PROPERTY_messageDestination].setPropertyEditorClass ( org.netbeans.modules.j2ee.sun.share.configbean.editors.DummyPropertyEditor.class );
-            properties[PROPERTY_name] = new PropertyDescriptor ( "name", EjbJarRoot.class, "getName", "setName" );
-            properties[PROPERTY_pmDescriptors] = new PropertyDescriptor ( "pmDescriptors", EjbJarRoot.class, "getPmDescriptors", "setPmDescriptors" );
+            properties[PROPERTY_name] = new PropertyDescriptor ( "name", org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot.class, "getName", "setName" );
+            properties[PROPERTY_pmDescriptors] = new PropertyDescriptor ( "pmDescriptors", org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot.class, "getPmDescriptors", "setPmDescriptors" );
             properties[PROPERTY_pmDescriptors].setPropertyEditorClass ( org.netbeans.modules.j2ee.sun.share.configbean.editors.DummyPropertyEditor.class );
-            properties[PROPERTY_refIdentity] = new PropertyDescriptor ( "refIdentity", EjbJarRoot.class, "getRefIdentity", null );
-            properties[PROPERTY_webserviceDescription] = new IndexedPropertyDescriptor ( "webserviceDescription", EjbJarRoot.class, "getWebserviceDescription", "setWebserviceDescription", "getWebserviceDescription", "setWebserviceDescription" );
-            properties[PROPERTY_webserviceDescription].setPropertyEditorClass ( org.netbeans.modules.j2ee.sun.share.configbean.editors.DummyPropertyEditor.class );
+            properties[PROPERTY_refIdentity] = new PropertyDescriptor ( "refIdentity", org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot.class, "getRefIdentity", null );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 		
