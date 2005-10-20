@@ -15,6 +15,10 @@ package org.netbeans.modules.form.codestructure;
 
 import java.util.*;
 import java.lang.reflect.*;
+import org.netbeans.jmi.javamodel.ClassDefinition;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.openide.filesystems.FileObject;
 
 /**
  * Class representing code structure of one form. Also manages a pool
@@ -49,8 +53,10 @@ public class CodeStructure {
     private int lastUndone = -1;
     private int undoRedoHardLimit = 10000;
     private Map undoMap;
-    private Map redoMap;
-
+    private Map redoMap;   
+    
+    private JavaSource javaSource = new JavaSource();
+    
     // --------
     // constructor
 
@@ -59,6 +65,10 @@ public class CodeStructure {
             setUndoRedoRecording(true);
     }
 
+    public void setJavaFileObject(FileObject fo) {	
+	javaSource.setJavaFile(fo);
+    }
+    
     // -------
     // expressions
 
@@ -433,8 +443,8 @@ public class CodeStructure {
     }
 
     /** Checks whether given name is already used by some variable. */
-    public boolean isVariableNameReserved(String name) {
-        return namesToVariables.get(name) != null;
+    public boolean isVariableNameReserved(String name) {	
+        return namesToVariables.get(name) != null || javaSource.containsField(name, true);
     }
 
     /** Creates a new variable and attaches given expression to it. If the
@@ -510,10 +520,11 @@ public class CodeStructure {
                            + typeName.substring(i+2);
             }
 
+	    javaSource.refresh();
             do { // find a free name
                 name = baseName + (++n);
             }
-            while (namesToVariables.get(name) != null);
+            while ( namesToVariables.get(name) != null || javaSource.containsField(name, false) );
         }	
 	return name;
     }        
@@ -1008,6 +1019,65 @@ public class CodeStructure {
         }
     }
 
+    private class JavaSource {
+	
+	private FileObject javaFileObject;	
+	private List fields = null;
+	
+	public void setJavaFile(FileObject fo) {
+	    javaFileObject = fo;
+	}
+	
+	public void refresh() {
+	    if(javaFileObject!=null) {
+		fields = getFieldNames();		
+	    } else {
+		fields = null;
+	    }	     
+	}
+
+	public boolean containsField(String name, boolean refresh) {
+	    if(javaFileObject == null) {
+		return false;
+	    }
+	    if(refresh) {
+		refresh();
+	    }
+	    return fields != null && fields.contains(name);
+	}	
+	
+	private List getFieldNames() {
+	    List fields = new ArrayList();
+	    try{	    
+		Resource resource = JavaModel.getResource(javaFileObject);
+		java.util.List classifiers = resource.getClassifiers();
+		Iterator classIter = resource.getClassifiers().iterator();
+
+		while (classIter.hasNext()) {
+		    ClassDefinition javaClass = (ClassDefinition)classIter.next();
+		    String className = javaClass.getName();
+		    int dotIndex = className.lastIndexOf('.');
+		    className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
+		    if (className.equals(javaFileObject.getName())) {
+			java.util.List children = javaClass.getChildren();
+			for (Iterator childrenIter = children.iterator(); childrenIter.hasNext();) {
+			    org.netbeans.jmi.javamodel.Element child = (org.netbeans.jmi.javamodel.Element)childrenIter.next();
+			    if(child instanceof org.netbeans.jmi.javamodel.Field) {			
+				fields.add(((org.netbeans.jmi.javamodel.Field)child).getName());
+			    }
+			}
+		    }
+		}	
+	    } catch (Exception e) {
+		org.openide.ErrorManager.getDefault().notify(e);	    
+		// null will be ignored, so if something should be wrong
+		// a variable name will still be generated ...
+		return null;
+	    }
+	    return fields;
+	}	
+    }
+    
     // ---------------
 
     /** For debugging purposes only. */

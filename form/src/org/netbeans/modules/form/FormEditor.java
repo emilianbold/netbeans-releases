@@ -191,8 +191,9 @@ public class FormEditor {
         // create and register new FormModel instance
         formModel = new FormModel();
         formModel.setName(formDataObject.getName());        
-        formModel.setReadOnly(formDataObject.isReadOnly());         
-        
+        formModel.setReadOnly(formDataObject.isReadOnly());         		
+        formModel.getCodeStructure().setJavaFileObject(formDataObject.getPrimaryFile());
+	
         openForms.put(formModel, this);
 
         // load the form data (FormModel) and report errors
