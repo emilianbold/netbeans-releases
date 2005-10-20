@@ -13,7 +13,6 @@
 package org.openide.filesystems;
 
 import java.lang.ref.Reference;
-import org.openide.filesystems.*;
 import org.openide.filesystems.AbstractFileSystem.*;
 
 import java.beans.*;
@@ -21,6 +20,7 @@ import java.beans.*;
 import java.io.*;
 
 import java.util.*;
+import org.openide.ErrorManager;
 
 
 /**
@@ -28,14 +28,18 @@ import java.util.*;
  * @author Jaroslav Tulach
  */
 final class MemoryFileSystem extends AbstractFileSystem implements Info, Change, AbstractFileSystem.List, Attr {
+    private static final ErrorManager ERR = ErrorManager.getDefault().
+            getInstance(MemoryFileSystem.class.getName());
+    private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL); 
+    
     /** time when the filesystem was created. It is supposed to be the default
      * time of modification for all resources that has not been modified yet
      */
     private java.util.Date created = new java.util.Date();
 
     /** maps String to Entry */
-    private Hashtable entries = new Hashtable();
-
+    private Hashtable entries = initEntry();
+    
     /** Creates new MemoryFS */
     public MemoryFileSystem() {
         attr = this;
@@ -78,33 +82,44 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
         Entry x = (Entry) entries.get(n);
 
         if (x == null || !isValidEntry(n)) {
-            x = new Entry();
+            x = new Entry(n);
             entries.put(n, x);
         }
 
         return x;
     }
+
+	
+
+    private boolean isValidEntry(String n) {
+	return isValidEntry(n, null);
+    }
     
     /** finds whether there already is this name */
-    private boolean isValidEntry(String n) {
-        boolean isValidReference = false;
+    private boolean isValidEntry(String n, Boolean expectedResult) {
+        boolean retval = false;
         
         if ((n.length() > 0) && (n.charAt(0) == '/')) {
             n = n.substring(1);
         }
 
         Entry x = (Entry) entries.get(n);
+	FileObject fo = null;
         
         if (x != null) {
-            FileObject fo = null;
             Reference ref = findReference(n);
             if (ref != null) {
                 fo = (FileObject)ref.get();
-                isValidReference = (fo != null) ? fo.isValid() : true;
-            } 
+                retval = (fo != null) ? fo.isValid() : true;
+            }   
         }
 
-        return (isValidReference);
+	if (LOGGABLE && expectedResult != null && retval != expectedResult.booleanValue()) {
+	    logMessage("entry: " + x +  " isValidReference.fo: " + ((fo == null) ? "null" : //NOI18N
+		(fo.isValid() ? "valid" : "invalid")));//NOI18N
+	}
+	
+        return (retval);
     }
 
     public String getDisplayName() {
@@ -156,16 +171,20 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public void createData(String name) throws IOException {
-        if (isValidEntry(name)) {
-            throw new IOException("File already exists");
+        if (isValidEntry(name, Boolean.FALSE)) {
+	    StringBuffer message = new StringBuffer();
+	    message.append("File already exists: ").append(name);
+            throw new IOException(message.toString());//NOI18N
         }
 
         getOrCreateEntry(name).data = new byte[0];
     }
 
     public void createFolder(String name) throws java.io.IOException {
-        if (isValidEntry(name)) {
-            throw new IOException("File already exists");
+        if (isValidEntry(name, Boolean.FALSE)) {
+	    StringBuffer message = new StringBuffer();
+	    message.append("Folder already exists: ").append(name);
+            throw new IOException(message.toString());//NOI18N
         }
 
         getOrCreateEntry(name).data = null;
@@ -268,10 +287,64 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
         getOrCreateEntry(name).attrs.put(attrName, value);
     }
 
+    private Hashtable initEntry() {
+	return (!LOGGABLE) ? new Hashtable() : new Hashtable() {
+	    public Object get(Object key) {
+		Object retval = super.get(key);
+		logMessage("called: GET" + " key: "+key + " result: " + retval);//NOI18N    		
+		return retval;
+	    }
+
+	    public Object put(Object key, Object value) {
+		Object retval = super.put(key, value);
+		logMessage("called: PUT" + " key: "+key  + " value: "+value+ " result: " + retval);//NOI18N		
+		return retval;            
+	    }        
+
+	    public Object remove(Object key) {
+		Object retval = super.remove(key);
+		logMessage("called: REMOVE" + " key: "+key + " result: " + retval);//NOI18N		
+		return retval;
+	    }
+	};
+    }
+    
     static final class Entry {
         /** String, Object */
         public HashMap attrs = new HashMap();
         public byte[] data;
         public java.util.Date last;
+	private final String entryName;
+
+	Entry(String entryName) {
+	    this.entryName = entryName;
+	}
+	
+
+	public String toString() {
+	    StringBuffer sb = new StringBuffer();
+	    sb.append(" [").append(entryName);//NOI18N
+	    sb.append(" -> ").append(super.toString());//NOI18N
+	    sb.append("] ");
+	    return sb.toString();
+	}
     }
+    
+    
+    private static void logMessage(final String message) {
+	if (LOGGABLE) {
+	    StringBuffer sb = new StringBuffer();
+	    sb.append(" -> ").append(message);
+	    
+	    //ucomment if necessary
+	    /*ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	    PrintWriter pw = new PrintWriter(bos);
+	    new Exception().printStackTrace(pw);
+	    pw.close();
+	    sb.append(bos.toString());
+	     */
+	    ERR.log(ErrorManager.INFORMATIONAL,sb.toString());
+	}
+    }    
+    
 }
