@@ -60,7 +60,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
         return 4;
     }    
 
-    private static final Insets INSETS = new Insets(0, 2, 0, 10);
+    private static final Insets INSETS = new Insets(0, 2, 0, 0);
 
     private static class WinClassicPainter implements TabPainter {
 
