@@ -1,185 +1,174 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-<!--
- * 
- *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- *
- *
--->
-  <title>Viewing File Status information</title>
-  <link rel="StyleSheet"
- href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>Viewing File Status information</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>The IDE's CVS support enables you to view and manage the evolution
-of changes in version-controlled files. </p>
-<h3>Viewing Revision Information<a name="viewing"></a></h3>
-<p>The IDE's CVS support provides file status information in several
-windows and ways including: </p>
-<ul>
-  <li><b>Color coding.</b> Graphical indication of the status of
-individual files. </li>
-  <li><b>Status badges.</b> Graphical indication of the status of files
-contained within your project, folder, and package nodes. </li>
-  <li><b>Versioning window.</b> Provides a real-time list of all of the
-changed, removed, new, and out-of-date files in selected directories. </li>
-  <li><strong>Annotations.</strong> Displays commit message, author,
-date, and revision number information in the left margin of files open
-in the editor window. </li>
-</ul>
-<p>The Versioning window displays versioned files using the following
-color coding and font styles:
-<table
- summary="The left column lists the
-            task name. The right column lists the steps to perform."
- border="1" cellpadding="5" cellspacing="0">
-  <tbody>
-    <tr valign="top">
-      <th scope="col" align="left">Color Coding </th>
-      <th scope="col" align="center">Description</th>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/blue_label.png" alt="Note" height="17"
- width="137"></p>
-      </td>
-      <td><strong>Green Label.</strong> General version-controlled file
-node, annotated with a
-revision number and log message.</td>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/blue_label.png" alt="Note" height="17"
- width="137"></p>
-      </td>
-      <td>
-      <p><strong>Blue Label.</strong> revision node. A prior revision
-of a file existing on a branch in the VCS repository.</p>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/gray_label.png" alt="Note" height="17"
- width="137"></p>
-      </td>
-      <td><strong>Grey Label.</strong> The current copy of a file as it
-exists in your working directory.</td>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/red_label.png" alt="Note" height="17"
- width="137"></p>
-      </td>
-      <td> <strong>Red Label.</strong> A prior revision of a file
-existing in the
-VCS repository.</td>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/strike_label.png" alt="Note" height="17"
- width="137"></p>
-      </td>
-      <td>
-      <p><strong>Strikethrough Label.</strong> A prior revision of a
-file existing on a branch in the VCS repository.</p>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/light_blue_label.png" alt="Note" height="17"
- width="137"></p>
-      </td>
-      <td>
-      <p><strong>Light Blue Label.</strong> A prior revision of a file
-existing on a branch in the VCS repository.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-</p>
-<p>Current VCS file status is indicated by adding the following badges
-to project, package and directory icons:
-<table
- summary="The left column lists the
-            task name. The right column lists the steps to perform."
- border="1" cellpadding="5" cellspacing="0">
-  <tbody>
-    <tr valign="top">
-      <th scope="col" align="left"> Badge </th>
-      <th scope="col" align="center">Description</th>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/blue_badge.png" alt="Note" height="17"
- width="137"></p>
-      <p><img src="images/modified-badge.png" alt="Note" height="8"
- width="8"></p>
-      </td>
-      <td>
-      <p><strong>Locally Modified badge.</strong> A blue badge on a
-folder or package node marks folders or packages that contain locally
-modified or new files. In the case of packages, this badge applies only
-to the package itself and not its subpackages. For folders, the badge
-indicates local modifications in that folder or any of its subfolders.</p>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td align="center">
-      <p><img src="images/red_badge.png" alt="Note" height="17"
- width="137"></p>
-      <p><img src="images/conflicts-badge.png" alt="Note" height="8"
- width="8"></p>
-      </td>
-      <td>
-      <p> <strong>Conflict badge. </strong>A blue badge on a folder
-or package node marks folders or packages that contain files for which
-the repository copy of the file contains changes which conflict with
-the local version. In case of packages, this badge applies only to the
-package itself and not its subpackages. For folders, the badge
-indicates local modifications in that folder or any of its subfolders.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-</p>
-<h3>Tracking Changes in the Versioning Window <a name="monitor"></a></h3>
-<p>The Versioning window presents a real-time view of the changes in
-selected directories. It opens at the bottom of the IDE whenever you
-view changes made in version-controlled files. By default, the
-Versioning window displays a list of all modified files within the
-selected package or folder. Using the filter buttons in the toolbar,
-you can limit the list of displayed files to either locally or remotely
-modified files. The Versioning window toolbar also includes buttons
-that enable you to invoke the most common CVS tasks on all files
-displayed in the list. </p>
-<p>The following CVS commands are available in the Versioning window: </p>
-<ul>
-  <li><b>Refresh Status.</b></li>
-  <li><b>Diff All.</b></li>
-  <li><b>Update All.</b></li>
-  <li><strong>Commit All.</strong></li>
-</ul>
-<p>To open the Versioning window, choose CVS &gt; Show
-All Changes. Alternately, you can right-click any project, directory,
-or file that is in a CVS working directory and choose CVS &gt; Show
-Changes.</p>
-<dl>
-  <dt> <a name="seealso">See Also</a></dt>
-  <dd> <a href="./cvs-lite_overview.html">Working with CVS </a></dd>
-  <dd> <a href="./cvs-lite_using.html">Using CVS with the IDE</a></dd>
-  <dd> <a href="./cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>
-</dl>
-<hr> <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="50">
-  <tbody>
-    <tr>
-      <td>&nbsp;</td>
-    </tr>
-  </tbody>
-</table>
-</body>
+    <head>
+        <!--
+        * 
+        *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
+        *     Use is subject to license terms.
+        *
+        *
+        -->
+        <title>Viewing File Status information</title>
+        <link rel="StyleSheet"
+        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Viewing File Status information</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The IDE's CVS support enables you to view and manage the evolution
+        of changes in version-controlled files. </p>
+        <h3>Viewing Revision Information<a name="viewing"></a></h3>
+        <p>The IDE's CVS support provides file status information in several
+        windows and ways including: </p>
+        <ul>
+            <li><b>Color coding.</b> Graphical indication of the status of
+            individual files. </li>
+            <li><b>Status badges.</b> Graphical indication of the status of files
+            contained within your project, folder, and package nodes. </li>
+            <li><b>Versioning window.</b> Provides a real-time list of all of the
+            changed, removed, new, and out-of-date files in selected directories. </li>
+            <li><strong>Annotations.</strong> Displays commit message, author,
+            date, and revision number information in the left margin of files open
+            in the editor window. </li>
+        </ul>
+        <p>The Versioning window displays versioned files using the following
+            color coding and font styles:
+            <table summary="The left column lists the task name. The right column lists the steps to perform."
+                border="1" cellpadding="5" cellspacing="0">
+                <tbody>
+                    <tr valign="top">
+                        <th scope="col" align="left">Color Coding </th>
+                        <th scope="col" align="center">Description</th>
+                    </tr>
+                    <tr valign="top">
+                        <td align="center">
+                            <p><img src="images/blue_label.png" alt="Note" height="17"
+                            width="137"></p>
+                        </td>
+                        <td><strong>Green Label.</strong> Indicates that the file is 
+                        a new local file that does not yet exist in the repository. </td>
+                    </tr>
+                    <tr valign="top">
+                        <td align="center">
+                            <p><img src="images/blue_label.png" alt="Note" height="17"
+                            width="137"></p>
+                        </td>
+                        <td>
+                            <p><strong>Blue Label.</strong> Indicates that the file has 
+                            been modified locally. </p>
+                        </td>
+                    </tr>
+
+                    <tr valign="top">
+                        <td align="center">
+                            <p><img src="images/red_label.png" alt="Note" height="17"
+                            width="137"></p>
+                        </td>
+                        <td> <strong>Red Label.</strong> Indicates that the file 
+                        contains conflicts. You must use the Resolve conflicts command for such files.</td>
+                    </tr>
+                    
+                    <tr valign="top">
+                        <td align="center">
+                            <p><img src="images/gray_label.png" alt="Note" height="17"
+                            width="137"></p>
+                        </td>
+                        <td><strong>Grey Label.</strong> Indicates that the file is ignored by CVS 
+                        and will not be included when calling versioning commands.</td>
+                    </tr>                    
+                    
+                    <tr valign="top">
+                        <td align="center">
+                            <p><img src="images/strike_label.png" alt="Note" height="17"
+                            width="137"></p>
+                        </td>
+                        <td>
+                            <p><strong>Strikethrough Label.</strong> A prior revision of a
+                            file existing on a branch in the VCS repository.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </p>
+        <p>Current VCS file status is indicated by adding the following badges
+            to project, package and directory icons:
+            <table
+                summary="The left column lists the
+                task name. The right column lists the steps to perform."
+                border="1" cellpadding="5" cellspacing="0">
+                <tbody>
+                    <tr valign="top">
+                        <th scope="col" align="left"> Badge </th>
+                        <th scope="col" align="center">Description</th>
+                    </tr>
+                    <tr valign="top">
+                        <td align="center">
+                            <p><img src="images/blue_badge.png" alt="Note" height="17"
+                            width="137"></p>
+                            <!--<p><img src="images/modified-badge.png" alt="Note" height="8"
+                            width="8"></p>-->
+                        </td>
+                        <td>
+                            <p><strong>Locally Modified badge.</strong> A blue badge on a
+                            folder or package node marks folders or packages that contain locally
+                            modified or new files. In the case of packages, this badge applies only
+                            to the package itself and not its subpackages. For folders, the badge
+                            indicates local modifications in that folder or any of its subfolders.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <td align="center">
+                            <p><img src="images/red_badge.png" alt="Note" height="17"
+                            width="137"></p>
+                            <!--<p><img src="images/conflicts-badge.png" alt="Note" height="8"
+                            width="8"></p>-->
+                        </td>
+                        <td>
+                            <p> <strong>Conflict badge. </strong>A blue badge on a folder
+                            or package node marks folders or packages that contain files for which
+                            the repository copy of the file contains changes which conflict with
+                            the local version. In case of packages, this badge applies only to the
+                            package itself and not its subpackages. For folders, the badge
+                            indicates local modifications in that folder or any of its subfolders.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </p>
+        <h3>Tracking Changes in the Versioning Window <a name="monitor"></a></h3>
+        <p>The Versioning window presents a real-time view of the changes in
+        selected directories. It opens at the bottom of the IDE whenever you
+        view changes made in version-controlled files. By default, the
+        Versioning window displays a list of all modified files within the
+        selected package or folder. Using the filter buttons in the toolbar,
+        you can limit the list of displayed files to either locally or remotely
+        modified files. The Versioning window toolbar also includes buttons
+        that enable you to invoke the most common CVS tasks on all files
+        displayed in the list. </p>
+        <p>The following CVS commands are available in the Versioning window: </p>
+        <ul>
+            <li><b>Refresh Status.</b></li>
+            <li><b>Diff All.</b></li>
+            <li><b>Update All.</b></li>
+            <li><strong>Commit All.</strong></li>
+        </ul>
+        <p>To open the Versioning window, choose CVS &gt; Show
+        All Changes. Alternately, you can right-click any project, directory,
+        or file that is in a CVS working directory and choose CVS &gt; Show
+        Changes.</p>
+        <dl>
+            <dt> <a name="seealso">See Also</a></dt>
+            <dd> <a href="./cvs-lite_overview.html">Working with CVS </a></dd>
+            <dd> <a href="./cvs-lite_using.html">Using CVS with the IDE</a></dd>
+            <dd> <a href="./cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>
+        </dl>
+        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tbody>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
 </html>
