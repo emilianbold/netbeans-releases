@@ -469,7 +469,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
         if (localCompletionResult != null) {
             refreshedQuery = true;
-            localCompletionResult.refresh();
+            Result refreshResult = localCompletionResult.createRefreshResult();
+            synchronized (this) {
+                completionResult = refreshResult;
+            }
+            refreshResult.invokeRefresh();
         }
     }
     
@@ -686,7 +690,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             localDocumentationResult = docResult;
         }
         if (localDocumentationResult != null) {
-            localDocumentationResult.refresh();
+            Result refreshResult = localDocumentationResult.createRefreshResult();
+            synchronized (this) {
+                docResult = refreshResult;
+            }
+            refreshResult.invokeRefresh();
         }
     }
 
@@ -801,7 +809,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             localToolTipResult = toolTipResult;
         }
         if (localToolTipResult != null) {
-            localToolTipResult.refresh();
+            Result refreshResult = localToolTipResult.createRefreshResult();
+            synchronized (this) {
+                toolTipResult = refreshResult;
+            }
+            refreshResult.invokeRefresh();
         }
     }
 
@@ -1079,17 +1091,21 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
     }
     
-    private static void refreshResultSets(List resultSets) {
+    private static void createRefreshResultSets(List resultSets, Result refreshResult) {
+        List refreshResultSets = refreshResult.getResultSets();
         int size = resultSets.size();
         // Create new resultSets
         for (int i = 0; i < size; i++) {
             CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
             result.markInactive();
             result = new CompletionResultSetImpl(result.getCompletionImpl(),
-                    result.getResultId(), result.getTask(), result.getQueryType());
-            resultSets.set(i, result);
+                    refreshResult, result.getTask(), result.getQueryType());
+            refreshResultSets.add(result);
         }
-        // Refresh the tasks on the new resultSets
+    }
+    
+    private static void refreshResultSets(List resultSets) {
+        int size = resultSets.size();
         for (int i = 0; i < size; i++) {
             CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
             result.getTask().refresh(result.getResultSet());
@@ -1192,18 +1208,29 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
         
         /**
-         * Refresh the result sets and once the refreshing finishes
-         * mark the query as invoked.
+         * and return the new result set
+         * containing the refreshed results.
          */
-        void refresh() {
+        Result createRefreshResult() {
             synchronized (this) {
                 if (cancelled) {
-                    return;
+                    return null;
                 }
                 assert (invoked); // had to be invoked
                 invoked = false;
             }
-            refreshResultSets(resultSets);
+            Result refreshResult = new Result(getResultSets().size());
+            createRefreshResultSets(resultSets, refreshResult);
+            return refreshResult;
+        }
+        
+        /**
+         * Invoke refreshing of the result sets.
+         * This method should be invoked on the result set returned from
+         * {@link #createRefreshResult()}.
+         */
+        void invokeRefresh() {
+            refreshResultSets(getResultSets());
             queryInvoked();
         }
 
