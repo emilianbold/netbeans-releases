@@ -562,8 +562,11 @@ under Print Settings in the Options window)
 <!--Move Inner to Outer Level dialog box -->
 <mapID target="org.netbeans.modules.refactoring.ui.InnerToOuterRefactoringUI" url="tbd.html" /> 
 
-<!--Preview Refactoring window: -->
-<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/csh/previewWindow.html" /> 
+
+<!--Usages window-->
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer.find-usages" url="refactor/csh/previewWindow.html" />
+<!--Refactoring window: -->
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer.refactoring-preview" url="refactor/csh/previewWindow.html" />
 
   <!--this ID is the one the ID calls if someone presses F1 in an area where there 
   is no help ID assigned. The pending.html file provides the disclaimer that no 
