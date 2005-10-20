@@ -13,6 +13,8 @@
 package org.netbeans.nbbuild;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -677,6 +679,31 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         
         int idx = systemId.lastIndexOf('/');
         String last = systemId.substring(idx + 1);
+        
+        if (last.equals("xhtml1-strict.dtd")) {
+            // try to find relative libraries
+            URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
+            File f;
+            try {
+                f = new File(new java.net.URI(u.toString()));
+            } catch (URISyntaxException ex) {
+                throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+            }
+            for (;;) {
+                f = f.getParentFile();
+                if (f == null) {
+                    break;
+                }
+                File lib = new File(new File(new File(new File(new File(new File(f, 
+                    "libs"), "external"), "dtds"), "xhtml1-20020801"), "DTD"), "xhtml1-strict.dtd"
+                );
+                String r = "file:" + lib.toString();
+                if (lib.exists() && !r.equals(systemId)) {
+                    log("Replacing entity " + publicId + " at " + systemId + " with " + r);
+                    return new InputSource(r);
+                }
+            }
+        }
         
         String replace = (String)publicIds.get(last);
         if (replace == null) {
