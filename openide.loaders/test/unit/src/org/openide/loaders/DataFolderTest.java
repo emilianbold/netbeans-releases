@@ -44,7 +44,6 @@ public class DataFolderTest extends LoggingTestCaseHid {
             "AA/",
         };
         
-        TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
 
         FileObject fo = lfs.findResource ("AA");
@@ -106,7 +105,6 @@ public class DataFolderTest extends LoggingTestCaseHid {
             "AA/a.txt",
             "AA/b.txt"
         };
-        clearWorkDir();
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
 
         DataFolder df = DataFolder.findFolder (lfs.findResource ("AA"));
@@ -325,7 +323,6 @@ public class DataFolderTest extends LoggingTestCaseHid {
             "AA/CCC/"
         };
 
-        clearWorkDir();
         FileSystem lfsA = TestUtilHid.createLocalFileSystem(new File(getWorkDir(), "A"), fsstruct);
         FileSystem lfsB = TestUtilHid.createLocalFileSystem(new File(getWorkDir(), "B"), fsstruct);
         
