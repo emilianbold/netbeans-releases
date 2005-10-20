@@ -657,6 +657,12 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         RP.post(u, 100, Thread.MIN_PRIORITY);
     }
     
+    /** For use in tests that need to be sure that all updators have finished.
+     */
+   static final void waitUpdatesProcessed() {
+       RP.post(org.openide.util.Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
+   }
+    
     protected DataObject handleCopy (DataFolder f) throws IOException {
         if (getOriginal() instanceof DataFolder) {
             DataFolder.testNesting(((DataFolder)getOriginal()), f);
