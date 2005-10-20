@@ -238,8 +238,11 @@ public final class BrandingSupport {
 
     private NbPlatform getActivePlatform() {
         NbPlatform retval = suiteProperties.getActivePlatform();
-        assert retval != null && retval.isValid();
-        return retval;
+        if (retval != null) {
+            return retval;
+        } else {
+            return NbPlatform.getDefaultPlatform();
+        }
     }
     
     public void brandFile(final BrandedFile bFile) throws IOException {
