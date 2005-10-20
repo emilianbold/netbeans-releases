@@ -31,6 +31,7 @@ import org.openide.nodes.*;
 import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.openide.LifecycleManager;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -314,6 +315,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * and refreshing file nodes.
      */ 
     private void onRefreshAction() {
+        LifecycleManager.getDefault().saveAll();
         refreshStatuses();
     }
 
