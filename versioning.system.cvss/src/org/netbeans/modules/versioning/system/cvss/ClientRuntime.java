@@ -166,12 +166,10 @@ public class ClientRuntime {
     }
 
     /**
-     * TODO: This method does not work
+     * Makes sure output from this command is visible.
      */ 
-    public void focusLog() {
-        log.setFocusTaken(true);
-        log.getOut().write("\n");
-        log.setFocusTaken(false);
+    void focusLog() {
+        log.select();
     }
 
     public void flushLog() {
