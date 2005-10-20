@@ -1404,6 +1404,7 @@ public abstract class TreeView extends JScrollPane {
                     //close a modal dialog
                     if (ke.getKeyCode() == ke.VK_ESCAPE) {
                         removeSearchField();
+                        ke.consume();
 
                         // bugfix #32909, reqest focus when search field is removed
                         SwingUtilities.invokeLater(
