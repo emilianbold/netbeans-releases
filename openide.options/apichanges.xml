@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
       </description>
       <class package="org.openide.options" name="ContextSystemOption"/>
     </change>
-<change>
+    <change id='directly-adding-options' >
       <api name="options"/>
       <summary>Directly adding or removing options is deprecated</summary>
       <date day="25" month="4" year="2001"/>

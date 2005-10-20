@@ -390,13 +390,13 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
   </target>
   
   
-  <target name="javadoc-check-broken-links" depends="init" >
+  <target name="javadoc-check-broken-links" depends="init" unless="javadoc.skip.brokenlinks.check" >
         <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
             <classpath>
                 <pathelement location="nbantext.jar"/>
             </classpath>
         </taskdef>
-        <checklinks basedir="${netbeans.javadoc.dir}" checkexternal="${javadoc.check.external.links}" failonerror="true" >
+        <checklinks basedir="${netbeans.javadoc.dir}" checkexternal="${javadoc.check.external.links}" checkspaces="false" failonerror="true" >
             <include name="*/overview-summary.html"/>
             <include name="*/apichanges.html"/>
             <include name="*/architecture-summary.html"/>
