@@ -58,6 +58,12 @@ import org.openide.xml.XMLUtil;
  */
 public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Groupable  {
     
+    /**
+     * CVS server messages that start with one of these patterns won't be displayed in Output.
+     * Library needs these messages to prune empty directories, hence this workaround. 
+     */ 
+    private static final String [] ignoredMessagePrefixes = {"cvs server: Updating", "cvs server: New directory"};
+        
     protected final FileStatusCache       cache;
 
     /**
@@ -226,10 +232,19 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             locked &= e.getMessage().indexOf("lock in") != -1; // NOI18N
             if (locked || logCommandOutput()) {
                 if (e.getMessage().length() > 0) {  // filter out bogus newlines
-                    clientRuntime.log(e.getMessage() + "\n");  // NOI18N
+                    if (shouldBeDisplayed(e.getMessage())) { 
+                        clientRuntime.log(e.getMessage() + "\n");  // NOI18N
+                    }
                 }
             }
         }
+    }
+
+    private boolean shouldBeDisplayed(String message) {
+        for (int i = 0; i < ignoredMessagePrefixes.length; i++) {
+            if (message.startsWith(ignoredMessagePrefixes[i])) return false; 
+        }
+        return true;
     }
 
     public void messageSent(BinaryMessageEvent e) {
