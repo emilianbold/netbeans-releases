@@ -91,14 +91,16 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         // this is called when the property is enabled for writing (i.e. policy
         // is GEN_BOUNDS), but also when loading form (when policy might be not
         // set yet) - so always propagate to designer size
+        Dimension designerSize;
         if (getBeanInstance() instanceof Dialog
             || getBeanInstance() instanceof Frame)
         {
             Dimension diffDim = getWindowContentDimensionDiff();
-            value = new Dimension(value.width - diffDim.width,
-                                  value.height - diffDim.height);
+            designerSize = new Dimension(value.width - diffDim.width,
+                                         value.height - diffDim.height);
         }
-        setDesignerSizeImpl(value, false);
+        else designerSize = value;
+        setDesignerSizeImpl(designerSize, false);
 
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
     }
@@ -120,14 +122,16 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Dimension old = setDesignerSizeImpl(value);
 
         if (getFormSizePolicy() == GEN_BOUNDS) { // propagate to form size
+            Dimension formSize;
             if (getBeanInstance() instanceof Dialog
                 || getBeanInstance() instanceof Frame)
             {
                 Dimension diffDim = getWindowContentDimensionDiff();
-                value = new Dimension(value.width + diffDim.width,
+                formSize = new Dimension(value.width + diffDim.width,
                                       value.height + diffDim.height);
             }
-            setFormSizeImpl(value);
+            else formSize = value;
+            setFormSizeImpl(formSize);
         }
 
         getFormModel().fireSyntheticPropertyChanged(this, FormDesigner.PROP_DESIGNER_SIZE, old, value);
