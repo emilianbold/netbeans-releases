@@ -89,17 +89,25 @@ public class JBDeploymentFactory implements DeploymentFactory {
     
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
         
-        return new JBDeploymentManager(getFactory().getDeploymentManager(uri, uname, passwd), uri, uname, passwd);
+        DeploymentFactory df = getFactory();
+        if (df == null)
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+
+        return new JBDeploymentManager(df.getDeploymentManager(uri, uname, passwd), uri, uname, passwd);
     }
      
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
         
+        DeploymentFactory df = getFactory();
+        if (df == null)
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+
         return new JBDeploymentManager(getFactory().getDisconnectedDeploymentManager(uri), uri, null, null);
     }
     
