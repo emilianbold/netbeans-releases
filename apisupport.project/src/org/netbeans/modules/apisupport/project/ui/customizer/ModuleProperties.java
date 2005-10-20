@@ -40,6 +40,9 @@ abstract class ModuleProperties {
     public static final String PROPERTIES_REFRESHED = "propertiesRefreshed"; // NOI18N
     
     static final RequestProcessor RP = new RequestProcessor(ModuleProperties.class.getName());
+
+    // XXX better to inject own DialogDisplayer when running tests or similar trick
+    static boolean runFromTests = false;
     
     // Helpers for storing and retrieving real values currently stored on the disk
     private AntProjectHelper helper;
@@ -211,8 +214,12 @@ abstract class ModuleProperties {
         String plafText = lostPlatform != null
                 ? '"' + lostPlatform.getLabel() + '"'
                 : NbBundle.getMessage(ModuleProperties.class, "MSG_PreviouslySet");
-        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                NbBundle.getMessage(ModuleProperties.class, "MSG_PlatformNotFound", plafText)));
+        String message = NbBundle.getMessage(ModuleProperties.class, "MSG_PlatformNotFound", plafText);
+        if (!runFromTests) {
+            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(message));
+        } else {
+            System.err.println(message);
+        }
     }
     
 }

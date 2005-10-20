@@ -51,6 +51,7 @@ public class SuitePropertiesTest extends TestBase {
     protected void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
+        ModuleProperties.runFromTests = true;
     }
     
     public static SuiteProperties getSuiteProperties(SuiteProject suite) throws IOException {
@@ -244,10 +245,10 @@ public class SuitePropertiesTest extends TestBase {
         TestBase.generateSuiteComponent(suite1, "module1");
         SubprojectProvider spp = getSubProjectProvider(suite1);
         SuiteProperties suiteProps = getSuiteProperties(suite1);
-        assertEquals("one module", "${project.module1}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
+        assertEquals("one module", "${project.org.example.module1}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
         TestBase.generateSuiteComponent(suite1, "module2");
         suiteProps.refresh(spp.getSubprojects());
-        assertEquals("two modules", "${project.module1}:${project.module2}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
+        assertEquals("two modules", "${project.org.example.module1}:${project.org.example.module2}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
         assertEquals("two module suite component", 2, suiteProps.getModulesListModel().getSize());
     }
     

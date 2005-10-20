@@ -94,7 +94,7 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
     public NbPlatform getActivePlatform() {
-        if (activePlatform == null) {
+        if (activePlatform == null || !activePlatform.isValid()) {
             ModuleProperties.reportLostPlatform(activePlatform);
             activePlatform = NbPlatform.getDefaultPlatform();
         }
