@@ -57,27 +57,27 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
  * @author  Peter Williams
  */
 public class WebServiceDescriptor extends Base {
-    
+
 	/** property event names
 	 */
 	public static final String WEBSERVICE_DESCRIPTION_NAME = "webserviceDescriptionName"; // NOI18N
 	public static final String WEBSERVICE_ENDPOINT = "webserviceEndpoint"; // NOI18N
 	public static final String COMPONENT_LINK_NAME = "componentLinkName"; // NOI18N
-    
-    
+
+
 	/** DDBean that refers to "webservice-description-name" child of bound DDBean. */
 	private DDBean webServiceDescriptionNameDD;
-	
+
 	/** Holds value of property wsdlPublishLocation. */
 	private String wsdlPublishLocation;
-	
+
     /** Hold a map of DDBean [portComponent] -> web service endpoints. */
     private Map webServiceEndpointMap;
 
     /** Differentiates Servlet vs Ejb webservice support */
     private EndpointHelper helper;
 
-    
+
     /** Creates a new instance of WebServiceDescriptor */
 	public WebServiceDescriptor() {
 		setDescriptorElement(bundle.getString("BDN_WebServiceDescriptor")); // NOI18N
@@ -90,7 +90,7 @@ public class WebServiceDescriptor extends Base {
 	 */
 	protected void init(DDBean dDBean, Base parent) throws ConfigurationException {
 		super.init(dDBean, parent);
-		
+
 // !PW Disable grouping code for now, spec non-compliance.
 //		initGroup(dDBean, parent);
 
@@ -102,24 +102,24 @@ public class WebServiceDescriptor extends Base {
         } else {
             throw new ConfigurationException("Unexpected master DConfigBean type: " + masterRoot); // NOI18N
         }
-        
+
         dDBean.addXpathListener(dDBean.getXpath(), this);
 		webServiceDescriptionNameDD = getNameDD("webservice-description-name"); // NOI18N
 
-		loadFromPlanFile(getConfig());		
+		loadFromPlanFile(getConfig());
 	}
 
 	protected String getComponentName() {
 		return getWebServiceDescriptionName();
 	}
-	
+
 	/** Getter for helpId property
 	 * @return Help context ID for this DConfigBean
 	 */
 	public String getHelpId() {
 		return "AS_CFG_WebServiceDescriptor";
 	}
-	
+
 	/** Getter for property webservice-description-name.
 	 * @return Value of property webservice-description-name.
 	 *
@@ -127,7 +127,7 @@ public class WebServiceDescriptor extends Base {
 	public String getWebServiceDescriptionName() {
 		return cleanDDBeanText(webServiceDescriptionNameDD);
 	}
-	
+
     /* ------------------------------------------------------------------------
      * Persistence support.  Loads DConfigBeans from previously saved Deployment
      * plan file.
@@ -148,14 +148,14 @@ public class WebServiceDescriptor extends Base {
 				if(wsdlPublishLocation != null && wsdlPublishLocation.length() > 0) {
 					return true;
 				}
-				
+
 				return false;
             }
 
             public String getPropertyName() {
                 return SunWebApp.WEBSERVICE_DESCRIPTION;
             }
-            
+
             public CommonDDBean mergeIntoRovingDD(CommonDDBean ddParent) {
                 CommonDDBean newBean = getDDSnippet();
                 if(newBean != null) {
@@ -165,7 +165,7 @@ public class WebServiceDescriptor extends Base {
                 }
                 return newBean;
             }
-            
+
         };
 
         Snippet snipTwo = new DefaultSnippet() {
@@ -185,14 +185,14 @@ public class WebServiceDescriptor extends Base {
 				}
 
 				return false;
-            }	
+            }
 
             public CommonDDBean mergeIntoRovingDD(CommonDDBean ddParent) {
                 // For each endpoint, locate the host (servlet or ejb) it is bound
                 // to and add it to that host's endpoint table.
                 RootInterface root = (RootInterface) ddParent;
                 Iterator iter = webServiceEndpointMap.entrySet().iterator();
-                
+
                 while(iter.hasNext()) {
                     Map.Entry entry = (Map.Entry) iter.next();
                     DDBean portComponent = (DDBean) entry.getKey();
@@ -209,7 +209,7 @@ public class WebServiceDescriptor extends Base {
                             break;
                         }
                     }
-                    
+
                     if(!endpointAdded) {
                         CommonDDBean newBean = helper.createNewHost();
                         newBean.setValue(helper.getHostNameProperty(), linkName);
@@ -217,7 +217,7 @@ public class WebServiceDescriptor extends Base {
                         helper.addEndpointHost(root, newBean);
                     }
                 }
-                
+
                 return ddParent;
             }
 
@@ -230,9 +230,9 @@ public class WebServiceDescriptor extends Base {
         snippets.add(snipTwo);
         return snippets;
 	}
-	
+
 	protected class WebServiceDescriptorFinder implements ConfigFinder {
-        
+
 		private String wsDescName;
 
 		public WebServiceDescriptorFinder(String beanName) {
@@ -243,7 +243,7 @@ public class WebServiceDescriptor extends Base {
 			Object result = null;
 			CommonDDBean root = (CommonDDBean) obj;
             CommonDDBean [] descriptions = helper.getWebServiceDescriptions(root);
-			
+
 			for(int i = 0; i < descriptions.length; i++) {
                 String name = (String) descriptions[i].getValue(WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME);
                 if(wsDescName.equals(name)) {
@@ -251,40 +251,40 @@ public class WebServiceDescriptor extends Base {
 					break;
 				}
 			}
-			
+
 			return result;
 		}
 	}
-    
+
 	private class RootFinder implements ConfigFinder {
 		public Object find(Object obj) {
 			RootInterface result = null;
-			
+
 			if(obj instanceof SunWebApp || obj instanceof SunEjbJar) {
 				result = (RootInterface) obj;
 			}
-			
+
 			return result;
 		}
 	}
-	
+
 	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		String uriText = getUriText();
 
         RootInterface root = (RootInterface) config.getBeans(uriText,
             constructFileName(), null, new RootFinder());
 
-		WebserviceDescription descGraph = (WebserviceDescription) config.getBeans(uriText, 
+		WebserviceDescription descGraph = (WebserviceDescription) config.getBeans(uriText,
             constructFileName(), null, new WebServiceDescriptorFinder(getWebServiceDescriptionName()));
-        
+
         clearProperties();
-		
+
         webServiceEndpointMap = getEndpointMap();
-        
+
 		if(descGraph != null) {
             wsdlPublishLocation = descGraph.getWsdlPublishLocation();
         }
-        
+
         if(root != null) {
             // Load all endpoints that already have defined values.
             CommonDDBean [] hosts = helper.getEndpointHosts(root);
@@ -292,7 +292,7 @@ public class WebServiceDescriptor extends Base {
                 for(int i = 0; i < hosts.length; i++) {
                     String hostName = (String) hosts[i].getValue(helper.getHostNameProperty());
                     WebserviceEndpoint [] definedEndpoints = (WebserviceEndpoint []) hosts[i].getValues(helper.getEndpointProperty());
-                    
+
                     for(int j = 0; j < definedEndpoints.length; j++) {
                         DDBean key = findEndpointInMap(hostName, definedEndpoints[j].getPortComponentName());
                         if(key != null) {
@@ -303,21 +303,21 @@ public class WebServiceDescriptor extends Base {
                 }
             }
         }
-        
+
         // Do we want to do anything special for default values, or simply fill in
         // the entries + port component name all the time?
-        
+
 		return (descGraph != null || root != null);
 	}
-    
-    /** Finds the first endpoint in the map, if any, with the given port name 
+
+    /** Finds the first endpoint in the map, if any, with the given port name
      *  and servlet-link or ejb-link and returns the key that will allow this
      *  entry to be retrieved.  If this proves to be a performance bottleneck,
      *  we may have to have an additional index into the map.
      */
     private DDBean findEndpointInMap(String linkName, String portComponentName) {
         DDBean key = null;
-        
+
         if(Utils.notEmpty(linkName) && Utils.notEmpty(portComponentName)) {
             Iterator iter = webServiceEndpointMap.entrySet().iterator();
             while(iter.hasNext()) {
@@ -331,33 +331,33 @@ public class WebServiceDescriptor extends Base {
                 }
             }
         }
-        
+
         return key;
     }
 
-    /** Returns a map between servlet/port pairs and endpoints, with the port 
+    /** Returns a map between servlet/port pairs and endpoints, with the port
      *  name in each endpoint pre-filled.
      */
     private Map getEndpointMap() {
         HashMap endpointMap = new HashMap();
-        
+
         // The list of ports in this service
         DDBean [] portComponents = getDDBean().getChildBean("port-component"); // NOI18N
         for(int i = 0; i < portComponents.length; i++) {
             String portComponentName = getPortComponentName(portComponents[i]);
             WebserviceEndpoint endpoint = StorageBeanFactory.getDefault().createWebserviceEndpoint();
-            
+
             if(Utils.notEmpty(portComponentName)) {
                 endpoint.setPortComponentName(portComponentName);
                 endpoint.setEndpointAddressUri(portComponentName); // this is a default setting.
             }
-            
+
             endpointMap.put(portComponents[i], endpoint);
         }
-        
+
         return endpointMap;
     }
-    
+
     private String getPortComponentName(DDBean portComponent) {
         return getChildBeanText(portComponent, "port-component-name");
     }
@@ -365,32 +365,32 @@ public class WebServiceDescriptor extends Base {
     private String getComponentLinkName(DDBean portComponent) {
         return getChildBeanText(portComponent, "service-impl-bean/" + helper.getLinkXpath());
     }
-    
+
     protected String getChildBeanText(DDBean parent, String childXpath) {
         String childText = null;
-        
+
 		DDBean[] beans = parent.getChildBean(childXpath);
 		DDBean childDD = null;
 		if(beans.length >= 1) {
 			// Found the DDBean we want.
 			childDD = beans[0];
 		}
-		
+
         if(childDD != null) {
             childText = childDD.getText();
             if(childText != null) {
                 childText = childText.trim();
             }
         }
-        
+
 		return childText;
     }
-    
+
 	protected void clearProperties() {
 		wsdlPublishLocation = null;
 		webServiceEndpointMap = new HashMap();
 	}
-	
+
 	protected void setDefaultProperties() {
 	}
 
@@ -398,23 +398,23 @@ public class WebServiceDescriptor extends Base {
         // Delegate to parent, which in turn delegates to master DCB root.
         return getParent().constructFileName();
     }
-	
+
 	/* ------------------------------------------------------------------------
 	 * Event handling support
 	 */
-    
+
 	/** The DDBean (or one of it's children) that this DConfigBean is bound to
 	 *  has changed.
 	 *
 	 * @param xpathEvent
-	 */    
+	 */
 	public void notifyDDChange(XpathEvent xpathEvent) {
 		super.notifyDDChange(xpathEvent);
-        dumpNotification("notifyDDChange", xpathEvent);
-        
+//        dumpNotification("notifyDDChange", xpathEvent);
+
 		DDBean eventBean = xpathEvent.getBean();
         String xpath = eventBean.getXpath();
-		
+
 		if(eventBean == webServiceDescriptionNameDD) {
 			// name changed...
 			getPCS().firePropertyChange(WEBSERVICE_DESCRIPTION_NAME, GenericOldValue, getWebServiceDescriptionName());
@@ -438,14 +438,14 @@ public class WebServiceDescriptor extends Base {
             }
         }
 	}
-    
+
     private void updateEndpoint(WebserviceEndpoint endpoint, DDBean portComponentNameDD) {
         String oldPortComponentName = endpoint.getPortComponentName();
         String newPortComponentName = portComponentNameDD.getText();
         if(newPortComponentName != null) {
             newPortComponentName = newPortComponentName.trim();
         }
-        
+
         endpoint.setPortComponentName(newPortComponentName);
 
         String oldEndpointUri = endpoint.getEndpointAddressUri();
@@ -454,17 +454,17 @@ public class WebServiceDescriptor extends Base {
             endpoint.setEndpointAddressUri(newPortComponentName);
         }
     }
-    
+
     /** A DDBean has been added or removed (or changed, but we handle change events
      *  in notifyDDChange()).
      */
     public void fireXpathEvent(XpathEvent xpathEvent) {
         super.fireXpathEvent(xpathEvent);
-        dumpNotification("fireXpathEvent", xpathEvent);
-        
+//        dumpNotification("fireXpathEvent", xpathEvent);
+
         DDBean eventBean = xpathEvent.getBean();
         String xpath = eventBean.getXpath();
-        
+
         if(xpath.endsWith("port-component")) {
             if(xpathEvent.isAddEvent()) {
                 try {
@@ -496,18 +496,18 @@ public class WebServiceDescriptor extends Base {
             }
         }
     }
-    
+
 	/* ------------------------------------------------------------------------
 	 * Property support
 	 */
-    
+
     /** Getter for property wsdlPublishLocation.
 	 * @return Value of property wsdlPublishLocation.
 	 */
 	public String getWsdlPublishLocation() {
 		return this.wsdlPublishLocation;
 	}
-	
+
 	/** Setter for property wsdlPublishLocation.
 	 * @param newWsdlPublishLocation New value of property wsdlPublishLocation.
 	 *
@@ -519,7 +519,7 @@ public class WebServiceDescriptor extends Base {
 		this.wsdlPublishLocation = newWsdlPublishLocation;
 		getPCS().firePropertyChange("wsdlPublishLocation", oldWsdlPublishLocation, wsdlPublishLocation);
 	}
-	
+
 	/** Getter for property webServiceEndpoint.
 	 * @return Value of property webServiceEndpoint.
 	 *
@@ -533,12 +533,12 @@ public class WebServiceDescriptor extends Base {
         }
         return result;
 	}
-	
+
 	public WebserviceEndpoint getWebServiceEndpoint(int index) {
         List endpoints = getWebServiceEndpoints();
         return (WebserviceEndpoint) endpoints.get(index);
 	}
-    
+
 	/** Setter for property webServiceEndpoint.
 	 * @param webServiceEndpoint New value of property webServiceEndpoint.
 	 *
@@ -563,7 +563,7 @@ public class WebServiceDescriptor extends Base {
         }
         getPCS().firePropertyChange("webServiceEndpointMap", oldWebServiceEndpointMap, webServiceEndpointMap);	// NOI18N
     }
-    
+
 	public void addWebServiceEndpoint(WebserviceEndpoint newWebServiceEndpoint) throws java.beans.PropertyVetoException {
 		getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, null, newWebServiceEndpoint);
 		if(webServiceEndpointMap == null) {
@@ -575,7 +575,7 @@ public class WebServiceDescriptor extends Base {
             getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, null, newWebServiceEndpoint );
         }
 	}
-    
+
 	public void removeWebServiceEndpoint(WebserviceEndpoint oldWebServiceEndpoint) throws java.beans.PropertyVetoException {
 		getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, oldWebServiceEndpoint, null);
         DDBean key = createKey(oldWebServiceEndpoint.getPortComponentName());
@@ -584,7 +584,7 @@ public class WebServiceDescriptor extends Base {
             getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, oldWebServiceEndpoint, null );
         }
 	}
-    
+
     public void addWebServiceEndpoint(DDBean portComponentDD) throws java.beans.PropertyVetoException {
         WebserviceEndpoint newWebserviceEndpoint = StorageBeanFactory.getDefault().createWebserviceEndpoint();
         String portComponentName = getChildBeanText(portComponentDD, "port-component-name"); // NOI81N
@@ -598,7 +598,7 @@ public class WebServiceDescriptor extends Base {
         webServiceEndpointMap.put(portComponentDD, newWebserviceEndpoint);
         getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, null, newWebserviceEndpoint);
     }
-    
+
     public void removeWebServiceEndpoint(DDBean portComponentDD) throws java.beans.PropertyVetoException {
         WebserviceEndpoint oldWebserviceEndpoint = (WebserviceEndpoint) webServiceEndpointMap.get(portComponentDD);
         if(oldWebserviceEndpoint != null) {
@@ -625,16 +625,16 @@ public class WebServiceDescriptor extends Base {
                 break;
             }
         }
-        
+
         return key;
     }
-    
+
 
     private static final EndpointHelper servletHelper = new ServletHelper();
     private static final EndpointHelper ejbHelper = new EjbHelper();
-    
+
     private static abstract class EndpointHelper {
-        
+
         private final String linkXpath;
         private final String hostNameProperty;
         private final String endpointProperty;
@@ -644,7 +644,7 @@ public class WebServiceDescriptor extends Base {
             hostNameProperty = hnp;
             endpointProperty = epp;
         }
-        
+
         public String getLinkXpath() {
             return linkXpath;
         }
@@ -652,36 +652,36 @@ public class WebServiceDescriptor extends Base {
         public String getHostNameProperty() {
             return hostNameProperty;
         }
-        
+
         public String getEndpointProperty() {
             return endpointProperty;
         }
-        
+
         public abstract CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent);
-        
+
         public abstract void addWebServiceDescription(CommonDDBean ddParent, CommonDDBean wsDescBean);
-        
+
         public abstract CommonDDBean [] getEndpointHosts(RootInterface root);
-        
+
         public abstract void addEndpointHost(RootInterface root, CommonDDBean bean);
-        
+
         public abstract CommonDDBean createNewHost();
     }
-    
+
     private static class ServletHelper extends EndpointHelper {
         public ServletHelper() {
             super("servlet-link", Servlet.SERVLET_NAME, Servlet.WEBSERVICE_ENDPOINT);
         }
-        
+
         public CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent) {
             CommonDDBean [] result = (CommonDDBean []) ddParent.getValues(SunWebApp.WEBSERVICE_DESCRIPTION);
             return result;
         }
-        
+
         public void addWebServiceDescription(CommonDDBean ddParent, CommonDDBean wsDescBean) {
             ddParent.addValue(SunWebApp.WEBSERVICE_DESCRIPTION, wsDescBean);
         }
-        
+
         public CommonDDBean [] getEndpointHosts(RootInterface root) {
             CommonDDBean [] result = (CommonDDBean []) root.getValues(SunWebApp.SERVLET);
             return result;
@@ -690,17 +690,17 @@ public class WebServiceDescriptor extends Base {
         public void addEndpointHost(RootInterface root, CommonDDBean bean) {
             root.addValue(SunWebApp.SERVLET, bean);
         }
-        
+
         public CommonDDBean createNewHost() {
             return StorageBeanFactory.getDefault().createServlet();
         }
     }
-    
+
     private static class EjbHelper extends EndpointHelper {
         public EjbHelper() {
             super("ejb-link", Ejb.EJB_NAME, Ejb.WEBSERVICE_ENDPOINT);
         }
-        
+
         public CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent) {
             CommonDDBean [] result = null;
             CommonDDBean enterpriseBeans = (CommonDDBean) ddParent.getValue(SunEjbJar.ENTERPRISE_BEANS);
@@ -709,12 +709,12 @@ public class WebServiceDescriptor extends Base {
             }
             return result;
         }
-        
+
         public void addWebServiceDescription(CommonDDBean ddParent, CommonDDBean wsDescBean) {
             CommonDDBean enterpriseBeans = getEnterpriseBeans(ddParent);
             enterpriseBeans.addValue(EnterpriseBeans.WEBSERVICE_DESCRIPTION, wsDescBean);
         }
-        
+
         public CommonDDBean [] getEndpointHosts(RootInterface root) {
             CommonDDBean [] result = null;
             CommonDDBean enterpriseBeans = (CommonDDBean) root.getValue(SunEjbJar.ENTERPRISE_BEANS);
@@ -732,7 +732,7 @@ public class WebServiceDescriptor extends Base {
         public CommonDDBean createNewHost() {
             return StorageBeanFactory.getDefault().createEjb();
         }
-        
+
         private CommonDDBean getEnterpriseBeans(CommonDDBean ddParent) {
             assert ddParent instanceof SunEjbJar;
             CommonDDBean enterpriseBeans = (CommonDDBean) ddParent.getValue(SunEjbJar.ENTERPRISE_BEANS);
