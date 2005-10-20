@@ -62,4 +62,20 @@ public class Context implements Serializable {
     public File[] getRootFiles() {
         return (File[]) rootFiles.toArray(new File[rootFiles.size()]);
     }
+    
+    public boolean contains(File file) {
+        outter : for (Iterator i = rootFiles.iterator(); i.hasNext();) {
+            File root = (File) i.next();
+            if (Utils.isParentOrEqual(root, file)) {
+                for (Iterator j = exclusions.iterator(); j.hasNext();) {
+                    File excluded = (File) j.next();
+                    if (Utils.isParentOrEqual(excluded, file)) {
+                        continue outter;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -395,6 +395,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
 
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
+            if (!affectsView(event)) return;
             if (cvs.getParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING) != null) {
                 reScheduleRefresh(1000);
             } else {
@@ -408,6 +409,18 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 }
             }
         }
+    }
+
+    private boolean affectsView(VersioningEvent event) {
+        File file = (File) event.getParams()[0];
+        FileInformation oldInfo = (FileInformation) event.getParams()[1];
+        FileInformation newInfo = (FileInformation) event.getParams()[2];
+        if (oldInfo == null) {
+            if ((newInfo.getStatus() & displayStatuses) == 0) return false;
+        } else {
+            if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
+        }
+        return context.contains(file);
     }
 
     /** Reloads data from cache */

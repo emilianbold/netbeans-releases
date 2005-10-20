@@ -37,6 +37,9 @@ public class FileStatusCache {
     /**
      * Indicates that status of a file changed and listeners SHOULD check new status 
      * values if they are interested in this file.
+     * First parameter: File whose status changes
+     * Second parameter: old FileInformation object, may be null
+     * Third parameter: new FileInformation object
      */
     public static final Object EVENT_FILE_STATUS_CHANGED = new Object();
 
@@ -239,7 +242,7 @@ public class FileStatusCache {
                 refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
             }
         }
-        fireFileStatusChanged(file);
+        fireFileStatusChanged(file, current, fi);
         return fi;
     }
 
@@ -384,7 +387,7 @@ public class FileStatusCache {
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) files.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file);
+            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file, null, info);
         }
         return files;
     }
@@ -634,8 +637,8 @@ public class FileStatusCache {
         listenerSupport.removeListener(listener);
     }
     
-    private void fireFileStatusChanged(File file) {
-        listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, file);
+    private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
+        listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
     private static final class NotManagedMap extends AbstractMap {
