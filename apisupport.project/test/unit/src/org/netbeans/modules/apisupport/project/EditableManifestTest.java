@@ -274,6 +274,13 @@ public class EditableManifestTest extends NbTestCase {
         assertEquals("A:x\nB : x\nC: lo\n ng \n as heck\nd: x2\nE: longer\n\n\nName: n\n", manifest2String(m));
     }
     
+    public void test66341() throws Exception {
+        EditableManifest m = string2Manifest("A: x\nB: y\n");
+        m.addSection("x");
+        //System.err.println(manifest2String(m));
+        assertEquals("adding a section always inserts a blank line", "A: x\nB: y\n\nName: x\n\n", manifest2String(m));
+    }
+    
     private static EditableManifest string2Manifest(String text) throws Exception {
         return new EditableManifest(new ByteArrayInputStream(text.getBytes("UTF-8")));
     }

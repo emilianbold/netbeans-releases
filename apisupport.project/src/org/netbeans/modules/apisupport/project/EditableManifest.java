@@ -126,10 +126,10 @@ public final class EditableManifest {
      */
     public void write(OutputStream os) throws IOException {
         Writer w = new OutputStreamWriter(os, "UTF-8"); // NOI18N
-        mainSection.write(w);
+        mainSection.write(w, !sections.isEmpty());
         Iterator it = sections.iterator();
         while (it.hasNext()) {
-            ((Section) it.next()).write(w);
+            ((Section) it.next()).write(w, it.hasNext());
         }
         w.flush();
     }
@@ -447,13 +447,16 @@ public final class EditableManifest {
             return attrNames;
         }
         
-        public void write(Writer w) throws IOException {
+        public void write(Writer w, boolean forceBlankLine) throws IOException {
             Iterator it = lines.iterator();
             while (it.hasNext()) {
                 Line line = (Line) it.next();
                 line.write(w);
             }
             for (int i = 0; i < blankLinesAfter; i++) {
+                newline(w);
+            }
+            if (forceBlankLine && blankLinesAfter == 0) {
                 newline(w);
             }
         }
