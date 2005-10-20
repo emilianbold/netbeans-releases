@@ -55,18 +55,18 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpCon
  * @author Peter Williams
  */
 public class ServletRefCustomizer extends BaseCustomizer implements 
-	TableModelListener, PropertyChangeListener {
+	PropertyChangeListener {
 	
 	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
 
 	private ServletRef theBean;
 	private boolean servlet24FeaturesVisible;
-	
-	// Table for editing webservice endpoints
-	private GenericTableModel webServiceEndpointModel;
-	private GenericTablePanel webServiceEndpointPanel;
-	
+
+    // Web service endpoint help text to point user to web service specific 
+    // customizers for endpoint editing.
+    private JLabel jLblEndpointHelp;
+    
 	// Panel to fill in for when the webservice endpoint panel is missing.
 	// This keeps the layout manager happy and doing what we want it to do.
 	private JPanel fillerPanel;
@@ -208,33 +208,30 @@ public class ServletRefCustomizer extends BaseCustomizer implements
 		addTitlePanel(customizerBundle.getString("TITLE_Servlet"));	// NOI18N
 		getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_Servlet"));	// NOI18N
 		getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_Servlet"));	// NOI18N
-		
-		/** Add webservice endpoints table panel :
-		 *  TableEntry list has three properties: port component, endpoint address,
-		 *  and transport which are all standard values.  Authentication method,
-		 *  specified in the DTD, is not used for servlet based endpoints.
-		 */
-		ArrayList tableColumns = new ArrayList(4);
-		tableColumns.add(new GenericTableModel.ValueEntry(WebserviceEndpoint.PORT_COMPONENT_NAME, customizerBundle.getString("LBL_PortComponentName"), true));	// NOI18N
-		tableColumns.add(new GenericTableModel.ValueEntry(WebserviceEndpoint.ENDPOINT_ADDRESS_URI, customizerBundle.getString("LBL_EndpointAddressURI")));	// NOI18N
-		tableColumns.add(new GenericTableModel.ValueEntry(WebserviceEndpoint.TRANSPORT_GUARANTEE, customizerBundle.getString("LBL_TransportGuarantee")));	// NOI18N
-		
-		// add Properties table
-        webServiceEndpointModel = new GenericTableModel(webserviceEndpointFactory, tableColumns);
-        webServiceEndpointPanel = new GenericTablePanel(webServiceEndpointModel, 
-			customizerBundle, "WebServiceEndpoint",	// NOI18N - property name
-			WebServiceEndpointEntryPanel.class,
-			HelpContext.HELP_SERVLET_SERVICE_ENDPOINT_POPUP);
+
+        // Endpoint help text
+        jLblEndpointHelp = new JLabel();
+        jLblEndpointHelp.setText(customizerBundle.getString("LBL_EndpointHelp"));
+        jLblEndpointHelp.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_EndpointHelp"));
+        jLblEndpointHelp.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_EndpointHelp"));
+        
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+		add(jLblEndpointHelp, gridBagConstraints);
+		servlet24FeaturesVisible = true;
+
+        // Filler panel to push everything to the top.
+		fillerPanel = new JPanel();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-		add(webServiceEndpointPanel, gridBagConstraints);
-		servlet24FeaturesVisible = true;
-		
-		fillerPanel = new JPanel();
+		add(fillerPanel, gridBagConstraints);
 		
 		// Add error panel
 		addErrorPanel();
@@ -247,10 +244,9 @@ public class ServletRefCustomizer extends BaseCustomizer implements
 		handleRoleFields();
 		
 		if(theBean.getJ2EEModuleVersion().compareTo(ServletVersion.SERVLET_2_4) >= 0) {
-			showWebServiceEndpointPanel();
-			webServiceEndpointPanel.setModel(theBean.getWebServiceEndpoints());
+			showWebServiceEndpointInformation();
 		} else {
-			hideWebServiceEndpointPanel();
+			hideWebServiceEndpointInformation();
 		}
 	}
 	
@@ -273,42 +269,18 @@ public class ServletRefCustomizer extends BaseCustomizer implements
 		}
 	}
 	
-	private void showWebServiceEndpointPanel() {
+	private void showWebServiceEndpointInformation() {
 		if(!servlet24FeaturesVisible) {
-			remove(fillerPanel);	
-			GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-			gridBagConstraints.fill = GridBagConstraints.BOTH;
-			gridBagConstraints.weightx = 1.0;
-			gridBagConstraints.weighty = 1.0;
-			gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-			add(webServiceEndpointPanel, gridBagConstraints, getComponentCount() - 1);
+            jLblEndpointHelp.setVisible(true);
 			servlet24FeaturesVisible = true;
 		}
 	}
 	
-	private void hideWebServiceEndpointPanel() {
+	private void hideWebServiceEndpointInformation() {
 		if(servlet24FeaturesVisible) {
-			remove(webServiceEndpointPanel);
-			GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-			gridBagConstraints.fill = GridBagConstraints.BOTH;
-			gridBagConstraints.weightx = 1.0;
-			gridBagConstraints.weighty = 1.0;
-			add(fillerPanel, gridBagConstraints, getComponentCount() - 1);
+            jLblEndpointHelp.setVisible(false);
 			servlet24FeaturesVisible = false;
 		}
-	}
-	
-	public void tableChanged(TableModelEvent e) {
-		if(theBean != null) {
-			try {
-				theBean.setWebServiceEndpoints(webServiceEndpointModel.getData());
-				theBean.setDirty();
-			} catch(PropertyVetoException ex) {
-				// FIXME undo whatever changed... how?
-			}
-		}		
 	}
 	
 	public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -324,13 +296,11 @@ public class ServletRefCustomizer extends BaseCustomizer implements
 	protected void addListeners() {
 		super.addListeners();
 		theBean.addPropertyChangeListener(this);
-                webServiceEndpointModel.addTableModelListener(this);
 	}
 	
 	protected void removeListeners() {
 		super.removeListeners();
 		theBean.removePropertyChangeListener(this);
-                webServiceEndpointModel.removeTableModelListener(this);
 	}
 	
 	protected boolean setBean(Object bean) {
@@ -354,13 +324,4 @@ public class ServletRefCustomizer extends BaseCustomizer implements
 	public String getHelpId() {
 		return "AS_CFG_Servlet";	// NOI18N
 	}
-
-    // New for migration to sun DD API model.  Factory instance to pass to generic table model
-    // to allow it to create webserviceEndpoint beans.
-	private static GenericTableModel.ParentPropertyFactory webserviceEndpointFactory =
-        new GenericTableModel.ParentPropertyFactory() {
-            public CommonDDBean newParentProperty() {
-                return StorageBeanFactory.getDefault().createWebserviceEndpoint();
-            }
-        };
 }

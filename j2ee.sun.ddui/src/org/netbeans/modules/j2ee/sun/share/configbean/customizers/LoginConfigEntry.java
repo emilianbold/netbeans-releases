@@ -54,13 +54,25 @@ public class LoginConfigEntry extends GenericTableModel.TableEntry {
 	}
 
 	public void setEntry(CommonDDBean parent, Object value) {
-		LoginConfig lc = (LoginConfig) parent.getValue(WebserviceEndpoint.LOGIN_CONFIG);
-		if(lc == null) {
-			lc = StorageBeanFactory.getDefault().createLoginConfig();
-			parent.setValue(propertyName, lc);
-		}
+        // Set blank strings to null.  This object also handles message-security-binding
+        // though, so we have to check it out.        
+        if(value instanceof String && ((String) value).length() == 0) {
+            value = null;
+        }
 
-		lc.setValue(LoginConfig.AUTH_METHOD, value);
+        LoginConfig lc = (LoginConfig) parent.getValue(WebserviceEndpoint.LOGIN_CONFIG);
+        if(value != null) {
+            if(lc == null) {
+                lc = StorageBeanFactory.getDefault().createLoginConfig();
+                parent.setValue(propertyName, lc);
+            }
+
+            lc.setValue(LoginConfig.AUTH_METHOD, value);
+        } else {
+            if(lc != null) {
+                parent.setValue(WebserviceEndpoint.LOGIN_CONFIG, null);
+            }
+        }
 	}
 	
 	public Object getEntry(CommonDDBean parent, int row) {
