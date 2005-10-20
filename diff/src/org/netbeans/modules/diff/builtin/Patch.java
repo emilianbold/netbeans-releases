@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -281,11 +282,39 @@ public class Patch extends Reader {
             } else continue;
             ArrayList secondChanges = new ArrayList(); // List of intervals and texts
             line = fillChanges(secondInterval, br, DIFFERENCE_DELIMETER, secondChanges);
+            if (changesCountInvariant(firstChanges, secondChanges) == false) {
+                throw new IOException("Diff file format error. Number of new and old file changes in one hunk must be same!");   // NOI18N
+            }
             mergeChanges(firstInterval, secondInterval, firstChanges, secondChanges, diffs);
         } while (line != null);
         return (Difference[]) diffs.toArray(new Difference[diffs.size()]);
     }
-    
+
+
+    private static boolean changesCountInvariant(List changes1, List changes2) {
+        int i1 = 0;
+        Iterator it = changes1.iterator();
+        while (it.hasNext()) {
+            int[] ints = (int[]) it.next();
+            if (ints[2] == 2) {
+                i1++;
+            }
+            String skip = (String) it.next();
+        }
+
+        int i2 = 0;
+        it = changes2.iterator();
+        while (it.hasNext()) {
+            int[] ints = (int[]) it.next();
+            if (ints[2] == 2) {
+                i2++;
+            }
+            String skip = (String) it.next();
+        }
+
+        return i1 == i2;
+    }
+
     private static void readNums(String str, int off, int[] values) throws NumberFormatException {
         int end = str.indexOf(CONTEXT_MARK_DELIMETER, off);
         if (end > 0) {
@@ -378,6 +407,8 @@ public class Patch extends Reader {
     
     private static void mergeChanges(int[] firstInterval, int[] secondInterval,
                               List firstChanges, List secondChanges, List diffs) {
+
+
         int p1, p2;
         int n1 = firstChanges.size();
         int n2 = secondChanges.size();
@@ -392,7 +423,9 @@ public class Patch extends Reader {
                 int[] interval = (int[]) firstChanges.get(p1);
                 if (p2 < n2) {
                     int[] interval2 = (int[]) secondChanges.get(p2);
-                    if (interval[0] + firstToSecondIntervalShift > interval2[0]) break;
+                    if (interval[0] + firstToSecondIntervalShift > interval2[0]) {
+                        break;
+                    }
                     // We need to set differences successively. Differences with
                     // higher line numbers must not precede differences with
                     // smaller line numbers
@@ -443,16 +476,18 @@ public class Patch extends Reader {
             // Change is remaining
             if (p1 < n1 && p2 < n2) {
                 int[] interval1 = (int[]) firstChanges.get(p1);
-                int[] interval2 = (int[]) secondChanges.get(p2);
-                diffs.add(new Difference(interval1[2], interval1[0], interval1[1],
-                                         interval2[0], interval2[1],
-                                         (String) firstChanges.get(p1 + 1),
-                                         (String) secondChanges.get(p2 + 1)));
-                p1 += 2;
-                p2 += 2;
-                firstToSecondIntervalShift += interval2[1] - interval2[0] - (interval1[1] - interval1[0]);
-                //System.out.println("added diff = "+diffs.get(diffs.size() - 1));
-                //System.out.println("new shift = "+firstToSecondIntervalShift);
+                if (interval1[2] == Difference.CHANGE) {  // double check the break above
+                    int[] interval2 = (int[]) secondChanges.get(p2);
+                    diffs.add(new Difference(interval1[2], interval1[0], interval1[1],
+                                             interval2[0], interval2[1],
+                                             (String) firstChanges.get(p1 + 1),
+                                             (String) secondChanges.get(p2 + 1)));
+                    p1 += 2;
+                    p2 += 2;
+                    firstToSecondIntervalShift += interval2[1] - interval2[0] - (interval1[1] - interval1[0]);
+                    //System.out.println("added diff = "+diffs.get(diffs.size() - 1));
+                    //System.out.println("new shift = "+firstToSecondIntervalShift);
+                }
             }
         }
     }
