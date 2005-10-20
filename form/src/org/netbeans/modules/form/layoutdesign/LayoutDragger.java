@@ -540,9 +540,13 @@ class LayoutDragger implements LayoutConstants {
             else {
                 boolean preferredNextTo = (dimension == HORIZONTAL);
                 int nextToDst = smallestDistance(findingsNextTo[dimension]);
-                int alignedOrtDst = Math.abs(LayoutRegion.nonOverlapDistance(
+                int alignedDst = smallestDistance(findingsAligned[dimension]);
+                if (!relatedPositions(bestNextTo, bestAligned)) {
+                    // penalize the aligned position according to distance in the other dimension
+                    int alignedOrtDst = Math.abs(LayoutRegion.nonOverlapDistance(
                         bestAligned.interval.getCurrentSpace(), movingSpace, dimension ^ 1));
-                int alignedDst = getDistanceScore(smallestDistance(findingsAligned[dimension]), alignedOrtDst);
+                    alignedDst = getDistanceScore(alignedDst, alignedOrtDst);
+                }
                 if (preferredNextTo) {
                     best = alignedDst*2 <= nextToDst && nextToDst - alignedDst >= SNAP_DISTANCE/2 ?
                            bestAligned : bestNextTo;
@@ -1002,7 +1006,7 @@ class LayoutDragger implements LayoutConstants {
         return false;
     }
 
-    private static boolean contentOverlap(LayoutInterval group, int x1, int x2, int y1, int y2, int dim) {
+    private boolean contentOverlap(LayoutInterval group, int x1, int x2, int y1, int y2, int dim) {
         int[][] groupPos = group.getCurrentSpace().positions;
         for (int i=0, n=group.getSubIntervalCount(); i < n; i++) {
             LayoutInterval li = group.getSubInterval(i);
@@ -1032,14 +1036,23 @@ class LayoutDragger implements LayoutConstants {
             }
             if (_x1 < x2 && _x2 > x1 && _y1 < y2 && _y2 > y1) { // overlap
                 if (li.isComponent()) {
-                    return true;
+                    if (isValidInterval(li))
+                        return true;
                 }
                 else if (li.isEmptySpace()) {
                     if (i > 0 // i == 0 indent space is not in the way
                         && (li.getMinimumSize() == NOT_EXPLICITLY_DEFINED || li.getMinimumSize() == USE_PREFERRED_SIZE)
                         && li.getPreferredSize() == NOT_EXPLICITLY_DEFINED
                         && (li.getMaximumSize() == NOT_EXPLICITLY_DEFINED || li.getMaximumSize() == USE_PREFERRED_SIZE))
-                        return true; // preferred padding in the way
+                    {   // preferred padding might be in the way
+                        LayoutInterval prev = group.getSubInterval(i-1);
+                        LayoutInterval next = i+1 < n ? group.getSubInterval(i+1) : null;
+                        if ((!prev.isComponent() || isValidInterval(prev))
+                            && (next == null || !next.isComponent() || isValidInterval(next)))
+                        {   // preferred padding between valid intervals (i.e. not next to the moving component itself)
+                            return true;
+                        }
+                    }
                     if (_x1 >= x1 && _x2 <= x2)
                         return false; // goes over a gap in a sequence - so no overlap
                 }
@@ -1173,6 +1186,16 @@ class LayoutDragger implements LayoutConstants {
             }
         }
         return bestDst;
+    }
+
+    private boolean relatedPositions(PositionDef nextTo, PositionDef aligned) {
+        if (nextTo.interval == null || aligned.interval == null)
+            return false;
+
+        if (LayoutInterval.getNeighbor(aligned.interval, nextTo.alignment, true, true, false) == nextTo.interval)
+            return true;
+
+        return false;
     }
 
     /**
