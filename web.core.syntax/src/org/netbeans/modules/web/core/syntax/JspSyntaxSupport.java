@@ -1541,7 +1541,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
             if (!isScriptingOrContentToken(nextItem))
                 return new SyntaxElement.ScriptingL(this, 
-                    firstToken.getOffset(), getTokenEnd(item));
+                    firstToken.getOffset(), getTokenEnd(nextItem));
             item = nextItem;
         }
         while (true);
