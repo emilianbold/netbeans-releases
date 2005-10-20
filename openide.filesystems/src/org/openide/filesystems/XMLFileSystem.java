@@ -297,9 +297,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             urlsToXml = origUrls;
             throw iox;
         } catch (Exception e) {
-            IOException x = new IOException(e.getMessage() + " : " + act); // NOI18N
-            ExternalUtil.copyAnnotation(x, e);
-            throw x;
+            throw (IOException) new IOException(act + ": " + e.toString()).initCause(e); // NOI18N
         } finally {
             rootElem = null;
         }
