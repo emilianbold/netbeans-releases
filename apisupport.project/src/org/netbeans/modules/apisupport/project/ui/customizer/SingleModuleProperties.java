@@ -249,7 +249,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     NbPlatform getActivePlatform() {
         if (moduleType != NbModuleTypeProvider.NETBEANS_ORG
                 && (activePlatform == null || !NbPlatform.getPlatforms().contains(activePlatform))) {
-            Util.err.log("Platform " + activePlatform + " was presuambly removed. Switching to default."); // NOI18N
+            ModuleProperties.reportLostPlatform(activePlatform);
             activePlatform = NbPlatform.getDefaultPlatform();
         }
         return activePlatform;

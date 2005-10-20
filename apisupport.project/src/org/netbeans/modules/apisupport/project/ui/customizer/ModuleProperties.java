@@ -24,7 +24,10 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -202,6 +205,14 @@ abstract class ModuleProperties {
     
     protected void firePropertiesRefreshed() {
         firePropertyChange(PROPERTIES_REFRESHED, null, null);
+    }
+    
+    protected static void reportLostPlatform(final NbPlatform lostPlatform) {
+        String plafText = lostPlatform != null
+                ? '"' + lostPlatform.getLabel() + '"'
+                : NbBundle.getMessage(ModuleProperties.class, "MSG_PreviouslySet");
+        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                NbBundle.getMessage(ModuleProperties.class, "MSG_PlatformNotFound", plafText)));
     }
     
 }

@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -96,7 +95,7 @@ public final class SuiteProperties extends ModuleProperties {
     
     public NbPlatform getActivePlatform() {
         if (activePlatform == null) {
-            Util.err.log("Platform " + activePlatform + " not found; switching to default");
+            ModuleProperties.reportLostPlatform(activePlatform);
             activePlatform = NbPlatform.getDefaultPlatform();
         }
         return activePlatform;
