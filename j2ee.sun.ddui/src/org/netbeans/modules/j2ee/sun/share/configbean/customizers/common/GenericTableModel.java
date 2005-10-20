@@ -495,6 +495,9 @@ public class GenericTableModel extends BeanTableModel {
 		}
 
 		public void setEntry(CommonDDBean parent, Object value) {
+            if(value instanceof String && ((String) value).length() == 0) {
+                value = null;
+            }
 			parent.setValue(propertyName, value);
 		}
 
