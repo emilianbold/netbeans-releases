@@ -30,6 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -38,8 +39,10 @@ import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -59,6 +62,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -90,7 +94,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps")));
             actions.add(createMasterAction(project, new String[] {"init", "all-" + path, "tryme"}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps_tryme")));
         } else {
-            actions.add(createGlobalAction(project, new String[] {"run"}, NbBundle.getMessage(ModuleActions.class, "ACTION_run")));
+            actions.add(createSimpleAction(project, new String[] {"run"}, NbBundle.getMessage(ModuleActions.class, "ACTION_run")));
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
         actions.add(null);
@@ -127,8 +131,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(null);
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, NbBundle.getMessage(ModuleActions.class, "ACTION_javadoc"), null));
-        // Prefer to always show it, for discoverability: if (project.evaluator().getProperty("javadoc.arch") != null)
-        actions.add(createGlobalAction(project, new String[] {"arch-nb"}, NbBundle.getMessage(ModuleActions.class, "ACTION_arch")));
+        actions.add(createArchAction(project));
         actions.add(null);
         if (isNetBeansOrg) {
             actions.add(createCheckBundleAction(project, NbBundle.getMessage(ModuleActions.class, "ACTION_unused_bundle_keys")));
@@ -136,7 +139,7 @@ public final class ModuleActions implements ActionProvider {
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_reload"), null));
         actions.add(createReloadInIDEAction(project, new String[] {"reload-in-ide"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload_in_ide")));
-        actions.add(createGlobalAction(project, new String[] {"nbm"}, NbBundle.getMessage(ModuleActions.class, "ACTION_nbm")));
+        actions.add(createSimpleAction(project, new String[] {"nbm"}, NbBundle.getMessage(ModuleActions.class, "ACTION_nbm")));
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
@@ -147,7 +150,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         actions.add(SystemAction.get(DeleteAction.class));
          */
-
+        
         // Honor #57874 contract:
         try {
             FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
@@ -173,7 +176,7 @@ public final class ModuleActions implements ActionProvider {
         } catch (DataObjectNotFoundException ex) {
             assert false : ex;
         }
-
+        
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
@@ -242,7 +245,7 @@ public final class ModuleActions implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) {
         if (command.equals(COMMAND_COMPILE_SINGLE)) {
             return findBuildXml(project) != null &&
-                (findSources(context) != null || findTestSources(context, false) != null);
+                    (findSources(context) != null || findTestSources(context, false) != null);
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
             return findBuildXml(project) != null &&  findTestSourcesForSources(context) != null;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
@@ -326,7 +329,7 @@ public final class ModuleActions implements ActionProvider {
         FileObject testSrcDir = project.getTestSourceDirectory();
         FileObject srcDir = project.getSourceDirectory();
         return ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
-    }    
+    }
     
     private FileObject[] findFunctionalTestSources(Lookup context) {
         FileObject srcDir = project.getFunctionalTestSourceDirectory();
@@ -380,19 +383,19 @@ public final class ModuleActions implements ActionProvider {
                 p.setProperty("classname", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
                 targetNames = new String[] {"internal-execution"}; // NOI18N
                 buildScript = findTestBuildXml(project);
-            } else if ((files = findPerformanceTestSources(context)) != null) { 
+            } else if ((files = findPerformanceTestSources(context)) != null) {
                 String path = FileUtil.getRelativePath(project.getPerformanceTestSourceDirectory(), files[0]);
                 p = new Properties();
                 p.setProperty("xtest.testtype", "qa-performance"); // NOI18N
                 p.setProperty("classname", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
                 targetNames = new String[] {"internal-execution"}; // NOI18N
-                buildScript = findTestBuildXml(project);         
+                buildScript = findTestBuildXml(project);
             }  else {
                 files = findTestSources(context, false);
                 p = new Properties();
                 targetNames = setupTestSingle(p, files);
             }
-      } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
+        } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] files = findTestSources(context, false);
             p = new Properties();
             targetNames = setupDebugTestSingle(p, files);
@@ -434,7 +437,7 @@ public final class ModuleActions implements ActionProvider {
             Util.err.notify(e);
         }
     }
-
+    
     private void promptForPublicPackagesToDocument() {
         // #61372: warn the user, rather than disabling the action.
         String msg = NbBundle.getMessage(ModuleActions.class, "ERR_javadoc_disabled");
@@ -445,7 +448,7 @@ public final class ModuleActions implements ActionProvider {
         configure.setDefaultCapable(true);
         d.setOptions(new Object[] {
             configure,
-            NotifyDescriptor.CANCEL_OPTION,
+                    NotifyDescriptor.CANCEL_OPTION,
         });
         d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
         if (DialogDisplayer.getDefault().notify(d).equals(configure)) {
@@ -458,15 +461,15 @@ public final class ModuleActions implements ActionProvider {
         p.setProperty("test.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }
-
+    
     private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
         String path = FileUtil.getRelativePath(project.getTestSourceDirectory(), files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
         return new String[] {"debug-test-single-nb"}; // NOI18N
     }
-
-    private static Action createGlobalAction(final NbModuleProject project, final String[] targetNames, String displayName) {
+    
+    private static Action createSimpleAction(final NbModuleProject project, final String[] targetNames, String displayName) {
         return new AbstractAction(displayName) {
             public boolean isEnabled() {
                 return findBuildXml(project) != null;
@@ -531,7 +534,7 @@ public final class ModuleActions implements ActionProvider {
             }
         };
     }
-
+    
     private static Action createReloadInIDEAction(final NbModuleProject project, final String[] targetNames, String displayName) {
         return new AbstractAction(displayName) {
             public boolean isEnabled() {
@@ -550,11 +553,12 @@ public final class ModuleActions implements ActionProvider {
                         if (suite == null) {
                             return false;
                         }
-                        if (!suite.getActivePlatform().isDefault()) {
+                        NbPlatform p = suite.getActivePlatform();
+                        if (/* #67148 */p == null || !p.isDefault()) {
                             return false;
                         }
                         return SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY).length == 0 &&
-                            SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY).length == 0;
+                                SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY).length == 0;
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         return false;
@@ -574,6 +578,38 @@ public final class ModuleActions implements ActionProvider {
                 }
                 try {
                     ActionUtils.runTarget(findBuildXml(project), targetNames, null);
+                } catch (IOException e) {
+                    Util.err.notify(e);
+                }
+            }
+        };
+    }
+    
+    private static Action createArchAction(final NbModuleProject project) {
+        return new AbstractAction(NbBundle.getMessage(ModuleActions.class, "ACTION_arch")) {
+            public boolean isEnabled() {
+                return findBuildXml(project) != null;
+            }
+            public void actionPerformed(ActionEvent ignore) {
+                ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                    public Object run() {
+                        String prop = "javadoc.arch"; // NOI18N
+                        if (project.evaluator().getProperty(prop) == null) {
+                            // User has not yet configured an arch desc. Assume we should just do it for them.
+                            EditableProperties props = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            props.setProperty(prop, "${basedir}/arch.xml"); // NOI18N
+                            project.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            try {
+                                ProjectManager.getDefault().saveProject(project);
+                            } catch (IOException e) {
+                                Util.err.notify(e);
+                            }
+                        }
+                        return null;
+                    }
+                });
+                try {
+                    ActionUtils.runTarget(findBuildXml(project), new String[] {"arch-nb"}, null); // NOI18N
                 } catch (IOException e) {
                     Util.err.notify(e);
                 }
