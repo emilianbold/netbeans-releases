@@ -7,30 +7,45 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.platform.ui;
 
-import java.awt.*;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import javax.swing.JComponent;
-
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.platform.wizard.PlatformInstallIterator;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.TemplateWizard;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -38,23 +53,9 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Children;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.java.platform.wizard.PlatformInstallIterator;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-
-
-
-
-
-
 /**
- *
  * @author  tom
  */
 public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
@@ -587,7 +588,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                         if (platform != null) {
                             String platformType = platform.getSpecification().getName();
                             if (platformType != null) {
-                                platformType = platformType.toUpperCase();
+                                platformType = platformType.toUpperCase(Locale.ENGLISH);
                                 PlatformCategoriesDescriptor platforms = (PlatformCategoriesDescriptor) categories.get (platformType);
                                 if (platforms == null ) {
                                     platforms = new PlatformCategoriesDescriptor (platformType);
