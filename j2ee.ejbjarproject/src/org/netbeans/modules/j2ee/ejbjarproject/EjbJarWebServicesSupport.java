@@ -90,6 +90,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     }
     
     public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL) {
+        this.addServiceImpl(serviceName, configFile, fromWSDL,null);
+    }
+    
+    public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL, String[] wscompileFeatures) {
         
         //Add properties to project.properties file
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -99,8 +103,17 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         ep.put(serviceName + MAPPING_PROP_SUFFIX, serviceName + MAPPING_FILE_SUFFIX); //NOI18N
         // Add property for wscompile
         String featurePropertyName = "wscompile.service." + serviceName + ".features"; // NOI18N
-        String defaultFeatures = fromWSDL ? wsdlServiceStub.getDefaultFeaturesAsArgument() :
-            seiServiceStub.getDefaultFeaturesAsArgument();
+        JAXRPCStubDescriptor stubDesc = null;
+        if (fromWSDL) {
+            if (wscompileFeatures!=null) 
+                stubDesc = new JAXRPCStubDescriptor(StubDescriptor.WSDL_SERVICE_STUB,
+                                NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"),
+                                wscompileFeatures);
+            else stubDesc = wsdlServiceStub;
+        } else {
+            stubDesc = seiServiceStub;
+        }
+        String defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
             ep.put(featurePropertyName, defaultFeatures);
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             
