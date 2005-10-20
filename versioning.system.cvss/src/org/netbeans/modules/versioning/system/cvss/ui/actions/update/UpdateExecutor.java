@@ -24,6 +24,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -126,12 +128,15 @@ public class UpdateExecutor extends ExecutorSupport {
         
         cvs.setParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING, null);
         if (hasConflict) {
-            JOptionPane.showMessageDialog(
-                    null, 
+            NotifyDescriptor nd = new NotifyDescriptor(
                     NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Prompt"),
                     NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Title"),
-                    JOptionPane.WARNING_MESSAGE
-                    );
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE,
+                    null,
+                    null
+            );
+            DialogDisplayer.getDefault().notify(nd);
         }
         
         for (Iterator i = filesystems.iterator(); i.hasNext();) {
