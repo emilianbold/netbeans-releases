@@ -279,6 +279,7 @@ public class WebServiceDescriptor extends Base {
 
         clearProperties();
 
+        // Default endpoint URI's are set in this call.
         webServiceEndpointMap = getEndpointMap();
 
 		if(descGraph != null) {
@@ -303,7 +304,9 @@ public class WebServiceDescriptor extends Base {
                 }
             }
         }
-
+        
+        // No default values, other than endpoint URI, which is set above in getEndpointMap().
+        
         // Do we want to do anything special for default values, or simply fill in
         // the entries + port component name all the time?
 
@@ -349,7 +352,8 @@ public class WebServiceDescriptor extends Base {
 
             if(Utils.notEmpty(portComponentName)) {
                 endpoint.setPortComponentName(portComponentName);
-                endpoint.setEndpointAddressUri(portComponentName); // this is a default setting.
+                 // This where default endpoints get set.
+                endpoint.setEndpointAddressUri(helper.getUriPrefix() + portComponentName);
             }
 
             endpointMap.put(portComponents[i], endpoint);
@@ -630,6 +634,9 @@ public class WebServiceDescriptor extends Base {
     }
 
 
+    private static final String WEB_URI_PREFIX = ""; // NOI18N
+    private static final String EJB_URI_PREFIX = "webservice/"; // NOI18N
+    
     private static final EndpointHelper servletHelper = new ServletHelper();
     private static final EndpointHelper ejbHelper = new EjbHelper();
 
@@ -638,11 +645,13 @@ public class WebServiceDescriptor extends Base {
         private final String linkXpath;
         private final String hostNameProperty;
         private final String endpointProperty;
+        private final String blueprintsUriPrefix;
 
-        public EndpointHelper(String xpath, String hnp, String epp) {
+        public EndpointHelper(String xpath, String hnp, String epp, String uriPrefix) {
             linkXpath = xpath;
             hostNameProperty = hnp;
             endpointProperty = epp;
+            blueprintsUriPrefix = uriPrefix;
         }
 
         public String getLinkXpath() {
@@ -655,6 +664,10 @@ public class WebServiceDescriptor extends Base {
 
         public String getEndpointProperty() {
             return endpointProperty;
+        }
+
+        public String getUriPrefix() {
+            return blueprintsUriPrefix;
         }
 
         public abstract CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent);
@@ -670,7 +683,7 @@ public class WebServiceDescriptor extends Base {
 
     private static class ServletHelper extends EndpointHelper {
         public ServletHelper() {
-            super("servlet-link", Servlet.SERVLET_NAME, Servlet.WEBSERVICE_ENDPOINT);
+            super("servlet-link", Servlet.SERVLET_NAME, Servlet.WEBSERVICE_ENDPOINT, WEB_URI_PREFIX);
         }
 
         public CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent) {
@@ -698,7 +711,7 @@ public class WebServiceDescriptor extends Base {
 
     private static class EjbHelper extends EndpointHelper {
         public EjbHelper() {
-            super("ejb-link", Ejb.EJB_NAME, Ejb.WEBSERVICE_ENDPOINT);
+            super("ejb-link", Ejb.EJB_NAME, Ejb.WEBSERVICE_ENDPOINT, EJB_URI_PREFIX);
         }
 
         public CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent) {
