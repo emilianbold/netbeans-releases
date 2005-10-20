@@ -505,8 +505,6 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
 <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
 <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
-<!--CSH ID for Options | Editing | Form Editor Settings :-->
-<mapID target="gui.configuring" url="gui/csh/gui_options_window.html" />
 
 <!-- To Do window help :-->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
@@ -664,7 +662,10 @@ under Print Settings in the Options window)
 
    <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
 
-
+<!--CSH ID for Options | Editing | Form Editor Settings :-->
+    <mapID target="gui.configuring" url="configure/options_form_classic.html" />
+<!--ID for CSH in Options | Modern View - Advanced-Form Editor Settings : --> 
+    <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
 
 
 
@@ -713,8 +714,6 @@ under Print Settings in the Options window)
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
   <!--ID for CSH in Options | Modern View - Advanced-Ant Category: --> 
   <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
-  <!--ID for CSH in Options | Modern View - Advanced-Form Editor Category: --> 
-  <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
 
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
