@@ -137,4 +137,8 @@ public final class WebServicesSupport {
         return impl.isFromWSDL(serviceName);
     }
     
+    public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL, String[] wscompileFeatures) {
+        impl.addServiceImpl(serviceName, configFile, fromWSDL,wscompileFeatures);
+    }
+    
 }

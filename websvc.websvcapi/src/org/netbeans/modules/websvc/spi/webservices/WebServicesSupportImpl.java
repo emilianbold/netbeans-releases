@@ -26,6 +26,11 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  * @author Peter Williams
  */
 public interface WebServicesSupportImpl {
+
+    /*
+     * Add web service related entries to the project.properties and project.xml files
+     */
+    public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL, String[] wscompileFeatures);
     
     /*
      * Add web service related entries to the project.properties and project.xml files
@@ -106,4 +111,5 @@ public interface WebServicesSupportImpl {
      * Determine if the web service was created from WSDL
      */
     public boolean isFromWSDL(String serviceName);
+    
 }
