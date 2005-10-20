@@ -122,8 +122,13 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     </createmodulexml>
     
     <locjar 
-      basedir="core/src"
+      basedir="core/startup/src"
       jarfile="${cluster}/core/core.jar"
+    />
+
+    <locjar 
+      basedir="core/src"
+      jarfile="${cluster}/modules/org-netbeans-core.jar"
     />
 
     <locjar 
@@ -152,13 +157,13 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     </makenbm>
   </target>
   
-	<target name="clean" depends="init" >
-  	<delete dir="build" />
-    <delete>
-      <fileset dir="${cluster}">
-        <patternset refID="ide/branding.files"/>
-      </fileset>
-    </delete>
-  </target>
+    <target name="clean" depends="init" >
+        <delete dir="build" />
+        <delete>
+            <fileset dir="${cluster}">
+                <patternset refID="ide/branding.files"/>
+            </fileset>
+        </delete>
+    </target>
 
 </project>
