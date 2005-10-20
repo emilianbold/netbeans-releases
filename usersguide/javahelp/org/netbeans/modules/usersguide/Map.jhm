@@ -424,6 +424,11 @@ under Print Settings in the Options window)
 <mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
 <mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
 
+
+<!--CSH for Java Editor-->
+<mapID target="org.netbeans.modules.editor.java.JavaKit" url="editing/editing_about.html" />
+
+
 <!--CSH for Options - Editing Beans Property-->
 <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="configure/options_beans_prop_classic.html" />
 
@@ -481,8 +486,18 @@ under Print Settings in the Options window)
 
 <!--TODO - add mappings for debug dialog topics-->
 
+<mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
+<mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewInterface" url="pending.html"/>
+
+
+<!--Override methods dialog box-->
+<mapID target="org.netbeans.modules.java.tools.OverrideAction" url="java/override.html" />
+
 <!-- Options | Editing | Java Sources | Override Methods :-->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
+
+
+
 
 <!--CSH for GUI Builder:-->
 
