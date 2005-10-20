@@ -71,6 +71,7 @@ public final class AggregateProgressFactory {
     /**
      * Get the progress bar component for use in custom dialogs, the task won't 
      * show in the progress bar anymore.
+     * @since 1.3
      * @return the component to use in custom UI.
      */
     public static JComponent createProgressComponent(AggregateProgressHandle handle) {
