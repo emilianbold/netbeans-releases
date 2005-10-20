@@ -188,7 +188,14 @@ public final class OpenProjectList {
 		    } finally {
 			SwingUtilities.invokeLater(new Runnable() {
 			    public void run() {
-				dialog.setVisible(false);
+                                //fix for #67114:
+                                try {
+                                    Thread.currentThread().sleep(50);
+                                } catch (InterruptedException e) {
+                                    // ignored
+                                }
+                                dialog.setVisible(false);
+                                dialog.dispose();
 			    }
 			});
 		    }
