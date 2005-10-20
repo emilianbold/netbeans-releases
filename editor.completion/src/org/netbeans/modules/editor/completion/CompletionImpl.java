@@ -73,6 +73,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private static final String DOC_SHOW = "doc-show"; //NOI18N
     private static final String TOOLTIP_SHOW = "tool-tip-show"; //NOI18N
     
+    private static final int PLEASE_WAIT_TIMEOUT = 100;
+    
     public static CompletionImpl get() {
         if (singleton == null)
             singleton = new CompletionImpl();
@@ -155,7 +157,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         });
         docAutoPopupTimer.setRepeats(false);
 
-        pleaseWaitTimer = new Timer(800, new ActionListener() {
+        pleaseWaitTimer = new Timer(PLEASE_WAIT_TIMEOUT, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
                         null, -1, CompletionImpl.this);
