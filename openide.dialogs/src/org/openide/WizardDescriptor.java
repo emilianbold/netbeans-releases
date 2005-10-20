@@ -2040,11 +2040,15 @@ public class WizardDescriptor extends DialogDescriptor {
 
             nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
             if (nbErrorForeground == null) {
-                nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
+                //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
+                nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
             }
             
-            nbWarningForeground = UIManager.getColor ("Label.foreground");
-
+            nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+            if (nbErrorForeground == null) {
+                nbErrorForeground = new Color(51, 51, 51); // Label.foreground
+            }
+            
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 11));
             m_lblMessage = new javax.swing.JLabel("  "); //NOI18N

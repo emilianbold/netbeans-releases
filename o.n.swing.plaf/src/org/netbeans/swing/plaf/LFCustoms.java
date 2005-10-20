@@ -241,6 +241,7 @@ public abstract class LFCustoms {
 
     //General
     protected static final String ERROR_FOREGROUND = "nb.errorForeground"; //NOI18N
+    protected static final String WARNING_FOREGROUND = "nb.warningForeground"; //NOI18N
 
     //Tab control
     protected static final String EDITOR_TABBED_CONTAINER_UI = "TabbedContainerUI"; //NOI18N
