@@ -79,9 +79,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
         this.moduleListModel = null;
-        // XXX similar to SuiteProject.getActivePlatform:
-        activePlatform = NbPlatform.getPlatformByID(
-                getEvaluator().getProperty("nbplatform.active")); // NOI18N
+        activePlatform = project.getActivePlatform();
         firePropertiesRefreshed();
     }
     
