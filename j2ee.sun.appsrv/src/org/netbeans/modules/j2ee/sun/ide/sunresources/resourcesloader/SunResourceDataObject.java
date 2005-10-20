@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
 import java.io.InputStream;
 import org.xml.sax.InputSource;
 
+import org.openide.filesystems.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.XMLDataObject;
@@ -34,18 +35,18 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.*;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
-
+import org.openide.util.WeakListeners;
 
 /** Represents a SunResource object in the Repository.
  *
  * @author nityad
  */
-public class SunResourceDataObject extends XMLDataObject { // extends MultiDataObject{
-    private static String JDBC_CP = "ConnectionPool"; //NOI18N
-    private static String JDBC_DS = "DataSource"; //NOI18N
-    private static String PMF = "PersistenceManager"; //NOI18N
-    private static String MAIL = "MailSession"; //NOI18N
-    private static String JMS = "JMS"; //NOI18N
+public class SunResourceDataObject extends XMLDataObject implements FileChangeListener { // extends MultiDataObject{
+    private static String JDBC_CP = "jdbc-connection-pool"; //NOI18N
+    private static String JDBC_DS = "jdbc-resource"; //NOI18N
+    private static String PMF = "persistence-manager-factory-resource"; //NOI18N
+    private static String MAIL = "mail-resource"; //NOI18N
+    private static String JMS = "jms-resource"; //NOI18N
 
     private ValidateXMLCookie validateCookie = null;
     private CheckXMLCookie checkCookie = null;
@@ -57,16 +58,11 @@ public class SunResourceDataObject extends XMLDataObject { // extends MultiDataO
     JMSBean jmsBean = null;
     
     String resType;
-    //private org.openide.filesystems.FileChangeListener fl;
+    private org.openide.filesystems.FileChangeListener fl;
     
     public SunResourceDataObject(FileObject pf, SunResourceDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        /*fl = new org.openide.filesystems.FileChangeAdapter(){
-                public void fileChanged(org.openide.filesystems.FileEvent evt){
-                    
-                }
-        };
-        pf.addFileChangeListener(org.openide.util.WeakListener.fileChange(fl,pf));*/
+        pf.addFileChangeListener((FileChangeListener) WeakListeners.create(FileChangeListener.class, this, pf));
         
         resType = getResource(pf);
 //        init(pf);
@@ -123,23 +119,18 @@ public class SunResourceDataObject extends XMLDataObject { // extends MultiDataO
         if(resType != null){
             if(this.resType.equals(this.JDBC_CP)){
                 Node node = new ConnPoolBeanDataNode(this, getPool());
-                node.setValue(WizardConstants.__ResourceType, WizardConstants.__JdbcConnectionPool);
                 return node;
             }if(this.resType.equals(this.JDBC_DS)){
                 Node node = new DataSourceBeanDataNode(this, getDataSource());
-                node.setValue(WizardConstants.__ResourceType, WizardConstants.__JdbcResource);
                 return node;
             }if(this.resType.equals(this.PMF)){
                 Node node = new PersistenceManagerBeanDataNode(this, getPersistenceManager());
-                node.setValue(WizardConstants.__ResourceType, WizardConstants.__PersistenceManagerFactoryResource);
                 return node;
             }if(this.resType.equals(this.MAIL)){
                 Node node = new JavaMailSessionBeanDataNode(this, getMailSession());
-                node.setValue(WizardConstants.__ResourceType, WizardConstants.__MailResource);
                 return node;
             }if(this.resType.equals(this.JMS)){    
                 Node node = new JMSBeanDataNode(this, getJMS());
-                node.setValue(WizardConstants.__ResourceType, WizardConstants.__JmsResource);
                 return node;
             }else{
                 String mess = NbBundle.getMessage(SunResourceDataObject.class, "Info_notSunResource"); //NOI18N
@@ -156,7 +147,6 @@ public class SunResourceDataObject extends XMLDataObject { // extends MultiDataO
        try {
             if((! primaryFile.isFolder()) && primaryFile.isValid()){
                 InputStream in = primaryFile.getInputStream();
-                DDProvider.getDefault().getResourcesGraph();
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
                 
                 // identify JDBC Connection Pool xml
@@ -211,7 +201,7 @@ public class SunResourceDataObject extends XMLDataObject { // extends MultiDataO
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
             return type;
         }catch(Exception ex){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            //ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getLocalizedMessage());
             return type;
         }
        
@@ -257,6 +247,37 @@ public class SunResourceDataObject extends XMLDataObject { // extends MultiDataO
         return this.jmsBean;
     }
     
+    public void fileAttributeChanged (FileAttributeEvent fe) {
+        updateDataObject();
+    }
+    
+    public void fileChanged (FileEvent fe) {
+        updateDataObject();
+    }
+    
+    public void fileDataCreated (FileEvent fe) {
+        updateDataObject ();
+    }
+    
+    public void fileDeleted (FileEvent fe) {
+        updateDataObject ();
+    }
+    
+    public void fileFolderCreated (FileEvent fe) {
+        updateDataObject ();
+    }
+    
+    public void fileRenamed (FileRenameEvent fe) {
+        updateDataObject ();
+    }
+    
+    private void updateDataObject(){
+        resType = getResource(this.getPrimaryFile());       
+    }
+    
+    public String getResourceType(){
+        return resType;
+    }
     // If you made an Editor Support you will want to add these methods:
      
     /*public final void addSaveCookie(SaveCookie save) {

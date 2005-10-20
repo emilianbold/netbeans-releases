@@ -18,10 +18,15 @@
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions;
 
+import java.text.MessageFormat;
+import javax.swing.SwingUtilities;
+
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.actions.NodeAction;
 
 import org.openide.loaders.DataObject;
@@ -43,11 +48,16 @@ public class RegisterAction extends NodeAction implements WizardConstants{
     protected void performAction(Node[] nodes) {
         try{
             SunResourceDataObject dobj = (SunResourceDataObject)nodes[0].getCookie(SunResourceDataObject.class);
-            resourceType = nodes[0].getValue(__ResourceType).toString();            
-            InstanceProperties target = getTargetServer(nodes[0]);
-            new ListServerInstances(NbBundle.getMessage (RegisterAction.class, ("Reg_" + resourceType)), dobj, resourceType, target); //NOI18N 
+            String resourceType = dobj.getResourceType();
+            if(resourceType != null){
+                InstanceProperties target = getTargetServer(nodes[0]);
+                new ListServerInstances(NbBundle.getMessage(RegisterAction.class, ("Reg_" + resourceType)), dobj, resourceType, target); //NOI18N
+            }else{
+                String message = MessageFormat.format(NbBundle.getMessage(RegisterAction.class, "Err_InvalidXML"), new Object[]{nodes[0].getName()}); //NOI18N 
+                showError(message);
+            }
         }catch(Exception ex){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
     
@@ -90,6 +100,14 @@ public class RegisterAction extends NodeAction implements WizardConstants{
         return serverName;
     }
     
+    public static void showError(final String msg){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+            }
+        });
+    }
     /** Perform extra initialization of this action's singleton.
      * PLEASE do not use constructors for this purpose!
      * protected void initialize() {

@@ -159,8 +159,6 @@ public interface WizardConstants {
     public static final String __DynamicWizPanel = "dynamicPanel"; //to identify ds & cp created dynamically
     public static final String __SunResourceExt = "sun-resource";
     
-    public static final String __ResourceType = "ResourceType";
-    
     //First Step - temporary workaround
     public static final String __FirstStepChoose = "Choose ...";
     //Resource Folder
