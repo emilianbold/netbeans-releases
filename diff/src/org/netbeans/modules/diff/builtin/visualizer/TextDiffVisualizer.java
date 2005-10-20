@@ -196,7 +196,10 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
     private static final String LINE_PREP_ADD = "+ ";
     private static final String LINE_PREP_REMOVE = "- ";
     private static final String LINE_PREP_CHANGE = "! ";
-    
+
+    /**
+     * @return UTF-8 encoded stream with '\n' newlines. 
+     */
     public static InputStream differenceToContextDiffText(TextDiffInfo diffInfo) throws IOException {
         StringBuffer content = new StringBuffer();
         content.append(CONTEXT_MARK1B);
@@ -251,7 +254,7 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
             //    content.append(DIFFERENCE_DELIMETER);
             //}
         }
-        return new ByteArrayInputStream(content.toString().getBytes());
+        return new ByteArrayInputStream(content.toString().getBytes("utf8"));  // NOI18N
     }
     
     private static int[] getContextRange(Difference[] diffs, int i,
