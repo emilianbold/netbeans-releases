@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -208,8 +208,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
         Iterator iter = openedFiles.iterator ();
         while (iter.hasNext()) {
             DataObject obj = (DataObject) iter.next ();
-            EditorCookie ed = (EditorCookie)obj.getCookie (EditorCookie.class);
-            if (ed != null && ed.isModified ()) {
+            if (obj.isModified ()) {
                 set.add (obj);
             }
         }
@@ -268,7 +267,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
             }
 
             result = false;
-            exitDialog.show(); // Show the modal Save dialog
+            exitDialog.setVisible (true); // Show the modal Save dialog
             return result;
 
         }
