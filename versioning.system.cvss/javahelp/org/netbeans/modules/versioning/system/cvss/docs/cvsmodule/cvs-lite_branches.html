@@ -2,12 +2,12 @@
 <html>
 <head>
 <!--
- * 
- *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- *
- *
--->
+        * 
+        *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
+        *     Use is subject to license terms.
+        *
+        *
+        -->
   <title>Working with Branches</title>
   <link rel="StyleSheet"
  href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -19,16 +19,14 @@
 an entire code base using branches. Branches are created by attaching a
 branch tag to a file or folder in the repository. When you modify files
 in a branch it does not affect the files in the main code line or
-"trunk".
-You can, however, merge any modifications you make in the branch back
-to the trunk later.</p>
+"trunk". You can, however, merge any modifications you make in the
+branch back to the trunk later.</p>
 <h3>Checking out Branches</h3>
 <p>If you need to edit files on a branch that has already exists, you
 can check out the branch to copy the files to a local working
 directory. You must, however, create a new local working directory
 within which to checkout the branch. </p>
-<ul class="note">
-</ul>
+
 <p><b>To check out a branch to a local working directory:</b></p>
 <ol>
   <li>Choose CVS &gt; Checkout from the main menu.</li>
@@ -38,9 +36,7 @@ menu. If you are unfamiliar with the syntax, click the Edit button and
 enter the required information in the Edit CVS Root dialog.</li>
   <li>Enter your password in the Password field. </li>
   <li>If you are using a proxy, click the Proxy Configuration button
-and enter the required information. Click Next.
-<!--Note that by default the IDE sets this to Use System Proxy Settings.-->
-  </li>
+and enter the required information. Click Next.<!--Note that by default the IDE sets this to Use System Proxy Settings.--> </li>
   <li>On the Module to Checkout page, specify the files and directories
 you want to check out in the Module field or click the Browse button to
 choose from a list of all modules in the repository. </li>
@@ -55,11 +51,25 @@ to navigate to the desired directory on your system.</li>
 Status bar indicates the progress of the files downloading from the
 branch to your local working directory.</p>
 </ol>
-<!--<h3>Switching a Project/Dir to a Branch</h3>
-<p>tbd...</p>-->
+<h3>Switching to a Branch</h3>
+<p>If you want to switch a project, directory, or file to a branch that
+already exists for stabilization or experimentation purposes, you can
+do so using the Switch to Branch command.</p>
+<p><b>To switch to a branch:</b></p>
+<ol>
+  <li>In the Projects, Files, or Versioning window, right-click the
+file or folder you want to be the root of your branch and choose CVS
+&gt; Branches &gt; Switch <tt>filename</tt> to Branch.</li>
+  <li>In the Switch to Branch dialog, enter a Branch name or click Browse to see
+a list of available branches.</li>
+  <li>Click Switch.</li>
+  <p>The IDE moves the selected file to the specified branch by adding a branch tag.</p>
+</ol>
 <h3>Creating a Branch</h3>
-<p>Branches are created by adding a branch tag to a file revision or
-directory.</p>
+<p>If you want to work on a separate version of your file system for
+stabilization or experimentation purposes, you can do so by creating a
+branch. Branches are created by adding a branch tag to a project,
+directory, or file revision.</p>
 <p><b>To create a branch:</b></p>
 <ol>
   <li>In the Projects, Files, or Versioning window, right-click the

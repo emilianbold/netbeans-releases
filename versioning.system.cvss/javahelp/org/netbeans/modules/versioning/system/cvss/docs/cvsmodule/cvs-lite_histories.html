@@ -1,95 +1,95 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-<!--
- * 
- *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- *
- *
--->
-  <title>Working with Version Histories</title>
-  <link rel="StyleSheet"
- href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>Working with Version Histories</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>Searching the histories of files can be helpful when you need to
-find specific commits, when fixing bugs for example.</p>
-<h3>Viewing File's Version History</h3>
-<p>The IDE's Search
-Histories window enables you to view a summary of a file's evolution
-over time by revision number. You can open the Search History window by
-choosing CVS &gt; Search History. </p>
-<p>You can compare a file with previous versions from within the
-Search Histories window using the Diff button. </p>
-<p><b>To view revision differences in the Search History window:</b></p>
-<ol>
-  <li>Click the Diff button in the toolbar.<br>
-  </li>
-  <li>Select the revision against which you want to compare your local
-working copy.</li>
-  <li>The IDE displays a diff of the file's revisions within the Search
-History window. Note that you can navigate between the differences
-using the Previous Difference and Next
-Difference buttons.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"></span>
-<h3><span style="font-weight: bold;">Searching for Specific Revisions</span><br>
-</h3>
-<p>Using the Search History window, you can search a file's history for
-versions based on several criteria.&nbsp;</p>
-<p>The Search Histories window enables you to search for changes in
-version controlled files by: </p>
-<ul>
-  <li><strong>Message</strong>. The description submitted with the
-commit.<!--Indicates lines that have been changed
-since the earlier revision.-->
-  </li>
-  <li> <strong>Username</strong>. The author of the commit.<!--Indicates lines that have been added
-since the earlier revision.-->
-  </li>
-  <li><strong>From Tag</strong>. The tag, branch, or date from which
-the commit was made.</li>
-  <li><b>To Tag. </b>The tag, branch, or date before which the commit
-was made.<!--Indicates lines that have been added
-since the earlier revision.--><strong><br>
-    </strong></li>
-</ul>
-<p><b>To search for a revision:</b></p>
-<ol>
-  <li>Select the file for which you want to find a specific revision.</li>
-  <li>Choose CVS &gt; Search <tt>filename</tt> History from the main
-menu.</li>
-  <p>The IDE displays the file's revision history in the Search
-History window. </p>
-  <li>Enter search criteria information in the Message, Name, From, and
-To fields. You can use the Browse buttons to designate any tag, branch,
-revision, or date you want to limit your search to.<br>
-  </li>
-  <li>Click Search.</li>
-  <p>The IDE displays the file's revision history in the Search
-History window.</p>
-</ol>
-<p>If you want to view other files that were included in a specific
-commit, you can broaden your search using the "your_project" and Open
-Projects links to the right of each revision.
-</p>
-<dl>
-  <dt><a name="seealso">See Also </a></dt>
-  <dd><a href="cvs-lite_merge.html">Merging File Revisions</a> </dd>
-  <dd><a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
-  <dd><a href="cvs-lite_patch.html">Creating and Applying a Patch</a> </dd>
-</dl>
-<hr><small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="50">
-  <tbody>
-    <tr>
-      <td>&nbsp;</td>
-    </tr>
-  </tbody>
-</table>
-</body>
+    <head>
+        <!--
+        * 
+        *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
+        *     Use is subject to license terms.
+        *
+        *
+        -->
+        <title>Working with Version Histories</title>
+        <link rel="StyleSheet"
+        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Working with Version Histories</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Searching the histories of files can be helpful when you need to
+        find specific commits, when backporting bugs for example.</p>
+        <h3>Viewing File Version History</h3>
+        <p>The IDE's Search
+        Histories window enables you to view a summary of a file's evolution
+        over time by revision number. You can open the Search History window by
+        choosing CVS &gt; Search History. </p>
+        <p>You can compare a file with previous versions from within the
+        Search Histories window using the Diff button. </p>
+        <p><b>To view revision differences in the Search History window:</b></p>
+        <ol>
+            <li>Click the Diff button in the toolbar.<br>
+            </li>
+            <li>Select the revision against which you want to compare your local
+            working copy.</li>
+            <li>The IDE displays a diff of the file's revisions within the Search
+                History window. Note that you can navigate between the differences
+                using the Previous Difference and Next
+                Difference buttons.<br>
+            </li>
+        </ol>
+        <span style="font-weight: bold;"></span>
+        <h3><span style="font-weight: bold;">Searching for Specific Revisions</span><br>
+        </h3>
+        <p>Using the Search History window, you can search a file's history for
+        versions based on several criteria.&nbsp;</p>
+        <p>The Search Histories window enables you to search for changes in
+        version controlled files by: </p>
+        <ul>
+            <li><strong>Message</strong>. The description submitted with the
+                commit.<!--Indicates lines that have been changed
+                since the earlier revision.-->
+            </li>
+            <li> <strong>Username</strong>. The author of the commit.<!--Indicates lines that have been added
+                since the earlier revision.-->
+            </li>
+            <li><strong>From Tag</strong>. The tag, revision number, or date from which
+            the commit was made.</li>
+            <li><b>To Tag. </b>The tag, revision number, or date before which the commit
+            was made.<!--Indicates lines that have been added
+            since the earlier revision.--><strong><br>
+            </strong></li>
+        </ul>
+        <p><b>To search for a revision:</b></p>
+        <ol>
+            <li>Select the file for which you want to find a specific revision.</li>
+            <li>Choose CVS &gt; Search <tt>filename</tt> History from the main
+            menu.</li>
+            <p>The IDE displays the file's revision history in the Search
+            History window. </p>
+            <li>Enter search criteria information in the Message, Name, From, and
+                To fields. You can use the Browse buttons to designate any tag, branch,
+                revision, or date you want to limit your search to.<br>
+            </li>
+            <li>Click Search.</li>
+            <p>The IDE displays the file's revision history in the Search
+            History window.</p>
+        </ol>
+        <p>If you want to view other files that were included in a specific
+            commit, you can broaden your search using the <tt>"your_project"</tt> and <tt>Open
+            Projects</tt> links to the right of each revision.
+        </p>
+        <dl>
+            <dt><a name="seealso">See Also </a></dt>
+            <dd><a href="cvs-lite_merge.html">Merging File Revisions</a> </dd>
+            <dd><a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+            <dd><a href="cvs-lite_patch.html">Creating and Applying a Patch</a> </dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tbody>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
 </html>
