@@ -430,7 +430,7 @@ public class AttrSupports extends Object {
             while (files.hasMoreElements ()) {
                 FileObject file = (FileObject)files.nextElement ();
                 String fname = file.getNameExt ();
-                if (fname.startsWith (prefix)) {
+                if (fname.startsWith (prefix) && !"cvs".equalsIgnoreCase(fname)) {
                     
                     if (file.isFolder())
                         resFolders.put(file.getNameExt (), new JspCompletionItem.FileAttributeValue (file.getNameExt () + "/", java.awt.Color.BLUE, PACKAGE_ICON));
