@@ -32,6 +32,7 @@ public class Delete implements ActiveEditorDrop {
     
     private String variable = "";
     private int scopeIndex = SQLStmt.SCOPE_DEFAULT;
+    private String dataSource = "";
     private String update = STMT_DEFAULT;
     
     private String displayName;
@@ -60,7 +61,7 @@ public class Delete implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, update);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, update);
         
     }
 
@@ -91,12 +92,17 @@ public class Delete implements ActiveEditorDrop {
         if (scopeIndex != SQLStmt.SCOPE_DEFAULT)
             strScope = " scope=\"" + SQLStmt.scopes[scopeIndex] + "\""; // NOI18N
 
+        dataSource = stmt.getDataSource();
+        String strDS = " dataSource=\"\""; // NOI18N
+        if (strDS.length() > 0)
+            strDS = " dataSource=\"" + dataSource + "\""; // NOI18N
+            
         update = stmt.getStmt();
         String strUpdate = update;
         if (update.length() > 0)
             strUpdate += "\n";
         
-        String queryBody =  "<sql:update" + strVariable + strScope + ">\n" + // NOI18N
+        String queryBody =  "<sql:update" + strVariable + strScope + strDS + ">\n" + // NOI18N
                             strUpdate +
                             "</sql:update>";// NOI18N
         

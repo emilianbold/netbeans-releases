@@ -33,6 +33,7 @@ public class Report implements ActiveEditorDrop {
     
     private String variable = VARIABLE_DEFAULT;
     private int scopeIndex = SQLStmt.SCOPE_DEFAULT;
+    private String dataSource = "";
     private String query = QUERY_DEFAULT;
     
     private String displayName;
@@ -61,7 +62,7 @@ public class Report implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, query);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, query);
         
     }
 
@@ -92,12 +93,17 @@ public class Report implements ActiveEditorDrop {
         if (scopeIndex != SQLStmt.SCOPE_DEFAULT)
             strScope = " scope=\"" + SQLStmt.scopes[scopeIndex] + "\""; // NOI18N
 
+        dataSource = stmt.getDataSource();
+        String strDS = " dataSource=\"\""; // NOI18N
+        if (strDS.length() > 0)
+            strDS = " dataSource=\"" + dataSource + "\""; // NOI18N
+            
         query = stmt.getStmt();
         String strQuery = query;
         if (query.length() > 0)
             strQuery += "\n"; // NOI18N
 
-        String body =  "<sql:query" + strVariable + strScope + ">\n" + // NOI18N
+        String body =  "<sql:query" + strVariable + strScope + strDS + ">\n" + // NOI18N
                         strQuery +
                         "</sql:query>\n" + // NOI18N
                         "\n" + // NOI18N

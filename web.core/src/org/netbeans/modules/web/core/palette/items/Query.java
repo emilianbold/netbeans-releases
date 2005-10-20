@@ -26,12 +26,13 @@ import org.openide.util.NbBundle;
  */
 public class Query implements ActiveEditorDrop {
     
-    public static String QUERY_DEFAULT = "SELECT column_name(s) FROM table_name";
+    public static String QUERY_DEFAULT = "SELECT column_name(s) FROM table_name"; // NOI18N
     
     SQLStmt stmt = null;
     
     private String variable = "";
     private int scopeIndex = SQLStmt.SCOPE_DEFAULT;
+    private String dataSource = "";
     private String query = QUERY_DEFAULT;
     
     private String displayName;
@@ -60,7 +61,7 @@ public class Query implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, query);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, query);
         
     }
 
@@ -82,7 +83,7 @@ public class Query implements ActiveEditorDrop {
     private String createBody() {
         
         variable = stmt.getVariable();
-        String strVariable = " var=\"\"";
+        String strVariable = " var=\"\""; // NOI18N
         if (variable.length() > 0)
             strVariable = " var=\"" + variable + "\""; // NOI18N
             
@@ -91,12 +92,17 @@ public class Query implements ActiveEditorDrop {
         if (scopeIndex != SQLStmt.SCOPE_DEFAULT)
             strScope = " scope=\"" + SQLStmt.scopes[scopeIndex] + "\""; // NOI18N
 
+        dataSource = stmt.getDataSource();
+        String strDS = " dataSource=\"\""; // NOI18N
+        if (strDS.length() > 0)
+            strDS = " dataSource=\"" + dataSource + "\""; // NOI18N
+            
         query = stmt.getStmt();
         String strQuery = query;
         if (query.length() > 0)
-            strQuery += "\n";
+            strQuery += "\n"; // NOI18N
         
-        String queryBody =  "<sql:query" + strVariable + strScope + ">\n" + // NOI18N
+        String queryBody =  "<sql:query" + strVariable + strScope + strDS + ">\n" + // NOI18N
                             strQuery +
                             "</sql:query>";// NOI18N
         

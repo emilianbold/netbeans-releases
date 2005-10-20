@@ -28,12 +28,14 @@ public class SQLStmt {
     //user data
     private String variable;
     private int scopeIndex;
+    private String dataSource;
     private String stmt;
     
-    public SQLStmt(String variable, int scopeIndex, String stmt) {
+    public SQLStmt(String variable, int scopeIndex, String dataSource, String stmt) {
                    
         this.variable = variable;
         this.scopeIndex = scopeIndex;
+        this.dataSource = dataSource;
         this.stmt = stmt;
     }
 
@@ -69,5 +71,12 @@ public class SQLStmt {
         this.stmt = query;
     }
 
-    
+    public String getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(String dataSource) {
+        this.dataSource = dataSource;
+    }
+
 }

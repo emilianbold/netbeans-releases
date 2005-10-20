@@ -62,6 +62,8 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         jComboBox2.setModel(new DefaultComboBoxModel(SQLStmt.scopes));
         jComboBox2.setSelectedIndex(stmt.getScopeIndex());
         
+        jTextField2.setText(stmt.getDataSource());
+        
         jTextArea1.setText(stmt.getStmt());
     }
     
@@ -98,6 +100,9 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         int scopeIndex = jComboBox2.getSelectedIndex();
         stmt.setScopeIndex(scopeIndex);
         
+        String dataSource = jTextField2.getText();
+        stmt.setDataSource(dataSource);
+        
         String stmtString = jTextArea1.getText();
         stmt.setStmt(stmtString);
         
@@ -120,6 +125,8 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        jLabel3 = new javax.swing.JLabel();
+        jTextField2 = new javax.swing.JTextField();
 
         jFileChooser1.setCurrentDirectory(null);
 
@@ -170,7 +177,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, stmtLabel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -184,7 +191,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -192,6 +199,26 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
+
+        jLabel3.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SQLStmtCustomizer.class, "LBL_Stmt_DataSource"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLStmtCustomizer.class, "ACSN_Stmt_DataSource"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLStmtCustomizer.class, "ACSD_Stmt_DataSource"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        add(jTextField2, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -202,10 +229,12 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
     
 }
