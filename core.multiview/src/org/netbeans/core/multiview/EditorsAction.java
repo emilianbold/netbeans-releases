@@ -20,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
@@ -28,6 +29,7 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -49,28 +51,7 @@ public class EditorsAction extends AbstractAction
     
     public EditorsAction() {
         putValue(NAME, NbBundle.getMessage(EditorsAction.class, "CTL_EditorsAction"));
-        propListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName()) || 
-                   TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                    updateState();
-                }
-           }
-        };
-        TopComponent.Registry registry = TopComponent.getRegistry();
-//        registry.addPropertyChangeListener(WeakListeners.propertyChange(propListener, registry));
-        registry.addPropertyChangeListener(propListener);
-
-        // #37529 WindowsAPI to be called from AWT thread only.
-        if(SwingUtilities.isEventDispatchThread()) {
-            updateState();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateState();
-                }
-            });
-        }        
+      
     }
     
     /** Perform the action. Tries the performer and then scans the ActionMap
@@ -82,9 +63,8 @@ public class EditorsAction extends AbstractAction
     
     public JMenuItem getMenuPresenter() {
         String label = NbBundle.getMessage(EditorsAction.class, "CTL_EditorsAction");
-        menu = new JMenu(label);
+        menu = new UpdatingMenu();
         Mnemonics.setLocalizedText(menu, label);
-        updateMenu();
         return menu;
     }
     
@@ -160,6 +140,18 @@ public class EditorsAction extends AbstractAction
             if (getName().equals(newOne.getDisplayName())) {
                 setSelected(true);
             }
+        }
+        
+    }
+    
+    private class UpdatingMenu extends JMenu implements DynamicMenuContent {
+        public JComponent[] synchMenuPresenters(javax.swing.JComponent[] items) {
+            return getMenuPresenters();
+        }
+
+        public JComponent[] getMenuPresenters() {
+            updateState();
+            return new JComponent[] {this};
         }
         
     }
