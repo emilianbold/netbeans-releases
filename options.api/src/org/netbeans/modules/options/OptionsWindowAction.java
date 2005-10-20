@@ -47,12 +47,13 @@ import org.openide.util.actions.SystemAction;
 public class OptionsWindowAction extends AbstractAction {
 
     /** Link to dialog, if its opened. */
-    private Dialog              dialog;
+    private static Dialog           dialog;
     /** weak link to options dialog DialogDescriptor. */
-    private WeakReference       optionsDialogDescriptor = 
+    private static WeakReference    optionsDialogDescriptor = 
                                     new WeakReference (null);
-    private ErrorManager        log = ErrorManager.getDefault ().getInstance
+    private static ErrorManager     log = ErrorManager.getDefault ().getInstance
                                     (OptionsWindowAction.class.getName ());
+    
     
     public OptionsWindowAction () {
         putValue (
