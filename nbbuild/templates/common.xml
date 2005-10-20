@@ -423,6 +423,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="arch-nb" depends="init,arch" if="netbeans.home" description="Process an arch.xml, creating it if it does not yet exist, and display the result.">
+        <!-- XXX might not yet exist, if arch file newly generated as skeleton -->
         <nbbrowse file="${arch.output.html}"/>
     </target>
         
