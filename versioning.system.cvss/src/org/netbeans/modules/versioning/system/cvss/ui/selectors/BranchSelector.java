@@ -261,10 +261,12 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
             tagsLoaded(branches, tags);
             Kit.deleteRecursively(checkoutFolder);
         } catch (CommandException e) {
+            error(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2016"));
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2016"));
             err.notify(e);
         } catch (AuthenticationException e) {
+            error(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2016"));
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2016"));
             err.notify(e);
