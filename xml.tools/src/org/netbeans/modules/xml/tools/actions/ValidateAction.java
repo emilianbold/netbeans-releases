@@ -47,7 +47,7 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
 
         if (nodes == null) return;
 
-        RequestProcessor.postRequest(
+        RequestProcessor.getDefault().post(
                new ValidateAction.RunAction (nodes)
         );
     }
