@@ -127,6 +127,19 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         assertTrue(Arrays.equals(new String[] {"proj2"}, projectDirectory.list()));
     }
     
+    public void testDeleteProjectNestedLibrary() throws Exception {
+        FileObject library = projdir.createFolder("lib");
+        
+        TestUserInputHandler handler = new TestUserInputHandler(TestUserInputHandler.USER_OK_ALL);
+        
+        DefaultProjectOperationsImplementation.deleteProject(prj, handler);
+        
+        assertTrue(handler.confirmationDialogCalled);
+        
+        assertTrue(projectDirectory.exists());
+        assertTrue(Arrays.equals(new String[] {"lib"}, projectDirectory.list()));
+    }
+    
     public void testDeleteProjectExternalSources() throws Exception {
         FileObject extDir = scratch.createFolder("external");
         File extDirFile = FileUtil.toFile(extDir);
@@ -157,7 +170,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         public static final int USER_OK_ALL = 3;
 
         private int answer;
-        private IOException exception;
+        private Exception exception;
         
         private boolean confirmationDialogCalled;
         
@@ -182,7 +195,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
             
             try {
                 executor.execute();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 exception = e;
             }
         }
