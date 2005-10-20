@@ -198,14 +198,15 @@ public class StrutsConfigUtilities {
         return moduleName;
     }
     
-    public static Servlet getActionServlet(FileObject dd){
+    public static Servlet getActionServlet(FileObject dd) {
         // PENDING - must be more declarative.
-        try{
+        if (dd == null) {
+            return null;
+        }
+        try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            if (webApp == null) {
-                return null;
-            }
-            return (Servlet)webApp.findBeanByName("Servlet","ServletClass","org.apache.struts.action.ActionServlet"); //NOI18N;
+            return (Servlet) webApp
+                    .findBeanByName("Servlet", "ServletClass", "org.apache.struts.action.ActionServlet"); //NOI18N;
         } catch (java.io.IOException e) {
             return null;
         }
