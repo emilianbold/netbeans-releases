@@ -12,33 +12,55 @@
  */
 package org.netbeans.nbbuild;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.taskdefs.Ant;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
-import org.apache.tools.ant.Task;
-
-import org.w3c.dom.*;
-import org.xml.sax.*;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Ant;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Task to process Arch questions & answers document.
@@ -124,12 +146,12 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         }
         
         
-        org.w3c.dom.Document q;
+        Document q;
         Source qSource;
-        javax.xml.parsers.DocumentBuilderFactory factory;
-        javax.xml.parsers.DocumentBuilder builder;
+        DocumentBuilderFactory factory;
+        DocumentBuilder builder;
         try {
-            factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
+            factory = DocumentBuilderFactory.newInstance ();
             factory.setValidating(!generateTemplate && !"true".equals(this.getProject().getProperty ("arch.private.disable.validation.for.test.purposes"))); // NOI18N
             
             builder = factory.newDocumentBuilder();
@@ -227,7 +249,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
                     } catch (IOException ex) {
                         throw new BuildException (ex);
                     }
-                    qSource = new javax.xml.transform.stream.StreamSource (questionsFile);
+                    qSource = new StreamSource (questionsFile);
                     try {
                         q = builder.parse(questionsFile);
                     } catch (IOException ex) {
@@ -249,7 +271,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             // read also apichanges and add them to the document
             log("Reading apichanges from " + apichanges);
 
-            org.w3c.dom.Document api;
+            Document api;
             try {
                 api = builder.parse (apichanges);
             } catch (SAXParseException ex) {
@@ -281,7 +303,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
 
             
             
-            org.w3c.dom.Document prj;
+            Document prj;
             try {
                 DocumentBuilderFactory fack = DocumentBuilderFactory.newInstance();
                 fack.setNamespaceAware(false);
@@ -387,7 +409,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             for (int i = 0; i < list.getLength(); i++) {
                 Node n = list.item(i);
                 String id = n.getAttributes().getNamedItem("id").getNodeValue();
-                java.net.URL u = Arch.class.getResource("Arch-default-" + id + ".xsl");
+                URL u = Arch.class.getResource("Arch-default-" + id + ".xsl");
                 if (u != null) {
                     log("Found default answer to " + id + " question", Project.MSG_VERBOSE);
                     Node defaultAnswer = findDefaultAnswer(n);
@@ -408,7 +430,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
                         t.transform(prjSrc, res);
                     } catch (IOException ex) {
                         throw new BuildException (ex);
-                    } catch (javax.xml.transform.TransformerException ex) {
+                    } catch (TransformerException ex) {
                         throw new BuildException (ex);
                     }
                     
@@ -434,26 +456,26 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         
         // apply the transform operation
         try {
-            javax.xml.transform.stream.StreamSource ss;
+            StreamSource ss;
             String file = this.xsl != null ? this.xsl.toString() : getProject().getProperty ("arch.xsl");
             
             if (file != null) {
                 log ("Using " + file + " as the XSL stylesheet");
-                ss = new javax.xml.transform.stream.StreamSource (file);
+                ss = new StreamSource (file);
             } else {
-                ss = new javax.xml.transform.stream.StreamSource (
+                ss = new StreamSource (
                     getClass ().getResourceAsStream ("Arch.xsl")
                 );
             }
             
             log("Transforming " + questionsFile + " into " + output);
 
-            javax.xml.transform.TransformerFactory trans;
-            trans = javax.xml.transform.TransformerFactory.newInstance();
+            TransformerFactory trans;
+            trans = TransformerFactory.newInstance();
             trans.setURIResolver(this);
-            javax.xml.transform.Transformer t = trans.newTransformer(ss);
+            Transformer t = trans.newTransformer(ss);
             OutputStream os = new BufferedOutputStream (new FileOutputStream (output));
-            javax.xml.transform.stream.StreamResult r = new javax.xml.transform.stream.StreamResult (os);
+            StreamResult r = new StreamResult (os);
             if (stylesheet == null) {
                 stylesheet = this.getProject ().getProperty ("arch.stylesheet");
             }
@@ -487,9 +509,9 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             os.close ();
         } catch (IOException ex) {
             throw new BuildException (ex);
-        } catch (javax.xml.transform.TransformerConfigurationException ex) {
+        } catch (TransformerConfigurationException ex) {
             throw new BuildException (ex);
-        } catch (javax.xml.transform.TransformerException ex) {
+        } catch (TransformerException ex) {
             throw new BuildException (ex);
         }
     }
@@ -520,7 +542,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
     }
 
     private void writeQuestions (Writer w, Set missing) throws IOException {
-        java.util.Iterator it = missing.iterator();
+        Iterator it = missing.iterator();
         while (it.hasNext()) {
             String s = (String)it.next ();
             Element n = (Element)questions.get (s);
@@ -530,7 +552,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             w.write(elementToString(n));
             w.write("\n-->\n");
             
-            java.net.URL u = Arch.class.getResource("Arch-default-" + s + ".xsl");
+            URL u = Arch.class.getResource("Arch-default-" + s + ".xsl");
             if (u != null) {
                 // there is default answer
                 w.write(" <answer id=\"" + s + "\">\n  <defaultanswer generate='here' />\n </answer>\n\n");
@@ -560,11 +582,14 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             result.append("../"); // URI, so pathsep is /
             f = f.getParentFile();
         }
-        return "${nbroot}/";
+        return null;
     }
     
     private void generateTemplateFile (String versionOfQuestions, Set missing) throws IOException {
-        String nbRoot = findNbRoot (questionsFile).replace (File.separatorChar, '/');
+        String nbRoot = findNbRoot(questionsFile);
+        if (nbRoot == null) {
+            nbRoot = "http://www.netbeans.org/source/browse/~checkout~/";
+        }
         
         Writer w = new FileWriter (questionsFile);
         
@@ -682,26 +707,16 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         
         if (last.equals("xhtml1-strict.dtd")) {
             // try to find relative libraries
-            URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
-            File f;
-            try {
-                f = new File(new java.net.URI(u.toString()));
-            } catch (URISyntaxException ex) {
-                throw (IOException)new IOException(ex.getMessage()).initCause(ex);
-            }
-            for (;;) {
-                f = f.getParentFile();
-                if (f == null) {
-                    break;
-                }
-                File lib = new File(new File(new File(new File(new File(new File(f, 
-                    "libs"), "external"), "dtds"), "xhtml1-20020801"), "DTD"), "xhtml1-strict.dtd"
-                );
-                String r = "file:" + lib.toString();
-                if (lib.exists() && !r.equals(systemId)) {
+            String dtd = "libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd".replace('/', File.separatorChar);
+            File f = questionsFile.getParentFile();
+            while (f != null) {
+                File check = new File(f, dtd);
+                if (check.isFile()) {
+                    String r = check.toURI().toString();
                     log("Replacing entity " + publicId + " at " + systemId + " with " + r);
                     return new InputSource(r);
                 }
+                f = f.getParentFile();
             }
         }
         
@@ -712,7 +727,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         }
         
         try {
-            java.net.URL u = new java.net.URL(systemId);
+            URL u = new URL(systemId);
             u.openStream();
             log("systemId " + systemId + " exists, leaving", Project.MSG_VERBOSE);
             return null;
@@ -723,10 +738,10 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         InputSource is;
         log("Replacing entity " + publicId + " at " + systemId + " with " + replace);
         if (replace.startsWith("http://")) {
-            is = new InputSource(new java.net.URL(replace).openStream());
+            is = new InputSource(new URL(replace).openStream());
             is.setSystemId(replace);
         } else {
-            is = new InputSource(getClass().getResourceAsStream(replace));
+            is = new InputSource(Arch.class.getResourceAsStream(replace));
             is.setSystemId(replace);
         }
         return is;
