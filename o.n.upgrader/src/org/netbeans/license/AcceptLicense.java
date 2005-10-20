@@ -59,6 +59,7 @@ public final class AcceptLicense {
             public void actionPerformed (ActionEvent e) {
                 command = e.getActionCommand();
                 d.setVisible(false);
+                d = null;
             }            
         };
         yesButton.addActionListener(listener);
