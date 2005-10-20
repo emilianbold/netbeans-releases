@@ -564,7 +564,7 @@ under Print Settings in the Options window)
 
 
 <!--Usages window-->
-<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer.find-usages" url="refactor/csh/previewWindow.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer.find-usages" url="refactor/csh/usagesWindow.html" />
 <!--Refactoring window: -->
 <mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer.refactoring-preview" url="refactor/csh/previewWindow.html" />
 
