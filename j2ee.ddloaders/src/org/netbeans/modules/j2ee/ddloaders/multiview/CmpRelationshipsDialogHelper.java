@@ -375,8 +375,7 @@ public class CmpRelationshipsDialogHelper {
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(form, title);
         dialogDescriptor.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.setFocusTraversalPolicy(
-                form.createFocusTraversalPolicy(dialog.getFocusTraversalPolicy()));
+        dialog.setFocusTraversalPolicy(form.createFocusTraversalPolicy());
         DialogListener dialogListener = new DialogListener(errorLabel, dialogDescriptor);
         form.getFieldNameTextField().getDocument().addDocumentListener(dialogListener);
         form.getFieldNameTextField2().getDocument().addDocumentListener(dialogListener);

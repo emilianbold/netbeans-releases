@@ -34,10 +34,9 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         org.netbeans.modules.xml.multiview.Utils.makeTextAreaLikeTextField(descriptionTextArea,
                 relationshipNameTextField);
     }
-    
-    public FocusTraversalPolicy createFocusTraversalPolicy(
-            FocusTraversalPolicy defaultPolicy) {
-        return new CustomFocusTraversalPolicy(defaultPolicy);
+
+    public FocusTraversalPolicy createFocusTraversalPolicy() {
+        return new CustomFocusTraversalPolicy();
     }
 
     /**
@@ -491,15 +490,14 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
      */
     final class CustomFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
         
-        private final FocusTraversalPolicy defaultPolicy;
         private final Component[] compList;
         
-        CustomFocusTraversalPolicy(FocusTraversalPolicy defaultPolicy) {
+        CustomFocusTraversalPolicy() {
             super();
-            this.defaultPolicy = defaultPolicy;
-            
+
             // <editor-fold defaultstate="collapsed" desc=" compList = new Component[] { ... } ">
             compList = new Component[] {
+                    relationshipNameTextField,
                     descriptionTextArea,
                     ejbComboBox,
                     roleNameTextField,
@@ -524,7 +522,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
             };
             // </editor-fold>
         }
-        
+
         /**
          */
         private int getIndex(Component c) {
@@ -538,68 +536,27 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
 
         /**
          */
-        public Component getComponentBefore(Container focusCycleRoot,
-                                            Component aComponent) {
-            int index = getIndex(aComponent);
-            if (index == 0) {
-                return defaultPolicy.getComponentBefore(focusCycleRoot,
-                                                        aComponent);
-            }
-            
-            if (index == -1) {
-                Component def = defaultPolicy.getComponentBefore(focusCycleRoot,
-                                                                 aComponent);
-                if (getIndex(def) == -1) {
-                    return def;
-                }
-                
-                index = compList.length; //so that --index decreases it to index
-                                         //of the last component in compList
-            }
-                
-            do {
-                Component c = compList[--index];
+        public Component getComponentBefore(Container focusCycleRoot, Component c) {
+            for (int i = getIndex(c); i > 0 && i < compList.length;) {
+                c = compList[--i];
                 if (accept(c)) {
                     return c;
                 }
-            } while (index > 0);
-            return defaultPolicy.getComponentBefore(focusCycleRoot,
-                                                    compList[0]);
+            }
+            return super.getComponentBefore(focusCycleRoot, c);
         }
 
         /**
          */
-        public Component getComponentAfter(Container focusCycleRoot,
-                                           Component aComponent) {
-            final int maxIndex = compList.length - 1;
-            
-            int index = getIndex(aComponent);
-            if (index < 0 || index >= maxIndex) {
-                return defaultPolicy.getComponentAfter(focusCycleRoot,
-                                                       aComponent);
-            }
-            do {
-                Component c = compList[++index];
+        public Component getComponentAfter(Container focusCycleRoot, Component c) {
+            for (int i = getIndex(c) + 1; i > 0 && i < compList.length; i++) {
+                c = compList[i];
                 if (accept(c)) {
                     return c;
                 }
-            } while (index < maxIndex);
-            return defaultPolicy.getComponentAfter(focusCycleRoot,
-                                                   compList[maxIndex]);
+            }
+            return super.getComponentAfter(focusCycleRoot, c);
         }
-
-        public Component getLastComponent(Container focusCycleRoot) {
-            return compList[compList.length - 1];
-        }
-
-        public Component getFirstComponent(Container focusCycleRoot) {
-            return compList[0];
-        }
-
-        public Component getDefaultComponent(Container focusCycleRoot) {
-            return defaultPolicy.getDefaultComponent(focusCycleRoot);
-        }
-        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
