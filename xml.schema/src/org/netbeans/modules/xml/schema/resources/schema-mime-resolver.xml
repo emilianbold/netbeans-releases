@@ -19,7 +19,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Mark all XML Schemas with "application/x-schema+xml" MIME content type -->
     <file>
         <ext name="xml"/>
-        <ext name="xsd"/>
         <resolver mime="application/x-schema+xml">
             <xml-rule>
                 <!-- it is official schema DTD public id -->
@@ -31,6 +30,11 @@ Microsystems, Inc. All Rights Reserved.
                 </element-->                
             </xml-rule>
         </resolver>
+    </file>
+    
+    <file>
+        <ext name="xsd"/>
+        <resolver mime="application/x-schema+xml"/>
     </file>
     
 </MIME-resolver>
