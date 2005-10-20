@@ -803,6 +803,27 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             }
         }
         
+        /**
+         * Initially overridden to support CVS status labels in package nodes.
+         *  
+         * @return annotated display name
+         */ 
+        public String getHtmlDisplayName() {
+            String name = getDisplayName();
+            try {
+                FileObject fo = dataFolder.getPrimaryFile();
+                Set set = new NonResursiveFolderSet(fo);                
+                org.openide.filesystems.FileSystem.Status status = fo.getFileSystem().getStatus();
+                if (status instanceof org.openide.filesystems.FileSystem.HtmlStatus) {
+                    name = ((org.openide.filesystems.FileSystem.HtmlStatus) status).annotateNameHtml(name, set);
+                } else {
+                    name = status.annotateName(name, set);
+                }
+            } catch (FileStateInvalidException e) {
+                // no fs, do nothing
+            }
+            return name;
+        }
         
         public String getDisplayName() {
             FileObject folder = dataFolder.getPrimaryFile();
