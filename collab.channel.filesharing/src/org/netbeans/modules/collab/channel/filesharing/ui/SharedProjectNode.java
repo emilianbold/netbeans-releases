@@ -197,7 +197,7 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
     }
 
     public boolean canCopy() {
-        return false;
+        return true;
     }
 
     public boolean canCut() {
@@ -210,10 +210,6 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
 
     public boolean canRename() {
         return false;
-    }
-
-    public Transferable clipboardCopy() {
-        return null;
     }
 
     public Transferable clipboardCut() {
