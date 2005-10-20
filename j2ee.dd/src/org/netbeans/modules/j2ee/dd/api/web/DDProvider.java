@@ -68,7 +68,7 @@ public final class DDProvider {
      */
     public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
         if (fo == null) {
-            return null;
+            throw new IllegalArgumentException("FileObject is null");  //NOI18N;
         }
         WebAppProxy webApp = getFromCache(fo);
         if (webApp != null) {
