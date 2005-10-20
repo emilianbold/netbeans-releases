@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 
 <fontscolors>
-    <fontcolor name="default" default="default"/>
     <fontcolor name="xml-EOL" default="whitespace"/>
     <fontcolor name="xml-attribute" default="identifier"/>
     <fontcolor name="xml-cdata-section" foreColor="yellow" default="default"/>

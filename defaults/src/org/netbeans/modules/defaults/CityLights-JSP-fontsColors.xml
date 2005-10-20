@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 
 <fontscolors>
-    <fontcolor name="default" default="default"/>
     <fontcolor name="jsp-el-EOL" default="whitespace"/>
     <fontcolor name="jsp-el-char-literal" default="char"/>
     <fontcolor name="jsp-el-el-delimiter" default="whitespace"/>

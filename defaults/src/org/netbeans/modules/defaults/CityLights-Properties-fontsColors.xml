@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 
 <fontscolors>
-    <fontcolor name="default" default="default"/>
     <fontcolor name="properties-line-comment" default="comment"/>
     <fontcolor name="properties-equal-sign" default="operator"/>
     <fontcolor name="properties-key" default="identifier"/>

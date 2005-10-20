@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 
 <fontscolors>
-    <fontcolor name="default" default="default"/>
     <fontcolor name="dtd-comment" foreColor="red" default="comment"/>
     <fontcolor name="dtd-eol" default="whitespace"/>
     <fontcolor name="dtd-error" default="error"/>

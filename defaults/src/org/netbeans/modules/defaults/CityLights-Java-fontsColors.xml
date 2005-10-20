@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 
 <fontscolors>
-    <fontcolor name="default" default="default"/>
     <fontcolor name="java-annotation" foreColor="ff006f00" default="default"/>
     <fontcolor name="java-block-comment" default="comment"/>
     <fontcolor name="java-char-literal" default="char"/>
