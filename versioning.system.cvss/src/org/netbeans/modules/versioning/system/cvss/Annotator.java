@@ -128,7 +128,7 @@ public class Annotator {
         int status = info.getStatus();
         String textAnnotation;
         String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();
-        if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
+        if ("OFF".equals(textAnnotationFormat) == false && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             String sticky = Utils.getSticky(file);
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
                 textAnnotation = "";
@@ -183,7 +183,7 @@ public class Annotator {
         int status = info.getStatus();
         String textAnnotation;
         String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();        
-        if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
+        if ("OFF".equals(textAnnotationFormat) == false && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
             String sticky = Utils.getSticky(file);
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
                 textAnnotation = "";
