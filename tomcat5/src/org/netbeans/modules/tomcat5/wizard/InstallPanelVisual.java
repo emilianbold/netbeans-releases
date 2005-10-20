@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -34,6 +35,7 @@ import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -52,6 +54,8 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     private String serverPort;
     private String shutdownPort;
+    
+    private RequestProcessor.Task validationTask;
     
     
     /** Creates new form JPanel */
@@ -393,9 +397,9 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     public String getErrorMessage() {
         // prevent the message from being cut off - wizard descriptor issue work-around
-        return errorMessage != null || errorMessage.length() > 0 
-                ? "<html>" + errorMessage.replaceAll("<",  "&lt;").replaceAll(">",  "&gt;") + "</html>" // NIO18N
-                : errorMessage;
+        return errorMessage == null 
+                ? null
+                : "<html>" + errorMessage.replaceAll("<",  "&lt;").replaceAll(">",  "&gt;") + "</html>"; // NIO18N
     }
     
     private boolean isServerXmlValid(File file) {
@@ -505,22 +509,38 @@ class InstallPanelVisual extends javax.swing.JPanel {
     }
     
     public boolean isValid() {
-        errorMessage = ""; // NOI18N
+        errorMessage = null;
         return isHomeValid() && isBaseValid() && !isAlreadyRegistered();
     }
     
     private void fireChange() {
-        ChangeEvent event = new ChangeEvent(this);
-        ArrayList tempList;
-
-        synchronized(listeners) {
-            tempList = new ArrayList(listeners);
+        // schedule the validation task so that error messages won't flash e.g. 
+        // when calling jTextFieldBaseDir.setText which triggers two consecutive 
+        // events removeUpdate and insertUpdate. validation after the first one 
+        // inevitably leads to a failure.
+        if (validationTask == null) {
+            validationTask = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    if (!SwingUtilities.isEventDispatchThread()) {
+                        SwingUtilities.invokeLater(this);
+                        return;
+                    }
+                    
+                    ChangeEvent event = new ChangeEvent(this);
+                    ArrayList tempList;
+                    
+                    synchronized(listeners) {
+                        tempList = new ArrayList(listeners);
+                    }
+                    
+                    Iterator iter = tempList.iterator();
+                    while (iter.hasNext()) {
+                        ((ChangeListener)iter.next()).stateChanged(event);
+                    }
+                }
+            });
         }
-        
-        Iterator iter = tempList.iterator();
-        while (iter.hasNext()) {
-            ((ChangeListener)iter.next()).stateChanged(event);
-        }
+        validationTask.schedule(60);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
