@@ -381,6 +381,7 @@ public class OutputCollablet extends MOXCCollablet {
                 io.getOut().reset();
                 io.getOut().print(content);
                 io.getOut().flush();
+                io.select();
             } catch (Exception e) {
                 Debug.debugNotify(e);
             }
@@ -391,15 +392,7 @@ public class OutputCollablet extends MOXCCollablet {
             out.flush();
 
             remoteOutputIOMap.put(instance_id, inputOutput);
-
-            // hack, as we can't get tab from io since NbIO is not public
-            //			AbstractOutputTab[] tabs = OutputWindow.findDefault().getTabs();
-            //			if (tabs.length>0)
-            //			{
-            //				AbstractOutputTab tab=tabs[tabs.length-1];
-            //				remoteOutputTabs.put(instance_id, tab);
-            //			}
-            //			AbstractOutputTab tab=OutputWindow.findDefault().getTabForIO((NbIO)inputOutput);
+            inputOutput.select();
         }
     }
 
