@@ -1225,14 +1225,28 @@ public abstract class TreeView extends JScrollPane {
             for (int i = 0; i < paths.length; i++) {
                 Node n = Visualizer.findNode(paths[i].getLastPathComponent());
 
-                if ((n == manager.getRootContext()) || (n.getParentNode() != null)) {
+                if( isUnderRoot( manager.getRootContext(), n ) ) {
                     ll.add(n);
                 }
             }
-
             callSelectionChanged((Node[]) ll.toArray(new Node[ll.size()]));
         }
+        
+        /** Checks whether given Node is a subnode of rootContext.
+        * @return true if specified Node is under current rootContext
+        */
+        private boolean isUnderRoot(Node rootContext, Node node) {
+            while (node != null) {
+                if (node.equals(rootContext)) {
+                    return true;
+                }
 
+                node = node.getParentNode();
+            }
+
+            return false;
+        }
+            
         public void treeWillCollapse(TreeExpansionEvent event)
         throws ExpandVetoException {
         }
