@@ -101,6 +101,10 @@ public final class WebServicesClientSupport {
         impl.addServiceClient(serviceName, packageName, sourceUrl, configFile, stubDescriptor);
     }
 
+    public void addServiceClient(String serviceName, String packageName, String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor, String[] wscompileFeatures) {
+        impl.addServiceClient(serviceName, packageName, sourceUrl, configFile, stubDescriptor, wscompileFeatures);
+    }
+    
     /** Adds a service-ref to module deployment descriptor.
      *
      * @param serviceName name of this service, e.g. service/MyService

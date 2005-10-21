@@ -29,7 +29,10 @@ public interface WebServicesClientSupportImpl {
 	
     public void addServiceClient(String serviceName, String packageName, 
         String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor);
-	
+    
+    public void addServiceClient(String serviceName, String packageName, 
+        String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor, String[] wscompileFeatures);
+    
     public void addServiceClientReference(String serviceName, String fqServiceName, String relativeWsdlPath, String mappingPath, String[] portSEIInfo);
 
     public void removeServiceClient(String serviceName);
