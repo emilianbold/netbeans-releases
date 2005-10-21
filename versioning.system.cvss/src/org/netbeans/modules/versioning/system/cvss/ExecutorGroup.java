@@ -190,7 +190,6 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         while (it2.hasNext()) {
             ClientRuntime console = (ClientRuntime) it2.next();
             console.log(msg + "\n"); // NOI18N
-            console.focusLog();
             console.flushLog();
         }
     }
