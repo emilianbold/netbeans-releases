@@ -1028,7 +1028,7 @@ public class LayoutDesigner implements LayoutConstants {
     private Image linkBadgeHorizontal = null;
     private Image linkBadgeVertical = null;
     
-    private final int BOTH_DIMENSIONS = 2;
+    private static final int BOTH_DIMENSIONS = 2;
             
     private Image getLinkBadge(int dimension) {
         if (dimension == (BOTH_DIMENSIONS)) {

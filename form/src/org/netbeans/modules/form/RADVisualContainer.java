@@ -152,7 +152,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         Object value = getBeanInfo().getBeanDescriptor()
                                         .getValue("containerDelegate"); // NOI18N
         
-        if (value != null && value instanceof String)
+        if (value instanceof String)
             return (String) value;
         else
             return null;

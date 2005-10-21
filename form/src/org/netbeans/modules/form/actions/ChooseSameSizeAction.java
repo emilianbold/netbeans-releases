@@ -47,7 +47,7 @@ public class ChooseSameSizeAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(EventsAction.class, "ACT_ChooseSameSize"); // NOI18N
+        return NbBundle.getMessage(ChooseSameSizeAction.class, "ACT_ChooseSameSize"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

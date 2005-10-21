@@ -14,7 +14,6 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
-import java.beans.BeanInfo;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject;

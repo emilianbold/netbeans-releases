@@ -31,7 +31,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.palette.PaletteFilter;
-import org.openide.loaders.DataObject;
 
 /**
  * Class providing various useful methods for palette classes.

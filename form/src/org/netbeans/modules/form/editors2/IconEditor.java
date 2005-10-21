@@ -472,7 +472,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             if (propertyEnv != null)
                 propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             
-            if (value == null || !(value instanceof NbImageIcon)) {
+            if (!(value instanceof NbImageIcon)) {
                 rbNoPicture.setSelected(true);
                 bSelect.setEnabled(false);
                 tfName.setEnabled(false);

@@ -352,23 +352,6 @@ public class ComponentInspector extends TopComponent
         pasteAction.setPasteTypes(null);
     }
 
-    private boolean checkNodeParents(Node node, java.util.Map set) {
-        if (set.get(node) != null)
-            return false; // the node is in the set (as parent of another node)
-        
-        // 'this' means the original node (not parent)
-        set.put(node, this);
- 
-        node = node.getParentNode();
-        while (node != null) {
-            if (set.put(node, node) == this)
-                return false; // the parent is also a node already in the set
-            node = node.getParentNode();
-        }
-
-        return true;
-    }
-
     private Clipboard getClipboard() {
         Clipboard c = (java.awt.datatransfer.Clipboard)
             Lookup.getDefault().lookup(java.awt.datatransfer.Clipboard.class);

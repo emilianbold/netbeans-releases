@@ -172,14 +172,6 @@ public class BeanSupport
      * JavaBean class
      * @see #getDefaultPropertyValues
      */
-//    public static Object getDefaultPropertyValue(Class beanClass, String propertyName) {
-//        Map values = getDefaultPropertyValues(beanClass);
-//        Object val = values.get(propertyName);
-//        if (val == null && !values.containsKey(propertyName))
-//            val = NO_VALUE;
-//        return val;
-//    }
-
     public static Object getDefaultPropertyValue(Object bean,
                                                  String propertyName)
     {
@@ -219,22 +211,10 @@ public class BeanSupport
             if (readMethod != null) {
                 try {
                     Object value = readMethod.invoke(beanInstance, new Object [0]);
-//                    if (value == null)
-//                        value = getSpecialDefaultAWTValue(beanInstance, properties[i].getName());
                     defaultValues.put(properties[i].getName(), value);
                 } catch (Exception e) {
-                    // problem with reading property ==>> no default value
-//                    if (FormEditor.getFormSettings().getOutputLevel() != FormLoaderSettings.OUTPUT_MINIMUM) {
-                        //            notifyPropertyException(beanInstance.getClass(), properties [i].getName(), "component", e, true); // NOI18N
-//                    }
                 }
             } 
-//            else { // the property does not have plain read method
-//                if (properties[i] instanceof IndexedPropertyDescriptor) {
-//                    //          [PENDING]
-//                    //          Method indexedReadMethod =((IndexedPropertyDescriptor)properties[i]).getIndexedReadMethod();
-//                }
-//            }
         }
 
         return defaultValues;
@@ -246,16 +226,6 @@ public class BeanSupport
      */
     public static Image getBeanIcon(Class beanClass, int iconType) {
         return getIconForDefault(beanClass);
-/*        Image ret = getIconForDefault(beanClass);
-        if (ret != null) {
-            return ret;
-        }
-        // [FUTURE: the icon should be obtained from the InstanceCookie somehow, and customizable by the user]
-        BeanInfo bi = createBeanInfo(beanClass);
-        if (bi != null) {
-            return bi.getIcon(iconType);
-        }
-        return null; */
     }
 
     /** A utility method that returns a class of event adapter for
@@ -282,53 +252,8 @@ public class BeanSupport
         else return null; // not found
     }
 
-/*    public static Node.Property [] createEventsProperties(Object beanInstance) {
-        BeanInfo beanInfo = createBeanInfo(beanInstance.getClass());
-        EventSetDescriptor[] events = beanInfo.getEventSetDescriptors();
-        ArrayList eventsProps = new ArrayList();
-        for (int i = 0; i < events.length; i++) {
-        }
-
-        Node.Property[] np = new Node.Property [eventsProps.size()];
-        eventsProps.toArray(np);
-
-        return np;
-    }*/
-
     // -----------------------------------------------------------------------------
     // Private methods
-
-    private static Object getSpecialDefaultAWTValue(Object beanObject, String propertyName) {
-        if ((beanObject instanceof Frame) ||
-            (beanObject instanceof Dialog)) {
-            if ("background".equals(propertyName)) // NOI18N
-                return SystemColor.window;
-            else if ("foreground".equals(propertyName)) // NOI18N
-                return SystemColor.windowText;
-            else if ("font".equals(propertyName)) // NOI18N
-                return FakePeerSupport.getDefaultAWTFont();
-        }
-
-        if ((beanObject instanceof Label) ||
-            (beanObject instanceof Button) ||
-            (beanObject instanceof TextField) ||
-            (beanObject instanceof TextArea) ||
-            (beanObject instanceof Checkbox) ||
-            (beanObject instanceof Choice) ||
-            (beanObject instanceof List) ||
-            (beanObject instanceof Scrollbar) ||
-            (beanObject instanceof Panel) ||
-            (beanObject instanceof ScrollPane)) {
-            if ("background".equals(propertyName)) // NOI18N
-                return SystemColor.control;
-            else if ("foreground".equals(propertyName)) // NOI18N
-                return SystemColor.controlText;
-            else if ("font".equals(propertyName)) // NOI18N
-                return FakePeerSupport.getDefaultAWTFont();
-        }
-
-        return null;
-    }
 
     static Reference imageCache;
 
@@ -383,12 +308,6 @@ public class BeanSupport
 
         return map;
     }
-
-//    private static void include(Map ret, String[] compos, String[] icons) {
-//        for (int i = 0; i < compos.length; i++) {
-//            ret.put(compos[i], icons[i]);
-//        }
-//    }
 
     private static abstract class DefaultValueDeviation {
         protected Object[] values;
