@@ -30,6 +30,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="testAnnotationBrowseable1.xml" url="testAnnotationBrowseable1.xml"/>
             <file name="testAnnotationBrowseable2.xml" url="testAnnotationBrowseable2.xml"/>
             <file name="testAnnotationBrowseable3.xml" url="testAnnotationBrowseable3.xml"/>
+            
+            <file name="testAnnotationPriority1.xml" url="testAnnotationPriority1.xml"/>
+            <file name="testAnnotationPriority2.xml" url="testAnnotationPriority2.xml"/>
+            <file name="testAnnotationPriority3.xml" url="testAnnotationPriority3.xml"/>
+            <file name="testAnnotationPriority4.xml" url="testAnnotationPriority4.xml"/>
         </folder>
     </folder>
 </filesystem>
