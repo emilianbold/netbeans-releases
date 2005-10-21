@@ -722,13 +722,17 @@ public class DOMBinding {
                     Node previousNode = node.getPreviousSibling();
                     if (previousNode != null && previousNode.getNodeType() == Node.TEXT_NODE) {
                         String s1 = previousNode.getNodeValue();
-                        if (s1.trim().length() == 0) {
-                            i = s1.lastIndexOf('\n');
-                            if (i > 0) {
-                                s = s1.substring(0, i) + s;
-                            } else {
-                                parent.removeChild(previousNode);
+                        if (previousNode.getPreviousSibling() != null) {
+                            if (s1.trim().length() == 0) {
+                                i = s1.lastIndexOf('\n');
+                                if (i > 0) {
+                                    s = s1.substring(0, i) + s;
+                                } else {
+                                    parent.removeChild(previousNode);
+                                }
                             }
+                        } else {
+                            parent.removeChild((previousNode));
                         }
                     }
                     nextNode.setNodeValue(s);
