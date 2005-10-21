@@ -197,7 +197,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
 	
     }
     
-    private static final Color GLOBAL_RED = new Color(0xFB4C48);
+    private static final Color GLOBAL_RED = new Color(0xFF2A1C);
     private static final Color GLOBAL_YELLOW = new Color(0xE1AA00);
     private static final Color GLOBAL_GREEN = new Color(0x65B56B);
     

@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
 <type
     name='debugger-PC_mixedBP'
     description_key='HINT_PC_MIXED_BREAKPOINTS'
@@ -20,7 +20,10 @@ Microsystems, Inc. All Rights Reserved.
     visible='true' 
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/MultiBreakpoint+PC.gif'
     highlight='0xBDE6AA' 
-    type='line'>
+    type='line'
+    severity='ok'
+    priority='100'
+    custom_sidebar_color='0xFF8FD5'>
 
     <combination tiptext_key='HINT_PC_MIXED_BREAKPOINTS_TOOLTIP' order='400'>
         <combine annotationtype='debugger-mixed_BP'/>
