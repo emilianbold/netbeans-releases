@@ -59,11 +59,8 @@ import javax.swing.plaf.basic.BasicMenuItemUI;
 import javax.swing.text.*;
 import javax.swing.text.html.*;
 
-//import org.netbeans.core.windows.view.ui.*;
-//import org.netbeans.core.windows.view.ui.tabcontrol.*;
 import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.channel.chat.messagetype.CollabContentType;
-import org.netbeans.modules.collab.channel.chat.messagetype.CollabContentTypeFactory;
 import org.netbeans.modules.collab.core.Debug;
 
 
@@ -113,11 +110,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
     private static final int MAX_SENDER_CLASSES = 9;
     private static final String TOKEN_BASE_FONT_SIZE = "@BASE_FONT_SIZE@";
     private static final String TOKEN_SMALL_FONT_SIZE = "@SMALL_FONT_SIZE@";
-    private static final String CHAT_MESSAGETYPE = "Chat"; //NOI18N
-    private static final String FORMATTED_TEXT_MESSAGETYPE = "Formatted Text"; //NOI18N
-    private static final String JAVA_MESSAGETYPE = "Java"; //NOI18N
-    private static final String HTML_MESSAGETYPE = "HTML"; //NOI18N
-    private static final String XML_MESSAGETYPE = "XML"; //NOI18N
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables
@@ -435,39 +427,25 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
 
         ButtonGroup group = new ButtonGroup();
 
-        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(CollabContentTypeFactory.class));
-        Collection instanceCollection = result.allInstances();
-        CollabContentTypeFactory[] messageFactory = (CollabContentTypeFactory[]) instanceCollection.toArray(
-                new CollabContentTypeFactory[instanceCollection.size()]
-            );
-        CollabContentType[] messageTypeList = new CollabContentType[messageFactory.length];
-
-        for (int j = 0; j < messageTypeList.length; j++) {
-            messageTypeList[j] = messageFactory[j].createMessageType();
-        }
-
-        Arrays.sort(messageTypeList, new CollabMessageTypeComparator());
-
-        for (int i = 0; i < messageTypeList.length; i++) {
-            CollabContentType messageType = messageTypeList[i];
+        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(CollabContentType.class));
+        Collection messageTypeCollection = result.allInstances();
+        
+        for (Iterator it = messageTypeCollection.iterator(); it.hasNext(); ) {
+            CollabContentType messageType = (CollabContentType)it.next();
             Image icon = messageType.getIcon();
             String displayName = messageType.getDisplayName();
+            String contentType = messageType.getContentType();
             JToggleButton button = new JToggleButton(new ImageIcon(icon));
+            button.putClientProperty("contentType", contentType); //NOI18N
 
-            if (displayName != null) {
-                button.setToolTipText(displayName);
-
-                if (displayName.equals(CHAT_MESSAGETYPE)) {
-                    chatFocusButton = button;
-                }
+            button.setToolTipText(displayName);
+            if (messageType.getContentType().equals(ContentTypes.UNKNOWN_TEXT)) {
+                chatFocusButton = button;
             }
+            button.addActionListener(actionListener);
 
             group.add(button);
             inputToolbar.add(button);
-            button.addActionListener(actionListener);
-
-            String contentType = messageType.getContentTypes();
-            button.addItemListener(new ContentTypeItemListener(contentType));
             contentTypeToButton.put(contentType, button);
         }
 
@@ -1349,70 +1327,6 @@ LOOP:
         }
     }
 
-    /*author Smitha Krishna Nagesh
-    Comparing two CollabMessageType */
-    protected class CollabMessageTypeComparator implements Comparator {
-        HashMap compareName = new HashMap();
-
-        public CollabMessageTypeComparator() {
-            compareName.put(CHAT_MESSAGETYPE, new Integer(1));
-            compareName.put(FORMATTED_TEXT_MESSAGETYPE, new Integer(2));
-            compareName.put(JAVA_MESSAGETYPE, new Integer(3));
-            compareName.put(HTML_MESSAGETYPE, new Integer(4));
-            compareName.put(XML_MESSAGETYPE, new Integer(5));
-        }
-
-        /**
-         *
-         *
-         */
-        public int compare(Object o1, Object o2) {
-            if (o1 == o2) {
-                return 0;
-            }
-
-            if (o1 == null) {
-                return -1;
-            }
-
-            if (o2 == null) {
-                return 1;
-            }
-
-            CollabContentType messageType1 = (CollabContentType) o1;
-            CollabContentType messageType2 = (CollabContentType) o2;
-
-            String s1 = messageType1.getDisplayName();
-
-            if (s1 == null) {
-                s1 = "";
-            }
-
-            String s2 = messageType2.getDisplayName();
-
-            if (s2 == null) {
-                s2 = "";
-            }
-
-            Integer result1 = (Integer) compareName.get(s1);
-            Integer result2 = (Integer) compareName.get(s2);
-
-            if (result1 == result2) {
-                return 0;
-            }
-
-            if (result1 == null) {
-                result1 = new Integer(Integer.MAX_VALUE);
-            }
-
-            if (result2 == null) {
-                result2 = new Integer(Integer.MAX_VALUE);
-            }
-
-            return result1.compareTo(result2);
-        }
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     // Inner class
     ////////////////////////////////////////////////////////////////////////////
@@ -1506,57 +1420,19 @@ LOOP:
      *
      *
      */
-    protected class ContentTypeItemListener extends Object implements ItemListener {
-        private String contentType;
-
-        /**
-         *
-         *
-         */
-        public ContentTypeItemListener(String contentType) {
-            super();
-            this.contentType = contentType;
-        }
-
-        /**
-         *
-         *
-         */
-        public void itemStateChanged(ItemEvent event) {
-            if (event.getStateChange() == ItemEvent.SELECTED) {
-                setInputContentType(contentType, false, false);
-                syncAllowCharacterButtons();
-            }
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     *
-     *
-     */
-    protected class ContentTypeActionListener extends Object implements ActionListener {
-        /**
-         *
-         *
-         */
+    private class ContentTypeActionListener extends Object implements ActionListener {
         public void actionPerformed(ActionEvent event) {
             // This will be invoked only when the user selects the button.
             // If the user explicitly selects a button, cancel the previous
             // selection
-            JToggleButton resultButton = (JToggleButton) event.getSource();
-            String text = resultButton.getToolTipText();
-
-            if (text.equals(CHAT_MESSAGETYPE)) {
-                smileyButton.setEnabled(true);
-            } else {
-                smileyButton.setEnabled(false);
-            }
+            JToggleButton source = (JToggleButton) event.getSource();
+            String type = (String)source.getClientProperty("contentType"); //NOI18N 
+            smileyButton.setEnabled(type.equals(ContentTypes.UNKNOWN_TEXT));
 
             previouslySelectedContentType = null;
+
+            setInputContentType(type, false, false);
+            syncAllowCharacterButtons();
         }
     }
 

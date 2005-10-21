@@ -1,0 +1,2 @@
+1.0.2:	Refactored content type registration, reduces class count.
+

@@ -14,17 +14,16 @@ package org.netbeans.modules.collab.channel.chat.messagetype;
 
 import java.awt.Image;
 
-import javax.swing.JToggleButton;
-
 
 /**
  *
  * @author  Smitha Krishna Nagesh
  */
-public interface CollabContentType {
-    public String getDisplayName();
+public abstract class CollabContentType {
+    public abstract String getDisplayName();
 
-    public Image getIcon();
+    public abstract Image getIcon();
 
-    public String getContentTypes();
+    public abstract String getContentType();
+    
 }

@@ -1,0 +1,7 @@
+1.0.2:	Fixed #62873: Word wrapping in plain text chat.
+
+1.0.3:	Fixed #62875: Indicate when other users are typing.
+
+1.0.4:	Backport of JSE fixes
+	Code-aware chat fixed (was not displaying mime-typed text on remote end)
+	Refactored content type registration and handling, reduces class count.
