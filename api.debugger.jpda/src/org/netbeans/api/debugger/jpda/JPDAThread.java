@@ -142,8 +142,10 @@ public interface JPDAThread {
     /**
      * Returns call stack for this thread.
      *
-     * @throws NoInformationException if the thread is running or not able
-     *         to return callstack
+     * @throws AbsentInformationException if the thread is running or not able
+     *         to return callstack. If the thread is in an incompatible state
+     *         (e.g. running), the AbsentInformationException has
+     *         IncompatibleThreadStateException as a cause.
      * @return call stack
      */
     public abstract CallStackFrame[] getCallStack () 
@@ -154,8 +156,10 @@ public interface JPDAThread {
      *
      * @param from a from index
      * @param to a to index
-     * @throws NoInformationException if the thread is running or not able
-     *         to return callstack
+     * @throws AbsentInformationException if the thread is running or not able
+     *         to return callstack. If the thread is in an incompatible state
+     *         (e.g. running), the AbsentInformationException has
+     *         IncompatibleThreadStateException as a cause.
      * @return call stack
      */
     public abstract CallStackFrame[] getCallStack (int from, int to) 
