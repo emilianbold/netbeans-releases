@@ -217,7 +217,7 @@ public final class OpenProjectList {
     private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle) {
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
-        int  workPerProject = maxWork / projects.length;
+        int  workPerProject = maxWork / (projects.length > 0 ? projects.length : 1);
         Collection projectsOpened = new LinkedHashSet(); // Collects all project opened by the call
         
 	if (handle != null) {
