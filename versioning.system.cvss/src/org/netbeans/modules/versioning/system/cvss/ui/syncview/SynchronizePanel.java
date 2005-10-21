@@ -227,10 +227,10 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(SynchronizePanel.class, "MSG_Refreshing_Versioning_View"));
         try {
             refreshViewThread = Thread.currentThread();
-            refreshViewThread.interrupt();  // clear interupted status
+            refreshViewThread.interrupted();  // clear interupted status
             ph.start();  // XXX created handle does not have set Cancelable hook
             final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context, displayStatuses));  // takes long
-            if (nodes == null || Thread.interrupted()) {
+            if (nodes == null) {
                 return;
                 // finally section
             }
