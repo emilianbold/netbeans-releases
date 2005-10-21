@@ -219,8 +219,9 @@ class CopySupport {
                         Object layoutUndoMark = layoutModel.getChangeMark();
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
                         boolean autoUndo = true;
-                        boolean fromModel = !(targetComponent instanceof RADVisualContainer)
-                                            || ((RADVisualContainer)targetComponent).getLayoutSupport() != null;
+                        boolean fromModel = (!(targetComponent instanceof RADVisualContainer)
+                                            || ((RADVisualContainer)targetComponent).getLayoutSupport() != null)
+                                            && !layoutComponent.isLayoutContainer();
                         try {
                             layoutModel.removeComponent(sourceComponent.getId(), fromModel);
                             autoUndo = false;
