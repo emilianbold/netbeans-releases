@@ -34,6 +34,8 @@ public final class JSPColoringData extends PropertyChangeSupport {
     *  information changes in such a way that recoloring of the document is required. 
     */
     public static final String PROP_COLORING_CHANGE = "coloringChange"; // NOI18N
+    public static final String PROP_PARSING_SUCCESSFUL = "parsingSuccessful"; //NOI18N
+    public static final String PROP_PARSING_IN_PROGRESS = "parsingInProgress"; //NOI18N
     
     /** Taglib id -> TagLibraryInfo */
     private Map taglibs;
@@ -92,6 +94,10 @@ public final class JSPColoringData extends PropertyChangeSupport {
     /*public boolean isBodyIntepretedByTag(String prefix, String tagName) {
     }*/
         
+    public void parsingStarted() {
+        firePropertyChange(PROP_PARSING_IN_PROGRESS, null, new Boolean(true));
+    }
+    
     /** Incorporates new parse data from the parser, possibly firing a change about coloring.
      * @param newTaglibs the new map of (uri -> TagLibraryInfo)
      * @param newPrefixMapper the new map of (prefix, uri)
@@ -100,6 +106,9 @@ public final class JSPColoringData extends PropertyChangeSupport {
     public void applyParsedData(Map newTaglibs, Map newPrefixMapper, boolean newELIgnored, boolean newXMLSyntax, boolean parseSuccessful) {
         // check whether coloring has not changed
         boolean coloringSame = equalsColoringInformation(taglibs, prefixMapper, newTaglibs, newPrefixMapper);
+        
+        firePropertyChange(PROP_PARSING_IN_PROGRESS, null, new Boolean(false));
+        firePropertyChange(PROP_PARSING_SUCCESSFUL, null, new Boolean(parseSuccessful));
         
         // check and apply EL data
         if (parseSuccessful) {
