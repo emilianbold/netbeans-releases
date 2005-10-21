@@ -16,22 +16,30 @@
         <h2>Viewing File Status information</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>The IDE's CVS support enables you to view and manage the evolution
-        of changes in version-controlled files. </p>
+        of changes in version-controlled files.</p>
+        
         <h3>Viewing Revision Information<a name="viewing"></a></h3>
-        <p>The IDE's CVS support provides file status information in several
-        windows and ways including: </p>
+        <p>The IDE's CVS support enables you to view version status information in 
+        many of the IDE's primary windows as you work, including the Versioning, Projects, Files, 
+        and Favorites windows. The Versioning window represents the primary place within
+        which to manage version-controlled files by displaying a real-time list of all of the
+        new, modified, removed, and out-of-date files in the currently selected project or directory. </li>
+        <p>The IDE's CVS support provides file status information in the following
+        ways: </p>
         <ul>
-            <li><b>Color coding.</b> Graphical indication of the status of
-            individual files. </li>
-            <li><b>Status badges.</b> Graphical indication of the status of files
-            contained within your project, folder, and package nodes. </li>
-            <li><b>Versioning window.</b> Provides a real-time list of all of the
-            changed, removed, new, and out-of-date files in selected directories. </li>
-            <li><strong>Annotations.</strong> Displays commit message, author,
+            <li><b>Status Labels. </b>Textual indication of file status 
+            in the Versioning, Projects, Files, and Favorites windows.</li>
+            <li><b>Status color. </b>Graphical indication of file status in the 
+            Versioning, Projects, Files, and Favorites windows. </li>
+            <li><b>Status badges. </b> Graphical indication of the status of files
+            contained within your project, folder, and package nodes. Displayed in the 
+            Projects, Files, and Favorites windows.</li>
+            <li><b>Revision Annotations.</b> Displays commit message, author,
             date, and revision number information in the left margin of files open
             in the editor window. </li>
         </ul>
-        <p>The Versioning window displays versioned files using the following
+
+        <p>The IDE displays version-controlled files using the following
             color coding and font styles:
             <table summary="The left column lists the task name. The right column lists the steps to perform."
                 border="1" cellpadding="5" cellspacing="0">
@@ -78,8 +86,9 @@
                             <p><img src="images/strikethrough_status.png" alt="Note"></p>
                         </td>
                         <td>
-                            <p><strong>Strikethrough Label.</strong> A prior revision of a
-                            file existing on a branch in the VCS repository.</p>
+                            <p><strong>Strikethrough Label.</strong> Indicates that the file 
+                            is excluded when calling CVS commands. Note that the strikethrough
+                            style only appears in the Versioning window.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -93,7 +102,7 @@
                 border="1" cellpadding="5" cellspacing="0">
                 <tbody>
                     <tr valign="top">
-                        <th scope="col" align="left"> Badge </th>
+                        <th scope="col" align="left">Badge </th>
                         <th scope="col" align="center">Description</th>
                     </tr>
                     <tr valign="top">
@@ -131,12 +140,13 @@
         selected directories. It opens at the bottom of the IDE whenever you
         view changes made in version-controlled files. By default, the
         Versioning window displays a list of all modified files within the
-        selected package or folder. Using the filter buttons in the toolbar,
+        selected package or folder. 
+<p>Using the filter buttons in the toolbar,
         you can limit the list of displayed files to either locally or remotely
         modified files. The Versioning window toolbar also includes buttons
         that enable you to invoke the most common CVS tasks on all files
         displayed in the list. </p>
-        <p>The following CVS commands are available in the Versioning window: </p>
+        <p>The following common CVS commands are available in the Versioning window's toolbar: </p>
         <ul>
             <li><b>Refresh Status.</b></li>
             <li><b>Diff All.</b></li>
