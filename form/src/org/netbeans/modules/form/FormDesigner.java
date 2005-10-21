@@ -1259,14 +1259,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
     private void finishInPlaceEditing(boolean applyChanges) {
         if (applyChanges) {
-            try {
-                editedProperty.setValue(textEditLayer.getEditedText());
-            }
-            catch (Exception ex) { // should not happen
+            try {		
+		Object value = editedProperty.getValue();
+		if(value instanceof String) {
+		    editedProperty.setValue(textEditLayer.getEditedText());		    
+		} else {	
+		    PropertyEditor prEd = editedProperty.findDefaultEditor();
+		    editedProperty.setValue(new FormProperty.ValueWithEditor(textEditLayer.getEditedText(), prEd));    		    
+		}		                 
+	    } catch (Exception ex) { // should not happen
                 ex.printStackTrace();
             }
         }
-
+	
         textEditLayer.setVisible(false);
         handleLayer.setVisible(true);
         handleLayer.requestFocus();

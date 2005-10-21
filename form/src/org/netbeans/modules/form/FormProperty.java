@@ -828,7 +828,7 @@ public abstract class FormProperty extends Node.Property {
         return (propType & DETACHED_READ) == 0 ? getTargetValue() : null;
     }
 
-    private PropertyEditor findDefaultEditor() {
+    PropertyEditor findDefaultEditor() {
         PropertyEditor defaultEditor = getExpliciteEditor();
         if (defaultEditor != null)
             return defaultEditor;
