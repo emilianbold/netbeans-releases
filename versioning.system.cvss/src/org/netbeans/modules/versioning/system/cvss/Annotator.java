@@ -40,6 +40,7 @@ import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
@@ -71,6 +72,8 @@ public class Annotator {
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_VERSIONED_CONFLICT | 
             FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
+
+    private static final Pattern lessThan = Pattern.compile("<");
     
     private final FileStatusCache cache;
 
@@ -125,6 +128,7 @@ public class Annotator {
      * also return the original name String
      */ 
     public String annotateNameHtml(String name, FileInformation info, File file) {
+        name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
         String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();
@@ -180,6 +184,7 @@ public class Annotator {
     }
 
     private String annotateFolderNameHtml(String name, FileInformation info, File file) {
+        name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
         String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();        
@@ -224,6 +229,11 @@ public class Annotator {
         }
     }
     
+    private String htmlEncode(String name) {
+        if (name.indexOf('<') == -1) return name;
+        return lessThan.matcher(name).replaceAll("&lt;");
+    }
+
     public String annotateNameHtml(File file, FileInformation info) {
         return annotateNameHtml(file.getName(), info, file);
     }

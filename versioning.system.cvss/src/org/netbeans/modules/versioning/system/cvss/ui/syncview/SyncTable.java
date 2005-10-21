@@ -412,7 +412,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>";
                     } else {
-                        value = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml("<s>" + nodeName + "</s>", node.getFileInformation(), null);
+                        value = "<html><s>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(nodeName, node.getFileInformation(), null) + "</s>";
                     }
                 }
             }
