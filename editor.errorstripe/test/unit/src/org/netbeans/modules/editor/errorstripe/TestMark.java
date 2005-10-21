@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,13 +27,18 @@ public class TestMark implements Mark {
     private String description;
     private Color  color;
     private int[]  lines;
+    private int    priority;
     
-    /** Creates a new instance of TestMark */
     public TestMark(Status status, String description, Color color, int[] lines) {
+        this(status, description, color, lines, PRIORITY_DEFAULT);
+    }
+    
+    public TestMark(Status status, String description, Color color, int[] lines, int priority) {
         this.status = status;
         this.description = description;
         this.color = color;
         this.lines = lines;
+        this.priority = priority;
     }
 
     public Status getStatus() {
@@ -57,7 +62,7 @@ public class TestMark implements Mark {
     }
     
     public int getPriority() {
-        return PRIORITY_DEFAULT;
+        return priority;
     }
     
 }

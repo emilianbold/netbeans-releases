@@ -61,7 +61,11 @@ public class AnnotationMark implements Mark {
     }
     
     public int getPriority() {
-        return PRIORITY_DEFAULT;
+        return annotation.getAnnotationTypeInstance().getPriority();
     }
 
+    public AnnotationDesc getAnnotationDesc() {
+        return annotation;
+    }
+    
 }

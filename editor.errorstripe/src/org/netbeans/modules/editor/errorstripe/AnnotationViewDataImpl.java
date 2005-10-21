@@ -247,7 +247,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         if (m2 == null)
             return m1;
         
-        if (m1.getStatus().compareTo(m2.getStatus()) > 0)
+        if (isMoreImportant(m1, m2))
             return m1;
         else
             return m2;
@@ -261,14 +261,22 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             for (Iterator i = getStatusesForLineImpl(/*doc, */current, marks).iterator(); i.hasNext(); ) {
                 Mark newMark = (Mark) i.next();
                 
-                if (found == null || newMark.getStatus().compareTo(found.getStatus()) > 0) {
+                if (found == null || isMoreImportant(newMark, found)) {
                     found = newMark;
                 }
             }
-            current++;
         }
         
         return found;
+    }
+    
+    private static boolean isMoreImportant(Mark m1, Mark m2) {
+        int compared = m1.getStatus().compareTo(m2.getStatus());
+        
+        if (compared == 0)
+            return m1.getPriority() < m2.getPriority();
+        
+        return compared > 0;
     }
     
     private boolean isMoreImportant(AnnotationDesc a1, AnnotationDesc a2) {

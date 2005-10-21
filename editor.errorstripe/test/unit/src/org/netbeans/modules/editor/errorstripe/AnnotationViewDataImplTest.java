@@ -290,6 +290,92 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         assertEquals(Arrays.asList(new Mark[] {mark3}), map.get(new Integer(6)));
     }
 
+    public void testMarkPriorities() throws Exception {
+        JEditorPane editor = new JEditorPane();
+        
+        editor.setEditorKit(BaseKit.getKit(PlainKit.class));
+        
+        BaseDocument bd = (BaseDocument) editor.getDocument();
+
+        bd.insertString(0, "\n\n\n\n\n\n\n\n\n\n", null);
+        
+        //test marks:
+        TestMark mark1 = new TestMark(Status.STATUS_OK, null, null, new int[] {2, 2}, 99);
+        TestMark mark2 = new TestMark(Status.STATUS_OK, null, null, new int[] {2, 2}, 10);
+        TestMark mark3 = new TestMark(Status.STATUS_OK, null, null, new int[] {3, 4}, 5);
+        
+        TestMark mark4 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {2, 2}, 1000);
+        TestMark mark5 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {2, 2}, 100);
+        TestMark mark6 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {3, 4}, 50);
+        
+        List marks1 = Arrays.asList(new Mark[]{mark1, mark2, mark3});
+        List marks2 = Arrays.asList(new Mark[]{mark2, mark1, mark3});
+        List marks3 = Arrays.asList(new Mark[]{mark1, mark2, mark3, mark4, mark5, mark6});
+        
+        TestMarkProvider provider = new TestMarkProvider(marks1, UpToDateStatus.UP_TO_DATE_OK);
+        TestMarkProviderCreator creator = TestMarkProviderCreator.getDefault();
+        
+        creator.setProvider(provider);
+        
+        AnnotationView aView = new AnnotationView(editor);
+        AnnotationViewDataImpl data = (AnnotationViewDataImpl) aView.getData();
+        
+        assertEquals(mark2, data.getMainMarkForBlock(2, 2));
+        assertEquals(mark3, data.getMainMarkForBlock(2, 3));
+        assertEquals(mark3, data.getMainMarkForBlock(3, 4));
+        
+        assertEquals(null, data.getMainMarkForBlock(6, 6));
+        
+        provider.setMarks(marks2);
+        
+        assertEquals(mark2, data.getMainMarkForBlock(2, 2));
+        assertEquals(mark3, data.getMainMarkForBlock(2, 3));
+        assertEquals(mark3, data.getMainMarkForBlock(3, 4));
+        
+        assertEquals(null, data.getMainMarkForBlock(6, 6));
+        
+        provider.setMarks(marks3);
+        
+        assertEquals(mark5, data.getMainMarkForBlock(2, 2));
+        assertEquals(mark6, data.getMainMarkForBlock(2, 3));
+        assertEquals(mark6, data.getMainMarkForBlock(3, 4));
+        
+        assertEquals(null, data.getMainMarkForBlock(6, 6));
+        
+        provider.setMarks(Collections.EMPTY_LIST);
+        
+        //test annotations:
+        AnnotationDesc test1 = new TestAnnotationDesc(bd, bd.createPosition(2), "test-annotation-priority-1");
+        AnnotationDesc test2 = new TestAnnotationDesc(bd, bd.createPosition(2), "test-annotation-priority-2");
+        AnnotationDesc test3 = new TestAnnotationDesc(bd, bd.createPosition(2), "test-annotation-priority-3");
+        AnnotationDesc test4 = new TestAnnotationDesc(bd, bd.createPosition(2), "test-annotation-priority-4");
+        
+        bd.getAnnotations().addAnnotation(test1);
+        bd.getAnnotations().addAnnotation(test2);
+        
+        assertEquals(test2, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
+        
+        bd.getAnnotations().addAnnotation(test3);
+        bd.getAnnotations().addAnnotation(test4);
+        
+        assertEquals(test4, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
+        
+        //test interaction between annotations and marks:
+        List marks4 = Arrays.asList(new Mark[]{mark1});
+        
+        provider.setMarks(marks4);
+        
+        bd.getAnnotations().removeAnnotation(test2);
+        bd.getAnnotations().removeAnnotation(test3);
+        bd.getAnnotations().removeAnnotation(test4);
+        
+        assertEquals(mark1, data.getMainMarkForBlock(2, 2));
+        
+        bd.getAnnotations().addAnnotation(test2);
+        
+        assertEquals(test2, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
+    }
+    
     protected boolean runInEQ() {
         return true;
     }
