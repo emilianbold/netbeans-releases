@@ -31,9 +31,16 @@ public final class LayoutInterval implements LayoutConstants {
     static final int ATTR_DESIGN_CONTAINER_GAP = 4;
     static final int ATTR_DESIGN_RESIZING = 8;
     static final int ATTR_DESIGN_SUPPRESSED_RESIZING = 16;
+    
+    // attributes used during aligning
+    static final int ATTR_ALIGN_PRE = 64;
+    static final int ATTR_ALIGN_POST = 128;
+
     static final int DESIGN_ATTRS = ATTR_DESIGN_CONTAINER_GAP
                                     | ATTR_DESIGN_RESIZING
-                                    | ATTR_DESIGN_SUPPRESSED_RESIZING;
+                                    | ATTR_DESIGN_SUPPRESSED_RESIZING
+                                    | ATTR_ALIGN_PRE
+                                    | ATTR_ALIGN_POST;
 
     static final int ATTR_PERSISTENT_MASK = ATTRIBUTE_FILL | ATTRIBUTE_FORMER_FILL
                                             | ATTR_CLOSED_GROUP;
