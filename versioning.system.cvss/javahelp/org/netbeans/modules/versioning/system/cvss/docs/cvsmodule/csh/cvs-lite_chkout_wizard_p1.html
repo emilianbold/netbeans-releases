@@ -8,14 +8,54 @@
 -->
 <html>
     <head>
-        <title>CVS: Checkout Wizard</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+	<title>CVS Wizard: CVS Root</title>
+	<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>CVS: Checkout Wizard</h2>
-        <p>Coming Soon...</p><br>
-        
-        <hr>
-        <small><a href="../../credits.html">Legal Notices</a></small>
+	<h2>CVS Wizard: CVS Root</h2>
+	<p><small><a href="#seealso">See Also</a></small></p>
+	<p>You use this panel of the wizard to specify the CVS root for your CVS repository when you are checking out file from a CVS repository or importing files into a CVS repository. </p>
+	<p>You access this panel when you do the following:</p>
+	<ul>
+	    <li>Checkout a project using the Checkout wizard by choosing CVS &gt; Checkout from the main menu</li>
+	    <li>Import a project to a repository using the Import Projects wizard by selecting a project node in the Projects window and choosing CVS &gt; Import into Repository from the main menu.
+	    Alternately, you can right-click a project node in the Projects window and choose CVS &gt; Import into Repository.</li>
+	</ul>
+	<p>When checking out files or importing a project into a repository, you need to specify the location of the repository as defined by the CVS root.
+	To specify the CVS root, specify the following:</p>
+	
+	<ul>
+	    <li><b>CVS root.</b> Select a CVS root type and location from the drop-down list. 
+		The drop-down list contains a list of previous CVS root locations used in the IDE.</p>
+		<p>If no CVS root locations are listed in the drop-down list, you need to supply the CVS root type.
+		You can enter the information directly in the text field, or click the Edit button to open the Edit CVS Root dialog box.</p>
+		<p>The IDE supports directly the following CVS root types:</p>
+		<ul>
+		    <li><b>pserver.</b> For connecting to pserver repositories.<br><tt>:pserver:username@hostname:/repository_path</tt></li>
+		    <li><b>ext.</b> For connecting to CVS repositories using SSH, etc.<br><tt> :pserver:username@hostname:/repository_path</tt></li>
+		</ul>
+		<p>The following root types require an external CVS executable:</p>
+		<ul>
+		    <li><b>fork</b> for protocol access to local CVS repository<br><tt> :fork:/repository_path</tt></li>    
+		    <li><b>local</b> for direct access to local CVS repository<br><tt> :local:/repository_path</tt></li> 
+		</ul>
+	    </li>
+	    <li><b>Password.</b> Enter the password for the user to access the repository.</li>
+	    <li><b>Proxy configuration.</b> Click the Proxy configuration button to specify details of your proxy configuration to connect to the CVS repository.</li>
+	</ul>
+	
+	<dl>
+	    <dt>
+	    <a name="seealso">See Also</a></dt>
+	    <dd> <a href="../cvs-lite_checkout.html">Checking Out Files from a Remote Repository</a></dd> 
+	    <dd> <a href="../cvs-lite_setup.html">Setting Up CVS</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../../credits.html">Legal Notices</a></small>
+	<table cellpadding="50" border="0">
+	    <tr>
+		<td>&nbsp;</td>
+	    </tr>
+	</table> 
     </body>
 </html>
