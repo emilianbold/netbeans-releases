@@ -18,14 +18,10 @@ import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 
 import java.awt.*;
 import java.io.*;
-import java.util.*;
-import java.util.List;
 
 /**
  * Top component of the Versioning view.
@@ -211,32 +207,12 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
         } else {
             setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
-            context = removeDuplicates(ctx);
+            context = ctx;
             setBranchTitle(null);
             refreshContent();
         }
     }
 
-    private List removeDuplicates(File [] roots) {
-        List newFiles = new ArrayList();
-        outter: for (int i = 0; i < roots.length; i++) {
-            File file = roots[i];
-            for (Iterator j = newFiles.iterator(); j.hasNext();) {
-                File includedFile = (File) j.next();
-                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !(includedFile instanceof FlatFolder))) continue outter;
-                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !(file instanceof FlatFolder))) {
-                    j.remove();
-                }
-            }
-            newFiles.add(file);
-        }
-        return newFiles;
-    }
-
-    private Context removeDuplicates(Context ctx) {
-        return new Context(removeDuplicates(ctx.getFiles()), removeDuplicates((File[]) ctx.getRoots().toArray(new File[0])), ctx.getExclusions());
-    }
-    
     /** Tests whether it shows some content. */
     public boolean hasContext() {
         return context != null && context.getFiles().length > 0;

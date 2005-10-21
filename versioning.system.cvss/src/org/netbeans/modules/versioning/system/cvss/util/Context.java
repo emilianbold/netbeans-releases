@@ -38,6 +38,52 @@ public class Context implements Serializable {
         this.filteredFiles = filteredFiles;
         this.rootFiles = rootFiles;
         this.exclusions = exclusions;
+        while (normalize());
+    }
+
+    private boolean normalize() {
+        for (Iterator i = rootFiles.iterator(); i.hasNext();) {
+            File root = (File) i.next();
+            for (Iterator j = exclusions.iterator(); j.hasNext();) {
+                File exclusion = (File) j.next();
+                if (Utils.isParentOrEqual(exclusion, root)) {
+                    j.remove();
+                    exclusionRemoved(exclusion, root);
+                    return true;
+                }
+            }
+        }
+        removeDuplicates(rootFiles);
+        removeDuplicates(exclusions);
+        return false;
+    }
+
+    private void removeDuplicates(List files) {
+        List newFiles = new ArrayList();
+        outter: for (Iterator i = files.iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            for (Iterator j = newFiles.iterator(); j.hasNext();) {
+                File includedFile = (File) j.next();
+                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !(includedFile instanceof FlatFolder))) continue outter;
+                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !(file instanceof FlatFolder))) {
+                    j.remove();
+                }
+            }
+            newFiles.add(file);
+        }
+        files.clear();
+        files.addAll(newFiles);
+    }
+    
+    private void exclusionRemoved(File exclusion, File root) {
+        File [] exclusionChildren = exclusion.listFiles();
+        if (exclusionChildren == null) return;
+        for (int i = 0; i < exclusionChildren.length; i++) {
+            File child = exclusionChildren[i];
+            if (!Utils.isParentOrEqual(root, child)) {
+                exclusions.add(child);
+            }
+        }
     }
 
     public List getRoots() {
