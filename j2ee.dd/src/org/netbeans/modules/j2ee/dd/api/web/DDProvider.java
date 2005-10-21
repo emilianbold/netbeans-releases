@@ -310,17 +310,7 @@ public final class DDProvider {
                             WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
                             baseBeanMap.put(fo.getURL(), new WeakReference (original));
                             errorMap.put(fo.getURL(), webApp.getError ());
-                            // replacing original file in proxy WebApp
-                            if (!version.equals(webApp.getVersion())) {
-                                webApp.setOriginal(original);
-                            } else {// the same version
-                                // replacing original file in proxy WebApp
-                                if (webApp.getOriginal()==null) {
-                                    webApp.setOriginal(original);
-                                } else {
-                                    webApp.getOriginal().merge(original,WebApp.MERGE_UPDATE);
-                                }
-                            }
+                            webApp.merge(original, WebApp.MERGE_UPDATE);
                         } catch (SAXException ex) {
                             if (ex instanceof SAXParseException) {
                                 webApp.setError((SAXParseException)ex);

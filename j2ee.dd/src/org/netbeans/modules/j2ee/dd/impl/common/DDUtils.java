@@ -64,15 +64,7 @@ public class DDUtils {
                 ejbJarProxy.setError(newEjbJarProxy.getError());
                 return;
             }
-            BigDecimal newVersion = newEjbJarProxy.getVersion();
-            EjbJar newOriginal = newEjbJarProxy.getOriginal();
-            if (newVersion.equals(ejbJarProxy.getVersion())) {// the same version
-                // merging original in proxy EjbJar
-                ejbJarProxy.getOriginal().merge(newOriginal, EjbJar.MERGE_UPDATE);
-            } else {
-                ejbJarProxy.setOriginal(newOriginal);
-                ejbJarProxy.setProxyVersion(newVersion.toString());
-            }
+            ejbJarProxy.merge(newEjbJarProxy, EjbJar.MERGE_UPDATE);
             ejbJarProxy.setStatus(newEjbJarProxy.getStatus());
             ejbJarProxy.setError(newEjbJarProxy.getError());
         } catch (IOException ex) {

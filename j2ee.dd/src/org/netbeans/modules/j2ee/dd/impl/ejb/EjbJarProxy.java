@@ -15,6 +15,8 @@ package org.netbeans.modules.j2ee.dd.impl.ejb;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.Schema2BeansUtil;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
@@ -33,12 +35,14 @@ public class EjbJarProxy implements EjbJar {
     public boolean writing=false;
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
+    private Schema2BeansUtil.ReindentationListener reindentationListener = new Schema2BeansUtil.ReindentationListener();
 
     /** Creates a new instance of EjbJarProxy */
     public EjbJarProxy(EjbJar ejbJar, String version) {
         this.ejbJar=ejbJar;
         this.version = version;
         listeners = new java.util.ArrayList();
+        addPropertyChangeListener(reindentationListener);
     }
 
     public void setOriginal(EjbJar ejbJar) {
@@ -214,7 +218,9 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar != bean && bean instanceof EjbJar) {
             EjbJar newEjbJar = (EjbJar) bean;
             if (ejbJar != null && ejbJar.getVersion().equals(newEjbJar.getVersion())) {
+                removePropertyChangeListener(reindentationListener);
                 ejbJar.merge(newEjbJar, mode);
+                addPropertyChangeListener(reindentationListener);
             } else {
                 setOriginal((EjbJar) newEjbJar.clone());
             }
@@ -329,7 +335,7 @@ public class EjbJarProxy implements EjbJar {
     public void write(java.io.OutputStream os) throws java.io.IOException {
         if (ejbJar!=null) {
             writing=true;
-            ejbJar.write(os);
+            Schema2BeansUtil.write((BaseBean) ejbJar, os);
         }
     }
 

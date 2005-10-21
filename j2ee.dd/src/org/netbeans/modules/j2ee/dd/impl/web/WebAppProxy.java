@@ -15,6 +15,8 @@ package org.netbeans.modules.j2ee.dd.impl.web;
 
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.Schema2BeansUtil;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
 
@@ -30,12 +32,14 @@ public class WebAppProxy implements WebApp {
     public boolean writing=false;
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
+    private Schema2BeansUtil.ReindentationListener reindentationListener = new Schema2BeansUtil.ReindentationListener();
 
     /** Creates a new instance of WebAppProxy */
     public WebAppProxy(WebApp webApp, String version) {
         this.webApp=webApp;
         this.version = version;
         listeners = new java.util.ArrayList();
+        addPropertyChangeListener(reindentationListener);
     }
 
     public void setOriginal(WebApp webApp) {
@@ -428,15 +432,17 @@ public class WebAppProxy implements WebApp {
     }
 
     public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface bean, int mode) {
-        if (bean instanceof WebApp) {
-            WebApp otherWebApp = bean instanceof WebAppProxy ? ((WebAppProxy)bean).getOriginal() : ((WebApp) bean);
-            if (otherWebApp != null) {
-                if (webApp != null && version != null && version.equals(otherWebApp.getVersion())) {
-                    webApp.merge(otherWebApp, mode);
-                } else {
-                    webApp= otherWebApp;
-                    version = otherWebApp.getVersion();
-                }
+        if (bean instanceof WebAppProxy) {
+            bean = ((WebAppProxy) bean).getOriginal();
+        }
+        if (webApp != bean && bean instanceof WebApp) {
+            WebApp newWebApp = (WebApp) bean;
+            if (webApp != null && webApp.getVersion().equals(newWebApp.getVersion())) {
+                removePropertyChangeListener(reindentationListener);
+                webApp.merge(newWebApp, mode);
+                addPropertyChangeListener(reindentationListener);
+            } else {
+                setOriginal((WebApp) newWebApp.clone());
             }
         }
     }
@@ -915,7 +921,7 @@ public class WebAppProxy implements WebApp {
     public void write(java.io.OutputStream os) throws java.io.IOException {
         if (webApp!=null) {
             writing=true;
-            webApp.write(os);
+            Schema2BeansUtil.write((BaseBean) webApp, os);
         }
     }
 

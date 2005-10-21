@@ -14,11 +14,9 @@
 package org.netbeans.modules.schema2beans;
 
 import java.util.*;
-import java.io.*;
 import java.beans.*;
 import org.w3c.dom.*;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 
 // To dynamically instanciate a wrapper object
 import java.lang.reflect.*;
@@ -700,10 +698,43 @@ public class DOMBinding {
 				this.node.getNodeName() + " from " +
 				parent.getNodeName());
 	    }
-
+        removeSurroundingSpace(parent, node);
 	    parent.removeChild(this.node);
 	    this.node = null;
 	}
+    }
+
+    /**
+     * Removes space surrounding node appointed to removal to keep proper document layout
+     * @param parent
+     * @param node
+     */
+    private static void removeSurroundingSpace(Node parent, Node node) {
+        Node nextNode = node.getNextSibling();
+        if (nextNode != null && nextNode.getNodeType() == Node.TEXT_NODE) {
+            String s = nextNode.getNodeValue();
+            if (s.trim().length() == 0) {
+                int i = s.indexOf('\n');
+                if (i == -1) {
+                    parent.removeChild(nextNode);
+                } else {
+                    s = s.substring(i);
+                    Node previousNode = node.getPreviousSibling();
+                    if (previousNode != null && previousNode.getNodeType() == Node.TEXT_NODE) {
+                        String s1 = previousNode.getNodeValue();
+                        if (s1.trim().length() == 0) {
+                            i = s1.lastIndexOf('\n');
+                            if (i > 0) {
+                                s = s1.substring(0, i) + s;
+                            } else {
+                                parent.removeChild(previousNode);
+                            }
+                        }
+                    }
+                    nextNode.setNodeValue(s);
+                }
+            }
+        }
     }
 
     /**
@@ -937,6 +968,5 @@ public class DOMBinding {
 	return (this.node != null);
     }
 }
-
 
 
