@@ -282,21 +282,21 @@ public class PropertyPattern extends Pattern {
                 if( PropertyActionSettings.getDefault().getPropStyle().equals(PropertyActionSettings.GENERATE_UNDERSCORED))
                     fieldName = PropertyActionSettings.GENERATE_UNDERSCORED + fieldName;
                 estimatedField.setName(fieldName);
-                if ( mode == READ_WRITE || mode == READ_ONLY ) {
+                if ( (mode == READ_WRITE || mode == READ_ONLY) && getterMethod !=null ) {
                     String existingGetterBody = getterMethod.getBodyText().trim();
                     String oldGetterBody1 = BeanPatternGenerator.propertyGetterBody( oldName, true, true ).trim();
                     String oldGetterBody2 = BeanPatternGenerator.propertyGetterBody( oldName, true, false ).trim();
                     if (existingGetterBody.equals(oldGetterBody1)) {
-                        getterMethod.setBodyText(BeanPatternGenerator.propertyGetterBody( getName(), true, true));
+                        getterMethod.setBodyText(BeanPatternGenerator.propertyGetterBody( fieldName, true, true));
                     } else if (existingGetterBody.equals(oldGetterBody2)) {
-                        getterMethod.setBodyText(BeanPatternGenerator.propertyGetterBody( getName(), true, false));
+                        getterMethod.setBodyText(BeanPatternGenerator.propertyGetterBody( fieldName, true, false));
                     }
                 }
-                if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
+                if ( (mode == READ_WRITE || mode == WRITE_ONLY) && setterMethod != null) {
                     String existingSetterBody = setterMethod.getBodyText().trim();
                     String oldSetterBody = BeanPatternGenerator.propertySetterBody (oldName, this.type, false, false, true, false, null, null).trim();
                     if (existingSetterBody.equals(oldSetterBody)) {
-                        setterMethod.setBodyText(BeanPatternGenerator.propertySetterBody (getName(), getType(), false, false, true, false, null, null));
+                        setterMethod.setBodyText(BeanPatternGenerator.propertySetterBody (fieldName, getType(), false, false, true, false, null, null));
                         if ( setterMethod != null ) {
                             Parameter param = (Parameter) setterMethod.getParameters().get(0);
                             param.setName(Introspector.decapitalize( name ));
