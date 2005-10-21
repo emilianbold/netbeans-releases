@@ -133,8 +133,8 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 try {
                     allTargets = TargetLister.getTargets(project);
                 } catch (IOException e) {
-                    // XXX how to notify properly?
-                    AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(e.getLocalizedMessage()));
                     allTargets = Collections.EMPTY_SET;
                 }
                 String defaultTarget = null;
