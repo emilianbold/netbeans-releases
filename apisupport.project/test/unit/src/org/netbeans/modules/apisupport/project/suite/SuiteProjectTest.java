@@ -19,11 +19,15 @@ import java.util.HashSet;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  * Test basic {@link SuiteProject} stuff.
@@ -61,6 +65,19 @@ public class SuiteProjectTest extends NbTestCase {
         model = new BasicBrandingModel(new SuiteProperties(p, p.getHelper(), p.getEvaluator(), Collections.EMPTY_SET));
         assertEquals("sweetness", model.getName());
         assertEquals("Sweetness is Now!", model.getTitle());
+    }
+    
+    public void testSuiteEvaluatorReturnsUpToDateValues_67314() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        PropertyEvaluator eval = suite1.getEvaluator();
+        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        
+        EditableProperties suiteEP = Util.loadProperties(suite1.getProjectDirectory().getFileObject("nbproject/project.properties"));
+        assertEquals("modules property", "${project.org.example.module1}", suiteEP.getProperty("modules"));
+        assertEquals("project.org.example.module1 property", "module1", suiteEP.getProperty("project.org.example.module1"));
+        
+        SubprojectProvider spp = (SubprojectProvider) suite1.getLookup().lookup(SubprojectProvider.class);
+        assertEquals("up-to-date 'modules' property from suite evaluator", "module1", eval.getProperty("modules"));
     }
     
 }
