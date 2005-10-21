@@ -33,7 +33,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.TaskStructure;
-import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
