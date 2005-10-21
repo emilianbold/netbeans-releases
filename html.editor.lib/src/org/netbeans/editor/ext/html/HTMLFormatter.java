@@ -137,8 +137,9 @@ public class HTMLFormatter extends ExtFormatter {
                             //is used to remember the last pair token offset
                             //fix for #49411
                             if( token.getOffset() > lastPairTokenRowOffset) {
-                                if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath) &&
-                                        HTMLSyntaxSupport.isTag(token)) {
+                                if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath) 
+                                    && HTMLSyntaxSupport.isTag(token)
+                                    && !sup.isSingletonTag(token)) {
                                     if (token.getImage().trim().equals(tag) &&
                                             token.getTokenID().getNumericID() == HTMLTokenContext.TAG_OPEN_ID){
                                         if (poss == 0){

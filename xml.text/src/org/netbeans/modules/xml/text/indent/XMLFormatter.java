@@ -142,7 +142,8 @@ public class XMLFormatter extends ExtFormatter {
                             //is used to remember the last pair token offset
                             //fix for #49411
                             if( token.getOffset() > lastPairTokenRowOffset) {
-                                if (token.getTokenID() == XMLTokenIDs.TAG) {
+                                if (token.getTokenID() == XMLTokenIDs.TAG
+                                        && !sup.isSingletonTag(token)) {
                                     if (token.getImage().substring(1).trim().equals(tag) &&
                                             token.getImage().startsWith("<") &&
                                             !token.getImage().startsWith("</")){
