@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -165,6 +166,9 @@ public class NavigatorContent extends JPanel   {
             tree.addMouseListener(ml);
             
             JScrollPane treeView = new JScrollPane(tree);
+            treeView.setBorder(BorderFactory.createEmptyBorder());
+            treeView.setViewportBorder(BorderFactory.createEmptyBorder());
+        
             add(treeView, BorderLayout.CENTER);
             
             //create the TapPanel
