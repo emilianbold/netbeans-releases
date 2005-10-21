@@ -159,7 +159,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         //I cannot get parent).
         DocumentElement tested = model.getLeafElementForOffset(de.getStartOffset());
         boolean restartTimer = false;
-        do {
+        while(tested != null) {
             //do not check root element
             if(tested.equals(model.getRootElement())) break ;
             
@@ -199,7 +199,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
             }
             
             tested = tested.getParentElement(); //switch to parent
-        } while(tested != null);
+        }
         
         if(restartTimer) restartTimer(); //restart if necessary
     }
