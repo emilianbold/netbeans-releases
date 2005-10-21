@@ -764,6 +764,7 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         public AbbrevDebugLineAction() {
             super(abbrevDebugLineAction);
+            putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
