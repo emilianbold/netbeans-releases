@@ -281,8 +281,16 @@ public class RADComponentNode extends FormNode
                 }
             }
         }
-        component.getFormModel().removeComponent(component, true);
         component.setNodeReference(null);
+        if (EventQueue.isDispatchThread()) {
+            component.getFormModel().removeComponent(component, true);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    component.getFormModel().removeComponent(component, true);
+                }
+            });
+        }
 
         super.destroy();
     }
