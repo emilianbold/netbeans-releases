@@ -13,6 +13,7 @@
 
 package org.openide.loaders;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,7 +70,11 @@ class LoggingTestCaseHid extends NbTestCase {
             AssertionFailedError ne = new AssertionFailedError (ex.getMessage () + " Log:\n" + ErrManager.messages);
             ne.setStackTrace (ex.getStackTrace ());
             throw ne;
-        }
+        } catch (IOException iex) {//#66208
+            IOException ne = new IOException (iex.getMessage () + " Log:\n" + ErrManager.messages);
+            ne.setStackTrace (iex.getStackTrace ());
+            throw ne;	    
+	}
     }
     
     /** Allows subclasses to register content for the lookup. Can be used in 
