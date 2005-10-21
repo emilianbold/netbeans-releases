@@ -337,10 +337,12 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
                 GraphicsConfiguration gc = getGraphicsConfiguration();
                 Image intermediateImage = gc.createCompatibleImage(16, 18, Transparency.BITMASK);
                 Graphics2D gImg = (Graphics2D)intermediateImage.getGraphics();
+                Composite old = gImg.getComposite();
                 gImg.setComposite(AlphaComposite.Src);
                 gImg.setColor(new Color(0, 0, 0, 0));
                 gImg.fillRect(0, 0, 16, 18);
                 gImg.setClip( 0, 0, 16, 18 );
+                gImg.setComposite(old);
                 super.paintComponent(gImg);
                 gImg.dispose();
                 if (enabled) {
