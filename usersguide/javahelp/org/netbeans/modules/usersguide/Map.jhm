@@ -523,6 +523,7 @@ under Print Settings in the Options window)
 
 <!-- To Do window help :-->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
+<mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView " url="editing/todo_window_csh.html" />
 <mapID target="org.netbeans.modules.tasklist.docscan.Settings" url="configure/options_todo_settings.html" /> 
 
 <!-- Ant CSH :-->
