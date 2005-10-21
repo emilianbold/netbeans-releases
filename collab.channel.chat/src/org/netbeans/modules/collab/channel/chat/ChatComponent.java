@@ -21,6 +21,7 @@ import com.sun.collablet.Conversation;
 import com.sun.collablet.ConversationPrivilege;
 import com.sun.collablet.UserInterface;
 import com.sun.collablet.chat.ChatCollablet;
+import org.openide.ErrorManager;
 
 import org.openide.awt.*;
 import org.openide.util.*;
@@ -247,13 +248,14 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
 
         if (canSendMessages) {
             // Create a send button
-            sendButton = new JButton(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_SendButton")) // NOI18N
-                     {
-                        public void transferFocusBackward() {
-                            // Make sure the prior component is always the input pane
-                            getInputPane().requestFocus();
-                        }
-                    };
+            sendButton = new JButton() {
+                public void transferFocusBackward() {
+                    // Make sure the prior component is always the input pane
+                    getInputPane().requestFocus();
+                }
+            };
+            Mnemonics.setLocalizedText(sendButton, 
+                    NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_SendButton"));
             sendButton.addActionListener(new SendButtonActionListener());
 
             // Add the toolbar
@@ -430,7 +432,8 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(CollabContentType.class));
         Collection messageTypeCollection = result.allInstances();
         
-        for (Iterator it = messageTypeCollection.iterator(); it.hasNext(); ) {
+        int i=1;
+        for (Iterator it = messageTypeCollection.iterator(); it.hasNext(); i++) {
             CollabContentType messageType = (CollabContentType)it.next();
             Image icon = messageType.getIcon();
             String displayName = messageType.getDisplayName();
@@ -438,6 +441,7 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             JToggleButton button = new JToggleButton(new ImageIcon(icon));
             button.putClientProperty("contentType", contentType); //NOI18N
 
+            if (i < 9) button.setMnemonic((char)('0' + i));
             button.setToolTipText(displayName);
             if (messageType.getContentType().equals(ContentTypes.UNKNOWN_TEXT)) {
                 chatFocusButton = button;
@@ -450,26 +454,31 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         }
 
         // Add button for enter handling
-        allowEnterButton = new JToggleButton(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_AllowEnter")); // NOI18N
+        allowEnterButton = new JToggleButton();
+        Mnemonics.setLocalizedText(allowEnterButton,
+                NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_AllowEnter")); // NOI18N
         allowEnterButton.setRequestFocusEnabled(false);
         allowEnterButton.addItemListener(
             new ItemListener() {
                 public void itemStateChanged(ItemEvent event) {
                     setInsertEnterKey(event.getStateChange() == ItemEvent.SELECTED, true);
                     syncAllowCharacterButtons();
+                    inputPane.grabFocus();
                 }
             }
         );
 
         // Add button for tab handling
-        allowTabsButton = new JToggleButton(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_AllowTabs")); // NOI18N
+        allowTabsButton = new JToggleButton();
+        Mnemonics.setLocalizedText(allowTabsButton,
+                NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_AllowTabs")); // NOI18N
         allowTabsButton.setRequestFocusEnabled(false);
         allowTabsButton.addItemListener(
             new ItemListener() {
                 public void itemStateChanged(ItemEvent event) {
                     setInsertTabKey(event.getStateChange() == ItemEvent.SELECTED, true);
                     syncAllowCharacterButtons();
-                }
+                    inputPane.grabFocus();                }
             }
         );
 
@@ -479,9 +488,11 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
                 "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_smiley16.png"
             ); // NOI18N        
         smileyButton = new JButton(new ImageIcon(smileyButtonIcon));
+        smileyButton.setMnemonic(NbBundle.getMessage(ChatComponent.class,
+                "MNE_ChatComponent_MIMEType_Smileys").charAt(0));
         smileyButton.setToolTipText(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_MIMEType_Smileys"));
         smileyButton.setRequestFocusEnabled(false);
-        smileyButton.addMouseListener(new SmileListener());
+        smileyButton.addActionListener(new SmileListener());
         inputToolbar.add(smileyButton);
 
         // Create the input area toolbar
@@ -500,97 +511,35 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         newMenu = new JPopupMenu();
         newMenu.setLayout(new GridLayout(3, 2));
         newMenu.setPopupSize(50, 50);
+        ButtonClickedListener listener = new ButtonClickedListener();
 
-        JButton smileButton;
-        JButton frownButton;
-        JButton winkButton;
-        JButton laughButton;
-        JButton coolButton;
-        JButton grinButton;
-        EmptyBorder emptyBorder = new EmptyBorder(1, 1, 1, 1);
+        newMenu.add(createSmileButton(":-)", "emo_smiley", "Smile", listener));
+        newMenu.add(createSmileButton(":-(", "emo_sad", "Frown", listener));
+        newMenu.add(createSmileButton(";-(", "emo_wink", "Wink", listener));
+        newMenu.add(createSmileButton(":=)", "emo_laughing", "Laugh", listener));
+        newMenu.add(createSmileButton("8-)", "emo_cool", "Cool", listener));
+        newMenu.add(createSmileButton(":-D", "emo_grin", "Grin", listener));
 
-        ButtonClickedListener buttonClickListener = new ButtonClickedListener();
-        Image smiling = org.openide.util.Utilities.loadImage(
-                "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_smiley16.png"
-            ); // NOI18N
-        smileButton = new JButton(new ImageIcon(smiling));
-        smileButton.setContentAreaFilled(false);
-        smileButton.setBorder(emptyBorder);
-        smileButton.setBorderPainted(false);
-        smileButton.setToolTipText(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_MIMEType_Smile"));
-        smileButton.setActionCommand(":-) ");
-        smileButton.setRequestFocusEnabled(false);
-        smileButton.addActionListener(buttonClickListener);
-
-        Image frowning = org.openide.util.Utilities.loadImage(
-                "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_sad16.png"
-            ); // NOI18N
-        frownButton = new JButton(new ImageIcon(frowning));
-        frownButton.setContentAreaFilled(false);
-        frownButton.setBorder(emptyBorder);
-        frownButton.setBorderPainted(false);
-        frownButton.setToolTipText(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_MIMEType_Frown"));
-        frownButton.setActionCommand(":-( ");
-        frownButton.setRequestFocusEnabled(false);
-        frownButton.addActionListener(buttonClickListener);
-
-        Image winking = org.openide.util.Utilities.loadImage(
-                "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_wink16.png"
-            ); // NOI18N
-        winkButton = new JButton(new ImageIcon(winking));
-        winkButton.setContentAreaFilled(false);
-        winkButton.setBorder(emptyBorder);
-        winkButton.setBorderPainted(false);
-        winkButton.setToolTipText(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_MIMEType_Wink"));
-        winkButton.setActionCommand(";-) ");
-        winkButton.setRequestFocusEnabled(false);
-        winkButton.addActionListener(buttonClickListener);
-
-        Image laughing = org.openide.util.Utilities.loadImage(
-                "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_laughing16.png"
-            ); // NOI18N
-        laughButton = new JButton(new ImageIcon(laughing));
-        laughButton.setContentAreaFilled(false);
-        laughButton.setBorder(emptyBorder);
-        laughButton.setBorderPainted(false);
-        laughButton.setToolTipText(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_MIMEType_Laugh"));
-        laughButton.setActionCommand(":=) ");
-        laughButton.setRequestFocusEnabled(false);
-        laughButton.addActionListener(buttonClickListener);
-
-        Image cool = org.openide.util.Utilities.loadImage(
-                "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_cool16.png"
-            ); // NOI18N
-        coolButton = new JButton(new ImageIcon(cool));
-        coolButton.setContentAreaFilled(false);
-        coolButton.setBorder(emptyBorder);
-        coolButton.setBorderPainted(false);
-        coolButton.setToolTipText(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_MIMEType_Cool"));
-        coolButton.setActionCommand("8-) ");
-        coolButton.setRequestFocusEnabled(false);
-        coolButton.addActionListener(buttonClickListener);
-
-        Image grinning = org.openide.util.Utilities.loadImage(
-                "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_grin16.png"
-            ); // NOI18N			
-        grinButton = new JButton(new ImageIcon(grinning));
-        grinButton.setContentAreaFilled(false);
-        grinButton.setBorder(emptyBorder);
-        grinButton.setBorderPainted(false);
-        grinButton.setToolTipText(NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_MIMEType_Grin"));
-        grinButton.setActionCommand(":-D ");
-        grinButton.setRequestFocusEnabled(false);
-        grinButton.addActionListener(buttonClickListener);
-
-        newMenu.add(smileButton);
-        newMenu.add(frownButton);
-        newMenu.add(winkButton);
-        newMenu.add(laughButton);
-        newMenu.add(coolButton);
-        newMenu.add(grinButton);
         newMenu.pack();
 
         return newMenu;
+    }
+
+    private JButton createSmileButton(String smile, String icon, String key, ActionListener listener) {
+        Image img = org.openide.util.Utilities.loadImage(
+                "org/netbeans/modules/collab/channel/chat/resources/emoticons/" + icon + "16.png"); // NOI18N
+        JButton button = new JButton(new ImageIcon(img));
+        button.setActionCommand(smile.concat(" "));
+        String tip = NbBundle.getMessage(ChatComponent.class, "LBL_Emoticon_" + key);
+        button.setToolTipText(tip);
+        button.setMnemonic(tip.charAt(0));
+        button.addActionListener(listener);
+
+        button.setContentAreaFilled(false);
+        button.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
+        button.setBorderPainted(false);
+        button.setRequestFocusEnabled(false);
+        return button;
     }
 
     /**
@@ -1302,11 +1251,10 @@ LOOP:
     }
 
     /*author Smitha Krishna Nagesh*/
-    protected class SmileListener extends MouseAdapter {
-        public void mouseClicked(MouseEvent mEvt) {
-            if ((smileyButton.isEnabled() == true) && SwingUtilities.isLeftMouseButton(mEvt)) {
-                newMenu.show(smileyButton, mEvt.getX(), mEvt.getY());
-            }
+    protected class SmileListener implements ActionListener {
+        public void actionPerformed(ActionEvent event) {
+            newMenu.show(smileyButton, 10, 10);
+            inputPane.grabFocus();
         }
     }
 
@@ -1322,7 +1270,7 @@ LOOP:
                 inputPane.setCaretPosition(caretPos + str.length());
                 newMenu.setVisible(false);
             } catch (Exception e) {
-                e.printStackTrace();
+                ErrorManager.getDefault().notify(e);
             }
         }
     }

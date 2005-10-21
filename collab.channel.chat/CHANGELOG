@@ -5,3 +5,6 @@
 1.0.4:	Backport of JSE fixes
 	Code-aware chat fixed (was not displaying mime-typed text on remote end)
 	Refactored content type registration and handling, reduces class count.
+
+1.0.5:  Mnemonics for chat input
+        
