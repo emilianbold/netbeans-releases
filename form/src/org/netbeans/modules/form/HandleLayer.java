@@ -184,15 +184,14 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             g2.setStroke(getPaintStroke());
             boolean painted = false;
             try {
+                boolean inLayout = selectedComponentsInSameVisibleContainer();
                 Iterator metacomps = formDesigner.getSelectedComponents().iterator();
-                boolean first = true;
                 while (metacomps.hasNext()) {
                     RADComponent metacomp = (RADComponent)metacomps.next();
                     RADVisualComponent layoutMetacomp = formDesigner.componentToLayoutComponent(metacomp);
                     if (layoutMetacomp != null)
                         metacomp = layoutMetacomp;
-                    paintSelection(g2, metacomp, first || !isDesignedInNewLayout(metacomp));
-                    first = false;
+                    paintSelection(g2, metacomp, inLayout);
                 }
                 painted = true;
             } finally {
@@ -210,9 +209,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
     /**
      * @param inLayout indicates whether to paint layout related decorations
-     *        (layout relations and resize handles)
+     *        (layout relations in container and resize handles)
      */
     private void paintSelection(Graphics2D g, RADComponent metacomp, boolean inLayout) {
+        if (!(metacomp instanceof RADVisualComponent))
+            return;
         Object comp = formDesigner.getComponent(metacomp);
         if (!(comp instanceof Component))
             return;
@@ -248,7 +249,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 g.translate(-convertPoint.x, -convertPoint.y);
             }
             int resizable = 0;
-            if (inLayout && (metacomp instanceof RADVisualComponent)) {
+            if (inLayout) {
                 resizable = getComponentResizable((RADVisualComponent)metacomp);
             }
             if (resizable == 0) {
@@ -260,7 +261,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             int width = selRect.width + correction;
             int height = selRect.height + correction;
             g.drawRect(x, y, width, height);
-            if (inLayout && (metacomp instanceof RADVisualComponent)) {
+            if (inLayout) {
                 Image resizeHandle = resizeHandle();
                 int iconHeight = resizeHandle.getHeight(null);
                 int iconWidth = resizeHandle.getWidth(null);
@@ -292,17 +293,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
     }
     
-    private boolean isDesignedInNewLayout(RADComponent metacomp) {
-        if (metacomp instanceof RADVisualComponent
-            && metacomp != formDesigner.getTopDesignComponent()
-            && formDesigner.isInDesignedTree(metacomp))
-        {   // is visible under the top-designed container
-            RADVisualContainer metacont = ((RADVisualComponent)metacomp).getParentContainer();
-            return metacont != null && metacont.getLayoutSupport() == null;
-        }
-        return false;
-    }
-
     private Image resizeHandle() {
         if (resizeHandle == null) {
             resizeHandle = new ImageIcon(Utilities.loadImage(
@@ -1056,20 +1046,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         // check selected components whether they are in the same container
-        RADComponent parent = null;
-        Iterator selected = formDesigner.getSelectedComponents().iterator();
-        while (selected.hasNext()) {
-            RADComponent comp = (RADComponent) selected.next();
-            if (parent == null) {
-                if (!formDesigner.getTopDesignComponent().isParentComponent(comp)) {
-                    return 0; // selected component without parent in visible tree
-                }
-                parent = comp.getParentComponent();
-            }
-            else if (comp.getParentComponent() != parent) {
-                return 0; // different parent
-            }
-        }
+        if (!selectedComponentsInSameVisibleContainer())
+            return 0;
 
         Point p = e.getPoint();
         RADComponent compAtPoint = selectedComponentAt(p, 6);
@@ -1106,7 +1084,26 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         return resizeType;
     }
-    
+
+    private boolean selectedComponentsInSameVisibleContainer() {
+        RADComponent parent = null;
+        Iterator selected = formDesigner.getSelectedComponents().iterator();
+        while (selected.hasNext()) {
+            RADComponent comp = (RADComponent) selected.next();
+            if (parent == null) {
+                if (!formDesigner.getTopDesignComponent().isParentComponent(comp)) {
+                    return false; // selected component not in the designed tree
+                                  // or the top design component itself
+                }
+                parent = comp.getParentComponent();
+            }
+            else if (comp.getParentComponent() != parent) {
+                return false; // different parent
+            }
+        }
+        return true;
+    }
+
     // Returns selected component at the given point (even outside the designer area).
     private RADComponent selectedComponentAt(Point p, int borderSize) {
         RADComponent compAtPoint = null;
