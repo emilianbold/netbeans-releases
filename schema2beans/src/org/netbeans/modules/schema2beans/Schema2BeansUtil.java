@@ -126,6 +126,12 @@ public class Schema2BeansUtil {
         NodeList childNodes = node.getChildNodes();
         List children = relevantNodes(childNodes);
         Document document = getOwnerDocument(node);
+        for (int i = childNodes.getLength() - 1; i >= 0; i--) {
+            Node childNode = childNodes.item(i);
+            if (!isRelevantNode(childNode)) {
+                node.removeChild(childNode);
+            }
+        }
         NodeList patternChildNodes = patternNode.getChildNodes();
         for (int i = 0; i < patternChildNodes.getLength(); i++) {
             Node patternChild = patternChildNodes.item(i);
