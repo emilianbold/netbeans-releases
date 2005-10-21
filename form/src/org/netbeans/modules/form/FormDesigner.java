@@ -1744,6 +1744,18 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         private FormModelEvent[] events;
 
         public void formChanged(final FormModelEvent[] events) {
+            if (!EventQueue.isDispatchThread()) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        processEvents(events);
+                    }
+                });
+            } else {
+                processEvents(events);
+            }
+        }
+
+        private void processEvents(FormModelEvent[] events) {
             boolean lafBlock;
             if (events == null) {
                 lafBlock = true;
