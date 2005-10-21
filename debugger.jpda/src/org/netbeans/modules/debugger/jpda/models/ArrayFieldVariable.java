@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.*;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -29,7 +30,7 @@ org.netbeans.api.debugger.jpda.Field {
     private String declaredType;
 
     ArrayFieldVariable (
-        LocalsTreeModel model, 
+        JPDADebuggerImpl debugger, 
         Value value,
         String declaredType,
         ArrayReference array,
@@ -38,7 +39,7 @@ org.netbeans.api.debugger.jpda.Field {
         String parentID
     ) {
         super (
-            model, 
+            debugger, 
             value, 
             parentID + '.' + index +
                 (value instanceof ObjectReference ? "^" : "")

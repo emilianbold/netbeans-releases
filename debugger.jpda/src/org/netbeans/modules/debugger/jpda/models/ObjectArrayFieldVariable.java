@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ArrayReference;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -25,7 +26,7 @@ class ObjectArrayFieldVariable extends ArrayFieldVariable
 implements ObjectVariable {
         
     ObjectArrayFieldVariable (
-        LocalsTreeModel model, 
+        JPDADebuggerImpl debugger, 
         ObjectReference value,
         String declaredType,
         ArrayReference array,
@@ -34,7 +35,7 @@ implements ObjectVariable {
         String parentID
     ) {
         super (
-            model, 
+            debugger, 
             value, 
             declaredType,
             array,

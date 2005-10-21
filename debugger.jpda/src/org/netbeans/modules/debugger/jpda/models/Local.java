@@ -19,6 +19,7 @@ import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -33,14 +34,14 @@ org.netbeans.api.debugger.jpda.LocalVariable {
 
     
     Local (
-        LocalsTreeModel model,
+        JPDADebuggerImpl debugger,
         Value value, 
         String className,
         LocalVariable local,
         CallStackFrameImpl frame
     ) {
         super (
-            model, 
+            debugger, 
             value, 
             local.name () + local.hashCode() +
                 (value instanceof ObjectReference ? "^" : "")
@@ -51,20 +52,22 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     }
 
     Local (
-        LocalsTreeModel model, 
+        JPDADebuggerImpl debugger, 
         Value value, 
         String className, 
         LocalVariable local, 
-        String genericSignature
+        String genericSignature,
+        CallStackFrameImpl frame
     ) {
         super (
-            model, 
+            debugger, 
             value, 
             genericSignature, 
             local.name () + local.hashCode() +
                 (value instanceof ObjectReference ? "^" : "")
         );
         this.local = local;
+        this.frame = frame;
         this.className = className;
     }
 
@@ -88,6 +91,10 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     public String getClassName () {
         return className;
     }
+    
+    protected final void setClassName(String className) {
+        this.className = className;
+    }
 
     /**
     * Returns string representation of type of this variable.
@@ -98,7 +105,7 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         return local.typeName ();
     }
     
-    protected void setValue (Value value) throws InvalidExpressionException {
+    protected final void setValue (Value value) throws InvalidExpressionException {
         try {
             frame.getStackFrame ().setValue (local, value);
         } catch (InvalidTypeException ex) {
@@ -110,12 +117,8 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     
     // other methods ...........................................................
     
-    void setFrame(CallStackFrameImpl frame) {
+    protected final void setFrame(CallStackFrameImpl frame) {
         this.frame = frame;
-    }
-    
-    void setLocalVariable(LocalVariable local) {
-        this.local = local;
     }
     
     public String toString () {

@@ -7,31 +7,34 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ThreadGroupReference;
+import com.sun.jdi.ThreadReference;
 
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
 /**
-*/
+ * The implementation of JPDAThreadGroup.
+ */
 public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     
     private ThreadGroupReference tgr;
-    private ThreadsTreeModel ttm;
+    private JPDADebuggerImpl debugger;
     
-    public JPDAThreadGroupImpl (ThreadGroupReference tgr, ThreadsTreeModel ttm) {
+    public JPDAThreadGroupImpl (ThreadGroupReference tgr, JPDADebuggerImpl debugger) {
         this.tgr = tgr;
-        this.ttm = ttm;
+        this.debugger = debugger;
     }
 
     /**
@@ -42,40 +45,25 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     public JPDAThreadGroup getParentThreadGroup () {
         ThreadGroupReference ptgr = tgr.parent ();
         if (ptgr == null) return null;
-        try {
-            return (JPDAThreadGroup) ttm.translate (ptgr);
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return null;
-        }
+        return debugger.getThreadGroup(ptgr);
     }
     
     public JPDAThread[] getThreads () {
-        try {
-            List l = tgr.threads ();
-            int i, k = l.size ();
-            JPDAThread[] ts = new JPDAThread [k];
-            for (i = 0; i < k; i++)
-                ts [i] = (JPDAThread) ttm.translate (l.get (i));
-            return ts;
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return new JPDAThread [0];
-        }
+        List l = tgr.threads ();
+        int i, k = l.size ();
+        JPDAThread[] ts = new JPDAThread [k];
+        for (i = 0; i < k; i++)
+            ts [i] = debugger.getThread((ThreadReference) l.get (i));
+        return ts;
     }
     
     public JPDAThreadGroup[] getThreadGroups () {
-        try {
-            List l = tgr.threadGroups ();
-            int i, k = l.size ();
-            JPDAThreadGroup[] ts = new JPDAThreadGroup [k];
-            for (i = 0; i < k; i++)
-                ts [i] = (JPDAThreadGroup) ttm.translate (l.get (i));
-            return ts;
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return new JPDAThreadGroup [0];
-        }
+        List l = tgr.threadGroups ();
+        int i, k = l.size ();
+        JPDAThreadGroup[] ts = new JPDAThreadGroup [k];
+        for (i = 0; i < k; i++)
+            ts [i] = debugger.getThreadGroup((ThreadGroupReference) l.get (i));
+        return ts;
     }
     
     public String getName () {

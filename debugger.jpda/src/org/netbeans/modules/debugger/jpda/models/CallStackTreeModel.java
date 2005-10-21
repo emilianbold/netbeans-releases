@@ -13,41 +13,46 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.InvalidStackFrameException;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
+import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.IncompatibleThreadStateException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.HashSet;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.RequestProcessor;
 
 
 /**
- * This tree model delegates to BasicCallStackTreeModel and encapsulates 
- * StackFrame instances to CallStackFrameImpl.
+ * This tree model provides an array of CallStackFrame objects.
  *
- * @author Jan Jancura
+ * @author Jan Jancura, Martin Entlicher
  */
 public class CallStackTreeModel implements TreeModel {
 
-    private ContextProvider             lookupProvider;
-    private JPDADebuggerImpl            debugger;
-    private BasicCallStackTreeModel     model;
-    //private Vector listeners = new Vector ();
-    //private Listener listener = new Listener ();
+    private static boolean verbose = 
+        (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
+        (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('c') >= 0);
+    
+    private JPDADebuggerImpl    debugger;
+    private Collection          listeners = new HashSet();
+    private Listener            listener;
     
    
     public CallStackTreeModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
-        model = new BasicCallStackTreeModel (lookupProvider);
-        //model.addTreeModelListener (listener);
-        this.lookupProvider = lookupProvider;
     }
     
     /** 
@@ -57,42 +62,30 @@ public class CallStackTreeModel implements TreeModel {
     public Object[] getChildren (Object parent, int from, int to) 
     throws UnknownTypeException {
         if ( parent.equals (ROOT) ||
-             (parent instanceof ThreadReference) 
+             (parent instanceof JPDAThread) 
         ) {
-            // 1) get ThreadReference
-            ThreadReference threadRef = null;
+            // 1) get Thread
+            JPDAThread thread;
             if (parent.equals (ROOT)) {
-                JPDAThreadImpl ti = (JPDAThreadImpl) debugger.
-                    getCurrentThread ();
-                if (ti != null)
-                    threadRef = ti.getThreadReference ();
-            } else
-                threadRef = (ThreadReference) parent;
-            if (threadRef == null) 
-                return new String [] {"No current thread"};
-
-            // 2) get StackFrames
-            Object[] res = (Object[]) model.getChildren (parent, from, to);
-            if (res instanceof String[]) return res;
-            StackFrame[] ch = (StackFrame[]) res;
-            
-            // 3) encapsulate them to CallStackFrameImpls
-            int i, k = ch.length, j = from;
-            CallStackFrameImpl[] r = new CallStackFrameImpl [k];
-            String threadName = threadRef.name () + ":";
-            for (i = 0; i < k; i++, j++) {
-                String id = threadName + j;
-                // StackFrame of the same thread with the same index should 
-                // be "equal"
-                r [i] = new CallStackFrameImpl (
-                    threadRef,
-                    ch [i], 
-                    this, 
-                    id,
-                    j
-                );
+                thread = debugger.getCurrentThread ();
+            } else {
+                thread = (JPDAThread) parent;
             }
-            return r;
+            if (thread == null) {
+                return new String[] {"No current thread"}; // TODO make localizable!!!
+            }
+            
+            // 2) get StackFrames for this Thread
+            try {
+                CallStackFrame[] sfs = thread.getCallStack(from, to);
+                return sfs;
+            } catch (AbsentInformationException aiex) {
+                if (aiex.getCause() instanceof IncompatibleThreadStateException) {
+                    return new String[] {"Thread is running"}; // TODO make localizable!!!
+                } else {
+                    return new String[] {"No call stack information available."}; // TODO make localizable!!!
+                }
+            }
         } else
         throw new UnknownTypeException (parent);
     }
@@ -106,8 +99,24 @@ public class CallStackTreeModel implements TreeModel {
      *
      * @return  true if node is leaf
      */
-    public int getChildrenCount (Object node) throws UnknownTypeException {
-        return model.getChildrenCount (node);
+    public int getChildrenCount (Object parent) throws UnknownTypeException {
+        if ( parent.equals (ROOT) ||
+             (parent instanceof JPDAThread) 
+        ) {
+            // 1) get Thread
+            JPDAThread thread;
+            if (parent.equals (ROOT)) {
+                thread = debugger.getCurrentThread ();
+            } else {
+                thread = (JPDAThread) parent;
+            }
+            if (thread == null) {
+                return 1; //new String [] {"No current thread"};
+            }
+            
+            return thread.getStackDepth();
+        } else
+        throw new UnknownTypeException (parent);
     }
     
     /** 
@@ -115,16 +124,12 @@ public class CallStackTreeModel implements TreeModel {
      * @return threads contained in this group of threads
      */
     public Object getRoot () {
-        return model.getRoot ();
+        return ROOT;
     }
     
     public boolean isLeaf (Object node) throws UnknownTypeException {
-        if (node == BasicCallStackTreeModel.ROOT) 
-            return model.isLeaf (node);
-        if (node instanceof CallStackFrame) {
-            CallStackFrame csf = (CallStackFrame) node;
-            return model.isLeaf(csf);
-        }
+        if (node.equals (ROOT)) return false;
+        if (node instanceof CallStackFrame) return true;
         throw new UnknownTypeException (node);
     }
 
@@ -133,8 +138,12 @@ public class CallStackTreeModel implements TreeModel {
      * @param l the listener to add
      */
     public void addModelListener (ModelListener l) {
-        //listeners.add (l);
-        model.addModelListener (l);
+        synchronized (listeners) {
+            listeners.add (l);
+            if (listener == null) {
+                listener = new Listener (this, debugger);
+            }
+        }
     }
 
     /** 
@@ -142,48 +151,109 @@ public class CallStackTreeModel implements TreeModel {
      * @param l the listener to remove
      */
     public void removeModelListener (ModelListener l) {
-        //listeners.remove (l);
-        model.removeModelListener (l);
+        synchronized (listeners) {
+            listeners.remove (l);
+            if (listeners.size () == 0) {
+                listener.destroy ();
+                listener = null;
+            }
+        }
     }
     
-//    private void fireTreeChanged () {
-//        Vector v = (Vector) listeners.clone ();
-//        int i, k = v.size ();
-//        for (i = 0; i < k; i++)
-//            ((TreeModelListener) v.get (i)).treeChanged ();
-//    }
-//    
-//    private void fireTreeNodeChanged (Object parent) {
-//        Vector v = (Vector) listeners.clone ();
-//        int i, k = v.size ();
-//        for (i = 0; i < k; i++)
-//            ((TreeModelListener) v.get (i)).treeNodeChanged (parent);
-//    }
-    
-    JPDADebuggerImpl getDebugger () {
-        return debugger;
-    }
-    
-    private LocalsTreeModel localsTreeModel;
-
-    LocalsTreeModel getLocalsTreeModel () {
-        if (localsTreeModel == null)
-            localsTreeModel = (LocalsTreeModel) lookupProvider.
-                lookupFirst ("LocalsView", TreeModel.class);
-        return localsTreeModel;
+    public void fireTreeChanged () {
+        Object[] ls;
+        synchronized (listeners) {
+            ls = listeners.toArray();
+        }
+        ModelEvent ev = new ModelEvent.TreeChanged(this);
+        for (int i = 0; i < ls.length; i++) {
+            ((ModelListener) ls[i]).modelChanged (ev);
+        }
     }
     
     
-//    private class Listener implements TreeModelListener {
-//        
-//        public void treeNodeChanged (Object node) {
-//            fireTreeNodeChanged (node);
-//        }
-//        
-//        public void treeChanged () {
-//            fireTreeChanged ();
-//        }
-//        
-//    }
+    /**
+     * Listens on JPDADebugger on PROP_STATE
+     */
+    private static class Listener implements PropertyChangeListener {
+        
+        private JPDADebugger debugger;
+        private WeakReference model;
+        
+        public Listener (
+            CallStackTreeModel tm,
+            JPDADebugger debugger
+        ) {
+            this.debugger = debugger;
+            model = new WeakReference (tm);
+            debugger.addPropertyChangeListener (this);
+        }
+        
+        private CallStackTreeModel getModel () {
+            CallStackTreeModel tm = (CallStackTreeModel) model.get ();
+            if (tm == null) {
+                destroy ();
+            }
+            return tm;
+        }
+        
+        void destroy () {
+            debugger.removePropertyChangeListener (this);
+            if (task != null) {
+                // cancel old task
+                task.cancel ();
+                if (verbose)
+                    System.out.println("CSTM cancel old task " + task);
+                task = null;
+            }
+        }
+        
+        // currently waiting / running refresh task
+        // there is at most one
+        private RequestProcessor.Task task;
+        
+        public void propertyChange (PropertyChangeEvent e) {
+            if ( ( (e.getPropertyName () == 
+                     debugger.PROP_CURRENT_THREAD) ||
+                   (e.getPropertyName () == debugger.PROP_STATE)
+                 ) && (debugger.getState () == debugger.STATE_STOPPED)
+            ) {
+                final CallStackTreeModel tm = getModel ();
+                if (tm == null) return;
+                if (task != null) {
+                    // cancel old task
+                    task.cancel ();
+                    if (verbose)
+                        System.out.println("CSTM cancel old task " + task);
+                    task = null;
+                }
+                task = RequestProcessor.getDefault ().post (new Runnable () {
+                    public void run () {
+                        if (debugger.getState () != debugger.STATE_STOPPED) {
+                            if (verbose)
+                                System.out.println("CSTM cancel started task " + task);
+                            return;
+                        }
+                        if (verbose)
+                            System.out.println("CSTM do task " + task);
+                        tm.fireTreeChanged ();
+                    }
+                }, 500);
+                if (verbose)
+                    System.out.println("CSTM  create task " + task);
+            } else
+            if ( (e.getPropertyName () == debugger.PROP_STATE) &&
+                 (debugger.getState () != debugger.STATE_STOPPED) &&
+                 (task != null)
+            ) {
+                // debugger has been resumed
+                // =>> cancel task
+                task.cancel ();
+                if (verbose)
+                    System.out.println("CSTM cancel task " + task);
+                task = null;
+            }
+        }
+    }
 }
 

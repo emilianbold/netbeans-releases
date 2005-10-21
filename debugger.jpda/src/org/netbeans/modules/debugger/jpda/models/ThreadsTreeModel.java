@@ -15,13 +15,27 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -29,56 +43,378 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  *
  * @author Jan Jancura
  */
-public class ThreadsTreeModel extends TranslatingTreeModel {
+public class ThreadsTreeModel implements TreeModel {
 
+    private static boolean verbose = 
+        (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
+        (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('t') >= 0);
+    
     private JPDADebuggerImpl    debugger;
-    private ContextProvider      lookupProvider;
+    private Map                 childrenCache = new WeakHashMap();
+    private Listener            listener;
+    private Collection          listeners = new HashSet();
     
     
     public ThreadsTreeModel (ContextProvider lookupProvider) {
-        super (new BasicThreadsTreeModel (lookupProvider));
         debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
-        this.lookupProvider = lookupProvider;
     }
 
-    protected Object createTranslation (Object o) throws UnknownTypeException {
-        if (o instanceof ThreadReference)
-            return new JPDAThreadImpl ((ThreadReference) o, this);
-        else
-        if (o instanceof ThreadGroupReference)
-            return new JPDAThreadGroupImpl ((ThreadGroupReference) o, this);
-        else
-        if (o.equals (BasicThreadsTreeModel.ROOT))
-            return o;
-        else
+    public Object getRoot () {
+        return ROOT;
+    }
+    
+    public Object[] getChildren (Object o, int from, int to)
+    throws UnknownTypeException {
+        /*
+        if (node.equals (ROOT)) {
+            return debugger.getTopLevelThreadGroups();
+        } else if (node instanceof JPDAThreadGroup) {
+            JPDAThreadGroup tg = (JPDAThreadGroup) node;
+            JPDAThreadGroup[] tgs = tg.getThreadGroups();
+            JPDAThread[] ts = tg.getThreads();
+            int n = tgs.length + ts.length;
+            from = Math.min(n, from);
+            to = Math.min(n, to);
+            Object[] ch = new Object[to - from];
+            if (from < tgs.length) {
+                if (to >= tgs.length) {
+                    System.arraycopy(tgs, from, ch, 0, tgs.length - from);
+                } else {
+                    System.arraycopy(tgs, from, ch, 0, to - from);
+                }
+            }
+            if (to > tgs.length) {
+                to -= tgs.length;
+                int pos = tgs.length - from;
+                if (from >= tgs.length) {
+                    from -= tgs.length;
+                } else {
+                    from = 0;
+                }
+                System.arraycopy(ts, from, ch, pos, to - from);
+            }
+            return ch;
+        } else {
+            throw new UnknownTypeException (node);
+        }
+        */
+        
+        Object[] ch;
+        synchronized (childrenCache) {
+            //ch = (List) childrenCache.get(o);
+            ChildrenTree cht = (ChildrenTree) childrenCache.get(o);
+            if (cht != null) {
+                ch = cht.getChildren();
+            } else {
+                ch = null;
+            }
+        }
+        if (ch == null) {
+            ch = computeChildren(o);
+            if (ch == null) {
+                throw new UnknownTypeException (o);
+            } else {
+                synchronized (childrenCache) {
+                    ChildrenTree cht = new ChildrenTree(o);
+                    cht.setChildren(ch);
+                    childrenCache.put(o, cht);
+                }
+            }
+        }
+        int l = ch.length;
+        from = Math.min(l, from);
+        to = Math.min(l, to);
+        if (from == 0 && to == l) {
+            return ch;
+        } else {
+            Object[] ch1 = new Object[to - from];
+            System.arraycopy(ch, from, ch1, 0, to - from);
+            ch = ch1;
+        }
+        return ch;
+    }
+    
+    private Object[] computeChildren(Object node) {
+        /*
+        List ch;
+        try {
+            if (node.equals (ROOT)) {
+                VirtualMachine vm = debugger.getVirtualMachine ();
+                if (vm != null)
+                    ch = vm.topLevelThreadGroups ();
+                else
+                    ch = Collections.EMPTY_LIST;
+            } else
+            if (node instanceof ThreadGroupReference) {
+                ThreadGroupReference tgr = (ThreadGroupReference) node;
+                ch = new ArrayList (tgr.threadGroups ());
+                ch.addAll(tgr.threads ());
+            } else
+                ch = null;
+        } catch (VMDisconnectedException ex) {
+            ch = Collections.EMPTY_LIST;
+        }
+        return ch;
+         */
+        if (node.equals (ROOT)) {
+            return debugger.getTopLevelThreadGroups();
+        } else if (node instanceof JPDAThreadGroup) {
+            JPDAThreadGroup tg = (JPDAThreadGroup) node;
+            JPDAThreadGroup[] tgs = tg.getThreadGroups();
+            JPDAThread[] ts = tg.getThreads();
+            int n = tgs.length + ts.length;
+            Object[] ch = new Object[n];
+            System.arraycopy(tgs, 0, ch, 0, tgs.length);
+            System.arraycopy(ts, 0, ch, tgs.length, ts.length);
+            return ch;
+        } else {
+            return new Object[0];
+        }
+    }
+    
+    private void recomputeChildren() {
+        synchronized (childrenCache) {
+            recomputeChildren(getRoot());
+        }
+    }
+    
+    private void recomputeChildren(Object node) {
+        ChildrenTree cht = (ChildrenTree) childrenCache.get(node);
+        if (cht != null) {
+            Set keys = childrenCache.keySet();
+            Object[] oldCh = cht.getChildren();
+            Object[] newCh = computeChildren(node);
+            cht.setChildren(newCh);
+            for (int i = 0; i < newCh.length; i++) {
+                if (keys.contains(newCh[i])) {
+                    recomputeChildren(newCh[i]);
+                }
+            }
+        }
+        /*
+            Set nodes = childrenCache.keySet();
+            for (Iterator it = nodes.iterator(); it.hasNext(); ) {
+                Object node = it.next();
+                // potreba brat jako tree - vyhodit stare nody hierarchicky
+                // takto bych se ptal i na stare out-of-date nody!
+            }
+            //List ch = (List) childrenCache.get(o);
+        */
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws UnknownTypeException {
+        Object[] ch;
+        synchronized (childrenCache) {
+            ChildrenTree cht = (ChildrenTree) childrenCache.get(node);
+            if (cht != null) {
+                ch = cht.getChildren();
+            } else {
+                ch = null;
+            }
+        }
+        if (ch == null) {
+            ch = computeChildren(node);
+            if (ch == null) {
+                throw new UnknownTypeException (node);
+            } else {
+                synchronized (childrenCache) {
+                    ChildrenTree cht = new ChildrenTree(node);
+                    cht.setChildren(ch);
+                    childrenCache.put(node, cht);
+                }
+            }
+        }
+        return ch.length;
+        /*
+        try {
+            List ch;
+            if (node.equals (ROOT)) {
+                VirtualMachine vm = debugger.getVirtualMachine ();
+                if (vm != null)
+                    ch = vm.topLevelThreadGroups ();
+                else
+                    ch = Collections.EMPTY_LIST;
+            } else
+            if (node instanceof ThreadGroupReference) {
+                ThreadGroupReference tgr = (ThreadGroupReference) node;
+                ch = new ArrayList (tgr.threadGroups ());
+                ch.addAll(tgr.threads ());
+            } else
+            throw new UnknownTypeException (node);
+            synchronized (lastCachedLock) {
+                lastCachedChildrenNode = node;
+                lastCachedChildren = ch;
+            }
+            return ch.size();
+        } catch (VMDisconnectedException ex) {
+            return 0;
+        }
+         */
+    }
+    
+    public boolean isLeaf (Object o) throws UnknownTypeException {
+        if (o instanceof JPDAThread) return true;
+        if (o instanceof JPDAThreadGroup) return false;
+        if (o == ROOT) return false;
         throw new UnknownTypeException (o);
     }
 
-    public Object translate (Object o) throws UnknownTypeException {
-        return super.translate (o);
+    public void addModelListener (ModelListener l) {
+        synchronized (listeners) {
+            listeners.add (l);
+            if (listener == null) {
+                listener = new Listener (this, debugger);
+            }
+        }
     }
-    
-    private CallStackTreeModel callStackTreeModel;
-    
-    CallStackTreeModel getCallStackTreeModel () {
-        if (callStackTreeModel == null)
-            callStackTreeModel = (CallStackTreeModel) lookupProvider.
-                lookupFirst ("CallStackView", TreeModel.class);
-        return callStackTreeModel;
-    }
-    
-    private LocalsTreeModel localsTreeModel;
 
-    LocalsTreeModel getLocalsTreeModel () {
-        if (localsTreeModel == null)
-            localsTreeModel = (LocalsTreeModel) lookupProvider.
-                lookupFirst ("LocalsView", TreeModel.class);
-        return localsTreeModel;
+    public void removeModelListener (ModelListener l) {
+        synchronized (listeners) {
+            listeners.remove (l);
+            if (listeners.size () == 0) {
+                listener.destroy ();
+                listener = null;
+            }
+        }
     }
     
-    JPDADebuggerImpl getDebugger () {
-        return debugger;
+    public void fireTreeChanged () {
+        recomputeChildren();
+        Object[] ls;
+        synchronized (listeners) {
+            ls = listeners.toArray();
+        }
+        ModelEvent ev = new ModelEvent.TreeChanged(this);
+        for (int i = 0; i < ls.length; i++) {
+            ((ModelListener) ls[i]).modelChanged (ev);
+        }
     }
+
+    /**
+     * Listens on JPDADebugger state property and updates all threads hierarchy.
+     */
+    private static class Listener implements PropertyChangeListener {
+        
+        private JPDADebugger debugger;
+        private WeakReference model;
+        // currently waiting / running refresh task
+        // there is at most one
+        private RequestProcessor.Task task;
+        
+        public Listener (
+            ThreadsTreeModel tm,
+            JPDADebugger debugger
+        ) {
+            this.debugger = debugger;
+            model = new WeakReference (tm);
+            debugger.addPropertyChangeListener (this);
+            if (debugger.getState() == debugger.STATE_RUNNING) {
+                task = createTask();
+                task.schedule(500);
+            }
+        }
+        
+        private ThreadsTreeModel getModel () {
+            ThreadsTreeModel tm = (ThreadsTreeModel) model.get ();
+            if (tm == null) {
+                destroy ();
+            }
+            return tm;
+        }
+        
+        void destroy () {
+            debugger.removePropertyChangeListener (this);
+            synchronized (this) {
+                if (task != null) {
+                    // cancel old task
+                    task.cancel ();
+                    if (verbose)
+                        System.out.println("TTM cancel old task " + task);
+                    task = null;
+                }
+            }
+        }
+        
+        private RequestProcessor.Task createTask() {
+            RequestProcessor.Task task =
+                new RequestProcessor("Threads Refresh", 1).create(
+                                new RefreshTree());
+            if (verbose)
+                System.out.println("TTM  create task " + task);
+            return task;
+        }
+        
+        public void propertyChange (PropertyChangeEvent e) {
+            if ( (e.getPropertyName () == debugger.PROP_STATE) &&
+                 (debugger.getState () == debugger.STATE_STOPPED)
+            ) {
+                final ThreadsTreeModel tm = getModel ();
+                if (tm == null) return;
+                synchronized (this) {
+                    if (task == null) {
+                        task = createTask();
+                    }
+                }
+                task.schedule(500);
+            } else 
+            if ( (e.getPropertyName () == debugger.PROP_STATE) &&
+                 (debugger.getState () == debugger.STATE_RUNNING)
+            ) {
+                final ThreadsTreeModel tm = getModel ();
+                if (tm == null) return;
+                synchronized (this) {
+                    if (task == null) {
+                        task = createTask();
+                    }
+                }
+                task.schedule (2000);
+            }
+        }
+        
+        private class RefreshTree implements Runnable {
+            public RefreshTree () {}
+            
+            public void run() {
+                ThreadsTreeModel tm = getModel ();
+                if (tm == null) return;
+                if (verbose)
+                    System.out.println("TTM do R task " + task);
+                tm.fireTreeChanged ();
+                if (debugger.getState () == debugger.STATE_RUNNING) {
+                    task.schedule (2000);
+                }
+            }
+        }
+    }
+    
+    private static class ChildrenTree {
+        
+        private Object node;
+        private Object[] ch;
+        
+        public ChildrenTree(Object node) {
+            this.node = node;
+        }
+        
+        public void setChildren(Object[] ch) {
+            this.ch = ch;
+        }
+        
+        public Object[] getChildren() {
+            return ch;
+        }
+        
+    }
+    
 }
 

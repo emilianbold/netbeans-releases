@@ -18,6 +18,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
@@ -28,22 +29,24 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
 /**
-*/
+ * The implementation of JPDAThread.
+ */
 public class JPDAThreadImpl implements JPDAThread {
     
     private ThreadReference     threadReference;
-    private ThreadsTreeModel    ttm;
+    private JPDADebuggerImpl    debugger;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
-        ThreadsTreeModel    ttm
+        JPDADebuggerImpl    debugger
     ) {
         this.threadReference = threadReference;
-        this.ttm = ttm;
+        this.debugger = debugger;
     }
 
     /**
@@ -70,13 +73,10 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             ThreadGroupReference tgr = threadReference.threadGroup ();
             if (tgr == null) return null;
-            return (JPDAThreadGroup) ttm.translate (tgr);
+            return debugger.getThreadGroup(tgr);
         } catch (ObjectCollectedException ex) {
             return null;
         } catch (VMDisconnectedException ex) {
-            return null;
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
             return null;
         }
     }
@@ -202,8 +202,12 @@ public class JPDAThreadImpl implements JPDAThread {
     /**
      * Returns call stack for this thread.
      *
-     * @throws NoInformationException if the thread is running or not able
-     *         to return callstack
+     * @throws AbsentInformationException if the thread is running or not able
+     *         to return callstack. If the thread is in an incompatible state
+     *         (e.g. running), the AbsentInformationException has
+     *         IncompatibleThreadStateException as a cause.
+     *         If the thread is collected, the AbsentInformationException has
+     *         ObjectCollectedException as a cause.
      * @return call stack
      */
     public CallStackFrame[] getCallStack () throws AbsentInformationException {
@@ -215,23 +219,36 @@ public class JPDAThreadImpl implements JPDAThread {
      *
      * @param from a from index
      * @param to a to index
-     * @throws NoInformationException if the thread is running or not able
-     *         to return callstack
+     * @throws AbsentInformationException if the thread is running or not able
+     *         to return callstack. If the thread is in an incompatible state
+     *         (e.g. running), the AbsentInformationException has
+     *         IncompatibleThreadStateException as a cause.
+     *         If the thread is collected, the AbsentInformationException has
+     *         ObjectCollectedException as a cause.
      * @return call stack
      */
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
         try {
-            Object[] result = ttm.getCallStackTreeModel ().getChildren (
-                threadReference, from, to
-            );
-            if (result instanceof CallStackFrame[])
-                return (CallStackFrame[]) result;
-            throw new AbsentInformationException (
-                ((String[]) result) [0]
-            );
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
+            int max = threadReference.frameCount();
+            from = Math.min(from, max);
+            to = Math.min(to, max);
+            List l = threadReference.frames (from, to - from);
+            int n = l.size();
+            CallStackFrame[] frames = new CallStackFrame[n];
+            for (int i = 0; i < n; i++) {
+                frames[i] = debugger.getCallStackFrame((StackFrame) l.get(i));
+            }
+            return frames;
+        } catch (IncompatibleThreadStateException ex) {
+            AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
+            aiex.initCause(ex);
+            throw aiex;
+        } catch (ObjectCollectedException ocex) {
+            AbsentInformationException aiex = new AbsentInformationException(ocex.getLocalizedMessage());
+            aiex.initCause(ocex);
+            throw aiex;
+        } catch (VMDisconnectedException ex) {
             return new CallStackFrame [0];
         }
     }
@@ -293,7 +310,7 @@ public class JPDAThreadImpl implements JPDAThread {
      * @see JPDADebugger#getCurrentThread
      */
     public void makeCurrent () {
-        ttm.getDebugger ().setCurrentThread (this);
+        debugger.setCurrentThread (this);
     }
     
     /**
@@ -305,8 +322,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             ObjectReference or = threadReference.currentContendedMonitor ();
             if (or == null) return null;
-            LocalsTreeModel ltm = ttm.getLocalsTreeModel ();
-            return ltm.getThis (or, "");
+            return new ThisVariable (debugger, or, "");
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
         } catch (UnsupportedOperationException e) {
@@ -323,11 +339,10 @@ public class JPDAThreadImpl implements JPDAThread {
     public ObjectVariable[] getOwnedMonitors () {
         try {
             List l = threadReference.ownedMonitors ();
-            LocalsTreeModel ltm = ttm.getLocalsTreeModel ();
             int i, k = l.size ();
             ObjectVariable[] vs = new ObjectVariable [k];
             for (i = 0; i < k; i++) {
-                vs [i] = ltm.getThis ((ObjectReference) l.get (i), "");
+                vs [i] = new ThisVariable (debugger, (ObjectReference) l.get (i), "");
             }
             return vs;
         } catch (ObjectCollectedException ex) {

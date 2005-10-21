@@ -25,6 +25,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -36,29 +37,29 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 class JPDAObjectWatchImpl extends AbstractVariable implements JPDAWatch,
 ObjectVariable {
 
-    private WatchesModel        model;
+    private JPDADebuggerImpl    debugger;
     private Watch               watch;
     private String              exceptionDescription;
     
     
-    JPDAObjectWatchImpl (WatchesModel model, Watch watch, ObjectReference v) {
+    JPDAObjectWatchImpl (JPDADebuggerImpl debugger, Watch watch, ObjectReference v) {
         super (
-            model.getLocalsTreeModel (), 
+            debugger, 
             v, 
             "" + watch +
                 (v instanceof ObjectReference ? "^" : "")
         );
-        this.model = model;
+        this.debugger = debugger;
         this.watch = watch;
     }
     
-    JPDAObjectWatchImpl (WatchesModel model, Watch watch, String exceptionDescription) {
+    JPDAObjectWatchImpl (JPDADebuggerImpl debugger, Watch watch, String exceptionDescription) {
         super (
-            model.getLocalsTreeModel (), 
+            debugger, 
             null, 
             "" + watch
         );
-        this.model = model;
+        this.debugger = debugger;
         this.watch = watch;
         this.exceptionDescription = exceptionDescription;
     }
@@ -102,7 +103,7 @@ ObjectVariable {
     * Sets string representation of value of this variable.
     *
     * @param value string representation of value of this variable.
-    */
+    *
     public void setValue (String expression) throws InvalidExpressionException {
         // evaluate expression to Value
         Value value = model.getDebugger ().evaluateIn (expression);
@@ -113,12 +114,13 @@ ObjectVariable {
         // refresh tree
         model.fireTableValueChangedChanged (this, null);
     }
+     */
     
     protected void setValue (final Value value) 
     throws InvalidExpressionException {
         
         // 1) get frame
-        CallStackFrameImpl frame = (CallStackFrameImpl) model.getDebugger ().
+        CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
             getCurrentCallStackFrame ();
         if (frame == null)
             throw new InvalidExpressionException ("No curent frame.");

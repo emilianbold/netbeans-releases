@@ -23,6 +23,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
+import java.beans.Customizer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -47,7 +48,7 @@ import org.openide.util.RequestProcessor;
 /**
  * @author   Jan Jancura
  */
-public class LocalsTreeModel implements TreeModel {
+public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 
     
     private static boolean      verbose = 
@@ -74,7 +75,22 @@ public class LocalsTreeModel implements TreeModel {
         return ROOT;
     }
     
+    public void propertyChange(PropertyChangeEvent evt) {
+        fireTableValueChangedChanged(evt.getSource(), null);
+    }
+    
     public Object[] getChildren (Object o, int from, int to) 
+    throws UnknownTypeException {
+        Object[] ch = getChildrenImpl(o, from, to);
+        for (int i = 0; i < ch.length; i++) {
+            if (ch[i] instanceof Customizer) {
+                ((Customizer) ch[i]).addPropertyChangeListener(this);
+            }
+        }
+        return ch;
+    }
+    
+    public Object[] getChildrenImpl (Object o, int from, int to) 
     throws UnknownTypeException {
         try {
             if (o.equals (ROOT)) {
@@ -204,7 +220,7 @@ public class LocalsTreeModel implements TreeModel {
             );
     }
     
-    void fireTableValueChangedChanged (Object node, String propertyName) {
+    private void fireTableValueChangedChanged (Object node, String propertyName) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
@@ -256,7 +272,7 @@ public class LocalsTreeModel implements TreeModel {
                     }
                     Object[] result = new Object [avs.length + 1];
                     if (from < 1)
-                        result [0] = getThis (thisR, "");
+                        result [0] = new ThisVariable (debugger, thisR, "");
                     System.arraycopy (avs, 0, result, 1, avs.length);
                     return result;
                 }            
@@ -266,12 +282,25 @@ public class LocalsTreeModel implements TreeModel {
         } // synchronized
     }
     
-    AbstractVariable[] getLocalVariables (
+    org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables (
         final CallStackFrameImpl    callStackFrame, 
         final StackFrame            stackFrame,
         int                         from,
         int                         to
     ) throws AbsentInformationException {
+        org.netbeans.api.debugger.jpda.LocalVariable[] locals = callStackFrame.getLocalVariables();
+        int n = locals.length;
+        to = Math.min(n, to);
+        from = Math.min(n, from);
+        if (from != 0 || to != n) {
+            org.netbeans.api.debugger.jpda.LocalVariable[] subLocals = new org.netbeans.api.debugger.jpda.LocalVariable[to - from];
+            for (int i = from; i < to; i++) {
+                subLocals[i - from] = locals[i];
+            }
+            locals = subLocals;
+        }
+        return locals;
+        /*
         try {
             String className = stackFrame.location ().declaringType ().name ();
             List l = stackFrame.visibleVariables ();
@@ -291,12 +320,9 @@ public class LocalsTreeModel implements TreeModel {
         } catch (VMDisconnectedException ex) {
             return new AbstractVariable [0];
         }
+         */
     }
-    
-    ThisVariable getThis (ObjectReference thisR, String parentID) {
-        return new ThisVariable (this, thisR, parentID);
-    }
-    
+    /*
     private Local getLocal (LocalVariable lv, CallStackFrameImpl frame, String className) {
         Value v = frame.getStackFrame ().getValue (lv);
         Local local = (Local) cachedLocals.get(lv);
@@ -307,7 +333,7 @@ public class LocalsTreeModel implements TreeModel {
         } else {
             if (v instanceof ObjectReference) {
                 local = new ObjectLocalVariable (
-                    this, 
+                    debugger, 
                     v, 
                     className, 
                     lv, 
@@ -315,21 +341,22 @@ public class LocalsTreeModel implements TreeModel {
                     frame
                 );
             } else {
-                local = new Local (this, v, className, lv, frame);
+                local = new Local (debugger, v, className, lv, frame);
             }
             cachedLocals.put(lv, local);
         }
         return local;
     }
+     */
     
     public Variable getVariable (Value v) {
         if (v instanceof ObjectReference)
             return new AbstractVariable (
-                this,
+                debugger,
                 (ObjectReference) v,
                 null
             );
-        return new AbstractVariable (this, v, null);
+        return new AbstractVariable (debugger, v, null);
     }
     
     

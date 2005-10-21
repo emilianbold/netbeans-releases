@@ -221,7 +221,9 @@ public class WatchesModel implements TreeModel {
     // innerclasses ............................................................
     
     private static class JPDAWatchEvaluating extends AbstractVariable
-                                             implements JPDAWatch, Variable, Refreshable {//.Lazy {
+                                             implements JPDAWatch, Variable,
+                                                        Refreshable, //.Lazy {
+                                                        PropertyChangeListener {
         
         private WatchesModel model;
         private Watch w;
@@ -232,7 +234,7 @@ public class WatchesModel implements TreeModel {
         private PropertyChangeSupport propSupp = new PropertyChangeSupport(this);
         
         public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
-            super(model.getLocalsTreeModel(), null, "" + w);
+            super(debugger, null, "" + w);
             this.model = model;
             this.w = w;
             this.debugger = debugger;
@@ -246,7 +248,7 @@ public class WatchesModel implements TreeModel {
                     Expression.LANGUAGE_JAVA_1_5
                 );
             } catch (ParseException e) {
-                setEvaluated(new JPDAWatchImpl(model, w, e, this));
+                setEvaluated(new JPDAWatchImpl(debugger, w, e, this));
             }
         }
         
@@ -328,11 +330,15 @@ public class WatchesModel implements TreeModel {
             try {
                 Expression expr = getParsedExpression();
                 Value v = debugger.evaluateIn (expr);
-                if (v instanceof ObjectReference)
-                    jw = new JPDAObjectWatchImpl (model, w, (ObjectReference) v);
-                jw = new JPDAWatchImpl (model, w, v, this);
+                //if (v instanceof ObjectReference)
+                //    jw = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
+                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, v, this);
+                jwi.addPropertyChangeListener(this);
+                jw = jwi;
             } catch (InvalidExpressionException e) {
-                jw = new JPDAWatchImpl (model, w, e, this);
+                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
+                jwi.addPropertyChangeListener(this);
+                jw = jwi;
             } finally {
                 setEvaluated(jw);
                 synchronized (evaluating) {
@@ -371,6 +377,10 @@ public class WatchesModel implements TreeModel {
         
         public void removePropertyChangeListener(PropertyChangeListener l) {
             propSupp.removePropertyChangeListener(l);
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            model.fireTableValueChangedChanged (this, null);
         }
         
         /** Does wait for the value to be evaluated. */

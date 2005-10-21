@@ -18,6 +18,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -27,37 +28,19 @@ class ObjectLocalVariable extends Local implements
 org.netbeans.api.debugger.jpda.ObjectVariable {
     
     
-    private CallStackFrameImpl  frame;
-    
     ObjectLocalVariable (
-        LocalsTreeModel model, 
+        JPDADebuggerImpl debugger, 
         Value value, 
         String className, 
         LocalVariable local, 
         String genericSignature,
         CallStackFrameImpl frame
     ) {
-        super (model, value, className, local, genericSignature);
-        this.frame = frame;
+        super (debugger, value, className, local, genericSignature, frame);
     }
     
     
     // LocalVariable impl.......................................................
-    
-    protected void setValue (Value value) throws InvalidExpressionException {
-        try {
-            frame.getStackFrame ().setValue (local, value);
-        } catch (InvalidTypeException ex) {
-            throw new InvalidExpressionException (ex);
-        } catch (ClassNotLoadedException ex) {
-            throw new InvalidExpressionException (ex);
-        }
-    }
-    
-    void setFrame(CallStackFrameImpl frame) {
-        this.frame = frame;
-    }
-    
     
     // other methods ...........................................................
     

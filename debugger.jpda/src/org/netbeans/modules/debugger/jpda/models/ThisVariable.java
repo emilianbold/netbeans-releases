@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -23,12 +24,12 @@ import org.netbeans.api.debugger.jpda.This;
 class ThisVariable extends AbstractVariable implements This {
 
     ThisVariable (
-        LocalsTreeModel model,
+        JPDADebuggerImpl debugger,
         Value value,
         String parentID
     ) {
         super (
-            model, 
+            debugger, 
             value,
             parentID + ".this^"
         );

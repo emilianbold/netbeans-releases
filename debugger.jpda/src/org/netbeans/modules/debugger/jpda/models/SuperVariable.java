@@ -17,6 +17,7 @@ import com.sun.jdi.ClassType;
 import com.sun.jdi.ObjectReference;
 
 import org.netbeans.api.debugger.jpda.Super;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -29,13 +30,13 @@ class SuperVariable extends AbstractVariable implements Super {
     
     
     SuperVariable (
-        LocalsTreeModel model,
+        JPDADebuggerImpl debugger,
         ObjectReference value, 
         ClassType classType,
         String parentID
     ) {
         super (
-            model, 
+            debugger, 
             value, 
             parentID + ".super^"
         );
@@ -52,7 +53,7 @@ class SuperVariable extends AbstractVariable implements Super {
         if (superType == null) 
             return null;
         return new SuperVariable(
-                this.getModel(), 
+                this.getDebugger(), 
                 (ObjectReference) this.getInnerValue(),
                 superType,
                 this.getID()

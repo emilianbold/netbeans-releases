@@ -22,6 +22,7 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.TypeComponent;
 import com.sun.jdi.VMDisconnectedException;
@@ -51,7 +52,9 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
+import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
@@ -112,6 +115,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private Set                         languages;
     private String                      lastStratumn;
     private ContextProvider             lookupProvider;
+    private ObjectTranslation           threadsTranslation;
+    private ObjectTranslation           stackFrameTranslation;
+    private ObjectTranslation           localsTranslation;
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -130,6 +136,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 ("JavaEngineProvider have to be used to start JPDADebugger!");
         languages = new HashSet ();
         languages.add ("Java");
+        threadsTranslation = ObjectTranslation.createThreadTranslation(this);
+        stackFrameTranslation = ObjectTranslation.createStackTranslation(this);
+        localsTranslation = ObjectTranslation.createLocalsTranslation(this);
     }
 
 
@@ -183,9 +192,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return current stack frame or null
      */
-    public CallStackFrame getCurrentCallStackFrame () {
-        if (currentCallStackFrame != null && !currentCallStackFrame.getThread().isSuspended()) {
-            return null;
+    public synchronized CallStackFrame getCurrentCallStackFrame () {
+        if (currentCallStackFrame != null) {
+            try {
+                if (!currentCallStackFrame.getThread().isSuspended()) {
+                    currentCallStackFrame = null;
+                }
+            } catch (InvalidStackFrameException isfex) {
+                currentCallStackFrame = null;
+            }
+        }
+        if (currentCallStackFrame == null && currentThread != null) {
+            try {
+                currentCallStackFrame = currentThread.getCallStack()[0];
+            } catch (Exception ex) {}
         }
         return currentCallStackFrame;
     }
@@ -418,13 +438,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void setCurrentCallStackFrame (CallStackFrame callStackFrame) {
-        if (callStackFrame == currentCallStackFrame) return;
-        CallStackFrame old = currentCallStackFrame;
-        currentCallStackFrame = callStackFrame;
+        CallStackFrame old;
+        synchronized (this) {
+            if (callStackFrame == currentCallStackFrame) return;
+            old = currentCallStackFrame;
+            currentCallStackFrame = callStackFrame;
+        }
         pcs.firePropertyChange (
             PROP_CURRENT_CALL_STACK_FRAME,
             old,
-            currentCallStackFrame
+            callStackFrame
         );
     }
 
@@ -774,14 +797,36 @@ public class JPDADebuggerImpl extends JPDADebugger {
             setState (STATE_RUNNING);
         }
     }
+    
+    public JPDAThreadGroup[] getTopLevelThreadGroups() {
+        List groupList;
+        synchronized (LOCK) {
+            if (virtualMachine == null) {
+                return new JPDAThreadGroup[0];
+            }
+            groupList = virtualMachine.topLevelThreadGroups();
+        }
+        JPDAThreadGroup[] groups = new JPDAThreadGroup[groupList.size()];
+        for (int i = 0; i < groups.length; i++) {
+            groups[i] = getThreadGroup((ThreadGroupReference) groupList.get(i));
+        }
+        return groups;
+    }
 
     public JPDAThread getThread (ThreadReference tr) {
-        try {
-            return (JPDAThread) getThreadsTreeModel ().translate (tr);
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return null;
-        }
+        return (JPDAThread) threadsTranslation.translate (tr);
+    }
+
+    public JPDAThreadGroup getThreadGroup (ThreadGroupReference tgr) {
+        return (JPDAThreadGroup) threadsTranslation.translate (tgr);
+    }
+    
+    public CallStackFrame getCallStackFrame (StackFrame sf) {
+        return (CallStackFrame) stackFrameTranslation.translate (sf);
+    }
+    
+    public Variable getLocalVariable(LocalVariable lv, Value v) {
+        return (Variable) localsTranslation.translate(lv, v);
     }
 
     public Variable getVariable (Value value) {
@@ -846,16 +891,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return engineContext;
     }
 
-    private ThreadsTreeModel threadsTreeModel;
-    ThreadsTreeModel getThreadsTreeModel () {
-        if (threadsTreeModel == null)
-            threadsTreeModel = (ThreadsTreeModel) lookupProvider.
-                lookupFirst ("ThreadsView", TreeModel.class);
-        return threadsTreeModel;
-    }
-
     private LocalsTreeModel localsTreeModel;
-    LocalsTreeModel getLocalsTreeModel () {
+    private LocalsTreeModel getLocalsTreeModel () {
         if (localsTreeModel == null)
             localsTreeModel = (LocalsTreeModel) lookupProvider.
                 lookupFirst ("LocalsView", TreeModel.class);

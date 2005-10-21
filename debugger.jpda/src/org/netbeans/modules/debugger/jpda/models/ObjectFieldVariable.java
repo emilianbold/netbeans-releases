@@ -20,6 +20,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -32,7 +33,7 @@ implements ObjectVariable {
     private ObjectReference objectReference;
     
     ObjectFieldVariable (
-        LocalsTreeModel model, 
+        JPDADebuggerImpl debugger, 
         ObjectReference value, 
         //String className,
         Field field,
@@ -41,7 +42,7 @@ implements ObjectVariable {
         ObjectReference objectReference
     ) {
         super (
-            model,
+            debugger,
             value,
            // className,
             field,

@@ -19,6 +19,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -33,7 +34,7 @@ org.netbeans.api.debugger.jpda.Field {
     
 
     FieldVariable (
-        LocalsTreeModel model,
+        JPDADebuggerImpl debugger,
         Value value,
     //    String className,
         Field field,
@@ -41,7 +42,7 @@ org.netbeans.api.debugger.jpda.Field {
         ObjectReference objectReference
     ) {
         super (
-            model, 
+            debugger, 
             value, 
             parentID + '.' + field.name () +
                 (value instanceof ObjectReference ? "^" : "")
@@ -52,14 +53,14 @@ org.netbeans.api.debugger.jpda.Field {
     }
 
     FieldVariable (
-        LocalsTreeModel model,
+        JPDADebuggerImpl debugger,
         Value value,
        // String className,
         Field field,
         String parentID,
         String genericSignature
     ) {
-        super(model, value, genericSignature, parentID + '.' + field.name () +
+        super(debugger, value, genericSignature, parentID + '.' + field.name () +
                 (value instanceof ObjectReference ? "^" : ""));
         this.field = field;
        // this.className = className;

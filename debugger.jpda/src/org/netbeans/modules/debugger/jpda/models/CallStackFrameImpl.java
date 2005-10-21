@@ -7,20 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.*;
+import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.InvalidStackFrameException;
+import com.sun.jdi.NativeMethodException;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -28,23 +37,17 @@ import org.netbeans.api.debugger.jpda.This;
 */
 public class CallStackFrameImpl implements CallStackFrame {
     
-    private ThreadReference     thread;
-    private int                 index;
-    private CallStackTreeModel  ctm;
-    private String              id;
-    
+    private StackFrame          sf;
+    private JPDADebuggerImpl    debugger;
+    private boolean             valid;
     
     public CallStackFrameImpl (
-        ThreadReference     thread,
         StackFrame          sf,
-        CallStackTreeModel  ctm,
-        String              id,
-        int                 index
+        JPDADebuggerImpl    debugger
     ) {
-        this.thread = thread;
-        this.index = index;
-        this.ctm = ctm;
-        this.id = id;
+        this.sf = sf;
+        this.debugger = debugger;
+        this.valid = true; // suppose we're valid when we're new
     }
 
     // public interface ........................................................
@@ -54,13 +57,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return Returns line number of this frame in this callstack.
     */
-    public int getLineNumber (String struts) {
+    public synchronized int getLineNumber (String struts) {
+        if (!valid) return 0;
         try {
             return getStackFrame().location ().lineNumber (struts);
-        } catch (Exception ex) {
+        } catch (InvalidStackFrameException isfex) {
             // this stack frame is not available or information in it is not available
+            valid = false;
+            return 0;
         }
-        return 0;
     }
 
     /**
@@ -68,13 +73,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return Returns method name of this frame in this callstack.
     */
-    public String getMethodName () {
+    public synchronized String getMethodName () {
+        if (!valid) return "";
         try {
             return getStackFrame().location ().method ().name ();
-        } catch (Exception ex) {
+        } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
+            valid = false;
+            return "";
         }
-        return "";
     }
 
     /**
@@ -82,13 +89,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return class name of this frame in this callstack
     */
-    public String getClassName () {
+    public synchronized String getClassName () {
+        if (!valid) return "";
         try {
             return getStackFrame().location ().declaringType ().name ();
-        } catch (Exception ex) {
+        } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
+            valid = false;
+            return "";
         }
-        return "";
     }
 
     /**
@@ -96,13 +105,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return name of default stratumn
     */
-    public String getDefaultStratum () {
+    public synchronized String getDefaultStratum () {
+        if (!valid) return "";
         try {
             return getStackFrame().location ().declaringType ().defaultStratum ();
-        } catch (Exception ex) {
+        } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
+            valid = false;
+            return "";
         }
-        return "";
     }
 
     /**
@@ -110,13 +121,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return name of default stratumn
     */
-    public List getAvailableStrata () {
+    public synchronized List getAvailableStrata () {
+        if (!valid) return Collections.EMPTY_LIST;
         try {
             return getStackFrame().location ().declaringType ().availableStrata ();
-        } catch (Exception ex) {
+        } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
+            valid = false;
+            return Collections.EMPTY_LIST;
         }
-        return new ArrayList ();
     }
 
     /**
@@ -126,13 +139,15 @@ public class CallStackFrameImpl implements CallStackFrame {
     * @throws NoInformationException if informations about source are not included or some other error
     *   occurres.
     */
-    public String getSourceName (String stratum) throws AbsentInformationException {
+    public synchronized String getSourceName (String stratum) throws AbsentInformationException {
+        if (!valid) return "";
         try {
             return getStackFrame().location ().sourceName (stratum);
-        } catch (Exception ex) {
+        } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
+            valid = false;
+            return "";
         }
-        return "";
     }
     
     /**
@@ -140,13 +155,15 @@ public class CallStackFrameImpl implements CallStackFrame {
      *
      * @return source path of file this frame is stopped in or null
      */
-    public String getSourcePath (String stratum) throws AbsentInformationException {
+    public synchronized String getSourcePath (String stratum) throws AbsentInformationException {
+        if (!valid) return "";
         try {
             return getStackFrame().location ().sourcePath (stratum);
-        } catch (Exception ex) {
-        // this stack frame is not available or information in it is not available
+        } catch (InvalidStackFrameException ex) {
+            // this stack frame is not available or information in it is not available
+            valid = false;
+            return "";
         }
-        return "";
     }
     
     /**
@@ -156,14 +173,28 @@ public class CallStackFrameImpl implements CallStackFrame {
      */
     public org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables () 
     throws AbsentInformationException {
-        LocalsTreeModel ltm = ctm.getLocalsTreeModel ();
-        int count = getStackFrame ().visibleVariables ().size ();
-        AbstractVariable vs[] = ltm.getLocalVariables 
-            (this, getStackFrame (), 0, count);
-        org.netbeans.api.debugger.jpda.LocalVariable[] var = new
-            org.netbeans.api.debugger.jpda.LocalVariable [vs.length];
-        System.arraycopy (vs, 0, var, 0, vs.length);
-        return var;
+        try {
+            String className = getStackFrame ().location ().declaringType ().name ();
+            List l = getStackFrame ().visibleVariables ();
+            int n = l.size();
+            LocalVariable[] locals = new LocalVariable [n];
+            for (int i = 0; i < n; i++) {
+                com.sun.jdi.LocalVariable lv = (com.sun.jdi.LocalVariable) l.get (i);
+                Value v = getStackFrame ().getValue (lv);
+                Local local = (Local) debugger.getLocalVariable(lv, v);
+                local.setFrame(this);
+                local.setInnerValue(v);
+                local.setClassName(className);
+                locals[i] = local;
+            }
+            return locals;
+        } catch (NativeMethodException ex) {
+            throw new AbsentInformationException ("native method");
+        } catch (InvalidStackFrameException ex) {
+            throw new AbsentInformationException ("thread is running");
+        } catch (VMDisconnectedException ex) {
+            return new LocalVariable [0];
+        }
     }
     
     /**
@@ -172,11 +203,17 @@ public class CallStackFrameImpl implements CallStackFrame {
      *
      * @return object reference this frame is associated with or null
      */
-    public This getThisVariable () {
-        ObjectReference thisR = getStackFrame().thisObject ();
+    public synchronized This getThisVariable () {
+        if (!valid) return null;
+        ObjectReference thisR;
+        try {
+            thisR = getStackFrame().thisObject ();
+        } catch (InvalidStackFrameException ex) {
+            valid = false;
+            return null;
+        }
         if (thisR == null) return null;
-        LocalsTreeModel ltm = ctm.getLocalsTreeModel ();
-        return ltm.getThis (thisR, "");
+        return new ThisVariable (debugger, thisR, "");
     }
     
     /**
@@ -185,15 +222,16 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @see org.netbeans.api.debugger.jpda.JPDADebugger#getCurrentCallStackFrame
      */
     public void makeCurrent () {
-        ctm.getDebugger ().setCurrentCallStackFrame (this);
+        debugger.setCurrentCallStackFrame (this);
     }
     
     /**
-     * Returns <code>true</code> if this frame is obsoleted.
+     * Returns <code>true</code> if the method in this frame is obsoleted.
      *
-     * @return <code>true</code> if this frame is obsoleted
+     * @return <code>true</code> if the method in this frame is obsoleted
+     * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
-    public boolean isObsolete () {
+    public synchronized boolean isObsolete () {
         return getStackFrame ().location ().method ().isObsolete ();
     }
     
@@ -201,18 +239,21 @@ public class CallStackFrameImpl implements CallStackFrame {
      * Pop stack frames. All frames up to and including the frame 
      * are popped off the stack. The frame previous to the parameter 
      * frame will become the current frame.
+     *
+     * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public void popFrame () {
-        ctm.getDebugger ().popFrames (thread, getStackFrame ());
+        debugger.popFrames (sf.thread(), getStackFrame ());
     }
     
     /**
      * Returns thread.
      *
      * @return thread
+     * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public JPDAThread getThread () {
-        return ctm.getDebugger ().getThread (thread);
+        return debugger.getThread (sf.thread());
     }
 
     
@@ -223,26 +264,30 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws IllegalStateException when the associated thread is not suspended.
      */
     public StackFrame getStackFrame () {
-        try {
-            return thread.frame (index);
-        } catch (IncompatibleThreadStateException e) {
-            // There is a lot of calls like "getStackFrame().<something>
-            // therefore it's better not to return null.
-            // The caller should know that this can not be called while the
-            // thread is running
-            IllegalStateException isex = new IllegalStateException(e.getLocalizedMessage());
-            isex.initCause(e);
-            throw isex;
-        }
+        return sf;
     }
 
     public boolean equals (Object o) {
-        return  (o instanceof CallStackFrameImpl) &&
-                (id.equals (((CallStackFrameImpl) o).id));
+        try {
+            return  (o instanceof CallStackFrameImpl) &&
+                    (sf.equals (((CallStackFrameImpl) o).sf));
+        } catch (InvalidStackFrameException isfex) {
+            return sf == ((CallStackFrameImpl) o).sf;
+        }
     }
     
-    public int hashCode () {
-        return id.hashCode ();
+    private Integer hashCode;
+    
+    public synchronized int hashCode () {
+        if (hashCode == null) {
+            try {
+                hashCode = new Integer(sf.hashCode());
+            } catch (InvalidStackFrameException isfex) {
+                valid = false;
+                hashCode = new Integer(super.hashCode());
+            }
+        }
+        return hashCode.intValue();
     }
 }
 

@@ -22,6 +22,7 @@ import com.sun.jdi.Value;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 /**
  * Represents watch in JPDA debugger.
@@ -31,36 +32,36 @@ import org.netbeans.api.debugger.jpda.JPDAWatch;
 
 class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
 
-    private WatchesModel        model;
+    private JPDADebuggerImpl    debugger;
     private Watch               watch;
     private String              exceptionDescription;
     private java.lang.ref.Reference nodeRef;
     
     
-    JPDAWatchImpl (WatchesModel model, Watch watch, Value v, Object node) {
+    JPDAWatchImpl (JPDADebuggerImpl debugger, Watch watch, Value v, Object node) {
         super (
-            model.getLocalsTreeModel (), 
+            debugger,
             v, 
             "" + watch +
                 (v instanceof ObjectReference ? "^" : "")
         );
-        this.model = model;
+        this.debugger = debugger;
         this.watch = watch;
         this.nodeRef = new java.lang.ref.WeakReference(node);
     }
     
     JPDAWatchImpl (
-        WatchesModel model, 
+        JPDADebuggerImpl debugger, 
         Watch watch, 
         Exception exception,
         Object node
     ) {
         super (
-            model.getLocalsTreeModel (), 
+            debugger, 
             null, 
             "" + watch
         );
-        this.model = model;
+        this.debugger = debugger;
         this.watch = watch;
         this.exceptionDescription = exception.getLocalizedMessage ();
         if (exceptionDescription == null)
@@ -107,7 +108,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     * Sets string representation of value of this variable.
     *
     * @param value string representation of value of this variable.
-    */
+    *
     public void setValue (String expression) throws InvalidExpressionException {
         // evaluate expression to Value
         Value value = model.getDebugger ().evaluateIn (expression);
@@ -121,6 +122,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
             model.fireTableValueChangedChanged (node, null);
         }
     }
+     */
     
     protected void setInnerValue (Value v) {
         super.setInnerValue (v);
@@ -128,7 +130,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     }
     
     protected void setValue (Value value) throws InvalidExpressionException {
-        CallStackFrameImpl frame = (CallStackFrameImpl) model.getDebugger ().
+        CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
             getCurrentCallStackFrame ();
         if (frame == null)
             throw new InvalidExpressionException ("No curent frame.");

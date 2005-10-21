@@ -14,7 +14,11 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.*;
+import java.beans.Customizer;
+import java.beans.PropertyChangeEvent;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,32 +38,34 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 /**
  * @author   Jan Jancura
  */
-class AbstractVariable implements ObjectVariable {
+class AbstractVariable implements ObjectVariable, Customizer { // Customized for add/removePropertyChangeListener
 
     private Value           value;
-    private LocalsTreeModel model;
+    private JPDADebuggerImpl debugger;
     private String          id;
     private String          genericType;
     private Field[]         fields;
     private Field[]         staticFields;
     private Field[]         inheritedFields;
+    
+    private Set listeners = new HashSet();
 
     
     AbstractVariable (
-        LocalsTreeModel model,
+        JPDADebuggerImpl debugger,
         Value value,
         String id
     ) {
-        this.model = model;
+        this.debugger = debugger;
         this.value = value;
         this.id = id;
         if (this.id == null)
             this.id = Integer.toString(super.hashCode());
     }
 
-    AbstractVariable (LocalsTreeModel model, Value value, String genericSignature,
+    AbstractVariable (JPDADebuggerImpl debugger, Value value, String genericSignature,
                       String id) {
-        this.model = model;
+        this.debugger = debugger;
         this.value = value;
         try {
             if (genericSignature != null) {
@@ -108,17 +114,45 @@ class AbstractVariable implements ObjectVariable {
     */
     public void setValue (String expression) throws InvalidExpressionException {
         // evaluate expression to Value
-        Value value = getModel().getDebugger ().evaluateIn (expression);
+        Value value = debugger.evaluateIn (expression);
         // set new value to remote veriable
         setValue (value);
         // set new value to this model
         setInnerValue (value);
         // refresh tree
-        getModel ().fireTableValueChangedChanged (this, null);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "value", null, value);
+        Object[] ls;
+        synchronized (listeners) {
+            ls = listeners.toArray();
+        }
+        for (int i = 0; i < ls.length; i++) {
+            ((PropertyChangeListener) ls[i]).propertyChange(evt);
+        }
+        //pchs.firePropertyChange("value", null, value);
+        //getModel ().fireTableValueChangedChanged (this, null);
     }
     
+    /**
+     * Override, but do not call directly!
+     */
     protected void setValue (Value value) throws InvalidExpressionException {
         throw new InternalError ();
+    }
+    
+    public void setObject(Object bean) {
+        try {
+            if (bean instanceof String) {
+                setValue((String) bean);
+            //} else if (bean instanceof Value) {
+            //    setValue((Value) bean); -- do not call directly
+            } else {
+                throw new IllegalArgumentException(""+bean);
+            }
+        } catch (InvalidExpressionException ieex) {
+            IllegalArgumentException iaex = new IllegalArgumentException(ieex.getLocalizedMessage());
+            iaex.initCause(ieex);
+            throw iaex;
+        }
     }
 
     /**
@@ -240,7 +274,7 @@ class AbstractVariable implements ObjectVariable {
         if (superType == null) 
             return null;
         return new SuperVariable(
-                this.getModel(), 
+                debugger, 
                 (ObjectReference) this.getInnerValue(),
                 superType,
                 this.id
@@ -268,7 +302,7 @@ class AbstractVariable implements ObjectVariable {
                 ) + "\"";
             Method toStringMethod = ((ClassType) v.type ()).
                 concreteMethodByName ("toString", "()Ljava/lang/String;");
-            return ((StringReference) getModel ().getDebugger ().invokeMethod (
+            return ((StringReference) debugger.invokeMethod (
                 (ObjectReference) v,
                 toStringMethod,
                 new Value [0]
@@ -332,7 +366,7 @@ class AbstractVariable implements ObjectVariable {
             int i, k = arguments.length;
             for (i = 0; i < k; i++)
                 vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
-            Value v = getModel().getDebugger ().invokeMethod (
+            Value v = debugger.invokeMethod (
                 (ObjectReference) this.getInnerValue(),
                 method,
                 vs
@@ -341,11 +375,11 @@ class AbstractVariable implements ObjectVariable {
             // 4) encapsulate result
             if (v instanceof ObjectReference)
                 return new AbstractVariable ( // It's also ObjectVariable
-                        getModel (),
+                        debugger,
                         (ObjectReference) v,
                         id + method + "^"
                     );
-            return new AbstractVariable (getModel (), v, id + method);
+            return new AbstractVariable (debugger, v, id + method);
         } catch (VMDisconnectedException ex) {
             return null;
         }
@@ -385,8 +419,8 @@ class AbstractVariable implements ObjectVariable {
         inheritedFields = null;
     }
     
-    LocalsTreeModel getModel () {
-        return model;
+    protected final JPDADebuggerImpl getDebugger() {
+        return debugger;
     }
     
     String getID () {
@@ -511,7 +545,7 @@ class AbstractVariable implements ObjectVariable {
                 Value v = (Value) l.get (i);
                 ch [i] = (v instanceof ObjectReference) ?
                     new ObjectArrayFieldVariable (
-                        this.getModel (), 
+                        debugger, 
                         (ObjectReference) v, 
                         componentType, 
                         ar, 
@@ -520,7 +554,7 @@ class AbstractVariable implements ObjectVariable {
                         parentID
                     ) :
                     new ArrayFieldVariable (
-                        this.getModel (), 
+                        debugger, 
                         v, 
                         componentType, 
                         ar, 
@@ -573,14 +607,22 @@ class AbstractVariable implements ObjectVariable {
         Value v = or.getValue (f);
         if ( (v == null) || (v instanceof ObjectReference))
             return new ObjectFieldVariable (
-                this.getModel(),
+                debugger,
                 (ObjectReference) v,
                 f,
                 parentID,
                 JPDADebuggerImpl.getGenericSignature(f),
                 or
             );
-        return new FieldVariable (this.getModel(), v, f, parentID, or);
+        return new FieldVariable (debugger, v, f, parentID, or);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        listeners.add(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        listeners.remove(l);
     }
     
     public String toString () {
@@ -650,5 +692,6 @@ class AbstractVariable implements ObjectVariable {
             }
         return sb.toString();
     }
+    
 }
 
