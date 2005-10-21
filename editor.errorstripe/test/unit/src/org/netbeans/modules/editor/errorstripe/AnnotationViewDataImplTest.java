@@ -355,8 +355,22 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         
         assertEquals(test2, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
         
+        bd.getAnnotations().activateNextAnnotation(2);
+        
+        assertEquals(test2, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
+        
+        bd.getAnnotations().activateNextAnnotation(2);
+        
         bd.getAnnotations().addAnnotation(test3);
         bd.getAnnotations().addAnnotation(test4);
+        
+        assertEquals(test4, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
+        
+        bd.getAnnotations().activateNextAnnotation(2);
+        
+        assertEquals(test4, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
+        
+        bd.getAnnotations().activateNextAnnotation(2);
         
         assertEquals(test4, ((AnnotationMark) data.getMainMarkForBlock(2, 2)).getAnnotationDesc());
         

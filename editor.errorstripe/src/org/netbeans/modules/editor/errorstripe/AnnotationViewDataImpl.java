@@ -280,7 +280,15 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
     
     private boolean isMoreImportant(AnnotationDesc a1, AnnotationDesc a2) {
-        return a1.getAnnotationTypeInstance().getSeverity().compareTo(a2.getAnnotationTypeInstance().getSeverity()) > 0;
+        AnnotationType t1 = a1.getAnnotationTypeInstance();
+        AnnotationType t2 = a2.getAnnotationTypeInstance();
+        
+        int compared = t1.getSeverity().compareTo(t2.getSeverity());
+        
+        if (compared == 0)
+            return t1.getPriority() < t2.getPriority();
+        
+        return compared > 0;
     }
     
     private boolean isValidForErrorStripe(AnnotationDesc a) {
