@@ -175,9 +175,15 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
     public ReferenceHelper getReferenceHelper(){
         return referenceHelper;
     }
-        
+
     // Implementation of WebServiceClientSupportImpl
     public void addServiceClient(String serviceName, String packageName, String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor) {
+        this.addServiceClient(serviceName, packageName, sourceUrl, configFile, stubDescriptor, null);
+    }
+
+        
+    // Implementation of WebServiceClientSupportImpl
+    public void addServiceClient(String serviceName, String packageName, String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor, String[] wscompileFeatures) {
         // !PW FIXME I have two concerns with this implementation:
         // 1. Since it modifies project.xml, I suspect it should be acquiring
         //    ProjectManager.mutex() for write access.
@@ -254,6 +260,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
             String defaultFeatures = "wsi, strict"; // NOI18N -- defaults if stub descriptor is bad type (should never happen?)
             if(stubDescriptor instanceof JAXRPCClientStubDescriptor) {
                 JAXRPCClientStubDescriptor stubDesc = (JAXRPCClientStubDescriptor) stubDescriptor;
+                if (wscompileFeatures!=null) stubDesc.setDefaultFeatures(wscompileFeatures);
                 defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
             } else {
                 // !PW FIXME wrong stub type -- log error message.
@@ -875,10 +882,14 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 if(i > 0) {
                     buf.append(",");
                 }
-                
+
                 buf.append(defaultFeatures[i]);
             }
             return buf.toString();
+        }
+        
+        void setDefaultFeatures(String[] defaultFeatures) {
+            this.defaultFeatures=defaultFeatures;
         }
     }
     
