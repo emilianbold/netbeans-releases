@@ -29,6 +29,9 @@ Microsystems, Inc. All Rights Reserved.
   <resources>
 $${jnlp.resources}
   </resources>
+  <resources os="Mac OS X"> 
+      <property name="netbeans.user" value="${user.home}/Library/Application Support/feedreader"/>
+  </resource>
   <application-desc>
     <argument>--branding</argument>
     <argument>$${branding.token}</argument>
