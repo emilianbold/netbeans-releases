@@ -210,7 +210,9 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
 
             for (int i = 0; i<diffs.length; i++) {
                 int startLine = diffShifts[i][0] + diffs[i].getFirstStart();
-                if (firstVisibleLine < startLine && startLine < lastVisibleLine) {
+                int endLine = diffShifts[i][0] + diffs[i].getFirstEnd();  // there no add changes in left pane  
+                if (firstVisibleLine < startLine && startLine < lastVisibleLine
+                || firstVisibleLine < endLine && endLine < lastVisibleLine) {
                     if (i == currentDiffLine) {
                         return currentDiffLine; // current is visible, eliminate hazards use it.
                     }
@@ -431,7 +433,7 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
             copy.removePropertyChangeListener(copyListener);
         }
     }
-    
+
     private void expandFolds() {
         FoldHierarchy fh = FoldHierarchy.get(jEditorPane1);
         FoldUtilities.expandAll(fh);
