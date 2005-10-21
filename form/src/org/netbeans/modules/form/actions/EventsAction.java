@@ -165,7 +165,7 @@ public class EventsAction extends CookieAction {
                                                  + name.substring(1));
                     HelpCtx.setHelpIDString(eventSetMenu,
                                             EventsAction.class.getName());
-                    menu.add(eventSetMenu);
+                    addSortedMenuItem(menu, eventSetMenu);
                     eventSetHasHandlers = false;
                     lastEventSetDesc = event.getEventSetDescriptor();
                 }
@@ -205,7 +205,7 @@ public class EventsAction extends CookieAction {
         }
         menu.add(menuItem);
     }
-
+	
     private ActionListener getMenuItemListener() {
         if (menuItemListener == null)
             menuItemListener = new EventMenuItemListener();
