@@ -189,8 +189,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 while (metacomps.hasNext()) {
                     RADComponent metacomp = (RADComponent)metacomps.next();
                     RADVisualComponent layoutMetacomp = formDesigner.componentToLayoutComponent(metacomp);
-                    if (layoutMetacomp != null) metacomp = layoutMetacomp;
-                    paintSelection(g2, metacomp, first || !isInNewLayout(metacomp));
+                    if (layoutMetacomp != null)
+                        metacomp = layoutMetacomp;
+                    paintSelection(g2, metacomp, first || !isDesignedInNewLayout(metacomp));
                     first = false;
                 }
                 painted = true;
@@ -207,11 +208,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
     }
 
-    private void paintSelection(Graphics2D g, RADComponent metacomp, boolean resizeHandles) {
+    /**
+     * @param inLayout indicates whether to paint layout related decorations
+     *        (layout relations and resize handles)
+     */
+    private void paintSelection(Graphics2D g, RADComponent metacomp, boolean inLayout) {
         Object comp = formDesigner.getComponent(metacomp);
         if (!(comp instanceof Component))
-            return;
-        if (metacomp == formDesigner.getTopDesignComponent())
             return;
 
         Component component = (Component) comp;
@@ -224,8 +227,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             Rectangle visible = new Rectangle(0, 0, parent.getWidth(), parent.getHeight());
             visible = convertVisibleRectangleFromComponent(visible, parent);
 
-            if ((metacont instanceof RADVisualContainer)
-                && (((RADVisualContainer)metacont).getLayoutSupport() == null)) {
+            if (inLayout) {
                 Container topCont = formDesigner.getTopVisualContainer();
                 Point convertPoint = convertPointFromComponent(0, 0, topCont);
                 g.translate(convertPoint.x, convertPoint.y);
@@ -246,7 +248,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 g.translate(-convertPoint.x, -convertPoint.y);
             }
             int resizable = 0;
-            if (resizeHandles && (metacomp instanceof RADVisualComponent)) {
+            if (inLayout && (metacomp instanceof RADVisualComponent)) {
                 resizable = getComponentResizable((RADVisualComponent)metacomp);
             }
             if (resizable == 0) {
@@ -258,7 +260,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             int width = selRect.width + correction;
             int height = selRect.height + correction;
             g.drawRect(x, y, width, height);
-            if (resizeHandles && (metacomp instanceof RADVisualComponent)) {
+            if (inLayout && (metacomp instanceof RADVisualComponent)) {
                 Image resizeHandle = resizeHandle();
                 int iconHeight = resizeHandle.getHeight(null);
                 int iconWidth = resizeHandle.getWidth(null);
@@ -290,18 +292,17 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
     }
     
-    private boolean isInNewLayout(RADComponent metacomp) {
-        RADComponent metacont = metacomp.getParentComponent();
-        if (metacont instanceof RADVisualContainer) {
-            RADVisualContainer container = (RADVisualContainer)metacont;
-            LayoutSupportManager laySup = container.getLayoutSupport();
-            if (laySup == null) { // new layout support
-                return true;
-            }
+    private boolean isDesignedInNewLayout(RADComponent metacomp) {
+        if (metacomp instanceof RADVisualComponent
+            && metacomp != formDesigner.getTopDesignComponent()
+            && formDesigner.isInDesignedTree(metacomp))
+        {   // is visible under the top-designed container
+            RADVisualContainer metacont = ((RADVisualComponent)metacomp).getParentContainer();
+            return metacont != null && metacont.getLayoutSupport() == null;
         }
         return false;
     }
-    
+
     private Image resizeHandle() {
         if (resizeHandle == null) {
             resizeHandle = new ImageIcon(Utilities.loadImage(
