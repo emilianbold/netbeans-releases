@@ -579,10 +579,12 @@ public final class OpenProjectList {
         // Notify projects opened
         notifyOpened(p);
         
-        Mutex.EVENT.readAccess(new Runnable() {
-            public void run() {
+        Mutex.EVENT.readAccess(new Action() {
+            public Object run() {
                 // Open project files
                 ProjectUtilities.openProjectFiles(p);
+                
+                return null;
             }
         });
         
