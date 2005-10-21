@@ -37,8 +37,8 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
     private static Method setTopComponentMethod;
     private static Method setBottomComponentMethod;
 
-    private static String LEFT_TOP_BUTTON = "cp_left_top_button";
-    private static String RIGHT_BOTTOM_BUTTON = "cp_right_bottom_button";
+    private static final String LEFT_TOP_BUTTON = "cp_left_top_button"; // NOI18N
+    private static final String RIGHT_BOTTOM_BUTTON = "cp_right_bottom_button"; // NOI18N
 	
     /** Gets the supported layout manager class - JSplitPane.
      * @return the class supported by this delegate

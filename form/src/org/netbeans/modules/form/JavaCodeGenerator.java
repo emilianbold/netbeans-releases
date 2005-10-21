@@ -737,7 +737,7 @@ class JavaCodeGenerator extends CodeGenerator {
 			if(invalid==null) {
 			    invalid = bundle.getString("CTL_LB_InvalidComponent");  // NOI18N
 			}
-                        return component.getMissingClassName() + ": [" + invalid + "]";                
+                        return component.getMissingClassName() + ": [" + invalid + "]"; // NOI18N
                     }
                     Class beanClass = component.getBeanClass();
                     if(beanClass!=null) {

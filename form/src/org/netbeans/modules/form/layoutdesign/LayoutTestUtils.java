@@ -110,7 +110,7 @@ public class LayoutTestUtils implements LayoutConstants {
                                        new Double(bounds[i].getHeight()).intValue() + ")"; //NOI18N
             codeList.add(line);
         }
-        codeList.add("};");
+        codeList.add("};"); // NOI18N
     }
     
     static void dumpTestcode(List codeList, DataObject form, Map idToNameMap, int idCounter) {
@@ -211,7 +211,7 @@ public class LayoutTestUtils implements LayoutConstants {
 	    FileObject fo = targetFolder.createData(formFO.getName() + "Test-ExpectedEndModel", "txt"); //NOI18N
 	    fw = new FileWriter(FileUtil.toFile(fo));
 	    fw.write(lm.dump(idToNameMap));
-	    StatusDisplayer.getDefault().setStatusText("The test was successfully written: " + fo.getPath());
+	    StatusDisplayer.getDefault().setStatusText("The test was successfully written: " + fo.getPath()); // NOI18N
 	} catch (IOException ex) {
 	    ex.printStackTrace();
 	    return;

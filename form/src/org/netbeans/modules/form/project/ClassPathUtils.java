@@ -86,7 +86,7 @@ public class ClassPathUtils {
     }
 
     static int getClassLoadingType(String className) {
-        int i = className.lastIndexOf("[L");
+        int i = className.lastIndexOf("[L"); // NOI18N
         if (i != -1)
             className = className.substring(i+2, className.length()-1);
         if (isClassLoaderType(className, SYSTEM_CLASS))

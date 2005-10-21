@@ -443,7 +443,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 			    formFile.getName() + "Test-StartingForm", //NOI18N
 			    formFile.getExt()); 
 		savedIdCounter = RADComponent.getIdCounter() - 1;
-		StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath());
+		StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath()); // NOI18N
             } catch (IOException ioe) {
                 //TODO
             }
