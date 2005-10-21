@@ -194,7 +194,32 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
     }
 
     public int getCurrentDifference() throws UnsupportedOperationException {
-        return currentDiffLine;
+        int firstVisibleLine;
+        int lastVisibleLine;
+        int candidate = currentDiffLine;
+        if (jViewport1 != null) {
+            int viewHeight = jViewport1.getViewSize().height;
+            java.awt.Point p1;
+            initGlobalSizes(); // The window might be resized in the mean time.
+            p1 = jViewport1.getViewPosition();
+            int HALFLINE_CEILING = 2;  // compensation for rounding error and partially visible lines
+            float firstPct = ((float)p1.y / (float)viewHeight);
+            firstVisibleLine =  (int) (firstPct * totalLines) + HALFLINE_CEILING;
+            float lastPct = ((float)(jViewport1.getHeight() + p1.y) / (float)viewHeight);
+            lastVisibleLine = (int) (lastPct * totalLines) - HALFLINE_CEILING;
+
+            for (int i = 0; i<diffs.length; i++) {
+                int startLine = diffShifts[i][0] + diffs[i].getFirstStart();
+                if (firstVisibleLine < startLine && startLine < lastVisibleLine) {
+                    if (i == currentDiffLine) {
+                        return currentDiffLine; // current is visible, eliminate hazards use it.
+                    }
+                    candidate = i;  // takes last visible, optimalized for Next>
+                }
+            }
+        }
+
+        return candidate;
     }
 
     public JToolBar getToolBar() {
@@ -337,6 +362,10 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
         ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
         EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
         ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+
+        expandFolds();
+        initGlobalSizes();
+        addChangeListeners();
     }
 
     private Hashtable kitActions;
@@ -401,26 +430,6 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
         if (copy != null) {
             copy.removePropertyChangeListener(copyListener);
         }
-    }
-    
-
-    public void open() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                jSplitPane1.setDividerLocation(0.5);
-                openPostProcess();
-            }
-        });
-    }
-
-    protected void openPostProcess() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                expandFolds();
-                initGlobalSizes();
-                addChangeListeners();
-            }
-        });
     }
     
     private void expandFolds() {
