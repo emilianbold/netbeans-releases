@@ -28,18 +28,24 @@ import org.openide.util.Lookup;
 public final class FormEditorPanelController extends PanelController {
 
     private FormEditorCustomizer customizer = new FormEditorCustomizer ();
+    private boolean initialized = false;
     
     
     public void update () {
+        initialized = true;
         customizer.update ();
     }
     
     public void applyChanges () {
-        customizer.applyChanges ();
+        if (initialized) {
+            customizer.applyChanges ();
+        }
+        initialized = false;
     }
     
     public void cancel () {
         customizer.cancel ();
+        initialized = false;
     }
     
     public boolean isValid () {
