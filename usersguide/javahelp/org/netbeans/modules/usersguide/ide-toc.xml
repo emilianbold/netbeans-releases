@@ -213,11 +213,7 @@
     </tocitem>
     <tocitem text="Configuring the Source Editor" >
       <tocitem text="About" target="editing.configuring"/>    
-      <tocitem text="Source Editor Properties" target="editing.editor-props"/>
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting"/>
-      <tocitem text="Setting Source Synchronization Properties" target="java.sync.properties" />
-      <tocitem text="Indentation Properties" target="editing.indentation"/>
-      <tocitem text="Print Properties" target="editing.printing"/>
       <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
       <tocitem text="Working With Tabs" target="editing.tabs"/>
     </tocitem>
