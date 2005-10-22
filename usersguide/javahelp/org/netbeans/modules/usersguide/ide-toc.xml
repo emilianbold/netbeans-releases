@@ -134,7 +134,6 @@
       <tocitem text="Setting the Completion Box Delay" target="editing.settingdelay"/>
       <tocitem text="Disabling Automatic Completion " target="editing.disablingdelay"/>
       <tocitem text="Setting Code Completion Shortcuts" target="editing.settingccshortcuts"/>
-      <tocitem text="Using Javadoc With Code Completion" target="editing.completing-javadoc"/>    
       <tocitem text="Code Completion Javadoc Box" target="editing.completing-javadoc-box"/>  
     </tocitem>
     <tocitem text="Using Code Templates and Macros" >

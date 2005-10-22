@@ -142,7 +142,6 @@
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
 <mapID target="editing.completing-tag" url="editing/codecompletion/completing-tag.html" />
-<mapID target="editing.completing-javadoc" url="editing/codecompletion/completing-javadoc.html" />
 <mapID target="editing.completing-javadoc-box" url="editing/codecompletion/completing-javadoc-box.html" />
 <mapID target="editing.settingdelay" url="editing/codecompletion/settingdelay.html" />
 <mapID target="editing.disablingdelay" url="editing/codecompletion/disabling.html" />
