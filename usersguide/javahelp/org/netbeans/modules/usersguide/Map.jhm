@@ -296,7 +296,7 @@ under Print Settings in the Options window)
 <mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
 <mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
 <mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
-<!-- CSH Help ID : Options : Classic view : Editing : Internationalization -->
+<!-- CSH Help ID : Options : Advanced Options : Editing : Internationalization -->
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/options_custominter.html" />
 
 <mapID target="ant_docs" url="ant/ant_docs.html" />
@@ -683,7 +683,7 @@ under Print Settings in the Options window)
 
 <!--CSH ID for Options | Editing | Form Editor Settings :-->
     <mapID target="gui.configuring" url="configure/options_form_classic.html" />
-<!--ID for CSH in Options | Modern View - Advanced-Form Editor Settings : --> 
+<!--ID for CSH in Options | Basic Options - Advanced-Form Editor Settings : --> 
     <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
 
 
@@ -722,16 +722,16 @@ under Print Settings in the Options window)
 <!--ID for unmapped options nodes-->
    <mapID target="org.openide.options.SystemOption" url="pending.html" /> 
 
-<!-- IDs for Options window - Modern View -->
-  <!--ID for CSH in Options | Modern View - Advanced: for now just maps to Options window help topic. No CSH. --> 
+<!-- IDs for Options window - Basic Options -->
+  <!--ID for CSH in Options | Basic Options - Advanced: for now just maps to Options window help topic. No CSH. --> 
   <mapID target="netbeans.optionsDialog.advanced" url="configure/configure_options.html" />
-  <!--ID for CSH in Options | Modern View - General Category: --> 
+  <!--ID for CSH in Options | Basic Options - General Category: --> 
   <mapID target="netbeans.optionsDialog.general" url="configure/options_general.html" />
-  <!--ID for CSH in Options | Modern View - Editor Category: --> 
+  <!--ID for CSH in Options | Basic Options - Editor Category: --> 
   <mapID target="netbeans.optionsDialog.editor" url="configure/options_editor.html" />
-  <!--ID for CSH in Options | Modern View - Fonts and Colors Category: --> 
+  <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
-  <!--ID for CSH in Options | Modern View - Advanced-Ant Category: --> 
+  <!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
   <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
 
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
