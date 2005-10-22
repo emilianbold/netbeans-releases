@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+     xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+     xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
+     version="1.0">
+<xsl:output method="xml" indent="yes"/>
+<xsl:strip-space elements="*"/>
+
+  <xsl:template match="wsdl:definitions">
+   <xsl:copy>
+       <xsl:copy-of select="@*"/>
+       <xsl:apply-templates select="wsdl:documentation | wsdl:types | wsdl:import | wsdl:message | wsdl:portType | wsdl:binding | wsdl:service"/>
+       <!--<xsl:call-template name="genService"/>--> 
+   </xsl:copy>
+   
+  </xsl:template>
+
+   <xsl:template match="wsdl:documentation | wsdl:types | wsdl:import | wsdl:message | wsdl:portType | wsdl:binding">
+   <xsl:copy>
+       <xsl:copy-of select="@* | node()"/>
+       <!-- <xsl:apply-templates/> -->
+   </xsl:copy>
+  </xsl:template>
+  
+  <xsl:template match="wsdl:service" >
+      <xsl:element name="wsdl:service">
+          <xsl:attribute name="name">
+             <!-- replace the name attribute with -->
+             <xsl:value-of select="@name"/><xsl:text>_Service</xsl:text>
+          </xsl:attribute>
+          <xsl:copy-of select="wsdl:documentation | wsdl:port"/>
+      </xsl:element>
+  </xsl:template>
+ 
+</xsl:stylesheet> 
