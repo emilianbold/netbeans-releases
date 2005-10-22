@@ -13,11 +13,12 @@
 
 package org.openide.loaders;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -27,7 +28,6 @@ import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-
 
 /** To simulate and fix 65543.
  * <pre>
@@ -129,11 +129,11 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         assertNotNull("InstanceCookie is there", ic);
         assertEquals("Is the same as from instance", v, ic.instanceCreate());
         
-        if (DataFolderIndexTest.ErrManager.messages.indexOf("Preventing deadlock") == -1) {
-            fail("There should be a warning in the log: " + DataFolderIndexTest.ErrManager.messages);
+        if (ErrManager.messages.indexOf("Preventing deadlock") == -1) {
+            fail("There should be a warning in the log: " + ErrManager.messages);
         }
-        if (DataFolderIndexTest.ErrManager.messages.indexOf("65543") == -1) {
-            fail("There should be a warning in the log: " + DataFolderIndexTest.ErrManager.messages);
+        if (ErrManager.messages.indexOf("65543") == -1) {
+            fail("There should be a warning in the log: " + ErrManager.messages);
         }
     }
     
@@ -146,7 +146,7 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         private Lkp(InstanceContent ic) {
             super(ic);
             ic.add(new Pool());
-            ic.add(new DataFolderIndexTest.ErrManager ());
+            ic.add(new ErrManager ());
         }
     }
     
@@ -238,6 +238,47 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         
         public Enumeration loaders() {
             return Enumerations.singleton(DataLoader.getLoader(MyLoader.class));
+        }
+    }
+    static final class ErrManager extends org.openide.ErrorManager {
+        static final StringBuffer messages = new StringBuffer();
+        static int nOfMessages;
+        static final String DELIMITER = ": ";
+        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
+        
+        static void resetMessages() {
+            messages.delete(0, ErrManager.messages.length());
+            nOfMessages = 0;
+        }
+        
+        public void log(int severity, String s) {
+            nOfMessages++;
+            messages.append(severity + DELIMITER + s);
+            messages.append('\n');
+        }
+        
+        public Throwable annotate(Throwable t, int severity,
+                String message, String localizedMessage,
+                Throwable stackTrace, java.util.Date date) {
+            return t;
+        }
+        
+        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
+            return t;
+        }
+        
+        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
+            return null;
+        }
+        
+        public org.openide.ErrorManager getInstance(String name) {
+            return this;
+        }
+        
+        public void notify(int severity, Throwable t) {
+            StringWriter w = new StringWriter();
+            t.printStackTrace(new PrintWriter(w));
+            messages.append(w.toString());
         }
     }
     

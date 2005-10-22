@@ -361,8 +361,12 @@ public class FolderLookup extends FolderInstance {
                     try {
                         // try a bit but prevent deadlock from CanYouQueryFolderLookupFromHandleFindTest
                         while (!fl.waitFinished(10000)) {
-                            if (DataObjectPool.getPOOL().isInWaitNotified()) {
-                                fl.err().notify(ErrorManager.WARNING, new InterruptedException("Preventing deadlock #65543: Do not call FolderLookup from inside DataObject operations!")); // NOI18N
+                            long blocked = DataObjectPool.getPOOL().timeInWaitNotified();
+                            if (blocked > 10000L) {
+                                // folder recognizer thread is waiting for more then
+                                // 10s in waitFinished, which signals that there 
+                                // is a very high possibility of a deadlock
+                                fl.err().log(ErrorManager.INFORMATIONAL, "Preventing deadlock #65543: Do not call FolderLookup from inside DataObject operations!"); // NOI18N
                                 return;
                             }
                         }

@@ -34,7 +34,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach
  */
-public class CanYouCreateFolderLookupFromHandleFindSlowVersionTest extends NbTestCase {
+public class CanYouCreateFolderLookupFromHandleFindSlowVersionTest extends LoggingTestCaseHid {
     
     /** Creates a new instance of CanYouQueryFolderLookupFromHandleFindTest */
     public CanYouCreateFolderLookupFromHandleFindSlowVersionTest(String s) {
@@ -42,8 +42,7 @@ public class CanYouCreateFolderLookupFromHandleFindSlowVersionTest extends NbTes
     }
     
     protected void setUp() {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
+        registerIntoLookup(new Pool());
     }
     
     public void testCreateAndImmediatellyQueryWhenThereIsALotfSlowDataObjectsTheLookup() throws Exception {
@@ -70,17 +69,6 @@ public class CanYouCreateFolderLookupFromHandleFindSlowVersionTest extends NbTes
         assertEquals("All slow files recognized", 15, m.slowCnt);
     }
     
-    
-    public static final class Lkp extends AbstractLookup {
-        public Lkp() {
-            this(new InstanceContent());
-        }
-        
-        private Lkp(InstanceContent ic) {
-            super(ic);
-            ic.add(new Pool());
-        }
-    }
     
     public static final class MyLoader extends UniFileLoader {
         public FileObject button;

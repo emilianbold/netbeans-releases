@@ -65,7 +65,7 @@ implements ChangeListener {
      * inside synchronized block, but read without synchronization, that is
      * why it is made volatile
      */
-    private volatile boolean inWaitNotified;
+    private volatile long inWaitNotified = -1;
     
     /** Get the instance of DataObjectPool - value of static field 'POOL'.
      * Initialize the field if necessary.
@@ -460,8 +460,6 @@ implements ChangeListener {
         for (;;) {
             synchronized (this) {
                 try {
-                    inWaitNotified = true;
-                    
                     enterRecognition (obj.getPrimaryFile().getParent());
 
                     if (toNotify.isEmpty()) {
@@ -482,22 +480,37 @@ implements ChangeListener {
                         err.log (ErrorManager.INFORMATIONAL, "      waitingFor: " + obj.getPrimaryFile ().getPath ()); // NOI18N
                     }
 
+                    if (FolderList.isFolderRecognizerThread()) {
+                        inWaitNotified = System.currentTimeMillis();
+                    }
                     wait ();
                 } catch (InterruptedException ex) {
                     // never mind
                 } finally {
-                    inWaitNotified = false;
+                    if (FolderList.isFolderRecognizerThread()) {
+                        inWaitNotified = -1;
+                    }
                 }
             }
         }
     }
 
-    /** Allows to check whether a code is in waitNotified method in order
+    /** Allows to check whether folder recognizer is in waitNotified method in order
      * to detect more precisly the condition needed for deadlock #65543 really
      * happened.
+     * @return the time for how long the folder recognizer is waiting or -1 if it is not
      */
-    final boolean isInWaitNotified() {
-        return inWaitNotified;
+    final long timeInWaitNotified() {
+        long l = inWaitNotified;
+        if (l == -1) {
+            return -1;
+        } else {
+            l = System.currentTimeMillis() - l;
+            if (l < 0) {
+                l = 0;
+            }
+            return l;
+        }
     }
     
     
