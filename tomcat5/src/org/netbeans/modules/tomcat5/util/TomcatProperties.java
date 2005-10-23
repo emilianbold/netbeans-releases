@@ -26,7 +26,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.customizer.CustomizerDataSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -34,7 +33,6 @@ import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
 /**
  * Utility class that makes it easier to access and set Tomcat instance properties.
  *
@@ -98,7 +96,7 @@ public class TomcatProperties {
     private File baseDir;
     
     /** Creates a new instance of TomcatProperties */
-    public TomcatProperties(TomcatManager tm) {
+    public TomcatProperties(TomcatManager tm) throws IllegalArgumentException {
         this.tm = tm;
         this.ip = tm.getInstanceProperties();
         String catalinaHome = null;
@@ -133,11 +131,16 @@ public class TomcatProperties {
                 }
             }
         }
-        assert catalinaHome != null : "CATALINA_HOME must not be null."; // NOI18N
+        if (catalinaHome == null) {
+            throw new IllegalArgumentException("CATALINA_HOME must not be null."); // NOI18N
+        }
         homeDir = new File(catalinaHome);
         if (!homeDir.isAbsolute ()) {
             InstalledFileLocator ifl = InstalledFileLocator.getDefault();
             homeDir = ifl.locate(catalinaHome, null, false);
+        }
+        if (!homeDir.exists()) {
+            throw new IllegalArgumentException("CATALINA_HOME directory does not exist."); // NOI18N
         }
         if (catalinaBase != null) {
             baseDir = new File(catalinaBase);

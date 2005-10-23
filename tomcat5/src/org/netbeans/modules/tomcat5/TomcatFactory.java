@@ -91,8 +91,13 @@ public class TomcatFactory implements DeploymentFactory {
         }
         TomcatManager tm = (TomcatManager)managerCache.get(ip);
         if (tm == null) {
-            tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), TomcatManager.TOMCAT_50);
-            managerCache.put(ip, tm);
+            try {
+                tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), TomcatManager.TOMCAT_50);
+                managerCache.put(ip, tm);
+            } catch (IllegalArgumentException iae) {
+                Throwable t = new DeploymentManagerCreationException("Cannot create deployment manager for Tomcat instance: " + uri + "."); // NOI18N
+                throw (DeploymentManagerCreationException)(t.initCause(iae));
+            }
         }
         return tm;
     }

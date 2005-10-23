@@ -81,7 +81,7 @@ public class TomcatManager implements DeploymentManager {
     
     private TomcatPlatformImpl tomcatPlatform;
     
-    private TomcatProperties tomcatProperties;
+    private TomcatProperties tp;
     
     private int tomcatVersion;
     
@@ -93,7 +93,8 @@ public class TomcatManager implements DeploymentManager {
      * @param uname username
      * @param passwd password
      */
-    public TomcatManager (boolean conn, String uri, int tomcatVersion) {
+    public TomcatManager(boolean conn, String uri, int tomcatVersion) 
+    throws IllegalArgumentException {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri); //NOI18N
         }
@@ -107,6 +108,9 @@ public class TomcatManager implements DeploymentManager {
             if (!displayName.equals(ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR))) {
                 ip.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
             }
+        }
+        if (ip != null) {
+            tp = new TomcatProperties(this);
         }
     }
 
@@ -123,11 +127,8 @@ public class TomcatManager implements DeploymentManager {
                            : false;
     }
     
-    public synchronized TomcatProperties getTomcatProperties() {
-        if (tomcatProperties == null) {
-            tomcatProperties = new TomcatProperties(this);
-        }
-        return tomcatProperties;
+    public TomcatProperties getTomcatProperties() {
+        return tp;
     }
 
     /**
@@ -137,7 +138,7 @@ public class TomcatManager implements DeploymentManager {
      * @return <code>true</code> if the server is running.
      */
     public boolean isRunning(boolean checkResponse) {
-        return isRunning(getTomcatProperties().getRunningCheckTimeout(), checkResponse);
+        return isRunning(tp.getRunningCheckTimeout(), checkResponse);
     }
     
     /**
@@ -183,14 +184,14 @@ public class TomcatManager implements DeploymentManager {
      * @return URI without home and base specification
      */
     public String getPlainUri () {
-        return "http://" + getTomcatProperties().getHost() + ":" + getCurrentServerPort() + "/manager/"; //NOI18N
+        return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/"; //NOI18N
     }
     
     /** Returns URI of TomcatManager.
      * @return URI without home and base specification
      */
     public String getServerUri () {
-        return "http://" + getTomcatProperties().getHost() + ":" + getCurrentServerPort(); //NOI18N
+        return "http://" + tp.getHost() + ":" + getCurrentServerPort(); //NOI18N
     }
 
     /**
@@ -203,7 +204,6 @@ public class TomcatManager implements DeploymentManager {
         TomcatManagerConfig tmConfig = getTomcatManagerConfig();
         String engineName = tmConfig.getEngineElement().getAttributeValue("name"); //NOI18N
         String hostName = tmConfig.getHostElement().getAttributeValue("name"); //NOI18N
-        TomcatProperties tp = getTomcatProperties();
         StringBuffer catWork = new StringBuffer(tp.getCatalinaDir().toString());
         catWork.append("/work/").append(engineName).append("/").append(hostName); //NOI18N
         return catWork.toString(); 
@@ -211,7 +211,6 @@ public class TomcatManager implements DeploymentManager {
     
     /** Ensure that the catalina base folder is ready, generate it if empty. */
     public void ensureCatalinaBaseReady() {
-        TomcatProperties tp = getTomcatProperties();
         File baseDir = tp.getCatalinaBase();
         if (baseDir != null) {
             String[] files = baseDir.list();
@@ -595,13 +594,11 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public String toString () {
-        TomcatProperties tp = getTomcatProperties();
         return "Tomcat manager ["+uri+", home "+tp.getCatalinaHome()+", base "+tp.getCatalinaBase()+(connected?"conneceted":"disconnected")+"]";    // NOI18N
     }
     
     public void setServerPort(int port) {
         ensureCatalinaBaseReady(); // generated the catalina base folder if empty
-        TomcatProperties tp = getTomcatProperties();
         if (TomcatInstallUtil.setServerPort(port, tp.getServerXml())) {
             tp.setServerPort(port);
         }
@@ -609,7 +606,6 @@ public class TomcatManager implements DeploymentManager {
     
     public void setShutdownPort(int port) {
         ensureCatalinaBaseReady(); // generated the catalina base folder if empty
-        TomcatProperties tp = getTomcatProperties();
         if (TomcatInstallUtil.setShutdownPort(port, tp.getServerXml())) {
             tp.setShutdownPort(port);
         }
@@ -629,16 +625,15 @@ public class TomcatManager implements DeploymentManager {
      * from the actual port Tomcat is currently running on @see #getCurrentServerPort(). */
     public int getServerPort() {
         ensurePortsUptodate();
-        return getTomcatProperties().getServerPort();
+        return tp.getServerPort();
     }
     
     public int getShutdownPort() {
         ensurePortsUptodate();
-        return getTomcatProperties().getShutdownPort();
+        return tp.getShutdownPort();
     }
     
     private void ensurePortsUptodate() {
-        TomcatProperties tp = getTomcatProperties();
         File serverXml = tp.getServerXml();
         long timestamp = -1;
         if (serverXml.exists()) {
@@ -660,7 +655,7 @@ public class TomcatManager implements DeploymentManager {
     
     public Server getRoot() {        
         try {
-            return Server.createGraph(getTomcatProperties().getServerXml());
+            return Server.createGraph(tp.getServerXml());
         } catch (IOException e) {
             if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                 TomcatFactory.getEM ().log (e.toString());
@@ -732,7 +727,7 @@ public class TomcatManager implements DeploymentManager {
             String passwd = null;
             if (isBundledTomcat()) {
                 passwd = TomcatInstallUtil.generatePassword(8);
-                getTomcatProperties().setPassword(passwd);
+                tp.setPassword(passwd);
             }
             String [] patternTo = new String [] { 
                 null, 
@@ -897,7 +892,7 @@ public class TomcatManager implements DeploymentManager {
      */
     public synchronized TomcatManagerConfig getTomcatManagerConfig() {
         if (tomcatManagerConfig == null) {
-            tomcatManagerConfig = new TomcatManagerConfig(getTomcatProperties().getServerXml());
+            tomcatManagerConfig = new TomcatManagerConfig(tp.getServerXml());
         }
         return tomcatManagerConfig;
     }
@@ -942,7 +937,7 @@ public class TomcatManager implements DeploymentManager {
     
     public synchronized TomcatPlatformImpl getTomcatPlatform() {
         if (tomcatPlatform == null) {
-            tomcatPlatform = new TomcatPlatformImpl(getTomcatProperties());
+            tomcatPlatform = new TomcatPlatformImpl(tp);
         }
         return tomcatPlatform;
     }
