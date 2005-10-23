@@ -450,11 +450,14 @@ implements DocumentListener, KeyListener {
     }
     
     public void keyPressed(KeyEvent e) {
-        if (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0).equals(
-                KeyStroke.getKeyStrokeForEvent(e))
-        ) {
+        if (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0).equals(KeyStroke.getKeyStrokeForEvent(e))) {
             release();
             e.consume();
+        } else if (KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0).equals(KeyStroke.getKeyStrokeForEvent(e))) {
+            if (getActiveMaster() == null) {
+                checkNotifyParameterUpdate();
+                release();
+            }
         }
     }
 
