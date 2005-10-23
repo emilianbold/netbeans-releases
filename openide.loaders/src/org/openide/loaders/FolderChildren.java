@@ -164,7 +164,7 @@ implements PropertyChangeListener, ChangeListener {
             }
         }
         Node[] res = getNodes();
-        refreshRunnable.clear(); // we can clean the references to data objects now
+        postClearTask();         // we can clean the references to data objects now
                                  // they are no longer needed
         return res;
     }
