@@ -162,7 +162,7 @@ public class TomcatManager implements DeploymentManager {
             }
         }
         if (checkResponse) {
-            return URLWait.waitForStartup (this, timeout); // is tomcat responding?
+            return Utils.pingTomcat(getServerPort(), timeout); // is tomcat responding?
         } else {
             return false; // cannot resolve the state
         }

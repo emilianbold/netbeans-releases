@@ -325,6 +325,20 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             }
             
             currentServerPort = tm.getServerPort(); // remember the server port
+            int shutdownPort = tm.getShutdownPort();
+            
+            if (command == CommandType.START) {
+                // check whether the server ports are free
+                if (!Utils.isPortFree(currentServerPort)) {
+                    fireCmdExecProgressEvent("MSG_StartFailedServerPortInUse", String.valueOf(currentServerPort), StateType.FAILED);
+                    return;
+                }
+                if (!Utils.isPortFree(shutdownPort)) {
+                    fireCmdExecProgressEvent("MSG_StartFailedShutdownPortInUse", String.valueOf(shutdownPort), StateType.FAILED);
+                    return;
+                }
+            }
+            
             JavaPlatform platform = mode == MODE_PROFILE ? profilerSettings.getJavaPlatform()
                                                          : getJavaPlatform();
             String jdkVersion = platform.getSpecification().getVersion().toString();
@@ -591,7 +605,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             }
         } else {
             int timeout = tm.getTomcatProperties().getRunningCheckTimeout();
-            return !URLWait.waitForStartup(tm, timeout);
+            return !Utils.pingTomcat(tm.getServerPort(), timeout);
         }
     }
     

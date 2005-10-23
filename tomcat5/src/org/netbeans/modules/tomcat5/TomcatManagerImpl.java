@@ -445,8 +445,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
                 }
 
-                URLWait.waitForStartup(tm, 30000);
-
                 conn = urlToConnectTo.openConnection();
                 HttpURLConnection hconn = (HttpURLConnection) conn;
 
