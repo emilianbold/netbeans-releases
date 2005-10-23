@@ -338,7 +338,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     removeInstanceFromFile(url);
                     instancesMap().remove(url);
                 }
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         return false;
