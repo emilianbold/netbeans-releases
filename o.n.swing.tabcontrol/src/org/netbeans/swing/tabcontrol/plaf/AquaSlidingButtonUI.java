@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.View;
+import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 import org.netbeans.swing.tabcontrol.plaf.GenericGlowingChiclet;
@@ -99,12 +100,18 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
     //          Layout Methods
     // ********************************
     public Dimension getPreferredSize(JComponent c) {
-	Dimension d = super.getPreferredSize(c);
+        SlidingButton slide = (SlidingButton) c;
+	Dimension d = new Dimension(super.getPreferredSize(c));
+        int orientation = slide.getOrientation();
 
-        d.width += 11;
-	d.height += 7; 
+        if (orientation == SlideBarDataModel.SOUTH) {        
+            d.width += 11;
+            d.height += 7;
+        }
+        else {
+            d.width += 7;
+            d.height += 11;
+        }
 	return d;
-    } 
-
-    
+    }
 }
