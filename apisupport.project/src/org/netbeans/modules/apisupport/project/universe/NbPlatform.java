@@ -545,7 +545,7 @@ public final class NbPlatform implements Comparable {
                 path.append(urlToAntPath(urls[i]));
             }
             if (i != urls.length - 1) {
-                path.append(';'); // NOI18N
+                path.append(':'); // NOI18N
             }
         }
         return path.toString();
