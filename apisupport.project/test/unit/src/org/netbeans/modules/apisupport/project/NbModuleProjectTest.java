@@ -224,8 +224,7 @@ public class NbModuleProjectTest extends TestBase {
         resetingThread.start();
         evaluatorThread.join(DEADLOCK_TIME);
         if (evaluatorThread.isAlive() || resetingThread.isAlive()) {
-            System.err.println("Threads haven't finished in " + DEADLOCK_TIME + "ms. Seems to be a deadlock.");
-            fail("Presuambly deadlock reached");
+            fail("Deadlock presumably reached; threads have not finished within " + DEADLOCK_TIME + "msec");
         }
     }
     
