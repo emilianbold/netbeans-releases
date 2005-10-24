@@ -197,9 +197,9 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
             List logFiles = new ArrayList(files.length);
             fillLogFiles(files, logFiles);
             if (logFiles.isEmpty()) {
+                tagsLoaded(Collections.EMPTY_SET, Collections.EMPTY_SET);
                 return;
             }
-
 
             // extract tags using log
             LogCommand log = new LogCommand();

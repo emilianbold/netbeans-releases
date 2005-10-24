@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.selectors;
 
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
@@ -53,7 +54,7 @@ public final class Kit implements Client.Factory {
                 return checkoutFolder;
             }
             tmp.deleteOnExit();
-            checkoutFolder = tmp;
+            checkoutFolder = FileUtil.normalizeFile(tmp);
         } catch (IOException e) {
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, org.openide.util.NbBundle.getMessage(Kit.class, "BK2018"));
