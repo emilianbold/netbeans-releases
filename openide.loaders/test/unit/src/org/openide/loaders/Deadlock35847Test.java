@@ -14,6 +14,7 @@
 package org.openide.loaders;
 
 import junit.textui.TestRunner;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
@@ -26,74 +27,77 @@ import java.beans.PropertyChangeListener;
  * @author Jaroslav Tulach
  */
 public class Deadlock35847Test extends LoggingTestCaseHid {
+    private ErrorManager err;
     
     public Deadlock35847Test(String name) {
         super(name);
     }
     
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
+        registerIntoLookup(new Pool());
+    }
+    
     public void testLoaderThatStopsToRecognizeWhatItHasRecognized () throws Exception {
-        ForgetableLoader l = (ForgetableLoader)DataLoader.getLoader(ForgetableLoader.class);
-        AddLoaderManuallyHid.addRemoveLoader(l, true);
-        try {
-            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
-                "folder/f.forget",
-                "folder/f.keep"
-            });
-            
-            // do not recognize anything
-            l.forget = true;
-            
-            FileObject fo = lfs.findResource("folder");
-            DataFolder f = DataFolder.findFolder(fo);
-            
-            
-            DataObject[] arr = f.getChildren ();
-            assertEquals ("Two child there", 2, arr.length);
-            
-            DataObject keep;
-            java.lang.ref.WeakReference forget;
-            if (arr[0].getPrimaryFile().hasExt ("keep")) {
-                keep = arr[0];
-                forget = new java.lang.ref.WeakReference (arr[1]);
-            } else {
-                keep = arr[1];
-                forget = new java.lang.ref.WeakReference (arr[0]);
-            }
-            
-            org.openide.nodes.Node theDelegate = new org.openide.nodes.FilterNode (keep.getNodeDelegate());
-            
-            arr = null;
-            assertGC ("Forgetable object can be forgeted", forget);
-            
-            class P extends org.openide.nodes.NodeAdapter
-            implements java.beans.PropertyChangeListener {
-                int cnt;
-                String name;
-                
-                public void propertyChange (java.beans.PropertyChangeEvent ev) {
-                    name = ev.getPropertyName();
-                    cnt++;
-                }
-            }
-            P listener = new P ();
-            keep.addPropertyChangeListener (listener);
-            // in order to trigger listening on the original node and cause deadlock
-            theDelegate.addNodeListener(listener);
-            
-            // now recognize
-            l.forget = false;
-            
-            // this will trigger invalidation of keep from Folder Recognizer Thread
-            DataObject[] newArr = f.getChildren ();
-            
-            assertEquals ("Keep is Invalidated", 1, listener.cnt);
-            assertEquals ("Property is PROP_VALID", DataObject.PROP_VALID, listener.name);
-        } finally {
-            AddLoaderManuallyHid.addRemoveLoader(l, false);
-            // back to previous state
-            l.forget = false;
+        ForgetableLoader l = (ForgetableLoader)ForgetableLoader.getLoader(ForgetableLoader.class);
+        
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
+            "folder/f.forget",
+            "folder/f.keep"
+        });
+
+        // do not recognize anything
+        l.forget = true;
+
+        FileObject fo = lfs.findResource("folder");
+        DataFolder f = DataFolder.findFolder(fo);
+
+
+        DataObject[] arr = f.getChildren ();
+        assertEquals ("Two child there", 2, arr.length);
+
+        DataObject keep;
+        java.lang.ref.WeakReference forget;
+        if (arr[0].getPrimaryFile().hasExt ("keep")) {
+            keep = arr[0];
+            forget = new java.lang.ref.WeakReference (arr[1]);
+        } else {
+            keep = arr[1];
+            forget = new java.lang.ref.WeakReference (arr[0]);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
+
+        org.openide.nodes.Node theDelegate = new org.openide.nodes.FilterNode (keep.getNodeDelegate());
+
+        arr = null;
+        assertGC ("Forgetable object can be forgeted", forget);
+
+        class P extends org.openide.nodes.NodeAdapter
+        implements java.beans.PropertyChangeListener {
+            int cnt;
+            String name;
+
+            public void propertyChange (java.beans.PropertyChangeEvent ev) {
+                name = ev.getPropertyName();
+                cnt++;
+                err.log("Event arrived: " + ev.getPropertyName());
+            }
+        }
+        P listener = new P ();
+        keep.addPropertyChangeListener (listener);
+        // in order to trigger listening on the original node and cause deadlock
+        theDelegate.addNodeListener(listener);
+
+        // now recognize
+        l.forget = false;
+
+        // this will trigger invalidation of keep from Folder Recognizer Thread
+        err.log("Beging to get children");
+        DataObject[] newArr = f.getChildren ();
+        err.log("End of get children");
+
+        assertEquals ("Keep is Invalidated", 1, listener.cnt);
+        assertEquals ("Property is PROP_VALID", DataObject.PROP_VALID, listener.name);
     }
     
     public void testLoaderThatStopsToRecognizeWhatItHasRecognizedAndDoesItWhileHoldingChildrenMutex () throws Exception {
@@ -137,6 +141,15 @@ public class Deadlock35847Test extends LoggingTestCaseHid {
         }
         protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
             return new FileEntry(obj, secondaryFile);
+        }
+    }
+    private static final class Pool extends DataLoaderPool {
+        public Pool() {
+        }
+        
+        public Enumeration loaders() {
+            ForgetableLoader l = (ForgetableLoader)ForgetableLoader.getLoader(ForgetableLoader.class);
+            return org.openide.util.Enumerations.singleton(l);
         }
     }
 }
