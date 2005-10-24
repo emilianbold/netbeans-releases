@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
 $${jnlp.resources}
   </resources>
   <resources os="Mac OS X"> 
-      <property name="netbeans.user" value="${user.home}/Library/Application Support/feedreader"/>
+      <property name="netbeans.user" value="${user.home}/Library/Application Support/$${app.name}"/>
   </resource>
   <application-desc>
     <argument>--branding</argument>
