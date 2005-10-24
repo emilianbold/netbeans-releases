@@ -319,6 +319,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                             ExtWebBrowser.getEM().log("Restarting browser.");    // NOI18N
                         }
                         startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
+                    } catch (InterruptedException ex) {
+                        // just ignore
                     }
                 }
                 if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
