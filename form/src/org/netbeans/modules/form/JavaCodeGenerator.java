@@ -893,14 +893,14 @@ class JavaCodeGenerator extends CodeGenerator {
                 containerDependentProperties.clear();
 	    formModel.getCodeStructure().clearExternalVariableNames();
 	
-            initCodeWriter.write("}\n"); // NOI18N
+            initCodeWriter.write("}"); // no new line because of fold footer // NOI18N
 
             int listenerCodeStyle = formModel.getSettings().getListenerGenerationStyle();
             if ((listenerCodeStyle == CEDL_INNERCLASS
                   || listenerCodeStyle == CEDL_MAINCLASS)
                 && anyEvents())
             {
-                initCodeWriter.write("\n"); // NOI18N
+                initCodeWriter.write("\n\n"); // NOI18N
                 initCodeWriter.write(getEventDispatchCodeComment());
                 initCodeWriter.write("\n"); // NOI18N
 
@@ -910,6 +910,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
             if (foldGeneratedCode) {
                 initCodeWriter.write("// </editor-fold>\n"); // NOI18N
+            }
+            else {
+                initCodeWriter.write("\n");
             }
             initCodeWriter.close();
 
@@ -1750,7 +1753,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         String[] paramNames = generateListenerMethodHeader(
                                    null, event.getListenerMethod(), codeWriter);
                         generateEventHandlerCalls(event, paramNames, codeWriter, true);
-                        generateListenerMethodFooter(codeWriter);
+                        codeWriter.write("}\n"); // NOI18N
                     }
                 }
                 else { // generate full listener implementation (all methods)
@@ -1771,7 +1774,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             generateListenerMethodHeader(null, m, codeWriter);
                         if (event != null)
                             generateEventHandlerCalls(event, paramNames, codeWriter, true);
-                        generateListenerMethodFooter(codeWriter);
+                        codeWriter.write("}\n"); // NOI18N
                     }
                 }
 
@@ -1981,7 +1984,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generateDispatchListenerCode(Writer codeWriter)
         throws IOException
-    {
+    {   // always ends up with } as last character (no new line - because of fold footer)
         FormEvents formEvents = formModel.getFormEvents();
         boolean innerclass = formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS;
         boolean mainclass = formModel.getSettings().getListenerGenerationStyle() == CEDL_MAINCLASS;
@@ -2053,15 +2056,17 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (implementedInSuperclass)
                     generateSuperListenerCall(method, paramNames, codeWriter);
 
-                generateListenerMethodFooter(codeWriter);
-
                 if (j+1 < methods.length || i+1 < listenersToImplement.length)
-                    codeWriter.write("\n"); // NOI18N
+                    codeWriter.write("}\n\n"); // NOI18N
+                else if (innerclass)
+                    codeWriter.write("}\n"); // NOI18N
+                else
+                    codeWriter.write("}"); // last char // NOI18N
             }
         }
 
         if (innerclass)
-            codeWriter.write("}\n"); // NOI18N
+            codeWriter.write("}"); // last char NOI18N
     }
 
     // modifies the form class declaration to implement required listeners
@@ -2294,7 +2299,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(bodyText);
             codeWriter.flush();
             i2 = buffer.getBuffer().length();
-            generateListenerMethodFooter(codeWriter);
+            codeWriter.write("}\n"); // footer with new line
             codeWriter.flush();
 
             sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -2363,7 +2368,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(header.substring(index + oldHandlerName.length()));
             codeWriter.flush();
             int i1 = buffer.getBuffer().length();
-            generateListenerMethodFooter(codeWriter);
+            codeWriter.write("}\n"); // footer with new line
             codeWriter.flush();
 
             sec.setHeader(buffer.getBuffer().substring(0, i1));
@@ -2468,12 +2473,6 @@ class JavaCodeGenerator extends CodeGenerator {
         writer.write(" {\n"); // NOI18N
 
         return paramNames;
-    }
-
-    private void generateListenerMethodFooter(Writer writer)
-        throws IOException
-    {
-        writer.write("}\n"); // NOI18N
     }
 
     private void generateSuperListenerCall(Method method,
