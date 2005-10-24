@@ -70,8 +70,8 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         btv.expandAll();
         selectNode( categoryModel.getCurrentCategory() );
 
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CategoryView.class,"AN_CatgoryView"));
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CategoryView.class,"AD_CategoryView"));
+        btv.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CategoryView.class,"AN_CatgoryView"));
+        btv.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CategoryView.class,"AD_CategoryView"));
 
     }
 

@@ -109,7 +109,7 @@ public class CustomizerPane extends JPanel
 
         categoryPanel.setLayout(new java.awt.GridBagLayout());
 
-        categoryPanel.setBorder(new javax.swing.border.EtchedBorder());
+        categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         categoryPanel.setMinimumSize(new java.awt.Dimension(220, 4));
         categoryPanel.setPreferredSize(new java.awt.Dimension(220, 4));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -118,8 +118,6 @@ public class CustomizerPane extends JPanel
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 11, 8, 11);
         add(categoryPanel, gridBagConstraints);
-        categoryPanel.getAccessibleContext().setAccessibleName(null);
-        categoryPanel.getAccessibleContext().setAccessibleDescription(null);
 
         customizerPanel.setLayout(new java.awt.GridBagLayout());
 
