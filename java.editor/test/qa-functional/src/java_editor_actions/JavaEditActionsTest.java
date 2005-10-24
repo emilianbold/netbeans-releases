@@ -223,10 +223,8 @@ import editor_actions.EditorActionsTest;
             editor.setCaretPosition(20, 9);
             txtOper.typeKey('s');
             txtOper.typeKey('t');
-            txtOper.pushKey(KeyEvent.VK_SPACE, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.typeKey(' '); // workaround. Space wasn't typd during test performing
+            txtOper.typeKey(' ', KeyEvent.SHIFT_MASK);
             compareToGoldenFile(txtOper.getDocument());
-            
             
             /* __________________ Capitlization ___________________ */
             

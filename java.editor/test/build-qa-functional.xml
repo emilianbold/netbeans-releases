@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- You can override default qa-functional-compiler if you need something special -->
 
     <target name="qa-functional-compiler" depends="init-cp">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
                 <!--<pathelement location="${openide.dir}/core/openide.jar"/>-->
@@ -44,7 +44,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar" />
 		<pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
 		<pathelement location="../../../libs/external/xerces-2.6.0.jar"/>
-                <pathelement location="../../../editor/build/test/qa-functional/classes" />
+		<!-- removed dependence on editor tests -->
+                <!--pathelement location="../../../editor/build/test/qa-functional/classes" /-->
 		<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
 		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
 		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
@@ -53,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
          
     <target name="qa-functional-compiler-completion" depends="init-cp">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
                 <pathelement location="${openide.dir}/core/openide.jar"/>
@@ -63,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar" />
 		<pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
 		<pathelement location="../../../libs/external/xerces-2.6.0.jar"/>
-                <pathelement location="../../../editor/build/test/qa-functional/classes" />
+                <!--pathelement location="../../../editor/build/test/qa-functional/classes" /-->
 		<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
 		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
 		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
@@ -83,7 +84,8 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests  pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>  
-                <pathelement location="../../../editor/build/test/qa-functional/classes" />
+		<!-- removed dependence on editor tests -->
+                <!--pathelement location="../../../editor/build/test/qa-functional/classes" /-->
             </classpath>
         </executeTests>
     </target>
