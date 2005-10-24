@@ -10,19 +10,19 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.apisupport.project.jnlp;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -31,18 +31,20 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGeneratorTest;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Checks JNLP support behaviour.
  * @author Jaroslav Tulach
  */
 public class GenerateJNLPApplicationTest extends TestBase {
+    
     private ErrorManager err;
     private SuiteProject suite;
     
@@ -51,8 +53,6 @@ public class GenerateJNLPApplicationTest extends TestBase {
     }
 
     protected void setUp() throws Exception {
-        clearWorkDir();
-        
         super.setUp();
 
         InstalledFileLocatorImpl.registerDestDir(destDirF);
@@ -76,7 +76,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
         p.invokeAction("build-jnlp", suite.getLookup());
         
-        org.openide.filesystems.FileObject[] arr = suite.getProjectDirectory().getChildren();
+        FileObject[] arr = suite.getProjectDirectory().getChildren();
         List subobj = new ArrayList (Arrays.asList(arr));
         subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
         subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
@@ -88,8 +88,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
     }
     
     public void testBuildTheJNLPAppWhenAppNamePropIsSet() throws Exception {
-        FileObject x = suite.getProjectDirectory().getFileObject("nbproject/project.properties");
-        EditableProperties ep = org.netbeans.modules.apisupport.project.Util.loadProperties(x);
+        EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("app.name", "fakeapp");
         
         File someJar = createNewJarFile("fake-jnlp-servlet");
@@ -113,7 +112,8 @@ public class GenerateJNLPApplicationTest extends TestBase {
             "org.openide.util.enumerations" +
             "");
         ep.setProperty("jnlp.servlet.jar", someJar.toString());
-        org.netbeans.modules.apisupport.project.Util.storeProperties(x, ep);
+        suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(suite);
         err.log("Properties stored");
         
         SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
@@ -134,7 +134,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         assertEquals("Finished ok", 0, task.result());
         err.log("Testing the content of the directory");
         
-        org.openide.filesystems.FileObject[] arr = suite.getProjectDirectory().getChildren();
+        FileObject[] arr = suite.getProjectDirectory().getChildren();
         List subobj = new ArrayList (Arrays.asList(arr));
         subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
         subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
@@ -154,7 +154,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         FileObject war = dist.getFileObject("fakeapp.war");
         assertNotNull("War file created: " + war, war);
         
-        File warF = org.openide.filesystems.FileUtil.toFile(war);
+        File warF = FileUtil.toFile(war);
         JarFile warJ = new JarFile(warF);
         Enumeration en = warJ.entries();
         int cntJnlp = 0;
