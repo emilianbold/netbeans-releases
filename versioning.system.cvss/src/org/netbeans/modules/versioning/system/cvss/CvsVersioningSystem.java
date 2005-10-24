@@ -49,18 +49,18 @@ public class CvsVersioningSystem {
 
     private static CvsVersioningSystem instance;
     
-    public static final String FILENAME_CVSIGNORE = ".cvsignore";
-    public static final String FILENAME_CVS = "CVS";
+    public static final String FILENAME_CVSIGNORE = ".cvsignore"; // NOI18N
+    public static final String FILENAME_CVS = "CVS"; // NOI18N
 
     public static final Object EVENT_PARAM_CHANGED = new Object();
     public static final Object PARAM_BATCH_REFRESH_RUNNING = new Object();
 
-    private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository";
+    private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository"; // NOI18N
     
     /**
      * Extensions to be treated as text although MIME type may suggest otherwise.
      */ 
-    private static final Set textExtensions = new HashSet(Arrays.asList(new String [] { "txt", "xml", "html", "properties", "mf", "jhm", "hs", "form" }));
+    private static final Set textExtensions = new HashSet(Arrays.asList(new String [] { "txt", "xml", "html", "properties", "mf", "jhm", "hs", "form" })); // NOI18N
     
     private final Map clientsCache = new HashMap();
     private final Map params = new HashMap();
@@ -158,7 +158,7 @@ public class CvsVersioningSystem {
             BasicCommand c = (BasicCommand) cmd;
             files = c.getFiles();
         } else {
-            throw new NotVersionedException("Cannot determine CVSRoot for command: " + cmd);
+            throw new NotVersionedException("Cannot determine CVSRoot for command: " + cmd); // NOI18N
         }
 
         File oneFile = files[0];
@@ -166,7 +166,7 @@ public class CvsVersioningSystem {
             String cvsRoot = Utils.getCVSRootFor(oneFile);
             return cvsRoot;
         } catch (IOException e) {
-            throw new NotVersionedException("Cannot determine CVSRoot for: " + oneFile);
+            throw new NotVersionedException("Cannot determine CVSRoot for: " + oneFile); // NOI18N
         }
 
     }
@@ -262,7 +262,7 @@ public class CvsVersioningSystem {
     }
     
     private void addUserPatterns(Set patterns) {
-        File userIgnores = new File(System.getProperty("user.home"), FILENAME_CVSIGNORE);
+        File userIgnores = new File(System.getProperty("user.home"), FILENAME_CVSIGNORE); // NOI18N
         long lm = userIgnores.lastModified();
         if (lm > userIgnorePatternsTimestamp || lm == 0 && userIgnorePatternsTimestamp > 0) {
             userIgnorePatternsTimestamp = lm;
@@ -282,7 +282,7 @@ public class CvsVersioningSystem {
             r = new BufferedReader(new FileReader(userIgnores));
             String s;
             while ((s = r.readLine()) != null) {
-                if ("!".equals(s)) {
+                if ("!".equals(s)) { // NOI18N
                     userIgnorePatternsReset = true;
                     userIgnorePatterns.clear();
                 } else {
@@ -304,8 +304,8 @@ public class CvsVersioningSystem {
      */ 
     private static Pattern sh2regex(String s) {
         // TODO: implement full SH->REGEX convertor
-        s = s.replaceAll("\\.", "\\\\.");
-        s = s.replaceAll("\\*", ".*");
+        s = s.replaceAll("\\.", "\\\\."); // NOI18N
+        s = s.replaceAll("\\*", ".*"); // NOI18N
         return Pattern.compile(s);
     }
 
@@ -331,7 +331,7 @@ public class CvsVersioningSystem {
             Set shPatterns = readCvsIgnoreEntries(file);
             for (Iterator i = shPatterns.iterator(); i.hasNext();) {
                 String shPattern = (String) i.next();
-                if ("!".equals(shPattern)) {
+                if ("!".equals(shPattern)) { // NOI18N
                     patterns.clear();
                 } else {
                     patterns.add(sh2regex(shPattern));
@@ -397,7 +397,7 @@ public class CvsVersioningSystem {
         } catch (DataObjectNotFoundException e) {
             // not found, continue
         }
-        if (fo.getMIMEType().startsWith("text")) {
+        if (fo.getMIMEType().startsWith("text")) { // NOI18N
             return true;            
         }
         // TODO: HACKS begin, still needed?

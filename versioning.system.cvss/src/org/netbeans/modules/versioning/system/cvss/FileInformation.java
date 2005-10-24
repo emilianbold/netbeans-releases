@@ -195,7 +195,7 @@ public class FileInformation implements Serializable {
 
     /** Converts to String decodeable by {@link #fromExternalForm} */
     public String toExternalForm() {
-        String dir = isDirectory ? "d" : "";
+        String dir = isDirectory ? "d" : ""; // NOI18N
         switch (status) {
             case STATUS_UNKNOWN:
                 return STATUS_UNKNOWN_EXT + dir;
@@ -226,7 +226,7 @@ public class FileInformation implements Serializable {
             case STATUS_VERSIONED_ADDEDLOCALLY:
                 return STATUS_VERSIONED_ADDEDLOCALLY_EXT + dir;
             default:
-                throw new IllegalStateException("Status " + status);
+                throw new IllegalStateException("Status " + status); // NOI18N
         }
     }
 
@@ -265,7 +265,7 @@ public class FileInformation implements Serializable {
         } else if (STATUS_VERSIONED_ADDEDLOCALLY_EXT.equals(ext)) {
             return new FileInformation(STATUS_VERSIONED_ADDEDLOCALLY, dir);
         } else {
-            throw new IllegalStateException("External form " + ext);
+            throw new IllegalStateException("External form " + ext); // NOI18N
         }
     }
 
@@ -324,7 +324,7 @@ public class FileInformation implements Serializable {
         } else if (status == FileInformation.STATUS_VERSIONED_MERGE) {
             return loc.getString("CTL_FileInfoStatus_Merge");
         } else {
-            return "";                        
+            return "";   // NOI18N                     
         }
     }    
 
@@ -341,7 +341,7 @@ public class FileInformation implements Serializable {
         } else if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
             return loc.getString("CTL_FileInfoStatus_Conflict_Short");
         } else {
-            return "";                        
+            return "";      // NOI18N                  
         }
     }    
 }

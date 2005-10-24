@@ -27,6 +27,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import com.jcraft.jsch.*;
+import org.openide.util.NbBundle;
 
 /**
  * Provides SSH tunnel for :ext: connection method. 
@@ -59,14 +60,14 @@ public class SSHConnection extends AbstractConnection {
         this.socketFactory = socketFactory;
         this.host = host;
         this.port = port;
-        this.username = username != null ? username : System.getProperty("user.name");
+        this.username = username != null ? username : System.getProperty("user.name"); // NOI18N
         this.password = password;
     }
 
     public void open() throws AuthenticationException, CommandAbortedException {
 
         Properties props = new Properties();
-        props.put("StrictHostKeyChecking", "no");
+        props.put("StrictHostKeyChecking", "no"); // NOI18N
         
         JSch jsch = new JSch();
         try {
@@ -76,21 +77,21 @@ public class SSHConnection extends AbstractConnection {
             session.setUserInfo(new SSHUserInfo());
             session.connect();
         } catch (JSchException e) {
-            throw new AuthenticationException(e, "SSH connection failed.");
+            throw new AuthenticationException(e, NbBundle.getMessage(SSHConnection.class, "BK3001"));
         }
         
         try {
-            channel = (ChannelExec) session.openChannel("exec");
+            channel = (ChannelExec) session.openChannel("exec"); // NOI18N
             channel.setCommand(CVS_SERVER_COMMAND);
             setInputStream(new LoggedDataInputStream(new SshChannelInputStream(channel)));
             setOutputStream(new LoggedDataOutputStream(channel.getOutputStream()));
             channel.connect();
         } catch (JSchException e) {
-            IOException ioe = new IOException("JSch exception");
+            IOException ioe = new IOException(NbBundle.getMessage(SSHConnection.class, "BK3002"));
             ioe.initCause(e);
-            throw new AuthenticationException(ioe, "SSH open channel failed.");
+            throw new AuthenticationException(ioe, NbBundle.getMessage(SSHConnection.class, "BK3003"));
         } catch (IOException e) {
-            throw new AuthenticationException(e, "SSH open channel failed.");
+            throw new AuthenticationException(e, NbBundle.getMessage(SSHConnection.class, "BK3003"));
         }
     }
 
@@ -108,13 +109,13 @@ public class SSHConnection extends AbstractConnection {
                 // ignore
             }
             if (channel.getExitStatus() != -1) {
-                throw new AuthenticationException("", "Error executing '" + CVS_SERVER_COMMAND + "' on server.\nSet CVS_SERVER environment variable properly.");
+                throw new AuthenticationException(CVS_SERVER_COMMAND, NbBundle.getMessage(SSHConnection.class, "BK3004", CVS_SERVER_COMMAND));
             }
             close();
         } catch (CommandAbortedException e) {
-            throw new AuthenticationException(e, "SSH: open connection failed.");
+            throw new AuthenticationException(e, NbBundle.getMessage(SSHConnection.class, "BK3005"));
         } catch (IOException e) {
-            throw new AuthenticationException(e, "SSH: close connection failed.");
+            throw new AuthenticationException(e, NbBundle.getMessage(SSHConnection.class, "Bk3006"));
         } finally {
             reset();
         }
@@ -211,8 +212,8 @@ public class SSHConnection extends AbstractConnection {
 
         private void checkChannelState() throws IOException {
             int exitStatus = channel.getExitStatus();
-            if (exitStatus > 0 || exitStatus < -1) throw new IOException("Error executing '" + CVS_SERVER_COMMAND + "' on server.\nSet CVS_SERVER environment variable properly.");
-            if (exitStatus == 0 || channel.isEOF()) throw new EOFException("SSH tunnel closed.");
+            if (exitStatus > 0 || exitStatus < -1) throw new IOException(NbBundle.getMessage(SSHConnection.class, "BK3004", CVS_SERVER_COMMAND));
+            if (exitStatus == 0 || channel.isEOF()) throw new EOFException(NbBundle.getMessage(SSHConnection.class, "BK3007"));
         }
     }
 }

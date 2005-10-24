@@ -62,7 +62,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
      * CVS server messages that start with one of these patterns won't be displayed in Output.
      * Library needs these messages to prune empty directories, hence this workaround. 
      */ 
-    private static final String [] ignoredMessagePrefixes = {"cvs server: Updating", "cvs server: New directory"};
+    private static final String [] ignoredMessagePrefixes = {"cvs server: Updating", "cvs server: New directory"}; // NOI18N
         
     protected final FileStatusCache       cache;
 
@@ -216,7 +216,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         if (e.isError()) {
             errorMessages.add(e.getMessage());
         }
-        else if (e.getMessage().startsWith("W ")) {
+        else if (e.getMessage().startsWith("W ")) { // NOI18N
             warningMessages.add(e.getMessage().substring(2));
         }
         if (e.isTagged()) {
@@ -283,7 +283,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
     }
 
     private int importance(String type) {
-        return "UC".indexOf(type);
+        return "UC".indexOf(type); // NOI18N
     }
 
     /**
@@ -517,7 +517,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         String format = cmd.getDisplayName();
         File [] files = cmd.getFiles();
         if (files == null || files.length < 2) {
-            if (format != null) cmd.setDisplayName(MessageFormat.format(format, new Object [] { files == null ? "" : files[0].getName() }));
+            if (format != null) cmd.setDisplayName(MessageFormat.format(format, new Object [] { files == null ? "" : files[0].getName() })); // NOI18N
             return new BasicCommand [] { cmd };
         }
         File [][] fileSets = splitFiles(files);

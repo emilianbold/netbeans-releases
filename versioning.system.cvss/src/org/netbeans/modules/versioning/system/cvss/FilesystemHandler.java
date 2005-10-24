@@ -34,7 +34,7 @@ import java.util.*;
  */
 class FilesystemHandler implements FileChangeListener, InterceptionListener {
         
-    private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1);
+    private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1); // NOI18N
 
     private final FileStatusCache   cache;
     private final Map savedMetadata = new HashMap();
@@ -78,7 +78,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             try {
                 f.createNewFile();
             } catch (IOException e) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath());
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
             }
         }        
     }
@@ -285,7 +285,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             if (entry.isNewUserFile()) {
                 ah.removeEntry(file);
             } else {
-                entry.setRevision("-" + entry.getRevision());
+                entry.setRevision("-" + entry.getRevision()); // NOI18N
                 entry.setConflict(Entry.DUMMY_TIMESTAMP);
                 ah.setEntry(file, entry);
             }
@@ -386,7 +386,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             FileObject newFile = event.getFile();
             String oldName = event.getName();
             String oldExtension = event.getExt();
-            if (oldExtension.length() > 0) oldExtension = "." + oldExtension;
+            if (oldExtension.length() > 0) oldExtension = "." + oldExtension; // NOI18N
         
             File parent = FileUtil.toFile(newFile.getParent());
             File removed = new File(parent, oldName + oldExtension);

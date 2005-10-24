@@ -144,7 +144,7 @@ class DiskMapTurboProvider implements TurboProvider {
 
         if (value == null && !store.exists()) return true;
 
-        File storeNew = new File(store.getParentFile(), store.getName() + ".new");
+        File storeNew = new File(store.getParentFile(), store.getName() + ".new"); // NOI18N
 
         DataOutputStream oos = null;
         DataInputStream dis = null;
@@ -181,7 +181,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().annotate(e, "Copy: " + store.getAbsolutePath() + " to: " + storeNew.getAbsolutePath());
+            ErrorManager.getDefault().annotate(e, "Copy: " + store.getAbsolutePath() + " to: " + storeNew.getAbsolutePath());  // NOI18N
             ErrorManager.getDefault().notify(e);
             return true;
         } finally {
@@ -260,16 +260,16 @@ class DiskMapTurboProvider implements TurboProvider {
     private File getStore(File dir) {
         String dirPath = dir.getAbsolutePath();
         int dirHash = dirPath.hashCode();
-        return new File(cacheStore, Integer.toString(dirHash % 173 + 172) + ".bin");
+        return new File(cacheStore, Integer.toString(dirHash % 173 + 172) + ".bin"); // NOI18N
     }
 
     private void initCacheStore() {
-        String userDir = System.getProperty("netbeans.user");
+        String userDir = System.getProperty("netbeans.user"); // NOI18N
         if (userDir != null) {
-            cacheStore = new File(new File(new File (userDir, "var"), "cache"), "cvscache");
+            cacheStore = new File(new File(new File (userDir, "var"), "cache"), "cvscache"); // NOI18N
         } else {
             File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
-            cacheStore = new File(cachedir, "cvscache");
+            cacheStore = new File(cachedir, "cvscache"); // NOI18N
         }
         cacheStore.mkdirs();
     }

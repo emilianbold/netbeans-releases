@@ -66,7 +66,7 @@ public class ClientRuntime {
 
     ClientRuntime(String root) {
         cvsRoot = root;
-        requestProcessor = new RequestProcessor("CVS: " + cvsRoot);
+        requestProcessor = new RequestProcessor("CVS: " + cvsRoot);  // NOI18N
         log = IOProvider.getDefault().getIO(cvsRoot, false);
     }
 
@@ -75,9 +75,9 @@ public class ClientRuntime {
             File file = files[i];
             try {
                 String root = Utils.getCVSRootFor(file);
-                if (!root.equals(cvsRoot)) throw new IllegalCommandException("#63547 command includes files from different CVS root.\n Expected: " + cvsRoot + "\nGot:     " + root);
+                if (!root.equals(cvsRoot)) throw new IllegalCommandException("#63547 command includes files from different CVS root.\n Expected: " + cvsRoot + "\nGot:     " + root); // NOI18N
             } catch (IOException e) {
-                throw new IllegalCommandException("Missing or invalid CVS/Root for: " + file);
+                throw new IllegalCommandException("Missing or invalid CVS/Root for: " + file); // NOI18N
             }
         }
     }
@@ -116,7 +116,7 @@ public class ClientRuntime {
                 client.setLocalPath(path);
             } else {
                 // #67315: use some default working dir
-                client.setLocalPath(System.getProperty("user.dir"));
+                client.setLocalPath(System.getProperty("user.dir")); // NOI18N
             }
         } else if (cmd instanceof ImportCommand) {
             client.setLocalPath(((ImportCommand)cmd).getImportDirectory());
@@ -209,7 +209,7 @@ public class ClientRuntime {
             if (!Utils.isParentOrEqual(commonParent, files[i])) {
                 for (;;) {
                     commonParent = commonParent.getParentFile();
-                    if (commonParent == null) throw new IllegalCommandException("Files do not have common parent!");
+                    if (commonParent == null) throw new IllegalCommandException("Files do not have common parent!"); // NOI18N
                     if (Utils.isParentOrEqual(commonParent, files[i])) {
                         break;
                     }
@@ -309,7 +309,7 @@ public class ClientRuntime {
             }
         }
         
-        throw new IllegalArgumentException("Unrecognized CVS Root: " + cvsRoot);
+        throw new IllegalArgumentException("Unrecognized CVS Root: " + cvsRoot); // NOI18N
     }
 
     public static ConnectivitySettings toConnectivitySettings(ProxyDescriptor pd) {

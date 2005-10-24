@@ -73,7 +73,7 @@ public class Annotator {
             FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
-    private static final Pattern lessThan = Pattern.compile("<");
+    private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     
     private final FileStatusCache cache;
 
@@ -86,14 +86,14 @@ public class Annotator {
         Field [] fields = Annotator.class.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             String name = fields[i].getName();
-            if (name.endsWith("Format")) {
+            if (name.endsWith("Format")) {  // NOI18N
                 initDefaultColor(name.substring(0, name.length() - 6)); 
             }
         }
     }
 
     private void initDefaultColor(String name) {
-        String color = System.getProperty("cvs.color." + name);
+        String color = System.getProperty("cvs.color." + name);  // NOI18N
         if (color == null) return;
         setAnnotationColor(name, color);
     }
@@ -108,11 +108,11 @@ public class Annotator {
      */ 
     private void setAnnotationColor(String name, String colorString) {
         try {
-            Field field = Annotator.class.getDeclaredField(name + "Format");
-            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");
+            Field field = Annotator.class.getDeclaredField(name + "Format");  // NOI18N
+            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");  // NOI18N
             field.set(null, format);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid color name");
+            throw new IllegalArgumentException("Invalid color name");  // NOI18N
         }
     }
     
@@ -135,19 +135,19 @@ public class Annotator {
         if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             String sticky = Utils.getSticky(file);
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
-                textAnnotation = "";
+                textAnnotation = "";  // NOI18N
             } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                textAnnotation = " [" + sticky.substring(1) + "]";
+                textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
             } else  if (sticky == null) {
-                textAnnotation = " [" + info.getShortStatusText() + "]";
+                textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
             } else {
-                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]";
+                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
             }
         } else {
-            textAnnotation = "";
+            textAnnotation = ""; // NOI18N
         }
         if (textAnnotation.length() > 0) {
-            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation);
+            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation); 
         }
         
         switch (status) {
@@ -179,7 +179,7 @@ public class Annotator {
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
             return excludedFormat.format(new Object [] { name, textAnnotation });
         default:
-            throw new IllegalArgumentException("Unknown status: " + status);
+            throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
     }
 
@@ -191,16 +191,16 @@ public class Annotator {
         if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
             String sticky = Utils.getSticky(file);
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
-                textAnnotation = "";
+                textAnnotation = ""; // NOI18N
             } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                textAnnotation = " [" + sticky.substring(1) + "]";
+                textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
             } else  if (sticky == null) {
-                textAnnotation = " [" + info.getShortStatusText() + "]";
+                textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
             } else {
-                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]";
+                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
             }
         } else {
-            textAnnotation = "";
+            textAnnotation = ""; // NOI18N
         }
         if (textAnnotation.length() > 0) {
             textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation);
@@ -225,13 +225,13 @@ public class Annotator {
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
             return excludedFormat.format(new Object [] { name, textAnnotation });
         default:
-            throw new IllegalArgumentException("Unknown status: " + status);
+            throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
     }
     
     private String htmlEncode(String name) {
         if (name.indexOf('<') == -1) return name;
-        return lessThan.matcher(name).replaceAll("&lt;");
+        return lessThan.matcher(name).replaceAll("&lt;"); // NOI18N
     }
 
     public String annotateNameHtml(File file, FileInformation info) {
@@ -317,7 +317,7 @@ public class Annotator {
                         if (info.isDirectory()) continue;
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png");
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png");  // NOI18N
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -331,7 +331,7 @@ public class Annotator {
                         FileInformation info = (FileInformation) modifiedFiles.get(mf);
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png");
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png"); // NOI18N
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -342,7 +342,7 @@ public class Annotator {
         }
 
         if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png");
+            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png"); // NOI18N
             return Utilities.mergeImages(icon, badge, 16, 9);
         } else {
             return icon;

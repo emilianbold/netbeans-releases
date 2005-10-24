@@ -32,9 +32,9 @@ import java.util.*;
  */
 class CvsLiteAdminHandler implements AdminHandler {
 
-    static final String INVALID_METADATA_MARKER = "invalid-metadata";
+    static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
 
-    private static final String INVALID_METADATA_MARKER_PATH = CvsVersioningSystem.FILENAME_CVS + "/" + INVALID_METADATA_MARKER;
+    private static final String INVALID_METADATA_MARKER_PATH = CvsVersioningSystem.FILENAME_CVS + "/" + INVALID_METADATA_MARKER; // NOI18N
 
     private StandardAdminHandler stdHandler;
 
@@ -73,7 +73,7 @@ class CvsLiteAdminHandler implements AdminHandler {
 
     public boolean exists(File file) {
         if (file.exists()) return true;
-        if ("CVS".equals(file.getName())) file = file.getParentFile();
+        if ("CVS".equals(file.getName())) file = file.getParentFile(); // NOI18N
         return MetadataAttic.getMetadata(file) != null;
     }
 
@@ -140,10 +140,10 @@ class CvsLiteAdminHandler implements AdminHandler {
         
         String fileRepository = data.getRepository();
         if (fileRepository == null) {
-            fileRepository = ""; //NOI18N
+            fileRepository = ""; // NOI18N
         }
 
-        if (fileRepository.startsWith("/")) { //NOI18N
+        if (fileRepository.startsWith("/")) { // NOI18N
             return fileRepository;
         }
         // otherwise the cvs is using relative repository path
@@ -162,7 +162,7 @@ class CvsLiteAdminHandler implements AdminHandler {
                 if (file.getName().equals(entry.getName())) {
                     List newEntries = new ArrayList(Arrays.asList(entries));
                     newEntries.remove(entries[i]);
-                    if (newEntries.size() == 0 || newEntries.size() == 1 && "D".equals(newEntries.get(0))) {
+                    if (newEntries.size() == 0 || newEntries.size() == 1 && "D".equals(newEntries.get(0))) { // NOI18N
                         MetadataAttic.setMetadata(parent, null);
                     } else {
                         CvsMetadata newData = new CvsMetadata(data.getRepository(), data.getRoot(), (String[]) newEntries.toArray(new String[newEntries.size()]));

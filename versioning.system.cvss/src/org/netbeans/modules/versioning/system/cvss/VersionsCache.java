@@ -36,19 +36,19 @@ public class VersionsCache {
     /**
      * Constant representing the current working revision.
      */ 
-    public static final String  REVISION_CURRENT = "";
+    public static final String  REVISION_CURRENT = ""; // NOI18N
 
     /**
      * Constant representing the base revision of the current working revision (the one in Entries).
      */ 
-    public static final String  REVISION_BASE = "*";
+    public static final String  REVISION_BASE = "*"; // NOI18N
     
     /**
      * Constant representing the CVS HEAD revision.
      */ 
-    public static final String  REVISION_HEAD    = "HEAD";
+    public static final String  REVISION_HEAD    = "HEAD"; // NOI18N
     
-    private static final String CACHE_DIR = "CVS/RevisionCache/";
+    private static final String CACHE_DIR = "CVS/RevisionCache/"; // NOI18N
     
     private static VersionsCache instance = new VersionsCache();
 
@@ -148,7 +148,7 @@ public class VersionsCache {
     private String getBaseRevision(File file) throws IOException {
         Entry entry = CvsVersioningSystem.getInstance().getAdminHandler().getEntry(file);
         String rawRev = entry.getRevision();
-        if (rawRev != null && rawRev.startsWith("-")) {
+        if (rawRev != null && rawRev.startsWith("-")) { // NOI18N
             // leading - means removed
             return rawRev.substring(1);
         }
@@ -156,16 +156,16 @@ public class VersionsCache {
     }
 
     private String cachedName(File baseFile, String revision) {
-        return baseFile.getName() + "#" + revision;        
+        return baseFile.getName() + "#" + revision;     // NOI18N   
     }
 
     private String getRepositoryForDirectory(File directory) {
         if (directory == null) return null;
         if (!directory.exists()) {
-            return getRepositoryForDirectory(directory.getParentFile()) + "/" + directory.getName();
+            return getRepositoryForDirectory(directory.getParentFile()) + "/" + directory.getName(); // NOI18N
         }
         try {
-            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1);
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1); // NOI18N
         } catch (IOException e) {
             return null;
         }
@@ -183,7 +183,7 @@ public class VersionsCache {
      */ 
     private File checkoutRemoteFile(File baseFile, String revision, ExecutorGroup group) throws IOException {
         
-        String repositoryPath = getRepositoryForDirectory(baseFile.getParentFile()) + "/" + baseFile.getName();
+        String repositoryPath = getRepositoryForDirectory(baseFile.getParentFile()) + "/" + baseFile.getName(); // NOI18N
         
         CheckoutCommand cmd = new CheckoutCommand();
         cmd.setRecursive(false);
@@ -210,7 +210,7 @@ public class VersionsCache {
             return executor.getCheckedOutVersion();
         } else {
             // XXX note that executor already handles/notifies failures
-            IOException ioe = new IOException("Unable to checkout revision " + revision + " of " + baseFile.getName());
+            IOException ioe = new IOException(NbBundle.getMessage(VersionsCache.class, "Bk4001", revision, baseFile.getName()));
             ioe.initCause(executor.getFailure());
             throw ioe;
         }
@@ -218,7 +218,7 @@ public class VersionsCache {
     }
 
     private String getCvsRoot(File baseFile) throws IOException {
-        File root = new File (new File(baseFile, "CVS"), "Root");
+        File root = new File (new File(baseFile, "CVS"), "Root");  // NOI18N
         if (root.isFile()) {
             BufferedReader r = null;
             try {

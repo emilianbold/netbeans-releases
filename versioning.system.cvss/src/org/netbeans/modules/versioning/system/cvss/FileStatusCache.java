@@ -546,7 +546,7 @@ public class FileStatusCache {
                 }
             }
         }
-        throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus);
+        throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus); // NOI18N
     }
 
     private boolean isLocalConflict(Entry entry, File file) {
@@ -605,7 +605,7 @@ public class FileStatusCache {
             // CVS reports: cvs.exe update: move away THIS_FILE; it is in the way
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, false);
         }
-        throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus);
+        throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus); // NOI18N
     }
 
     private boolean isInsideCvsMetadata(File file) {
