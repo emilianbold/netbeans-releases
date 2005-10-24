@@ -14,12 +14,18 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.awt.Rectangle;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.lang.reflect.Modifier;
 import java.util.*;
+import org.netbeans.jmi.javamodel.ClassDefinition;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.jmi.javamodel.UnresolvedClass;
@@ -64,7 +70,7 @@ public class LayoutTestUtils implements LayoutConstants {
 		first = false;
             }
 	    String id = (String)i.next();
-            line += "${" + id + "}"; //NOI18N
+            line += "\"" + id + "\""; //NOI18N
             codeList.add(line);
         }
         codeList.add("};"); //NOI18N
@@ -77,7 +83,7 @@ public class LayoutTestUtils implements LayoutConstants {
             if (i != 0) {
                 line += ","; //NOI18N
             }
-            line += "${" + compIds[i] + "}"; //NOI18N
+            line += "\"" + compIds[i] + "\""; //NOI18N
             codeList.add(line);
         }
         codeList.add("};"); //NOI18N
@@ -113,7 +119,7 @@ public class LayoutTestUtils implements LayoutConstants {
         codeList.add("};"); // NOI18N
     }
     
-    static void dumpTestcode(List codeList, DataObject form, Map idToNameMap, int idCounter) {
+    static void dumpTestcode(List codeList, DataObject form, int modelCounter) {
 
         FileWriter fw = null;
         String template = ""; //NOI18N
@@ -123,7 +129,7 @@ public class LayoutTestUtils implements LayoutConstants {
 
             FileObject primaryFile = form.getPrimaryFile();
 
-            //1. Read the template for test class
+            //Read the template for test class
             InputStream in = LayoutTestUtils.class.getResourceAsStream("/org/netbeans/modules/form/resources/LayoutModelAutoTest_template"); //NOI18N
             LineNumberReader lReader = new LineNumberReader(new InputStreamReader(in));
             while (lReader.ready()) {
@@ -131,60 +137,70 @@ public class LayoutTestUtils implements LayoutConstants {
             }
             lReader.close();
 
-            //2. Get the code into one string
+            //Get the code into one string
             String code = ""; //NOI18N
             Iterator i = codeList.iterator();
             while (i.hasNext()) {
                 String line = (String)i.next();
-                System.out.println(line);
                 code += line + "\n"; //NOI18N
             }
 	    
-	    //3.a Put the idToNameMap into the code 
-            String nameMap = "HashMap nameToIdMap = new HashMap(); \n"; //NOI18N
-            Iterator ids = idToNameMap.keySet().iterator();
-            while (ids.hasNext()) {
-                String id = (String)ids.next();
-                nameMap += "nameToIdMap.put(\"" + (String)idToNameMap.get(id) + "\", \"" + id + "\"); \n"; //NOI18N
-                nameMap += "idToNameMap.put(\"" + id + "\", \"" + (String)idToNameMap.get(id) + "\"); \n"; //NOI18N
-            }
-            code = nameMap.concat(code);
-
-            //4. Put the doChanges code into the test class file
-            String output = Utilities.replaceString(template, "${CODE_GOES_HERE}", code); //NOI18N
-
-            //5. Find a name for the test file
+            //Find a name for the test file
             Resource r = JavaModel.getResource(primaryFile);
             Type type = JavaModel.getDefaultExtent().getType().resolve(r.getPackageName() + "." + primaryFile.getName()); //NOI18N
             if (type instanceof UnresolvedClass) return;
             
             String testClassName = primaryFile.getName() + "Test"; //NOI18N
-            String testFileName = FileUtil.findFreeFileName(primaryFile.getParent(), testClassName, "java"); //NOI18N
-            FileObject testFO = primaryFile.getParent().createData(testFileName, "java"); //NOI18N
-
-            //6. Rename the class in template to correct class name
-            output = Utilities.replaceString(output, "${CLASS_NAME}", testFO.getName()); //NOI18N
             
-            //7. Put the correct idcounter value
-            output = Utilities.replaceString(output, "${COUNTER_ID}", Integer.toString(idCounter)); //NOI18N
+            FileObject testFO = primaryFile.getParent().getFileObject(testClassName, "java");//NOI18N
+            if (testFO == null) {
+                testFO = primaryFile.getParent().createData(testClassName, "java"); //NOI18N
+                
+                //Rename the class in template to correct class name
+                String output = Utilities.replaceString(template, "${CLASS_NAME}", testFO.getName()); //NOI18N
 
-	    //8. correct references, so that the file can be read better
-            ids = idToNameMap.keySet().iterator();
-            while (ids.hasNext()) {
-                String id = (String)ids.next();
-                output = Utilities.replaceString(output, "${" + id + "}", "(String)nameToIdMap.get(\"" + (String)idToNameMap.get(id) + "\")"); //NOI18N
+                //Write the file to disc
+                fw = new FileWriter(FileUtil.toFile(testFO));
+                fw.write(output);
+                fw.close();
             }
+
+            //8. Add the method to test class
+            boolean rollback = true;
+            JavaModel.getJavaRepository().beginTrans(true);
             
-            //7. Write the file to disc
-            fw = new FileWriter(FileUtil.toFile(testFO));
-            fw.write(output);
-            fw.close();
-            
+            try {
+                JavaClass testClass = (JavaClass) resolveType("org.netbeans.modules.form.layoutdesign." + testFO.getName()); //NOI18N
+                if (!(testClass instanceof UnresolvedClass)) {
+                    org.netbeans.jmi.javamodel.Method m = ((JavaModelPackage)testClass.refImmediatePackage()).getMethod().createMethod();
+                    m.setName("doChanges" + modelCounter);
+                    m.setBodyText(code);
+                    m.setType(resolveType("void"));
+                    m.setModifiers(Modifier.PUBLIC);
+                                        
+                    testClass.getContents().add(m);
+                    rollback = false;
+                }
+            } finally {
+                JavaModel.getJavaRepository().endTrans(rollback);
+            }
+                        
         } catch (IOException ex) {
             ex.printStackTrace();
             return;
         }
         
+    }
+    
+    private static Type resolveType(String typeName) {
+        Type type = JavaModel.getDefaultExtent().getType().resolve(typeName);
+        if (type instanceof UnresolvedClass) {
+            Type basicType = JavaModel.getDefaultExtent().getType().resolve("java.lang." + typeName);  // NOI18N;
+            if (!(basicType instanceof UnresolvedClass)) {
+                return basicType;
+            }
+        }
+        return type;
     }
     
     public static FileObject getTargetFolder(FileObject file) {
@@ -200,15 +216,15 @@ public class LayoutTestUtils implements LayoutConstants {
 	return targetFolder;
     }
     
-    public static void writeTest(FormDesigner fd, FormDataObject formDO, Map idToNameMap, LayoutModel lm, int idCounter) {
+    public static void writeTest(FormDesigner fd, FormDataObject formDO, Map idToNameMap, LayoutModel lm) {
 	FileObject formFO = formDO.getFormFile();
 
-	fd.getLayoutDesigner().dumpTestcode(formDO, idToNameMap, idCounter);
+	fd.getLayoutDesigner().dumpTestcode(formDO);
 
 	FileWriter fw = null;
 	try {
 	    FileObject targetFolder = getTargetFolder(formFO);
-	    FileObject fo = targetFolder.createData(formFO.getName() + "Test-ExpectedEndModel", "txt"); //NOI18N
+	    FileObject fo = targetFolder.createData(formFO.getName() + "Test-ExpectedEndModel" + Integer.toString(fd.getLayoutDesigner().getModelCounter()), "txt"); //NOI18N
 	    fw = new FileWriter(FileUtil.toFile(fo));
 	    fw.write(lm.dump(idToNameMap));
 	    StatusDisplayer.getDefault().setStatusText("The test was successfully written: " + fo.getPath()); // NOI18N

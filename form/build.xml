@@ -13,4 +13,37 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="form">
     <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="test-single" depends="init,test-init,test-build">
+        <fail unless="test.includes">Must set test.includes</fail>
+        <mkdir dir="${build.test.unit.results.dir}"/>
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}">
+            <batchtest todir="${build.test.unit.results.dir}">
+                <fileset dir="${test.unit.src.dir}" includes="${test.includes}"/>
+            </batchtest>
+            <classpath refid="test.unit.run.cp"/>
+            <syspropertyset refid="test.unit.properties"/>
+            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
+            <jvmarg value="-ea"/>
+            <jvmarg value="-Dorg.netbeans.modules.form.layoutdesign.test=0"/>
+            <formatter type="brief" usefile="false"/>
+        </junit>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+
+    <target name="do-debug-test-single">
+        <fail unless="test.class">Must set test.class</fail>
+        <java fork="true" classname="junit.textui.TestRunner">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Dorg.netbeans.modules.form.layoutdesign.test=0"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <jvmarg value="-ea"/>
+            <classpath refid="test.unit.run.cp"/>
+            <syspropertyset refid="test.unit.properties"/>
+            <arg line="${test.class}"/>
+        </java>
+    </target>
+    
 </project>

@@ -246,9 +246,15 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
     // -----------------------------------------------------------------------------
     // Public interface
+    
+    private ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
 
     public final String getId() {
-        return id;
+        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            return getName();
+        } else {
+            return id;
+        }
     }
 
     public final boolean isReadOnly() {
@@ -1458,13 +1464,5 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         void removePropertyDescriptors() {
             propertyDescriptors.clear();
         }
-    }    
-
-    public static int getIdCounter() {
-        return idCounter;
-    }
-
-    public static void setIdCounter(int aIdCounter) {
-        idCounter = aIdCounter;
     }
 }

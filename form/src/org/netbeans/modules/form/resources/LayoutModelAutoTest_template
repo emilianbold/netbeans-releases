@@ -28,25 +28,12 @@ public class ${CLASS_NAME} extends LayoutTestCase {
     public ${CLASS_NAME}(String name) {
         super(name);
         try {
-            // classloader points to form/build/test/unit/classes/
-            // golden file is in form/test/unit/data/goldenfiles/
-            String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
-	    String className = this.getClass().getName();
+	    className = this.getClass().getName();
 	    className = className.substring(className.lastIndexOf('.') + 1, className.length());	    
             startingFormFile = FileUtil.toFileObject(new File(url.getFile() + goldenFilesPath + className + "-StartingForm.form").getCanonicalFile());
-            expectedLayoutFile = new File(url.getFile() + goldenFilesPath + className + "-ExpectedEndModel.txt").getCanonicalFile();
         } catch (IOException ioe) {
             fail(ioe.toString());
         }
     }
     
-    protected int getCounterId() {
-	return ${COUNTER_ID};
-    }
-
-    protected void doChanges(LayoutModel model) {
-        
-        ${CODE_GOES_HERE}
-        
-    }
 }

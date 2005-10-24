@@ -41,6 +41,8 @@ public class LayoutDesigner implements LayoutConstants {
     private List move2 = new ArrayList();
     private boolean isMoving = false;
     
+    private int modelCounter = 0;
+    
     private Point lastMovePoint = new Point(0, 0);
     
     private LayoutModel layoutModel;
@@ -106,7 +108,6 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("updateCurrentState"); //NOI18N            
             testCode.add("ld.updateCurrentState();"); //NOI18N
             testCode.add("// < UPDATE CURRENT STATE"); //NOI18N
         }
@@ -318,8 +319,14 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
-    public void dumpTestcode(DataObject form, Map idToNameMap, int idCounter) {
-        LayoutTestUtils.dumpTestcode(testCode, form, idToNameMap, idCounter);
+    public void dumpTestcode(DataObject form) {
+        LayoutTestUtils.dumpTestcode(testCode, form, getModelCounter());
+        testCode = new ArrayList();
+        testCode0 = new ArrayList();
+        beforeMove = new ArrayList();
+        move1 = new ArrayList();
+        move2 = new ArrayList();
+        isMoving = false;
     }
     
     // -----
@@ -335,7 +342,6 @@ public class LayoutDesigner implements LayoutConstants {
 	}
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("startAdding: " + comps + ", " + bounds + ", " + hotspot + ", " + defaultContId);      //NOI18N       
             testCode.add("{");
 	    // lc should be already filled in the MetaComponentCreator.getPrecreatedComponent
             LayoutTestUtils.writeLayoutComponentArray(testCode, "comps", "lc");				    //NOI18N
@@ -355,7 +361,6 @@ public class LayoutDesigner implements LayoutConstants {
     
     public void startMoving(String[] compIds, Rectangle[] bounds, Point hotspot) {
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("startMoving: " + compIds + ", " + bounds + ", " + hotspot); //NOI18N
             testCode.add("// > START MOVING"); //NOI18N
             testCode.add("{"); //NOI18N
             LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
@@ -386,7 +391,6 @@ public class LayoutDesigner implements LayoutConstants {
                               boolean inLayout)
     {
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("startResizing: " + compIds + ", " + bounds + ", " + hotspot + ", " + resizeEdges); //NOI18N
             testCode.add("// > START RESIZING"); //NOI18N
             testCode.add("{"); //NOI18N
             LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
@@ -394,7 +398,8 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("Point hotspot = new Point(" + new Double(hotspot.getX()).intValue() + "," +  //NOI18N
 		    new Double(hotspot.getY()).intValue() + ");"); //NOI18N
             LayoutTestUtils.writeIntArray(testCode, "resizeEdges", resizeEdges); //NOI18N
-            testCode.add("ld.startResizing(compIds, bounds, hotspot, resizeEdges);"); //NOI18N
+            testCode.add("boolean inLayout = " + inLayout + ";");
+            testCode.add("ld.startResizing(compIds, bounds, hotspot, resizeEdges, inLayout);"); //NOI18N
             testCode.add("}"); //NOI18N
         }
 
@@ -489,9 +494,6 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (!dragger.isResizing() && (!lockDimension || dragger.getTargetContainer() == null)) {
-	    if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-		em.log("Asking for container id: " + containerId); //NOI18N
-	    }
             dragger.setTargetContainer(layoutModel.getLayoutComponent(containerId));
         }
 
@@ -511,7 +513,6 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("move: point(" + x + ", " + y + "), " + containerId + ", " + autoPositioning + ", " + lockDimension + ", " + bounds); //NOI18N
             move2.add("{"); //NOI18N
             move2.add("Point p = new Point(" + x + "," + y + ");"); //NOI18N
             LayoutTestUtils.writeString(move2, "containerId", containerId); //NOI18N
@@ -530,7 +531,6 @@ public class LayoutDesigner implements LayoutConstants {
 
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
             if (committed) {
-                em.log("writing move code"); //NOI18N
                 beforeMove.addAll(testCode0);
                 beforeMove.addAll(move1);
                 beforeMove.addAll(testCode);
@@ -647,7 +647,6 @@ public class LayoutDesigner implements LayoutConstants {
             modelListener.activate();
             dragger = null;
             if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-                em.log("endMoving: " + committed); //NOI18N
                 testCode.add("ld.endMoving(" + committed + ");"); //NOI18N
                 testCode.add("// < END MOVING"); //NOI18N
             }
@@ -1296,7 +1295,6 @@ public class LayoutDesigner implements LayoutConstants {
      */
     public void adjustComponentAlignment(LayoutComponent comp, int dimension, int alignment) {
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("adjustComponentAlignment: " + comp + ", " + dimension + ", " + alignment); //NOI18N
             testCode.add("// > ADJUST COMPONENT ALIGNMENT"); //NOI18N
             testCode.add("{"); //NOI18N
             testCode.add("LayoutComponent comp = model.getLayoutComponent(\"" + comp.getId() + "\");"); //NOI18N
@@ -1568,7 +1566,6 @@ public class LayoutDesigner implements LayoutConstants {
      */
     public void setComponentResizing(LayoutComponent comp, int dimension, boolean resizing) {
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("setComponentResizing: " + comp + ", " + dimension + ", " + resizing); //NOI18N
             testCode.add("// > SET COMPONENT RESIZING"); //NOI18N
             testCode.add("{"); //NOI18N
             testCode.add("LayoutComponent comp = model.getLayoutComponent(\"${" + comp.getId() + "}\");"); //NOI18N
@@ -1787,7 +1784,6 @@ public class LayoutDesigner implements LayoutConstants {
      */
     public void align(Collection componentIds, boolean closed, int dimension, int alignment) {
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("align: " + componentIds + ", " + closed + ", " + dimension + ", " + alignment); //NOI18N
             testCode.add("// > ALIGN"); //NOI18N
             testCode.add("{"); //NOI18N
 	    LayoutTestUtils.writeCollection(testCode, "componentIds", componentIds); //NOI18N
@@ -2223,7 +2219,6 @@ public class LayoutDesigner implements LayoutConstants {
 
     public void setDefaultSize(String compId) {
         if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            em.log("setDefaultSize: " + compId); //NOI18N
             testCode.add("// > SET DEFAULT SIZE"); //NOI18N
             testCode.add("{"); //NOI18N
             testCode.add("String compId = \"${" + compId + "}\";"); //NOI18N
@@ -2925,4 +2920,12 @@ public class LayoutDesigner implements LayoutConstants {
 
     // resizability of a component in the designer
     private boolean[][] resizability = { { true, true }, { true, true } };
+
+    public int getModelCounter() {
+        return modelCounter;
+    }
+
+    public void setModelCounter(int modelCounter) {
+        this.modelCounter = modelCounter;
+    }
 }

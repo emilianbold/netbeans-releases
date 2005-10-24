@@ -219,9 +219,9 @@ public class MetaComponentCreator {
                 LayoutDesigner ld = FormEditor.getFormDesigner(formModel).getLayoutDesigner();
                 if (ld.em.isLoggable(ErrorManager.INFORMATIONAL)) {
                     if (initialSize == null) {
-                        ld.testCode.add("lc = new LayoutComponent(${" + preMetaComp.getId() + "}, " + isContainer + ");"); //NOI18N
+                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isContainer + ");"); //NOI18N
                     } else {
-                        ld.testCode.add("lc = new LayoutComponent(${" + preMetaComp.getId() + "}, " + isContainer + ", " + //NOI18N 
+                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isContainer + ", " + //NOI18N 
                                                                     initialSize.width + ", " + initialSize.height + ");"); //NOI18N
                     } 
                 }

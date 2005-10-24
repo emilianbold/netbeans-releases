@@ -87,8 +87,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
-    private int savedIdCounter = -1;
-    
     // -------
 
     HandleLayer(FormDesigner fd) {
@@ -421,7 +419,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
 		FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
-		LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel, savedIdCounter);
+		LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel);
+                LayoutDesigner ld = formDesigner.getLayoutDesigner();
+                ld.setModelCounter(ld.getModelCounter() + 1);
             }
         } else if (((keyCode == KeyEvent.VK_S)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
@@ -433,8 +433,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 FileObject copied = formFile.copy(LayoutTestUtils.getTargetFolder(formFile), 
 			    formFile.getName() + "Test-StartingForm", //NOI18N
 			    formFile.getExt()); 
-		savedIdCounter = RADComponent.getIdCounter() - 1;
-		StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath()); // NOI18N
+                formDesigner.getLayoutDesigner().setModelCounter(0);
+		StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath());
             } catch (IOException ioe) {
                 //TODO
             }

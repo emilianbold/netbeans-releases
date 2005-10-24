@@ -17,6 +17,7 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
+import org.netbeans.modules.form.layoutdesign.LayoutDesigner;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
@@ -36,7 +37,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.w3c.dom.NamedNodeMap;/**
+import org.w3c.dom.NamedNodeMap;
+
+/**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
  * The class contains lots of complicated code with many hacks ensuring full
  * compatibility of the format despite that many original classes already don't
@@ -121,6 +124,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final String ONE_INDENT =  "  "; // NOI18N
     private static final Object NO_VALUE = new Object();
     private static final String FORM_SETTINGS_PREFIX = "FormSettings_"; // NOI18N
+
+    public ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
 
     private org.w3c.dom.Document topDocument =
         XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
@@ -724,15 +729,25 @@ public class GandalfPersistenceManager extends PersistenceManager {
             visualContainer.setOldLayoutSupport(false);
             formModel.setFreeDesignDefaultLayout(true);
             LayoutModel layoutModel = formModel.getLayoutModel();
-	    layoutModel.addRootComponent(
-                new LayoutComponent(visualContainer.getId(), true));
+
+            if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                layoutModel.addRootComponent(
+                    new LayoutComponent(visualContainer.getName(), true));
+            } else {
+                layoutModel.addRootComponent(
+                    new LayoutComponent(visualContainer.getId(), true));
+            }
             Map nameToIdMap = new HashMap();
             for (int i=0; i<childComponents.length; i++) {
                 RADComponent comp = childComponents[i];
                 CodeVariable var = comp.getCodeExpression().getVariable();
                 nameToIdMap.put(var.getName(), comp.getId());
             }
-            layoutModel.loadModel(visualContainer.getId(), layoutNode.getChildNodes(), nameToIdMap);
+            if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                layoutModel.loadModel(visualContainer.getName(), layoutNode.getChildNodes(), null);
+            } else {
+                layoutModel.loadModel(visualContainer.getId(), layoutNode.getChildNodes(), nameToIdMap);
+            }
             newLayout = true;
         }
 
@@ -2791,7 +2806,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             LayoutModel layoutModel = formModel.getLayoutModel();
             int indentation = indent.length()/ONE_INDENT.length() + 1;
             LayoutComponent layoutComp = layoutModel.getLayoutComponent(container.getId());
-            buf.append(layoutModel.dumpLayout(indentation, layoutComp, idToNameMap, false));
+            
+            if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                buf.append(layoutModel.dumpLayout(indentation, layoutComp, null, false));
+            } else {
+                buf.append(layoutModel.dumpLayout(indentation, layoutComp, idToNameMap, false));
+            }
             buf.append(indent);
             addElementClose(buf, XML_LAYOUT);
             return LAYOUT_NATURAL;

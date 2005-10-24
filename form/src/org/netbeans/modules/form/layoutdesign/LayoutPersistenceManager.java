@@ -14,6 +14,7 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.util.*;
+import org.openide.ErrorManager;
 import org.w3c.dom.*;
 
 /**
@@ -66,7 +67,9 @@ public class LayoutPersistenceManager implements LayoutConstants {
     static final String VALUE_SIZE_MAX = "Short.MAX_VALUE"; // NOI18N
     static final String VALUE_GROUP_PARALLEL = "parallel"; // NOI18N
     static final String VALUE_GROUP_SEQUENTIAL = "sequential"; // NOI18N
-    
+
+    private ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
+
     /**
      * Creates new <code>LayoutPersistenceManager</code>.
      *
@@ -164,7 +167,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
         } else {
             if (interval.isComponent()) {
                 String name = interval.getComponent().getId();
-                if (idNameMap != null) {
+                if (!em.isLoggable(ErrorManager.INFORMATIONAL) && idNameMap != null) {
                     name = (String)idNameMap.get(name);
                     assert (name != null);
                 }
@@ -375,7 +378,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
         NamedNodeMap attrMap = componentNode.getAttributes();
         String name = attrMap.getNamedItem(ATTR_COMPONENT_ID).getNodeValue();
         Node linkSizeId = attrMap.getNamedItem(ATTR_LINK_SIZE);
-        String id = (String)idNameMap.get(name);
+        String id = em.isLoggable(ErrorManager.INFORMATIONAL) ? name : (String)idNameMap.get(name);
         Node alignmentNode = attrMap.getNamedItem(ATTR_ALIGNMENT);
         int alignment = (alignmentNode == null) ? DEFAULT : integerFromNode(alignmentNode);
         LayoutComponent layoutComponent = layoutModel.getLayoutComponent(id);

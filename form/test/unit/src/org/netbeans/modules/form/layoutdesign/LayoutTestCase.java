@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +58,10 @@ public abstract class LayoutTestCase extends TestCase {
     
     protected LayoutComponent lc = null;
     
+    protected String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
+
+    protected String className;
+    
     public LayoutTestCase(String name) {
         super(name);
     }
@@ -70,25 +76,48 @@ public abstract class LayoutTestCase extends TestCase {
     public void testLayout() throws IOException {
 		
         loadForm(startingFormFile);
-        doChanges(lm);
-        
-        String currentLayout = getCurrentLayoutDump();
-        String expectedLayout = getExpectedLayoutDump();
-        
-        System.out.println("Comparing ... ");
-        System.out.println("EXPECTED: ");
-        System.out.println(expectedLayout);
-        System.out.println("");
-        System.out.println("CURRENT: ");
-        System.out.println(currentLayout);
-        System.out.println("");
-        
-        boolean same = expectedLayout.equals(currentLayout);
-        if (!same) {
-            writeCurrentWrongLayout(currentLayout);
-        }
 
-	assertTrue("Model dump gives different result than expected", same);
+        Method[] methods = this.getClass().getMethods();
+        for (int i=0; i < methods.length; i++) {
+            Method m = methods[i];
+            if (m.getName().startsWith("doChanges")) {
+                try {
+                    System.out.println("Invoking " + m.getName());
+                    m.invoke(this, null);
+                    
+                    String methodCount = m.getName().substring(9);
+                    
+                    String currentLayout = getCurrentLayoutDump();
+                    String expectedLayout = getExpectedLayoutDump(methodCount);
+
+                    System.out.println("Comparing ... ");
+                    System.out.println("EXPECTED: ");
+                    System.out.println(expectedLayout);
+                    System.out.println("");
+                    System.out.println("CURRENT: ");
+                    System.out.println(currentLayout);
+                    System.out.println("");
+
+                    boolean same = expectedLayout.equals(currentLayout);
+                    if (!same) {
+                        writeCurrentWrongLayout(currentLayout);
+                    }
+
+                    assertTrue("Model dump in step " + methodCount + " gives different result than expected", same);
+                    
+                } catch (IllegalArgumentException ex) {
+                    ex.printStackTrace();
+                    fail("Error while invoking method: " + m);
+                } catch (IllegalAccessException ex) {
+                    ex.printStackTrace();
+                    fail("Error while invoking method: " + m);
+                } catch (InvocationTargetException ex) {
+                    ex.printStackTrace();
+                    fail("Error while invoking method: " + m);
+                }
+            }
+        }
+        
     }
     
     private void loadForm(FileObject file) {
@@ -96,7 +125,7 @@ public abstract class LayoutTestCase extends TestCase {
         List errors = new ArrayList();
         
         try {
-	    RADComponent.setIdCounter(getCounterId());
+//	    RADComponent.setIdCounter(getCounterId());
             fm = gpm.loadForm(file, file, null, errors);
         } catch (PersistenceException pe) {
             fail(pe.toString());
@@ -124,7 +153,8 @@ public abstract class LayoutTestCase extends TestCase {
         return lm.dump(idToNameMap);
     }
     
-    private String getExpectedLayoutDump() {
+    private String getExpectedLayoutDump(String methodCount) throws IOException {        
+        expectedLayoutFile = new File(url.getFile() + goldenFilesPath + className + "-ExpectedEndModel" + methodCount + ".txt").getCanonicalFile();
         int length = (int) expectedLayoutFile.length();
         FileReader fr = null;
         try {
@@ -145,11 +175,7 @@ public abstract class LayoutTestCase extends TestCase {
         }
         return null;
     }
-    
-    protected abstract void doChanges(LayoutModel model);
-    
-    protected abstract int getCounterId();
-
+        
     private void writeCurrentWrongLayout(String dump) throws IOException {
         // will go to form/build/test/unit/results
         File file = new File(url.getFile() + "../results").getCanonicalFile();
