@@ -113,20 +113,22 @@ public class HtmlBrowser extends Object {
             // PENDING need to get rid of this filtering
             FileObject fo = Repository.getDefault ()
             .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
-            DataFolder folder = DataFolder.findFolder (fo);
-            DataObject [] dobjs = folder.getChildren ();
-            for (int i = 0; i<dobjs.length; i++) {
-                // Must not be hidden and have to provide instances (we assume instance is HtmlBrowser.Factory)
-                if (Boolean.TRUE.equals(dobjs[i].getPrimaryFile().getAttribute(EA_HIDDEN)) ||
-                        dobjs[i].getCookie(InstanceCookie.class) == null) {
-                    FileObject fo2 = dobjs[i].getPrimaryFile();
-                    String n = fo2.getName();
-                    try {
-                        n = fo2.getFileSystem().getStatus().annotateName(n, dobjs[i].files());
-                    } catch (FileStateInvalidException e) {
-                        // Never mind.
+            if (fo != null) {
+                DataFolder folder = DataFolder.findFolder (fo);
+                DataObject [] dobjs = folder.getChildren ();
+                for (int i = 0; i<dobjs.length; i++) {
+                    // Must not be hidden and have to provide instances (we assume instance is HtmlBrowser.Factory)
+                    if (Boolean.TRUE.equals(dobjs[i].getPrimaryFile().getAttribute(EA_HIDDEN)) ||
+                            dobjs[i].getCookie(InstanceCookie.class) == null) {
+                        FileObject fo2 = dobjs[i].getPrimaryFile();
+                        String n = fo2.getName();
+                        try {
+                            n = fo2.getFileSystem().getStatus().annotateName(n, dobjs[i].files());
+                        } catch (FileStateInvalidException e) {
+                            // Never mind.
+                        }
+                        list.remove(n);
                     }
-                    list.remove(n);
                 }
             }
             String[] retValue = new String[list.size ()];
