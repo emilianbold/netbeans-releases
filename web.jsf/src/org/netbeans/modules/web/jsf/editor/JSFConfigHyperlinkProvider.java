@@ -57,6 +57,21 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
         hyperlinkTable.put("validator-class", new Integer(JAVA_CLASS));      //NOI18N
         hyperlinkTable.put("attribute-class", new Integer(JAVA_CLASS));      //NOI18N
         hyperlinkTable.put("message-bundle", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("action-listener", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("application-factory", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("converter-class", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("converter-for-class", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("faces-context-factory", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("key-class", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("lifecycle-factory", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("navigation-handler", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("phase-listener", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("property-resolver", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("referenced-bean-class", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("render-kit-class", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("render-kit-factory", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("value-class", new Integer(JAVA_CLASS));      //NOI18N
+        hyperlinkTable.put("variable-resolver", new Integer(JAVA_CLASS));      //NOI18N
         hyperlinkTable.put("from-view-id", new Integer(RESOURCE_PATH));   //NOI18N
         hyperlinkTable.put("to-view-id", new Integer(RESOURCE_PATH));     //NOI18N
     }
