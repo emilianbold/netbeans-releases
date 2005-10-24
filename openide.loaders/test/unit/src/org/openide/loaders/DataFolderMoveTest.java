@@ -27,13 +27,22 @@ import org.netbeans.junit.*;
  *
  * @author  Petr Hamernik
  */
-public class DataFolderMoveTest extends NbTestCase {
+public class DataFolderMoveTest extends LoggingTestCaseHid {
+    private org.openide.ErrorManager err;
+    
 
     /** Creates new DataFolderTest */
     public DataFolderMoveTest(String name) {
         super (name);
     }
 
+    
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        err = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
+    }
+    
+    
     private static final int FS_WIDTH = 5;
     private static final int FS_DEPTH = 4;
     private static final int TXT_SIZE = 20000;
@@ -96,7 +105,7 @@ public class DataFolderMoveTest extends NbTestCase {
                 final int src = (k % 2 == 0) ? 0 : 1;
                 final int dest = (src == 0) ? 1 : 0;
 
-                System.out.println("Copy cycle "+k+" (from "+src+" to "+dest+")");
+                err.log("Copy cycle "+k+" (from "+src+" to "+dest+")");
                 
                 final boolean[] working = new boolean[] { true };
 
