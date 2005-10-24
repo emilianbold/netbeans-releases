@@ -801,7 +801,7 @@ build - build all suite modules.
 
 build-jnlp - builds the JNLP war file with your application
 
-clean - clean all suite modules.
+clean - clean everything.
 
 debug - like run, but run in the JPDA debugger. (Only available from inside the
 IDE.)
@@ -813,6 +813,8 @@ profile - used from inside the NetBeans IDE to profile the entire suite
 run - start application for testing.
 
 run-jnlp - executes your JNLP application (currently from local files)
+
+testuserdir-delete - deletes just the testing user directory (if not currently in use).
 
 CONTENTS OF YOUR manifest.mf
 ----------------------------
