@@ -115,6 +115,14 @@ public interface CallStackFrame {
      */
     public abstract boolean isObsolete ();
     
+    /** UNCOMMENT WHEN THIS METHOD IS NEEDED. IT'S ALREADY IMPLEMENTED IN THE IMPL. CLASS.
+     * Determine, if this stack frame can be poped off the stack.
+     *
+     * @return <code>true</code> if this frame can be poped
+     *
+    public abstract boolean canPop();
+     */
+    
     /**
      * Pop stack frames. All frames up to and including the frame 
      * are popped off the stack. The frame previous to the parameter 

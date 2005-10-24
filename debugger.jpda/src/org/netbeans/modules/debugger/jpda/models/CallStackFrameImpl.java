@@ -14,10 +14,12 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
@@ -233,6 +235,26 @@ public class CallStackFrameImpl implements CallStackFrame {
      */
     public synchronized boolean isObsolete () {
         return getStackFrame ().location ().method ().isObsolete ();
+    }
+    
+    public boolean canPop() {
+        if (!debugger.canPopFrames()) return false;
+        ThreadReference t = getStackFrame().thread();
+        try {
+            if (t.frameCount() <= 1) { // Nowhere to pop
+                return false;
+            }
+            List topFrames = t.frames(0, 2);
+            if (((StackFrame) topFrames.get(0)).location().method().isNative() ||
+                ((StackFrame) topFrames.get(1)).location().method().isNative()) {
+                // Have native methods on the stack - can not pop
+                return false;
+            }
+        } catch (IncompatibleThreadStateException itsex) {
+            return false;
+        }
+        // Looks like we should be able to pop...
+        return true;
     }
     
     /**
