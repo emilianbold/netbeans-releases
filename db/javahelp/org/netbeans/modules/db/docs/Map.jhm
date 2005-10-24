@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
 <mapID target="createviews" url="createviews.html" />
 <mapID target="manipsql" url="manipsql.html" />
 
-<mapID target="db.explorer.misc" url="misc.html" />
+<!--<mapID target="db.explorer.misc" url="misc.html" />-->
 <mapID target="dbconfig" url="dbconfig.html" />
 
 <mapID target="browstruct" url="browstruct.html" />
