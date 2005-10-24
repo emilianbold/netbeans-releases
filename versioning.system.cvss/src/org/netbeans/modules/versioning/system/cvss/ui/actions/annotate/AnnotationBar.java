@@ -59,7 +59,7 @@ import java.text.MessageFormat;
  *
  * @author Petr Kuzel
  */
-final class AnnotationBar extends JComponent implements Accessible, FoldHierarchyListener, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener, Runnable {
+final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
 
     /**
      * Target text component for which the annotation bar is aiming.
@@ -170,7 +170,7 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         elementAnnotationsSubstitute = loc.getString("CTL_AnnotationSubstitute");
 
         doc.addDocumentListener(this);
-        foldHierarchy.addFoldHierarchyListener(this);
+        textComponent.addComponentListener(this);
         editorUI.addPropertyChangeListener(this);
 
         revalidate();  // resize the component
@@ -643,7 +643,7 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
      */
     private void release() {
         editorUI.removePropertyChangeListener(this);
-        foldHierarchy.removeFoldHierarchyListener(this);
+        textComponent.removeComponentListener(this);
         doc.removeDocumentListener(this);
         caret.removeChangeListener(this);
         if (caretTimer != null) {
@@ -852,11 +852,6 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
     }
 
     /** Implementation */
-    public void foldHierarchyChanged(FoldHierarchyEvent event) {
-        repaint();
-    }
-
-    /** Implementation */
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) return;
         String id = evt.getPropertyName();
@@ -930,6 +925,23 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
     public void actionPerformed(ActionEvent e) {
         assert e.getSource() == caretTimer;
         onCurrentLine();
+    }
+
+    /** on JTextPane */
+    public void componentHidden(ComponentEvent e) {
+    }
+
+    /** on JTextPane */
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    /** on JTextPane */
+    public void componentResized(ComponentEvent e) {
+        revalidate();
+    }
+
+    /** on JTextPane */
+    public void componentShown(ComponentEvent e) {
     }
 
     private static class CvsAnnotation extends Annotation {
