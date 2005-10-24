@@ -130,10 +130,10 @@
 
     <!-- shortcuts -->
     <folder name="Shortcuts">
-        <file name="DO-J.instance">
+        <file name="DS-U.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.CreateTestAction"/>
 	</file>
-        <file name="DO-K.instance">
+        <file name="OS-E.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.GoToOppositeAction"/>
 	</file>
     </folder>

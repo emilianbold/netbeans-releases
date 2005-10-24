@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DS-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
             </file>
-            <file name="DO-K.shadow">
+            <file name="OS-E.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>
             </file>
             <file name="S-F1.shadow">
@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
             </file>
-            <file name="DO-J.shadow">
+            <file name="DS-U.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
             </file>
             <file name="D-8.shadow">
@@ -520,7 +520,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-0.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
-            <file name="DO-J.shadow">
+            <file name="DS-U.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
             </file>
             <file name="DS-P.shadow">
