@@ -213,20 +213,7 @@ public class WizardHelpers
     
     public static FileObject[] getTestsFileObject(SourceGroup sourceGroup, Project project) {
         /* .) get URLs of target SourceGroup's roots: */
-        URL[] rootURLs = null;
-        try {
-            rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
-        }catch(java.lang.NoSuchMethodError e) {
-            //OK We are running in 4.0.
-            
-            URL tmp = UnitTestForSourceQuery.findUnitTest(sourceGroup.getRootFolder());
-            if(tmp != null) {
-                rootURLs = new URL[1];
-                rootURLs[0] = tmp;
-            } else
-                rootURLs = new URL[0];
-            
-        }
+        URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
         
         if (rootURLs.length == 0) {
             return new FileObject[0];
@@ -1152,6 +1139,9 @@ public class WizardHelpers
     public static JavaClass getJavaClassInProject(FileObject foClass) {
         JavaModel.getJavaRepository().beginTrans(false);
         try {
+            //Need to be in transaction to findout validity
+            if(!foClass.isValid()) return null;
+            
             JavaModel.setClassPath(foClass);
             Resource rc = JavaModel.getResource(foClass);
             return getJavaClass(rc, foClass.getName());

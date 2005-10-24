@@ -65,7 +65,9 @@ public class AddRegisterIntfAction extends CookieAction {
         
         dob = (DataObject)nodes[0].getCookie(DataObject.class);
         FileObject fo = null;
-        if (dob != null) fo = dob.getPrimaryFile();
+        if (dob == null) return false;
+        
+        fo = dob.getPrimaryFile();
         
         JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
         if (foClass == null) return false;

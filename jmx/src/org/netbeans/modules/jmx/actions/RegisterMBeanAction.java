@@ -65,12 +65,14 @@ public class RegisterMBeanAction extends CookieAction {
         
         dob = (DataObject)nodes[0].getCookie(DataObject.class);
         fo = null;
-        if (dob != null) fo = dob.getPrimaryFile();
+        if (dob == null) return false;
         
+        fo = dob.getPrimaryFile();
+       
         JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
-        
         if (foClass == null)
             return false;
+        
         //We need to do all MDR access in a transaction
         JavaModel.getJavaRepository().beginTrans(false);
         try {
