@@ -114,6 +114,9 @@ public class ClientRuntime {
             if (bc.getFiles() != null) {
                 String path = bc.getFiles()[0].getAbsolutePath();
                 client.setLocalPath(path);
+            } else {
+                // #67315: use some default working dir
+                client.setLocalPath(System.getProperty("user.dir"));
             }
         } else if (cmd instanceof ImportCommand) {
             client.setLocalPath(((ImportCommand)cmd).getImportDirectory());
