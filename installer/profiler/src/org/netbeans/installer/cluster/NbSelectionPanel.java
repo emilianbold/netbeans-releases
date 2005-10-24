@@ -509,7 +509,8 @@ public class NbSelectionPanel extends DirectoryChooserPanel
     private void disableNavigation () {
         logEvent(this, Log.DBG,"disableNavigation");
         getWizard().getUI().setNavigationEnabled(false);
-        getWizard().getUI().setBusy();
+        getWizard().getUI().setBusy
+        (resolveString(BUNDLE + "NetBeansDirChooser.uninstallerRunning)"));
     }
     
     private void enableNavigation () {
@@ -535,7 +536,10 @@ public class NbSelectionPanel extends DirectoryChooserPanel
             int returnValue = -1;
 	    try {
                 RunCommand runCommand = new RunCommand();
-                runCommand.execute(uninstallerPath);
+                String [] params = new String[2];
+                params[0] = uninstallerPath;
+                params[1] = "-silent";
+                runCommand.execute(params);
                 runCommand.waitFor();
                 log.logEvent(this, Log.DBG,runCommand.print());
                 returnValue = runCommand.getReturnStatus();
