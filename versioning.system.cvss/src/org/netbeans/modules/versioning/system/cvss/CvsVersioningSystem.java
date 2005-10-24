@@ -529,8 +529,22 @@ public class CvsVersioningSystem {
      */
     public static GlobalOptions createGlobalOptions() {
         GlobalOptions globalOptions = new GlobalOptions();
-        if (System.getProperty("cvsClientLog") == null) {
-            globalOptions.setCompressionLevel(3);
+        if (System.getProperty("cvsClientLog") == null) {    // NOI18N
+            int gzipLevel = 3;
+            String level = System.getProperty("netbeans.experimental.cvs.io.compressionLevel"); // NOI18N
+            if (level != null) {
+                try {
+                    int candidate = Integer.parseInt(level);
+                    if (0 <= candidate && candidate < 10) {
+                        gzipLevel = candidate;
+                    }
+                } catch (NumberFormatException ex) {
+                    // default level
+                }
+            }
+            if (gzipLevel > 0) {
+                globalOptions.setCompressionLevel(gzipLevel);
+            }
         }
         return globalOptions;
     }
