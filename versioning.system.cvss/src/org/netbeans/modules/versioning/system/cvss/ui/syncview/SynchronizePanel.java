@@ -655,16 +655,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        cbUpToDate = new javax.swing.JCheckBox();
-        cbNewLocally = new javax.swing.JCheckBox();
-        cbAdded = new javax.swing.JCheckBox();
-        cbNewInRepository = new javax.swing.JCheckBox();
-        cbModified = new javax.swing.JCheckBox();
-        cbRemovedLocally = new javax.swing.JCheckBox();
-        cbFlatView = new javax.swing.JCheckBox();
-        cbModifiedRepository = new javax.swing.JCheckBox();
-        cbExcluded = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JToolBar();
         tgbAll = new javax.swing.JToggleButton();
         tgbLocal = new javax.swing.JToggleButton();
@@ -675,61 +665,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         jPanel3 = new javax.swing.JPanel();
         btnUpdate = new javax.swing.JButton();
         btnCommit = new javax.swing.JButton();
-
-        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
-        cbUpToDate.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_Uptodate").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbUpToDate, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_Uptodate"));
-        cbUpToDate.addActionListener(this);
-
-        jPanel1.add(cbUpToDate);
-
-        cbNewLocally.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_NewLocally").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbNewLocally, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_NewLocally"));
-        cbNewLocally.addActionListener(this);
-
-        jPanel1.add(cbNewLocally);
-
-        cbAdded.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_Added").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbAdded, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_Added"));
-        cbAdded.addActionListener(this);
-
-        jPanel1.add(cbAdded);
-
-        cbNewInRepository.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_NewInRepository").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbNewInRepository, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_NewInRepository"));
-        cbNewInRepository.addActionListener(this);
-
-        jPanel1.add(cbNewInRepository);
-
-        cbModified.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_Modified").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbModified, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_Modified"));
-        cbModified.addActionListener(this);
-
-        jPanel1.add(cbModified);
-
-        cbRemovedLocally.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_RemovedLocally").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbRemovedLocally, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_RemovedLocally"));
-        cbRemovedLocally.addActionListener(this);
-
-        jPanel1.add(cbRemovedLocally);
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbFlatView, "Flat");
-        cbFlatView.addActionListener(this);
-
-        jPanel1.add(cbFlatView);
-
-        cbModifiedRepository.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_ModifiedInRepository").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbModifiedRepository, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_ModifiedInRepository"));
-        cbModifiedRepository.addActionListener(this);
-
-        jPanel1.add(cbModifiedRepository);
-
-        cbExcluded.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("MNE_Synchronize_Option_Excluded").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbExcluded, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Option_Excluded"));
-        cbExcluded.addActionListener(this);
-
-        jPanel1.add(cbExcluded);
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -803,34 +738,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     // Code for dispatching events from components to event handlers.
 
     public void actionPerformed(java.awt.event.ActionEvent evt) {
-        if (evt.getSource() == cbUpToDate) {
-            SynchronizePanel.this.cbUpToDateActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbNewLocally) {
-            SynchronizePanel.this.cbNewLocallyActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbAdded) {
-            SynchronizePanel.this.cbAddedActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbNewInRepository) {
-            SynchronizePanel.this.cbNewInRepositoryActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbModified) {
-            SynchronizePanel.this.cbModifiedActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbRemovedLocally) {
-            SynchronizePanel.this.cbRemovedLocallyActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbFlatView) {
-            SynchronizePanel.this.cbFlatViewActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbModifiedRepository) {
-            SynchronizePanel.this.cbModifiedRepositoryActionPerformed(evt);
-        }
-        else if (evt.getSource() == cbExcluded) {
-            SynchronizePanel.this.cbExcludedActionPerformed(evt);
-        }
-        else if (evt.getSource() == tgbAll) {
+        if (evt.getSource() == tgbAll) {
             SynchronizePanel.this.tgbAllActionPerformed(evt);
         }
         else if (evt.getSource() == tgbLocal) {
@@ -878,41 +786,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         onCommitAction();
     }//GEN-LAST:event_btnCommitActionPerformed
 
-    private void cbExcludedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbExcludedActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbExcludedActionPerformed
-
-    private void cbModifiedRepositoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbModifiedRepositoryActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbModifiedRepositoryActionPerformed
-
-    private void cbFlatViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFlatViewActionPerformed
-    }//GEN-LAST:event_cbFlatViewActionPerformed
-
-    private void cbRemovedLocallyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbRemovedLocallyActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbRemovedLocallyActionPerformed
-
-    private void cbModifiedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbModifiedActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbModifiedActionPerformed
-
-    private void cbNewInRepositoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbNewInRepositoryActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbNewInRepositoryActionPerformed
-
-    private void cbAddedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddedActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbAddedActionPerformed
-
-    private void cbNewLocallyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbNewLocallyActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbNewLocallyActionPerformed
-
-    private void cbUpToDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbUpToDateActionPerformed
-        onDisplayedStatusChanged();
-    }//GEN-LAST:event_cbUpToDateActionPerformed
-
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
         onRefreshAction();
     }//GEN-LAST:event_btnRefreshActionPerformed
@@ -923,16 +796,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private javax.swing.JButton btnDiff;
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnUpdate;
-    private javax.swing.JCheckBox cbAdded;
-    private javax.swing.JCheckBox cbExcluded;
-    private javax.swing.JCheckBox cbFlatView;
-    private javax.swing.JCheckBox cbModified;
-    private javax.swing.JCheckBox cbModifiedRepository;
-    private javax.swing.JCheckBox cbNewInRepository;
-    private javax.swing.JCheckBox cbNewLocally;
-    private javax.swing.JCheckBox cbRemovedLocally;
-    private javax.swing.JCheckBox cbUpToDate;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JSeparator jSeparator1;
