@@ -59,7 +59,10 @@ public class ViewActions extends AbstractAction {
     }
     
     static void openComponent (String viewName, boolean activate) {
-        TopComponent view = View.getView(viewName);
+        TopComponent view = WindowManager.getDefault().findTopComponent(viewName);
+        if (view == null) {
+            throw new IllegalArgumentException(viewName);
+        }
         view.open();
         if (activate) {
             view.requestActive();
@@ -71,7 +74,7 @@ public class ViewActions extends AbstractAction {
      * Creates an action that opens Breakpoints TopComponent.
      */
     public static Action createBreakpointsViewAction () {
-        ViewActions action = new ViewActions(View.BREAKPOINTS_VIEW_NAME);
+        ViewActions action = new ViewActions("breakpointsView");
         action.putValue (Action.NAME, "CTL_BreakpointsAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint" // NOI18N
@@ -83,7 +86,7 @@ public class ViewActions extends AbstractAction {
      * Creates an action that opens Call Stack TopComponent.
      */
     public static Action createCallStackViewAction () {
-        ViewActions action = new ViewActions(View.CALLSTACK_VIEW_NAME);
+        ViewActions action = new ViewActions("callstackView");
         action.putValue (Action.NAME, "CTL_CallStackAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame" // NOI18N
@@ -95,7 +98,7 @@ public class ViewActions extends AbstractAction {
      * Creates an action that opens Local Variables TopComponent.
      */
     public static Action createLocalsViewAction() {
-        ViewActions action = new ViewActions(View.LOCALS_VIEW_NAME);
+        ViewActions action = new ViewActions("localsView");
         action.putValue (Action.NAME, "CTL_LocalVariablesAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/localsView/LocalVariable" // NOI18N
@@ -107,7 +110,7 @@ public class ViewActions extends AbstractAction {
      * Creates an action that opens Sessions TopComponent.
      */
     public static Action createSessionsViewAction () {
-        ViewActions action = new ViewActions(View.SESSIONS_VIEW_NAME);
+        ViewActions action = new ViewActions("sessionsView");
         action.putValue (Action.NAME, "CTL_SessionsAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/sessionsView/Session" // NOI18N
@@ -119,7 +122,7 @@ public class ViewActions extends AbstractAction {
      * Creates an action that opens Threads TopComponent.
      */
     public static Action createThreadsViewAction () {
-        ViewActions action = new ViewActions(View.THREADS_VIEW_NAME);
+        ViewActions action = new ViewActions("threadsView");
         action.putValue (Action.NAME, "CTL_ThreadsAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/threadsView/ThreadGroup" // NOI18N
@@ -132,7 +135,7 @@ public class ViewActions extends AbstractAction {
      * Creates an action that opens Watches TopComponent.
      */
     public static Action createWatchesViewAction() {
-        ViewActions action = new ViewActions(View.WATCHES_VIEW_NAME);
+        ViewActions action = new ViewActions("watchesView");
         action.putValue (Action.NAME, "CTL_WatchesAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/watchesView/Watch" // NOI18N

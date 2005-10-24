@@ -14,6 +14,10 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.BorderLayout;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import javax.swing.JComponent;
 import org.netbeans.spi.viewmodel.Models;
 
@@ -121,11 +125,13 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     public Object writeReplace() {
         return new ResolvableHelper(name);
     }
+     
+    
     
     /**
      * The serializing class.
      */
-    private static final class ResolvableHelper {
+    private static final class ResolvableHelper implements Externalizable {
         
         private String name;
         
@@ -135,120 +141,125 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             this.name = name;
         }
         
+        public ResolvableHelper() {
+            // Just for the purpose of deserialization
+        }
+        
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeObject(name);
+        }
+        
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            name = (String) in.readObject();
+        }
+        
         public Object readResolve() {
             return View.getView(name);
         }
     }
     
     
-    private static TopComponent BREAKPOINTS_VIEW;
-    private static TopComponent CALLSTACK_VIEW;
-    private static TopComponent LOCALS_VIEW;
-    private static TopComponent SESSIONS_VIEW;
-    private static TopComponent THREADS_VIEW;
-    private static TopComponent WATCHES_VIEW;
-    
+    /** Creates the view. Call from the module layer only!
+     * @deprecated Do not call.
+     */
     public static synchronized TopComponent getBreakpointsView() {
-        if (BREAKPOINTS_VIEW == null) {
-            BREAKPOINTS_VIEW = new View(
-                "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint",
-                BREAKPOINTS_VIEW_NAME,
-                "NetbeansDebuggerBreakpointNode",
-                null,
-                "CTL_Breakpoints_view",
-                "CTL_Breakpoints_view_tooltip"
-            );
-        }
-        return BREAKPOINTS_VIEW;
+        return new View(
+            "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint",
+            BREAKPOINTS_VIEW_NAME,
+            "NetbeansDebuggerBreakpointNode",
+            null,
+            "CTL_Breakpoints_view",
+            "CTL_Breakpoints_view_tooltip"
+        );
     }
     
+    /** Creates the view. Call from the module layer only!
+     * @deprecated Do not call.
+     */
     public static synchronized TopComponent getCallStackView() {
-        if (CALLSTACK_VIEW == null) {
-            CALLSTACK_VIEW = new View(
-                "org/netbeans/modules/debugger/resources/allInOneView/CallStack",
-                CALLSTACK_VIEW_NAME,
-                "NetbeansDebuggerCallStackNode",
-                null,
-                "CTL_Call_stack_view",
-                "CTL_Call_stack_view_tooltip"
-            );
-        }
-        return CALLSTACK_VIEW;
+        return new View(
+            "org/netbeans/modules/debugger/resources/allInOneView/CallStack",
+            CALLSTACK_VIEW_NAME,
+            "NetbeansDebuggerCallStackNode",
+            null,
+            "CTL_Call_stack_view",
+            "CTL_Call_stack_view_tooltip"
+        );
     }
     
+    /** Creates the view. Call from the module layer only!
+     * @deprecated Do not call.
+     */
     public static synchronized TopComponent getLocalsView() {
-        if (LOCALS_VIEW == null) {
-            LOCALS_VIEW = new View(
-                "org/netbeans/modules/debugger/resources/localsView/LocalVariable",
-                LOCALS_VIEW_NAME,
-                "NetbeansDebuggerVariableNode",
-                null,
-                "CTL_Variables_view",
-                "CTL_Locals_view_tooltip"
-            );
-        }
-        return LOCALS_VIEW;
+        return new View(
+            "org/netbeans/modules/debugger/resources/localsView/LocalVariable",
+            LOCALS_VIEW_NAME,
+            "NetbeansDebuggerVariableNode",
+            null,
+            "CTL_Variables_view",
+            "CTL_Locals_view_tooltip"
+        );
     }
     
+    /** Creates the view. Call from the module layer only!
+     * @deprecated Do not call.
+     */
     public static synchronized TopComponent getSessionsView() {
-        if (SESSIONS_VIEW == null) {
-            SESSIONS_VIEW = new View(
-                "org/netbeans/modules/debugger/resources/sessionsView/Session",
-                SESSIONS_VIEW_NAME,
-                "NetbeansDebuggerSessionNode",
-                "NetbeansDebuggerSessionsPropertiesSheet",
-                "CTL_Sessions_view",
-                "CTL_Sessions_view_tooltip"
-            );
-        }
-        return SESSIONS_VIEW;
+        return new View(
+            "org/netbeans/modules/debugger/resources/sessionsView/Session",
+            SESSIONS_VIEW_NAME,
+            "NetbeansDebuggerSessionNode",
+            "NetbeansDebuggerSessionsPropertiesSheet",
+            "CTL_Sessions_view",
+            "CTL_Sessions_view_tooltip"
+        );
     }
     
+    /** Creates the view. Call from the module layer only!
+     * @deprecated Do not call.
+     */
     public static synchronized TopComponent getThreadsView() {
-        if (THREADS_VIEW == null) {
-            THREADS_VIEW = new View(
-                "org/netbeans/modules/debugger/resources/threadsView/RunningThread",
-                THREADS_VIEW_NAME,
-                "NetbeansDebuggerThreadNode",
-                "NetbeansDebuggerThreadsPropertiesSheet",
-                "CTL_Threads_view",
-                "CTL_Threads_view_tooltip"
-            );
-        }
-        return THREADS_VIEW;
+        return new View(
+            "org/netbeans/modules/debugger/resources/threadsView/RunningThread",
+            THREADS_VIEW_NAME,
+            "NetbeansDebuggerThreadNode",
+            "NetbeansDebuggerThreadsPropertiesSheet",
+            "CTL_Threads_view",
+            "CTL_Threads_view_tooltip"
+        );
     }
     
+    /** Creates the view. Call from the module layer only!
+     * @deprecated Do not call.
+     */
     public static synchronized TopComponent getWatchesView() {
-        if (WATCHES_VIEW == null) {
-            WATCHES_VIEW = new View(
-                "org/netbeans/modules/debugger/resources/watchesView/Watch",
-                WATCHES_VIEW_NAME,
-                "NetbeansDebuggerWatchNode",
-                null,
-                "CTL_Watches_view",
-                "CTL_Watches_view_tooltip"
-            );
-        }
-        return WATCHES_VIEW;
+        return new View(
+            "org/netbeans/modules/debugger/resources/watchesView/Watch",
+            WATCHES_VIEW_NAME,
+            "NetbeansDebuggerWatchNode",
+            null,
+            "CTL_Watches_view",
+            "CTL_Watches_view_tooltip"
+        );
     }
     
-    public static TopComponent getView(String viewName) {
-        if (viewName == BREAKPOINTS_VIEW_NAME) {
+    private static TopComponent getView(String viewName) {
+        if (viewName.equals(BREAKPOINTS_VIEW_NAME)) {
             return getBreakpointsView();
         }
-        if (viewName == CALLSTACK_VIEW_NAME) {
+        if (viewName.equals(CALLSTACK_VIEW_NAME)) {
             return getCallStackView();
         }
-        if (viewName == LOCALS_VIEW_NAME) {
+        if (viewName.equals(LOCALS_VIEW_NAME)) {
             return getLocalsView();
         }
-        if (viewName == SESSIONS_VIEW_NAME) {
+        if (viewName.equals(SESSIONS_VIEW_NAME)) {
             return getSessionsView();
         }
-        if (viewName == THREADS_VIEW_NAME) {
+        if (viewName.equals(THREADS_VIEW_NAME)) {
             return getThreadsView();
         }
-        if (viewName == WATCHES_VIEW_NAME) {
+        if (viewName.equals(WATCHES_VIEW_NAME)) {
             return getWatchesView();
         }
         throw new IllegalArgumentException(viewName);
