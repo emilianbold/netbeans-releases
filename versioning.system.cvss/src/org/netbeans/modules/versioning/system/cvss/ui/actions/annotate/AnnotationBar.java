@@ -317,6 +317,31 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
      */
     public void addNotify() {
         super.addNotify();
+
+
+        this.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    createPopup().show(e.getComponent(),
+                               e.getX(), e.getY());
+                }
+            }
+        });
+
+        // register with tooltip manager
+        setToolTipText("");
+
+    }
+
+    private JPopupMenu createPopup() {
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
         final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision"));
@@ -374,7 +399,7 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
                 if (al == null || commitMessages == null) return;
                 String message = (String) commitMessages.get(al.getRevision());
                 File file = getCurrentFile();
-                SearchHistoryAction.openSearch(NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision), 
+                SearchHistoryAction.openSearch(NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision),
                                                message, al.getAuthor(), al.getDate());
             }
         });
@@ -389,39 +414,23 @@ final class AnnotationBar extends JComponent implements Accessible, FoldHierarch
         popupMenu.add(new JSeparator());
         popupMenu.add(menu);
 
-        this.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
-                maybeShowPopup(e);
+        // dynamic labels an dvisibility
+
+        diffMenu.setVisible(false);
+        rollbackMenu.setVisible(false);
+        if (recentRevision != null) {
+            String prevRevision = Utils.previousRevision(recentRevision);
+            if (prevRevision != null) {
+                String format = loc.getString("CTL_MenuItem_DiffToRevision");
+                diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, prevRevision }));
+                diffMenu.setVisible(true);
             }
+            String format = loc.getString("CTL_MenuItem_RollbackToRevision");
+            rollbackMenu.setText(MessageFormat.format(format, new Object [] { recentRevision }));
+            rollbackMenu.setVisible(true);
+        }
 
-            public void mouseReleased(MouseEvent e) {
-                maybeShowPopup(e);
-            }
-
-            private void maybeShowPopup(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    diffMenu.setVisible(false);
-                    rollbackMenu.setVisible(false);
-                    if (recentRevision != null) {
-                        String prevRevision = Utils.previousRevision(recentRevision);
-                        if (prevRevision != null) {
-                            String format = loc.getString("CTL_MenuItem_DiffToRevision");
-                            diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, prevRevision }));
-                            diffMenu.setVisible(true);
-                        }
-                        String format = loc.getString("CTL_MenuItem_RollbackToRevision");
-                        rollbackMenu.setText(MessageFormat.format(format, new Object [] { recentRevision }));
-                        rollbackMenu.setVisible(true);
-                    }
-                    popupMenu.show(e.getComponent(),
-                               e.getX(), e.getY());
-                }
-            }
-        });
-
-        // register with tooltip manager
-        setToolTipText("");
-
+        return popupMenu;
     }
 
     /**
