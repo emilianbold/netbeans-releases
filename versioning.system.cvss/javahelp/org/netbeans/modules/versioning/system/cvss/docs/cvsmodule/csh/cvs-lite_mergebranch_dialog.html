@@ -8,21 +8,39 @@
 -->
 <html>
     <head>
-        <title>CVS: Merge Branch Dialog</title>
+        <title>CVS: Merge Changes from Branch Dialog Box</title>
         <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>CVS: Merge Branch Dialog</h2>
-        <p>Use this dialog box when merging files.</p><br>
-        <ul>
-	    <li><b>Merge from Trunk.</b></li>
-	    <li><b>Merge from Branch.</b></li>
-	    <li><b>Merge Only Changes Made after Tag.</b> When selected, ....</li>
-	    <li><b>Tag Trunk After Merge.</b> When selected, ...</li>
-	    
-	    
+        <h2>CVS: Merge Changes from Branch Dialog Box</h2>
+	<p><small><a href="#seealso">See Also</a></small></p>
+        <p>Use this dialog box when merging files from a branch or the trunk to your local directory.</p>
+	<p>You access this dialog box by right-clicking a file or folder and choosing CVS &gt; Merge Changes from Branch.</p>
+        <p>When merging files, select one of the following:</p>
+	<ul>
+	    <li><b>Merge from Trunk.</b> Select this to merge changes that were made in the trunk to your working directory.</li>
+	    <li><b>Merge from Branch.</b> Select this to merge changes that were made in the specified branch to your working directory.
+	    When you choose this option, specify the name of the branch you want to merge into your local repository.
+	    You can enter the name of the branch in the text field or click Browse to open the Browse Tags dialog box and choose from the available branches.</li>
+	</ul>
+	<p>You can set the following options when merging files to your local repository:</p>
+	    <li><b>Merge Only Changes Made after Tag.</b> When selected, only changes made after the specified tag are merged into your local repository. 
+	    Enter the name of the tag in the text field or click Browse to open the Browse Tags dialog box and choose from the available tags.
+	    If unselected, all changes are merged into your local repository.</li>
+	    <li><b>Tag Trunk After Merge.</b> When selected, the trunk is tagged after merging to mark changes you have already merged.
+	    Enter the tag to attach after the merge, of click Browse to choose an existing tag.
+	    If unselected, no tag is attached to the source branch.</li>
         </ul>
-        <hr>
-        <small><a href="../../credits.html">Legal Notices</a></small>
+        <dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd> <a href="../cvs-lite_merge.html">Merging File Revisions from a Branch</a></dd> 
+	</dl>
+	<hr>
+	<small><a href="../../credits.html">Legal Notices</a></small>
+	<table cellpadding="50" border="0">
+	    <tr>
+		<td>&nbsp;</td>
+	    </tr>
+	</table> 
     </body>
 </html>
