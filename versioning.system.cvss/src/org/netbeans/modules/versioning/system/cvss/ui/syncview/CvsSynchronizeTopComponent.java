@@ -47,6 +47,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "ACSD_Synchronize_TopComponent"));
         syncPanel = new SynchronizePanel(this);
         add(syncPanel);
+        setFocusable(true);
     }
 
     public HelpCtx getHelpCtx() {
