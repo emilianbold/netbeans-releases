@@ -60,7 +60,6 @@ public class DDUtils {
             EjbJarProxy newEjbJarProxy = createEjbJarProxy(reader);
             if (newEjbJarProxy.getStatus() == EjbJar.STATE_INVALID_UNPARSABLE) {
                 ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-                ejbJarProxy.setProxyVersion(null);
                 ejbJarProxy.setError(newEjbJarProxy.getError());
                 return;
             }
@@ -76,7 +75,6 @@ public class DDUtils {
             // so lets not set the original to null here but wait
             // until the file becomes parsable again to do a merge
             //ejbJarProxy.setOriginal(null);
-            ejbJarProxy.setProxyVersion(null);
         }
     }
 
