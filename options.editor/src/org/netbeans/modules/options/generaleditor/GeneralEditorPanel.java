@@ -164,6 +164,7 @@ ActionListener {
     
     void applyChanges () {
         
+        if (model == null) return;
         // code folding options
         model.setFoldingOptions (
             cbShowCodeFolding.isSelected (),
