@@ -106,7 +106,9 @@
 
 <mapID target="java.sync.properties" url="java/synchronizing/properties.html" />
 <mapID target="java.sync.new-interface" url="java/synchronizing/new-interface.html" />
-<mapID target="java.override" url="java/override.html" />
+<mapID target="java.override.tasktopic" url="java/override.html" />
+
+
 <mapID target="java.java_sources" url="java/java_sources.html" />
 <mapID target="java.encoding" url="java/encoding.html" />
 
@@ -490,7 +492,7 @@ under Print Settings in the Options window)
 
 
 <!--Override methods dialog box-->
-<mapID target="org.netbeans.modules.java.tools.OverrideAction" url="java/override.html" />
+<mapID target="org.netbeans.modules.java.tools.OverrideAction" url="java/override_implement_methods_db.html"/>
 
 <!-- Options | Editing | Java Sources | Override Methods :-->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
