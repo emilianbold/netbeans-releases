@@ -16,6 +16,7 @@ package org.netbeans.modules.ant.freeform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
@@ -62,7 +63,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
     public List/*<FileObject>*/ getDataFiles() {
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element foldersEl = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
-        List/*<Element>*/ folders = Util.findSubElements(foldersEl);
+        List/*<Element>*/ folders = foldersEl != null ? Util.findSubElements(foldersEl) : Collections.EMPTY_LIST;
         List/*<FileObject>*/ result = new ArrayList/*<FileObject>*/();
 
         for (Iterator i = folders.iterator(); i.hasNext(); ) {
