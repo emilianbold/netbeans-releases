@@ -239,6 +239,21 @@ public class ClientRuntime {
      * @throws IllegalArgumentException if the 'method' part of the supplied CVS Root is not recognized
      */ 
     public static Connection setupConnection(CVSRoot cvsRoot, ProxyDescriptor proxy) throws IllegalArgumentException {
+
+        // for testing porposes allow to use dynamically generated port numbers
+        String t9yRoot = System.getProperty("netbeans.t9y.cvs.connection.CVSROOT"); // NOI18N
+        CVSRoot patchedCvsRoot = cvsRoot;
+        if (t9yRoot != null) {
+            try {
+                patchedCvsRoot = CVSRoot.parse(t9yRoot);
+                assert patchedCvsRoot.getRepository().equals(cvsRoot.getRepository());
+                assert patchedCvsRoot.getHostName().equals(cvsRoot.getHostName());
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "CVS.ClientRuntime: using patched CVSROOT " + t9yRoot);  // NOI18N
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+            }
+        }
+
         if (cvsRoot.isLocal()) {
             LocalConnection con = new LocalConnection();
             con.setRepository(cvsRoot.getRepository());
@@ -254,7 +269,7 @@ public class ClientRuntime {
 
         String method = cvsRoot.getMethod();
         if (CVSRoot.METHOD_PSERVER.equals(method)) {
-            PServerConnection con = new PServerConnection(cvsRoot, factory);
+            PServerConnection con = new PServerConnection(patchedCvsRoot, factory);
             String password = PasswordsFile.findPassword(cvsRoot.toString());                    
             con.setEncodedPassword(password);
             return con;
@@ -263,7 +278,7 @@ public class ClientRuntime {
             String userName = cvsRoot.getUserName();
             String host = cvsRoot.getHostName();
             if (extSettings.extUseInternalSsh) {
-                int port = cvsRoot.getPort();
+                int port = patchedCvsRoot.getPort();
                 port = port == 0 ? 22 : port;  // default port
                 String password = extSettings.extPassword;
                 if (password == null) {
