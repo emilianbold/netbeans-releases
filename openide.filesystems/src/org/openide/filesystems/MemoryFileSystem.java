@@ -38,7 +38,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     private java.util.Date created = new java.util.Date();
 
     /** maps String to Entry */
-    private Hashtable entries = initEntry();
+    private Map entries = initEntry();
     
     /** Creates new MemoryFS */
     public MemoryFileSystem() {
@@ -79,14 +79,17 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
             n = n.substring(1);
         }
 
-        Entry x = (Entry) entries.get(n);
+        boolean isValidEntry = isValidEntry(n);
+        synchronized(entries) {
+            Entry x = (Entry) entries.get(n);
 
-        if (x == null || !isValidEntry(n)) {
-            x = new Entry(n);
-            entries.put(n, x);
+            if (x == null || !isValidEntry) {
+                x = new Entry(n);
+                entries.put(n, x);
+            }
+        
+            return x;
         }
-
-        return x;
     }
 
 	
@@ -146,28 +149,30 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
         HashSet l = new HashSet();
 
         //System.out.println("Folder: " + f);
-        Iterator it = entries.keySet().iterator();
+        synchronized(entries) {
+            Iterator it = entries.keySet().iterator();
 
-        while (it.hasNext()) {
-            String name = (String) it.next();
+            while (it.hasNext()) {
+                String name = (String) it.next();
 
-            if (name.startsWith(f) || (f.trim().length() == 0)) {
-                int i = name.indexOf('/', f.length());
-                String child = null;
+                if (name.startsWith(f) || (f.trim().length() == 0)) {
+                    int i = name.indexOf('/', f.length());
+                    String child = null;
 
-                if (i > 0) {
-                    child = name.substring(f.length(), i);
-                } else {
-                    child = name.substring(f.length());
-                }
+                    if (i > 0) {
+                        child = name.substring(f.length(), i);
+                    } else {
+                        child = name.substring(f.length());
+                    }
 
-                if (child.trim().length() > 0) {
-                    l.add(child);
+                    if (child.trim().length() > 0) {
+                        l.add(child);
+                    }
                 }
             }
-        }
 
-        return (String[]) l.toArray(new String[0]);
+            return (String[]) l.toArray(new String[0]);
+        }
     }
 
     public void createData(String name) throws IOException {
@@ -287,8 +292,8 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
         getOrCreateEntry(name).attrs.put(attrName, value);
     }
 
-    private Hashtable initEntry() {
-	return (!LOGGABLE) ? new Hashtable() : new Hashtable() {
+    private Map initEntry() {
+	return Collections.synchronizedMap((!LOGGABLE) ? new Hashtable() : new Hashtable() {
 	    public Object get(Object key) {
 		Object retval = super.get(key);
 		logMessage("called: GET" + " key: "+key + " result: " + retval);//NOI18N    		
@@ -306,7 +311,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
 		logMessage("called: REMOVE" + " key: "+key + " result: " + retval);//NOI18N		
 		return retval;
 	    }
-	};
+	});
     }
     
     static final class Entry {
