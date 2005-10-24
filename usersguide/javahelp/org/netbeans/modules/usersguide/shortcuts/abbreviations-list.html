@@ -14,11 +14,13 @@
 <h2>Code Template Abbreviations: Quick Reference</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>You can reduce the number of keystrokes when you are typing code by using 
-typing abbreviations for code templates to generate code snippets. The abbreviation 
-is expanded into the full code snippet after you type a space. Below is a list of 
-code templates with their abbreviations.</p>
-<!--TODO - reword-->
+<p>You can reduce the number of keystrokes when you are typing code by 
+typing abbreviations to generate code snippets. The abbreviation 
+is expanded into a longer code snippet after you type a space.</p>
+ <p>The IDE comes with a set of code templates. You can also create your own 
+code templates.</p>
+Below is the list of 
+code templates that the IDE provides by default. </p>
 
 <h3>Java Files</h3>
         <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the Java expression 
@@ -26,180 +28,242 @@ code templates with their abbreviations.</p>
             <tr valign="top"> 
                 <th scope="col" align="left">Abbreviation</th>
                 <th scope="col" align="left">Code Template</th>
-            </tr>
-            <tr valign="top"> 
-                <td>En</td>
-                <td>Enumeration</td>
-            </tr>
-            <tr valign="top"> 
-                <td>Ex </td>
-                <td>Exception</td>
-            </tr>
-            <tr valign="top"> 
-                <td>Ob </td>
-                <td>Object</td>
-            </tr>
-            <tr valign="top"> 
-                <td>Psf </td>
-                <td>public static final</td>
-            </tr>
-            <tr valign="top"> 
-                <td>Psfb </td>
-                <td>public static final boolean</td>
-            </tr>
-            <tr valign="top"> 
-                <td>Psfi </td>
-                <td>public static final int</td>
-            </tr>
-            <tr valign="top"> 
-                <td>Psfs </td>
-                <td>public static final String</td>
-            </tr>
-            <tr valign="top"> 
-                <td>St </td>
-                <td>String</td>
-            </tr>
-            <tr valign="top"> 
-                <td>ab </td>
-                <td>abstract</td>
-            </tr>
-            <tr valign="top"> 
-                <td>bo </td>
-                <td>boolean</td>
-            </tr>
-            <tr valign="top"> 
-                <td>br </td>
-                <td>break</td>
-            </tr>
-            <tr valign="top"> 
-                <td>ca </td>
-                <td>catch (</td>
-            </tr>
-            <tr valign="top"> 
-                <td>cl </td>
-                <td>class</td>
-            </tr>
-            <tr valign="top"> 
-                <td>cn </td>
-                <td>continue</td>
-            </tr>
-            <tr valign="top"> 
-                <td>df </td>
-                <td>default:</td>
-            </tr>
-            <tr valign="top"> 
-                <td>ex </td>
-                <td>extends</td>
-            </tr>
-            <tr valign="top"> 
-                <td>fa </td>
-                <td>false</td>
-            </tr>
-            <tr valign="top"> 
-                <td>fi </td>
-                <td>final</td>
-            </tr>
-            <tr valign="top"> 
-                <td>fl </td>
-                <td>float</td>
-            </tr>
-            <tr valign="top"> 
-                <td>fy </td>
-                <td>finally</td>
-            </tr>
-            <tr valign="top"> 
-                <td>ie </td>
-                <td>interface</td>
-            </tr>
-            <tr valign="top"> 
-                <td>im </td>
-                <td>implements</td>
-            </tr>
-            <tr valign="top"> 
-                <td>iof </td>
-                <td>instanceof</td>
-            </tr>
-            <tr valign="top"> 
-                <td>ir </td>
-                <td>import</td>
-            </tr>
-            <tr valign="top"> 
-                <td>pe </td>
-                <td>protected</td>
-            </tr>
-            <tr valign="top"> 
-                <td>pr </td>
-                <td>private</td>
-            </tr>
-            <tr valign="top"> 
-                <td>psf </td>
-                <td>private static final</td>
-            </tr>
-            <tr valign="top"> 
-                <td>psfb </td>
-                <td>private static final boolean</td>
-            </tr>
-            <tr valign="top"> 
-                <td>psfi </td>
-                <td>private static final int</td>
-            </tr>
-            <tr valign="top"> 
-                <td>psfs </td>
-                <td>private static final String</td>
-            </tr>
-            <tr valign="top"> 
-                <td>pst </td>
-                <td>printStackTrace();</td>
-            </tr>
-            <tr valign="top"> 
-                <td>pu </td>
-                <td>public</td>
-            </tr>
-            <tr valign="top"> 
-                <td>re </td>
-                <td>return</td>
-            </tr>
-            <tr valign="top"> 
-                <td>serr </td>
-                <td>System.err.println ("</td>
-            </tr>
-            <tr valign="top"> 
-                <td>sout </td>
-                <td>System.out.println ("</td>
-            </tr>
-            <tr valign="top"> 
-                <td>st </td>
-                <td>static</td>
-            </tr>
-            <tr valign="top"> 
-                <td>sw </td>
-                <td>switch (</td>
-            </tr>
-            <tr valign="top"> 
-                <td>sy </td>
-                <td>synchronized</td>
-            </tr>
-            <tr valign="top"> 
-                <td>tds </td>
-                <td>Thread.dumpStack();</td>
-            </tr>
-            <tr valign="top"> 
-                <td>th </td>
-                <td>throws</td>
-            </tr>
-            <tr valign="top"> 
-                <td>tw </td>
-                <td>throw</td>
-            </tr>
-            <tr valign="top"> 
-                <td>twn </td>
-                <td>throw new</td>
-            </tr>
-            <tr valign="top"> 
-                <td>wh </td>
-                <td>While (</td>
-            </tr>
 
+            <tr valign="top"> 
+                <td><tt>Ex </tt></td>
+                <td><tt>Exception</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>Ob </tt></td>
+                <td><tt>Object</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>Psf </tt></td>
+                <td><tt>public static final</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>Psfb </tt></td>
+                <td><tt>public static final boolean</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>Psfi </tt></td>
+                <td><tt>public static final int</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>Psfs </tt></td>
+                <td><tt>public static final String</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>St </tt></td>
+                <td><tt>String</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>ab </tt></td>
+                <td><tt>abstract</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>bo </tt></td>
+                <td><tt>boolean</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>br </tt></td>
+                <td><tt>break</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>ca </tt></td>
+                <td><tt>catch (</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>cl </tt></td>
+                <td><tt>class</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>cn </tt></td>
+                <td><tt>continue</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>df </tt></td>
+                <td><tt>default:</tt></td>
+            </tr>
+<!--TODO check to make sure the below renders OK-->
+            <tr valign="top"> 
+                <td><tt>dowhile </tt></td>
+                <td><pre>do {
+        
+} while (condition);</pre></td>
+            </tr>            
+            <tr valign="top"> 
+                <td><tt>eq</tt></td>
+                <td><tt>equals</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>ex </tt></td>
+                <td><tt>extends</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fa </tt></td>
+                <td><tt>false</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fi </tt></td>
+                <td><tt>final</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fl </tt></td>
+                <td><tt>float</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>forc</tt></td>
+                <td><pre>for (Iterator it = collection.iterator(); it.hasNext();) {
+    Object elem = (Object) it.next();
+        
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fore</tt></td>
+                <td><pre>for (Object elem : iterable) {
+
+}</pre></td>
+            </tr>            
+            <tr valign="top"> 
+                <td><tt>fori</tt></td>
+                <td><pre>for (int i = 0; i < SCRAMBLED_WORD_LIST.length; i++) {
+
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fy </tt></td>
+                <td><tt>finally</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>ie </tt></td>
+                <td><tt>interface</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>ifelse </tt></td>
+                <td><pre>if (condition) {
+
+} else {
+
+}</pre></td>
+            </tr>            
+            <tr valign="top"> 
+                <td><tt>im </tt></td>
+                <td><tt>implements</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>iof </tt></td>
+                <td><tt>instanceof</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>ir </tt></td>
+                <td><tt>import</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>le </tt></td>
+                <td><tt>length</tt></td>
+            </tr>  
+            <tr valign="top"> 
+                <td><tt>newo</tt></td>
+                <td><pre>Object name = new Object(args);</pre></td>
+            </tr>          
+            <tr valign="top"> 
+                <td><tt>pe </tt></td>
+                <td><tt>protected</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>pr </tt></td>
+                <td><tt>private</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>psf </tt></td>
+                <td><tt>private static final</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>psfb </tt></td>
+                <td><tt>private static final boolean</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>psfi </tt></td>
+                <td><tt>private static final int</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>psfs </tt></td>
+                <td><tt>private static final String</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>pst </tt></td>
+                <td><tt>printStackTrace();</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>psvm</tt></td>
+                <td><pre>public static void main(String[] args) {
+
+}</pre></td>
+            </tr>            
+            <tr valign="top"> 
+                <td><tt>pu </tt></td>
+                <td><tt>public</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>re </tt></td>
+                <td><tt>return</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>serr </tt></td>
+                <td><tt>System.err.println("|");</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>sout </tt></td>
+                <td><tt>System.out.println("|")</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>st </tt></td>
+                <td><tt>static</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>sw </tt></td>
+                <td><tt>switch (</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>sy </tt></td>
+                <td><tt>synchronized</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>tds </tt></td>
+                <td><tt>Thread.dumpStack();</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>th </tt></td>
+                <td><tt>throws</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>trycatch</tt></td>
+                <td><pre>try {
+
+} catch (Exception e) {
+
+}</pre></td>
+            </tr>            
+            <tr valign="top"> 
+                <td><tt>tw </tt></td>
+                <td><tt>throw</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>twn </tt></td>
+                <td><tt>throw new</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>wh </tt></td>
+                <td><tt>While (</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>whilei</tt></td>
+                <td><pre>    while (it.hasNext()) {
+        Object elem = (Object) it.next();
+        
+    }</pre></td>
+            </tr>
         </table>
 
 
@@ -210,149 +274,146 @@ code templates with their abbreviations.</p>
                 <th scope="col" align="left">Abbreviation</th>
                 <th scope="col" align="left">Code Template</th>
             </tr><tr valign="top"> 
-                <td>ag </td>
-                <td>application.getValue("</td>
+                <td><tt>ag </tt></td>
+                <td><tt>application.getAttribute("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>ap </td>
-                <td>application.putValue("</td>
+                <td><tt>ap </tt></td>
+                <td><tt>application.putAttribute("|",)</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>ar </td>
-                <td>application.removeValue("</td>
+                <td><tt>ar </tt></td>
+                <td><tt>application.removeAttribute("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>cfgi </td>
-                <td>config.getInitParameter("</td>
+                <td><tt>cfgi </tt></td>
+                <td><tt>config.getInitParameter("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>jg </td>
-                <td>&lt;jsp:getProperty name="</td>
+                <td><tt>&lt;jspf </tt></td>
+                <td><tt>&lt;jsp:forward page="|"/&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>&lt;jspf </td>
-                <td>&lt;jsp:forward page="</td>
+                <td><tt>jspg </tt></td>
+                <td><tt>&lt;jsp:getProperty name="|" property="|"/&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>jspg </td>
-                <td>&lt;jsp:getProperty name="</td>
+                <td><tt>jspi </tt></td>
+                <td><tt>&lt;jsp:include page="|"/&gt</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>jspi </td>
-                <td>&lt;jsp:include page="</td>
+                <td><tt>jspp </tt></td>
+                <td><pre>&lt;jsp:plugin type="|" code="" codebase=""&gt;
+</jsp:plugin&gt;</pre></td>
             </tr>
             <tr valign="top"> 
-                <td>jspp </td>
-                <td>&lt;jsp:plugin type="</td>
+                <td><tt>jsps </tt></td>
+                <td><tt>&lt;jsp:setProperty name="|" property=""/&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>jsps </td>
-                <td>&lt;jsp:setProperty name="</td>
+                <td><tt>jspu </tt></td>
+                <td><tt>&lt;jsp:useBean id="|" type=""/&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>jspu </td>
-                <td>&lt;jsp:useBean id="</td>
+                <td><tt>oup </tt></td>
+                <td><tt>out.print("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>oup </td>
-                <td>out.print("</td>
+                <td><tt>oupl </tt></td>
+                <td><tt>out.println("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>oupl </td>
-                <td>out.println("</td>
+                <td><tt>pcg </tt></td>
+                <td><tt>pageContext.getAttribute("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pcg </td>
-                <td>pageContext.getAttribute("</td>
-            </tr>
-            <tr valign="top"> 
-                <td>pcgn </td>
-                <td>pageContext.getAttributeNamesInScope("</td>
+                <td><tt>pcgn </tt></td>
+                <td><tt>pageContext.getAttributeNamesInScope("|")</tt></td>
             </tr>
             <tr valign="top"> <
-                <td>pcgs </td>
-                <td>pageContext.getAttributesScope("</td>
+                <td><tt>pcgs </tt></td>
+                <td><tt>pageContext.getAttributesScope("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pcr </td>
-                <td>pageContext.removeAttribute("</td>
+                <td><tt>pcr </tt></td>
+                <td><tt>pageContext.removeAttribute("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pcs </td>
-                <td>pageContext.setAttribute("</td>
+                <td><tt>pcs </tt></td>
+                <td><tt>pageContext.setAttribute("|",)</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pg </td>
-                <td>&lt;%@ page</td>
+                <td><tt>pg </tt></td>
+                <td><tt>&lt;%@page |%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pga </td>
-                <td>&lt;%@ page autoFlush="</td>
+                <td><tt>pga </tt></td>
+                <td><tt>&lt;%@ page autoFlush="false"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgb </td>
-                <td>&lt;%@ page buffer="</td>
+                <td><tt>pgb </tt></td>
+                <td><tt>&lt;%@ page buffer="|kb"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgc </td>
-                <td>&lt;%@ page contentType="</td>
+                <td><tt>pgc </tt></td>
+                <td><tt>&lt;%@page contentType="|"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgerr </td>
-                <td>&lt;%@ page errorPage="</td>
+                <td><tt>pgerr </tt></td>
+                <td><tt>&lt;%@page errorPage="|"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgex </td>
-                <td>&lt;%@ page extends="</td>
+                <td><tt>pgex </tt></td>
+                <td><tt>&lt;%@page extends="|"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgie </td>
-                <td>&lt;%@ page isErrorPage="</td>
+                <td><tt>pgie </tt></td>
+                <td><tt>&lt;%@page isErrorPage="true"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgim </td>
-                <td>&lt;%@ page import="</td>
+                <td><tt>pgim </tt></td>
+                <td><tt>&lt;%@page import="|"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgin </td>
-                <td>&lt;%@ page info="</td>
+                <td><tt>pgin </tt></td>
+                <td><tt>&lt;%@page info="|"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgit </td>
-                <td>&lt;%@ page isThreadSafe="</td>
+                <td><tt>pgit </tt></td>
+                <td><tt>&lt;%@page isThreadSafe="false"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgl </td>
-                <td>&lt;%@ page language="</td>
+                <td><tt>pgl </tt></td>
+                <td><tt>&lt;%@page language="java"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pgs </td>
-                <td>&lt;%@ page session="</td>
+                <td><tt>pgs </tt></td>
+                <td><tt>&lt;%@page session="false"%&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>rg </td>
-                <td>&lt;request.getParameter("</td>
+                <td><tt>rg </tt></td>
+                <td><tt>&lt;request.getParameter("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>sg </td>
-                <td>session.getValue("</td>
+                <td><tt>sg </tt></td>
+                <td><tt>session.getAttribute("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>sp </td>
-                <td>session.putValue("</td>
+                <td><tt>sp </tt></td>
+                <td><tt>session.setAttribute("|", )</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>sr </td>
-                <td>session.removeValue("</td>
+                <td><tt>sr </tt></td>
+                <td><tt>session.removeAttribute("|")</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>tglb </td>
-                <td>&lt;%@ taglib uri="</td>
+                <td><tt>tglb </tt></td>
+                <td><tt>&lt;%@taglib uri="|"%&gt;</tt></td>
             </tr>
         </table>
 
 
-<h3>XML and DTD Files</h3>
+<h3>XML Files</h3>
         <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the XML and DTD 
             abbreviations. The right column lists what the abbreviations expand to.">
             <tr valign="top"> 
@@ -360,121 +421,149 @@ code templates with their abbreviations.</p>
                 <th scope="col" align="left">Code Template</th>
             </tr>
             <tr valign="top"> 
-                <td>?xm </td>
-                <td>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</td>
+                <td><tt>!at </tt></td>
+                <td><tt>&lt;!ATTLIST |&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>!do </td>
-                <td>&lt;!DOCTYPE&gt;</td>
+                <td><tt>!cd </tt></td>
+                <td><tt>&lt;![CDATA[|]]&gt;</tt></td>
+            </tr>
+           <tr valign="top"> 
+                <td><tt>!do </tt></td>
+                <td><tt>&lt;!DOCTYPE </tt></td>
             </tr>
             <tr valign="top"> 
-                <td>!cd </td>
-                <td>&lt;![CDATA[|]]&gt;</td>
+                <td><tt>!el </tt></td>
+                <td><tt>&lt;!ELEMENT |&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>!at </td>
-                <td>&lt;!ATTLIST |&gt;</td>
+                <td><tt>!en </tt></td>
+                <td><tt>&lt;!ENTITY |&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>!el </td>
-                <td>&lt;!ELEMENT |&gt;</td>
+                <td><tt>?xm </tt></td>
+                <td><tt>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>!en </td>
-                <td>&lt;!ENTITY |&gt;</td>
+                <td><tt>pu </tt></td>
+                <td><tt>PUBLIC "|"</tt></td>
             </tr>
             <tr valign="top"> 
-                <td>pu </td>
-                <td>PUBLIC "|"</td>
-            </tr>
-            <tr valign="top"> 
-                <td>sy </td>
-                <td>SYSTEM "|"</td>
-            </tr>
-            <tr valign="top"> 
-                <td>!at </td>
-                <td>&lt;!ATTLIST |&gt;</td>
-            </tr>
-            <tr valign="top"> 
-                <td>!el </td>
-                <td>&lt;!ELEMENT |&gt;</td>
-            </tr>
-            <tr valign="top"> 
-                <td>!en </td>
-                <td>&lt;!ENTITY |&gt;</td>
-            </tr>
-            <tr valign="top"> 
-                <td>!no </td>
-                <td>&lt;!NOTATION |&gt;</td>
-            </tr>
-            <tr valign="top"> 
-                <td>pu </td>
-                <td>PUBLIC "|"</td>
-            </tr>
-            <tr valign="top"> 
-                <td>sy </td>
-                <td>SYSTEM "|"</td>
-            </tr>
-            <tr valign="top"> 
-                <td>cd </td>
-                <td>CDATA</td>
-            </tr>
-            <tr valign="top"> 
-                <td>em </td>
-                <td>EMPTY</td>
-            </tr>
-            <tr valign="top"> 
-                <td>en </td>
-                <td>ENTITY</td>
-            </tr>
-            <tr valign="top"> 
-                <td>ens </td>
-                <td>ENTITIES</td>
-            </tr>
-            <tr valign="top"> 
-                <td>fi </td>
-                <td>#FIXED</td>
-            </tr>
-            <tr valign="top"> 
-                <td>im </td>
-                <td>#IMPLIED</td>
-            </tr>
-            <tr valign="top"> 
-                <td>nm </td>
-                <td>NMTOKEN</td>
-            </tr>
-            <tr valign="top"> 
-                <td>nms </td>
-                <td>NMTOKENS</td>
-            </tr>
-            <tr valign="top"> 
-                <td>nn </td>
-                <td>NOTATION</td>
-            </tr>
-            <tr valign="top"> 
-                <td>pc </td>
-                <td>#PCDATA</td>
+                <td><tt>sy </tt></td>
+                <td><tt>SYSTEM "|"</tt></td>
             </tr>
         </table>
-<table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td>
-<a href="../editing/macros/abbreviations.html">Using Code Templates</a>
-<br>
-<a href="kybdshortcuts.html">Keyboard Shortcuts</a>
-</td>
-</tr>
-</table>
+ 
+<h3>DTD Files</h3>            
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the XML 
+             abbreviations. The right column lists what the abbreviations expand to.">
+            <tr valign="top"> 
+                <th scope="col" align="left">Abbreviation</th>
+                <th scope="col" align="left">Code Template</th>
+            <tr valign="top"> 
+                <td><tt>!el </tt></td>
+                <td><tt>&lt;!ELEMENT |&gt;</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>!en </tt></td>
+                <td><tt>&lt;!ENTITY |&gt;</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>!no </tt></td>
+                <td><tt>&lt;!NOTATION |&gt;</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>cd </tt></td>
+                <td><tt>CDATA</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>em </tt></td>
+                <td><tt>EMPTY</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>en </tt></td>
+                <td><tt>ENTITY</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>ens </tt></td>
+                <td><tt>ENTITIES</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fi </tt></td>
+                <td><tt>#FIXED</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>im </tt></td>
+                <td><tt>#IMPLIED</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>nm </tt></td>
+                <td><tt>NMTOKEN</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>nms </tt></td>
+                <td><tt>NMTOKENS</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>nn </tt></td>
+                <td><tt>NOTATION</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>pc </tt></td>
+                <td><tt>#PCDATA</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>pu </tt></td>
+                <td><tt>PUBLIC "|"</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>re </tt></td>
+                <td><tt>#REQUIRED</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>rf </tt></td>
+                <td><tt>IDREF</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>rfs </tt></td>
+                <td><tt>IDREFS</tt></td>
+            </tr>
+            
+            <tr valign="top"> 
+                <td><tt>sy </tt></td>
+                <td><tt>SYSTEM "|"</tt></td>
+            </tr>
+        </table>
+        
+<h3>CSS Files</h3>     
+   <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the JSP 
+             abbreviations. The right column lists what the abbreviations expand to.">
+            <tr valign="top"> 
+                <th scope="col" align="left">Abbreviation</th>
+                <th scope="col" align="left">Code Template</th>
+            </tr><tr valign="top"> 
+                <td><tt>bg </tt></td>
+                <td><tt>background:</tt></td>
+            </tr>
+            </tr><tr valign="top"> 
+                <td><tt>di </tt></td>
+                <td><tt>display:</tt></td>
+            </tr>
+            </tr><tr valign="top"> 
+                <td><tt>fs </tt></td>
+                <td><tt>font-size:</tt></td>
+            </tr>
+   </table>
+            
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../editing/macros/abbreviations.html">Using Code Templates</a></a></dd>
+            <dd><a href="kybdshortcuts.html">Keyboard Shortcuts</a></dd>
+        </dl>
 
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
+<tr><td><tt>&nbsp;</tt></td></tr>
 </table></body>
 </html>
