@@ -154,7 +154,8 @@ PropertyChangeListener {
         listen = false;
         currentScheme = colorModel.getCurrentProfile ();
         lCategories.setListData (getAnnotations (currentScheme));
-        lCategories.setSelectedIndex (0);
+        if (lCategories.getModel ().getSize () > 0)
+            lCategories.setSelectedIndex (0);
         refreshUI ();
         listen = true;
         changed = false;
@@ -193,7 +194,8 @@ PropertyChangeListener {
             v = getAnnotations (currentScheme);
         }
         lCategories.setListData (v);
-        lCategories.setSelectedIndex (0);
+        if (lCategories.getModel ().getSize () > 0)
+            lCategories.setSelectedIndex (0);
         refreshUI ();
     }
     

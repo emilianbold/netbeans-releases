@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import javax.swing.text.Document;
 
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.editor.BaseDocument;
@@ -155,12 +156,13 @@ ChangeListener, ActionListener {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 epPreview.setText (originalText);
-                BaseDocument doc = (BaseDocument) epPreview.getDocument ();
+                Document doc = epPreview.getDocument ();
+                if (doc instanceof BaseDocument)
                 try {
-                    doc.getFormatter ().reformat (
-                        doc, 
+                    ((BaseDocument) doc).getFormatter ().reformat (
+                        (BaseDocument) doc, 
                         0, 
-                        doc.getEndPosition ().getOffset ()
+                        ((BaseDocument) doc).getEndPosition ().getOffset ()
                     );
                 } catch (BadLocationException ex) {
                     ex.printStackTrace ();

@@ -61,6 +61,7 @@ public class Model {
     ) {
         if (javaOptions == null)
             javaOptions = getOptions ("text/x-java");
+        if (javaOptions == null) return;
         if (javaFoldingMap == null)
             javaFoldingMap = javaOptions.getCodeFoldingProps ();
 
@@ -210,6 +211,9 @@ public class Model {
     ) {
         if (javaFoldingMap == null) {
             BaseOptions options = getOptions ("text/x-java");
+            if (options == null)
+                options = getOptions ("text/plain");
+            if (options == null) return defaultValue;
             javaFoldingMap = options.getCodeFoldingProps ();
         }
         Boolean b = (Boolean) javaFoldingMap.get (parameterName);
@@ -220,8 +224,12 @@ public class Model {
     private BaseOptions javaOptions;
     
     private boolean getParameter (String parameterName, boolean defaultValue) {
-        if (javaOptions == null)
+        if (javaOptions == null) {
             javaOptions = getOptions ("text/x-java");
+            if (javaOptions == null)
+                javaOptions = getOptions ("text/plain");
+        }
+        if (javaOptions == null) return defaultValue;
         try {
             Method method = javaOptions.getClass ().getMethod (
                 parameterName,
@@ -234,7 +242,7 @@ public class Model {
         return defaultValue;
     }
     
-    public static BaseOptions getOptions (String mimeType) {
+    private static BaseOptions getOptions (String mimeType) {
         Iterator it = AllOptionsFolder.getDefault ().getInstalledOptions ().
             iterator ();
         while (it.hasNext ()) {

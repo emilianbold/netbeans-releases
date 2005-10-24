@@ -178,6 +178,9 @@ class IndentationModel {
     private Object getParameter (String parameterName, Object defaultValue) {
         if (javaIndentEngine == null) {
             BaseOptions options = getOptions ("text/x-java");
+            if (options == null)
+                options = getOptions ("text/plain");
+            if (options == null) return defaultValue;
             javaIndentEngine = options.getIndentEngine ();
         }
         try {
