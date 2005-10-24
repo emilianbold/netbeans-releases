@@ -238,6 +238,9 @@ implements PropertyChangeListener, ChangeListener {
          * or with empty collection if active is false
          */
         public void run() {
+            // this can be run only on the refRP thread
+            assert refRP.isRequestProcessorThread();
+
             FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
             
             if (! active) {
@@ -270,6 +273,8 @@ implements PropertyChangeListener, ChangeListener {
          * calling this they can be GCed again.
          */
         public void clear() {
+            // this can be run only on the refRP thread
+            assert refRP.isRequestProcessorThread();
             if (err != null) {
                 err.log("Clearing the reference to children"); // NOI18N
             }
