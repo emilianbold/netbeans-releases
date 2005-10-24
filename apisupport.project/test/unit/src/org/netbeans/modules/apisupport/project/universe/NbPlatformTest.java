@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.io.File;
 import java.net.URL;
 import java.text.Collator;
 import java.util.Arrays;
@@ -210,6 +211,26 @@ public class NbPlatformTest extends TestBase {
         assertTrue("contains suite3/nbplatform", NbPlatform.contains(file(extexamplesF, "suite3/nbplatform")));
         assertTrue("contains nbbuild/netbeans", NbPlatform.contains(file("nbbuild/netbeans")));
         assertFalse("doesn't contains whatever/platform", NbPlatform.contains(file("whatever/platform")));
+    }
+    
+    public void testSourceRootsPersistence() throws Exception {    
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
+        assertTrue("platform supported", NbPlatform.isSupportedPlatform(def.getDestDir()));        
+        File f1 = new File(getWorkDir(),"f1");
+        File f2 = new File(getWorkDir(),"f2");        
+        if (!f1.exists()) {
+            assertTrue(f1.mkdir());
+        }
+        if (!f2.exists()) {
+            assertTrue(f2.mkdir());
+        }        
+        URL[] us = new URL[] {f1.toURI().toURL(),f2.toURI().toURL()};        
+        String path = def.urlsToAntPath(us);                
+        URL[] rus = def.findURLs(path);
+        assertEquals(us.length, rus.length);
+        for (int i = 0; i < us.length; i++) {
+            assertEquals(path, us[i].toExternalForm(), rus[i].toExternalForm());
+        }
     }
     
 }

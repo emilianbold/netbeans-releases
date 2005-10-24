@@ -306,7 +306,7 @@ public final class NbPlatform implements Comparable {
         this.javadocRoots = javadoc;
     }
     
-    private static URL[] findURLs(String path) {
+    static URL[] findURLs(final String path) {
         if (path == null) {
             return new URL[0];
         }
@@ -536,20 +536,24 @@ public final class NbPlatform implements Comparable {
         return NbPlatform.isPlatformDirectory(getDestDir());
     }
 
-    private String urlsToAntPath(URL[] urls) {
+    static String urlsToAntPath(final URL[] urls) {
         StringBuffer path = new StringBuffer();
         for (int i = 0; i < urls.length; i++) {
             if (urls[i].getProtocol().equals("jar")) { // NOI18N
-                path.append(FileUtil.getArchiveFile(urls[i]).getFile());
-            } else {
-                path.append(urls[i].getFile());
+                path.append(urlToAntPath(FileUtil.getArchiveFile(urls[i])));
+            } else {                
+                path.append(urlToAntPath(urls[i]));
             }
             if (i != urls.length - 1) {
-                path.append(':'); // NOI18N
+                path.append(';'); // NOI18N
             }
         }
         return path.toString();
     }
+    
+    private static String urlToAntPath(final URL url) {
+        return new File(URI.create(url.toExternalForm())).getAbsolutePath();
+    } 
     
     private void putGlobalProperty(final String key, final String value) throws IOException {
         try {
