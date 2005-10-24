@@ -21,6 +21,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.web.project.SourceRoots;
@@ -221,7 +222,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
                     break;
                 case 5:
-                    cp = ClassPathFactory.createClassPath(new JspSourcePathImplementation(getDocumentBaseDir(), this.sourceRoots));
+                    cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
+                        ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
+                        ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper)),
+                    });
                     break;
             }
             cache[type] = cp;
