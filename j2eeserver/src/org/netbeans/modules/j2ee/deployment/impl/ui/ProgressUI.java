@@ -57,6 +57,7 @@ public class ProgressUI implements ProgressListener {
     
     private JDialog dialog;
     private JLabel messageLabel;
+    private String lastMessage;
     private JComponent progressComponent;
     private boolean finished;
     
@@ -88,7 +89,9 @@ public class ProgressUI implements ProgressListener {
         }
         dialog = new JDialog(WindowManager.getDefault().getMainWindow(), title, true);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        dialog.getContentPane().add(createProgressDialog(handle, title));
+        dialog.getContentPane().add(createProgressDialog(
+                                        handle, 
+                                        lastMessage != null ? lastMessage : title));
         dialog.pack();
         dialog.setBounds(Utilities.findCenterBounds(dialog.getSize()));
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -96,10 +99,18 @@ public class ProgressUI implements ProgressListener {
     }
     
     /** Displays a specified progress message. */
-    public void progress(String message) {
+    public void progress(final String message) {
         handle.progress(message);
         if (modal) {
-            messageLabel.setText(message);
+            Utils.runInEventDispatchThread(new Runnable() {
+                public void run() {
+                    if (messageLabel != null) {
+                        messageLabel.setText(message);
+                    } else {
+                        lastMessage = message;
+                    }
+                }
+            });
         }
         log(message);
     }
