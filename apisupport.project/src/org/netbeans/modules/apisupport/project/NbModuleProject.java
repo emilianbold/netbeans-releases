@@ -364,14 +364,21 @@ public final class NbModuleProject implements Project {
                     }
                 }
                 public void addChangeListener(ChangeListener l) {
-                    listeners.add(l);
+                    synchronized (listeners) {
+                        listeners.add(l);
+                    }
                 }
                 public void removeChangeListener(ChangeListener l) {
-                    listeners.remove(l);
+                    synchronized (listeners) {
+                        listeners.remove(l);
+                    }
                 }
                 public void propertyChange(PropertyChangeEvent evt) {
                     ChangeEvent ev = new ChangeEvent(this);
-                    Iterator it = listeners.iterator();
+                    Iterator it;
+                    synchronized (listeners) {
+                        it = new HashSet(listeners).iterator();
+                    }
                     while (it.hasNext()) {
                         ((ChangeListener) it.next()).stateChanged(ev);
                     }
