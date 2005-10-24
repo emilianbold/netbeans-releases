@@ -762,7 +762,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     long oldSaveTime = lastSaveTime;
 
                     try {
-                        lastSaveTime = -1;
+                        setLastSaveTime(-1);
                         os = new BufferedOutputStream(cesEnv().outputStream());
                         saveFromKitToStream(myDoc, kit, os);
 
@@ -770,14 +770,15 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         os = null;
 
                         // remember time of last save
-                        lastSaveTime = System.currentTimeMillis();
+                        setLastSaveTime(System.currentTimeMillis());
+                        
 
                         doMarkAsUnmodified = true;
                     } catch (BadLocationException ex) {
                         ERR.notify(ex);
                     } finally {
                         if (lastSaveTime == -1) { // restore for unsuccessful save
-                            lastSaveTime = oldSaveTime;
+                            setLastSaveTime(oldSaveTime);
                         }
 
                         if (os != null) { // try to close if not yet done
@@ -2123,11 +2124,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     void howToReproduceDeadlock40766(boolean beforeLock) {
     }
 
-    boolean isAlreadyModified() {
+    /** Make sure we log every access to last save time.
+     * @param lst the time in millis of last save
+     */
+    final void setLastSaveTime(long lst) {
+        ERR.log("Setting new lastSaveTime to " + lst);
+        this.lastSaveTime = lst;
+    }
+
+    final boolean isAlreadyModified() {
         return alreadyModified;
     }
 
-    void setAlreadyModified(boolean alreadyModified) {
+    final void setAlreadyModified(boolean alreadyModified) {
         if (ERR_LOG) {
             ERR.notify(new Exception("Setting to modified: " + alreadyModified));
         }
@@ -2396,7 +2405,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             // create new description of lines
             updateLineSet(true);
 
-            lastSaveTime = System.currentTimeMillis();
+            setLastSaveTime(System.currentTimeMillis());
 
             // Insert before-save undo event to enable unmodifying undo
             getUndoRedo().undoableEditHappened(new UndoableEditEvent(this, new BeforeSaveEdit(lastSaveTime)));
@@ -2557,6 +2566,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         BeforeModificationEdit(long saveTime, UndoableEdit delegate) {
             this.saveTime = saveTime;
             this.delegate = delegate;
+            if (ERR.isLoggable(ERR.INFORMATIONAL)) {
+                ERR.notify(new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
+            }
         }
 
         public boolean addEdit(UndoableEdit anEdit) {
@@ -2572,7 +2584,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public void undo() {
             super.undo();
 
-            if (saveTime == lastSaveTime) {
+            boolean res = saveTime == lastSaveTime;
+            ERR.log("Comparing saveTime and lastSaveTime: " + saveTime + "==" + lastSaveTime + " is " + res); // NOI18N
+            if (res) {
                 justRevertedToNotModified = true;
             }
         }
@@ -2809,4 +2823,5 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             initCause(ex);
         }
     }
+
 }

@@ -465,7 +465,7 @@ implements CloneableEditorSupport.Env {
         
         err.log("Going to remove " + len + " characters");
         doc.remove (0, len);
-        err.log("Removed");
+        err.log("Removed");Thread.sleep(300);
         
         assertEquals ("Empty", 0, doc.getLength ());
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
@@ -486,7 +486,7 @@ implements CloneableEditorSupport.Env {
         assertEquals ("Content is back", "Somecontent", doc.getText (0, len));
         
         err.log("Before assertModified");
-        support.assertModified (true, "Document is Modified");
+        support.assertModified (true, "Document is Modified");fail("Ok");
 
         err.log("Before redo");
         support.getUndoRedo ().redo ();
