@@ -15,30 +15,6 @@ package org.netbeans.modules.collab.ui;
 import com.sun.collablet.CollabPrincipal;
 import com.sun.collablet.Conversation;
 
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.util.datatransfer.NewType;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.reflect.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.ui.actions.*;
-
-
 /**
  *
  *

@@ -8,3 +8,5 @@
 	Don't show channel switching button if there is only one switchable
         channel (#64545)
 
+1.0.6:	Removed artifical dependency on filesystems and datasystems
+

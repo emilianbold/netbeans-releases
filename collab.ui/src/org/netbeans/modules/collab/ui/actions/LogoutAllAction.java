@@ -12,16 +12,13 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
-import com.sun.collablet.CollabManager;
+import java.awt.event.*;
 
 import org.openide.*;
 import org.openide.util.*;
-import org.openide.util.actions.*;
+import org.openide.util.actions.SystemAction;
 
-import java.awt.event.*;
-
-import org.netbeans.modules.collab.*;
-
+import com.sun.collablet.CollabManager;
 
 /**
  *

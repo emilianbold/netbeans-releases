@@ -12,34 +12,22 @@
  */
 package org.netbeans.modules.collab.ui.wizard;
 
-import com.sun.collablet.Account;
-
-import org.openide.*;
-import org.openide.awt.*;
-import org.openide.util.*;
-
-import java.awt.Component;
 import java.awt.Cursor;
-
 import java.io.*;
+import java.net.MalformedURLException;
 
-import java.net.*;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.Account;
 import org.netbeans.modules.collab.core.Debug;
-
 
 /**
  *
  *
  */
 public class AccountTypePanel extends WizardPanelBase {
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify                     
     private javax.swing.JCheckBox acceptCheckBox;
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JRadioButton existingAccountBtn;
@@ -344,11 +332,11 @@ public class AccountTypePanel extends WizardPanelBase {
     }
 
     // </editor-fold>//GEN-END:initComponents
-    private void acceptCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) { //GEN-FIRST:event_acceptCheckBoxStateChanged
+    private void acceptCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_acceptCheckBoxStateChanged
         setValid(acceptCheckBox.isSelected());
-    } //GEN-LAST:event_acceptCheckBoxStateChanged
+    }//GEN-LAST:event_acceptCheckBoxStateChanged
 
-    private void newHostedServerAccountBtnStateChanged(javax.swing.event.ChangeEvent evt) { //GEN-FIRST:event_newHostedServerAccountBtnStateChanged
+    private void newHostedServerAccountBtnStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_newHostedServerAccountBtnStateChanged
 
         if (newHostedServerAccountBtn.isSelected()) {
             acceptCheckBox.setEnabled(true);
@@ -357,9 +345,9 @@ public class AccountTypePanel extends WizardPanelBase {
             acceptCheckBox.setEnabled(false);
             setValid(true);
         }
-    } //GEN-LAST:event_newHostedServerAccountBtnStateChanged
+    }//GEN-LAST:event_newHostedServerAccountBtnStateChanged
 
-    private void termsOfConditionLblMouseClicked(java.awt.event.MouseEvent evt) { //GEN-FIRST:event_termsOfConditionLblMouseClicked
+    private void termsOfConditionLblMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_termsOfConditionLblMouseClicked
 
         String text = NbBundle.getMessage(AccountTypePanel.class, "MSG_AccountTypePanel_TermsOfCondition"); // NOI18N
         String userHome = System.getProperty("netbeans.user"); // NOI18N
@@ -389,7 +377,7 @@ public class AccountTypePanel extends WizardPanelBase {
         } catch (MalformedURLException me) {
             Debug.debugNotify(me);
         }
-    } //GEN-LAST:event_termsOfConditionLblMouseClicked
+    }//GEN-LAST:event_termsOfConditionLblMouseClicked
 
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
 }

@@ -12,30 +12,15 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
+import org.openide.nodes.Node;
+import org.openide.util.*;
+import org.openide.util.actions.NodeAction;
+
 import com.sun.collablet.CollabException;
 import com.sun.collablet.CollabManager;
 import com.sun.collablet.CollabPrincipal;
-
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.*;
-import org.netbeans.modules.collab.ui.ContactCookie;
-
 
 public class SubscribeAction extends NodeAction {
     protected boolean enable(Node[] nodes) {

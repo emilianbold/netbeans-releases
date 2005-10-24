@@ -14,6 +14,7 @@
 package org.netbeans.modules.collab.ui;
 
 import java.awt.Component;
+
 import org.openide.awt.StatusLineElementProvider;
 
 /**

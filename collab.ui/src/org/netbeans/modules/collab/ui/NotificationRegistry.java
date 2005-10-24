@@ -12,17 +12,12 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import org.openide.*;
-import org.openide.awt.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.windows.*;
-
 import java.util.*;
 
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.ui.actions.*;
+import org.openide.util.actions.*;
+import org.openide.windows.TopComponent;
 
+import org.netbeans.modules.collab.ui.actions.ShowNextNotificationAction;
 
 /**
  *

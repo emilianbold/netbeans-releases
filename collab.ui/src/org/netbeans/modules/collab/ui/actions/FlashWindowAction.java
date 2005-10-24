@@ -12,17 +12,10 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
-import org.openide.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.windows.*;
-
-import java.awt.*;
 import java.awt.event.*;
 
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.ui.*;
-
+import org.openide.util.*;
+import org.openide.util.actions.SystemAction;
 
 //import com.conga.jni.dispatch.*;
 

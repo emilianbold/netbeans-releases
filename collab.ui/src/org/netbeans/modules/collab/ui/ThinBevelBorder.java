@@ -13,14 +13,7 @@
 package org.netbeans.modules.collab.ui;
 
 import java.awt.*;
-import java.awt.event.*;
-
-import java.util.*;
-
-import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
-
 
 /**
  *

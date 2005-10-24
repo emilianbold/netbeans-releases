@@ -21,20 +21,14 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabException;
-
-import org.openide.util.*;
-
-import java.awt.*;
-
-import java.io.*;
-
+import java.awt.Component;
+import java.io.File;
 import java.util.*;
-
 import javax.swing.*;
 
-import org.netbeans.modules.collab.*;
+import org.openide.util.NbBundle;
 
+import com.sun.collablet.CollabException;
 
 class StickyFileChooserFilter extends javax.swing.filechooser.FileFilter {
     private HashSet extensions = null;

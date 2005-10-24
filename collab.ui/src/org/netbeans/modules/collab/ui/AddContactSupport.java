@@ -15,15 +15,6 @@ package org.netbeans.modules.collab.ui;
 import com.sun.collablet.CollabSession;
 import com.sun.collablet.ContactGroup;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-
-import java.io.IOException;
-
-import org.netbeans.modules.collab.*;
-
-
 public class AddContactSupport implements AddContactCookie {
     CollabSession _session;
     ContactGroup _group = null;

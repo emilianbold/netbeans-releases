@@ -12,53 +12,30 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.Account;
-import com.sun.collablet.AccountManager;
-import com.sun.collablet.CollabException;
-import com.sun.collablet.CollabManager;
-import com.sun.collablet.CollabPrincipal;
-import com.sun.collablet.CollabSession;
-import com.sun.collablet.Collablet;
-import com.sun.collablet.ContactGroup;
-import com.sun.collablet.Conversation;
-import com.sun.collablet.ConversationPrivilege;
-import com.sun.collablet.UserInterface;
-
-import org.openide.*;
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-
 import java.applet.*;
-
 import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.awt.event.*;
-
 import java.beans.*;
-
-import java.io.*;
-
+import java.io.IOException;
 import java.lang.ref.*;
-
 import java.net.*;
-import java.net.URL;
-
 import java.text.MessageFormat;
-
 import java.util.*;
-
 import javax.swing.*;
 
+import org.openide.*;
+import org.openide.cookies.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
+
+import com.sun.collablet.*;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.options.CollabSettings;
 import org.netbeans.modules.collab.ui.options.HiddenCollabSettings;
 import org.netbeans.modules.collab.ui.options.NotificationSettings;
 import org.netbeans.modules.collab.ui.wizard.AccountWizardIterator;
 import org.netbeans.modules.collab.ui.wizard.AccountWizardSettings;
-
 
 /**
  * Default IDE user interface implementation

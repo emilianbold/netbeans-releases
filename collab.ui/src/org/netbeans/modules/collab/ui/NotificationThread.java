@@ -13,12 +13,9 @@
 package org.netbeans.modules.collab.ui;
 
 import java.util.*;
+import javax.swing.SwingUtilities;
 
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.core.Debug;
-
 
 /**
  *

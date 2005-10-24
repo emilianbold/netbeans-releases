@@ -12,13 +12,8 @@
  */
 package org.netbeans.modules.collab.ui.options;
 
-import org.openide.options.*;
+import org.openide.options.SystemOption;
 import org.openide.util.*;
-
-import java.io.*;
-
-import org.netbeans.modules.collab.*;
-
 
 /**
  * This class is for storage of user-visible properties only.  All properties

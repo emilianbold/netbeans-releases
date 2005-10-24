@@ -12,29 +12,19 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.Conversation;
-
-import org.openide.*;
-import org.openide.awt.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.windows.*;
-
 import java.awt.*;
 import java.awt.event.*;
-
-import java.util.*;
-
 import javax.swing.*;
 
-import org.netbeans.modules.collab.*;
+import org.openide.awt.*;
+import org.openide.util.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.windows.*;
+
+import com.sun.collablet.Conversation;
 import org.netbeans.modules.collab.core.Debug;
-import org.netbeans.modules.collab.ui.*;
 import org.netbeans.modules.collab.ui.actions.*;
 import org.netbeans.modules.collab.ui.options.NotificationSettings;
-
 
 /**
  *

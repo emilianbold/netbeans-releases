@@ -12,40 +12,18 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabException;
-import com.sun.collablet.CollabManager;
-import com.sun.collablet.CollabPrincipal;
-import com.sun.collablet.CollabSession;
-import com.sun.collablet.ContactGroup;
-import com.sun.collablet.UserInterface;
+import java.awt.Image;
+import java.beans.*;
+import java.io.IOException;
 
-import org.openide.*;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.util.datatransfer.NewType;
+import org.openide.util.actions.SystemAction;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.reflect.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.*;
 import org.netbeans.modules.collab.core.Debug;
-import org.netbeans.modules.collab.ui.CollabSessionCookie;
-import org.netbeans.modules.collab.ui.ContactCookie;
 import org.netbeans.modules.collab.ui.actions.*;
-
 
 /**
  *

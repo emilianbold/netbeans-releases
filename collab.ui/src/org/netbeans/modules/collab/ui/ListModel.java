@@ -12,19 +12,14 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabPrincipal;
-import com.sun.collablet.Conversation;
+import java.util.Vector;
+import javax.swing.*;
 
 import org.openide.util.*;
 
-import java.net.*;
+import com.sun.collablet.CollabPrincipal;
+import com.sun.collablet.Conversation;
 
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.netbeans.modules.collab.*;
 
 
 /**

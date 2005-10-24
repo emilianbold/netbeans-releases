@@ -12,10 +12,9 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.*;
-
 import org.openide.nodes.*;
 
+import com.sun.collablet.*;
 
 /**
  * Simple cookie that indicates that the node corresponds to a contact group

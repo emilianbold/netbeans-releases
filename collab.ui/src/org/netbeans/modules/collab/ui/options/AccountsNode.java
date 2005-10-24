@@ -12,27 +12,21 @@
  */
 package org.netbeans.modules.collab.ui.options;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import java.util.List;
+
+import org.openide.actions.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.*;
+
 import com.sun.collablet.Account;
 import com.sun.collablet.AccountManager;
 import com.sun.collablet.CollabManager;
 
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.util.datatransfer.*;
 
-import java.awt.datatransfer.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.ui.actions.*;
 
 
 /**

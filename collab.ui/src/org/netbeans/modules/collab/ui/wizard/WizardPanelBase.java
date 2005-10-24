@@ -12,26 +12,15 @@
  */
 package org.netbeans.modules.collab.ui.wizard;
 
-import org.openide.*;
-import org.openide.util.*;
-
 import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
 import java.util.*;
-
 import javax.swing.*;
 import javax.swing.event.*;
 
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.core.Debug;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
+import org.netbeans.modules.collab.core.Debug;
 
 /**
  *

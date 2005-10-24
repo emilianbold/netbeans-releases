@@ -12,35 +12,18 @@
  */
 package org.netbeans.modules.collab.ui;
 
+import java.awt.*;
+import java.awt.event.*;
+import java.beans.*;
+import java.util.*;
+import javax.swing.*;
+
+import org.openide.util.*;
+
 import com.sun.collablet.Account;
 import com.sun.collablet.AccountManager;
 import com.sun.collablet.CollabManager;
-
-import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.core.Debug;
-import org.netbeans.modules.collab.ui.actions.*;
 
 
 /**
@@ -699,7 +682,7 @@ public class LoginAccountPanel extends JPanel {
     }
 
     // </editor-fold>//GEN-END:initComponents
-    private void rememberPasswordCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) { //GEN-FIRST:event_rememberPasswordCheckBoxItemStateChanged
+    private void rememberPasswordCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rememberPasswordCheckBoxItemStateChanged
 
         if (rememberPasswordCheckBox.isSelected()) {
             autoLoginCheckBox.setEnabled(true);
@@ -707,33 +690,33 @@ public class LoginAccountPanel extends JPanel {
             autoLoginCheckBox.setEnabled(false);
             autoLoginCheckBox.setSelected(false);
         }
-    } //GEN-LAST:event_rememberPasswordCheckBoxItemStateChanged
+    }//GEN-LAST:event_rememberPasswordCheckBoxItemStateChanged
 
-    private void autoLoginCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) { //GEN-FIRST:event_autoLoginCheckBoxItemStateChanged
+    private void autoLoginCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_autoLoginCheckBoxItemStateChanged
 
         if ((getSelectedAccount() != null) && getSelectedAccount().isValid()) {
             CollabManager.getDefault().getUserInterface().setAutoLoginAccount(
                 getSelectedAccount(), evt.getStateChange() == ItemEvent.SELECTED
             );
         }
-    } //GEN-LAST:event_autoLoginCheckBoxItemStateChanged
+    }//GEN-LAST:event_autoLoginCheckBoxItemStateChanged
 
-    private void accountComboBoxActionPerformed(java.awt.event.ActionEvent evt) { //GEN-FIRST:event_accountComboBoxActionPerformed
+    private void accountComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accountComboBoxActionPerformed
 
         Account account = getSelectedAccount();
 
         if (account != null) {
             updateSelectedAccountStatus(account);
         }
-    } //GEN-LAST:event_accountComboBoxActionPerformed
+    }//GEN-LAST:event_accountComboBoxActionPerformed
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cancelButtonActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
 
         // Show the collab explorer
         CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);
-    } //GEN-LAST:event_cancelButtonActionPerformed
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void newAccountLinkMouseClicked(java.awt.event.MouseEvent evt) { //GEN-FIRST:event_newAccountLinkMouseClicked
+    private void newAccountLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_newAccountLinkMouseClicked
 
         if (accountPanel.isVisible()) // bring up account managment dialog
          {
@@ -744,11 +727,11 @@ public class LoginAccountPanel extends JPanel {
          {
             newAccount = CollabManager.getDefault().getUserInterface().createNewAccount(null, null);
         }
-    } //GEN-LAST:event_newAccountLinkMouseClicked
+    }//GEN-LAST:event_newAccountLinkMouseClicked
 
-    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) { //GEN-FIRST:event_loginButtonActionPerformed
+    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
         login(getSelectedAccount());
-    } //GEN-LAST:event_loginButtonActionPerformed
+    }//GEN-LAST:event_loginButtonActionPerformed
 
     ////////////////////////////////////////////////////////////////////////////
     // Inner class

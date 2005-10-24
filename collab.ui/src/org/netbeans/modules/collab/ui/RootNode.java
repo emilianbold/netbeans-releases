@@ -12,27 +12,12 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import org.openide.*;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.util.datatransfer.*;
+import org.openide.util.actions.SystemAction;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.core.Debug;
-
 
 /**
  *

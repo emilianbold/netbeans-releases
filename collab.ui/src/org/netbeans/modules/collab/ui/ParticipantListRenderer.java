@@ -12,17 +12,10 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabPrincipal;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.util.*;
-
+import java.awt.Component;
 import javax.swing.*;
 
-import org.netbeans.modules.collab.*;
-
+import com.sun.collablet.CollabPrincipal;
 
 /**
  *

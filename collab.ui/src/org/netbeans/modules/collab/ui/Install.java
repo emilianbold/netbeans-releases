@@ -12,35 +12,20 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.Account;
-import com.sun.collablet.AccountManager;
-import com.sun.collablet.CollabManager;
-import com.sun.collablet.UserInterface;
-
-import org.openide.*;
-import org.openide.awt.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.modules.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.windows.*;
-
-import java.awt.*;
+import java.awt.Frame;
 import java.awt.event.*;
-
 import java.beans.*;
-
-import java.io.*;
-
 import java.util.*;
+import javax.swing.SwingUtilities;
 
-import javax.swing.*;
+import org.openide.awt.StatusDisplayer;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.*;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.options.CollabSettings;
-
 
 /**
  *

@@ -12,9 +12,11 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabManager;
-import com.sun.collablet.CollabPrincipal;
-import com.sun.collablet.CollabSession;
+import java.awt.*;
+import java.awt.event.*;
+import java.beans.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
 import org.openide.*;
 import org.openide.awt.*;
@@ -25,13 +27,9 @@ import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.windows.*;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import com.sun.collablet.CollabManager;
+import com.sun.collablet.CollabPrincipal;
+import com.sun.collablet.CollabSession;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.actions.*;
 

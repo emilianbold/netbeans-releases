@@ -12,35 +12,26 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.Account;
-import com.sun.collablet.AccountManager;
+import java.beans.*;
+import java.util.*;
 
 import org.openide.*;
 import org.openide.explorer.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.Account;
+import com.sun.collablet.AccountManager;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.options.AccountNode;
 import org.netbeans.modules.collab.ui.options.AccountsNode;
-
 
 public class AccountManagementPanel extends ExplorerPanel {
     static final long serialVersionUID = 1L;
     private int width_components = 0;
     private int width_leftcomponent = 0;
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify                     
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JLabel label;
     private org.openide.explorer.view.ListView listView1;
@@ -232,11 +223,11 @@ public class AccountManagementPanel extends ExplorerPanel {
     }
 
     // </editor-fold>//GEN-END:initComponents
-    private void listView1ComponentResized(java.awt.event.ComponentEvent evt) { //GEN-FIRST:event_listView1ComponentResized
+    private void listView1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_listView1ComponentResized
         width_leftcomponent = listView1.getWidth();
-    } //GEN-LAST:event_listView1ComponentResized
+    }//GEN-LAST:event_listView1ComponentResized
 
-    private void jSplitPane1ComponentResized(java.awt.event.ComponentEvent evt) { //GEN-FIRST:event_jSplitPane1ComponentResized
+    private void jSplitPane1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jSplitPane1ComponentResized
 
         int width;
         int locator;
@@ -251,13 +242,13 @@ public class AccountManagementPanel extends ExplorerPanel {
             width_leftcomponent = listView1.getWidth();
             width_components = width_leftcomponent + propertySheetView1.getWidth();
         }
-    } //GEN-LAST:event_jSplitPane1ComponentResized
+    }//GEN-LAST:event_jSplitPane1ComponentResized
 
-    private void removeButtonPressed(java.awt.event.ActionEvent evt) { //GEN-FIRST:event_removeButtonPressed
-    } //GEN-LAST:event_removeButtonPressed
+    private void removeButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonPressed
+    }//GEN-LAST:event_removeButtonPressed
 
-    private void addButtonPressed(java.awt.event.ActionEvent evt) { //GEN-FIRST:event_addButtonPressed
-    } //GEN-LAST:event_addButtonPressed
+    private void addButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonPressed
+    }//GEN-LAST:event_addButtonPressed
 
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
 }

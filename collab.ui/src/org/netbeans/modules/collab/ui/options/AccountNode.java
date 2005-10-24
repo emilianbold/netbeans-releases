@@ -12,30 +12,19 @@
  */
 package org.netbeans.modules.collab.ui.options;
 
-import com.sun.collablet.Account;
-import com.sun.collablet.AccountManager;
-import com.sun.collablet.CollabManager;
+import java.awt.Image;
+import java.beans.*;
+import java.io.IOException;
+import java.util.*;
 
-import org.openide.*;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
-import org.openide.util.actions.*;
+import org.openide.util.actions.SystemAction;
 
-import java.awt.Image;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.reflect.*;
-
-import java.util.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.*;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.actions.*;
-
 
 /**
  *

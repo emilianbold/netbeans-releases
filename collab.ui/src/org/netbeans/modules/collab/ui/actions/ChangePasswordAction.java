@@ -12,20 +12,12 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
-import com.sun.collablet.CollabSession;
-
-import org.openide.*;
-import org.openide.cookies.*;
-import org.openide.nodes.*;
+import org.openide.nodes.Node;
 import org.openide.util.*;
-import org.openide.util.actions.*;
+import org.openide.util.actions.CookieAction;
 
-import java.awt.event.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.CollabSession;
 import org.netbeans.modules.collab.ui.*;
-import org.netbeans.modules.collab.ui.CollabSessionCookie;
-
 
 public class ChangePasswordAction extends CookieAction {
     /**

@@ -12,17 +12,8 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import org.openide.*;
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
 import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-
-import java.beans.*;
-
-import java.util.*;
-
+import org.openide.util.actions.SystemAction;
 
 /**
  *

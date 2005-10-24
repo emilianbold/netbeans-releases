@@ -12,25 +12,12 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
-import org.openide.*;
-import org.openide.awt.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.windows.*;
-
 import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JPanel;
 
-import java.util.*;
-
-import javax.swing.*;
-
-//import org.netbeans.core.windows.view.ui.tabcontrol.*;
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.ui.*;
-
+import org.openide.util.*;
+import org.openide.util.actions.NodeAction;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -71,11 +58,6 @@ public class TestAction extends NodeAction {
             System.out.println(indent + component.getClass() /*+" ["+component+"]"*/);
 
             if (component instanceof Container) {
-                if (component instanceof org.openide.awt.ToolbarPool) {
-                    System.out.println(component.getParent().toString());
-                    System.out.println(component.toString());
-                }
-
                 if (component.getClass().getName().equals("org.netbeans.core.windows.view.ui.StatusLine")) {
                     JPanel panel = (JPanel) component.getParent();
 

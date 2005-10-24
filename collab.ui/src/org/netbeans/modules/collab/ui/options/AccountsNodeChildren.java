@@ -12,24 +12,16 @@
  */
 package org.netbeans.modules.collab.ui.options;
 
-import com.sun.collablet.Account;
-import com.sun.collablet.AccountManager;
-
-import org.openide.*;
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-
 import java.beans.*;
-
 import java.util.*;
 
-import org.netbeans.modules.collab.*;
+import org.openide.nodes.*;
+import org.openide.util.NbBundle;
+
+import com.sun.collablet.Account;
+import com.sun.collablet.AccountManager;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.*;
-
 
 /**
  *

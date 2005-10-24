@@ -12,25 +12,12 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabException;
-import com.sun.collablet.CollabSession;
-import com.sun.collablet.Conversation;
-
-import org.openide.*;
-import org.openide.cookies.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
+import org.openide.cookies.OpenCookie;
+import org.openide.util.Mutex;
 import org.openide.windows.*;
 
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.*;
 import org.netbeans.modules.collab.core.Debug;
-
 
 /**
  *

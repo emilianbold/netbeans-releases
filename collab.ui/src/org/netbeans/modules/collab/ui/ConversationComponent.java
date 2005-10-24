@@ -12,55 +12,25 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabException;
-import com.sun.collablet.Collablet;
-import com.sun.collablet.Conversation;
-import com.sun.collablet.InteractiveCollablet;
-import com.sun.collablet.chat.ChatCollablet;
+import java.awt.BorderLayout;
+import java.awt.event.*;
+import java.beans.*;
+import java.lang.ref.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
 import org.openide.*;
-import org.openide.actions.CopyAction;
-import org.openide.actions.PasteAction;
-import org.openide.awt.*;
-import org.openide.explorer.*;
 import org.openide.explorer.view.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.windows.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventListener;
-import org.w3c.dom.events.EventTarget;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.plaf.*;
-import javax.swing.plaf.basic.*;
-
-//import org.openide.util.actions.SystemAction;
-import javax.swing.text.DefaultEditorKit;
-
+import com.sun.collablet.*;
+import com.sun.collablet.chat.ChatCollablet;
 import org.netbeans.modules.collab.core.Debug;
-import org.netbeans.modules.collab.ui.SplittedPanel;
-import org.netbeans.modules.collab.ui.actions.*;
 import org.netbeans.modules.collab.ui.options.HiddenCollabSettings;
 import org.netbeans.modules.collab.ui.switcher.ViewSwitcherPane;
-
 
 /**
  *

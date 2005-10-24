@@ -12,20 +12,12 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.Conversation;
-
-import org.openide.*;
-import org.openide.util.*;
-import org.openide.windows.*;
-
 import java.beans.*;
+import java.io.IOException;
 
-import java.io.*;
+import org.openide.windows.CloneableOpenSupport;
 
-import java.util.*;
-
-import org.netbeans.modules.collab.*;
-
+import com.sun.collablet.Conversation;
 
 /**
  *

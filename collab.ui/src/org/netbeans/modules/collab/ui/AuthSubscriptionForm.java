@@ -12,24 +12,13 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabException;
-import com.sun.collablet.CollabPrincipal;
-import com.sun.collablet.CollabSession;
-import com.sun.collablet.ContactGroup;
+import java.awt.Dialog;
 
 import org.openide.*;
 import org.openide.util.*;
 
-import java.awt.Dialog;
-import java.awt.event.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.*;
 import org.netbeans.modules.collab.core.Debug;
-
 
 /**
  *

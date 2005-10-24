@@ -12,30 +12,14 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabSession;
+import java.io.IOException;
 
-import org.openide.*;
-import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.util.datatransfer.NewType;
+import org.openide.util.actions.SystemAction;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.reflect.*;
-
-import java.util.*;
-
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.ui.CollabSessionCookie;
+import com.sun.collablet.CollabSession;
 import org.netbeans.modules.collab.ui.actions.*;
-
 
 /**
  *

@@ -12,24 +12,13 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
+import org.openide.nodes.Node;
+import org.openide.util.*;
+import org.openide.util.actions.CookieAction;
+
 import com.sun.collablet.CollabManager;
 import com.sun.collablet.CollabSession;
-
-import org.openide.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-
-import java.awt.event.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.ui.*;
-import org.netbeans.modules.collab.ui.CollabSessionCookie;
-
 
 /**
  *

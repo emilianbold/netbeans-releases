@@ -12,15 +12,11 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import org.openide.*;
-import org.openide.windows.*;
-
-import java.awt.*;
 import java.awt.event.*;
 
-import org.netbeans.modules.collab.*;
-import org.netbeans.modules.collab.core.Debug;
+import org.openide.windows.WindowManager;
 
+import org.netbeans.modules.collab.core.Debug;
 
 /**
  *

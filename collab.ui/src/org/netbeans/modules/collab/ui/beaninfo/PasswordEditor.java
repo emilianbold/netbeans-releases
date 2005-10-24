@@ -12,26 +12,15 @@
  */
 package org.netbeans.modules.collab.ui.beaninfo;
 
-import org.openide.explorer.propertysheet.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-
 import java.awt.*;
 import java.awt.event.*;
-
 import java.beans.*;
-
-import java.text.*;
-
 import java.util.*;
-
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
 
-import org.netbeans.modules.collab.*;
+import org.openide.explorer.propertysheet.*;
+
 import org.netbeans.modules.collab.core.Debug;
-
 
 /**
  *

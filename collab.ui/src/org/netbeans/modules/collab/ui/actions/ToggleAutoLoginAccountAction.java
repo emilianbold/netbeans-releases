@@ -12,29 +12,14 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
+import org.openide.nodes.Node;
+import org.openide.util.*;
+import org.openide.util.actions.CookieAction;
+
 import com.sun.collablet.CollabManager;
 import com.sun.collablet.CollabSession;
-
-import org.openide.*;
-import org.openide.awt.*;
-import org.openide.filesystems.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.windows.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.core.Debug;
-import org.netbeans.modules.collab.ui.*;
 import org.netbeans.modules.collab.ui.options.AccountNode;
-
 
 /**
  * TAF 10-22-2004: This class does not currently function.

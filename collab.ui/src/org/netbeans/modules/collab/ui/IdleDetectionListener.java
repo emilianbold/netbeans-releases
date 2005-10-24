@@ -12,21 +12,17 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabManager;
-import com.sun.collablet.CollabPrincipal;
-import com.sun.collablet.CollabSession;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 import org.openide.*;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.CollabManager;
+import com.sun.collablet.CollabPrincipal;
+import com.sun.collablet.CollabSession;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.options.CollabSettings;
-
 
 /**
  * Listens to the AWT event queue and determines when the user is idle after

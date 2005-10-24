@@ -12,28 +12,18 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
-import com.sun.collablet.CollabManager;
-import com.sun.collablet.CollabSession;
+import java.io.*;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.*;
+import org.openide.nodes.Node;
 import org.openide.util.*;
-import org.openide.util.actions.*;
+import org.openide.util.actions.NodeAction;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
+import com.sun.collablet.CollabManager;
+import com.sun.collablet.CollabSession;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.*;
-
 
 public class ImportBuddyListAction extends NodeAction {
     public static final String defaultContactsExtension = ".iim";

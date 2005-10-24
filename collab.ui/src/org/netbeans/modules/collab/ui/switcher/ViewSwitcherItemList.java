@@ -14,18 +14,12 @@ package org.netbeans.modules.collab.ui.switcher;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-
-import java.beans.BeanInfo;
-
-import java.lang.ref.WeakReference;
-
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.basic.BasicListUI;
-
-
-//import org.openide.nodes.Node;
+import java.beans.BeanInfo;
+import java.lang.ref.WeakReference;
 
 /**
  * Specialized JList for palette items (content of a palette category) - having

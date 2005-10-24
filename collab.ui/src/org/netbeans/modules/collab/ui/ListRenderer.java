@@ -12,18 +12,11 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import com.sun.collablet.CollabPrincipal;
-import com.sun.collablet.Conversation;
-
 import java.awt.*;
-import java.awt.event.*;
-
-import java.util.*;
-
 import javax.swing.*;
 
-import org.netbeans.modules.collab.*;
-
+import com.sun.collablet.CollabPrincipal;
+import com.sun.collablet.Conversation;
 
 public final class ListRenderer extends DefaultListCellRenderer {
     private ListModel _model = null;

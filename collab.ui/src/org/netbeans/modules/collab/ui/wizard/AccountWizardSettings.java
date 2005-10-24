@@ -12,14 +12,11 @@
  */
 package org.netbeans.modules.collab.ui.wizard;
 
-import com.sun.collablet.Account;
-
-import org.openide.*;
-
 import java.awt.Dimension;
 
-import org.netbeans.modules.collab.*;
+import org.openide.WizardDescriptor;
 
+import com.sun.collablet.Account;
 
 /**
  *
