@@ -23,6 +23,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -48,7 +49,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
                 getWorkDir(),
             new URL[] {
                 getClass().getClassLoader().getResource(
-                        "org/netbeans/modules/editor/settings/storage/resources/mf-layer.xml")
+                        "org/netbeans/modules/defaults/mf-layer.xml")
             },
             new Object[] {},
             getClass().getClassLoader()
@@ -61,6 +62,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
     }
     
     public void testSettingChange() throws IOException{
+        EditorSettings editorSettings = EditorSettings.getDefault ();
         
         MimeLookup mimelookup = MimeLookup.getMimeLookup("text/x-java");
         FontColorSettings fcs = (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
@@ -88,7 +90,10 @@ public class EditorSettingsStorageTest extends NbTestCase {
                     
         assertTrue(color != setColor);
         colors.add(a);
-        fcsStorage.setAllFontColors(colors);
+        fcsStorage.setAllFontColors (
+            editorSettings.getCurrentFontColorProfile (),
+            colors
+        );
         
         set = fcsStorage.getTokenFontColors("java-keywords");
         assertTrue(set != null);
@@ -143,6 +148,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
     }
     
     private void setSetting(String mime, String settingName, AttributeSet set){
+        EditorSettings editorSettings = EditorSettings.getDefault ();
         MimeLookup mimelookup = MimeLookup.getMimeLookup(mime);
         FontColorSettings fcs = (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
        
@@ -151,7 +157,10 @@ public class EditorSettingsStorageTest extends NbTestCase {
 
         List colors = new ArrayList();
         colors.add(set);
-        fcsStorage.setAllFontColors(colors);
+        fcsStorage.setAllFontColors (
+            editorSettings.getCurrentFontColorProfile (),
+            colors
+        );
         
         // test setting was really set
         assertTrue(set.equals(getSetting(mime, settingName)));
