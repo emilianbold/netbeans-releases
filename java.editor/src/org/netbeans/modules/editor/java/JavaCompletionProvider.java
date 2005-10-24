@@ -26,13 +26,11 @@ import javax.swing.*;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.ExtUtilities;
-import org.netbeans.editor.ext.java.JavaTokenContext;
+import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Feature;
@@ -50,13 +48,7 @@ import org.openide.util.NbBundle;
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (".".equals(typedText)) { // NOI18N
-            try {
-                TokenID token = ((ExtSyntaxSupport)Utilities.getSyntaxSupport(component)).getTokenID(component.getCaret().getDot());
-                int id = token != null ? token.getNumericID() : 0;
-                if (id == JavaTokenContext.STRING_LITERAL_ID || id == JavaTokenContext.CHAR_LITERAL_ID || id == JavaTokenContext.LINE_COMMENT_ID || id == JavaTokenContext.BLOCK_COMMENT_ID)
-                    return 0;
-            } catch (BadLocationException e) {}
+        if (".".equals(typedText) && !((JavaSyntaxSupport)Utilities.getSyntaxSupport(component)).isCompletionDisabled(component.getCaret().getDot())) { // NOI18N
             return COMPLETION_QUERY_TYPE;
         }
         return 0;
