@@ -453,9 +453,11 @@ public class LocalePanel extends JPanel {
     private void supportedListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_supportedListValueChanged
         Locale selectedLocale = (Locale)supportedList.getSelectedValue();
         
-        languageCombo.setSelectedItem(selectedLocale.getLanguage());
-        countryCombo.setSelectedItem(selectedLocale.getCountry());
-        variantCombo.setSelectedItem(selectedLocale.getVariant());
+        if (selectedLocale != null) {
+	    languageCombo.setSelectedItem(selectedLocale.getLanguage());
+	    countryCombo.setSelectedItem(selectedLocale.getCountry());
+	    variantCombo.setSelectedItem(selectedLocale.getVariant());
+	}
         
         supportedList.ensureIndexIsVisible(supportedList.getSelectedIndex());
     }//GEN-LAST:event_supportedListValueChanged
