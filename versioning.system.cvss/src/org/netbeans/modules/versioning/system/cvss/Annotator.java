@@ -271,7 +271,7 @@ public class Annotator {
             folderAnnotation = looksLikeLogicalFolder(files);
         }
 
-        if (mostImportantInfo == null) return name;
+        if (mostImportantInfo == null) return htmlEncode(name);
         return folderAnnotation ? 
                 annotateFolderNameHtml(name, mostImportantInfo, mostImportantFile) : 
                 annotateNameHtml(name, mostImportantInfo, mostImportantFile);
