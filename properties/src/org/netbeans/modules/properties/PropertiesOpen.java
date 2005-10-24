@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -161,7 +161,7 @@ public class PropertiesOpen extends CloneableOpenSupport
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpening() {
-        return NbBundle.getMessage(OpenSupport.class , "CTL_ObjectOpen", // NOI18N
+        return NbBundle.getMessage(PropertiesOpen.class, "LBL_ObjectOpen", // NOI18N
             propDataObject.getName(),
             propDataObject.getPrimaryFile().toString()
         );
@@ -173,7 +173,7 @@ public class PropertiesOpen extends CloneableOpenSupport
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpened() {
-        return NbBundle.getMessage(OpenSupport.class, "CTL_ObjectOpened"); // NOI18N
+        return NbBundle.getMessage(PropertiesOpen.class, "LBL_ObjectOpened"); // NOI18N
     }
 
     /** @return whether has open table view component. */

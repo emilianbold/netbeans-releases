@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,8 +50,10 @@ public class LangRenameAction extends RenameAction {
                 lang = lang.substring(1);
 
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-            NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameLabel"),
-            NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameTitle"));
+		NbBundle.getMessage(LangRenameAction.class,
+				    "LBL_RenameLabel"),			//NOI18N
+		NbBundle.getMessage(LangRenameAction.class,
+				    "LBL_RenameTitle"));		//NOI18N
         
         dlg.setInputText(lang);
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
