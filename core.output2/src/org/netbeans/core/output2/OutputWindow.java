@@ -64,6 +64,9 @@ public class OutputWindow extends AbstractOutputWindow {
         if (Controller.log) Controller.log("Created an output window");
         this.controller = controller;
         setDisplayName (NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT")); //NOI18N
+        // setting name to satisfy the accesible name requirement for window.
+        setName (NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT")); //NOI18N
+        
         setIcon(Utilities.loadImage(ICON_RESOURCE)); // NOI18N
          // special title for sliding mode
         // XXX - please rewrite to regular API when available - see issue #55955

@@ -13,6 +13,9 @@
 
 package org.netbeans.core.output2.ui;
 
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import org.netbeans.core.output2.Controller;
 
 import javax.swing.*;
@@ -31,7 +34,7 @@ import java.awt.event.ActionListener;
  *
  * @author  Tim Boudreau
  */
-public abstract class AbstractOutputTab extends JComponent implements ActionListener {
+public abstract class AbstractOutputTab extends JComponent implements ActionListener, Accessible {
     private JToolBar toolbar = null;
     private InputPanel input = null;
     private AbstractOutputPane outputPane;
@@ -47,6 +50,30 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
     public void setDocument (Document doc) {
         outputPane.setDocument(doc);
     }
+    
+    /* Read accessible context
+     * @return - accessible context
+     */
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleJComponent() {
+                        public AccessibleRole getAccessibleRole() {
+                            // is it really a panel?
+                            return AccessibleRole.PANEL;
+                        }
+
+                        public String getAccessibleName() {
+                            if (accessibleName != null) {
+                                return accessibleName;
+                            }
+                            return getName();
+                        }
+                    };
+        }
+
+        return accessibleContext;
+    }
+    
 
     /**
      * on mouse click the specialized component is marked, and activation is requested.
