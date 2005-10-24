@@ -35,7 +35,7 @@ import org.netbeans.junit.*;
  * asked to recognize invalid objects, etc.
  * @author Jesse Glick
  */
-public class DataObjectInvalidationTest extends NbTestCase {
+public class DataObjectInvalidationTest extends LoggingTestCaseHid {
     
     // SEE ALSO:
     // FolderInstanceTest.testFolderInstanceNeverPassesInvObjects
@@ -43,6 +43,10 @@ public class DataObjectInvalidationTest extends NbTestCase {
     
     public DataObjectInvalidationTest(String name) {
         super(name);
+    }
+    
+    protected void setUp() throws IOException {
+        clearWorkDir();
     }
     
     public void testNobodyCanAccessDataObjectWithUnfinishedConstructor () throws Throwable {
