@@ -58,13 +58,23 @@ the plugin. The Tomcat Web Server implements the JavaServer Pages 2.0 and Servle
 
 <h3>The Bundled Tomcat Web Server</h3>
 When you install the IDE, the installation automatically registers the bundled Tomcat Web Server with the IDE.
-<p>The configuration files for the bundled Tomcat Web Server are in the Tomcat <i>base</i> 
-  directory, located under your IDE user directory. The Tomcat <i>home</i> directory 
+<p>The configuration files for the bundled Tomcat Web Server are in the Tomcat <i>base</i> (Catalina base) 
+  directory, located under your IDE user directory. The Tomcat <i>home</i> (Catalina home) directory 
   is under the IDE installation directory. Note that this setup differs from a 
   typical Tomcat installation, where the base directory and home directory coincide. 
   To see the exact locations of the home and base directories, right-click the 
   server's node in the Runtime tab and choose Properties from the contextual menu. 
-</p>
+  </p>
+	<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+	      If the Tomcat <i>base</i> (Catalina base) folder does not exist, it is created the first time the
+server is started.	 
+      </td>
+   </tr>
+</table>
+
 <p>Shared libraries that are used by web applications must be added to the home directory. 
   Do not add shared libraries to the base directory.</p>
 <table>
