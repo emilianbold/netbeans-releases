@@ -108,17 +108,7 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     public String getAsText() {
-        String valueText;
-        Object value = getValue();
-
-        if (value == null)
-            valueText = getBundle().getString("LAB_NoBorder"); // NOI18N
-        else if (borderSupport != null)
-            valueText = "[" + borderSupport.getDisplayName() + "]"; // NOI18N
-        else
-            valueText = "[" + org.openide.util.Utilities.getShortClassName( // NOI18N
-                            value.getClass()) + "]"; // NOI18N
-        return valueText;
+        return null;
     }
 
     public void setAsText(String string) {
@@ -129,7 +119,7 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     public void paintValue(Graphics g, Rectangle rectangle) {
-/*
+
         String valueText;
         Object value = getValue();
 
@@ -140,10 +130,10 @@ public final class BorderEditor extends PropertyEditorSupport
         else
             valueText = "[" + org.openide.util.Utilities.getShortClassName(
                             value.getClass()) + "]"; // NOI18N
- */
+ 
 
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(getAsText(), rectangle.x,
+        g.drawString(valueText, rectangle.x,
                        rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
     }
 
