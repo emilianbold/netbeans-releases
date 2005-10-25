@@ -17,7 +17,6 @@ import java.util.Properties;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 
 import org.openide.util.Lookup;
 
@@ -89,12 +88,6 @@ public class Settings {
                 + l);
 
         supp.removePropertyChangeListener(l);
-    }
-    
-    /**
-     */
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
     }
 
 }
