@@ -19,13 +19,11 @@ import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.beans.PropertyChangeListener;
-
-import junit.textui.TestRunner;
+import java.lang.ref.WeakReference;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
-
-import org.netbeans.junit.*;
 
 // XXX to do:
 // - loaders are never asked to recognize an invalid file object (#13926)
@@ -55,7 +53,9 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
     }
     
     protected void tearDown() throws Exception {
+        WeakReference ref = new WeakReference(DataLoader.getLoader(SlowDataLoader.class));
         Pool.setExtra(null);
+        assertGC("Let's cleanup all nodes, data objects created in previous test", ref);
     }
     
     public void testNobodyCanAccessDataObjectWithUnfinishedConstructor () throws Throwable {
@@ -301,6 +301,7 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
     
     public static final class SlowDataLoader extends UniFileLoader {
         public static int createCount = 0;
+        private static ErrorManager ERR = ErrorManager.getDefault().getInstance("SlowDataLoader");
         public SlowDataLoader() {
             super(SlowDataObject.class.getName());
         }
@@ -312,8 +313,11 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             return "Slow";
         }
         protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
+            ERR.log("in createMultiObject for: " + pf);
             SlowDataObject o = new SlowDataObject(pf, this);
+            
             createCount++;
+            ERR.log("created object : " + o);
             //new Exception("creating for: " + pf + " count=" + createCount).printStackTrace();
             return o;
         }
@@ -326,6 +330,7 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             synchronized (loader) {
                 // in case somebody is listening on the loader for our creation
                 // let him wake up
+                SlowDataLoader.ERR.log("Wake up sleepers");
                 loader.notifyAll ();
             }
             
@@ -342,6 +347,7 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             
             ok = Thread.currentThread();
             createCount++;
+            SlowDataLoader.ERR.log("End of constructor");
         }
         protected Node createNodeDelegate() {
             return new SlowDataNode(this);
