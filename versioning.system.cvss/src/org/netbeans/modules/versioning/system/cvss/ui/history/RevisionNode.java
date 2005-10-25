@@ -85,6 +85,7 @@ class RevisionNode extends AbstractNode {
         } else {
             return new Action [] {
                 new RollbackAction(),
+                new RollbackChangeAction(),
                 new FindCommitAction(false),
                 new FindCommitAction(true),
             };
@@ -217,6 +218,18 @@ class RevisionNode extends AbstractNode {
         }
     }
 
+    private class RollbackChangeAction extends AbstractAction {
+
+        public RollbackChangeAction() {
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"));
+            setEnabled(Utils.previousRevision(revision.getNumber()) != null);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            SummaryView.rollbackChanges(new LogInformation.Revision [] { revision });
+        }
+    }
+    
     private static class RevisionPropertyEditor extends PropertyEditorSupport {
 
         private static final JLabel renderer = new JLabel();

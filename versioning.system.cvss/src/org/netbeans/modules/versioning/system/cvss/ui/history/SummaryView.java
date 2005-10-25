@@ -14,10 +14,14 @@
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
+import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -233,6 +237,14 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }));
             }
         }
+        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) {
+            {
+                setEnabled(someRevisions(selection));
+            }
+            public void actionPerformed(ActionEvent e) {
+                rollbackChange(selection);
+            }
+        }));
         if (drev != null) {
             if (!"dead".equals(drev.getRevision().getState())) {
                 menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", drev.getRevision().getNumber())) {
@@ -270,6 +282,45 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         menu.show(e.getComponent(), e.getX(), e.getY());
     }
 
+    private boolean someRevisions(int[] selection) {
+        for (int i = 0; i < selection.length; i++) {
+            Object revCon = dispResults.get(selection[i]);
+            if (revCon instanceof SearchHistoryPanel. DispRevision) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void rollbackChange(int [] selection) {
+        List changes = new ArrayList();
+        for (int i = 0; i < selection.length; i++) {
+            int idx = selection[i];
+            Object o = dispResults.get(idx);
+            if (o instanceof SearchHistoryPanel.DispRevision) {
+                SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
+                changes.add(drev.getRevision());
+            }
+        }
+        rollbackChanges((LogInformation.Revision[]) changes.toArray(new LogInformation.Revision[changes.size()]));
+    }
+
+    private static void rollbackChange(LogInformation.Revision change, ExecutorGroup group) {
+        UpdateCommand cmd = new UpdateCommand();
+        cmd.setFiles(new File [] { change.getLogInfoHeader().getFile() });
+        cmd.setMergeRevision1(change.getNumber());
+        cmd.setMergeRevision2(Utils.previousRevision(change.getNumber()));
+        group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
+    }
+
+    static void rollbackChanges(LogInformation.Revision [] changes) {
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SummaryView.class, "MSG_SummaryView_RollingBackChange"));
+        for (int i = 0; i < changes.length; i++) {
+            rollbackChange(changes[i], group);
+        }
+        group.execute();
+    }
+    
     private void rollback(int idx) {
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
