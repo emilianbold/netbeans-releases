@@ -39,14 +39,15 @@ a module project and choosing Properties.
 	section of the <tt>nbproject/project.xml</tt> file. If your module tries to use a class from another module which is public, 
 	but that class is not actually in one of the packages the other module declares as its "public packages", 
 	it will throw a <tt>NoClassDefFoundException</tt> at runtime.
-	<li><b>Regular Module|Autoload Module|Eager Module.</b>
+	<li><b>Module Type.</b>
 	<ul>
+ 		<li><b>Regular.</b> A module that is loaded when the platform starts up. 
 		<li><b>Autoload.</b> A module that is loaded only when another module needs it. For example,
 		 a library wrapper module is only loaded when a module that depends on it needs it.
 		 <li><b>Eager.</b> A module that is loaded if all its dependencies are satisfied. For example,
 		  the module that provides coloring for NetBeans files depends on the module that provides the editor.
 		  Therefore, when you disable the editor module, the IDE automatically disables the coloring module.
-		  <li><b>Regular.</b> A module that is loaded when the platform starts up. 
+		 
 	</ul>	
 	<li><b>Public Packages.</b> Displays a list of all packages contained in the 
 	source directory plus any <tt>class-path-extensions</tt>. If checked, the package is included among <tt>public-packages</tt>
