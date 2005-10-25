@@ -14,6 +14,8 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.beans.EventSetDescriptor;
+import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.undo.*;
 import javax.swing.border.Border;
@@ -108,7 +110,7 @@ public class MetaComponentCreator {
      * component is added to target component (if it is ComponentContainer)
      * or applied to it (if it is layout or border).
      * @param sourceComp metacomponent to be copied
-     * @param targetComp target component (where the new component is added)
+     * @param targetComp target component (where the new component is added)     
      * @return the component if it was successfully created and added (all
      *         errors are reported immediately)
      */
@@ -671,8 +673,8 @@ public class MetaComponentCreator {
                 catch (Exception e) { // ignore problem with aux value
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-            }
-
+            }	    
+	
         // 5th - copy layout constraints
         if (sourceComp instanceof RADVisualComponent
             && newComp instanceof RADVisualComponent)
@@ -690,8 +692,59 @@ public class MetaComponentCreator {
             ((RADVisualComponent)newComp).setConstraintsMap(newConstraints);
         }
 
-        // 6th - copy events - TODO (only if copied between forms)
+        // 6th - copy events 
+	Event[] sourceEvents = sourceComp.getKnownEvents();				
+	String[] eventNames = new String[sourceEvents.length];
+	String[][] eventHandlers = new String[sourceEvents.length][];	    	
+	for (int eventsIdx=0; eventsIdx < sourceEvents.length; eventsIdx++) {	    	    
+	    eventNames[eventsIdx] = sourceEvents[eventsIdx].getName(); 
+	    eventHandlers[eventsIdx] = sourceEvents[eventsIdx].getEventHandlers();	    	    
+	}	
+		
+	FormEvents formEvents = formModel.getFormEvents();	    	
+	Event[] targetEvents = newComp.getEvents(eventNames);	
+	for (int targetEventsIdx = 0; targetEventsIdx < targetEvents.length; targetEventsIdx++) {			    
+	    
+	    Event targetEvent = targetEvents[targetEventsIdx];
+	    if (targetEvent == null) 
+		continue; // [uknown event error - should be reported!]
 
+	    String[] handlers = eventHandlers[targetEventsIdx];
+	    for (int handlersIdx = 0; handlersIdx < handlers.length; handlersIdx++) {		
+		String newHandlerName;
+		String oldHandlerName = handlers[handlersIdx];		
+		String sourceVariableName = sourceComp.getName();
+		String targetVariableName = newComp.getName();
+
+		int idx = oldHandlerName.indexOf(sourceVariableName);
+		if (idx >= 0) {
+		    newHandlerName = oldHandlerName.substring(0, idx)
+				   + targetVariableName
+				   + oldHandlerName.substring(idx + sourceVariableName.length());
+		} else {
+		    newHandlerName = targetVariableName 
+				   + oldHandlerName;						
+		}
+		newHandlerName = formEvents.findFreeHandlerName(newHandlerName);		
+				
+		String bodyText = null;
+		if(sourceComp.getFormModel() != formModel) {
+		    // copying to different form -> let's copy also the event handler content
+		    JavaCodeGenerator javaCodeGenerator = 
+			    ((JavaCodeGenerator)FormEditor.getCodeGenerator(sourceComp.getFormModel()));
+		    bodyText = javaCodeGenerator.getEventHandlerText(oldHandlerName);
+		}		
+		
+		try {		    		   
+		    formEvents.attachEvent(targetEvent, newHandlerName, bodyText);
+		}
+		catch (IllegalArgumentException ex) {
+		    // [incompatible handler error - should be reported!]
+		    ex.printStackTrace();
+		}
+	    }
+	}	
+	
         return newComp;
     }
 
