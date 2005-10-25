@@ -156,13 +156,10 @@ public final class NbPlatform implements Comparable {
     private static URL[] defaultPlatformJavadoc() {
         File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
         if (apidocsZip != null) {
-            try {
-                return new URL[] {FileUtil.normalizeFile(apidocsZip).toURI().toURL()};
-            } catch (MalformedURLException e) {
-                assert false : e;
-            }
+            return new URL[] {Util.urlForJar(apidocsZip)};
+        } else {
+            return new URL[0];
         }
-        return new URL[0];
     }
 
     /**

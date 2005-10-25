@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -25,7 +26,6 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
@@ -38,45 +38,47 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
     
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
         try {
-            NbPlatform supposedPlaf = null;
-            for (Iterator it = NbPlatform.getPlatforms().iterator(); it.hasNext(); ) {
-                NbPlatform plaf = (NbPlatform) it.next();
-                // XXX more robust condition?
-                if (binaryRoot.toExternalForm().indexOf(plaf.getDestDir().toURI().toURL().toExternalForm()) != -1) {
-                    supposedPlaf = plaf;
-                    break;
-                }
-            }
-            if (supposedPlaf == null) {
-                return null;
-            }
             if (!binaryRoot.getProtocol().equals("jar")) { // NOI18N
                 // XXX probably shouldn't just return null in this case
                 Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
                 return null;
             }
-            File binaryRootF = new File(URI.create(FileUtil.getArchiveFile(binaryRoot).toExternalForm()));
-            FileObject fo = FileUtil.toFileObject(binaryRootF);
-            if (fo == null) {
-                Util.err.log("Cannot found FileObject for " + binaryRootF + "(" + binaryRoot + ")"); // NOI18N
+            URL jar = FileUtil.getArchiveFile(binaryRoot);
+            if (!jar.getProtocol().equals("file")) { // NOI18N
+                Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
                 return null;
             }
-            String cnbdashes = fo.getName();
+            File binaryRootF = new File(URI.create(jar.toExternalForm()));
+            NbPlatform supposedPlaf = null;
+            for (Iterator it = NbPlatform.getPlatforms().iterator(); it.hasNext(); ) {
+                NbPlatform plaf = (NbPlatform) it.next();
+                if (binaryRootF.getAbsolutePath().startsWith(plaf.getDestDir().getAbsolutePath())) {
+                    supposedPlaf = plaf;
+                    break;
+                }
+            }
+            if (supposedPlaf == null) {
+                Util.err.log(binaryRootF + " does not correspond to a known platform"); // NOI18N
+                return null;
+            }
+            // XXX this will only work for modules following regular naming conventions:
+            String n = binaryRootF.getName();
+            if (!n.endsWith(".jar")) { // NOI18N
+                Util.err.log(binaryRootF + " is not a *.jar"); // NOI18N
+                return null;
+            }
+            String cnbdashes = n.substring(0, n.length() - 4);
             final List/*<URL>*/ candidates = new ArrayList();
             URL[] roots = supposedPlaf.getJavadocRoots();
+            Util.err.log("Platform in " + supposedPlaf.getDestDir() + " claimed to have Javadoc roots " + Arrays.asList(roots));
             for (int i = 0; i < roots.length; i++) {
-                if (roots[i].getProtocol().equals("jar")) { // NOI18N
-                    // suppose javadoc zip like org-openide-util.zip
-                    candidates.add(roots[i]);
-                } else {
-                    // suppose netbeans cvs root
-                    candidates.add(new URL(roots[i], cnbdashes + '/'));
-                }
+                candidates.add(new URL(roots[i], cnbdashes + '/'));
             }
             Iterator it = candidates.iterator();
             while (it.hasNext()) {
                 URL u = (URL) it.next();
                 if (URLMapper.findFileObject(u) == null) {
+                    Util.err.log("No such Javadoc candidate URL " + u);
                     it.remove();
                 }
             }
