@@ -75,8 +75,8 @@
 <mapID target="gui.layouts.custom_mgr" url="gui/gui_customlayout.html" />
 <mapID target="gui.layouts.props" url="gui/gui_layoutprops.html" />
 
-<mapID target="gui.events.managing" url="gui/gui_manageevents.html" />
-<mapID target="gui.connectionwizard" url="gui/gui_connectionwizard.html" />
+<mapID target="gui.events.managing" url="gui/gui_events_managing.html" />
+<mapID target="gui.connectionwizard" url="gui/gui_events_setting.html" />
 <mapID target="gui.mdi" url="gui/gui_creatingmdi.html" />
 
 <mapID target="gui.config" url="gui/gui_configuring.html" />
@@ -507,12 +507,17 @@ under Print Settings in the Options window)
 
 
 
+
+
 <!--CSH for GUI Builder:-->
 
 <!-- CSH page for event handler dialog box :-->
 <mapID target="gui.csh.handlers" url="gui/gui_manageevents.html" />
 <!-- CSH page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
+<!-- GUI Builder Connection Wizard : F1 and Help button-->
+<mapID target="gui.connecting.source" url="gui/gui_connectionwizard.html" />
+
 <!--TODO - map these 6 to appropriate form topics or have removed-->
 <mapID target="gui.modes" url="pending.html" />
 <mapID target="gui.components.inplace-editing" url="pending.html" />
@@ -521,13 +526,18 @@ under Print Settings in the Options window)
 <mapID target="gui.options.component-palette" url="pending.html" />
 <mapID target="gui.components.palette" url="pending.html" />
 <mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
-<!-- GUI Builder Connection Wizard : F1 and Help button-->
-<mapID target="gui.connecting.source" url="gui/gui_connectionwizard.html" />
+
+
 <!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
 <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
 <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
 <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
 <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
+
+
+
+
+
 
 <!-- To Do window help :-->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
