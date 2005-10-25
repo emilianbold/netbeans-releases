@@ -15,9 +15,7 @@ package org.netbeans.modules.j2ee.earproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -35,19 +33,18 @@ import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
-import org.xml.sax.SAXException;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
 /** An enterprise application project's j2eeserver implementation
  *
  * @see ProjectWeb
@@ -69,6 +66,8 @@ public final class ProjectEar extends J2eeAppProvider
     
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
+        AntProjectHelper helper = project.getAntProjectHelper();
+        helper.getStandardPropertyEvaluator().addPropertyChangeListener(this);
     }
     
     public FileObject getDeploymentDescriptor() {
@@ -210,6 +209,13 @@ public final class ProjectEar extends J2eeAppProvider
                 String newVersion = (String) evt.getNewValue();
                 vl.versionChanged(oldVersion, newVersion);
             }
+        } else if (EarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
+            String oldValue = (String)evt.getOldValue();
+            String newValue = (String)evt.getNewValue();
+            firePropertyChange(
+                    PROP_ENTERPRISE_RESOURCE_DIRECTORY, 
+                    oldValue == null ? null : new File(oldValue),
+                    newValue == null ? null : new File(newValue));
         }
     }
         

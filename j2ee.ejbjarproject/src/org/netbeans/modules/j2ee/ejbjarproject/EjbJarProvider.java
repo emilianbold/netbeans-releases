@@ -280,6 +280,13 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
             String oldServerID = evt.getOldValue () == null ? null : d.getServerID ((String) evt.getOldValue ());
             String newServerID = evt.getNewValue () == null ? null : d.getServerID ((String) evt.getNewValue ());
             fireServerChange (oldServerID, newServerID);
+        }  else if (EjbJarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
+            String oldValue = (String)evt.getOldValue();
+            String newValue = (String)evt.getNewValue();
+            firePropertyChange(
+                    PROP_ENTERPRISE_RESOURCE_DIRECTORY, 
+                    oldValue == null ? null : new File(oldValue),
+                    newValue == null ? null : new File(newValue));
         }
     }
     
