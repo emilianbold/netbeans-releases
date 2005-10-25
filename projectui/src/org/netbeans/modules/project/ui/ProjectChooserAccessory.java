@@ -281,7 +281,6 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                             }
                             jTextFieldProjectName.setText(msg);
                             jTextFieldProjectName.setCaretPosition(0);
-                            // Currently seems to be blue, at least on Ocean & GTK:
                             Color error = UIManager.getColor("nb.errorForeground"); // NOI18N
                             if (error != null) {
                                 jTextFieldProjectName.setForeground(error);
