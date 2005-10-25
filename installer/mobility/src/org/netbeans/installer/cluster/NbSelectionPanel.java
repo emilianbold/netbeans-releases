@@ -53,6 +53,9 @@ public class NbSelectionPanel extends DirectoryChooserPanel
         support.putRequiredService(FileService.NAME);
         try {
             support.putClass(Util.class.getName());
+            support.putClass(RunCommand.class.getName());
+            support.putClass("org.netbeans.installer.RunCommand$StreamAccumulator");
+            support.putClass(NbSelectionPanel.RunUninstaller.class.getName());
             support.putClass(NbSelectionPanel.PlatformClusterFilter.class.getName());
         } catch (IOException ex) {
             logEvent(this, Log.ERROR, ex);
@@ -359,13 +362,29 @@ public class NbSelectionPanel extends DirectoryChooserPanel
                     } else if (currentIndex > installedIndex) {
                         //Older version is installed ie. currentUID > installedUID
                         String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty2," + dest + ")");
-			showErrorMsg(title,msg);
-                        return false;
+                        String uninstall = "Uninstall";
+                        String cancel = "Cancel";
+                        Object ret = getWizard().getServices().getUserInput(title, msg, new Object [] {uninstall,cancel},cancel);
+                        if (ret == uninstall) {
+                            logEvent(this, Log.DBG,"UNINSTALL");
+                            return uninstallPrevious();
+                        } else {
+                            logEvent(this, Log.DBG,"CANCEL");
+                            return false;
+                        }
                     } else {
                         //The same version
                         String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty3," + dest + ")");
-                        showErrorMsg(title,msg);
-                        return false;
+                        String uninstall = "Uninstall";
+                        String cancel = "Cancel";
+                        Object ret = getWizard().getServices().getUserInput(title, msg, new Object [] {uninstall,cancel},cancel);
+                        if (ret == uninstall) {
+                            logEvent(this, Log.DBG,"UNINSTALL");
+                            return uninstallPrevious();
+                        } else {
+                            logEvent(this, Log.DBG,"CANCEL");
+                            return false;
+                        }
                     }
                 } else {
                     if (currentUID.compareTo(installedUID) < 0) {
@@ -376,10 +395,18 @@ public class NbSelectionPanel extends DirectoryChooserPanel
                     } else if (currentUID.compareTo(installedUID) > 0) {
                         //Older version is installed ie. currentUID > installedUID
                         String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty2," + dest + ")");
-			showErrorMsg(title,msg);
-                        return false;
+                        String uninstall = "Uninstall";
+                        String cancel = "Cancel";
+                        Object ret = getWizard().getServices().getUserInput(title, msg, new Object [] {uninstall,cancel},cancel);
+                        if (ret == uninstall) {
+                            logEvent(this, Log.DBG,"UNINSTALL");
+                            return uninstallPrevious();
+                        } else {
+                            logEvent(this, Log.DBG,"CANCEL");
+                            return false;
+                        }
                     } else {
-                        //This should not happen
+                        //This should not happen as if main version is different it must be either newer or older.
                         String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty1," + dest + ")");
                         showErrorMsg(title,msg);
                         return false;
@@ -393,6 +420,41 @@ public class NbSelectionPanel extends DirectoryChooserPanel
             }
         } catch (ServiceException exc) {
             logEvent(this, Log.ERROR, exc);
+            return false;
+        }
+    }
+    
+    private boolean uninstallPrevious () {
+        String currentUID = resolveString(BUNDLE + "Product.UID)");
+        String title = LocalizedStringResolver.resolve
+        (ProductResourcesConst.NAME,"DestinationPanel.destinationDirectory");
+        String dest = getInstallDir();
+        
+        try {
+            FileService fileService = (FileService) getService(FileService.NAME);
+            String uninstallerPath;
+            if (Util.isWindowsOS()) {
+                uninstallerPath = dest + File.separator + "_uninst" + File.separator + "uninstaller.exe";
+            } else {
+                uninstallerPath = dest + File.separator + "_uninst" + File.separator + "uninstaller";
+            }
+            if (!fileService.fileExists(uninstallerPath)) {
+                //Uninstaller not found, cannot uninstall
+                String msg = resolveString(BUNDLE + "NetBeansDirChooser.uninstallerNotFound,"
+                + uninstallerPath + ")");
+                showErrorMsg(title,msg);
+                return false;
+            }
+            //Run uninstaller is separate thread and disable navigation buttons.
+            disableNavigation();
+            RunUninstaller runUninstaller = new RunUninstaller(uninstallerPath,this);
+            runUninstaller.start();
+            return false;
+        } catch (ServiceException exc) {
+            Util.logStackTrace(this,exc);
+            String msg = resolveString(BUNDLE + "NetBeansDirChooser.uninstallerError,"
+            + exc.getLocalizedMessage() + ")");
+            showErrorMsg(title,msg);
             return false;
         }
     }
@@ -455,13 +517,53 @@ public class NbSelectionPanel extends DirectoryChooserPanel
     private void disableNavigation () {
         logEvent(this, Log.DBG,"disableNavigation");
         getWizard().getUI().setNavigationEnabled(false);
-        getWizard().getUI().setBusy();
+        getWizard().getUI().setBusy
+        (resolveString(BUNDLE + "NetBeansDirChooser.uninstallerRunning)"));
     }
     
     private void enableNavigation () {
         logEvent(this, Log.DBG,"enableNavigation");
         getWizard().getUI().setNavigationEnabled(true);
         getWizard().getUI().clearBusy();
+    }
+    
+    /** Used to run uninstaller in separate thread not to block AWT thread in installer
+     * when uninstaller is running.
+     */
+    private class RunUninstaller extends Thread {
+	private final String uninstallerPath;
+        private final Log log;
+	private Throwable throwable = null;
+        
+	RunUninstaller (String uninstallerPath, Log log) {
+	    this.uninstallerPath = uninstallerPath;
+            this.log = log;
+	}
+        
+	public void run() {
+            int returnValue = -1;
+	    try {
+                RunCommand runCommand = new RunCommand();
+                String [] params = new String[2];
+                params[0] = uninstallerPath;
+                params[1] = "-silent";
+                runCommand.execute(params);
+                runCommand.waitFor();
+                log.logEvent(this, Log.DBG,runCommand.print());
+                returnValue = runCommand.getReturnStatus();
+                log.logEvent(this, Log.DBG,"Uninstaller returned: " + returnValue);
+	    } catch (Throwable t) {
+                Util.logStackTrace(log,t);
+	    } finally {
+                enableNavigation();
+                if (returnValue != 0) {
+                    String title = LocalizedStringResolver.resolve
+                    (ProductResourcesConst.NAME,"DestinationPanel.destinationDirectory");
+                    String msg = resolveString(BUNDLE + "NetBeansDirChooser.uninstallerFailed)");
+                    showErrorMsg(title,msg);
+                }
+            }
+	}
     }
     
     /** Used to filter all but nb cluster dir from file list.
