@@ -158,10 +158,10 @@ public class ResultWindow extends TopComponent {
     }
     
     /**
+     * @param  report  test report to display; may be <code>null<code>
      */
     void displayReport(final int index, final Report report, boolean promote) {
         assert EventQueue.isDispatchThread();
-        assert report != null;
         
         if (view == null) {
             add(view = new ResultView());
