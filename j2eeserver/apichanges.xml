@@ -80,6 +80,32 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="resourceDirUpdate">
+            <api name="j2eeserver"/>
+            <summary>
+                Support for updating module enterprise resource directory added.
+            </summary>
+            <version major="1" minor="12"/>
+            <date day="10" month="10" year="2005"/>
+            <author login="sherold"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
+            <description>
+                <p>
+                    Plugins need to be notified when the module enterprise resource
+                    directory changes.
+                </p>
+                <p>
+                    Property PROP_ENTERPRISE_RESOURCE_DIRECTORY and property change 
+                    listener added to J2eeModuleProvider.
+                </p>
+                <p>
+                    Abstract method updateResourceDir(DeploymentConfiguration config, File resourceDir)
+                    added to ConfigurationSupport.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+        </change>
         <change id="profilerSupport">
             <api name="j2eeserver"/>
             <summary>

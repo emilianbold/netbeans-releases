@@ -12,6 +12,9 @@
  */
 
 package org.netbeans.modules.j2ee.deployment.config;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,7 +60,7 @@ import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationPro
 // case when provider does not associate with any server.
 
 public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport, 
-        DeploymentConfigurationProvider {
+        DeploymentConfigurationProvider, PropertyChangeListener {
     
     private static final File[] EMPTY_FILE_LIST = new File[0];
     private static final String GENERIC_EXTENSION = ".dpf"; // NOI18N
@@ -81,6 +84,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         server = instance != null 
                 ? instance.getServer() 
                 : ServerRegistry.getInstance().getServer(provider.getServerID());
+        provider.addPropertyChangeListener(this);
     }
     
     /**
@@ -159,6 +163,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     
     /** dispose all created deployment configurations */
     public void dispose() {
+        provider.removePropertyChangeListener(this);
         ConfigurationSupport serverConfig = server.getConfigurationSupport();
         if (deploymentConfiguration != null && serverConfig != null) {
             serverConfig.disposeConfiguration(deploymentConfiguration);
@@ -472,5 +477,17 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             collectData(server, allRelativePaths);
         }
         return allRelativePaths;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (J2eeModuleProvider.PROP_ENTERPRISE_RESOURCE_DIRECTORY.equals(evt.getPropertyName())) {
+            DeploymentConfiguration config = getDeploymentConfiguration();
+            ConfigurationSupport serverConfig = server.getConfigurationSupport();
+            Object newValue = evt.getNewValue();
+            if (!(newValue instanceof File)) {
+                throw new IllegalArgumentException("Enterprise resource directory property value is not a File"); // NIO18N
+            }
+            serverConfig.updateResourceDir(config, (File)newValue);
+        }
     }
 }

@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.OutputStream;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
@@ -47,6 +49,15 @@ public abstract class J2eeModuleProvider {
     private ConfigSupportImpl confSupp;
     List listeners = new ArrayList();
     private ConfigFilesListener configFilesListener = null;
+    
+    /**
+     * Enterprise resorce directory property
+     *
+     * @since 1.12
+     */
+    public static final String PROP_ENTERPRISE_RESOURCE_DIRECTORY = "resourceDir"; // NOI18N
+    
+    private PropertyChangeSupport supp = new PropertyChangeSupport(this);
     
     public J2eeModuleProvider () {
         il = new IL ();
@@ -103,6 +114,40 @@ public abstract class J2eeModuleProvider {
             return si.getStartServer().getDebugInfo(target);
         }
         return null;
+    }
+    
+    /**
+     * Register a listener which will be notified when some of the properties
+     * change.
+     * 
+     * @param l listener which should be added.
+     * @since 1.12
+     */
+    public final void addPropertyChangeListener(PropertyChangeListener l) {
+        supp.addPropertyChangeListener(l);
+    }
+    
+    /**
+     * Remove a listener registered previously.
+     *
+     * @param l listener which should be removed.
+     * @since 1.12
+     */
+    public final void removePropertyChangeListener(PropertyChangeListener l) {
+        supp.removePropertyChangeListener(l);
+    }
+    
+
+    /** 
+     * Fire PropertyChange to all registered PropertyChangeListeners.
+     *
+     * @param propName property name.
+     * @param oldValue old value.
+     * @param newValue new value.
+     * @since 1.12
+     */
+    protected final void firePropertyChange(String propName, Object oldValue, Object newValue) {
+        supp.firePropertyChange(propName, oldValue, newValue);
     }
     
     /**
