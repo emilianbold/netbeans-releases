@@ -204,8 +204,10 @@ PropertyChangeListener, KeyListener {
      * Reset abbreviation string collecting.
      */
     private void resetAbbrevChars() {
-        abbrevChars.setLength(0);
-        abbrevEndPosition = null;
+        synchronized(abbrevChars) {
+            abbrevChars.setLength(0);
+            abbrevEndPosition = null;
+        }
     }
     
     private void appendTypedText(int offset, int insertLength) {
@@ -261,15 +263,17 @@ PropertyChangeListener, KeyListener {
     }
     
     private void removeAbbrevText(int offset, int removeLength) {
-        if (abbrevEndPosition != null) {
-            // Abbrev position should already move appropriately
-            if (offset == abbrevEndPosition.getOffset()
-                && abbrevChars.length() >= removeLength
-            ) { // removed at end
-                abbrevChars.setLength(abbrevChars.length() - removeLength);
-                
-            } else {
-                resetAbbrevChars();
+        synchronized(abbrevChars) {
+            if (abbrevEndPosition != null) {
+                // Abbrev position should already move appropriately
+                if (offset == abbrevEndPosition.getOffset()
+                    && abbrevChars.length() >= removeLength
+                ) { // removed at end
+                    abbrevChars.setLength(abbrevChars.length() - removeLength);
+
+                } else {
+                    resetAbbrevChars();
+                }
             }
         }
     }
