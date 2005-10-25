@@ -38,23 +38,19 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class EditorOptionsTest extends NbTestCase {
     
+    
+    static {
+        IDEInitializer.setup (
+            new String[] {
+                "org/netbeans/modules/options/editor/mf-layer.xml",
+                "org/netbeans/modules/defaults/mf-layer.xml"
+            },
+            new Object[] {}
+        );
+    }
+    
     public EditorOptionsTest (String testName) {
         super (testName);
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp ();
-        EditorTestLookup.setLookup (
-            getWorkDir (),
-            new URL[] {
-                getClass ().getClassLoader ().getResource 
-                    ("org/netbeans/modules/options/editor/mf-layer.xml"),
-                getClass ().getClassLoader ().getResource 
-                    ("org/netbeans/modules/defaults/mf-layer.xml")
-            },
-            new Object[] {},
-            getClass ().getClassLoader ()
-        );
     }
     
     public void testOptions () {
