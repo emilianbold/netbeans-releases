@@ -32,10 +32,50 @@ import java.beans.VetoableChangeSupport;
  * env.getFeatureDescriptor().get("someHintString")</code>
  * to retrieve hints that affect their behavior from the
  * Node.Property object whose properties they are displaying.
- * <P><strong>Note:</strong>
- * client code should treat this class as final;  it should
- * never be necessary to create instances of this class
- * outside the propertysheet package or to subclass it.
+ * <p>
+ * The other purpose of the of this interface is to 
+ * enable communication between the {@link java.beans.PropertyEditor} and
+ * the {@link PropertySheet} or {@link PropertyPanel}. 
+ * The custom property editor can get into a state when the visual state 
+ * does not represent valid value and in such case needs to disable OK button. 
+ * To handle that the property editor has to keep reference to its associated
+ * {@link PropertyEnv} and switch it into invalid state by calling 
+ * <code>setState({@link PropertyEnv#STATE_INVALID})</code>
+ * as soon as the content of the custom property editor is invalid and then
+ * back by 
+ * <code>setState({@link PropertyEnv#STATE_VALID})</code>
+ * when the custom property editor becomes valid once again. As a reaction
+ * to these calls the displayer of the custom property editor (for example
+ * dialog with OK button) is supposed to disable and re-enable the button.
+ * <p>
+ * Also it can happen that the property editor is complex and cannot decide whether 
+ * the value is valid quickly. Just knows that it needs to be validated.
+ * For that purpose it wants to be informed when user presses the OK button and 
+ * do the complex validation then. For that purpose there is the {@link PropertyEnv#STATE_NEEDS_VALIDATION}
+ * state. The property editor needs to use it and attach a listener to 
+ * be notified when the user presses the OK button:
+ * <pre>
+ * class Validate implements VetoableChangeListener {
+ *   public void vetoableChange(VetoableChangeEvent ev) throws PropertyVetoException {
+ *     if (PROP_STATE.equals(ev.getPropertyName())) {
+ *       if (!doTheComplexValidationOk()) {
+ *         throw new PropertyVetoException(...);
+ *       }
+ *     }
+ *     // otherwise allow the switch to ok state
+ *   }
+ * }
+ * Validate v = new Validate();
+ * env.setState(STATE_NEEDS_VALIDATION);
+ * env.addVetoableChangeListener(v);
+ * </pre>
+ * When the state is {@link PropertyEnv#STATE_NEEDS_VALIDATION} the OK button
+ * of the surrounding dialog shall be enabled and when pressed the vetoable
+ * listener notified about the expected change from 
+ * {@link PropertyEnv#STATE_NEEDS_VALIDATION} to {@link PropertyEnv#STATE_VALID}
+ * which can either be accepted or vetoed.
+ *
+ *
  * @author  dstrupl
  */
 public class PropertyEnv {
