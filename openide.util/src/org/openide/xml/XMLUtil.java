@@ -375,6 +375,8 @@ public final class XMLUtil extends Object {
             }
         }
         // XXX should try to use org.w3c.dom.ls.LSSerializer if it exists...
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(XMLUtil.class.getClassLoader()); // XXX #66563 workaround
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
@@ -392,6 +394,8 @@ public final class XMLUtil extends Object {
             t.transform(source, result);
         } catch (Exception e) {
             throw (IOException) new IOException(e.toString()).initCause(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
     }
     /**
