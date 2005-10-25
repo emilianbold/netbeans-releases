@@ -188,18 +188,18 @@ class CompletionLayoutPopup {
         
         popupBounds.x = Math.min(occupiedBounds.x,
                 (screen.x + screen.width) - prefSize.width);
-        popupBounds.x = Math.max(popupBounds.x, 0);
+        popupBounds.x = Math.max(popupBounds.x, screen.x);
         popupBounds.width = Math.min(prefSize.width, screen.width);
         
         if (aboveOccupiedBounds) {
             popupBounds.height = Math.min(prefSize.height,
-                    occupiedBounds.y - CompletionLayout.POPUP_VERTICAL_GAP);
+                    occupiedBounds.y - screen.y - CompletionLayout.POPUP_VERTICAL_GAP);
             popupBounds.y = occupiedBounds.y - CompletionLayout.POPUP_VERTICAL_GAP - popupBounds.height;
         } else { // below caret
             popupBounds.y = occupiedBounds.y
                     + occupiedBounds.height + CompletionLayout.POPUP_VERTICAL_GAP;
             popupBounds.height = Math.min(prefSize.height,
-                    (screenBounds.y + screenBounds.height) - popupBounds.y);
+                    (screen.y + screen.height) - popupBounds.y);
         }
         return popupBounds;
     }
