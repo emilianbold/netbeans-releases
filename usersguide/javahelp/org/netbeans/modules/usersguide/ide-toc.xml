@@ -310,6 +310,7 @@
     <tocitem text="Setting Events With the Connection Wizard" target="gui.connectionwizard" />
     <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
     <tocitem text="Testing a Form" target="gui.testing" />    
+    <tocitem text="Deploying GUI Applications" target="gui.deploying" />      
     <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
   </tocitem>

@@ -83,6 +83,7 @@
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
+<mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
 
 <mapID target="beans.intro" url="beans/intro.html" />
@@ -510,10 +511,6 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
 
-
-
-
-
 <!--CSH for GUI Builder:-->
 
 <!-- CSH page for event handler dialog box :-->
@@ -521,27 +518,26 @@ under Print Settings in the Options window)
 <!-- CSH page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
 <!-- GUI Builder Connection Wizard : F1 and Help button-->
-<mapID target="gui.connecting.source" url="gui/gui_connectionwizard.html" />
+<mapID target="gui.connecting.source" url="gui/csh/gui_connection_wizard.html" />
 
-<!--TODO - map these 6 to appropriate form topics or have removed-->
-<mapID target="gui.modes" url="pending.html" />
-<mapID target="gui.components.inplace-editing" url="pending.html" />
-<mapID target="gui.components.designing" url="pending.html" />
-<mapID target="gui.formeditor" url="pending.html" />
-<mapID target="gui.options.component-palette" url="pending.html" />
-<mapID target="gui.components.palette" url="pending.html" />
 <mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
+<!--are the following 2 ids still valid? common palette may override them-->
+<mapID target="gui.components.palette" url="pending.html" />
+<mapID target="gui.options.component-palette" url="pending.html" />
 
+<!--CSH topic for GUI Builder main workspace-->
+<mapID target="gui.formeditor" url="/csh/gui.html" />
 
-<!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
+<!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
 <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
 <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
 <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
 
-
-
-
+<!--TODO - map these 6 to appropriate form topics or have removed-->
+<mapID target="gui.modes" url="pending.html" />
+<mapID target="gui.components.inplace-editing" url="pending.html" />
+<mapID target="gui.components.designing" url="pending.html" />
 
 
 <!-- To Do window help :-->
