@@ -76,6 +76,7 @@
 			<!-- Module: -->
 			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerSources" url="csh/proj_props/CustomizerSources.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerLibraries" url="csh/proj_props/CustomizerLibraries.html"/>
+			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/proj_props/CustomizerLibraries.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDisplay" url="csh/proj_props/CustomizerDisplay.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerVersioning" url="csh/proj_props/CustomizerVersioning.html"/>
 			<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" url="csh/proj_props/CustomizerCompiling.html"/>
