@@ -177,20 +177,24 @@ class TabsComponent extends JPanel {
         Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
         KeyStroke stroke = null;
         KeyStroke stroke2 = null;
-        Action[] acts = map.getBoundActions();
-        for (int i = 0; i < acts.length;i++) {
-            if (acts[i] instanceof CallbackSystemAction) {
-                CallbackSystemAction sa = (CallbackSystemAction)acts[i];
-                if ("NextViewAction".equals(sa.getActionMapKey())) { //NOI18N
-                    KeyStroke[] strokes = map.getKeyStrokesForAction(acts[i]);
-                    if (strokes != null && strokes.length > 0) {
-                        stroke = strokes[0];
+//in tests map can be null, that's why the check..
+        if (map != null) {
+            // map is null in tests..
+            Action[] acts = map.getBoundActions();
+            for (int i = 0; i < acts.length;i++) {
+                if (acts[i] instanceof CallbackSystemAction) {
+                    CallbackSystemAction sa = (CallbackSystemAction)acts[i];
+                    if ("NextViewAction".equals(sa.getActionMapKey())) { //NOI18N
+                        KeyStroke[] strokes = map.getKeyStrokesForAction(acts[i]);
+                        if (strokes != null && strokes.length > 0) {
+                            stroke = strokes[0];
+                        }
                     }
-                }
-                if ("PreviousViewAction".equals(sa.getActionMapKey())) { //NOI18N
-                    KeyStroke[] strokes = map.getKeyStrokesForAction(acts[i]);
-                    if (strokes != null && strokes.length > 0) {
-                        stroke2 = strokes[0];
+                    if ("PreviousViewAction".equals(sa.getActionMapKey())) { //NOI18N
+                        KeyStroke[] strokes = map.getKeyStrokesForAction(acts[i]);
+                        if (strokes != null && strokes.length > 0) {
+                            stroke2 = strokes[0];
+                        }
                     }
                 }
             }

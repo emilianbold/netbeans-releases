@@ -92,7 +92,7 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
         
         tc.close();
         //TODO shall the winsys also call deactivate on TC? the Dummy one doens't do it..
-        assertEquals("componentOpened-componentShowing-componentActivated-componentHidden-componentClosed-", elem2.getLog());
+        assertEquals("componentOpened-componentShowing-componentActivated-componentHidden-componentClosed-componentDeactivated-", elem2.getLog());
     }
 
     
