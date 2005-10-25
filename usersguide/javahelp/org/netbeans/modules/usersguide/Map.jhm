@@ -433,6 +433,11 @@ under Print Settings in the Options window)
 <!--topic for Java Editor toolbar - linked to from Java Editor topic-->
 <mapID target="java_editor_toolbar" url="editing/csh/java_editor_toolbar.html" />
 
+<!--topic for margin glyphs - linked to from Java Editor topic-->
+<mapID target="editor_glyphs" url="editing/csh/editor_glyphs.html" />
+
+<!--topic for error stripe - linked to from Java Editor topic-->
+<mapID target="editing_error-stripe" url="editing/csh/editing_error-stripe.html" />
 
 <!--CSH for Options - Editing Beans Property-->
 <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="configure/options_beans_prop_classic.html" />
