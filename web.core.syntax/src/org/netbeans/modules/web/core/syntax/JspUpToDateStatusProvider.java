@@ -50,7 +50,7 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
         
         //listen to parser results
         DataObject documentDO = NbEditorUtilities.getDataObject(document);
-        if(documentDO != null) {
+        if(documentDO != null && documentDO.isValid()) {
             JSPColoringData jspcd = JspUtils.getJSPColoringData(document, documentDO.getPrimaryFile());
             jspcd.addPropertyChangeListener(this);
         }
