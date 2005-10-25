@@ -1788,7 +1788,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         public void run() {
             if (events == null) {
-                Object originalVisualComp = replicator.getClonedComponent(topDesignComponent);
+                Object originalVisualComp = (topDesignComponent == null) ? null : replicator.getClonedComponent(topDesignComponent);
                 Dimension originalSize =  originalVisualComp instanceof Component ?
                     ((Component)originalVisualComp).getSize() : null;
 

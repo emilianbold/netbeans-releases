@@ -1084,12 +1084,15 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     }
 
     private boolean selectedComponentsInSameVisibleContainer() {
+        RADVisualComponent topDesigned = formDesigner.getTopDesignComponent();
+        if (topDesigned == null) return false;
         RADComponent parent = null;
         Iterator selected = formDesigner.getSelectedComponents().iterator();
         while (selected.hasNext()) {
             RADComponent comp = (RADComponent) selected.next();
             if (parent == null) {
-                if (!formDesigner.getTopDesignComponent().isParentComponent(comp)) {
+                
+                if (!topDesigned.isParentComponent(comp)) {
                     return false; // selected component not in the designed tree
                                   // or the top design component itself
                 }

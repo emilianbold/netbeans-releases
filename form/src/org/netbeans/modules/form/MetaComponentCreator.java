@@ -217,7 +217,7 @@ public class MetaComponentCreator {
                         (Component)preMetaComp.getBeanInstance(), preMetaComp instanceof RADVisualContainer);
                 
                 LayoutDesigner ld = FormEditor.getFormDesigner(formModel).getLayoutDesigner();
-                if (ld.logTestCode()) {
+                if ((ld != null) && ld.logTestCode()) {
                     if (initialSize == null) {
                         ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isContainer + ");"); //NOI18N
                     } else {
