@@ -272,18 +272,24 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public void add(RADComponent comp, int index) {
-        if (comp instanceof RADVisualComponent)
+        RADVisualComponent visual = comp instanceof RADVisualComponent ?
+                                    (RADVisualComponent) comp : null;
+        if (visual != null) {
             if (index == -1) {
-                subComponents.add(comp);
+                subComponents.add(visual);
             } else {
-                subComponents.add(index, comp);
+                subComponents.add(index, visual);
             }
+        }
         else if (comp instanceof RADMenuComponent)
             containerMenu = (RADMenuComponent) comp;  // [what with the current menu?]
         else
             return; // [just ignore?]
 
         comp.setParentComponent(this);
+        if (visual != null) { // force constraints properties creation
+            visual.getConstraintsProperties();
+        }
     }
 
     public void remove(RADComponent comp) {

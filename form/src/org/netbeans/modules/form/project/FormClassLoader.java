@@ -57,8 +57,11 @@ final class FormClassLoader extends ClassLoader {
         catch (ClassNotFoundException ex) {}
 
         int type = ClassPathUtils.getClassLoadingType(name);
-        if (type == ClassPathUtils.UNSPECIFIED_CLASS)
+        if (type == ClassPathUtils.UNSPECIFIED_CLASS) {
+            if (projectClassLoader == null)
+                throw new ClassNotFoundException(ClassPathUtils.getBundleString("MSG_NullClassPath"));
             return projectClassLoader.loadClass(name);
+        }
         if (type == ClassPathUtils.SYSTEM_CLASS)
             return systemClassLoader.loadClass(name);
         // otherwise type == ClassPathUtils.SYSTEM_CLASS_WITH_PROJECT
@@ -69,7 +72,7 @@ final class FormClassLoader extends ClassLoader {
 
         String filename = name.replace('.', '/').concat(".class"); // NOI18N
         URL url = systemClassLoader.getResource(filename);
-        if (url == null)
+        if (url == null && projectClassLoader != null)
             url = projectClassLoader.getResource(filename);
         if (url != null) {
             try {
@@ -107,7 +110,7 @@ final class FormClassLoader extends ClassLoader {
     }
 
     public URL getResource(String name) {
-        URL url = projectClassLoader.getResource(name);
+        URL url = projectClassLoader != null ? projectClassLoader.getResource(name) : null;
         if (url == null)
             url = systemClassLoader.getResource(name);
         return url;

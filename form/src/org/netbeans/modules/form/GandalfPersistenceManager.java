@@ -310,11 +310,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             }
             
-            Class superclass = ((declaredSuperclassName != null) && (!underTest)) ?
+            Class superclass = declaredSuperclassName != null ?
                 FormUtils.loadClass(declaredSuperclassName, formFile) : Object.class;
             formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
 
-            if (formBaseClass != superclass)
+            if (formBaseClass != superclass && !underTest)
                 System.err.println(FormUtils.getFormattedBundleString(
                     "FMT_IncompatibleFormTypeWarning", // NOI18N
                     new Object[] { javaFile.getName() }));

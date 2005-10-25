@@ -167,6 +167,10 @@ public final class LayoutComponent implements LayoutConstants {
         return (LayoutComponent)subComponents.get(index);
     }
 
+    int indexOf(LayoutComponent comp) {
+        return subComponents != null ? subComponents.indexOf(comp) : -1;
+    }
+
 //    int add(LayoutComponent comp) {
 //        return add(comp, -1);
 //    }
@@ -216,6 +220,43 @@ public final class LayoutComponent implements LayoutConstants {
                 subComponents = null;
             }
         }
+    }
+
+    // -----
+
+    static LayoutComponent getCommonParent(LayoutComponent comp1, LayoutComponent comp2) {
+        // Find all parents of given components
+        Iterator parents1 = parentsOfComponent(comp1).iterator();
+        Iterator parents2 = parentsOfComponent(comp2).iterator();
+        LayoutComponent parent1 = (LayoutComponent)parents1.next();
+        LayoutComponent parent2 = (LayoutComponent)parents2.next();
+        assert (parent1 == parent2);
+
+        // Candidate for the common parent
+        LayoutComponent parent = null;
+        while (parent1 == parent2) {
+            parent = parent1;
+            if (parents1.hasNext()) {
+                parent1 = (LayoutComponent)parents1.next();
+            } else {
+                break;
+            }
+            if (parents2.hasNext()) {
+                parent2 = (LayoutComponent)parents2.next();
+            } else {
+                break;
+            }
+        }
+        return parent;
+    }
+
+    private static List parentsOfComponent(LayoutComponent comp) {
+        List parents = new LinkedList();
+        while (comp != null) {
+            parents.add(0, comp);
+            comp = comp.getParent();
+        }
+        return parents;
     }
 
     // -----

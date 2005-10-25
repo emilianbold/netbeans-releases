@@ -53,11 +53,7 @@ public class ClassPathUtils {
     public static Class loadClass(String name, FileObject fileInProject)
         throws ClassNotFoundException
     {
-        FormClassLoader fcl = getFormClassLoader(fileInProject);
-        if (fcl == null)
-            throw new ClassNotFoundException(getBundleString("MSG_NullClassPath")); // NOI18N
-
-        return fcl.loadClass(name);
+        return getFormClassLoader(fileInProject).loadClass(name);
         // LinkageError left uncaught
     }
 
@@ -73,11 +69,8 @@ public class ClassPathUtils {
     private static FormClassLoader getFormClassLoader(FileObject fileInProject) {
         Project p = FileOwnerQuery.getOwner(fileInProject);
         FormClassLoader fcl = (FormClassLoader) loaders.get(p);
-        
         ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
-        if (classPath == null)
-            return null;
-        ClassLoader projectClassLoader = classPath.getClassLoader(true);
+        ClassLoader projectClassLoader = classPath != null ? classPath.getClassLoader(true) : null;
         if (fcl == null || fcl.getProjectClassLoader() != projectClassLoader) {
             fcl = new FormClassLoader(projectClassLoader);
             loaders.put(p, fcl);

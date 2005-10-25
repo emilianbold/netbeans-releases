@@ -54,8 +54,6 @@ public abstract class LayoutTestCase extends TestCase {
     protected HashMap compPrefSize = new HashMap();
     protected HashMap hasExplicitPrefSize = new HashMap();
     
-    protected HashMap idToNameMap = new HashMap();
-    
     protected LayoutComponent lc = null;
     
     protected String goldenFilesPath = "../../../../test/unit/data/goldenfiles/";
@@ -150,7 +148,7 @@ public abstract class LayoutTestCase extends TestCase {
     }
     
     private String getCurrentLayoutDump() {
-        return lm.dump(idToNameMap);
+        return lm.dump(null);
     }
     
     private String getExpectedLayoutDump(String methodCount) throws IOException {        

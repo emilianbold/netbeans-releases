@@ -1005,7 +1005,9 @@ public class FormUtils
     public static Class loadClass(String name, FormModel form)
         throws ClassNotFoundException
     {
-        return loadClass(name, FormEditor.getFormDataObject(form).getFormFile());
+        FormDataObject dobj = FormEditor.getFormDataObject(form);
+        return dobj != null ? loadClass(name, dobj.getFormFile()) :
+                              loadSystemClass(name); // layout test may have no data object
     }
 
     /** Loads a class using IDE system class loader. Usable for form module

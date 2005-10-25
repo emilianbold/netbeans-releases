@@ -29,22 +29,6 @@ import org.openide.util.Utilities;
 
 public class LayoutDesigner implements LayoutConstants {
 
-    public ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
-    
-    /* stores test code lines */
-    public List testCode = new ArrayList();
-    
-    // these below are used for removing unwanted move entries, otherwise the code can exceed 10000 lines in a few seconds of form editor work ;O)
-    private List testCode0 = new ArrayList();
-    private List beforeMove = new ArrayList();
-    private List move1 = new ArrayList();
-    private List move2 = new ArrayList();
-    private boolean isMoving = false;
-    
-    private int modelCounter = 0;
-    
-    private Point lastMovePoint = new Point(0, 0);
-    
     private LayoutModel layoutModel;
 
     private VisualMapper visualMapper;
@@ -73,7 +57,7 @@ public class LayoutDesigner implements LayoutConstants {
     // updates of the current visual state stored in the model
 
     public boolean updateCurrentState() {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > UPDATE CURRENT STATE"); //NOI18N
 	}
         Object changeMark = layoutModel.getChangeMark();
@@ -107,7 +91,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
 
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("ld.updateCurrentState();"); //NOI18N
             testCode.add("// < UPDATE CURRENT STATE"); //NOI18N
         }
@@ -337,11 +321,11 @@ public class LayoutDesigner implements LayoutConstants {
                             Point hotspot,
                             String defaultContId)
     {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > START ADDING"); //NOI18N
 	}
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("{");
 	    // lc should be already filled in the MetaComponentCreator.getPrecreatedComponent
             LayoutTestUtils.writeLayoutComponentArray(testCode, "comps", "lc");				    //NOI18N
@@ -354,13 +338,13 @@ public class LayoutDesigner implements LayoutConstants {
         }
         if (defaultContId != null)
             dragger.setTargetContainer(layoutModel.getLayoutComponent(defaultContId));
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// < START ADDING"); //NOI18N
 	}
     }
     
     public void startMoving(String[] compIds, Rectangle[] bounds, Point hotspot) {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > START MOVING"); //NOI18N
             testCode.add("{"); //NOI18N
             LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
@@ -378,7 +362,7 @@ public class LayoutDesigner implements LayoutConstants {
 
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
         dragger.setTargetContainer(comps[0].getParent());
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// < START MOVING"); //NOI18N
 	}
     }
@@ -390,7 +374,7 @@ public class LayoutDesigner implements LayoutConstants {
                               int[] resizeEdges,
                               boolean inLayout)
     {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > START RESIZING"); //NOI18N
             testCode.add("{"); //NOI18N
             LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
@@ -416,7 +400,7 @@ public class LayoutDesigner implements LayoutConstants {
 
         prepareDragger(comps, bounds, hotspot, edges);
         dragger.setTargetContainer(inLayout ? comps[0].getParent() : null);
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// < START RESIZING"); //NOI18N
 	}
     }
@@ -468,7 +452,7 @@ public class LayoutDesigner implements LayoutConstants {
 	int x = (p != null) ? p.x : 0;
 	int y = (p != null) ? p.y : 0;
 
-	if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+	if (logTestCode()) {
             // this terrible code here is to store only two last move() calls
             if (!isMoving) {
                 isMoving = true;
@@ -512,7 +496,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
 
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             move2.add("{"); //NOI18N
             move2.add("Point p = new Point(" + x + "," + y + ");"); //NOI18N
             LayoutTestUtils.writeString(move2, "containerId", containerId); //NOI18N
@@ -529,7 +513,7 @@ public class LayoutDesigner implements LayoutConstants {
         if (!committed && dragger == null)
             return; // redundant call
 
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             if (committed) {
                 beforeMove.addAll(testCode0);
                 beforeMove.addAll(move1);
@@ -646,7 +630,7 @@ public class LayoutDesigner implements LayoutConstants {
         } finally {
             modelListener.activate();
             dragger = null;
-            if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (logTestCode()) {
                 testCode.add("ld.endMoving(" + committed + ");"); //NOI18N
                 testCode.add("// < END MOVING"); //NOI18N
             }
@@ -1294,7 +1278,7 @@ public class LayoutDesigner implements LayoutConstants {
      * @param alignment desired alignment.
      */
     public void adjustComponentAlignment(LayoutComponent comp, int dimension, int alignment) {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > ADJUST COMPONENT ALIGNMENT"); //NOI18N
             testCode.add("{"); //NOI18N
             testCode.add("LayoutComponent comp = model.getLayoutComponent(\"" + comp.getId() + "\");"); //NOI18N
@@ -1407,7 +1391,7 @@ public class LayoutDesigner implements LayoutConstants {
         updateDesignModifications(interval, dimension);
         modelListener.activate();
         visualStateUpToDate = false;
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// < ADJUST COMPONENT ALIGNMENT"); //NOI18N
 	}
     }
@@ -1565,7 +1549,7 @@ public class LayoutDesigner implements LayoutConstants {
      * resizable in the given dimension.
      */
     public void setComponentResizing(LayoutComponent comp, int dimension, boolean resizing) {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > SET COMPONENT RESIZING"); //NOI18N
             testCode.add("{"); //NOI18N
             testCode.add("LayoutComponent comp = model.getLayoutComponent(\"${" + comp.getId() + "}\");"); //NOI18N
@@ -1749,7 +1733,7 @@ public class LayoutDesigner implements LayoutConstants {
 
         updateDesignModifications(comp.getParent());
         visualStateUpToDate = false;
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
 	    testCode.add("// < SET COMPONENT RESIZING"); //NOI18N
 	}
     }
@@ -1783,7 +1767,7 @@ public class LayoutDesigner implements LayoutConstants {
      * @param alignment requested alignment.
      */
     public void align(Collection componentIds, boolean closed, int dimension, int alignment) {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > ALIGN"); //NOI18N
             testCode.add("{"); //NOI18N
 	    LayoutTestUtils.writeCollection(testCode, "componentIds", componentIds); //NOI18N
@@ -1808,7 +1792,7 @@ public class LayoutDesigner implements LayoutConstants {
             modelListener.activate();
         }
         requireStructureOptimization();
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
 	    testCode.add("// < ALIGN"); //NOI18N
 	}
     }
@@ -2218,7 +2202,7 @@ public class LayoutDesigner implements LayoutConstants {
     // -----
 
     public void setDefaultSize(String compId) {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// > SET DEFAULT SIZE"); //NOI18N
             testCode.add("{"); //NOI18N
             testCode.add("String compId = \"${" + compId + "}\";"); //NOI18N
@@ -2228,7 +2212,7 @@ public class LayoutDesigner implements LayoutConstants {
         LayoutComponent component = layoutModel.getLayoutComponent(compId);
         if (component != null)
             setDefaultSize(component);
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (logTestCode()) {
             testCode.add("// < SET DEFAULT SIZE"); //NOI18N
 	}
     }
@@ -2921,11 +2905,34 @@ public class LayoutDesigner implements LayoutConstants {
     // resizability of a component in the designer
     private boolean[][] resizability = { { true, true }, { true, true } };
 
+    // -----
+    // test generation support
+
+    private ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
+
+    /* stores test code lines */
+    public List testCode = new ArrayList();
+
+    // these below are used for removing unwanted move entries, otherwise the code can exceed 10000 lines in a few seconds of form editor work ;O)
+    private List testCode0 = new ArrayList();
+    private List beforeMove = new ArrayList();
+    private List move1 = new ArrayList();
+    private List move2 = new ArrayList();
+    private boolean isMoving = false;
+    
+    private int modelCounter = -1;
+    
+    private Point lastMovePoint = new Point(0, 0);
+
     public int getModelCounter() {
         return modelCounter;
     }
 
     public void setModelCounter(int modelCounter) {
         this.modelCounter = modelCounter;
+    }
+
+    public boolean logTestCode() {
+        return modelCounter > -1 && em.isLoggable(ErrorManager.INFORMATIONAL);
     }
 }

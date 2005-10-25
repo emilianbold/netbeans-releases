@@ -870,12 +870,45 @@ public class LayoutModel implements LayoutConstants {
     }
 
     /**
-     * Returns dump of the layout model.
+     * Returns dump of the layout model. For debugging and testing purposes only.
      *
      * @return dump of the layout model.
      */
-    public String dump(Map idToNameMap) {
-        Set roots = new HashSet();
+    public String dump(final Map idToNameMap) {
+        Set roots = new TreeSet(new Comparator() {
+            // comparator to ensure stable order of dump; according to tree
+            // hierarchy, order within container, name
+            public int compare(Object o1, Object o2) {
+                if (o1 == o2)
+                    return 0;
+                LayoutComponent lc1 = (LayoutComponent) o1;
+                LayoutComponent lc2 = (LayoutComponent) o2;
+                // parent always first
+                if (lc1.isParentOf(lc2))
+                    return -1;
+                if (lc2.isParentOf(lc1))
+                    return 1;
+                // get the same level under common parent
+                LayoutComponent parent = LayoutComponent.getCommonParent(lc1, lc2);
+                while (lc1.getParent() != parent)
+                    lc1 = lc1.getParent();
+                while (lc2.getParent() != parent)
+                    lc2 = lc2.getParent();
+                if (parent != null) { // in the same tree
+                    return parent.indexOf(lc1) < parent.indexOf(lc2) ? -1 : 1;
+                }
+                else { // in distinct trees
+                    String id1 = lc1.getId();
+                    String id2 = lc2.getId();
+                    if (idToNameMap != null) {
+                        id1 = (String) idToNameMap.get(id1);
+                        id2 = (String) idToNameMap.get(id2);
+                        assert id1 != null && id2 != null;
+                    }
+                    return id1.compareTo(id2);
+                }
+            }
+        });
         Iterator iter = idToComponents.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry)iter.next();
@@ -889,7 +922,14 @@ public class LayoutModel implements LayoutConstants {
         Iterator rootIter = roots.iterator();
         while (rootIter.hasNext()) {
             LayoutComponent root = (LayoutComponent)rootIter.next();
-            sb.append("  <Root>\n"); // NOI18N
+            String rootId = root.getId();
+            if (idToNameMap != null) {
+                rootId = (String) idToNameMap.get(rootId);
+            }
+            if (rootId != null)
+                sb.append("  <Root id=\""+rootId+"\">\n"); // NOI18N
+            else
+                sb.append("  <Root>\n"); // NOI18N
             sb.append(dumpLayout(2, root, idToNameMap, true));
             sb.append("  </Root>\n"); // NOI18N
         }

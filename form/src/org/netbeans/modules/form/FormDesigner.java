@@ -1465,7 +1465,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 rect = componentBoundsToTop(visual);
             }
             
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  compBounds.put(\"" + componentId + "\", new Rectangle(" +  //NOI18N
                                                             rect.x + ", " + rect.y + ", " + rect.width + ", " + rect.height + "));"); //NOI18N
             }
@@ -1489,7 +1489,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             rect.width -= insets.left + insets.right;
             rect.height -= insets.top + insets.bottom;
 
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  contInterior.put(\"" + componentId + "\", new Rectangle(" +  //NOI18N
                                                         rect.x + ", " + rect.y + ", " + rect.width + ", " + rect.height + "));"); //NOI18N
 	    }
@@ -1503,7 +1503,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (visual != null) {
                 dim = visual.getMinimumSize();
             }
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  compMinSize.put(\"" + componentId + "\", new Dimension(" +  //NOI18N
                                                             new Double(dim.getWidth()).intValue() + ", " + new Double(dim.getHeight()).intValue() + "));"); //NOI18N
             }            
@@ -1516,7 +1516,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (visual != null) {
                 dim = visual.getPreferredSize();
             }
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  compPrefSize.put(\"" + componentId + "\", new Dimension(" +  //NOI18N
                                                             new Double(dim.getWidth()).intValue() + ", " + new Double(dim.getHeight()).intValue() + "));"); //NOI18N
             }
@@ -1529,7 +1529,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (visual != null) {
                 hasExplPrefSize = visual.isPreferredSizeSet();
             }
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  hasExplicitPrefSize.put(\"" + componentId + "\", new Boolean(" + hasExplPrefSize + "));"); //NOI18N
             }
             return hasExplPrefSize;
@@ -1554,7 +1554,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
             }
 
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 String id = componentId + "-" + width + "-" + height; //NOI18N
                 getLayoutDesigner().testCode.add("  baselinePosition.put(\"" + id + "\", new Integer(" + baseLinePos + "));"); //NOI18N
             }
@@ -1569,14 +1569,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                        int paddingType)
         {
             String id = null;
-	    if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+	    if (getLayoutDesigner().logTestCode()) {
 		id = comp1Id + "-" + comp2Id + "-" + dimension + "-" + comp2Alignment + "-" + paddingType; //NOI18N
 	    }
             
             JComponent comp1 = (JComponent) getVisualComponent(comp1Id, true, true);
             JComponent comp2 = (JComponent) getVisualComponent(comp2Id, true, true);
             if (comp1 == null || comp2 == null) { // not JComponents...
-                if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                if (getLayoutDesigner().logTestCode()) {
                     getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id +				    //NOI18N
 			    "\", new Integer(10)); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType");	    //NOI18N
                 }
@@ -1606,7 +1606,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             int prefPadding = getLayoutStyle().getPreferredGap(comp1, comp2, type, position, null);
             
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id + "\", new Integer(" + prefPadding +   //NOI18N
 				")); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType");			    //NOI18N
             }
@@ -1620,7 +1620,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                                int compAlignment)
         {
             String id = null;
-	    if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+	    if (getLayoutDesigner().logTestCode()) {
 		id = parentId + "-" + compId + "-" + dimension + "-" + compAlignment; //NOI18N
 	    }
             
@@ -1633,7 +1633,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 comp = (JComponent) getVisualComponent(compId, true, true);
             }
             if (comp == null) {
-                if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                if (getLayoutDesigner().logTestCode()) {
                     getLayoutDesigner().testCode.add("  prefPaddingInParent.put(\"" + id +	    //NOI18N
 			    "\", new Integer(10)); // parentId-compId-dimension-compAlignment");    //NOI18N
                 }
@@ -1663,7 +1663,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
             int prefPadding = getLayoutStyle().getContainerGap(comp, alignment, parent);
 
-            if (getLayoutDesigner().em.isLoggable(ErrorManager.INFORMATIONAL)) {
+            if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  prefPaddingInParent.put(\"" + id + "\", new Integer(" +  //NOI18N
 			prefPadding + ")); // parentId-compId-dimension-compAlignment");		     //NOI18N
             }

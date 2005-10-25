@@ -412,11 +412,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 Map idToNameMap = new HashMap();
                 while (iter.hasNext()) {
                     RADComponent comp = (RADComponent)iter.next();
-                    org.netbeans.modules.form.codestructure.CodeVariable var =
-                        comp.getCodeExpression().getVariable();
-                    if (var != null) {
-                        idToNameMap.put(comp.getId(), var.getName());
-                    }
+                    idToNameMap.put(comp.getId(), comp.getName());
                 }
 		FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
 		LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel);
@@ -429,11 +425,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 	
 	    SaveCookie saveCookie = (SaveCookie)formDO.getCookie(SaveCookie.class);
             try {
-                if (saveCookie != null) saveCookie.save();
+                if (saveCookie != null)
+                    saveCookie.save();
                 FileObject copied = formFile.copy(LayoutTestUtils.getTargetFolder(formFile), 
 			    formFile.getName() + "Test-StartingForm", //NOI18N
 			    formFile.getExt()); 
                 formDesigner.getLayoutDesigner().setModelCounter(0);
+                formDesigner.resetTopDesignComponent(true);
 		StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath());
             } catch (IOException ioe) {
                 //TODO
