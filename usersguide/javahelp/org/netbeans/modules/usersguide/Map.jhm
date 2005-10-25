@@ -82,7 +82,7 @@
 <mapID target="gui.config" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
-<mapID target="gui.testing" url="gui/gui_testing.html" />
+<mapID target="gui.testing" url="gui/gui_previewing.html" />
 
 
 <mapID target="beans.intro" url="beans/intro.html" />
@@ -509,9 +509,9 @@ under Print Settings in the Options window)
 
 <!--CSH for GUI Builder:-->
 
-<!-- csh page for event handler dialog box :-->
+<!-- CSH page for event handler dialog box :-->
 <mapID target="gui.csh.handlers" url="gui/gui_manageevents.html" />
-<!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
+<!-- CSH page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
 <!--TODO - map these 6 to appropriate form topics or have removed-->
 <mapID target="gui.modes" url="pending.html" />
