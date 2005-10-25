@@ -10,23 +10,18 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * WinXPEditorTabDisplayerUI.java
- *
- * Created on 09 December 2003, 16:53
- */
 
 package org.netbeans.swing.tabcontrol.plaf;
 
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import org.netbeans.swing.tabcontrol.TabListPopupAction;
+import org.openide.util.Utilities;
 
 /**
  * Windows xp impl of tabs ui
@@ -103,9 +98,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     private static final Image loadImage(String id) {
         //XXX for testing, so we don't lug lookup, etc. into memory
         try {
-            URL url = WinXPEditorTabDisplayerUI.class.getClassLoader()
-                    .getResource(id);
-            return ImageIO.read(url);
+            return Utilities.loadImage(id);
         } catch (Exception e) {
             e.printStackTrace();
             return new BufferedImage(12, 12, BufferedImage.TYPE_INT_ARGB);
