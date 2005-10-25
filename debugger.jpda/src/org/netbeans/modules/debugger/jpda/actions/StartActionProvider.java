@@ -158,18 +158,19 @@ public class StartActionProvider extends ActionsProvider {
                 if (cookie instanceof ListeningDICookie) 
                     startLock.wait(1500);
             }
+       
             debuggerImpl.setRunning (
                 virtualMachine,
                 o
             );
-
+          
             // PATCH #46295 JSP breakpoint isn't reached during 
             // second debugging
-            if (cookie instanceof AttachingDICookie) {
-                synchronized (debuggerImpl.LOCK) {
-                    virtualMachine.resume ();
-                }
-            }
+//            if (cookie instanceof AttachingDICookie) {
+//                synchronized (debuggerImpl.LOCK) {
+//                    virtualMachine.resume ();
+//                }
+//            }
             // PATCHEND Hanz
 
             if (startVerbose)

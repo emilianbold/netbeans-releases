@@ -667,30 +667,35 @@ public class JPDADebuggerImpl extends JPDADebugger {
         initGenericsSupport ();
         
         operator = o;
-        Iterator i = getVirtualMachine ().allThreads ().iterator ();
-        while (i.hasNext ()) {
-            ThreadReference tr = (ThreadReference) i.next ();
-            if (tr.isSuspended ()) {
-                if (startVerbose)
-                    System.out.println("\nS JPDADebuggerImpl.setRunning () - " +
-                        "thread supended"
-                    );
-                setState (STATE_RUNNING);
-                synchronized (LOCK) {
-                    virtualMachine.resume ();
-                }
-                if (startVerbose)
-                    System.out.println("\nS JPDADebuggerImpl.setRunning () - " +
-                        "thread supended - VM resumed - end"
-                    );
-                synchronized (LOCK2) {
-                    LOCK2.notify ();
-                }
-                return;
-            }
-        }
+        
+//        Iterator i = getVirtualMachine ().allThreads ().iterator ();
+//        while (i.hasNext ()) {
+//            ThreadReference tr = (ThreadReference) i.next ();
+//            if (tr.isSuspended ()) {
+//                if (startVerbose)
+//                    System.out.println("\nS JPDADebuggerImpl.setRunning () - " +
+//                        "thread supended"
+//                    );
+//                setState (STATE_RUNNING);
+//                synchronized (LOCK) {
+//                    virtualMachine.resume ();
+//                }
+//                if (startVerbose)
+//                    System.out.println("\nS JPDADebuggerImpl.setRunning () - " +
+//                        "thread supended - VM resumed - end"
+//                    );
+//                synchronized (LOCK2) {
+//                    LOCK2.notify ();
+//                }
+//                return;
+//            }
+//        }
         
         setState (STATE_RUNNING);
+        synchronized (LOCK) {
+            virtualMachine.resume();
+        }
+        
         if (startVerbose)
             System.out.println("\nS JPDADebuggerImpl.setRunning () - end");
         synchronized (LOCK2) {
