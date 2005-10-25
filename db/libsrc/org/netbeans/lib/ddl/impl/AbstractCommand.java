@@ -31,6 +31,7 @@ import org.netbeans.lib.ddl.DatabaseSpecification;
 import org.netbeans.lib.ddl.DDLCommand;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.util.CommandFormatter;
+import org.openide.windows.InputOutput;
 
 /**
 * Basic implementation of DDLCommand. This class can be used for really simple
@@ -165,7 +166,9 @@ public class AbstractCommand implements Serializable, DDLCommand {
         if (spec.getSpecificationFactory().isDebugMode()) {
 
             try {
-                OutputWriter ow = IOProvider.getDefault().getIO(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("LBL_Output_Window"), false).getOut(); //NOI18N
+                InputOutput io = IOProvider.getDefault().getIO(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("LBL_Output_Window"), false);
+                io.select();
+                OutputWriter ow = io.getOut(); //NOI18N
                 if (ow != null) {
                     ow.println(fcmd);
                     ow.println(" "); //NOI18N
