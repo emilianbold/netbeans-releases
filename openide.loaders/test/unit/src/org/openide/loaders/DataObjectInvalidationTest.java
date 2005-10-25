@@ -36,6 +36,7 @@ import org.netbeans.junit.*;
  * @author Jesse Glick
  */
 public class DataObjectInvalidationTest extends LoggingTestCaseHid {
+    org.openide.ErrorManager err;
     
     // SEE ALSO:
     // FolderInstanceTest.testFolderInstanceNeverPassesInvObjects
@@ -47,6 +48,14 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
     
     protected void setUp() throws IOException {
         clearWorkDir();
+        
+        err = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
+        
+        registerIntoLookup(new Pool());
+    }
+    
+    protected void tearDown() throws Exception {
+        Pool.setExtra(null);
     }
     
     public void testNobodyCanAccessDataObjectWithUnfinishedConstructor () throws Throwable {
@@ -57,75 +66,70 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         assertNotNull(file);
         
         final DataLoader l = DataLoader.getLoader(SlowDataLoader.class);
-        AddLoaderManuallyHid.addRemoveLoader(l, true);
-        try {
-            class DoTheTest extends Object implements Runnable {
-                private DataObject first;
-                /** any eception from run method */
-                private Throwable ex;
-                /** thread that shall call into the constructor */
-                private Thread constructor;
-                
-                public void runInMainThread () throws Throwable {
-                    wait (); // notified from HERE
-                    
-                    // I am going to be the constructor of the SlowDataObject
-                    constructor = Thread.currentThread();
-                    first = DataObject.find (file);
-                    
-                    
-                    // waiting for results
-                    wait ();
-                    if (ex != null) {
-                        throw ex;
-                    }
+        Pool.setExtra(l);
+        class DoTheTest extends Object implements Runnable {
+            private DataObject first;
+            /** any eception from run method */
+            private Throwable ex;
+            /** thread that shall call into the constructor */
+            private Thread constructor;
+
+            public void runInMainThread () throws Throwable {
+                wait (); // notified from HERE
+
+                // I am going to be the constructor of the SlowDataObject
+                constructor = Thread.currentThread();
+                first = DataObject.find (file);
+
+
+                // waiting for results
+                wait ();
+                if (ex != null) {
+                    throw ex;
                 }
-                
-                public void run () {
-                    try {
-                        synchronized (l) {
-                            synchronized (this) {
-                                notifyAll (); // HERE
-                            }
-                            
-                            // this wait is notified from the midle of SlowDataObject
-                            // constructor
-                            l.wait ();
+            }
 
-                            // that means the thread in runInMainThread() have not finished
-                            // the assignment to first variable yet
-                            assertNull (first);
-                        }
-                    
-                        // now try to get the DataObject while its constructor
-                        // is blocked in the case
-                        DataObject obj = DataObject.find (file);
-                        assertEquals ("It is the slow obj", SlowDataObject.class, obj.getClass());
-                        SlowDataObject slow = (SlowDataObject)obj;
-
-                        assertEquals ("Constructor has to finish completely, by the main thread", constructor, slow.ok);
-
-                    } catch (Throwable ex) {
-                        this.ex = ex;
-                    } finally {
+            public void run () {
+                try {
+                    synchronized (l) {
                         synchronized (this) {
-                            notify ();
+                            notifyAll (); // HERE
                         }
+
+                        // this wait is notified from the midle of SlowDataObject
+                        // constructor
+                        l.wait ();
+
+                        // that means the thread in runInMainThread() have not finished
+                        // the assignment to first variable yet
+                        assertNull (first);
+                    }
+
+                    // now try to get the DataObject while its constructor
+                    // is blocked in the case
+                    DataObject obj = DataObject.find (file);
+                    assertEquals ("It is the slow obj", SlowDataObject.class, obj.getClass());
+                    SlowDataObject slow = (SlowDataObject)obj;
+
+                    assertEquals ("Constructor has to finish completely, by the main thread", constructor, slow.ok);
+
+                } catch (Throwable ex) {
+                    this.ex = ex;
+                } finally {
+                    synchronized (this) {
+                        notify ();
                     }
                 }
             }
-            
-            DoTheTest dtt = new DoTheTest ();
-            synchronized (dtt) {
-                new Thread (dtt, "Slow").start ();
-                dtt.runInMainThread ();
-            }
-            
-            
-        } finally {
-            AddLoaderManuallyHid.addRemoveLoader(l, false);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
+
+        DoTheTest dtt = new DoTheTest ();
+        synchronized (dtt) {
+            new Thread (dtt, "Slow").start ();
+            dtt.runInMainThread ();
+        }
+
+
     }
     
     public void testNodeDelegateNotRequestedTillObjReady() throws Exception {
@@ -135,19 +139,14 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         FileObject folder = lfs.findResource("folder");
         assertNotNull(folder);
         DataLoader l = DataLoader.getLoader(SlowDataLoader.class);
-        AddLoaderManuallyHid.addRemoveLoader(l, true);
-        try {
-            DataFolder f = DataFolder.findFolder(folder);
-            Node foldernode = f.getNodeDelegate();
-            Children folderkids = foldernode.getChildren();
-            // Force it to recognize its children:
-            Node[] nodes = folderkids.getNodes(true);
-            assertEquals("Number of children", 1, nodes.length);
-            assertEquals("Correct node delegate", "slownode", nodes[0].getShortDescription());
-        } finally {
-            AddLoaderManuallyHid.addRemoveLoader(l, false);
-        }
-        TestUtilHid.destroyLocalFileSystem(getName());
+        Pool.setExtra(l);
+        DataFolder f = DataFolder.findFolder(folder);
+        Node foldernode = f.getNodeDelegate();
+        Children folderkids = foldernode.getChildren();
+        // Force it to recognize its children:
+        Node[] nodes = folderkids.getNodes(true);
+        assertEquals("Number of children", 1, nodes.length);
+        assertEquals("Correct node delegate", "slownode", nodes[0].getShortDescription());
     }
     
     /** Tests that the loader pool does not
@@ -161,22 +160,34 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         });
         FileObject folder = lfs.findResource("folder");
         DataLoader l = DataLoader.getLoader(SlowDataLoader.class);
-        AddLoaderManuallyHid.addRemoveLoader(l, true);
-        try {
-            SlowDataLoader.createCount = 0;
-            SlowDataObject.createCount = 0;
-            DataFolder f = DataFolder.findFolder(folder);
-            Node foldernode = f.getNodeDelegate();
-            Children folderkids = foldernode.getChildren();
-            assertEquals("Getting a folder node does not start automatically scanning children", 0, SlowDataLoader.createCount);
-            assertEquals("Getting a folder node does not finish automatically scanning children", 0, SlowDataObject.createCount);
-            folderkids.getNodes(true);
-            assertEquals("After getting folder node children, a data object is not started to be created >1 time", 1, SlowDataLoader.createCount);
-            assertEquals("After getting folder node children, a data object is not successfully created >1 time", 1, SlowDataObject.createCount);
-        } finally {
-            AddLoaderManuallyHid.addRemoveLoader(l, false);
-        }
-        TestUtilHid.destroyLocalFileSystem(getName());
+        err.log("Registering the slow loader");
+        Pool.setExtra(l);
+        
+        err.log("Clearing the counts");
+        SlowDataLoader.createCount = 0;
+        SlowDataObject.createCount = 0;
+        err.log("Counts cleared");
+        
+        DataFolder f = DataFolder.findFolder(folder);
+        
+        err.log("Folder created: " + f);
+        
+        Node foldernode = f.getNodeDelegate();
+        
+        err.log("Node created: " + foldernode);
+        
+        Children folderkids = foldernode.getChildren();
+        
+        err.log("Children are here");
+        assertEquals("Getting a folder node does not start automatically scanning children", 0, SlowDataLoader.createCount);
+        assertEquals("Getting a folder node does not finish automatically scanning children", 0, SlowDataObject.createCount);
+        
+        Node[] keep = folderkids.getNodes(true);
+        
+        err.log("Nodes for children are computed: " + keep.length);
+        
+        assertEquals("After getting folder node children, a data object is not started to be created >1 time", 1, SlowDataLoader.createCount);
+        assertEquals("After getting folder node children, a data object is not successfully created >1 time", 1, SlowDataObject.createCount);
     }
     
     /** See #15902.
@@ -191,41 +202,37 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         try {
             FileObject fo = lfs.findResource("folder/file.simple");
             DataLoader l = DataLoader.getLoader(DataLoaderOrigTest.SimpleUniFileLoader.class);
-            AddLoaderManuallyHid.addRemoveLoader(l, true);
-            try {
-                DataObject dob = DataObject.find(fo);
-                assertEquals(l, dob.getLoader());
-                assertTrue(fo.isValid());
-                assertTrue(dob.isValid());
-                File olddir = lfs.getRootDirectory();
-                File newdir = new File(olddir, "folder");
-                //File newdir = olddir.getParentFile();
-                assertTrue(newdir.exists());
-                ExpectingListener el = new ExpectingListener();
-                lfs.addPropertyChangeListener(el);
-                lfs.setRootDirectory(newdir);
-                assertTrue("PROP_ROOT was fired", el.gotSomething(FileSystem.PROP_ROOT));
-                assertTrue("PROP_SYSTEM_NAME was fired", el.gotSomething(FileSystem.PROP_SYSTEM_NAME));
-                FileObject fo2 = lfs.findResource("file.simple");
-                assertNotNull(fo2);
-                assertTrue(fo != fo2);
-                DataObject dob2 = DataObject.find(fo2);
-                assertEquals(l, dob2.getLoader());
-                assertTrue(dob != dob2);
-                assertTrue("FileSystem is still valid after change in root directory", lfs.isValid());
-                assertTrue(fo == dob.getPrimaryFile());
-                //assertTrue(fo.getFileSystem() == lfs);
-                if (fo.isValid()) {
-                    // Just in case it needs time to be invalidated:
-                    Thread.sleep(1000);
-                }
-                // Does nothing: lfs.getRoot().refresh()
-                // Currently this fails, not sure why:
-                assertTrue("FileObject invalidated after change in root directory", ! fo.isValid());
-                assertTrue("DataObject invalidated after change in root directory", ! dob.isValid());
-            } finally {
-                AddLoaderManuallyHid.addRemoveLoader(l, false);
+            Pool.setExtra(l);
+            DataObject dob = DataObject.find(fo);
+            assertEquals(l, dob.getLoader());
+            assertTrue(fo.isValid());
+            assertTrue(dob.isValid());
+            File olddir = lfs.getRootDirectory();
+            File newdir = new File(olddir, "folder");
+            //File newdir = olddir.getParentFile();
+            assertTrue(newdir.exists());
+            ExpectingListener el = new ExpectingListener();
+            lfs.addPropertyChangeListener(el);
+            lfs.setRootDirectory(newdir);
+            assertTrue("PROP_ROOT was fired", el.gotSomething(FileSystem.PROP_ROOT));
+            assertTrue("PROP_SYSTEM_NAME was fired", el.gotSomething(FileSystem.PROP_SYSTEM_NAME));
+            FileObject fo2 = lfs.findResource("file.simple");
+            assertNotNull(fo2);
+            assertTrue(fo != fo2);
+            DataObject dob2 = DataObject.find(fo2);
+            assertEquals(l, dob2.getLoader());
+            assertTrue(dob != dob2);
+            assertTrue("FileSystem is still valid after change in root directory", lfs.isValid());
+            assertTrue(fo == dob.getPrimaryFile());
+            //assertTrue(fo.getFileSystem() == lfs);
+            if (fo.isValid()) {
+                // Just in case it needs time to be invalidated:
+                Thread.sleep(1000);
             }
+            // Does nothing: lfs.getRoot().refresh()
+            // Currently this fails, not sure why:
+            assertTrue("FileObject invalidated after change in root directory", ! fo.isValid());
+            assertTrue("DataObject invalidated after change in root directory", ! dob.isValid());
         } finally {
             Repository.getDefault().removeFileSystem(lfs);
         }
@@ -239,14 +246,13 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), arr);
         FileObject file = lfs.findResource(arr[0]);
         DataLoader l = DataLoader.getLoader(SlowDataLoader.class);
-        AddLoaderManuallyHid.addRemoveLoader(l, true);
+        Pool.setExtra(l);
         try {
             DataObject obj = DataObject.find (file);
             DataFolder f = DataFolder.findFolder(file.getFileSystem().getRoot());
             obj.copy (f);
             obj.createFromTemplate(f);
         } finally {
-            AddLoaderManuallyHid.addRemoveLoader(l, false);
             TestUtilHid.destroyLocalFileSystem(getName());
         }
     }
@@ -262,16 +268,14 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         DataObject newObj;
         
         DataLoader l = DataLoader.getLoader(SlowDataLoader.class);
-        AddLoaderManuallyHid.addRemoveLoader(l, true);
+        Pool.setExtra(l);
         try {
             assertFalse ("The previous data object is not valid anymore", obj.isValid ());
             newObj = DataObject.find (file);
             assertTrue ("This is valid", newObj.isValid ());
-
-            
         } finally {
-            AddLoaderManuallyHid.addRemoveLoader(l, false);
             TestUtilHid.destroyLocalFileSystem(getName());
+            Pool.setExtra(null);
         }
         
         assertFalse ("After remove, it is invalidated", newObj.isValid ());
@@ -361,5 +365,26 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             setShortDescription("slownode");
         }
     }
-    
+
+    private static final class Pool extends DataLoaderPool {
+        private static DataLoader extra;
+        
+        
+        protected java.util.Enumeration loaders () {
+            if (extra == null) {
+                return org.openide.util.Enumerations.empty ();
+            } else {
+                return org.openide.util.Enumerations.singleton (extra);
+            }
+        }
+
+        public static void setExtra(DataLoader aExtra) {
+            if (aExtra != null && extra != null) {
+                fail("Cannot set extra loader while one is already there. 1: " + extra + " 2: " + aExtra);
+            }
+            extra = aExtra;
+            Pool p = (Pool)DataLoaderPool.getDefault();
+            p.fireChangeEvent(new javax.swing.event.ChangeEvent(p));
+        }
+    }
 }
