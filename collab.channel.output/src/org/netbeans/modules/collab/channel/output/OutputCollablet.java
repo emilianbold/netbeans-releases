@@ -12,47 +12,27 @@
  */
 package org.netbeans.modules.collab.channel.output;
 
-import com.sun.collablet.CollabException;
+import java.awt.Image;
+import java.beans.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
+
+import org.w3c.dom.*;
+import org.apache.xmlbeans.*;
+import org.openide.util.*;
+import org.openide.windows.*;
+
 import com.sun.collablet.CollabMessage;
 import com.sun.collablet.Conversation;
 import com.sun.collablet.moxc.*;
-
-import org.apache.xmlbeans.*;
-import org.openide.*;
-import org.openide.util.*;
-import org.openide.windows.*;
-import org.w3c.dom.*;
-import org.xml.sax.InputSource;
-
-import java.awt.Image;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-
-import javax.xml.parsers.*;
-
-import org.netbeans.core.output2.*;
-import org.netbeans.core.output2.ui.*;
-
-import org.netbeans.modules.collab.channel.filesharing.mdc.*;
 import org.netbeans.modules.collab.core.Debug;
-
 import org.netbeans.ns.shareOutput.x10.*;
-
 
 public class OutputCollablet extends MOXCCollablet {
     ////////////////////////////////////////////////////////////////////////////
     // Class variables
     ////////////////////////////////////////////////////////////////////////////
-    public static final String PROP_OUTPUT = "output"; // NOI18N
     private static int activeChannelCount;
 
     //	private static final String OUTPUT_URI=
@@ -64,11 +44,8 @@ public class OutputCollablet extends MOXCCollablet {
     // Instance variables
     ////////////////////////////////////////////////////////////////////////////
     private Conversation conversation;
-    private OutputCollabletComponent component;
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private Map remoteOutputIOMap = new HashMap();
-    private Map remoteOutputTabs = new HashMap();
-    private Map sharedOutputMap = new HashMap();
 
     /**
      *
@@ -114,90 +91,15 @@ public class OutputCollablet extends MOXCCollablet {
 
         while (it.hasNext()) {
             String key = (String) it.next();
-            AbstractOutputTab tab = (AbstractOutputTab) remoteOutputTabs.get(key);
             ((InputOutput) remoteOutputIOMap.get(key)).closeInputOutput();
 
-            //			OutputWindow.findDefault().remove(tab);
-        }
-
-        // remove document listener on owner side
-        keys = sharedOutputMap.keySet();
-        it = keys.iterator();
-
-        while (it.hasNext()) {
-            AbstractOutputTab key = (AbstractOutputTab) it.next();
-            SharedOutputTab tab = (SharedOutputTab) sharedOutputMap.get(key);
-            tab.removeDocumentListener();
         }
     }
 
-    /**
-     *
-     *
-     */
-    public synchronized JComponent getComponent() throws CollabException {
-        if (component == null) {
-            component = new OutputCollabletComponent(this);
-        }
-
-        return component;
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Message handling methods
     ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     *
-     *
-     */
-
-    //	public void openOutput(AbstractOutputTab tab)
-    //	{
-    //		try
-    //		{
-    //			SharedOutputTab sharedTab;
-    //			
-    //			if (sharedOutputMap.get(tab)!=null)
-    //			{
-    //				sharedTab = (SharedOutputTab)sharedOutputMap.get(tab);
-    //				sharedTab.reset();
-    //			}
-    //			else
-    //			{
-    //				sharedTab = new SharedOutputTab(this, tab);
-    //				sharedOutputMap.put(tab, sharedTab);
-    //			}
-    //			
-    //			Envelope envelope = constructHeader();
-    //			Body body = new Body();
-    //			Open open = new Open();
-    //			open.setName(Base64.encode(getTabName(tab.getName()).getBytes()));
-    //			open.setInstance(getPrincipalId() + System.identityHashCode(tab));
-    //			open.setContent(Base64.encode(sharedTab.getContent().getBytes()));
-    //			body.setOpen(open);
-    //			
-    //			envelope.setBody(body);
-    //			
-    //			ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
-    //			envelope.write(outputStream);
-    //			String sendMsg = new String(outputStream.toByteArray(),"UTF-8");
-    //		
-    ////			Debug.out.println("############# xml content" + sendMsg); 
-    //
-    //			CollabMessage collabMessage=getConversation().createMessage();
-    //			collabMessage.setContent(sendMsg);
-    //			
-    //			// Set a header to ensure the chat channel doesn't pick this up
-    ////			collabMessage.setHeader("x-channel","not-chat"); // NOI18N
-    //
-    //			getConversation().sendMessage(collabMessage);
-    //		}
-    //		catch (Exception e)
-    //		{
-    //			Debug.debugNotify(e);
-    //		}
-    //	}
 
     /**
      *
@@ -293,83 +195,6 @@ public class OutputCollablet extends MOXCCollablet {
         return principalId;
     }
 
-    //	/**
-    //	 *
-    //	 *
-    //	 */
-    //	public void appendOutput(String id, String change)
-    //	{
-    //		try
-    //		{
-    //			Envelope envelope = constructHeader();
-    //			Body body = new Body();
-    //			Append append = new Append();
-    //			append.setInstance(id);
-    //			append.setContent(Base64.encode(change.getBytes()));
-    //			body.setAppend(append);
-    //			
-    //			envelope.setBody(body);
-    //			
-    //			ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
-    //			envelope.write(outputStream);
-    //			String sendMsg = new String(outputStream.toByteArray(),"UTF-8");
-    //		
-    ////			Debug.out.println("############# xml content" + sendMsg); 
-    //
-    //			CollabMessage collabMessage=getConversation().createMessage();
-    //			collabMessage.setContent(sendMsg);
-    //			
-    //			// Set a header to ensure the chat channel doesn't pick this up
-    ////			collabMessage.setHeader("x-channel","not-chat"); // NOI18N
-    //
-    //			getConversation().sendMessage(collabMessage);
-    //		}
-    //		catch (Exception e)
-    //		{
-    //			Debug.debugNotify(e);
-    //		}
-    //	}
-
-    /**
-     *
-     *
-     */
-    public void clearOutput(String id) {
-        //		try 
-        //		{
-        //			SoapEnvelope envelope = constructHeader();
-        //			Body body = new Body();
-        //			Clear clear = new Clear();
-        //			clear.setInstanceId(id);
-        //			body.setShareOutputClear(clear);
-        //
-        //			envelope.setSoapBody(body);
-        //
-        //			ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
-        //			envelope.write(outputStream);
-        //			String sendMsg = new String(outputStream.toByteArray(),"UTF-8");
-        //
-        //			CollabMessage collabMessage=getConversation().createMessage();
-        //			collabMessage.setContent(sendMsg);
-        //
-        //			// Set a header to ensure the chat channel doesn't pick this up
-        //			collabMessage.setHeader("x-channel","not-chat"); // NOI18N
-        //
-        //			getConversation().sendMessage(collabMessage);
-        //		}catch (Exception e)
-        //		{
-        //			Debug.debugNotify(e);
-        //		}
-    }
-
-    /**
-     *
-     *
-     */
-    public void closeOutput(AbstractOutputTab tab) {
-        ((SharedOutputTab) sharedOutputMap.get(tab)).removeDocumentListener();
-    }
-
     /**
      *
      *
@@ -396,50 +221,7 @@ public class OutputCollablet extends MOXCCollablet {
         }
     }
 
-    /**
-     *
-     *
-     */
-    public void handleAppendOutput(String instance_id, String content) {
-        InputOutput io = (InputOutput) remoteOutputIOMap.get(instance_id);
 
-        if ((io == null) || io.isClosed()) {
-            return;
-        }
-
-        io.getOut().print(content);
-    }
-
-    /**
-     *
-     *
-     */
-    public void handleClearOutput(String instance_id) {
-        InputOutput io = (InputOutput) remoteOutputIOMap.get(instance_id);
-
-        if (io == null) {
-            return;
-        }
-
-        try {
-            io.getOut().reset();
-        } catch (Exception ex) {
-        }
-    }
-
-    /**
-     *
-     *
-     */
-    public void handleCloseOutput(String instance_id) {
-        Debug.out.println(" in handle close output");
-
-        // TODO: should we close the remote tab for user?
-    }
-
-    public Map getSharedTabs() {
-        return sharedOutputMap;
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Property change support
@@ -450,19 +232,6 @@ public class OutputCollablet extends MOXCCollablet {
      *
      */
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getPropertyName().equals("document_changed")) {
-            Debug.out.println(" doc change event received");
-
-            AbstractOutputTab tab = (AbstractOutputTab) event.getOldValue();
-
-            if (sharedOutputMap.get(tab) != null) {
-                //				openOutput(tab);
-            }
-        } else if (event.getPropertyName().equals("document_shared")) {
-            Debug.out.println(" document shared event is received");
-
-            //			openOutput((AbstractOutputTab)event.getOldValue());
-        }
     }
 
     /**
