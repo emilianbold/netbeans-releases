@@ -118,14 +118,19 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <folder name="SelectDocumentNode">
                 <!-- Searching nodes in projects/files tab -->
+                
                 <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjects"/>
                 </file>
 
+                <attr name="org-netbeans-modules-project-ui-SelectInProjects.instance/org-netbeans-modules-project-ui-SelectInFiles.instance" boolvalue="true"/>
+                
                 <file name="org-netbeans-modules-project-ui-SelectInFiles.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFiles"/>
-                </file>       
-            </folder>        
+                </file>
+                
+                <attr name="org-netbeans-modules-project-ui-SelectInFiles.instance/org-netbeans-modules-favorites-Select.instance" boolvalue="true"/>
+            </folder>
         </folder>
         
     </folder>
