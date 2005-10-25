@@ -113,6 +113,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="editor" testtypes="qa-functional" attributes="validation"/>
         <module name="properties" testtypes="qa-functional" attributes="validation"/>
         <module name="jellytools" testtypes="unit" attributes="stable"/>
+        <module name="serverplugins/jboss4" testtypes="qa-functional" attributes="validation"/>
   </config>
 
   <!-- PERFORMANCE -->
