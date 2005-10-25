@@ -23,6 +23,14 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <folder name="Windows2">
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr"/>
+    
+        <!-- Winsys implementation requires editor mode to be always defined. -->
+        <folder name="Modes">
+            <file name="editor.wsmode" url="windowmanager/editor.wsmode" />
+            <folder name="editor">
+            </folder>
+        </folder>
+        
     </folder>
 
     <folder name="Windows2Local"/>

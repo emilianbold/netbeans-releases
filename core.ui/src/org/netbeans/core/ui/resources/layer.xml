@@ -374,13 +374,12 @@ Microsystems, Inc. All Rights Reserved.
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
 	-->
         <folder name="Modes">
+        
+            <!-- Note, editor mode defined directly in core/windows, to allow
+             winsys run correctly in platform use, without core/ui -->
             
             <file name="explorer.wsmode" url="windowmanager/explorer.wsmode" />
             <folder name="explorer"/>
-                
-            <file name="editor.wsmode" url="windowmanager/editor.wsmode" />
-            <folder name="editor">
-            </folder>
                 
             <file name="properties.wsmode" url="windowmanager/properties.wsmode" />
             <folder name="properties">
