@@ -113,13 +113,13 @@ public interface DTDSyntaxConstants {
 
   String[] tokenImage = {
     "<EOF>",
-    "<CRLF>",
+    "\"\\n\"",
     "<TEXT>",
     "<CONTENT>",
     "<WS>",
     "\"<!\"",
     "\"<?\"",
-    "\"<\"",
+    "<TEXT_IN_DEFAULT>",
     "\"]]>\"",
     "<ERR_IN_DEFAULT>",
     "\"xml\"",

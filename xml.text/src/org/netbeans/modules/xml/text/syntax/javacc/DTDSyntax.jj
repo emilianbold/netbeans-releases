@@ -196,8 +196,10 @@ TOKEN_MGR_DECLS:
                 input_stream.backup(1);
 
                 myimage = input_stream.GetImage();
+                
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                     System.err.println(getClass().toString() + " ERROR:" + getState() + ":'" + ch + "'"); // NOI18N
+
                 id = Bridge.JJ_ERR;      
 
             } catch (IOException eof) {           
@@ -302,7 +304,7 @@ TOKEN_MGR_DECLS:
 <*>
 TOKEN: 
 {
-  <CRLF: (" " | "\t" | "\n")+ >   /** Understand as white-space. */
+  <CRLF: "\n" >
 | /** global text matches all but following chars. 
 
   ("<" | ">" | "'" | "\"" | "&" | "%"| ";" | "[" | "]" | "=" | "/" | "!" | "?")+
@@ -310,6 +312,8 @@ TOKEN:
   <#TEXT: (~[" ", "\t", "\n", "<", ">", "'", "\"", "&", "%", ";", "[", "]" , "=" , "/" , "!" , "?"])+>
 |
   <#CONTENT: (~["\n","<",">","&"])+>
+| /** global white space. */
+  <#WS: (" " | "\t")+>
 }
 
 /** Initial state could be a switch allowing then guess 
@@ -320,9 +324,9 @@ TOKEN:
 {
   <DECL_START: "<!"> : IN_DECL
 | <PI_START: "<?"> : IN_PI
-| <TEXT_IN_DEFAULT: "<">  //just being written
+| <TEXT_IN_DEFAULT: "<" | " " | "\t">  //just being written
 | <COND_END_IN_DEFAULT: "]]>"> //little bit tricky - what it would be else?
-| <ERR_IN_DEFAULT: (~["\n", "]", "<", "&", "%", " ", "\t"])+ >
+| <ERR_IN_DEFAULT: (~[" ", "\t", "\n", "]", "<", "&", "%"])+ >
 }
 
 
