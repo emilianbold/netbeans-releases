@@ -13,8 +13,12 @@
 
 package org.netbeans.modules.web.struts.dialogs;
 
+import java.io.IOException;
+import java.util.Hashtable;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.common.FQNSearch;
+import org.netbeans.modules.web.struts.StrutsConfigDataObject;
+import org.netbeans.modules.web.struts.config.model.FormBean;
 import org.openide.util.NbBundle;
 
 /**
@@ -23,14 +27,33 @@ import org.openide.util.NbBundle;
  */
 public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPanel {
     
+    private StrutsConfigDataObject config;
+    private Hashtable beanNames;
     /** Creates new form AddFormBeanPanel */
-    public AddFormBeanPanel() {
+    public AddFormBeanPanel(StrutsConfigDataObject config) {
         initComponents();
+        this.config = config;
+        beanNames = null;
     }
 
     public String validatePanel() {
+        //config.getStrutsConfig().getFormBeans().sizeFormBean()
         if (getFormName().length()==0)
             return NbBundle.getMessage(AddFormBeanPanel.class,"MSG_EmptyFormName");
+        if (beanNames == null){
+            System.out.println("vytvarim cashe of jmen");
+            beanNames = new Hashtable();
+            try {
+                FormBean[] beans = config.getStrutsConfig().getFormBeans().getFormBean();
+                for (int i = 0; i < beans.length; i++){
+                    beanNames.put(beans[i].getAttributeValue("name"), "");
+                }
+            } catch (IOException ex) {
+                // don't cashe
+            }
+        }
+        if (beanNames.get(getFormName()) != null)
+            return NbBundle.getMessage(AddFormBeanPanel.class,"MSG_BeanNameDefined");
         if (jRadioButton1.isSelected() && TFBeanClass.getText().trim().length()==0)
             return NbBundle.getMessage(AddFormBeanPanel.class,"MSG_EmptyFormBeanClass");
         return null;

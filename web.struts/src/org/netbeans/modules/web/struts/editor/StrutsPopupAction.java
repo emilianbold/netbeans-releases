@@ -108,7 +108,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             Document doc = target.getDocument();
             DataObject data = NbEditorUtilities.getDataObject(doc);
-            AddFormBeanPanel dialogPanel = new AddFormBeanPanel();
+            AddFormBeanPanel dialogPanel = new AddFormBeanPanel((StrutsConfigDataObject)data);
             AddDialog dialog = new AddDialog(dialogPanel,
                         NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddFormBean"),         //NOI18N
                         new HelpCtx(AddFormBeanPanel.class));
