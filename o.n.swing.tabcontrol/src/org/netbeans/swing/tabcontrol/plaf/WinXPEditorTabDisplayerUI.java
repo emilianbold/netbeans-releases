@@ -92,17 +92,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     }
     
     private static final Icon createIcon(int i) {
-        return new ImageIcon(loadImage(iconNames[i]));
-    }
-
-    private static final Image loadImage(String id) {
-        //XXX for testing, so we don't lug lookup, etc. into memory
-        try {
-            return Utilities.loadImage(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new BufferedImage(12, 12, BufferedImage.TYPE_INT_ARGB);
-        }
+        return new ImageIcon(Utilities.loadImage(iconNames[i]));
     }
 
     private static final Dimension controlButtonSize(int index) {
