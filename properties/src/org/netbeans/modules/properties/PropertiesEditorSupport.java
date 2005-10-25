@@ -134,6 +134,16 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     }
 
     /**
+     */
+    protected void initializeCloneableEditor(CloneableEditor editor) {
+
+	// add to CloneableEditorSupport - patch for a bug in deserialization
+	setRef(editor.getReference());
+
+	((PropertiesEditor) editor).initialize(myEntry);
+    }
+
+    /**
      * Overrides superclass method. 
      * Let's the super method create the document and also annotates it
      * with Title and StreamDescription properities.
@@ -800,16 +810,12 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** Creates new editor */
         public PropertiesEditor(PropertiesEditorSupport support) {
             super(support);
-            initialize();
         }
 
         
         /** Initializes object, used in construction and deserialization. */
-        private void initialize() {
-            this.entry = ((PropertiesEditorSupport)cloneableEditorSupport()).myEntry;
-            
-            // add to CloneableEditorSupport - patch for a bug in deserialization
-            ((PropertiesEditorSupport)cloneableEditorSupport()).setRef(getReference());
+        private void initialize(PropertiesFileEntry entry) {
+            this.entry = entry;
             
             Node n = entry.getNodeDelegate ();
             setActivatedNodes (new Node[] { n });
@@ -846,25 +852,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** Overrides superclass method. Gets help context. */
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Util.HELP_ID_EDITLOCALE);
-        }
-        
-        /**
-         * Overrides superclass method.
-         * Serialize this top component.
-         * @param out the stream to serialize to
-         */
-        public void writeExternal (ObjectOutput out) throws IOException {
-            super.writeExternal(out);
-        }
-        
-        /**
-         * Overrides superclass method. 
-         * Deserialize this top component.
-         * @param in the stream to deserialize from
-         */
-        public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal(in);
-            initialize();
         }
         
         /** Getter for pane. */
