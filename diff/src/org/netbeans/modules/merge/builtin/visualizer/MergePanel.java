@@ -33,6 +33,8 @@ import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.diff.builtin.visualizer.LinesComponent;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 
 /**
  * This class displays two editor panes with two files and marks the differences
@@ -125,6 +127,18 @@ public class MergePanel extends javax.swing.JPanel {
         jEditorPane3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane3A11yName"));  // NOI18N
         jEditorPane3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane3A11yDescr"));  // NOI18N
     }
+
+
+    public void addNotify() {
+        super.addNotify();
+        EditorUI ui1 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1);
+        ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
+        ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        EditorUI ui3 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane3);
+        ui3.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.

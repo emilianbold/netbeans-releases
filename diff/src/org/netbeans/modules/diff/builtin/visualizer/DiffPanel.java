@@ -26,6 +26,8 @@ import javax.swing.*;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 
 import org.openide.actions.CopyAction;
 import org.openide.util.actions.ActionPerformer;
@@ -77,6 +79,14 @@ public class DiffPanel extends javax.swing.JPanel {
         jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
         jEditorPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane2A11yName"));  // NOI18N
         jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
+    }
+
+    public void addNotify() {
+        super.addNotify();
+        EditorUI ui1 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1);
+        ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
+        ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
     }
 
     /** This method is called from within the constructor to
