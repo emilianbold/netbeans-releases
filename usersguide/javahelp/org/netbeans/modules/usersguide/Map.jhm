@@ -755,8 +755,8 @@ under Print Settings in the Options window)
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
 
-  <!--ID for Options | IDE Configuration | Server and External Tool Setting | PDF Settings; removal pending issue 54602 -->
-  <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
+  <!--ID for Options | IDE Configuration | Server and External Tool Setting | PDF Settings -->
+  <mapID target="org.netbeans.modules.pdf.PDFSettings" url="configure/options_pdfsettings_classic.html" />
 
  <!--Options | Source Creation and Management | Templates:-->  
  <!--TODO: future; create topic on meaning of node + notes on the fact that some templates aren't meant to be manipulated:-->
