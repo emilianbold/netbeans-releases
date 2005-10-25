@@ -55,7 +55,7 @@ import javax.swing.JMenuItem;
  * the overriden method {@link #enable}
  * is called and state of the action is updated
  * according to the result. When the action is performed, the subclasses are
- * notified by a call to their {@link performAction(Node[])} where they
+ * notified by a call to their {@link #performAction(Node[])} where they
  * can perform their operation on the currently selected array of nodes.
  *
  * <p><strong>Note:</strong> if your action involves getting cookies

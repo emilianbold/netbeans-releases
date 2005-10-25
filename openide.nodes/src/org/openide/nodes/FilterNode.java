@@ -346,8 +346,13 @@ public class FilterNode extends Node {
      *@param changeChildren If set to <CODE>true</CODE> changes children
      * of this node according to the new original node. If you pass
      * children which are not instance of class
-     * <CODE>FilterNode.Children</CODE> into the constructor set this
-     * parameter to <CODE>false</CODE>.
+     * {@link FilterNode.Children} into the constructor set this
+     * parameter to <CODE>false</CODE>. If you decide to
+     * also change the children, then please be aware
+     * that call to this method aquires
+     * write lock on the nodes hierarchy ({@link Children#MUTEX}). Take care not to call this method
+     * under read lock.
+     *
      *@throws java.lang.IllegalStateException if children which are not
      * instance of <CODE>FilterNode.Children</CODE> were passed
      * into the constructor and the method was called with the parameter
