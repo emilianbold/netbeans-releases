@@ -427,7 +427,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         final RootWizard rootWizard = RootWizard.configureRoot(root.toString());
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
+        panel.setBorder(BorderFactory.createEmptyBorder(0,6,6,6));
         StringBuffer reason = new StringBuffer("<ul>");  // NOI18N
         while (cause != null) {
             try {
@@ -454,7 +454,10 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         String okMsg = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Ok");
         final JButton ok = new JButton(okMsg);
         ok.setEnabled(rootWizard.isValid());
-        String cancel = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Cancel");
+        ok.getAccessibleContext().setAccessibleDescription(okMsg);
+        String cancelMsg = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Cancel");
+        final JButton cancel = new JButton(cancelMsg);
+        cancel.getAccessibleContext().setAccessibleDescription(cancelMsg);
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel, 
                 NbBundle.getMessage(ExecutorSupport.class, "BK0004", getDisplayName()),
@@ -467,7 +470,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                     public void actionPerformed(ActionEvent e) {
                     }
                 });
-        descriptor.setMessageType(DialogDescriptor.ERROR_MESSAGE);
+        descriptor.setMessageType(DialogDescriptor.WARNING_MESSAGE);
         descriptor.setClosingOptions(null);
         rootWizard.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -477,6 +480,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
 
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, initialCause);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExecutorSupport.class, "BK0005"));
         dialog.setVisible(true);
 
         boolean retry = false;
