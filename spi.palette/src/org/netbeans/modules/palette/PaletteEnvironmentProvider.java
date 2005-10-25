@@ -164,14 +164,12 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
             
             ArrayList objectsToLookup = new ArrayList();
 
-            ActiveEditorDrop drop = getActiveEditorDrop(handler.getClassName());
-            if (drop != null)
-                objectsToLookup.add(drop);
-            if (handler.getBody() != null)
-                objectsToLookup.add(handler.getBody());
-            Lookup lookup = Lookups.fixed(objectsToLookup.toArray());
-
-            PaletteItemNode node = new PaletteItemNode(new DataNode(xmlDataObject, Children.LEAF), name, displayName, tooltip, icon16, icon32, lookup);
+            InstanceContent ic = new InstanceContent();
+            if (handler.getClassName() != null)
+                ic.add(handler.getClassName(), ActiveEditorDropProvider.getInstance());
+            else if (handler.getBody() != null)
+                ic.add(handler.getBody(), ActiveEditorDropDefaultProvider.getInstance());
+            PaletteItemNode node = new PaletteItemNode(new DataNode(xmlDataObject, Children.LEAF), name, displayName, tooltip, icon16, icon32, ic);
 
             return node;
         }
@@ -251,34 +249,6 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
 
             return icon;
         }
-
-        private ActiveEditorDrop getActiveEditorDrop(String instanceName) {
-
-            ActiveEditorDrop drop = null;
-
-            if (instanceName != null && instanceName.trim().length() > 0) {//we should try to instantiate item drop
-                try {
-//                    Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-//                    FileObject fo = rep.getDefaultFileSystem().findResource(URL_PREFIX_INSTANCES + instanceName);
-//                    DataObject _do = DataObject.find(fo);
-//                    InstanceDataObject ido = (InstanceDataObject) _do;
-//                    drop = (ActiveEditorDrop)ido.instanceCreate();
-
-                    ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-                    if (loader == null)
-                        loader = getClass ().getClassLoader ();
-                    Class instanceClass = loader.loadClass (instanceName);
-                    drop = (ActiveEditorDrop)instanceClass.newInstance();
-                }
-                catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
-            }
-
-            return drop;
-        }
-
     }
-    
-    
+
 }

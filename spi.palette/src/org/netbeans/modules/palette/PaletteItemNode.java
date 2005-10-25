@@ -17,10 +17,6 @@ import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.beans.BeanInfo;
 import java.io.IOException;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -49,12 +45,8 @@ public final class PaletteItemNode extends FilterNode {
     private Image icon32;
     private Lookup localLookup;
     
-    PaletteItemNode(DataNode original, String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup) {
-        this(original, name, displayName, description, icon16, icon32, lookup, new InstanceContent() );
-    }
-    
-    private PaletteItemNode(DataNode original, String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup, InstanceContent content ) {
-        super(original, Children.LEAF, new ProxyLookup( new Lookup[] { lookup, new AbstractLookup(content) } ) );
+    PaletteItemNode(DataNode original, String name, String displayName, String description, Image icon16, Image icon32, InstanceContent content ) {
+        super(original, Children.LEAF, new AbstractLookup(content));
         
         content.add( this );
         this.name = name;
@@ -62,7 +54,6 @@ public final class PaletteItemNode extends FilterNode {
         this.description = description;
         this.icon16 = icon16;
         this.icon32 = icon32;
-        this.localLookup = lookup;
     }
  
     public String getName() {
@@ -102,11 +93,6 @@ public final class PaletteItemNode extends FilterNode {
         
         Lookup lookup = getLookup();
         ActiveEditorDrop drop = (ActiveEditorDrop) lookup.lookup(ActiveEditorDrop.class);
-        if (drop == null) {
-            String body = (String)lookup.lookup(String.class);
-            drop = new ActiveEditorDropDefault(body);
-        }
-        
         ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(drop);
         t.put(s);
 
@@ -132,39 +118,6 @@ public final class PaletteItemNode extends FilterNode {
             return drop;
         }
         
-    }
-
-    private static class ActiveEditorDropDefault implements ActiveEditorDrop {
-
-        String body;
-
-        public ActiveEditorDropDefault(String body) {
-            this.body = body;
-        }
-
-        public boolean handleTransfer(JTextComponent targetComponent) {
-
-            if (targetComponent == null)
-                return false;
-
-            try {
-                Document doc = targetComponent.getDocument();
-                Caret caret = targetComponent.getCaret();
-                int p0 = Math.min(caret.getDot(), caret.getMark());
-                int p1 = Math.max(caret.getDot(), caret.getMark());
-                doc.remove(p0, p1 - p0);
-
-                //replace selected text by the inserted one
-                int start = caret.getDot();
-                doc.insertString(start, body, null);
-            }
-            catch (BadLocationException ble) {
-                return false;
-            }
-
-            return true;
-        }
-
     }
     
 }

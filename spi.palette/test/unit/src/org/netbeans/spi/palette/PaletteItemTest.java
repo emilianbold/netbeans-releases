@@ -42,6 +42,7 @@ public class PaletteItemTest extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+        ((Lkp)Lookup.getDefault()).setLookup(new Object[] { new RepositoryImpl() });
     }     
     
     private static final String PALETTE_ROOT = "FooPalette";
@@ -57,7 +58,6 @@ public class PaletteItemTest extends NbTestCase {
     
     
     private FileObject itemsFolder;
-    private FileObject itemFile;
     
     private Lookup selectedNode;
     
@@ -80,7 +80,16 @@ public class PaletteItemTest extends NbTestCase {
     }
     
     public void testReadItemWithActiveEditorDrop() throws Exception {
-        itemFile = createItemFileWithActiveEditorDrop();
+        FileObject itemFile = createItemFileWithActiveEditorDrop();
+        verifyPaletteItem(itemFile);
+    }
+
+    public void testReadItemWithBody() throws Exception {
+        FileObject itemFile = createItemFileWithBody();
+        verifyPaletteItem(itemFile);
+    }
+    
+    private void verifyPaletteItem(FileObject itemFile) throws Exception {
         assertNotNull(itemFile);
         
         Node itemNode = DataObject.find(itemFile).getNodeDelegate();
@@ -94,24 +103,8 @@ public class PaletteItemTest extends NbTestCase {
         assertNotNull("Item does not contain ActiveEditorDrop implementation in its lookup.", o);
     }
 
-    public void testReadItemWithBody() throws Exception {
-        itemFile = createItemFileWithBody();
-        assertNotNull(itemFile);
-        
-        Node itemNode = DataObject.find(itemFile).getNodeDelegate();
-        
-        assertEquals("Item loaded with a wrong display name.", NbBundle.getBundle(BUNDLE_NAME).getString(NAME_KEY), itemNode.getDisplayName());
-        assertEquals("Item loaded with a wrong description.", NbBundle.getBundle(BUNDLE_NAME).getString(TOOLTIP_KEY), itemNode.getShortDescription());
-        assertNotNull("Item loaded with no small icon.", itemNode.getIcon(BeanInfo.ICON_COLOR_16x16));
-        assertNotNull("Item loaded with no big icon.", itemNode.getIcon(BeanInfo.ICON_COLOR_32x32));
-        
-        Object o = itemNode.getLookup().lookup(String.class);
-        assertNotNull("Item does not contain body string in its lookup.", o);
-        assertEquals("Item loaded with a wrong body string.", BODY, o);
-    }
-
     public void testFindItem() throws Exception {
-        itemFile = createItemFileWithActiveEditorDrop();
+        FileObject itemFile = createItemFileWithActiveEditorDrop();
         assertNotNull(itemFile);
 
         //create palette
@@ -134,7 +127,7 @@ public class PaletteItemTest extends NbTestCase {
     }
     
     public void testSelectItem() throws Exception {
-        itemFile = createItemFileWithActiveEditorDrop();
+        FileObject itemFile = createItemFileWithActiveEditorDrop();
         assertNotNull(itemFile);
 
         //create palette
@@ -158,7 +151,6 @@ public class PaletteItemTest extends NbTestCase {
         public Lkp() {
             Assert.assertNull(DEFAULT);
             DEFAULT = this;
-            setLookup(new Object[] { new RepositoryImpl() });
         }
         public static void setLookup(Object[] instances) {
             ClassLoader cl = Lkp.class.getClassLoader();
