@@ -147,7 +147,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                                     //get offset of previous token: < or </
 				    start = token.getPrevious().getOffset();
                                     token = token.getNext();
-				    end = token.getOffset()+token.getImage().length();
+				    end = token.getOffset()+ (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL ? token.getImage().length() : 0);
 //
 //				    while (token != null && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID){
 //					token = token.getNext();
