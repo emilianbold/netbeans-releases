@@ -199,6 +199,8 @@
 	<mapID target="org.netbeans.modules.web.struts.ui.StrutsConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html" />
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html" />
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html" />
+	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/csh/dbox_projprops/file_ActionPanel.html" />
+	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/csh/dbox_projprops/file_FormBeanNewPanel.html" />
 
 	<!--STRUTS AND JSF FRAMEWORK DIALOG BOXES:-->
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html" />
@@ -210,6 +212,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html" />
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/create/tag/framework/jsf/AddNavigationCaseDialog.html" />
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/jsf/AddManagedBeanDialog.html" />
+	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html" />
 
 
 <!-- End of CSH for Web Applications -->
