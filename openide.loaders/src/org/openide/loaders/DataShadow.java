@@ -100,7 +100,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     private static synchronized void enqueueDataShadow(DataShadow ds) {
         Map m = getDataShadowsSet ();
         
-        FileObject prim = ds.getOriginal ().getPrimaryFile ();
+        FileObject prim = ds.original.getPrimaryFile ();
         Reference ref = new DSWeakReference(ds);
         Set s = (Set)m.get (prim);
         if (s == null) {
@@ -183,7 +183,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                 Reference r = (Reference)refs.next ();
                 DataShadow shadow = (DataShadow)r.get ();
                 if (shadow != null) {
-                    shadow.refresh (shadow.getOriginal () == changed);
+                    shadow.refresh (shadow.original == changed);
                 }
             }
             return;
@@ -200,7 +200,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             DataShadow obj = (DataShadow)all.get(i);
             // if original was renamed or moved update 
             // the file with the link
-            obj.refresh (obj.getOriginal () == changed);
+            obj.refresh (obj.original == changed);
         }
     }
     
@@ -482,6 +482,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @return the data object
     */
     public DataObject getOriginal () {
+        waitUpdatesProcessed();
         return original;
     }
     
@@ -489,7 +490,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
      * @return array of one element, the original
      */
     public DataObject[] getChildren () {
-        return new DataObject[] { getOriginal () };
+        return new DataObject[] { original };
     }
 
     /* Creates node delegate.
@@ -530,7 +531,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @return help context
     */
     public HelpCtx getHelpCtx () {
-        return getOriginal ().getHelpCtx ();
+        return original.getHelpCtx ();
     }
 
     /* Creates shadow for this object in specified folder. The current
@@ -541,8 +542,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @return the shadow
     */
     protected DataShadow handleCreateShadow (DataFolder f) throws IOException {
-        if (getOriginal() instanceof DataFolder) {
-            DataFolder.testNesting(((DataFolder)getOriginal()), f);
+        if (original instanceof DataFolder) {
+            DataFolder.testNesting(((DataFolder)original), f);
         }
         return original.handleCreateShadow (f);
     }
@@ -626,6 +627,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
     
     private static RequestProcessor RP = new RequestProcessor("DataShadow validity check");
+    private static volatile org.openide.util.Task lastTask = org.openide.util.Task.EMPTY;
 
     private static void updateShadowOriginal(DataShadow shadow) {
         class Updator implements Runnable {
@@ -654,25 +656,27 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         Updator u = new Updator();
         u.sh = shadow;
         u.primary = u.sh.original.getPrimaryFile ();
-        RP.post(u, 100, Thread.MIN_PRIORITY);
+        lastTask = RP.post(u, 100, Thread.MIN_PRIORITY + 1);
     }
     
     /** For use in tests that need to be sure that all updators have finished.
      */
-   static final void waitUpdatesProcessed() {
-       RP.post(org.openide.util.Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
-   }
+    static final void waitUpdatesProcessed() {
+        if (!RP.isRequestProcessorThread()) {
+            lastTask.waitFinished();
+        }
+    }
     
     protected DataObject handleCopy (DataFolder f) throws IOException {
-        if (getOriginal() instanceof DataFolder) {
-            DataFolder.testNesting(((DataFolder)getOriginal()), f);
+        if (original instanceof DataFolder) {
+            DataFolder.testNesting(((DataFolder)original), f);
         }
         return super.handleCopy(f);
     }
     
     protected FileObject handleMove (DataFolder f) throws IOException {
-        if (getOriginal() instanceof DataFolder) {
-            DataFolder.testNesting(((DataFolder)getOriginal()), f);
+        if (original instanceof DataFolder) {
+            DataFolder.testNesting(((DataFolder)original), f);
         }
         return super.handleMove(f);
     }
@@ -715,7 +719,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
          * @param shadow the shadow
          */
         public ShadowNode (DataShadow shadow) {
-            this (shadow, shadow.getOriginal ().getNodeDelegate ());
+            this (shadow, shadow.original.getNodeDelegate ());
         }
 
         /** Initializes it */
@@ -813,7 +817,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                        shadowName, // name of the shadow
                        super.getDisplayName (), // name of original
                        systemNameOrFileName (obj.getPrimaryFile ()), // full name of file for shadow
-                       systemNameOrFileName (obj.getOriginal ().getPrimaryFile ()), // full name of original file
+                       systemNameOrFileName (obj.original.getPrimaryFile ()), // full name of original file
                        origDisp, // display name of original
                    };
         }
@@ -854,13 +858,13 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
         }
         private Image rootIcon(int type) {
-            FileObject orig = obj.getOriginal().getPrimaryFile();
+            FileObject orig = obj.original.getPrimaryFile();
             if (orig.isRoot()) {
                 try {
                     FileSystem fs = orig.getFileSystem();
                     try {
                         Image i = Introspector.getBeanInfo(fs.getClass()).getIcon(type);
-                        return fs.getStatus().annotateIcon(i, type, obj.getOriginal().files());
+                        return fs.getStatus().annotateIcon(i, type, obj.original.files());
                     } catch (IntrospectionException ie) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
                         // ignore
@@ -1005,7 +1009,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         /** Clones the property sheet of original node.
         */
         private Sheet cloneSheet () {
-            PropertySet[] sets = this.getOriginal ().getPropertySets ();
+            PropertySet[] sets = this.getOriginal().getPropertySets ();
 
             Sheet s = new Sheet ();
             for (int i = 0; i < sets.length; i++) {
@@ -1039,7 +1043,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }
 
         private void originalChanged () {
-            DataObject ori = obj.getOriginal();
+            DataObject ori = obj.original;
             if (ori.isValid()) {
                 changeOriginal (ori.getNodeDelegate(), true);
             } else {
@@ -1061,7 +1065,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
 
             public Object getValue () {
-                return obj.getOriginal ().getName();
+                return obj.original.getName();
             }
 
             public void setValue (Object val) throws IllegalAccessException,
@@ -1072,7 +1076,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     throw new IllegalArgumentException();
 
                 try {
-                    DataObject orig = obj.getOriginal ();
+                    DataObject orig = obj.original;
                     orig.rename ((String)val);
                     writeOriginal (null, null, obj.getPrimaryFile (), orig);
                 } catch (IOException ex) {
@@ -1081,7 +1085,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
 
             public boolean canWrite () {
-                return obj.getOriginal ().isRenameAllowed();
+                return obj.original.isRenameAllowed();
             }
         }
         
@@ -1115,7 +1119,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             this.hash = o.hashCode();
             if (o instanceof DataShadow) {
                 DataShadow s = (DataShadow)o;
-                this.original = s.getOriginal ().getPrimaryFile ();
+                this.original = s.original.getPrimaryFile ();
             }
         }
         

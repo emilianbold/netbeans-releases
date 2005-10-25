@@ -225,9 +225,9 @@ implements java.net.URLStreamHandlerFactory {
 
         err.log("Before find for " + original2);
         assertEquals ("But of course the original is newly created", DataObject.find (original2), ((DataShadow)shade3).getOriginal ());
-        
+
         err.log("Before shade.getOriginal()");
-        assertEquals ("However the old shadow is not updated as originals are never updated", original, shade.getOriginal ());
+        assertEquals ("The old shadow is updated & getOriginal() waits for that to happen", original2, shade.getOriginal().getPrimaryFile());
     }
 
     public void testDeleteInvalidatesCreateCreatesWhenChangeHappensInAtomicAction () throws Exception {
