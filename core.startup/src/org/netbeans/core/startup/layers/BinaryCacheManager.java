@@ -52,8 +52,23 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
             // all of this mess is here because Windows can't delete mmaped file.
             File tmpFile = new File(cacheFile.getParentFile(), cacheFile.getName() + "." + fileCounter++);
             tmpFile.delete(); // delete any leftover file from previous session
-            boolean renamed = cacheFile.renameTo(tmpFile); // try to rename it
-            if (!renamed) throw new IOException("Could not delete: " + cacheFile); // NOI18N
+            boolean renamed = false;
+            for (int i = 0; i < 5; i++) {
+                renamed = cacheFile.renameTo(tmpFile); // try to rename it
+                if (renamed) {
+                    break;
+                }
+                LayerCacheManager.err.log("cannot rename (#" + i + "): " + cacheFile); // NOI18N
+                // try harder
+                System.gc();
+                System.runFinalization();
+                LayerCacheManager.err.log("after GC"); // NOI18N
+            }
+            if (!renamed) {
+                // still delete on exit, so next start is ok
+                cacheFile.deleteOnExit();
+                throw new IOException("Could not delete: " + cacheFile); // NOI18N
+            }
             if (!tmpFile.delete()) tmpFile.deleteOnExit(); // delete now or later
         }
     }
