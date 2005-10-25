@@ -271,6 +271,10 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             inputPane.setEditable(true);
             inputPane._setContentType(inputContentType);
             inputPane.setTransferHandler(new InputPaneTransferHandler(inputPane.getTransferHandler()));
+            
+            KeyStroke snd = KeyStroke.getKeyStroke("control ENTER"); // NOI18N
+            inputPane.getInputMap().put(snd, "sendAction"); // NOI18N
+            inputPane.getActionMap().put("sendAction", new SendButtonActionListener());
 
             // registers itself
             InputPaneDocumentListener lst = new InputPaneDocumentListener();

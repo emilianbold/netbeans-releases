@@ -7,4 +7,4 @@
 	Refactored content type registration and handling, reduces class count.
 
 1.0.5:  Mnemonics for chat input
-        
+        Send message also by Ctrl+Enter (#65734)
