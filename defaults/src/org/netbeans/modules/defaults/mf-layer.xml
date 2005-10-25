@@ -846,6 +846,23 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
             </folder>
+            <folder name="x-sql">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans-SQL-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-SQL-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
             <folder name="xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                 <folder name="NetBeans">

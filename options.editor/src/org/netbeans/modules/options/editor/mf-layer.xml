@@ -56,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JavaExample" url="../colors/JavaExample"/>
             <file name="Plain TextExample" url="../colors/PlainTextExample"/>
             <file name="PropertiesExample" url="../colors/PropertiesExample"/>
+            <file name="SQLExample" url="../colors/SQLExample"/>
             <file name="XMLExample" url="../colors/XMLExample"/>
         </folder>
     </folder>

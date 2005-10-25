@@ -124,6 +124,11 @@ public class SQLSettingsInitializer extends Settings.AbstractInitializer {
                                 null, 
                                 Color.black, 
                                 null);
+                    case SQLTokenContext.DOT_ID:
+                        return new Coloring(
+                                null,
+                                Color.black,
+                                null);
                     case SQLTokenContext.INT_LITERAL_ID:
                     case SQLTokenContext.DOUBLE_LITERAL_ID:
                         return new Coloring(
