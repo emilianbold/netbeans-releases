@@ -137,6 +137,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private Timer pleaseWaitTimer;
     /** Whether it's initial or refreshed query. Changed in AWT only. */
     private boolean refreshedQuery = false;
+    /** Whether it's explicit or automatic query. Changed in AWT only. */
+    private boolean explicitQuery = false;
     
     /** Ending offset of the recent insertion or removal. */
     private int modEndOffset;
@@ -494,12 +496,17 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
      * May be called from any thread but it will be rescheduled into AWT.
      */
     public void showCompletion() {
+        showCompletion(false);
+    }
+    
+    private void showCompletion(boolean explicitQuery) {
         if (!SwingUtilities.isEventDispatchThread()) {
             // Re-call this method in AWT if necessary
             SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION));
             return;
         }
 
+        this.explicitQuery = explicitQuery;
         if (activeProviders != null) {
             completionCancel(); // cancel possibly pending query
             completionQuery();
@@ -547,7 +554,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             public void run() {
                 int caretOffset = activeComponent.getCaretPosition();
                 // completionResults = null;
-                if (sortedResultItems.size() == 1 && !refreshedQuery) {
+                if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery) {
                     try {
                         int[] block = Utilities.getIdentifierBlock(activeComponent, caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N
@@ -1013,7 +1020,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
     private final class CompletionShowAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            showCompletion();
+            showCompletion(true);
         }
     }
 
