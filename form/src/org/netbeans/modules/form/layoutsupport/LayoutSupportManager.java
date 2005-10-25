@@ -355,6 +355,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     // properties and customizer
     public Node.PropertySet[] getPropertySets() {
         if (propertySets == null) {
+            if (layoutDelegate == null) return new Node.PropertySet[0]; // Issue 63916
             propertySets = layoutDelegate.getPropertySets();
 
             for (int i=0; i < propertySets.length; i++) {
