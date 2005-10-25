@@ -268,7 +268,7 @@ public class XMLUtilTest extends NbTestCase {
         assertEquals(1, l.getLength());
         el = (Element) l.item(0);
         assertEquals("child", el.getLocalName());
-        assertEquals("child", el.getNamespaceURI());
+        assertEquals("Correct namespaces in " + baos.toString(), "child", el.getNamespaceURI());
     }
     
     public void testIndentation() throws Exception {
