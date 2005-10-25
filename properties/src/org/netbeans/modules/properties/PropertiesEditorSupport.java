@@ -121,19 +121,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     }
     
     /**
-     * Overrides superclass method.
-     * A method to create a new component. Overridden in subclasses.
-     * @return the {@link Editor} for this support
-     */
-    protected CloneableTopComponent createCloneableTopComponent () {
-        // initializes the document if not initialized
-        prepareDocument();
-        
-        CloneableEditor editor = new PropertiesEditor(this);
-        return editor;
-    }
-
-    /**
      */
     protected void initializeCloneableEditor(CloneableEditor editor) {
 
