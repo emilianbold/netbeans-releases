@@ -39,7 +39,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.cookies.SaveCookie;
 //import org.netbeans.modules.web.core.Util;
 //import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
@@ -119,8 +121,11 @@ public class ActionIterator implements TemplateWizard.Iterator {
         String superclass=(String)wizard.getProperty(WizardProperties.ACTION_SUPERCLASS);
         if (debug)
             log("superclass="+superclass);   //NOI18N
-        
-        if (ActionPanelVisual.DISPATCH_ACTION.equals(superclass)) {
+        boolean replaceSuperClass = false;
+        if (ActionPanelVisual.DEFAULT_ACTION.equals(superclass)){
+            superclass = "Action";
+            replaceSuperClass = true;
+        } else if (ActionPanelVisual.DISPATCH_ACTION.equals(superclass)) {
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("DispatchAction","java"); //NOI18N
         } else if (ActionPanelVisual.MAPPING_DISPATCH_ACTION.equals(superclass)) {
@@ -130,10 +135,24 @@ public class ActionIterator implements TemplateWizard.Iterator {
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("LookupDispatchAction","java"); //NOI18N
         }
+        else {
+            replaceSuperClass = true;
+        }
+        
         
         String targetName = Templates.getTargetName(wizard);
         DataObject dTemplate = DataObject.find( template );
         DataObject dobj = dTemplate.createFromTemplate( df, targetName  );
+        if (replaceSuperClass){
+            EditorCookie editorCookie = (EditorCookie) dobj.getCookie(EditorCookie.class);
+            if (editorCookie != null) {
+                javax.swing.text.Document doc = editorCookie.openDocument();
+                replaceInDocument(doc, "__SUPERCLASS__", superclass);    //NOI18N
+                SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
+                if (save != null)
+                    save.save();
+            }
+        }
         
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
@@ -241,6 +260,19 @@ public class ActionIterator implements TemplateWizard.Iterator {
         }
         return res;
     }
-    //private static final long serialVersionUID = -4147344271705652643L;
-
+    
+    private void replaceInDocument(javax.swing.text.Document document, String replaceFrom, String replaceTo) {
+        javax.swing.text.AbstractDocument doc = (javax.swing.text.AbstractDocument)document;
+        int len = replaceFrom.length();
+        try {
+            String content = doc.getText(0,doc.getLength());
+            int index = content.lastIndexOf(replaceFrom);
+            while (index>=0) {
+                doc.replace(index,len,replaceTo,null);
+                content=content.substring(0,index);
+                index = content.lastIndexOf(replaceFrom);
+            }
+        } catch (javax.swing.text.BadLocationException ex){}
+    }
+    
 }
