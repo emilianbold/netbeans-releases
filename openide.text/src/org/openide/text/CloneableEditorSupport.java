@@ -770,14 +770,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         os = null;
 
                         // remember time of last save
+                        ERR.log("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
                         setLastSaveTime(System.currentTimeMillis());
                         
-
                         doMarkAsUnmodified = true;
+                        ERR.log("doMarkAsUnmodified"); // NOI18N
                     } catch (BadLocationException ex) {
                         ERR.notify(ex);
                     } finally {
                         if (lastSaveTime == -1) { // restore for unsuccessful save
+                            ERR.log("restoring old save time"); // NOI18N
                             setLastSaveTime(oldSaveTime);
                         }
 
