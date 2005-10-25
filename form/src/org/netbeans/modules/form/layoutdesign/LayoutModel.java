@@ -430,8 +430,8 @@ public class LayoutModel implements LayoutConstants {
             LayoutComponent lComp = getLayoutComponent(id);
             if (lComp == null) {
                 lComp = new LayoutComponent(id, false);
-                addComponent(lComp, lCont, -1);
             }
+            addComponent(lComp, lCont, -1);
             Rectangle bounds = component.getBounds();
             Dimension dim = component.getPreferredSize();
             if (bounds.equals(notKnown)) { // Issue 65919
