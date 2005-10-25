@@ -39,10 +39,13 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -308,6 +311,18 @@ public final class CreatedModifiedFilesFactory {
         }
         
         public void run() throws IOException {
+            //#65420 it can happen the manifest is currently being edited. save it
+            // and cross fingers because it can be in inconsistent state
+            try {
+                DataObject dobj = DataObject.find(mfFO);
+                SaveCookie safe = (SaveCookie)dobj.getCookie(SaveCookie.class);
+                if (safe != null) {
+                    safe.save();
+                }
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            }
+            
             EditableManifest em = Util.loadManifest(mfFO);
             em.addSection(dataLoaderClass);
             em.setAttribute("OpenIDE-Module-Class", "Loader", dataLoaderClass); // NOI18N
