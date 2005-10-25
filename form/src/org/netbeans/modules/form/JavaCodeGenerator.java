@@ -2395,7 +2395,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     /** Gets the body (text) of event handler of given name. */
-    private String getEventHandlerText(String handlerName) {
+    String getEventHandlerText(String handlerName) {
         JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
         if (section != null) {
             String tx = section.getText();
@@ -2759,7 +2759,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_ADDED) {
                     String handlerName = ev.getEventHandler();
                     String bodyText = ev.getNewEventHandlerContent();
-                    if (ev.getCreatedDeleted() || bodyText != null) {
+                    if ((ev.getCreatedDeleted() || bodyText != null) && ev.getComponent().isInModel()) {
                         if (!ev.getCreatedDeleted())
                             ev.setOldEventHandlerContent(
                                 getEventHandlerText(handlerName));
