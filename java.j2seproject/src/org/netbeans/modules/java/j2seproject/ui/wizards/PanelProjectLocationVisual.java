@@ -188,14 +188,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
-        final File destFolder = getCanonicalFile(new File( createdFolderTextField.getText() ).getAbsoluteFile());
-        if (destFolder == null) {
+        final File destFolder = new File( createdFolderTextField.getText() ).getAbsoluteFile();
+        if (getCanonicalFile (destFolder) == null) {
             String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectName");
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
 
-        File projLoc = destFolder;
+        File projLoc = FileUtil.normalizeFile(destFolder);
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
