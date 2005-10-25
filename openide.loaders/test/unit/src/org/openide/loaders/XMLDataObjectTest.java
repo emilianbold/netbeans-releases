@@ -16,6 +16,8 @@ package org.openide.loaders;
 import org.openide.filesystems.*;
 import java.io.*;
 import org.openide.cookies.*;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -241,6 +243,94 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         
     } // end of ToolbarProcessor
 
+    public void testGetCookieCannotBeReentrantFromMoreThreads () throws Exception {
+        FileLock lck;
+        DataObject obj;
+        lck = data.lock();
+        String id = "-//NetBeans//DTD X Prcs 1.0//EN";
+        
+        XMLDataObject.Info info = new XMLDataObject.Info ();
+        info.addProcessorClass (XProcessor.class);
+        try {
+            XMLDataObject.registerInfo (id, info);
+            
+            
+            OutputStream ostm = data.getOutputStream(lck);
+            PrintWriter pw = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+            pw.println("<?xml version='1.0'?>"); //NOI18N
+            pw.println("<!DOCTYPE toolbar PUBLIC '" + id + "' 'http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd'>"); //NOI18N
+            pw.println("<toolbar>"); //NOI18N
+            pw.println("  <name value='somename'/>"); //NOI18N
+            pw.println("  <class value='java.lang.String'/>"); //NOI18N
+            pw.println("  <urls>"); //NOI18N
+            pw.println("  </urls>"); //NOI18N
+            pw.println("</toolbar>"); //NOI18N
+            pw.flush();
+            pw.close();
+            ostm.close();
+            
+            obj = DataObject.find (data);
+            
+            Object ic = obj.getCookie(InstanceCookie.class);
+            assertNotNull("There is a cookie", ic);
+            assertEquals("The right class", XProcessor.class, ic.getClass());
+            
+            XProcessor xp = (XProcessor)ic;
+            
+            // now it can finish
+            xp.task.waitFinished();
+            
+            assertNotNull("Cookie created", xp.cookie);
+            assertEquals("It is the same as me", xp.cookie, xp);
+        } finally {
+            XMLDataObject.registerInfo (id, null);
+            lck.releaseLock ();
+        }
+    }
+
+    /** Processor.
+     */
+    public static class XProcessor 
+    implements XMLDataObject.Processor, InstanceCookie.Of, Runnable {
+        private XMLDataObject obj;
+        private Node.Cookie cookie;
+        private RequestProcessor.Task task;
+        
+        public void attachTo (org.openide.loaders.XMLDataObject xmlDO) {
+            obj = xmlDO;
+            task = RequestProcessor.getDefault().post(this);
+            try {
+                assertFalse("This is going to time out", task.waitFinished(500));
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+                fail("No exceptions please");
+            }
+            assertNull("Cookie is still null", cookie);
+            
+        }
+        
+        public void run () {
+            cookie = obj.getCookie(InstanceCookie.class);
+        }
+        
+        public Class instanceClass () throws java.io.IOException, ClassNotFoundException {
+            return getClass ();
+        }
+        
+        public Object instanceCreate () throws java.io.IOException, ClassNotFoundException {
+            return this;
+        }
+        
+        public String instanceName () {
+            return getClass ().getName ();
+        }
+        
+        public boolean instanceOf (Class type) {
+            return type.isAssignableFrom (getClass());
+        }
+        
+    } // end of XProcessor
+    
     private static class PCL implements java.beans.PropertyChangeListener {
         int cnt;
         int docChange;
