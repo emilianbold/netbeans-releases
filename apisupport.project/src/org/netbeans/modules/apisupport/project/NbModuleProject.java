@@ -296,8 +296,13 @@ public final class NbModuleProject implements Project {
         Map/*<String,String>*/ stock = new HashMap();
         File dir = FileUtil.toFile(getProjectDirectory());
         NbModuleTypeProvider.NbModuleType type = getModuleType();
-        File nbroot = ModuleList.findNetBeansOrg(dir);
-        assert type == NbModuleTypeProvider.NETBEANS_ORG ^ nbroot == null : dir;
+        File nbroot;
+        if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+            nbroot = ModuleList.findNetBeansOrg(dir);
+            assert nbroot != null : dir;
+        } else {
+            nbroot = null;
+        }
         if (nbroot != null) {
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
         }
