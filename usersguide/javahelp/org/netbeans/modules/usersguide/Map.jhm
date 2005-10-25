@@ -134,6 +134,7 @@
 
 <mapID target="editing.about" url="editing/editing_about.html" />
 <mapID target="editing.opening" url="editing/opening.html" />
+<mapID target="editing.hints" url="editing/editing_hints.html" />
 
 <!--also CSH for Find in editor:-->
 <mapID target="editing.find" url="editing/find.html" />
@@ -427,7 +428,10 @@ under Print Settings in the Options window)
 
 
 <!--CSH for Java Editor-->
-<mapID target="org.netbeans.modules.editor.java.JavaKit" url="editing/editing_about.html" />
+<mapID target="org.netbeans.modules.editor.java.JavaKit" url="editing/csh/about_source_editor.html" />
+
+<!--topic for Java Editor toolbar - linked to from Java Editor topic-->
+<mapID target="java_editor_toolbar" url="java_editor_toolbar.html" />
 
 
 <!--CSH for Options - Editing Beans Property-->
@@ -487,7 +491,10 @@ under Print Settings in the Options window)
 
 <!--TODO - add mappings for debug dialog topics-->
 
+<!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
+
+<!--Add New Interface dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewInterface" url="pending.html"/>
 
 
