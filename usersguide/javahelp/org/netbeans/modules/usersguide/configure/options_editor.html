@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
                 See <a href="../editing/codecompletion/intro.html">Using Code Completion</a> for details.</p></li>
                 <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of  
                 only one possible completion for the expression. The expression is completed automatically. </li>
-                <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of expression 
+                <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression 
                 that you are typing. </li>
                 <li><b>Show Deprecated Members in Code Completion.</b> If selected, any depecrated class elements that are available are shown 
                 in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
             multiple or divisor of Tab Size.--></li>
             <li><b>Add Leading Star in Comment.</b> When selected, automatically puts an asterisk (*) at the start of any line inside a block comment of a Java file.  </li>
             <li><b>Add Newline Before Brace.</b> When selected, automatically puts curly braces on the following line in generated Java code.</li>
-            <li><b>Add Space Before Parentheses.</b> When selected, adds a space before the opening parenthesis in generated Java code. </li>
+            <li><b>Add Space Before Parenthesis.</b> When selected, adds a space before the opening parenthesis in generated Java code. </li>
         </ul>
         <p>The Preview pane displays how the applied changes will appear in the Source Editor.</p>
 
@@ -90,22 +90,23 @@ Microsystems, Inc. All Rights Reserved.
         Select a language from the drop-down list to see the abbreviations available.
         For each language you can do the following:
         <ul>
-            <li>Select an abbreviation from the list and type in the Abbreviation or Description field to modify the abbreviation.</li> 
+            <li>Select an abbreviation from the list and type in the Abbreviation or Expanded Text field to modify the abbreviation.</li> 
             <li>Select an abbreviation from the list and click Remove to remove the abbreviation.</li>
             <li>Click New and type the abbreviation and description in the respective fields.</li>
         </ul> 
        
         <h3>Macros tab</h3>
-        <p>Use this tab to edit, add, and remove Source Editor macros according to the language.
-        Select a language from the drop-down list to see the macros available.
-        For each language you can do the following:
+        <p>Use this tab to edit, add, and remove Source Editor macros.
+        The macro names and shortcuts are listed in the upper pane. 
+	The Macro Code editor in the lower pane displays the macro code and enables you to edit the code directly.</p>
         <ul>
-            <li>Select a macro from the list and type in the Name or Code field to modify the macro.</li> 
-            <li>Select a macro from the list and click Remove to remove the macro.</li>
-            <li>Click New and type the name and code in the respective fields.</li>
+            <li>To modify the macro code, select a macro from the list and edit the code in the Macro Code editor.</li> 
+            <li>To set a keyboard shortcut for a macro, select a macro from the list, click the Set Shortcut button and enter the shortcut in the dialog box.</li>
+            <li>To create a new macro, click the New button, enter the name for the new macro, then select the new macro in the list and enter the code in the Macro Code editor.</li>
+            <li>To remove a macro, select a macro from the list and click the Remove button.</li>
         </ul>  
         <ul class="note">        
-            <li>It is generally easier to add a new macro by recording it than by manually adding one in the Macros property editor. See <a href="../editing/macros/recording.html">Recording a Macro</a> for details.</li>
+            <li>It is generally easier to add a new macro by recording it than by adding one manually in the Macro Code editor. See <a href="../editing/macros/recording.html">Recording a Macro</a> for details.</li>
         </ul>
         
         

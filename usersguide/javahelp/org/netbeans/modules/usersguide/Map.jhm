@@ -765,8 +765,12 @@ under Print Settings in the Options window)
 
  <!--Options | Source Creation and Management | Templates:-->  
  <!--TODO: future; create topic on meaning of node + notes on the fact that some templates aren't meant to be manipulated:-->
-   <!--Node: Options | Source Creation and Management | Templates <-> help:-->
+ <!--Node: Options | Source Creation and Management | Templates <-> help:-->
   <mapID target="org.netbeans.core.actions.OptionsAction$Templates" url="pending.html" />
+
+ <!-- Options | IDE Configuration | System | File Types -->
+    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="configure/options_file_types.html" />
+    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl$FileTypeNode" url="configure/options_file_types.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->
