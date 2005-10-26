@@ -112,7 +112,7 @@ public class SQLSettingsInitializer extends Settings.AbstractInitializer {
                     case SQLTokenContext.STRING_ID:
                         return new Coloring(
                                 null, 
-                                Color.red.darker(), 
+                                new Color(153, 0, 107),
                                 null);
                     case SQLTokenContext.IDENTIFIER_ID:
                         return new Coloring(
@@ -133,7 +133,7 @@ public class SQLSettingsInitializer extends Settings.AbstractInitializer {
                     case SQLTokenContext.DOUBLE_LITERAL_ID:
                         return new Coloring(
                                 null, 
-                                Color.red.darker(), 
+                                new Color(120, 0, 0),
                                 null);
                     case SQLTokenContext.KEYWORD_ID:
                         return new Coloring(
