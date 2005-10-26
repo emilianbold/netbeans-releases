@@ -13,12 +13,18 @@
 
 package org.openide.loaders;
 import java.beans.PropertyChangeEvent;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.StringWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestResult;
@@ -89,10 +95,31 @@ class LoggingTestCaseHid extends NbTestCase {
     
     /** Registers hints for controlling thread switching in multithreaded
      * applications.
+     * @param url the url to read the file from
+     * @exception IOException thrown when there is problem reading the url
+     */
+    protected final void registerSwitches(URL url) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        InputStream is = url.openStream();
+        for (;;) {
+            int ch = is.read ();
+            if (ch == -1) break;
+            os.write (ch);
+        }
+        os.close();
+        is.close();
+        
+        registerSwitches(new String(os.toByteArray(), "utf-8"));
+    }
+    
+    /** Registers hints for controlling thread switching in multithreaded
+     * applications.
     
      */
     protected final void registerSwitches(String order) {
         LinkedList switches = new LinkedList();
+        
+        HashMap exprs = new HashMap();
         
         int pos = 0;
         for(;;) {
@@ -112,7 +139,13 @@ class LoggingTestCaseHid extends NbTestCase {
             String thrName = order.substring(pos + 7, msg).trim();
             String msgText = order.substring(msg + 4, end).trim();
             
-            Switch s = new Switch(thrName, msgText);
+            Pattern p = (Pattern)exprs.get(msgText);
+            if (p == null) {
+                p = Pattern.compile(msgText);
+                exprs.put(msgText, p);
+            }
+            
+            Switch s = new Switch(thrName, p);
             switches.add(s);
             
             pos = end;
@@ -217,64 +250,64 @@ class LoggingTestCaseHid extends NbTestCase {
 
                         Switch w = (Switch)switches.getFirst();
 
-                        int m = w.matches(s);
-                        if (log) {
-                            messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " result: " + m + "\n");
-                        }
                         boolean expectingMsg = false;
-                        switch (m) {
-                            case 1:  // same thread but wrong message => go on
+                        if (w.matchesThread()) {
+                            if (!w.matchesMessage(s)) {
+                                // same thread but wrong message => go on
                                 return;
-                            case 2:  // the correct message found
-                                switches.removeFirst();
-                                if (switches.isEmpty()) {
-                                    // end of sample
-                                    return;
-                                }
-                                w = (Switch)switches.getFirst();
-                                if (w.matches("") > 0) {
-                                    // next message is also from this thread, go on
-                                    return;
-                                }
-                                // fall thru
-                                expectingMsg = true;
-                            case 0:
-                                // some other thread is supposed to run
-                                Thread t = (Thread)threads.get(w.name);
-                                if (t != null) {
-                                    t.interrupt();
-                                }
-                                threads.put(Thread.currentThread().getName(), Thread.currentThread());
+                            }
+                            // the correct message from the right thread found
+                            switches.removeFirst();
+                            if (switches.isEmpty()) {
+                                // end of sample
+                                return;
+                            }
+                            w = (Switch)switches.getFirst();
+                            if (w.matchesThread()) {
+                                // next message is also from this thread, go on
+                                return;
+                            }
+                            // fall thru
+                            expectingMsg = true;
+                        } else {
+                            // some other thread is supposed to run
+                            Thread t = (Thread)threads.get(w.name);
+                            if (t != null) {
+                                t.interrupt();
+                            }
+                            threads.put(Thread.currentThread().getName(), Thread.currentThread());
 
-                                java.util.Iterator it = switches.iterator();
-                                while (it.hasNext()) {
-                                    Switch check = (Switch)it.next();
-                                    if (check.msg.equals(s)) {
-                                        expectingMsg = true;
-                                    }
+                            java.util.Iterator it = switches.iterator();
+                            while (it.hasNext()) {
+                                Switch check = (Switch)it.next();
+                                if (check.matchesMessage(s)) {
+                                    expectingMsg = true;
+                                    break;
                                 }
-                                if (!expectingMsg) {
-                                    return;
-                                }
+                            }                            
+                        }
+                        
+//                        
+//                        if (log) {
+//                            messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " result: " + m + " for: " + w + "\n");
+//                        }
+                        if (!expectingMsg) {
+                            return;
+                        }
 
-                                try {
-                                    if (log) {
-                                        messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " waiting\n");
-                                    }
-                                    switches.wait(300);
-                                    if (log) {
-                                        messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " timeout\n");
-                                    }
-                                } catch (InterruptedException ex) {
-                                    // ok, we love to be interrupted => go on
-                                    if (log) {
-                                        messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " interrupted\n");
-                                    }
-                                }
-
-                                break;
-                            default:
-                                assert false;
+                        try {
+                            if (log) {
+                                messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " waiting\n");
+                            }
+                            switches.wait(300);
+                            if (log) {
+                                messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " timeout\n");
+                            }
+                        } catch (InterruptedException ex) {
+                            // ok, we love to be interrupted => go on
+                            if (log) {
+                                messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " interrupted\n");
+                            }
                         }
                     }
                 }
@@ -304,24 +337,25 @@ class LoggingTestCaseHid extends NbTestCase {
     } // end of ErrManager
     
     private static final class Switch {
-        private String msg;
+        private Pattern msg;
         private String name;
         
-        public Switch(String n, String m) {
+        public Switch(String n, Pattern m) {
             this.name = n;
             this.msg = m;
         }
         
-        /** @return 0 if nothing matches 
-                    1 if the thread name is good
-                    2 if the thread name and message is the same
+        /** @return true if the thread name of the caller matches this switch
          */
-        public int matches(String logMsg) {
+        public boolean matchesThread() {
             String thr = Thread.currentThread().getName();
-            if (name.equals(thr)) {
-                return msg.equals(logMsg) ? 2 : 1;
-            }
-            return 0;
+            return name.equals(thr);
+        }
+        
+        /** @return true if the message matches the one provided by this switch
+         */
+        public boolean matchesMessage(String logMsg) {
+            return msg.matcher(logMsg).matches();
         }
         
         public String toString() {
