@@ -16,7 +16,9 @@ package org.netbeans.modules.form.codestructure;
 import java.util.*;
 import java.lang.reflect.*;
 import org.netbeans.jmi.javamodel.ClassDefinition;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
 
@@ -65,8 +67,8 @@ public class CodeStructure {
             setUndoRedoRecording(true);
     }
 
-    public void setJavaFileObject(FileObject fo) {	
-	javaSource.setJavaFile(fo);
+    public void setFormDataObject(FormDataObject fdo) {	
+	javaSource.setFormDataObject(fdo);
     }
     
     // -------
@@ -1021,15 +1023,15 @@ public class CodeStructure {
 
     private class JavaSource {
 	
-	private FileObject javaFileObject;	
+	private FormDataObject formDataObject;	
 	private List fields = null;
 	
-	public void setJavaFile(FileObject fo) {
-	    javaFileObject = fo;
+	public void setFormDataObject(FormDataObject formDataObject) {
+	    this.formDataObject = formDataObject;	    	    	    	
 	}
 	
 	public void refresh() {
-	    if(javaFileObject!=null) {
+	    if(formDataObject!=null) {
 		fields = getFieldNames();		
 	    } else {
 		fields = null;
@@ -1037,7 +1039,7 @@ public class CodeStructure {
 	}
 
 	public boolean containsField(String name, boolean refresh) {
-	    if(javaFileObject == null) {
+	    if(formDataObject == null) {
 		return false;
 	    }
 	    if(refresh) {
@@ -1049,9 +1051,14 @@ public class CodeStructure {
 	private List getFieldNames() {
 	    List fields = new ArrayList();
 	    try{	    
-		Resource resource = JavaModel.getResource(javaFileObject);
+
+		FileObject javaFileObject = formDataObject.getPrimaryFile();		
+		ClassPath classPath = ClassPath.getClassPath(javaFileObject, ClassPath.SOURCE);
+                Resource resource = JavaModel.getResource(classPath.findOwnerRoot(javaFileObject),
+					 classPath.getResourceName(javaFileObject));
+				
 		java.util.List classifiers = resource.getClassifiers();
-		Iterator classIter = resource.getClassifiers().iterator();
+		Iterator classIter = classifiers.iterator();
 
 		while (classIter.hasNext()) {
 		    ClassDefinition javaClass = (ClassDefinition)classIter.next();

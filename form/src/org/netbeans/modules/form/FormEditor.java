@@ -192,7 +192,7 @@ public class FormEditor {
         formModel = new FormModel();
         formModel.setName(formDataObject.getName());        
         formModel.setReadOnly(formDataObject.isReadOnly());         		
-        formModel.getCodeStructure().setJavaFileObject(formDataObject.getPrimaryFile());
+        formModel.getCodeStructure().setFormDataObject(formDataObject);
 	
         openForms.put(formModel, this);
 
