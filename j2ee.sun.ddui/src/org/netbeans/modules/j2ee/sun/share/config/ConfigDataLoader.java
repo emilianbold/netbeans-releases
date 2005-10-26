@@ -35,7 +35,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
  * Permits viewing/editing of them.
  * @author Pavel Buzek
  */
-public class ConfigDataLoader extends UniFileLoader implements FileChangeListener {
+public class ConfigDataLoader extends UniFileLoader {
 
     /** Generated serial version UID. */
 //    private static final long serialVersionUID = ;
@@ -45,15 +45,30 @@ public class ConfigDataLoader extends UniFileLoader implements FileChangeListene
     private static final String SECONDARY = "secondary"; //NOI18N
 //    private static final String SERVER = "server"; //NOI18N
     
+    private static HashMap primaryByName;
+    private static HashMap secondaryByName;
+    
     /** Creates loader. */
     public ConfigDataLoader () {
         super("org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject"); // NOI18N
+        
+        initMaps();
     }
 
     /** Initizalized loader, i.e. its extension list. Overrides superclass method. */
     protected void initialize () {
         super.initialize();
-        checkCache ();
+    }
+    
+    private void initMaps() {
+        primaryByName = new HashMap();
+        secondaryByName = new HashMap();
+        
+        // Sun Application Server specific files for 4.2.  !PW FIXME add appclient and connector in NB 5.0/Glassfish support
+        primaryByName.put("sun-web.xml", "WEB-INF/sun-web.xml");
+        primaryByName.put("sun-ejb-jar.xml", "META-INF/sun-ejb-jar.xml");
+        secondaryByName.put("sun-cmp-mappings.xml", "META-INF/sun-cmp-mappings.xml");
+        primaryByName.put("sun-application.xml", "META-INF/sun-application.xml");
     }
     
     /** Gets default display name. Overrides superclass method. */
@@ -143,133 +158,10 @@ public class ConfigDataLoader extends UniFileLoader implements FileChangeListene
     }
     
     private String getPrimaryByName (String name) {
-        HashMap p = (HashMap) getProperty (PRIMARY);
-        return (String) p.get (name);
+        return (String) primaryByName.get(name);
     }
     
     private String getPrimaryBySecondaryName (String name) {
-        HashMap p = (HashMap) getProperty (SECONDARY);
-        return (String) p.get (name);
+        return (String) secondaryByName.get(name);
     }
-    
-//    private Set getServersByFileName(String name) {
-//        Map m = (Map)getProperty(SERVER);
-//        Set serversByName = (Set)m.get(name);
-//        return serversByName != null ? serversByName : Collections.EMPTY_SET;
-//    }
-    
-    //this is only a workaround for getStringTable being protected in ModuleType 
-//    private static final class MT extends ModuleType {
-//        private MT (int i) {
-//            super (i);
-//        }
-//        //return map of MT name in upperCase -> MT instance
-//        private HashMap getMTMap () {
-//            String t [] = getStringTable ();
-//            HashMap m = new HashMap ();
-//            for (int i = 0; i < t.length; i ++) {
-//                m.put (t [i].toUpperCase (), ModuleType.getModuleType (i));
-//            }
-//            return m;
-//        }
-//    }
-    
-    private void checkCache () {
-//        HashMap serversByName = new HashMap ();
-        HashMap primaryByName = new HashMap ();
-        HashMap secondaryByName = new HashMap ();
-
-        // Sun Application Server specific files for 4.2.  !PW FIXME add appclient and connector in NB 5.0/Glassfish support
-        primaryByName.put("sun-web.xml", "WEB-INF/sun-web.xml");
-        primaryByName.put("sun-ejb-jar.xml", "META-INF/sun-ejb-jar.xml");
-        secondaryByName.put("sun-cmp-mappings.xml", "META-INF/sun-cmp-mappings.xml");
-        primaryByName.put("sun-application.xml", "META-INF/sun-application.xml");
-        
-        // Need to dynamically determine location of server specific files... dunno 
-        // how we're going to do that...
-//        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-//        assert rep != null;
-//        FileObject dir = null; //= rep.getDefaultFileSystem().findResource(ServerRegistry.DIR_JSR88_PLUGINS);
-//        if (dir != null) {
-//            dir.addFileChangeListener(this);
-//            FileObject[] servers = dir.getChildren();
-//            for(int _servers = 0; _servers < servers.length; _servers ++) {
-//                String serverName = servers[_servers].getName ();
-//                FileObject deplFNames = servers [_servers].getFileObject ("DeploymentFileNames"); //NOI18N
-//                if (deplFNames != null) {
-//                    FileObject mTypes [] = deplFNames.getChildren ();
-//                    HashMap mtMap = new MT (0).getMTMap ();
-//                    for (int _mTypes = 0; _mTypes < mTypes.length; _mTypes ++) {
-//                        String mTypeName = mTypes [_mTypes].getName ();
-//                        ModuleType mt = (ModuleType) mtMap.get (mTypeName.toUpperCase ());
-//
-//                        FileObject allNames [] = mTypes [_mTypes].getChildren ();
-//                        String primName = null;
-//                        for (int i = 0; i < allNames.length; i++) {
-//                            String fname = allNames [i].getNameExt ();
-//                            int lastSlash = fname.lastIndexOf ('/');
-//                            if (lastSlash == -1) {
-//                                lastSlash = fname.lastIndexOf ('\\'); //try both variants
-//                            }
-//                            lastSlash ++;
-//                            String shortName = fname.substring (lastSlash);
-//                            if (i == 0) {
-//                                primName = shortName;
-//                                primaryByName.put (shortName, fname.replace ('\\', '/')); //just in case..
-//                            } else {
-//                                secondaryByName.put (shortName, primName); //just in case..
-//                            }
-//                            HashSet hs = (HashSet)serversByName.get(shortName);
-//                            if (hs == null) {
-//                                hs = new HashSet();
-//                                serversByName.put(shortName, hs);
-//                            }
-//                            hs.add(serverName);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-        putProperty (PRIMARY, primaryByName);
-        putProperty (SECONDARY, secondaryByName);
-//        putProperty (SERVER, serversByName);
-    }
-    
-    private FileObject findPrimary (FileObject fo, String secondaryName, String primaryName) {
-        String secPath = fo.getPath ();
-        String primPath = secPath.substring (0, secPath.length () - secondaryName.length ()) + primaryName;
-        try {
-            return fo.getFileSystem ().findResource (primPath);
-        } catch (FileStateInvalidException e) {
-            org.openide.ErrorManager.getDefault ().log (e.getLocalizedMessage ());
-            return null;
-        }
-    }
-    
-    public void fileAttributeChanged (FileAttributeEvent fe) {
-    }
-    
-    public void fileChanged (FileEvent fe) {
-        checkCache ();
-    }
-    
-    public void fileDataCreated (FileEvent fe) {
-        checkCache ();
-    }
-    
-    public void fileDeleted (FileEvent fe) {
-        checkCache ();
-    }
-    
-    public void fileFolderCreated (FileEvent fe) {
-        checkCache ();
-    }
-    
-    public void fileRenamed (FileRenameEvent fe) {
-        checkCache ();
-    }
-    
-//    public static String getStandardDeploymentPlanName(Server server) {
-//        return server.getShortName() + "." + GENERIC_EXTENSION; //NOI18N
-//    }
 }
