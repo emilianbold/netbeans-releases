@@ -71,16 +71,15 @@ public class CmpEntityEjb extends EntityEjb {
     /** Holds value of property beanName. */
     //private String beanName;
     
-    /** Creates a new instance of SunONECmpEntityDConfigBean */
+    /** Creates a new instance of CmpEntityEjb */
         public CmpEntityEjb() {
-		addPropertyChangeListener(new PropertyChangeListener() {
-			public void  propertyChange(PropertyChangeEvent ev) {
+//        addPropertyChangeListener(new PropertyChangeListener() {
+//            public void  propertyChange(PropertyChangeEvent ev) {
 // FIXME what is this listener for?
 //				cmpDDSnippet = null;
+//            }
+//        });
 			}
-		});
-	}
-
     
     /** Getter for property schema.
      * @return Value of property schema.
@@ -144,15 +143,6 @@ public class CmpEntityEjb extends EntityEjb {
         this.consistency = consistency;
         getPCS().firePropertyChange("consistency", oldConsistency, consistency);
     }
-    
-
-    
-
-    
-
-    
-
-
 
     /** Getter for property beanName.
      * @return Value of property beanName.
@@ -229,26 +219,18 @@ public class CmpEntityEjb extends EntityEjb {
             this.flushAtEndOfMethod = flushAtEndOfMethod;
         }
     }
-
-	
-	/* ------------------------------------------------------------------------
-	 * XPath to Factory mapping support
-	 */
-/*
-	private HashMap cmpEjbFactoryMap;
-	
-	protected Map getXPathToFactoryMap() {
-		if(cmpEjbFactoryMap == null) {
-			cmpEjbFactoryMap = (HashMap) super.getXPathToFactoryMap();
-
-			// FIXME are there any CMP specific child DConfigBeans?  Their xpath
-			//   factory mappings would go here if there are.
-		}
-		
-		return cmpEjbFactoryMap;
-	}
- */
+    
+    protected void clearProperties() {
+        super.clearProperties();
         
+        cmp = null;
+        flushAtEndOfMethod = null;
+        schema = null;
+        tableName = null;
+        consistency = null;
+    }
+
+	
 	/** Getter for property cmp.
 	 * @return Value of property cmp.
 	 *
