@@ -94,6 +94,6 @@ public class EditFormAction extends NodeAction {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.components.designing"); // NOI18N
+        return new HelpCtx("gui.containers.designing"); // NOI18N
     }
 }

@@ -72,7 +72,7 @@ public class EditContainerAction extends NodeAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.components.designing"); // NOI18N
+        return new HelpCtx("gui.containers.designing"); // NOI18N
     }
 
 }

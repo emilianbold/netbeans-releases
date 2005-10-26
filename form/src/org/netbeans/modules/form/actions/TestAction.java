@@ -52,7 +52,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.modes"); // NOI18N
+        return new HelpCtx("gui.testing"); // NOI18N
     }
 
     /** @return resource for the action icon */

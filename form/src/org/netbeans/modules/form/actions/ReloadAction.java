@@ -42,7 +42,7 @@ public class ReloadAction extends CallableSystemAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.modes"); // NOI18N
+        return new HelpCtx("gui.quickref"); // NOI18N
     }
 
     protected boolean asynchronous() {
