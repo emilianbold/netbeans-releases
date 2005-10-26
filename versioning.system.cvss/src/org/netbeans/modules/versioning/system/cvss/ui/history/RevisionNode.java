@@ -23,6 +23,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
@@ -196,12 +197,19 @@ class RevisionNode extends AbstractNode {
         public void actionPerformed(ActionEvent e) {
             File file = revision.getLogInfoHeader().getFile();
             if (allProjects) {
-                SearchHistoryAction.openSearch(NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), revision.getNumber()),
-                                               revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+                Project [] projects  = OpenProjects.getDefault().getOpenProjects();
+                int n = projects.length;
+                SearchHistoryAction.openSearch(
+                        (n == 1) ? ProjectUtils.getInformation(projects[0]).getDisplayName() : 
+                        NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_OpenProjects_Title", Integer.toString(n)),
+                        revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
             } else {
-                Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
-                SearchHistoryAction.openSearch(context, NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), revision.getNumber()),
-                                               revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+                Project project = Utils.getProject(file);                
+                Context context = Utils.getProjectsContext(new Project[] { project });
+                SearchHistoryAction.openSearch(
+                        context, 
+                        ProjectUtils.getInformation(project).getDisplayName(),
+                        revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
             }
         }
     }

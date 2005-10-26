@@ -19,6 +19,7 @@ import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
 import org.netbeans.api.xml.parsers.*;
 import org.netbeans.api.project.*;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
@@ -26,7 +27,6 @@ import org.netbeans.modules.versioning.system.cvss.util.*;
 import org.netbeans.lib.cvsclient.command.annotate.*;
 import org.netbeans.spi.diff.*;
 import org.openide.*;
-import org.openide.cookies.*;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
@@ -382,9 +382,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     if (al == null || commitMessages == null) return;
                     String message = (String) commitMessages.get(al.getRevision());
                     File file = getCurrentFile();
-                    Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
-                    SearchHistoryAction.openSearch(context, NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision),
-                                                   message, al.getAuthor(), al.getDate());
+                    Project project = Utils.getProject(file);                
+                    Context context = Utils.getProjectsContext(new Project[] { project });
+                    SearchHistoryAction.openSearch(
+                            context, 
+                            ProjectUtils.getInformation(project).getDisplayName(),
+                            message, al.getAuthor(), al.getDate());
                 }
             });
             popupMenu.add(menu);
@@ -398,9 +401,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 AnnotateLine al = getAnnotateLine(line);
                 if (al == null || commitMessages == null) return;
                 String message = (String) commitMessages.get(al.getRevision());
-                File file = getCurrentFile();
-                SearchHistoryAction.openSearch(NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision),
-                                               message, al.getAuthor(), al.getDate());
+                Project [] projects  = OpenProjects.getDefault().getOpenProjects();
+                int n = projects.length;
+                SearchHistoryAction.openSearch(
+                        (n == 1) ? ProjectUtils.getInformation(projects[0]).getDisplayName() : 
+                        NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_OpenProjects_Title", Integer.toString(n)),
+                        message, al.getAuthor(), al.getDate());
             }
         });
         popupMenu.add(menu);

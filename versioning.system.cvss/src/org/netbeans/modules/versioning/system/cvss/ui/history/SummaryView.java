@@ -24,6 +24,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
@@ -346,9 +347,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            File file = drev.getRevision().getLogInfoHeader().getFile();
-            SearchHistoryAction.openSearch(NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), drev.getRevision().getNumber()), 
-                                           drev.getRevision().getMessage().trim(), drev.getRevision().getAuthor(), drev.getRevision().getDate());
+            Project [] projects  = OpenProjects.getDefault().getOpenProjects();
+            int n = projects.length;
+            SearchHistoryAction.openSearch(
+                    (n == 1) ? ProjectUtils.getInformation(projects[0]).getDisplayName() : 
+                    NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_OpenProjects_Title", Integer.toString(n)),
+                    drev.getRevision().getMessage().trim(), drev.getRevision().getAuthor(), drev.getRevision().getDate());
         }
     }
 
@@ -357,9 +361,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             File file = drev.getRevision().getLogInfoHeader().getFile();
+            Project project = Utils.getProject(file);                
             Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
-            SearchHistoryAction.openSearch(context, NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), drev.getRevision().getNumber()), 
-                                           drev.getRevision().getMessage().trim(), drev.getRevision().getAuthor(), drev.getRevision().getDate());
+            SearchHistoryAction.openSearch(
+                    context, 
+                    ProjectUtils.getInformation(project).getDisplayName(),
+                    drev.getRevision().getMessage().trim(), drev.getRevision().getAuthor(), drev.getRevision().getDate());
         }
     }
     
