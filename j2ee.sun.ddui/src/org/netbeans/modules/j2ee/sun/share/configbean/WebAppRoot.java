@@ -12,7 +12,6 @@
  */
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +23,8 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
+import org.openide.ErrorManager;
+
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
@@ -34,8 +35,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.LocaleCharsetInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
-import org.openide.ErrorManager;
-
 
 /** Property structure of WebAppRoot from DTD (sections that are handled
  *    by child DConfigBeans have been removed.):
@@ -516,8 +515,8 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		mappedFileProperty.setDescription(bundle.getString("DESC_MappedFile"));	// NOI18N
 		jspConfig.addWebProperty(mappedFileProperty);
 
-                classLoader = Boolean.TRUE;
-                delegate = Boolean.TRUE;
+        classLoader = Boolean.TRUE;
+        delegate = Boolean.TRUE;
 
 		// errorUrl is required for SJSAS 8.1
 		errorUrl = "";
