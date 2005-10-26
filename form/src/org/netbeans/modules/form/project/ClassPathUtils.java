@@ -244,6 +244,9 @@ public class ClassPathUtils {
             return false; // nothing to add to project
 
         Project project = FileOwnerQuery.getOwner(fileInProject);
+	if(project==null)
+	    return false;
+	
         ProjectClassPathExtender projectClassPath = (ProjectClassPathExtender)
             project.getLookup().lookup(ProjectClassPathExtender.class);
         if (projectClassPath == null)
