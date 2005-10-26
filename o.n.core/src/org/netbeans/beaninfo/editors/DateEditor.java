@@ -48,4 +48,9 @@ public class DateEditor extends PropertyEditorSupport {
         }
     }
     
+    // #67524: Properties Editor doesn't support Date type. Replaces them with '???'
+    public String getJavaInitializationString () {
+	return "new java.util.Date(java.text.DateFormat.getDateTimeInstance().parse(\"" + fmt.format ((Date) getValue ()) + "\")";
+    }
+
 }
