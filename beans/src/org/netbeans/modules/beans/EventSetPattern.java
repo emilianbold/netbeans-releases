@@ -94,7 +94,6 @@ public final class EventSetPattern extends Pattern {
     }
 
     /** Creates new pattern from result of dialog */
-
     static EventSetPattern create( PatternAnalyser patternAnalyser,
                                    String type,
                                    int implementation,
@@ -121,12 +120,12 @@ public final class EventSetPattern extends Pattern {
 
         if ( implementation == 1 ) {
             if ( isUnicast )
-                BeanPatternGenerator.unicastListenerField( esp.getDeclaringClass(), esp.type );
+                BeanPatternGenerator.unicastListenerField( esp.getDeclaringClass(), esp.type, true);
             else
-                BeanPatternGenerator.listenersArrayListField( esp.getDeclaringClass(), esp.type );
+                BeanPatternGenerator.listenersArrayListField( esp.getDeclaringClass(), esp.type, true );
         }
         else if ( implementation == 2 && !isUnicast ) {
-            listenerList = BeanPatternGenerator.eventListenerListField( esp.getDeclaringClass(), esp.type );
+            listenerList = BeanPatternGenerator.eventListenerListField( esp.getDeclaringClass(), esp.type, true).getName();
         }
 
 
@@ -161,6 +160,19 @@ public final class EventSetPattern extends Pattern {
 
 
         return esp;
+    }
+    
+    private Field getEstimatedListenerField() {
+        Field f;
+        if ( isUnicast )
+                f = BeanPatternGenerator.unicastListenerField( getDeclaringClass(), getType(), false);
+            else {
+                f = BeanPatternGenerator.listenersArrayListField( getDeclaringClass(), getType(), false);
+                if (f==null) {
+                    f = BeanPatternGenerator.eventListenerListField( getDeclaringClass(), getType(), false);
+                }
+            }
+        return f;
     }
 
     /** Gets the name of PropertyPattern */
@@ -374,6 +386,10 @@ public final class EventSetPattern extends Pattern {
             }
         }
         //** EOB - Matula
+        Field field = getEstimatedListenerField();
+        if ( field != null && field.isValid() && field.getReferences().isEmpty()) {
+            field.refDelete();
+        }
     }
 
     // Utility methods --------------------------------------------------------------------

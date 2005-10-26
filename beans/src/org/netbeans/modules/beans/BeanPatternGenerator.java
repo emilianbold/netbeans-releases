@@ -459,10 +459,11 @@ final class BeanPatternGenerator extends Object {
      * @param ce Class to operate on.
      * @param type Type of the Event Listener.
      * @throws JmiException If the modification of the source is impossible.
-     * @return Name of found or newly created field.
+     * @return found or newly created field.
      */
-    static String listenersArrayListField( JavaClass ce, Type type ) throws JmiException {
+    static Field listenersArrayListField( JavaClass ce, Type type, boolean create ) throws JmiException {
         assert JMIUtils.isInsideTrans();
+        Field ret = null;
         String fieldName = null;
         String simpleTypeName = ((JavaClass) type).getSimpleName();
         String fieldNameToFind = Introspector.decapitalize( simpleTypeName ) + "List"; // NOI18N
@@ -476,11 +477,12 @@ final class BeanPatternGenerator extends Object {
             Field field = (Field) it.next();
             if (JMIUtils.equalTypes(fieldType, field.getType()) && fieldNameToFind.equals(field.getName())) {
                 fieldName = fieldNameToFind;
+                ret = field;
                 break;
             }
         }
 
-        if ( fieldName == null ) { // Field not found we create new
+        if ( fieldName == null && create) { // Field not found we create new
             fieldName = fieldNameToFind;
             Field field = jmodel.getField().createField();
             field.setName( fieldName );
@@ -491,9 +493,10 @@ final class BeanPatternGenerator extends Object {
             field.setJavadocText( comment );
 
             ce.getFeatures().add( field );
+            ret = field;
         }
 
-        return fieldName;
+        return ret;
     }
 
     /** Ensure the listenersList  exists. Used for generating
@@ -503,11 +506,12 @@ final class BeanPatternGenerator extends Object {
      * @param ce Class to operate on.
      * @param type Type of the Event Listener.
      * @throws JmiException If the modification of the source is impossible.
-     * @return Name of found or newly created field.
+     * @return Field newly created field.
      */
-    static String eventListenerListField( JavaClass ce, Type type ) throws JmiException {
+    static Field eventListenerListField( JavaClass ce, Type type, boolean create ) throws JmiException {
         assert JMIUtils.isInsideTrans();
         String fieldName = null;
+        Field ret = null;
 
         String fieldTypeId = "javax.swing.event.EventListenerList"; // NOI18N
         JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ce);
@@ -518,11 +522,12 @@ final class BeanPatternGenerator extends Object {
             Field field = (Field) it.next();
             if (JMIUtils.equalTypes(fieldType, field.getType())) {
                 fieldName = field.getName();
+                ret = field;
                 break;
             }
         }
 
-        if ( fieldName == null ) { // Field not found we create new
+        if ( fieldName == null && create) { // Field not found we create new
             fieldName = "listenerList"; // NOI18N
             Field field = jmodel.getField().createField();
             field.setName( fieldName );
@@ -534,9 +539,10 @@ final class BeanPatternGenerator extends Object {
             field.setJavadocText( comment );
 
             ce.getFeatures().add( field );
+            ret = field;
         }
 
-        return fieldName;
+        return ret;
     }
 
     /** Ensure that listener field for unicast exists. Used for generating
@@ -546,9 +552,11 @@ final class BeanPatternGenerator extends Object {
      * @param ce Class to operate on.
      * @param type Type of the Event Listener.
      * @throws JmiException If the modification of the source is impossible.
+     * @return Field newly created field.
      */
-    static void unicastListenerField( JavaClass ce, Type type ) throws JmiException {
+    static Field unicastListenerField( JavaClass ce, Type type, boolean create ) throws JmiException {
         assert JMIUtils.isInsideTrans();
+        Field ret = null;
         String fieldName = null;
         String typeSimpleName = ((JavaClass) type).getSimpleName();
         String fieldNameToFind = Introspector.decapitalize( typeSimpleName );
@@ -562,11 +570,12 @@ final class BeanPatternGenerator extends Object {
             Field field = (Field) it.next();
             if (JMIUtils.equalTypes(type, field.getType()) && fieldNameToFind.equals(field.getName())) {
                 fieldName = fieldNameToFind;
+                ret = field;
                 break;
             }
         }
 
-        if ( fieldName == null ) { // Field not found we create new
+        if ( fieldName == null && create) { // Field not found we create new
             fieldName = fieldNameToFind;
             JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ce);
             Field field = jmodel.getField().createField();
@@ -578,7 +587,9 @@ final class BeanPatternGenerator extends Object {
                                                    new Object[] { ((JavaClass) type).getSimpleName() } );
             field.setJavadocText( comment );
             ce.getFeatures().add( field );
+            ret = field;
         }
+        return ret;
     }
 
     static String mcAddBody( Type type, int implementation, String listenerList ) throws JmiException {
