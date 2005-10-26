@@ -10,28 +10,24 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
-import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.ResourceBundle;
 import java.net.URL;
 import java.net.URLClassLoader;
-
+import java.text.MessageFormat;
 import javax.swing.SwingUtilities;
+
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
-
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 /**
  *
@@ -203,7 +199,7 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 
 		return result;
 	}
-
+    
 	public static URL getResourceURL(String resource, Class relatedClass) {
 		URL result = null;
 		ClassLoader classLoader = relatedClass.getClassLoader();
@@ -226,8 +222,7 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 	public static void invokeHelp(final HelpCtx helpCtx) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				((Help) Lookup.getDefault().lookup(Help.class))
-					.showHelp(helpCtx);
+				((Help) Lookup.getDefault().lookup(Help.class)).showHelp(helpCtx);
 			}
 		});
 	}
@@ -239,29 +234,6 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		return "jdo/pmf";
 	}
 	       
-    public static java.io.File createDestFile(java.io.File baseDir, String uri, String fname) {
-        String fixedUri = uri.replace('.', '_');
-        String metaDir = determineMetaDir(fname);
-        if (null != metaDir)
-            metaDir += File.separator + fname;
-        else
-            metaDir = fname;
-        java.io.File retVal = new java.io.File(baseDir.getAbsolutePath() + File.separator +
-            fixedUri + File.separator + metaDir);
-        if (! retVal.getParentFile().exists())
-            retVal.getParentFile().mkdirs();
-        return retVal;        
-    }
-    
-    private static String determineMetaDir(String name) {
-        String retVal = null;
-        if (name.endsWith("xml"))
-            retVal = "META-INF";
-        if (name.endsWith("sun-web.xml"))
-            retVal = "WEB-INF";
-        return retVal;
-    }
-    
     static ConfigurationException makeCE(String messageKey, Object[] params, Throwable cause) {
         String format = null;
         boolean poorFormat = false;
