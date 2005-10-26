@@ -48,11 +48,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private boolean firstTime = true;
     private DataModel data;
     
-    private static final String ENTER_LABEL =
-            NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel");
-    private static final String NONE_LABEL =
-            NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None");
-    
+    private static final String ENTER_LABEL = getMessage("CTL_EnterLabel");
+    private static final String NONE_LABEL = getMessage("CTL_None");
     
     /** Creates new NameIconLocationPanel */
     public NameIconLocationPanel(final WizardDescriptor setting, final DataModel data) {
@@ -79,7 +76,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_NameIconLocation_Title"); // NOI18N
+        return getMessage("LBL_NameIconLocation_Title");
     }
     
     protected void storeToDataModel() {
@@ -130,12 +127,12 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         boolean valid = false;
         String pName = packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassNamePrefix())) {
-            setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier")); // NOI18N
+            setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
         } else if (data.isFileTemplateType() &&
                 (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL))) {
-            setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered")); // NOI18N
+            setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered"));
         } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
-            setErrorMessage(getMessage("ERR_Package_Invalid")); // NOI18N
+            setErrorMessage(getMessage("ERR_Package_Invalid"));
         } else  {
             setErrorMessage(null);
             valid = true;
@@ -171,6 +168,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         packageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_PackageName"));
         createdFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_CreatedFiles"));
         modifiedFiles.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_ModifiedFiles"));
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(NameIconLocationPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -382,7 +383,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private void iconButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iconButtonActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser();
-        int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
+        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             icon.setText(file.getAbsolutePath());

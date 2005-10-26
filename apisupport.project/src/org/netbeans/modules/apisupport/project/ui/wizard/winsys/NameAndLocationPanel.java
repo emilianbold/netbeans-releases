@@ -41,7 +41,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         this.data = data;
         initComponents();
         initAccessibility();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_TCWizardTitle")); // NOI18N
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_TCWizardTitle"));
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -85,7 +85,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_NameLocation_Title"); // NOI18N
+        return getMessage("LBL_NameLocation_Title");
     }
     
     private boolean checkValidity() {
@@ -106,7 +106,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             }
         }
         String packageName = comPackageName.getEditor().getItem().toString().trim();
-        if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) { //NOI18N
+        if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) {
             setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
             return false;
         }
@@ -117,6 +117,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(NameAndLocationPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(NameAndLocationPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -302,7 +306,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private void btnIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIconActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser();
-        int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
+        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             txtIcon.setText(file.getAbsolutePath());

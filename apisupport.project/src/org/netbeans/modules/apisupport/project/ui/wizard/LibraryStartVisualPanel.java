@@ -32,9 +32,9 @@ import org.openide.util.NbBundle;
  * @author Milos Kleint
  */
 final class LibraryStartVisualPanel extends BasicVisualPanel {
-
+    
     static final String PROP_LIBRARY_PATH = "LIBRARY_PATH_VALUE"; //NOI18N
-    static final String PROP_LICENSE_PATH = "LICENSE_PATH_VALUE"; //NOI18N        
+    static final String PROP_LICENSE_PATH = "LICENSE_PATH_VALUE"; //NOI18N
     
     private NewModuleProjectData data;
     
@@ -50,25 +50,25 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         libraryDL = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) { 
-                checkLibraryAndLicense(); 
+            public void insertUpdate(DocumentEvent e) {
+                checkLibraryAndLicense();
             }
         };
         licenseDL = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) { 
-                checkLibraryAndLicense(); 
+            public void insertUpdate(DocumentEvent e) {
+                checkLibraryAndLicense();
             }
         };
         
     }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LibraryStartVisualPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LibraryStartVisualPanel"));
         jButton1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLibraries"));
         jButton2.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLicense"));
-        txtLibrary.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Library"));        
-        txtLicense.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_License"));        
-    }    
+        txtLibrary.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Library"));
+        txtLicense.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_License"));
+    }
     
     
     private void checkLibraryAndLicense() {
@@ -90,7 +90,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                 }
                 String badOnes = populateProjectData(data, text, false);
                 if (badOnes != null) {
-                    setErrorMessage(NbBundle.getMessage(getClass(), "MSG_ClassInDefaultPackage", badOnes), true);
+                    setErrorMessage(NbBundle.getMessage(LibraryStartVisualPanel.class, "MSG_ClassInDefaultPackage", badOnes), true);
                     setValid(Boolean.TRUE);
                     return;
                 }
@@ -244,6 +244,10 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         }
     }
     
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(LibraryStartVisualPanel.class, key);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -344,7 +348,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         JFileChooser chooser = new JFileChooser(txtLicense.getText());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -358,7 +362,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         }
         
     }//GEN-LAST:event_jButton2ActionPerformed
-
+    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         JFileChooser chooser = new JFileChooser();
         File[] olds = convertStringToFiles(txtLibrary.getText().trim());
@@ -375,13 +379,12 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
             }
             txtLibrary.setText(path);
         }
-
     }//GEN-LAST:event_jButton1ActionPerformed
-
+    
     
     static File[] convertStringToFiles(String path) {
         StringTokenizer tok = new StringTokenizer(path, File.pathSeparator);
-        File[] olds = new File[tok.countTokens()]; 
+        File[] olds = new File[tok.countTokens()];
         for (int i = 0; i < olds.length; i++) {
             olds[i] = new File(tok.nextToken());
         }
@@ -400,12 +403,12 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     // End of variables declaration//GEN-END:variables
     
     private static final class JarZipFilter extends FileFilter {
-             public boolean accept(File pathname) {
-                 return  pathname.isDirectory() || pathname.getName().endsWith("zip") || pathname.getName().endsWith("jar"); // NOI18N
-             }
-             public String getDescription() {
-                 return NbBundle.getMessage(LibraryStartVisualPanel.class, "LibraryStartVisualPanel_jar_zip_filter");
-             }
-        
+        public boolean accept(File pathname) {
+            return  pathname.isDirectory() || pathname.getName().endsWith("zip") || pathname.getName().endsWith("jar"); // NOI18N
+        }
+        public String getDescription() {
+            return NbBundle.getMessage(LibraryStartVisualPanel.class, "LibraryStartVisualPanel_jar_zip_filter");
+        }
     }
+    
 }

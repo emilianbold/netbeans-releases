@@ -40,7 +40,7 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     
     private NewLoaderIterator.DataModel data;
     private ButtonGroup group;
-    private boolean listenersAttached = false;
+    private boolean listenersAttached;
     private DocumentListener docList;
     
     /**
@@ -78,24 +78,24 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         String txt = txtMimeType.getText().trim();
         
         if (txt.length() == 0 || DEFAULT_MIME_TYPE.equals(txt) || (!MIME_TYPE_PATTERN.matcher(txt).matches())) {
-            message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NotValidMimeType");
+            message = getMessage("MSG_NotValidMimeType");
         } else {
             if (rbByElement.isSelected()) {
                 if (txtNamespace.getText().trim().length() == 0) {
-                    message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoNamespace");
+                    message = getMessage("MSG_NoNamespace");
                 } else {
                     Matcher match = ELEMENT_PATTERN.matcher(txt);
                     if (!match.matches()) {
-                        message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadMimeTypeForXML");
+                        message = getMessage("MSG_BadMimeTypeForXML");
                     }
                 }
             } else {
                 if (txtExtension.getText().trim().length() == 0) {
-                    message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoExtension");
+                    message = getMessage("MSG_NoExtension");
                 } else {
                     Matcher match = EXTENSION_PATTERN.matcher(txtExtension.getText());
                     if (!match.matches()) {
-                        message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadExtensionPattern");
+                        message = getMessage("MSG_BadExtensionPattern");
                     }
                 }
             }
@@ -174,6 +174,10 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(FileRecognitionPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(FileRecognitionPanel.class, key);
     }
     
     /** This method is called from within the constructor to

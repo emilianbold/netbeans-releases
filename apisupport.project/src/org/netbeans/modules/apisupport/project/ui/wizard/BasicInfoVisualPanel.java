@@ -111,7 +111,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicInfoVisualPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicInfoVisualPanel"));
         browseButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseButton"));
         browseSuiteButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseSuiteButton"));
         folderValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_FolderValue"));
@@ -125,7 +125,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         standAloneModule.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_StandAloneModule"));
         suiteModule.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_SuiteModule"));
         suitePlatformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_SuitePlatformValue"));
-    }     
+    }
     
     private void setComponentsVisibility() {
         boolean isSuiteWizard = wizardType == NewNbModuleWizardIterator.TYPE_SUITE;
@@ -308,6 +308,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private boolean isNetBeansOrgFolder() {
         return ModuleList.findNetBeansOrg(getFolder()) != null;
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(BasicInfoVisualPanel.class, key);
     }
     
     /** This method is called from within the constructor to

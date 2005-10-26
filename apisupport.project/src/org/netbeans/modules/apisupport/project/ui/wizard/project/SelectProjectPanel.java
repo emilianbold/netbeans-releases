@@ -42,7 +42,7 @@ import org.openide.util.NbBundle;
 final class SelectProjectPanel extends BasicWizardIterator.Panel {
     
     private NewProjectIterator.DataModel data;
-    private final ComboWrapper EMPTY = new ComboWrapper(NbBundle.getMessage(getClass(),"MSG_No_Projects"));
+    private final ComboWrapper EMPTY = new ComboWrapper(NbBundle.getMessage(getClass(), "MSG_No_Projects"));
     
     /** Creates new form SelectProjectPanel */
     public SelectProjectPanel(WizardDescriptor setting, NewProjectIterator.DataModel data) {
@@ -57,6 +57,10 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
                 checkValidity();
             }
         });
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(SelectProjectPanel.class, key);
     }
     
     /** This method is called from within the constructor to

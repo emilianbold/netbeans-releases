@@ -23,6 +23,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * the first panel in TopComponent wizard
@@ -127,6 +128,10 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(BasicSettingsPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(BasicSettingsPanel.class, key);
     }
     
     /** This method is called from within the constructor to

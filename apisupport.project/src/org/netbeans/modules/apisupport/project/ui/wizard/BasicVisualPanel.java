@@ -63,14 +63,6 @@ public abstract class BasicVisualPanel extends JPanel {
         firePropertyChange("valid", Boolean.valueOf(!newValid.booleanValue()), newValid); // NOI18N
     }
     
-    /**
-     * Convenience method for accessing Bundle resources from this package.
-     */
-    protected final String getMessage(String key) {
-        // XXX [-jglick] this is poor form - makes it impossible to safely subclass anything! Please remove
-        return NbBundle.getMessage(getClass(), key);
-    }
-    
     abstract static class NewTemplatePanel extends BasicVisualPanel {
         
         NewTemplatePanel(final WizardDescriptor settings, final int wizardType) {

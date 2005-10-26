@@ -36,10 +36,8 @@ import org.openide.util.Utilities;
  */
 final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
-    private static final String ENTER_LABEL =
-            NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel");
-    private static final String NONE_LABEL =
-            NbBundle.getMessage(NameIconLocationPanel.class, "CTL_None");
+    private static final String ENTER_LABEL = getMessage("CTL_EnterLabel");
+    private static final String NONE_LABEL = getMessage("CTL_None");
     
     private DataModel data;
     private DocumentListener updateListener;
@@ -53,7 +51,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         if (data.getPackageName() != null) {
             packageName.setSelectedItem(data.getPackageName());
         }
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle"));
         className.select(0, className.getText().length());
         updateListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -81,7 +79,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_NameIconLocation_Title"); // NOI18N
+        return getMessage("LBL_NameIconLocation_Title");
     }
     
     protected void storeToDataModel() {
@@ -117,15 +115,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private void checkValidity() {
         String pName = packageName.getEditor().getItem() == null ? "" : packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassName())) {
-            setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier")); // NOI18N
+            setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
         } else if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) {
-            setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered")); // NOI18N
+            setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered"));
         } else if (classAlreadyExists()) {
-            setErrorMessage(getMessage("MSG_ClassAlreadyExists")); // NOI18N
+            setErrorMessage(getMessage("MSG_ClassAlreadyExists"));
         } else if (data.isToolbarEnabled() && getIconPath() == null) {
-            setErrorMessage(getMessage("MSG_IconRequiredForToolbar")); // NOI18N
+            setErrorMessage(getMessage("MSG_IconRequiredForToolbar"));
         } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
-            setErrorMessage(getMessage("ERR_Package_Invalid")); // NOI18N
+            setErrorMessage(getMessage("ERR_Package_Invalid"));
         } else {
             setErrorMessage(null);
         }
@@ -145,6 +143,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(NameIconLocationPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(NameIconLocationPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -338,7 +340,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private void iconButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iconButtonActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser();
-        int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
+        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             icon.setText(file.getAbsolutePath());

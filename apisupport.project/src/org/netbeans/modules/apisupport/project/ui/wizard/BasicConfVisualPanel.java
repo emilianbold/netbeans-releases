@@ -225,6 +225,10 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         }
     }
     
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(BasicConfVisualPanel.class, key);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

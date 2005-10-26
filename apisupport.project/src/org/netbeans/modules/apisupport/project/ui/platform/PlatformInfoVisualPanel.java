@@ -53,11 +53,9 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     private void checkForm() {
         String plafName = plafNameValue.getText().trim();
         if (plafName.equals("")) {
-            setErrorMessage(NbBundle.getMessage(PlatformInfoVisualPanel.class,
-                    "MSG_BlankPlatformName")); // NOI18N
+            setErrorMessage(getMessage("MSG_BlankPlatformName"));
         } else if (!NbPlatform.isLabelValid(plafName)) {
-            setErrorMessage(NbBundle.getMessage(PlatformInfoVisualPanel.class,
-                    "MSG_NameIsAlreadyUsed")); // NOI18N
+            setErrorMessage(getMessage("MSG_NameIsAlreadyUsed"));
         } else {
             setErrorMessage(null);
         }
@@ -78,6 +76,10 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
             });
             attached = true;
         }
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(PlatformInfoVisualPanel.class, key);
     }
     
     /** This method is called from within the constructor to

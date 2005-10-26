@@ -65,12 +65,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private FileSystem sfs;
     
     private static final ListCellRenderer POSITION_RENDERER = new PositionRenderer();
-    private static final String POSITION_HERE =
-            NbBundle.getMessage(GUIRegistrationPanel.class, "CTL_PositionHere");
+    private static final String POSITION_HERE = getMessage("CTL_PositionHere");
     private static final String POSITION_SEPARATOR = " - "; // NOI18N
     
-    private static final String EMPTY_VALUE =
-            NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Empty");
+    private static final String EMPTY_VALUE = getMessage("LBL_Empty");
     private static final DefaultComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel(new Object[] { EMPTY_VALUE });
     
     private DataModel data;
@@ -89,7 +87,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         this.data = data;
         initComponents();
         initAccesibility();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle"));
         
         menu.addPopupMenuListener(new PML(menu, menuPosition));
         toolbar.addPopupMenuListener(new PML(toolbar, toolbarPosition));
@@ -114,7 +112,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_GUIRegistration_Title"); // NOI18N
+        return getMessage("LBL_GUIRegistration_Title");
     }
     
     protected void storeToDataModel() {
@@ -190,7 +188,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private boolean checkValidity() {
         boolean result = false;
         if (globalKeyboardShortcut.isSelected() && keyStroke.getText().equals("")) { // NOI18N
-            setErrorMessage(getMessage("MSG_YouMustSpecifyShortcut")); // NOI18N
+            setErrorMessage(getMessage("MSG_YouMustSpecifyShortcut"));
         } else if (!check(globalMenuItem, menu, menuPosition) ||
                 !check(globalToolbarButton, toolbar, toolbarPosition) ||
                 !check(fileTypeContext, ftContentType, ftPosition) ||
@@ -350,6 +348,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(GUIRegistrationPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(GUIRegistrationPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -789,7 +791,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     private void keyStrokeChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyStrokeChangeActionPerformed
         ShortcutEnterPanel sepPanel = new ShortcutEnterPanel();
-        DialogDescriptor dd = new DialogDescriptor(sepPanel, getMessage("LBL_AddShortcutTitle")); // NOI18N
+        DialogDescriptor dd = new DialogDescriptor(sepPanel, getMessage("LBL_AddShortcutTitle"));
         Dialog addshort = DialogDisplayer.getDefault().createDialog(dd);
         addshort.setVisible(true);
         if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
@@ -839,7 +841,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     // End of variables declaration//GEN-END:variables
     
     private void initAccesibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_GuiRegistrationPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_GuiRegistrationPanel"));
         category.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Category"));
         edContentType.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_edContentType"));
         edPosition.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_edPosition"));

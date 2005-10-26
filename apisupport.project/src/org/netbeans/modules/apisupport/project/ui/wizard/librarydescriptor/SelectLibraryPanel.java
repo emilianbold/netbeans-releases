@@ -24,6 +24,7 @@ import org.netbeans.modules.apisupport.project.ui.platform.LibrariesModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Libraries</em> panel in J2SE Library Descriptor Wizard.
@@ -41,7 +42,7 @@ final class SelectLibraryPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle")); // NOI18N
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
         
     }
     
@@ -63,11 +64,15 @@ final class SelectLibraryPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_SelectLibraryPanel_Title"); // NOI18N
+        return getMessage("LBL_SelectLibraryPanel_Title");
     }
     
     protected HelpCtx getHelp() {
         return new HelpCtx(SelectLibraryPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(SelectLibraryPanel.class, key);
     }
     
     /** This method is called from within the constructor to

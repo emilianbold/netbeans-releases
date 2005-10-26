@@ -24,6 +24,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -42,7 +43,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         initComponents();
         initAccessibility();
         Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle")); // NOI18N
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle"));
         modifiedFilesValue.setBackground(lblBgr);
         createdFilesValue.setBackground(lblBgr);
         modifiedFilesValue.setEditable(false);
@@ -96,7 +97,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_NameLocation_Title"); // NOI18N
+        return getMessage("LBL_NameLocation_Title");
     }
     
     private void checkValidity() {
@@ -109,7 +110,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             return;
         }
         String packageName = comPackageName.getEditor().getItem().toString().trim();
-        if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) { //NOI18N
+        if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) {
             setErrorMessage(getMessage("ERR_Package_Invalid"));
             return;
         }
@@ -124,6 +125,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     protected HelpCtx getHelp() {
         return new HelpCtx(NameAndLocationPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(NameAndLocationPanel.class, key);
     }
     
     /** This method is called from within the constructor to

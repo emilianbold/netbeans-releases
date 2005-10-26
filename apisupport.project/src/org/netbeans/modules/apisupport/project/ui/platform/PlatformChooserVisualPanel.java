@@ -44,7 +44,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
                 return f.isDirectory();
             }
             public String getDescription() {
-                return NbBundle.getMessage(PlatformChooserVisualPanel.class, "CTL_PlatformFolder"); // NOI18N
+                return getMessage("CTL_PlatformFolder");
             }
         });
         platformChooser.addPropertyChangeListener(this);
@@ -73,14 +73,11 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
                     setPlafLabel(plafDir.getAbsolutePath());
                 }
                 if (!NbPlatform.isSupportedPlatform(plafDir)) {
-                    setErrorMessage(NbBundle.getMessage(PlatformChooserVisualPanel.class,
-                            "MSG_UnsupportedPlatform")); // NOI18N
+                    setErrorMessage(getMessage("MSG_UnsupportedPlatform"));
                 } else if (NbPlatform.contains(plafDir)) {
-                    setErrorMessage(NbBundle.getMessage(PlatformChooserVisualPanel.class,
-                            "MSG_AlreadyAddedPlatform")); // NOI18N
+                    setErrorMessage(getMessage("MSG_AlreadyAddedPlatform"));
                 } else if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
-                    setErrorMessage(NbBundle.getMessage(PlatformChooserVisualPanel.class,
-                            "MSG_NameIsAlreadyUsedGoToNext")); // NOI18N
+                    setErrorMessage(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
                     setValid(Boolean.TRUE);
                 } else {
                     setErrorMessage(null);
@@ -98,6 +95,10 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         plafLabelValue.setText(label);
         plafLabelValue.setCaretPosition(0);
         storeData();
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(PlatformChooserVisualPanel.class, key);
     }
     
     /** This method is called from within the constructor to

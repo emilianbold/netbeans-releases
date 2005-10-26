@@ -23,6 +23,7 @@ import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * The first panel in the <em>New Action Wizard</em>.
@@ -53,12 +54,12 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         this.data = data;
         initComponents();
         initAccesibility();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle")); // NOI18N
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle"));
         coockieClass.setModel(COOKIE_CLASS_MODEL);
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_ActionType_Title"); // NOI18N
+        return getMessage("LBL_ActionType_Title");
     }
     
     protected void storeToDataModel() {
@@ -91,6 +92,10 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     private boolean isMultiSelection() {
         return modeMultiple.isSelected();
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(ActionTypePanel.class, key);
     }
     
     /** This method is called from within the constructor to

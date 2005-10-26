@@ -18,6 +18,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * The first panel in the <em>New Wizard Wizard</em>.
@@ -44,7 +45,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_WizardType_Title"); // NOI18N
+        return getMessage("LBL_WizardType_Title");
     }
     
     protected void storeToDataModel() {
@@ -68,7 +69,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     
     private void checkValidity() {
         if (!isNumberOfStepsValid()) {
-            setErrorMessage(getMessage("MSG_IncorrectNumberOfSteps")); // NOI18N
+            setErrorMessage(getMessage("MSG_IncorrectNumberOfSteps"));
         } else {
             setErrorMessage(null);
         }
@@ -93,6 +94,10 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         statik.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Static"));
         dynamic.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Dynamic"));
         numberOfStepsTxt.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_NumberOfSteps"));
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(WizardTypePanel.class, key);
     }
     
     /** This method is called from within the constructor to
