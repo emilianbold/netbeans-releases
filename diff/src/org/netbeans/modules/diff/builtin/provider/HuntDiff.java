@@ -142,12 +142,23 @@ public class HuntDiff {
             if (start1 > n) break;
             if (J[start1] < start2) { // There's something extra in the first file
                 int end1 = start1 + 1;
-                while (end1 <= n && J[end1] < start2) end1++;
-                differences.add(new Difference(Difference.DELETE, start1, end1 - 1, start2 - 1, 0, null, null));
+                StringBuffer deletedText = new StringBuffer();
+                deletedText.append(lines1[start1-1]).append('\n');
+                while (end1 <= n && J[end1] < start2) {
+                    String line = lines1[end1-1];
+                    deletedText.append(line).append('\n');
+                    end1++;
+                }
+                differences.add(new Difference(Difference.DELETE, start1, end1 - 1, start2 - 1, 0, deletedText.toString(), null));
                 start1 = end1;
             } else { // There's something extra in the second file
                 int end2 = J[start1];
-                differences.add(new Difference(Difference.ADD, (start1 - 1), 0, start2, (end2 - 1), null, null));
+                StringBuffer addedText = new StringBuffer();
+                for (int i = start2; i < end2; i++) {
+                    String line = lines2[i-1];
+                    addedText.append(line).append('\n');
+                }
+                differences.add(new Difference(Difference.ADD, (start1 - 1), 0, start2, (end2 - 1), null, addedText.toString()));
                 start2 = end2;
             }
         } while (start1 <= n);
