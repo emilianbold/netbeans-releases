@@ -199,7 +199,7 @@ public class AppRoot extends BaseRoot {
                 try {
                     result = provider.getAppDDRoot(new org.xml.sax.InputSource(stream));
                 } catch (Exception ex) {
-                    jsr88Logger.severe("invalid stream for SunWebApp"); // FIXME
+                    jsr88Logger.severe("invalid stream for SunApplication"); // FIXME
                 }
             }
             
