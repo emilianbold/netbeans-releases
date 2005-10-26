@@ -63,8 +63,8 @@ final class CodeTemplateOverrideAction extends TextAction {
             new CodeTemplateOverrideAction(handler, TAB),
             new CodeTemplateOverrideAction(handler, SHIFT_TAB),
             new CodeTemplateOverrideAction(handler, ENTER),
-            new CodeTemplateOverrideAction(handler, UNDO),
-            new CodeTemplateOverrideAction(handler, REDO),
+//            new CodeTemplateOverrideAction(handler, UNDO),
+//            new CodeTemplateOverrideAction(handler, REDO),
         };
         
         // Install the actions into new action map
