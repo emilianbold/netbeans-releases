@@ -367,7 +367,7 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
             } else {
                 // AWT thread
                 // #67599: This task runs delayed, so it's possible that
-                // navigator was already closed, that's hwy the check
+                // navigator was already closed, that's why the check
                 if (curNodes != null) {
                     updateContext();
                 }
