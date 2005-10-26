@@ -408,9 +408,11 @@ public class FormModel
         boolean autoUndo = true;
         try {
             if (fromModel) {
-                layoutStartMark = layoutModel.getChangeMark();
-                ue = layoutModel.getUndoableEdit();
-                layoutModel.removeComponent(metacomp.getId(), true);
+                if (layoutModel != null) {
+                    layoutStartMark = layoutModel.getChangeMark();
+                    ue = layoutModel.getUndoableEdit();
+                    layoutModel.removeComponent(metacomp.getId(), true);
+                }
                 removeLayoutComponentsRecursively(metacomp);
             }
 
@@ -477,7 +479,7 @@ public class FormModel
                 removeLayoutComponentsRecursively(comps[i]);
             }
         }
-        LayoutComponent layoutComp = layoutModel.getLayoutComponent(metacomp.getId());
+        LayoutComponent layoutComp = layoutModel == null ? null : layoutModel.getLayoutComponent(metacomp.getId());
         if (layoutComp != null && layoutComp.getParent() == null) {
             // remove only root components
             layoutModel.removeComponent(layoutComp.getId(), true);
