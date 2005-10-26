@@ -227,9 +227,10 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                         }
                     });
                 }
-            });
+            }, 100);
+        } else {
+            autoSaveTask.schedule(100);
         }
-        autoSaveTask.schedule(100);
     }
     
     public void setChanged() {
