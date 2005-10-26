@@ -135,6 +135,13 @@ public class StatefulEjb extends SessionEjb {
         }
     }
 
+    protected void clearProperties() {
+        super.clearProperties();
+        
+        availabilityEnabled = null;
+        checkpointAtEndOfMethod = null;
+    }
+    
 
     public String getAvailabilityEnabled() {
         return this.availabilityEnabled;
