@@ -59,9 +59,9 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
     //the property changes are fired via JSPColoringData by TagLibParseSupport
     public void propertyChange(PropertyChangeEvent evt) {
         Boolean newValue = (Boolean)evt.getNewValue();
-        if(evt.getPropertyName().equals(JSPColoringData.PROP_PARSING_IN_PROGRESS) && newValue.booleanValue())
+        if(JSPColoringData.PROP_PARSING_IN_PROGRESS.equals(evt.getPropertyName()) && newValue.booleanValue())
             setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
-        if(evt.getPropertyName().equals(JSPColoringData.PROP_PARSING_SUCCESSFUL))
+        if(JSPColoringData.PROP_PARSING_SUCCESSFUL.equals(evt.getPropertyName()))
             setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
     }
     
@@ -70,8 +70,10 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
     }
     
     private void setUpToDate(UpToDateStatus upToDate) {
+        UpToDateStatus oldStatus = this.upToDate;
+        if(oldStatus.equals(upToDate)) return ;
         this.upToDate = upToDate;
-        firePropertyChange(PROP_UP_TO_DATE, null, upToDate);
+        firePropertyChange(PROP_UP_TO_DATE, oldStatus, upToDate);
     }
     
     public synchronized void removeUpdate(DocumentEvent e) {

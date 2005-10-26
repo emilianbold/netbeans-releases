@@ -107,7 +107,6 @@ public final class JSPColoringData extends PropertyChangeSupport {
         // check whether coloring has not changed
         boolean coloringSame = equalsColoringInformation(taglibs, prefixMapper, newTaglibs, newPrefixMapper);
         
-        firePropertyChange(PROP_PARSING_IN_PROGRESS, null, new Boolean(false));
         firePropertyChange(PROP_PARSING_SUCCESSFUL, null, new Boolean(parseSuccessful));
         
         // check and apply EL data
