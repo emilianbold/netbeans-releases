@@ -14,15 +14,16 @@
 package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,7 +84,7 @@ final class NbPlatformCustomizerSources extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         sourceLabel.setLabelFor(sourceList);
         org.openide.awt.Mnemonics.setLocalizedText(sourceLabel, org.openide.util.NbBundle.getMessage(NbPlatformCustomizerSources.class, "LBL_PlatformSources"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -106,11 +107,11 @@ final class NbPlatformCustomizerSources extends JPanel {
 
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
-        buttonPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 12, 0, 0)));
-        org.openide.awt.Mnemonics.setLocalizedText(addFolderButton, org.openide.util.NbBundle.getMessage(NbPlatformCustomizerSources.class, "CTL_AddFolder"));
+        buttonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(addFolderButton, org.openide.util.NbBundle.getMessage(NbPlatformCustomizerSources.class, "CTL_AddZipOrFolder"));
         addFolderButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addFolder(evt);
+                addZipOrFolder(evt);
             }
         });
 
@@ -195,30 +196,27 @@ final class NbPlatformCustomizerSources extends JPanel {
         model.removeSourceRoot(selURLs);
     }//GEN-LAST:event_removeFolder
     
-    private void addFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFolder
+    private void addZipOrFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addZipOrFolder
         JFileChooser chooser = new JFileChooser();
         chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f)  {
-                return f.isDirectory();
+                return f.isDirectory() ||
+                        f.getName().toLowerCase(Locale.US).endsWith(".jar") || // NOI18N
+                        f.getName().toLowerCase(Locale.US).endsWith(".zip"); // NOI18N
             }
             public String getDescription() {
-                return NbBundle.getMessage(NbPlatformCustomizer.class, "CTL_SourcesTab"); // NOI18N
+                return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, "CTL_SourcesTab");
             }
         });
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            try {
-                URL newUrl = chooser.getSelectedFile().toURI().toURL();
-                model.addSourceRoot(newUrl);
-                sourceList.setSelectedValue(newUrl, true);
-            } catch (IOException e) {
-                // tell the user that something goes wrong
-                ErrorManager.getDefault().notify(ErrorManager.USER, e);
-            }
+            URL newUrl = Util.urlForDirOrJar(FileUtil.normalizeFile(chooser.getSelectedFile()));
+            model.addSourceRoot(newUrl);
+            sourceList.setSelectedValue(newUrl, true);
         }
-    }//GEN-LAST:event_addFolder
+    }//GEN-LAST:event_addZipOrFolder
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

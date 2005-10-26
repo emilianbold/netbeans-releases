@@ -50,7 +50,7 @@ public final class ModuleList {
     
     static final String DEST_DIR_IN_NETBEANS_ORG = "nbbuild" + File.separatorChar + "netbeans"; // NOI18N
     /** Synch with org.netbeans.nbbuild.ModuleListParser.DEPTH_NB_ALL */
-    private static final int DEPTH_NB_ALL = 3;
+    public static final int DEPTH_NB_ALL = 3;
     
     /**
      * Cache of source-derived lists, by source root.
@@ -173,7 +173,7 @@ public final class ModuleList {
         return new ModuleList(entries, root);
     }
     
-    private static final Set/*<String>*/ EXCLUDED_DIR_NAMES = new HashSet();
+    public static final Set/*<String>*/ EXCLUDED_DIR_NAMES = new HashSet();
     static {
         EXCLUDED_DIR_NAMES.add("CVS"); // NOI18N
         EXCLUDED_DIR_NAMES.add("nbproject"); // NOI18N
