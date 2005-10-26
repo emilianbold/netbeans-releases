@@ -194,6 +194,8 @@ PropertyChangeListener {
         if (!listen) return;
 	if (evt.getSource () == cbEffects) {
 	    effectsColorChooser.setEnabled (cbEffects.getSelectedIndex () > 0);
+            effectsColorChooser.setColor (null);
+            updateData ();
 	} else
 	if (evt.getSource () == cbLanguages) {
 	    setCurrentLanguage ((String) cbLanguages.getSelectedItem ());
