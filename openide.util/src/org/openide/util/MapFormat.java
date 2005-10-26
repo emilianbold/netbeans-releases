@@ -240,7 +240,15 @@ public class MapFormat extends Format {
             lastOffset = offidx;
 
             String key = arguments[i];
-            String obj = formatObject(processKey(key));
+            String obj;
+            if (key.length() > 0) {
+                obj = formatObject(processKey(key));
+            } else {
+                // else just copy the left and right braces
+                result.append(this.ldel);
+                result.append(this.rdel);
+                continue;
+            }
 
             if (obj == null) {
                 // try less-greedy match; useful for e.g. PROP___PROPNAME__ where

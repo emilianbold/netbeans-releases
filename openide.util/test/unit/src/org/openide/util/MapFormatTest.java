@@ -66,7 +66,7 @@ public class MapFormatTest extends TestCase {
         args.put("NAME", "Jaroslav");
         MapFormat f = new MapFormat(args) {
             protected Object processKey(String key) {
-                fail("There is no key in \"" + s + "\", processKey() should not be called.");
+                fail("There is no key in \"" + s + "\", processKey() should not be called with key:" + key);
                 return "not defined";
             }
         };
