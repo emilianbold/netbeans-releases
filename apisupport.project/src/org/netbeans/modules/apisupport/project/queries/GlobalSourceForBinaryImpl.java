@@ -90,7 +90,18 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     if (!nbSrcF.exists()) {
                         continue;
                     }
-                    String pathInZip = NetBeansSourcesParser.getInstance(nbSrcF).findSourceRoot(cnb);
+                    NetBeansSourcesParser nbsp;
+                    try {
+                        nbsp = NetBeansSourcesParser.getInstance(nbSrcF);
+                    } catch (ZipException e) {
+                        Util.err.annotate(e, ErrorManager.UNKNOWN, nbSrcF + " does not seem to be a valid ZIP file.", null, null, null); // NOI18N
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        continue;
+                    }
+                    if (nbsp == null) {
+                        continue;
+                    }
+                    String pathInZip = nbsp.findSourceRoot(cnb);
                     if (pathInZip == null) {
                         continue;
                     }
@@ -110,7 +121,6 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 public void removeChangeListener(ChangeListener l) {}
             };
         } catch (IOException ex) {
-            ex.printStackTrace();
             throw new AssertionError(ex);
         }
     }
@@ -126,13 +136,19 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         private ZipFile nbSrcZip;
         private String zipNBCVSRoot;
         
+        /**
+         * May return <code>null</code> if the given zip is not a valid
+         * NetBeans sources zip.
+         */
         static NetBeansSourcesParser getInstance(File nbSrcZip) throws ZipException, IOException {
             NetBeansSourcesParser nbsp = (NetBeansSourcesParser) instances.get(nbSrcZip);
             if (nbsp == null) {
                 ZipFile nbSrcZipFile = new ZipFile(nbSrcZip);
                 String zipNBCVSRoot = NetBeansSourcesParser.findNBCVSRoot(nbSrcZipFile);
-                nbsp = new NetBeansSourcesParser(nbSrcZipFile, zipNBCVSRoot);
-                instances.put(nbSrcZip, nbsp);
+                if (zipNBCVSRoot != null) {
+                    nbsp = new NetBeansSourcesParser(nbSrcZipFile, zipNBCVSRoot);
+                    instances.put(nbSrcZip, nbsp);
+                }
             }
             return nbsp;
         }
