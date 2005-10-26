@@ -1434,27 +1434,8 @@ public class XMLDataObject extends MultiDataObject {
             //super (XMLDataObject.class);                // nothing like looks loader can be constructed
         }                                                 // can it produce subclasses?
 
-        /** Get default actions.
-        * @return array of default system actions or <CODE>null</CODE> if this loader does not have any
-        *   actions
-        */
-        protected SystemAction[] defaultActions () {
-            return new SystemAction[] {
-                           SystemAction.get(OpenAction.class),
-                           SystemAction.get(FileSystemAction.class),
-                           null,
-                           SystemAction.get(CutAction.class),
-                           SystemAction.get(CopyAction.class),
-                           SystemAction.get(PasteAction.class),
-                           null,
-                           SystemAction.get(DeleteAction.class),
-                           SystemAction.get(RenameAction.class),
-                           null,
-                           SystemAction.get(SaveAsTemplateAction.class),
-                           null,
-                           SystemAction.get(ToolsAction.class),
-                           SystemAction.get(PropertiesAction.class)
-                       };
+        protected String actionsContext () {
+            return "Loaders/text/xml/Actions"; // NOI18N
         }
         
         /** Get the default display name of this loader.

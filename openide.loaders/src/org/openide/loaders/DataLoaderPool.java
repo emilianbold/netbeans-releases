@@ -625,28 +625,10 @@ private static class InstanceLoader extends UniFileLoader {
         setExtensions(null);
     }
 
-    /** Get default actions.
-    * @return array of default system actions or <CODE>null</CODE> if this loader does not have any
-    *   actions
-    */
-    protected SystemAction[] defaultActions () {
-        return new SystemAction[] {
-            SystemAction.get (org.openide.actions.OpenAction.class),
-            SystemAction.get (org.openide.actions.FileSystemAction.class),
-            null,
-            SystemAction.get(org.openide.actions.CutAction.class),
-            SystemAction.get(org.openide.actions.CopyAction.class),
-            SystemAction.get(org.openide.actions.PasteAction.class),
-            null,
-            SystemAction.get(org.openide.actions.DeleteAction.class),
-            // #16278: Rename should be there. (It may or may not be enabled...)
-            SystemAction.get(org.openide.actions.RenameAction.class),
-            null,
-            SystemAction.get (org.openide.actions.ToolsAction.class),
-            SystemAction.get(org.openide.actions.PropertiesAction.class)
-        };
+    protected String actionsContext () {
+        return "Loaders/application/x-nbsettings/Actions"; // NOI18N
     }
-
+    
     /** Get the default display name of this loader.
     * @return default display name
     */
@@ -756,29 +738,10 @@ private static final class DefaultLoader extends MultiFileLoader {
         //super (DefaultDataObject.class);
     }
 
-    /** Get default actions.
-    * @return array of default system actions or <CODE>null</CODE> if this loader does not have any
-    *   actions
-    */
-    protected SystemAction[] defaultActions () {
-        return new SystemAction[] {
-                SystemAction.get (org.openide.actions.OpenAction.class),
-                null,
-                SystemAction.get (org.openide.actions.FileSystemAction.class),
-                null,
-                SystemAction.get (org.openide.actions.CutAction.class),
-                SystemAction.get (org.openide.actions.CopyAction.class),
-                SystemAction.get (org.openide.actions.PasteAction.class),
-                null,
-                SystemAction.get (org.openide.actions.DeleteAction.class),
-                SystemAction.get (org.openide.actions.RenameAction.class),
-                null,
-                SystemAction.get (org.openide.actions.ToolsAction.class),
-                SystemAction.get (org.openide.actions.SaveAsTemplateAction.class),
-                SystemAction.get (org.openide.actions.PropertiesAction.class)
-            };
+    protected String actionsContext () {
+        return "Loaders/content/unknown/Actions"; // NOI18N
     }
-
+    
     /** Get the default display name of this loader.
     * @return default display name
     */
