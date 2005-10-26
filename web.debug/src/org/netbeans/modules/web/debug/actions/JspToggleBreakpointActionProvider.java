@@ -66,7 +66,7 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         //supports JSP debugging or not
         String serverID = Utils.getTargetServerID(url);
 
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isJsp && (serverID == null || !serverID.equals("WebLogic9"))); //NOI18N
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isJsp && !"WebLogic9".equals(serverID)); //NOI18N
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
         ) 
