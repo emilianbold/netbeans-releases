@@ -14,7 +14,9 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.BorderLayout;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 
@@ -43,6 +45,8 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         innerPanel = new javax.swing.JPanel();
+        nameOfTheProject = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -50,17 +54,42 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
         jLabel1.setText(org.openide.util.NbBundle.getMessage(OpeningProjectPanel.class, "LBL_Opening_Projects", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel1, gridBagConstraints);
 
-        innerPanel.add(progress);
+        innerPanel.setLayout(new java.awt.BorderLayout());
+
+        innerPanel.add(progress, BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(innerPanel, gridBagConstraints);
+
+        nameOfTheProject.setColumns(20);
+        nameOfTheProject.setEditable(false);
+        nameOfTheProject.setFont(javax.swing.UIManager.getFont("Label.font"));
+        nameOfTheProject.setText("jTextField1");
+        nameOfTheProject.setBorder(null);
+        nameOfTheProject.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        add(nameOfTheProject, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -69,6 +98,11 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JPanel innerPanel;
     public javax.swing.JLabel jLabel1;
+    public javax.swing.JPanel jPanel1;
+    public javax.swing.JTextField nameOfTheProject;
     // End of variables declaration//GEN-END:variables
     
+    public void setProjectName(final String name) {
+        nameOfTheProject.setText(name);
+    }
 }

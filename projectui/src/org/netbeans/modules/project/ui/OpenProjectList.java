@@ -167,8 +167,9 @@ public final class OpenProjectList {
 	    final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
 	    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
 	    final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true);
-	    
-	    dialog.getContentPane().add(new OpeningProjectPanel(handle));
+            final OpeningProjectPanel panel = new OpeningProjectPanel(handle);
+            
+	    dialog.getContentPane().add(panel);
 	    dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
 	    dialog.pack();
 	    
@@ -184,7 +185,7 @@ public final class OpenProjectList {
 	    OPENING_RP.post(new Runnable() {
 		public void run() {
 		    try {
-			doOpen(projects, openSubprojects, handle);
+			doOpen(projects, openSubprojects, handle, panel);
 		    } finally {
 			SwingUtilities.invokeLater(new Runnable() {
 			    public void run() {
@@ -204,7 +205,7 @@ public final class OpenProjectList {
 	    
 	    dialog.setVisible(true);
 	} else {
-	    doOpen(projects, openSubprojects, null);
+	    doOpen(projects, openSubprojects, null, null);
 	}
         
         long end = System.currentTimeMillis();
@@ -214,7 +215,7 @@ public final class OpenProjectList {
         }
     }
     
-    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle) {
+    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, OpeningProjectPanel panel) {
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
         int  workPerProject = maxWork / (projects.length > 0 ? projects.length : 1);
@@ -230,10 +231,19 @@ public final class OpenProjectList {
         for (int i=0; i<projects.length; i++) {
             assert projects[i] != null : "Projects can't be null";
             
+            if (!projectsOpened.add(projects[i])) {
+                //already opened:
+                continue;
+            }
+            
+            if (panel != null) {
+                panel.setProjectName(ProjectUtils.getInformation(projects[i]).getDisplayName());
+            }
+            
             recentProjectsChanged |= doOpenProject(projects[i]);
             
             if ( openSubprojects ) {
-                recentProjectsChanged |= openSubprojects(projects[i], projectsOpened, subprojectsCache, handle, i * workPerProject, (i + 1) * workPerProject);
+                recentProjectsChanged |= openSubprojects(projects[i], projectsOpened, subprojectsCache, handle, panel, i * workPerProject, (i + 1) * workPerProject);
             }
             
 	    if (handle != null) {
@@ -529,7 +539,7 @@ public final class OpenProjectList {
     /** Will recursively open subprojects of given project.
      * @return True if the recent projects list has changed
      */
-    private boolean openSubprojects(Project p, Collection projectsOpened, Map/*<Project,Set<Project>>*/ subprojectsCache, ProgressHandle handle, int start, int end) {
+    private boolean openSubprojects(Project p, Collection projectsOpened, Map/*<Project,Set<Project>>*/ subprojectsCache, ProgressHandle handle, OpeningProjectPanel panel, int start, int end) {
         Set/*<Project>*/ subprojects = (Set) subprojectsCache.get(p);
         if (subprojects == null) {
             SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
@@ -551,8 +561,17 @@ public final class OpenProjectList {
         for (Iterator/*<Project>*/ it = subprojects.iterator(); it.hasNext(); ) {
             Project sp = (Project)it.next();
             
+            if (!projectsOpened.add(sp)) {
+                //already opened:
+                continue;
+            }
+            
+            if (panel != null) {
+                panel.setProjectName(ProjectUtils.getInformation(sp).getDisplayName());
+            }
+
             recentProjectsChanged |= doOpenProject(sp);
-            recentProjectsChanged |= openSubprojects(sp, projectsOpened, subprojectsCache, handle, current, current + tick);
+            recentProjectsChanged |= openSubprojects(sp, projectsOpened, subprojectsCache, handle, panel, current, current + tick);
             doneProjects++;
             current += tick;
         }
