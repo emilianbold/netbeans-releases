@@ -48,16 +48,96 @@ public class StrutsEditorUtilitiesTest extends NbTestCase {
      */
     public void testGetActionPath() {
         BaseDocument doc = createBaseDocument(new File(testDir, "struts-config.xml"));
-        String path = StrutsEditorUtilities.getActionPath(doc, 659);
+        String path = null;
+        String text = null;
+        try {
+            text = doc.getText(0, doc.getLength() - 1);
+        } catch (BadLocationException ex) {
+            fail(ex.toString());
+        }
+        int where;
+        
+        where = text.indexOf("/login");
+        path = StrutsEditorUtilities.getActionPath(doc, where);
         assertEquals("/login", path);
-        path = StrutsEditorUtilities.getActionPath(doc, 657);
+        path = StrutsEditorUtilities.getActionPath(doc, where+1);
         assertEquals("/login", path);
-        path = StrutsEditorUtilities.getActionPath(doc, 652);
+        path = StrutsEditorUtilities.getActionPath(doc, where+6);
         assertEquals("/login", path);
-        path = StrutsEditorUtilities.getActionPath(doc, 665);
+        
+        where = text.indexOf("action type=\"com");
+        path = StrutsEditorUtilities.getActionPath(doc, where);
+        assertEquals("/login", path);
+        path = StrutsEditorUtilities.getActionPath(doc, where-1);
+        assertEquals("/login", path);
+        path = StrutsEditorUtilities.getActionPath(doc, where+7);
+        assertEquals("/login", path);
+        path = StrutsEditorUtilities.getActionPath(doc, where+10);
         assertEquals("/login", path);
     }
 
+    /** Test when the cursor is inside of declaration <form-bean ..... />
+     */
+    public void testGetActionFormBeanName() {
+        BaseDocument doc = createBaseDocument(new File(testDir, "struts-config.xml"));
+        String path = null;
+        String text = null;
+        try {
+            text = doc.getText(0, doc.getLength() - 1);
+        } catch (BadLocationException ex) {
+            fail(ex.toString());
+        }
+        int where;
+        
+        where = text.indexOf("name=\"FirstBean\"");
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where);
+        assertEquals("FirstBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+5);
+        assertEquals("FirstBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+10);
+        assertEquals("FirstBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+16);
+        assertEquals("FirstBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where-1);
+        assertEquals("FirstBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where - 20);
+        assertEquals("FirstBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where-35);
+        assertEquals("FirstBean", path);
+        
+        where = text.indexOf("initial=\"33\"");
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+5);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+10);
+        assertEquals("SecondBean", path);
+        
+        where = text.indexOf("name=\"name\"");
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+5);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+10);
+        assertEquals("SecondBean", path);
+        
+        where = text.indexOf("/form-bean>");
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+5);
+        assertEquals("SecondBean", path);
+        
+        where = text.indexOf("name=\"SecondBean\">");
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+10);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+15);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+17);
+        assertEquals("SecondBean", path);
+        path = StrutsEditorUtilities.getActionFormBeanName(doc, where+18);
+        assertEquals("SecondBean", path);
+    }
+    
     private BaseDocument createBaseDocument(File file){
         BaseDocument doc = new BaseDocument(XMLKit.class, false);
         File strutsConfig = new File(testDir, "struts-config.xml");
@@ -71,7 +151,6 @@ public class StrutsEditorUtilitiesTest extends NbTestCase {
             } 
             reader.close();
             doc.insertString(0, buffer.toString(), null); 
-            //System.out.println("where: " + buffer.toString().indexOf("/login"));
             return doc;
         } catch (IOException ex) {
             fail("Exception occured during createBaseDocument: " + ex.toString());
