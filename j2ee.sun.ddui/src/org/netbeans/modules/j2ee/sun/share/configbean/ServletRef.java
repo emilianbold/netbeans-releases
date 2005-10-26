@@ -16,23 +16,14 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-
-import org.netbeans.modules.schema2beans.BaseBean;
-
-import javax.enterprise.deploy.spi.DConfigBean;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
-import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.XpathEvent;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.model.exceptions.DDBeanCreateException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
 
 /** This DConfigBean is a child of SunWebApp.
@@ -42,17 +33,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
  *		servlet : Servlet[0,n]
  *			servlet-name : String
  *			principal-name : String?
- *			webservice-endpoint : WebserviceEndpoint[0,n]
- *				port-component-name : String
- *				endpoint-address-uri : String?
- *				login-config : LoginConfig?
- *					auth-method : String
- *				transport-guarantee : String?
- *				service-qname : ServiceQname?	[not used - set by server]
- *					namespaceURI : String		[not used - set by server]
- *					localpart : String			[not used - set by server]
- *				tie-class : String?				[not used - set by server]
- *				servlet-impl-class : String?	[not used - set by server]
  *
  *
  * @author  Peter Williams
@@ -70,9 +50,6 @@ public class ServletRef extends Base {
 	
 	/** Holds value of property principalName. */
 	private String principalName;
-	
-	/** Holds list of WebserviceEndpoints. */
-	private List webServiceEndpoints;
 	
     /** Creates a new instance of ServletRef */
 	public ServletRef() {
@@ -166,46 +143,6 @@ public class ServletRef extends Base {
 		getPCS().firePropertyChange("principalName", oldPrincipalName, principalName);
 	}
 	
-	/** Getter for property webServiceEndpoint.
-	 * @return Value of property webServiceEndpoint.
-	 *
-	 */
-	public List getWebServiceEndpoints() {
-		return webServiceEndpoints;
-	}
-	
-	public WebserviceEndpoint getWebServiceEndpoint(int index) {
-		return (WebserviceEndpoint) webServiceEndpoints.get(index);
-	}
-	
-	/** Setter for property webServiceEndpoint.
-	 * @param webServiceEndpoint New value of property webServiceEndpoint.
-	 *
-	 * @throws PropertyVetoException
-	 *
-	 */
-    public void setWebServiceEndpoints(List newWebServiceEndpoints) throws java.beans.PropertyVetoException {
-        List oldWebServiceEndpoints = webServiceEndpoints;
-        getVCS().fireVetoableChange("webServiceEndpoints", oldWebServiceEndpoints, newWebServiceEndpoints);	// NOI18N
-        webServiceEndpoints = newWebServiceEndpoints;
-        getPCS().firePropertyChange("webServiceEndpoints", oldWebServiceEndpoints, webServiceEndpoints);	// NOI18N
-    }
-    
-	public void addWebServiceEndpoint(WebserviceEndpoint newWebServiceEndpoint) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("webServiceEndpoint", null, newWebServiceEndpoint);	// NOI18N
-		if(webServiceEndpoints == null) {
-			webServiceEndpoints = new ArrayList();
-		}		
-		webServiceEndpoints.add(newWebServiceEndpoint);
-		getPCS().firePropertyChange("webServiceEndpoint", null, newWebServiceEndpoint );	// NOI18N
-	}
-	
-	public void removeWebServiceEndpoint(WebserviceEndpoint oldWebServiceEndpoint) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("webServiceEndpoint", oldWebServiceEndpoint, null);	// NOI18N
-		webServiceEndpoints.remove(oldWebServiceEndpoint);
-		getPCS().firePropertyChange("webServiceEndpoint", oldWebServiceEndpoint, null );	// NOI18N
-	}	
-	
 	/* ------------------------------------------------------------------------
 	 * Persistence support.  Loads DConfigBeans from previously saved Deployment
 	 * plan file.
@@ -226,21 +163,11 @@ public class ServletRef extends Base {
 					sg.setPrincipalName(principalName);
 				}
 				
-//				WebserviceEndpoint [] wsEndpoints = (WebserviceEndpoint []) 
-//					Utils.listToArray(getWebServiceEndpoints(), WebserviceEndpoint.class);
-//				if(wsEndpoints != null) {
-//					sg.setWebserviceEndpoint(wsEndpoints);
-//				}				
-
 				return sg;
 			}
 			
 			public boolean hasDDSnippet() {
 				if(principalName != null && principalName.length() > 0) {
-					return true;
-				}
-				
-				if(webServiceEndpoints != null && webServiceEndpoints.size() > 0) {
 					return true;
 				}
 				
@@ -289,7 +216,6 @@ public class ServletRef extends Base {
 		
 		if(beanGraph != null) {
 			principalName = beanGraph.getPrincipalName();
-			webServiceEndpoints = Utils.arrayToList(beanGraph.getWebserviceEndpoint());			
 		} else {
 			setDefaultProperties();
 		}
@@ -299,77 +225,8 @@ public class ServletRef extends Base {
 	
 	protected void clearProperties() {
 		principalName = null;
-		webServiceEndpoints = null;
 	}
 	
 	protected void setDefaultProperties() {
-		List epList = getDefaultEndpoints();
-		try {
-			setWebServiceEndpoints(epList);
-		} catch(java.beans.PropertyVetoException ex) {
-			System.out.println(ex.getMessage());
-		}
 	}
-	
-	private List getDefaultEndpoints() {
-		List result = new ArrayList();
-		try {
-			// !PW FIXME this entire process is unstable on startup of the bean tree.
-			// Specifically, if this bean is being created new, then everything should
-			// be fine.  However, if this bean is being loaded (but is not found, so
-			// it gets default values), the DDBean tree may not be fully constructed
-			// at the time this method is executed, causing a NPE during the getDDBeanRoot()
-			// call.  (This is why we did the whole 'module ref' thing for URI sharing
-			// between Application and individual J2ee Modules.)
-			DeployableObject dobj = getConfig().getDeployableObject();
-
-			// !PW FIXME file bug in j2eeserver on path below -- /webservices is what is supposed to work
-			DDBeanRoot webServicesRootDD = dobj.getDDBeanRoot("WEB-INF/webservices.xml"); // NOI18N
-			if(webServicesRootDD != null) {
-				jsr88Logger.warning("ServletRef.getDefaultEndpoints() failed to retrieve webservices DDRoot via xpath.  Using fallback method.");
-			}
-			
-			if(webServicesRootDD != null) {
-//				DDBean[] beans = webServicesRootDD.getChildBean("webservice-description/port-component/port-component-name"); // NOI18N
-				DDBean[] servletLinkDDs = webServicesRootDD.getChildBean("webservice-description/port-component/service-impl-bean/servlet-link"); // NOI18N
-				// First, find the service that corresponds to this servlet
-				for(int i = 0; i < servletLinkDDs.length; i++) {
-					if(servletNameDD.getText().equals(servletLinkDDs[i].getText())) {
-						DDBean[] portNameDDs = servletLinkDDs[i].getChildBean("../../port-component-name"); // NOI18N
-						for(int j = 0; j < portNameDDs.length; j++) {
-							WebserviceEndpoint ep = StorageBeanFactory.getDefault().createWebserviceEndpoint();
-							String pcn = portNameDDs[j].getText();
-							ep.setPortComponentName(pcn);
-							ep.setEndpointAddressUri(pcn);
-							result.add(ep);
-						}
-					}
-				}
-			}
-		} catch(DDBeanCreateException ex) {
-			jsr88Logger.warning(ex.getMessage());
-		} catch(java.io.FileNotFoundException ex) {
-			jsr88Logger.warning(ex.getMessage());
-		} catch(java.lang.NullPointerException ex) {
-			// This can happen if the file is being loaded into a new (and thus partially
-			// constructed tree.  Nothing to do but catch it and move on.
-			jsr88Logger.warning(ex.getMessage());
-		}
-		
-		return result;
-	}
-    
-    /** Api to retrieve the interface definitions for this bean.  Aids usability
-     *  during configuration, as the editors can display the existing methds
-     *  rather than have the user enter them manually.
-     */
-    public java.util.List/*ConfigQuery.MethodData*/ getServiceOperations(String portComponentName) {
-        /* !PW FIXME Temporary implementation values until plumbing in j2eeserver is worked out.
-         */
-        java.util.List operationList = new ArrayList();
-        operationList.add(new ConfigQuery.MethodData("servlet_ws_operation1", java.util.Arrays.asList(new String [] { "arg1", "arg2" } )));
-        operationList.add(new ConfigQuery.MethodData("servlet_ws_operation2", java.util.Arrays.asList(new String [] { "arg1" } )));
-        operationList.add(new ConfigQuery.MethodData("servlet_ws_operation3", java.util.Arrays.asList(new String [] { "arg1", "arg2", "arg3" } )));
-        return operationList;
-    }
 }
