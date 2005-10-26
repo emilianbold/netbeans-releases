@@ -14,12 +14,12 @@
 package org.netbeans.modules.java.examples;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -51,12 +51,12 @@ public class J2SESampleProjectGenerator {
 
 
     public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
-        FileObject prjLoc = null;
+        assert template != null && projectLocation != null && name != null;
+        FileObject prjLoc = createProjectFolder (projectLocation);
         if (template.getExt().endsWith("zip")) {  //NOI18N
-            unzip(template.getInputStream(), projectLocation);            
+            unzip(template.getInputStream(), prjLoc);            
             try {
-                // update project.xml
-                prjLoc = FileUtil.toFileObject(projectLocation);
+                // update project.xml                
                 File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
                 Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
                 NodeList nlist = doc.getElementsByTagNameNS(PROJECT_CONFIGURATION_NAMESPACE, "name");       //NOI18N
@@ -92,22 +92,40 @@ public class J2SESampleProjectGenerator {
         return prjLoc;
     }
     
-    private static void unzip(InputStream source, File targetFolder) throws IOException {
+    private static FileObject createProjectFolder (File projectFolder) throws IOException {
+        FileObject projLoc;
+        Stack nameStack = new Stack ();
+        while ((projLoc = FileUtil.toFileObject(projectFolder)) == null) {            
+            nameStack.push(projectFolder.getName());
+            projectFolder = projectFolder.getParentFile();            
+        }
+        while (!nameStack.empty()) {
+            projLoc = projLoc.createFolder ((String)nameStack.pop());
+            assert projLoc != null;
+        }
+        return projLoc;
+    }
+    
+    private static void unzip(InputStream source, FileObject targetFolder) throws IOException {
         //installation
         ZipInputStream zip=new ZipInputStream(source);
         try {
             ZipEntry ent;
             while ((ent = zip.getNextEntry()) != null) {
-                File f = new File(targetFolder, ent.getName().replace('/', File.separatorChar));
                 if (ent.isDirectory()) {
-                    f.mkdirs();
+                    FileUtil.createFolder(targetFolder, ent.getName());
                 } else {
-                    f.getParentFile().mkdirs();
-                    FileOutputStream out = new FileOutputStream(f);
+                    FileObject destFile = FileUtil.createData(targetFolder,ent.getName());
+                    FileLock lock = destFile.lock();
                     try {
-                        FileUtil.copy(zip, out);
+                        OutputStream out = destFile.getOutputStream(lock);
+                        try {
+                            FileUtil.copy(zip, out);
+                        } finally {
+                            out.close();
+                        }
                     } finally {
-                        out.close();
+                        lock.releaseLock();
                     }
                 }
             }
