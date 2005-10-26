@@ -486,7 +486,7 @@ implements CloneableEditorSupport.Env {
         assertEquals ("Content is back", "Somecontent", doc.getText (0, len));
         
         err.log("Before assertModified");
-        support.assertModified (true, "Document is Modified");fail("Ok");
+        support.assertModified (true, "Document is Modified");
 
         err.log("Before redo");
         support.getUndoRedo ().redo ();
