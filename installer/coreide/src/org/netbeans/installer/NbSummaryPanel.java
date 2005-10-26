@@ -22,6 +22,10 @@ import com.installshield.util.Log;
 import com.installshield.wizard.RunnableWizardBeanState;
 import com.installshield.wizard.service.WizardLog;
 import com.installshield.wizard.service.file.FileService;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 import java.util.Properties;
 
@@ -74,12 +78,20 @@ public class NbSummaryPanel extends TextDisplayPanel
                         setText(summaryMessage);
                     }
                 } else {
-                    if (Util.isWindowsOS()) {
-                        setText(resolveString
-                        ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans.exe,uninstaller.exe)"));
+                    boolean ret = scanLogFile();
+                    if (ret) {
+                        //Successfull
+                        if (Util.isWindowsOS()) {
+                            setText(resolveString
+                            ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans.exe,uninstaller.exe)"));
+                        } else {
+                            setText(resolveString
+                            ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans,uninstaller)"));
+                        }
                     } else {
+                        //Failure
                         setText(resolveString
-                        ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans,uninstaller)"));
+                        ("$L(org.netbeans.installer.Bundle, SummaryPanel.errorScanLogFile)"));
                     }
                 }
             } else {
@@ -136,4 +148,40 @@ public class NbSummaryPanel extends TextDisplayPanel
             ex.printStackTrace();
         }
     }
+    
+    /** Scans log file for possible errors. Look for java.util.zip.ZipException
+     * and java.io.FileNotFoundException. Their presence means corrupted data.
+     */
+    private boolean scanLogFile () {
+        WizardLog wizardLog = getWizard().getServices().getWizardLog();
+        String logFileName = wizardLog.getLogOutput();
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(logFileName));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if ((line.indexOf("java.util.zip.ZipException") != -1) ||
+                    (line.indexOf("java.io.FileNotFoundException") != -1)) {
+                    return false;
+                }
+            }
+        } catch (FileNotFoundException exc) {
+            logEvent(this, Log.ERROR, "scanLogFile Exception: " + exc.getMessage());
+            Util.logStackTrace(this,exc);
+        } catch (IOException exc) {
+            logEvent(this, Log.ERROR, "scanLogFile Exception: " + exc.getMessage());
+            Util.logStackTrace(this,exc);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException exc) {
+                    logEvent(this, Log.ERROR, "scanLogFile Exception: " + exc.getMessage());
+                    Util.logStackTrace(this,exc);
+                }
+            }
+        }
+        return true;
+    }
+    
 }
