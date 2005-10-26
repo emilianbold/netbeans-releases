@@ -935,7 +935,10 @@ public final class HtmlRenderer {
 
                 if (
                     ((style != STYLE_CLIP) &&
-                        ((style == STYLE_TRUNCATE) && ((widthPainted + r.getWidth()) > (w - (chWidth * 3))))) ||
+                        ((style == STYLE_TRUNCATE) && ((widthPainted + r.getWidth()) > (w /*- (chWidth * 3)*/)))) ||
+                        /** mkleint - commented out the "- (chWidth *3) because it makes no sense to strip the text and add dots when it fits exactly
+                         * into the rendering rectangle.. with this condition we stripped even strings that came close to the limit..
+                         **/
                         ((style == STYLE_WORDWRAP) && ((widthPainted + r.getWidth()) > w))
                 ) {
                     if (chWidth > 3) {
