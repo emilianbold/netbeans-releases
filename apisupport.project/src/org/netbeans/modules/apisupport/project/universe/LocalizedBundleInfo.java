@@ -31,6 +31,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+
 /**
  * Represents localized information for a NetBeans module usually loaded from a
  * <em>Bundle.properties</em> specified in a module's manifest. It is actaully
@@ -124,7 +125,10 @@ public final class LocalizedBundleInfo {
     
     /**
      * Reload data of this localizing bundle info from the file represented by
-     * previously set path.
+     * previously set path. Note that this instance already listens to the
+     * bundle properties file (or files if localized). So it just gives a
+     * possibility to force reloading in the case the properties were e.g.
+     * changed outside of IDE or using {@link java.io.File}.
      */
     public void reload() throws IOException {
         String oldDisplayName = getDisplayName();
@@ -263,6 +267,11 @@ public final class LocalizedBundleInfo {
                 getCategory() + "; " + // NOI18N
                 getShortDescription() + "; " + // NOI18N
                 getLongDescription() + "]"; // NOI18N
+    }
+    
+    public static interface Provider {
+        /** May return <code>null</code>. */
+        LocalizedBundleInfo getLocalizedBundleInfo();
     }
     
 }

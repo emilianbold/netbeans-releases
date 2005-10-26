@@ -116,6 +116,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private NbModuleTypeProvider.NbModuleType moduleType;
     private SuiteProvider suiteProvider;
     private ProjectXMLManager projectXMLManager;
+    private final LocalizedBundleInfo.Provider bundleInfoProvider;
     private LocalizedBundleInfo bundleInfo;
     
     // keeps current state of the user changes
@@ -152,9 +153,9 @@ public final class SingleModuleProperties extends ModuleProperties {
      */
     SingleModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator,
             SuiteProvider sp, NbModuleTypeProvider.NbModuleType moduleType,
-            LocalizedBundleInfo bundleInfo) {
+            LocalizedBundleInfo.Provider bundleInfoProvider) {
         super(helper, evaluator);
-        this.bundleInfo = bundleInfo;
+        this.bundleInfoProvider = bundleInfoProvider;
         refresh(moduleType, sp);
     }
     
@@ -185,6 +186,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(
                 new TreeSet(Arrays.asList(manifestManager.getRequiredTokens())));
+        bundleInfo = bundleInfoProvider.getLocalizedBundleInfo();
         if (bundleInfo != null) {
             try {
                 bundleInfo.reload();

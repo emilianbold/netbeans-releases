@@ -61,6 +61,8 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -202,6 +204,11 @@ public final class NbModuleProject implements Project {
         Info info = new Info();
         if (bundleInfo != null) {
             bundleInfo.addPropertyChangeListener(info);
+            getManifestFile().addFileChangeListener(new FileChangeAdapter() {
+                public void fileChanged(FileEvent fe) {
+                    bundleInfo = Util.findLocalizedBundleInfo(getSourceDirectory(), getManifest());
+                }
+            });
         }
         lookup = Lookups.fixed(new Object[] {
             info,
@@ -225,11 +232,12 @@ public final class NbModuleProject implements Project {
             }),
             sourcesHelper.createSources(),
             new AntArtifactProviderImpl(this, helper, evaluator()),
-            new CustomizerProviderImpl(this, getHelper(), evaluator(), bundleInfo),
+            new CustomizerProviderImpl(this, getHelper(), evaluator()),
             new SuiteProviderImpl(),
             typeProvider,
             new PrivilegedTemplatesImpl(),
             new ModuleProjectClassPathExtender(this),
+            new LocalizedBundleInfoProvider(),
       });
     }
     
@@ -1073,4 +1081,11 @@ public final class NbModuleProject implements Project {
             return RECOMMENDED_TYPES;
         }
     }    
+
+    private final class LocalizedBundleInfoProvider implements LocalizedBundleInfo.Provider {
+        public LocalizedBundleInfo getLocalizedBundleInfo() {
+            return bundleInfo;
+        }
+    }
+
 }

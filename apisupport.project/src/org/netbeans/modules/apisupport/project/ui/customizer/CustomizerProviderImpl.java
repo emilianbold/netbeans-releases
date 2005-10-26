@@ -44,16 +44,14 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private final LocalizedBundleInfo bundleInfo;
     
     private SingleModuleProperties moduleProps;
     
     public CustomizerProviderImpl(final Project project, final AntProjectHelper helper,
-            final PropertyEvaluator evaluator, final LocalizedBundleInfo bundleInfo) {
+            final PropertyEvaluator evaluator) {
         super(project);
         this.helper = helper;
         this.evaluator = evaluator;
-        this.bundleInfo = bundleInfo;
     }
     
     void storeProperties() throws IOException {
@@ -66,7 +64,8 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
         NbModuleTypeProvider nmtp = (NbModuleTypeProvider) lookup.lookup(NbModuleTypeProvider.class);
         if (moduleProps == null) { // first initialization
             moduleProps = new SingleModuleProperties(helper, evaluator,
-                    sp, nmtp.getModuleType(), bundleInfo);
+                    sp, nmtp.getModuleType(),
+                    (LocalizedBundleInfo.Provider) lookup.lookup(LocalizedBundleInfo.Provider.class));
             init();
         } else {
             moduleProps.refresh(nmtp.getModuleType(), sp);
