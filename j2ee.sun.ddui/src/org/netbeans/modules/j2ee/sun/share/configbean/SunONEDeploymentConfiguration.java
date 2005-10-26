@@ -1360,19 +1360,12 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         // Remove this entry from the beanMap, forcing it to be reparsed.
         // Flush bean cache.  This forces reparsing of the new tree we load here.
         beanMap.remove(key);
-
-        // refresh the configuration...
-        //((BaseRoot) getDConfigBeanRoot(mod.getDDBeanRoot())).refresh();
-        refreshGraphFromContentMap((BaseRoot) getDConfigBeanRoot(storage.normalizeDDBeanRoot(mod.getDDBeanRoot())));
     }
     
     public void extractFileFromPlanForModule(File f, DeployableObject mod, ConfigurationStorage storage) throws ConfigurationException {
         // find the uri
         String uri = getUriForDeployableObject(mod, storage);
         String fname = f.getName();
-        // make sure the configuration is "saved"
-//        updateContentMap((BaseRoot) getDConfigBeanRoot(storage.normalizeDDBeanRoot(mod.getDDBeanRoot())));
-        updateContentMap(null);
         // create the key
         String key = Utils.getFQNKey(uri,fname);
         // get the bean
@@ -1415,9 +1408,15 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
     
     private String getUriForDeployableObject(DeployableObject mod, ConfigurationStorage storage) throws ConfigurationException {
-        BaseRoot rootDCB = (BaseRoot) getDConfigBeanRoot(storage.normalizeDDBeanRoot(mod.getDDBeanRoot()));
-        String retVal = rootDCB.getUriText();
-        return retVal;
+        // Logic here duplicates logic from the BaseRoot derived classes that implement
+        // getUriText().  The reason is that the DConfigBean's do not necessarily exist
+        // at times when this routine is needed and we don't want to be creating them at
+        // that point for performance and other reasons.
+        String rootUri = "";
+        if(ModuleType.EAR.equals(mod.getType())) {
+            rootUri = "EAR";
+        } 
+        return rootUri;
     }
     
     // this routine flushes the bean data into the content map
@@ -1546,7 +1545,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             if(null != rootToRestore) {*/
         pending.add(rootToRestore);
         
-        
         int index = 0;
         while (index < pending.size()) {
             Base current = (Base) pending.get(index);
@@ -1585,9 +1583,22 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     
     // Formerly DeploymentPlanSplitter read/write config files.
     public void readDeploymentPlanFiles(ConfigurationStorage storage) throws ConfigurationException {
+        boolean loadGraph = false;
+
+        contentMap.clear();
+        BaseRoot masterRoot = (BaseRoot) getDConfigBeanRoot(storage.normalizeDDBeanRoot(dObj.getDDBeanRoot()));
+        
         int len = getValidatedNumberOfFiles(configFiles);
         for (int i = 0; i < len; i++) {
+            if(configFiles[i].exists()) {
             addFileToPlanForModule(configFiles[i], dObj, storage);
+                loadGraph = true;
+            }
+        }
+        
+        // refresh the configuration...
+        if(loadGraph) {
+            refreshGraphFromContentMap(masterRoot);
         }
         
         for (int j = 0; j < configFiles.length; j++) {
@@ -1599,6 +1610,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
     
     public void writeDeploymentPlanFiles(ConfigurationStorage storage) throws ConfigurationException {
+        // Update content map, then write all files.
+        updateContentMap(null);
+
         int len = getValidatedNumberOfFiles(configFiles);
         for (int i = 0; i < len; i++) {
             extractFileFromPlanForModule(configFiles[i], dObj, storage);
