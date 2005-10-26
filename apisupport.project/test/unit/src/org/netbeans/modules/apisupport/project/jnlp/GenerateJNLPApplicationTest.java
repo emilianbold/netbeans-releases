@@ -109,6 +109,32 @@ public class GenerateJNLPApplicationTest extends TestBase {
             "org.openide.compat," +
             "org.netbeans.api.progress," +
             "org.netbeans.core.multiview," +
+            "org.openide.filesystems," +
+            "org.openide.modules," +
+            "org.openide.util," +
+            "org.netbeans.core.execution," +
+            "org.netbeans.core.output2," +
+            "org.netbeans.core.ui," +
+            "org.netbeans.core.windows," +
+            "org.netbeans.core," +
+            "org.netbeans.modules.favorites," +
+            "org.netbeans.modules.javahelp," +
+            "org.netbeans.modules.masterfs," +
+            "org.netbeans.modules.queries," +
+            "org.netbeans.modules.settings," +
+            "org.netbeans.swing.plaf," +
+            "org.netbeans.swing.tabcontrol," +
+            "org.openide.actions," +
+            "org.openide.awt," +
+            "org.openide.dialogs," +
+            "org.openide.execution," +
+            "org.openide.explorer," +
+            "org.openide.io," +
+            "org.openide.loaders," +
+            "org.openide.nodes," +
+            "org.openide.options," +
+            "org.openide.text," +
+            "org.openide.windows," +
             "org.openide.util.enumerations" +
             "");
         ep.setProperty("jnlp.servlet.jar", someJar.toString());
