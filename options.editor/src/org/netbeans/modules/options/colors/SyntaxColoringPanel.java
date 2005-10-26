@@ -112,7 +112,6 @@ PropertyChangeListener {
     /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
     private Map                 toBeSaved = new HashMap ();
     private boolean		listen = false;
-    private boolean             changed = false;
 
     
     /** Creates new form FontAndColorsPanel */
@@ -195,7 +194,6 @@ PropertyChangeListener {
         if (!listen) return;
 	if (evt.getSource () == cbEffects) {
 	    effectsColorChooser.setEnabled (cbEffects.getSelectedIndex () > 0);
-            changed = true;
 	} else
 	if (evt.getSource () == cbLanguages) {
 	    setCurrentLanguage ((String) cbLanguages.getSelectedItem ());
@@ -269,7 +267,6 @@ PropertyChangeListener {
                 replaceCurrrentCategory (c);
                 setToBeSaved (currentProfile, currentLanguage);
                 refreshUI (); // refresh font viewer
-                changed = true;
             }
         }
     }
@@ -278,7 +275,6 @@ PropertyChangeListener {
         if (!listen) return;
         if (evt.getPropertyName () != ColorComboBox.PROP_COLOR) return;
         updateData ();
-        changed = true;
     }
     
     void update (ColorModel colorModel) {
@@ -301,13 +297,11 @@ PropertyChangeListener {
             cbLanguages.addItem (it.next ());
         listen = true;
         cbLanguages.setSelectedIndex (0);
-        changed = false;
     }
     
     void cancel () {
         toBeSaved = new HashMap ();
         profiles = new HashMap ();
-        changed = false;
     }
     
     void applyChanges () {
@@ -332,7 +326,7 @@ PropertyChangeListener {
     }
     
     boolean isChanged () {
-        return changed;
+        return !toBeSaved.isEmpty ();
     }
     
     public void setCurrentProfile (String currentProfile) {
@@ -487,6 +481,7 @@ PropertyChangeListener {
      * Updates all ui components.
      */
     private void refreshUI () {
+        listen = false;
         AttributeSet category = getCurrentCategory ();
         if (category == null) {
             // no category selected > disable all elements
@@ -515,7 +510,6 @@ PropertyChangeListener {
             (Color) getValue (category, StyleConstants.Background)
         );
         
-        listen = false;
         String font = fontToString (category);
         tfFont.setText (font);
         foregroundColorChooser.setColor (

@@ -130,6 +130,8 @@ public class EditorOptionsTest extends NbTestCase {
     }
     
     public void testCancel () {
+        
+        // 1) load PanelControllers and init master lookup
         List controllers = new ArrayList ();
         List lookups = new ArrayList ();
         Iterator it = getCategories ().iterator ();
@@ -141,11 +143,55 @@ public class EditorOptionsTest extends NbTestCase {
         }
         Lookup masterLookup = new ProxyLookup 
             ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
+        
+        // 2) create panels & call cancel on all PanelControllers
         it = controllers.iterator ();
         while (it.hasNext ()) {
             PanelController pc = (PanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
             pc.cancel ();
+        }
+    }
+    
+    public void testChangedAndValid () {
+        
+        // 1) load PanelControllers and init master lookup
+        List controllers = new ArrayList ();
+        List lookups = new ArrayList ();
+        Iterator it = getCategories ().iterator ();
+        while (it.hasNext ()) {
+            OptionsCategory oc = (OptionsCategory) it.next ();
+            PanelController pc = oc.create ();
+            controllers.add (pc);
+            lookups.add (pc.getLookup ());
+        }
+        Lookup masterLookup = new ProxyLookup 
+            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
+        
+        // 2) create panels & call cancel on all PanelControllers
+        it = controllers.iterator ();
+        while (it.hasNext ()) {
+            PanelController pc = (PanelController) it.next ();
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
+            JComponent c = pc.getComponent (masterLookup);
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
+            pc.update ();
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
+            pc.update ();
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
+            pc.cancel ();
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
+            pc.update ();
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
+            pc.applyChanges ();
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
         }
     }
 
