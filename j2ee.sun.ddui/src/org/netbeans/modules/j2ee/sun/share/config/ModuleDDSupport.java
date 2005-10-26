@@ -286,10 +286,12 @@ public class ModuleDDSupport implements PropertyChangeListener {
             // !PW Is this a good idea to add this here?  What are the repercussions?
             ConfigBeanStorage cbs = (ConfigBeanStorage) configMap.get(root);
             try {
-                config.removeDConfigBean((DConfigBeanRoot)cbs.bean);
+                if(config != null && cbs != null && cbs.bean != null) {
+                    config.removeDConfigBean((DConfigBeanRoot)cbs.bean);
+                }
             } catch (BeanNotFoundException bnfe) {
-                // IGNORE
-                System.out.println("BeanNotFoundException caught by ModuleDDSupport: " + bnfe.getMessage());
+                // Log this, it shouldn't happen
+                ErrorManager.getDefault().log("BeanNotFoundException caught by ModuleDDSupport: " + bnfe.getMessage());
             }
         }
         rootMap = null; 

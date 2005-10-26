@@ -177,7 +177,10 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
         char another = sep == '/' ? '\\' : '/';
         fsName = fsName.replace (another, sep);
         setToolTipText (fsName);
-        setActivatedNodes(new Node[] { selNode, rootNode.getChildren().getNodes()[0] });
+        Node [] topNodes = rootNode.getChildren().getNodes();
+        if(topNodes.length > 0) {
+            setActivatedNodes(new Node[] { selNode, rootNode.getChildren().getNodes()[0] });
+        }
         setIcon (Utilities.loadImage ("org/netbeans/modules/j2ee/sun/share/config/ui/resources/ConfigFile.gif")); //NOI18N
     }
     
@@ -194,7 +197,11 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
     private void initComponents() {
         try {
             rootNode = buildTree();
-            Node mainNode = rootNode.getChildren().getNodes()[0];
+            Node [] topNodes = rootNode.getChildren().getNodes();
+            Node mainNode = null;
+            if(topNodes.length > 0) {
+                mainNode = topNodes[0];
+            }
             setLayout(new BorderLayout());
             PanelView panelView = new ConfigBeanPanelView(rootNode);
             componentPanel = new TwoPanelComponentPanel(panelView, appConfig);
