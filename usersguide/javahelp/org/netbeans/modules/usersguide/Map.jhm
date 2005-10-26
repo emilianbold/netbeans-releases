@@ -526,7 +526,7 @@ under Print Settings in the Options window)
 <mapID target="gui.options.component-palette" url="pending.html" />
 
 <!--CSH topic for GUI Builder main workspace-->
-<mapID target="gui.formeditor" url="/csh/gui.html" />
+<mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
 
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 <!-- note : commenting out because engineer comfirmed these are obsolete-->
