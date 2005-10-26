@@ -33,9 +33,6 @@ import org.openide.util.Mutex;
  */
 public class NbModuleProjectTest extends TestBase {
     
-    /** How long to wait until the deadlock is considered. */
-    private static final long DEADLOCK_TIME = 60000;
-    
     public NbModuleProjectTest(String name) {
         super(name);
     }
@@ -222,10 +219,7 @@ public class NbModuleProjectTest extends TestBase {
         evaluatorThread.start();
         Thread.sleep(20);
         resetingThread.start();
-        evaluatorThread.join(DEADLOCK_TIME);
-        if (evaluatorThread.isAlive() || resetingThread.isAlive()) {
-            fail("Deadlock presumably reached; threads have not finished within " + DEADLOCK_TIME + "msec");
-        }
+        evaluatorThread.join();
     }
     
     public void testEvaluatorDeadlock_64582b() throws Exception {
@@ -261,11 +255,7 @@ public class NbModuleProjectTest extends TestBase {
         actionProject.resetEvaluator();
         ModuleList.refresh();
         evaluatorThread.start();
-        evaluatorThread.join(DEADLOCK_TIME);
-        if (evaluatorThread.isAlive() && moduleListThread.isAlive()) {
-            System.err.println("Threads haven't finished in " + DEADLOCK_TIME + "ms. Seems to be a deadlock.");
-            fail("Presuambly deadlock reached");
-        }
+        evaluatorThread.join();
     }
     
 }
