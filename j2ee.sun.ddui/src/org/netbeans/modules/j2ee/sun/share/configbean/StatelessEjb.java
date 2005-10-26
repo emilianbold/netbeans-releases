@@ -28,7 +28,7 @@ import javax.enterprise.deploy.model.DDBean;
  */
 public class StatelessEjb extends SessionEjb {
 
-    /** Creates a new instance of SunONEStatelessEjbDConfigBean */
+    /** Creates a new instance of StatelessEjb */
     public StatelessEjb() {
     }
 
