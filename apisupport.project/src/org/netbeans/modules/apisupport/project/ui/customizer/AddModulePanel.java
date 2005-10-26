@@ -52,6 +52,8 @@ import org.openide.util.RequestProcessor;
  * @author  mkrauskopf
  */
 final class AddModulePanel extends JPanel {
+
+    private static final String FILTER_DESCRIPTION = getMessage("LBL_FileterDescription");
     
     private ComponentFactory.DependencyListModel universeModules;
     private RequestProcessor.Task filterTask;
@@ -68,23 +70,27 @@ final class AddModulePanel extends JPanel {
         moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(true));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                showDescription();
-                currectJavadoc = null;
-                ModuleDependency[] deps = getSelectedDependencies();
-                if (deps.length == 1) {
-                    NbPlatform platform = props.getActivePlatform();
-                    if (platform == null) { // NetBeans.org module
-                        currectJavadoc = Util.findJavadocForNetBeansOrgModules(deps[0]);
-                    } else {
-                        currectJavadoc = Util.findJavadoc(deps[0], platform);
+                if (!FILTER_DESCRIPTION.equals(filterValue.getText())) {
+                    showDescription();
+                    currectJavadoc = null;
+                    ModuleDependency[] deps = getSelectedDependencies();
+                    if (deps.length == 1) {
+                        NbPlatform platform = props.getActivePlatform();
+                        if (platform == null) { // NetBeans.org module
+                            currectJavadoc = Util.findJavadocForNetBeansOrgModules(deps[0]);
+                        } else {
+                            currectJavadoc = Util.findJavadoc(deps[0], platform);
+                        }
                     }
+                    showJavadocButton.setEnabled(currectJavadoc != null);
                 }
-                showJavadocButton.setEnabled(currectJavadoc != null);
             }
         });
         filterValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                search();
+                if (!FILTER_DESCRIPTION.equals(filterValue.getText())) {
+                    search();
+                }
             }
         });
         // Make basic navigation commands from the list work from the text field.
@@ -134,8 +140,9 @@ final class AddModulePanel extends JPanel {
                         universeModules = ComponentFactory.createDependencyListModel(universeDeps);
                         moduleList.setModel(universeModules);
                         moduleList.setEnabled(true);
-                        filterValue.setText("");
                         filterValue.setEnabled(true);
+                        filterValue.setText(FILTER_DESCRIPTION);
+                        filterValue.selectAll();
                         filterValue.requestFocusInWindow();
                     }
                 });
@@ -251,7 +258,7 @@ final class AddModulePanel extends JPanel {
         moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_ModuleListHorizontalScroll"));
     }
     
-    private String getMessage(String key) {
+    private static String getMessage(String key) {
         return NbBundle.getMessage(AddModulePanel.class, key);
     }
     
