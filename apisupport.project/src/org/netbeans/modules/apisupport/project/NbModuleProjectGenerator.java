@@ -37,6 +37,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,145 +58,184 @@ public class NbModuleProjectGenerator {
     private NbModuleProjectGenerator() {/* empty constructor*/}
     
     /** Generates standalone NetBeans Module. */
-    public static void createStandAloneModule(File projectDir, String cnb,
-            String name, String bundlePath, String layerPath, String platformID) throws IOException {
-        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
-        if (ProjectManager.getDefault().findProject(dirFO) != null) {
-            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+    public static void createStandAloneModule(final File projectDir, final String cnb,
+            final String name, final String bundlePath,
+            final String layerPath, final String platformID) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    if (ProjectManager.getDefault().findProject(dirFO) != null) {
+                        throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+                    }
+                    createProjectXML(dirFO, cnb, NbModuleTypeProvider.STANDALONE);
+                    createPlatformProperties(dirFO, platformID);
+                    createManifest(dirFO, cnb, bundlePath, layerPath);
+                    createBundle(dirFO, bundlePath, name);
+                    createLayerInSrc(dirFO, layerPath);
+                    createEmptyTestDir(dirFO);
+                    ModuleList.refresh();
+                    ProjectManager.getDefault().clearNonProjectCache();
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
-        createProjectXML(dirFO, cnb, NbModuleTypeProvider.STANDALONE);
-        createPlatformProperties(dirFO, platformID);
-        createManifest(dirFO, cnb, bundlePath, layerPath);
-        createBundle(dirFO, bundlePath, name);
-        createLayerInSrc(dirFO, layerPath);
-        createEmptyTestDir(dirFO);
-        ModuleList.refresh();
-        ProjectManager.getDefault().clearNonProjectCache();
     }
     
     /** Generates suite component NetBeans Module. */
-    public static void createSuiteComponentModule(File projectDir, String cnb,
-            String name, String bundlePath, String layerPath, File suiteDir) throws IOException {
-        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
-        if (ProjectManager.getDefault().findProject(dirFO) != null) {
-            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+    public static void createSuiteComponentModule(final File projectDir, final String cnb,
+            final String name, final String bundlePath,
+            final String layerPath, final File suiteDir) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    if (ProjectManager.getDefault().findProject(dirFO) != null) {
+                        throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+                    }
+                    createProjectXML(dirFO, cnb, NbModuleTypeProvider.SUITE_COMPONENT);
+                    createSuiteProperties(dirFO, suiteDir);
+                    createManifest(dirFO, cnb, bundlePath, layerPath);
+                    createBundle(dirFO, bundlePath, name);
+                    createLayerInSrc(dirFO, layerPath);
+                    createEmptyTestDir(dirFO);
+                    appendToSuite(cnb, dirFO, suiteDir);
+                    ModuleList.refresh();
+                    ProjectManager.getDefault().clearNonProjectCache();
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
-        createProjectXML(dirFO, cnb, NbModuleTypeProvider.SUITE_COMPONENT);
-        createSuiteProperties(dirFO, suiteDir);
-        createManifest(dirFO, cnb, bundlePath, layerPath);
-        createBundle(dirFO, bundlePath, name);
-        createLayerInSrc(dirFO, layerPath);
-        createEmptyTestDir(dirFO);
-        appendToSuite(cnb, dirFO, suiteDir);
-        ModuleList.refresh();
-        ProjectManager.getDefault().clearNonProjectCache();
     }
     
     /** Generates suite component Library Wrapper NetBeans Module. */
-    public static void createSuiteLibraryModule(File projectDir, String cnb,
-            String name, String bundlePath, File suiteDir, File license, File[] jars) throws IOException {
-        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
-        if (ProjectManager.getDefault().findProject(dirFO) != null) {
-            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
-        }
-        
-        EditableProperties props = new EditableProperties(true);
-        props.put(SingleModuleProperties.IS_AUTOLOAD, "true"); // NOI18N
-        Set packageList = new HashSet(); //list of strings
-        Map classPathExtensions = new HashMap();
-        
-        File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N
-        if (!releaseDir.mkdirs()) {
-            //TODO report error
-            Util.err.log("cannot create release directory.");
-        }
-        FileObject relDirFo = FileUtil.toFileObject(releaseDir);
-        for (int i = 0; i < jars.length; i++) {
-            FileObject orig = FileUtil.toFileObject(jars[i]);
-            if (orig != null) {
-                JarFile jf = null;
-                try {
-                    FileUtil.copyFile(orig, relDirFo, orig.getName());
-                    jf = new JarFile(jars[i]);
-                    Enumeration en = jf.entries();
-                    while (en.hasMoreElements()) {
-                        JarEntry entry = (JarEntry)en.nextElement();
-                        if (!entry.isDirectory() && entry.getName().endsWith(".class")) { // NOI18N
-                            String nm = entry.getName();
-                            int index = nm.lastIndexOf('/');
-                            if (index > -1) {
-                                String path = nm.substring(0, index);
-                                packageList.add(path.replace('/', '.'));
+    public static void createSuiteLibraryModule(final File projectDir, final String cnb,
+            final String name, final String bundlePath, final File suiteDir,
+            final File license, final File[] jars) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    if (ProjectManager.getDefault().findProject(dirFO) != null) {
+                        throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+                    }
+                    
+                    EditableProperties props = new EditableProperties(true);
+                    props.put(SingleModuleProperties.IS_AUTOLOAD, "true"); // NOI18N
+                    Set packageList = new HashSet(); //list of strings
+                    Map classPathExtensions = new HashMap();
+                    
+                    File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N
+                    if (!releaseDir.mkdirs()) {
+                        //TODO report error
+                        Util.err.log("cannot create release directory.");
+                    }
+                    FileObject relDirFo = FileUtil.toFileObject(releaseDir);
+                    for (int i = 0; i < jars.length; i++) {
+                        FileObject orig = FileUtil.toFileObject(jars[i]);
+                        if (orig != null) {
+                            JarFile jf = null;
+                            try {
+                                FileUtil.copyFile(orig, relDirFo, orig.getName());
+                                jf = new JarFile(jars[i]);
+                                Enumeration en = jf.entries();
+                                while (en.hasMoreElements()) {
+                                    JarEntry entry = (JarEntry)en.nextElement();
+                                    if (!entry.isDirectory() && entry.getName().endsWith(".class")) { // NOI18N
+                                        String nm = entry.getName();
+                                        int index = nm.lastIndexOf('/');
+                                        if (index > -1) {
+                                            String path = nm.substring(0, index);
+                                            packageList.add(path.replace('/', '.'));
+                                        }
+                                    }
+                                }
+                                classPathExtensions.put("ext/" + orig.getNameExt(), "release/modules/ext/" + orig.getNameExt()); // NOI18N
+                            } catch (IOException e) {
+                                //TODO report
+                                Util.err.notify(e);
+                            } finally {
+                                if (jf != null) {
+                                    try {
+                                        jf.close();
+                                    } catch (IOException e) {
+                                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                                    }
+                                }
                             }
                         }
                     }
-                    classPathExtensions.put("ext/" + orig.getNameExt(), "release/modules/ext/" + orig.getNameExt()); // NOI18N
-                } catch (IOException e) {
-                    //TODO report
-                    Util.err.notify(e);
-                } finally {
-                    if (jf != null) {
+                    
+                    if (license != null && license.exists()) {
+                        FileObject fo = FileUtil.toFileObject(license);
                         try {
-                            jf.close();
+                            FileUtil.copyFile(fo, dirFO, fo.getName());
+                            props.put(SingleModuleProperties.LICENSE_FILE, "${basedir}/" + fo.getNameExt()); // NOI18N
+                            //TODO set the nbm.license property
                         } catch (IOException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                            //TODO report
+                            Util.err.notify(e);
                         }
+                        
                     }
+                    ProjectXMLManager.generateLibraryModuleTemplate(
+                            createFileObject(dirFO, AntProjectHelper.PROJECT_XML_PATH),
+                            cnb, NbModuleTypeProvider.SUITE_COMPONENT, packageList, classPathExtensions);
+                    createSuiteProperties(dirFO, suiteDir);
+                    createManifest(dirFO, cnb, bundlePath, null);
+                    createBundle(dirFO, bundlePath, name);
+                    appendToSuite(cnb, dirFO, suiteDir);
+                    
+                    // write down the nbproject/properties file
+                    FileObject bundleFO = createFileObject(
+                            dirFO, "nbproject/project.properties"); // NOI18N
+                    Util.storeProperties(bundleFO, props);
+                    
+                    ModuleList.refresh();
+                    ProjectManager.getDefault().clearNonProjectCache();
+                    return null;
                 }
-            }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
-        
-        if (license != null && license.exists()) {
-            FileObject fo = FileUtil.toFileObject(license);
-            try {
-                FileUtil.copyFile(fo, dirFO, fo.getName());
-                props.put(SingleModuleProperties.LICENSE_FILE, "${basedir}/" + fo.getNameExt()); // NOI18N
-                //TODO set the nbm.license property
-            } catch (IOException e) {
-                //TODO report
-                Util.err.notify(e);
-            }
-            
-        }
-        ProjectXMLManager.generateLibraryModuleTemplate(
-                createFileObject(dirFO, AntProjectHelper.PROJECT_XML_PATH),
-                cnb, NbModuleTypeProvider.SUITE_COMPONENT, packageList, classPathExtensions);
-        createSuiteProperties(dirFO, suiteDir);
-        createManifest(dirFO, cnb, bundlePath, null);
-        createBundle(dirFO, bundlePath, name);
-        appendToSuite(cnb, dirFO, suiteDir);
-        
-        // write down the nbproject/properties file
-        FileObject bundleFO = createFileObject(
-                dirFO, "nbproject/project.properties"); // NOI18N
-        Util.storeProperties(bundleFO, props);
-        
-        ModuleList.refresh();
-        ProjectManager.getDefault().clearNonProjectCache();
     }
     
     /**
      * Generates NetBeans Module within the netbeans.org CVS tree.
      */
-    public static void createNetBeansOrgModule(File projectDir, String cnb,
-            String name, String bundlePath, String layerPath) throws IOException {
-        File nborg = ModuleList.findNetBeansOrg(projectDir);
-        if (nborg == null) {
-            throw new IllegalArgumentException(projectDir + " doesn't " + // NOI18N
-                    "point to directory within the netbeans.org CVS tree"); // NOI18N
+    public static void createNetBeansOrgModule(final File projectDir, final String cnb,
+            final String name, final String bundlePath, final String layerPath) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    File nborg = ModuleList.findNetBeansOrg(projectDir);
+                    if (nborg == null) {
+                        throw new IllegalArgumentException(projectDir + " doesn't " + // NOI18N
+                                "point to directory within the netbeans.org CVS tree"); // NOI18N
+                    }
+                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    if (ProjectManager.getDefault().findProject(dirFO) != null) {
+                        throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+                    }
+                    createNetBeansOrgBuildXML(dirFO, cnb, nborg);
+                    createProjectXML(dirFO, cnb, NbModuleTypeProvider.NETBEANS_ORG);
+                    createManifest(dirFO, cnb, bundlePath, layerPath);
+                    createBundle(dirFO, bundlePath, name);
+                    createLayerInSrc(dirFO, layerPath);
+                    createEmptyTestDir(dirFO);
+                    ModuleList.refresh();
+                    ProjectManager.getDefault().clearNonProjectCache();
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
-        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
-        if (ProjectManager.getDefault().findProject(dirFO) != null) {
-            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
-        }
-        createNetBeansOrgBuildXML(dirFO, cnb, nborg);
-        createProjectXML(dirFO, cnb, NbModuleTypeProvider.NETBEANS_ORG);
-        createManifest(dirFO, cnb, bundlePath, layerPath);
-        createBundle(dirFO, bundlePath, name);
-        createLayerInSrc(dirFO, layerPath);
-        createEmptyTestDir(dirFO);
-        ModuleList.refresh();
-        ProjectManager.getDefault().clearNonProjectCache();
     }
     
     /**
@@ -271,7 +312,7 @@ public class NbModuleProjectGenerator {
         Util.storeProperties(suiteProperties, props);
     }
     
-    /** 
+    /**
      * Appends currently created project in the <code>projectDir<code> to a
      * suite project contained in the <code>suiteDir</code>. Also intelligently
      * decides whether an added project is relative to a destination suite or
@@ -343,7 +384,7 @@ public class NbModuleProjectGenerator {
     private static void createLayerInSrc(FileObject projectDir, String layerPath) throws IOException {
         createLayer(projectDir, "src/" + layerPath); // NOI18N
     }
-
+    
     public static FileObject createLayer(FileObject projectDir, String layerPath) throws IOException {
         FileObject layerFO = createFileObject(projectDir, layerPath); // NOI18N
         FileLock lock = layerFO.lock();
@@ -423,7 +464,7 @@ public class NbModuleProjectGenerator {
                     "file object for " + root.getAbsolutePath()); // NOI18N
         }
     }
-
+    
     /**
      * Creates a new <code>FileObject</code>.
      * Throws <code>IllegalArgumentException</code> if such an object already

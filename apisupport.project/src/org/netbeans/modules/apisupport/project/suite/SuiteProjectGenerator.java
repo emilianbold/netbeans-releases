@@ -17,8 +17,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
@@ -26,6 +26,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  * Servers for generating new NetBeans Modules templates.
@@ -43,16 +45,25 @@ public class SuiteProjectGenerator {
     private SuiteProjectGenerator() {/* empty constructor*/}
     
     /** Generates standalone NetBeans Module. */
-    public static void createSuiteProject(File projectDir, String platformID) throws IOException {
-        final FileObject dirFO = createProjectDir(projectDir);
-        if (ProjectManager.getDefault().findProject(dirFO) != null) {
-            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+    public static void createSuiteProject(final File projectDir, final String platformID) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    final FileObject dirFO = createProjectDir(projectDir);
+                    if (ProjectManager.getDefault().findProject(dirFO) != null) {
+                        throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+                    }
+                    createSuiteProjectXML(dirFO);
+                    createPlatformProperties(dirFO, platformID);
+                    createProjectProperties(dirFO);
+                    ModuleList.refresh();
+                    ProjectManager.getDefault().clearNonProjectCache();
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
-        createSuiteProjectXML(dirFO);
-        createPlatformProperties(dirFO, platformID);
-        createProjectProperties(dirFO);
-        ModuleList.refresh();
-        ProjectManager.getDefault().clearNonProjectCache();
     }
     
     /**
