@@ -24,6 +24,7 @@
               <tocitem text="Reverting CVS Modifications" target="cvs-lite_revert" />            
               <tocitem text="Placing Project Metadata Under Version Control" target="cvs-lite_projects" />               
 
+              <tocitem text="Working with Tags" target="cvs-lite_tagging" />  
               <tocitem text="Working with Branches" target="cvs-lite_branches" />  
               <tocitem text="Merging File Revisions from a Branch" target="cvs-lite_merge" /> 
               <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
