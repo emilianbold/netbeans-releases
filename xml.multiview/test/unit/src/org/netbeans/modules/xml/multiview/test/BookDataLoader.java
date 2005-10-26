@@ -15,21 +15,15 @@ import org.openide.loaders.*;
 public class BookDataLoader extends UniFileLoader {
     
     public BookDataLoader() {
-        super(BookDataObject.class.getName());
+        super(BookDataLoader.class.getName());
     }
-
-    protected FileObject findPrimaryFile(FileObject fo) {
-        if ("book.xml".equals(fo.getNameExt())) {
-            return fo;
-        } else {
-            return null;
-        }
+    protected void initialize() {
+        super.initialize();
+        getExtensions().addExtension("book");
     }
-
     protected String displayName() {
         return "Book";
     }
-
     protected MultiDataObject createMultiObject(FileObject pf) throws java.io.IOException {
         return new BookDataObject(pf, this);
     }
