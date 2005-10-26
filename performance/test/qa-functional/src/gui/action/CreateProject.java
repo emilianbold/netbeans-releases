@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -87,7 +87,7 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        wizard_location.txtProjectLocation().setText(System.getProperty("xtest.tmpdir"));
+        wizard_location.txtProjectLocation().setText(System.getProperty("xtest.tmpdir.createproject"));
         project_name = wizard_location.txtProjectName().getText();
     }
     

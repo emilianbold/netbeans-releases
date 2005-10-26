@@ -20,6 +20,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Imports defaults for Performance testing. -->
     <import file="../performancetestutilities/dist/build-performance-tests.xml"/>
+
+    <!-- Custom properties -->
+    <property name="xtest.tmpdir.createproject" location="${xtest.tmpdir}/createdProjects"/>
+    
+    
     
     <!-- ==================== -->
     <!-- Setting command line -->
@@ -81,6 +86,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="${xtest.workdir}/sys/ide">
             <fileset dir="${xtest.workdir}/sys/ide_backup"/>
         </copy>
+        
+        <mkdir dir="${xtest.tmpdir.createproject}"/>
+        
         <antcall target="copy_released_ide_cfg_file"/>
        
         <executeTests pluginName="ide">
@@ -93,6 +101,8 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.ide.reuse.userdir" value="true" />
             <property name="xtest.timeout" value="3600000" />
         </executeTests>
+        
+        <delete dir="${xtest.tmpdir.createproject}"/>
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
@@ -124,6 +134,8 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <antcall target="copy_released_ide_cfg_file"/>
        
+        <mkdir dir="${xtest.tmpdir.createproject}"/>
+        
         <executeTests pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
@@ -135,6 +147,8 @@ Microsystems, Inc. All Rights Reserved.
             
             <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=15" />
         </executeTests>
+        
+        <delete dir="${xtest.tmpdir.createproject}"/>
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
