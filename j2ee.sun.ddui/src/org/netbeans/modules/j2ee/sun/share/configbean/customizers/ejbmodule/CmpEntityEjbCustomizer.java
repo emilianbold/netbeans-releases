@@ -48,7 +48,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
 
     private CmpEntityEjb theBean;
     private OneOneFinderPanel finderPanel;
-    private FlushAtEndOfMethodPanel flushAtEndOfMethodPanel;
+//    private FlushAtEndOfMethodPanel flushAtEndOfMethodPanel;
     private PrefetchDisabledPanel prefetchDisabledPanel;
     private CmpEntityEjbPanel cmpEntityEjbPanel;
     private CmpPanel cmpPanel;
@@ -141,10 +141,10 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
 
 
 
-        flushAtEndOfMethodPanel = new FlushAtEndOfMethodPanel(theBean, this);
-        flushAtEndOfMethodPanel.addTableModelListener(this);
-        tabbedPanel.addTab(bundle.getString("LBL_Flush_At_End_Of_Method"),    // NOI18N
-            flushAtEndOfMethodPanel);
+//        flushAtEndOfMethodPanel = new FlushAtEndOfMethodPanel(theBean, this);
+//        flushAtEndOfMethodPanel.addTableModelListener(this);
+//        tabbedPanel.addTab(bundle.getString("LBL_Flush_At_End_Of_Method"),    // NOI18N
+//            flushAtEndOfMethodPanel);
 
 
         prefetchDisabledPanel = new PrefetchDisabledPanel(theBean, this);
@@ -186,7 +186,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
             }
         }
  
-        flushAtEndOfMethodPanel.setData(cmpEntityEjb);
+//        flushAtEndOfMethodPanel.setData(cmpEntityEjb);
 
         prefetchDisabledPanel.setData(cmpEntityEjb);
 
