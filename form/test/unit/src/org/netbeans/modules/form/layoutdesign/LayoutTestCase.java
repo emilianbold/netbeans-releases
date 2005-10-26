@@ -24,19 +24,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import junit.framework.TestCase;
-import org.netbeans.modules.form.FormDesigner;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.GandalfPersistenceManager;
 import org.netbeans.modules.form.PersistenceException;
-import org.netbeans.modules.form.RADComponent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public abstract class LayoutTestCase extends TestCase {
-    
+
+    private String testSwitch;
+
     private LayoutModel lm = null;
-    private FormModel fm = null;
-    private FormDesigner fd = null;
     protected LayoutDesigner ld = null;
     
     protected URL url = getClass().getClassLoader().getResource("");
@@ -72,7 +69,6 @@ public abstract class LayoutTestCase extends TestCase {
      * build/test/unit/results so it can be compared with the golden file manually.namename
      */
     public void testLayout() throws IOException {
-		
         loadForm(startingFormFile);
 
         Method[] methods = this.getClass().getMethods();
@@ -115,15 +111,27 @@ public abstract class LayoutTestCase extends TestCase {
                 }
             }
         }
-        
     }
-    
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        testSwitch = System.getProperty(LayoutDesigner.TEST_SWITCH);
+        System.setProperty(LayoutDesigner.TEST_SWITCH, "true"); // NOI18N
+    }
+
+    protected void tearDown() throws Exception {
+        if (testSwitch != null)
+            System.setProperty(LayoutDesigner.TEST_SWITCH, testSwitch);
+        else
+            System.getProperties().remove(LayoutDesigner.TEST_SWITCH);
+        super.tearDown();
+    }
+
     private void loadForm(FileObject file) {
+        FormModel fm = null;
         GandalfPersistenceManager gpm = new GandalfPersistenceManager();
         List errors = new ArrayList();
-        
         try {
-//	    RADComponent.setIdCounter(getCounterId());
             fm = gpm.loadForm(file, file, null, errors);
         } catch (PersistenceException pe) {
             fail(pe.toString());
@@ -135,16 +143,15 @@ public abstract class LayoutTestCase extends TestCase {
         
         lm = fm.getLayoutModel();
         
-        FakeLayoutMapper fakemapper = new FakeLayoutMapper(fm,
-                contInterior,
-                baselinePosition,
-                prefPaddingInParent,
-                compBounds,
-                compMinSize,
-                compPrefSize,
-                hasExplicitPrefSize,
-                prefPadding);
-        ld = new LayoutDesigner(lm, fakemapper);
+        ld = new LayoutDesigner(lm, new FakeLayoutMapper(fm,
+                                                         contInterior,
+                                                         baselinePosition,
+                                                         prefPaddingInParent,
+                                                         compBounds,
+                                                         compMinSize,
+                                                         compPrefSize,
+                                                         hasExplicitPrefSize,
+                                                         prefPadding));
     }
     
     private String getCurrentLayoutDump() {

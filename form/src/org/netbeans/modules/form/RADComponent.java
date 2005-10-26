@@ -246,15 +246,11 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
     // -----------------------------------------------------------------------------
     // Public interface
-    
-    private ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
+
+    private boolean testMode = Boolean.getBoolean("netbeans.form.layout_test"); // NOI18N
 
     public final String getId() {
-        if (em.isLoggable(ErrorManager.INFORMATIONAL)) {
-            return getName();
-        } else {
-            return id;
-        }
+        return testMode ? getName() : id;
     }
 
     public final boolean isReadOnly() {

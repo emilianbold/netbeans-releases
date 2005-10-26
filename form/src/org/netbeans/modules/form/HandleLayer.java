@@ -396,45 +396,47 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 Map idToNameMap = new HashMap();
                 while (iter.hasNext()) {
                     RADComponent comp = (RADComponent)iter.next();
-                    org.netbeans.modules.form.codestructure.CodeVariable var =
-                        comp.getCodeExpression().getVariable();
-                    if (var != null) {
-                        idToNameMap.put(comp.getId(), var.getName());
-                    }
+                    if (comp != formModel.getTopRADComponent())
+                        idToNameMap.put(comp.getId(), comp.getName());
                 }
                 System.out.println(layoutModel.dump(idToNameMap));
             }
         } else if (((keyCode == KeyEvent.VK_W)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
-            FormModel formModel = formDesigner.getFormModel();
-            LayoutModel layoutModel = formModel.getLayoutModel();
-            if (layoutModel != null) {
-                Iterator iter = formModel.getMetaComponents().iterator();
-                Map idToNameMap = new HashMap();
-                while (iter.hasNext()) {
-                    RADComponent comp = (RADComponent)iter.next();
-                    idToNameMap.put(comp.getId(), comp.getName());
+            // generate layout test (one checkpoint)
+            if (formDesigner.getLayoutDesigner().logTestCode()) {
+                FormModel formModel = formDesigner.getFormModel();
+                LayoutModel layoutModel = formModel.getLayoutModel();
+                if (layoutModel != null) {
+                    Iterator iter = formModel.getMetaComponents().iterator();
+                    Map idToNameMap = new HashMap();
+                    while (iter.hasNext()) {
+                        RADComponent comp = (RADComponent)iter.next();
+                        idToNameMap.put(comp.getId(), comp.getName());
+                    }
+                    FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
+                    LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel);
+                    LayoutDesigner ld = formDesigner.getLayoutDesigner();
+                    ld.setModelCounter(ld.getModelCounter() + 1);
                 }
-		FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
-		LayoutTestUtils.writeTest(formDesigner, formDO, idToNameMap, layoutModel);
-                LayoutDesigner ld = formDesigner.getLayoutDesigner();
-                ld.setModelCounter(ld.getModelCounter() + 1);
             }
         } else if (((keyCode == KeyEvent.VK_S)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
-            FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
-            FileObject formFile = formDO.getFormFile();
-	
-	    SaveCookie saveCookie = (SaveCookie)formDO.getCookie(SaveCookie.class);
-            try {
-                if (saveCookie != null)
-                    saveCookie.save();
-                FileObject copied = formFile.copy(LayoutTestUtils.getTargetFolder(formFile), 
-			    formFile.getName() + "Test-StartingForm", //NOI18N
-			    formFile.getExt()); 
-                formDesigner.getLayoutDesigner().setModelCounter(0);
-                formDesigner.resetTopDesignComponent(true);
-		StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath());
-            } catch (IOException ioe) {
-                //TODO
+            // start layout test recording
+            if (LayoutDesigner.testMode()) {
+                FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();
+                FileObject formFile = formDO.getFormFile();
+                SaveCookie saveCookie = (SaveCookie)formDO.getCookie(SaveCookie.class);
+                try {
+                    if (saveCookie != null)
+                        saveCookie.save();
+                    FileObject copied = formFile.copy(LayoutTestUtils.getTargetFolder(formFile), 
+                                formFile.getName() + "Test-StartingForm", // NOI18N
+                                formFile.getExt()); 
+                    formDesigner.getLayoutDesigner().setModelCounter(0);
+                    formDesigner.resetTopDesignComponent(true);
+                    StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath()); // NOI18N
+                } catch (IOException ioe) {
+                    //TODO
+                }
             }
         }
 

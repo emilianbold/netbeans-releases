@@ -103,6 +103,9 @@ public class LayoutDesigner implements LayoutConstants {
     public void externalSizeChangeHappened() {
         imposeSize = true;
         visualStateUpToDate = false;
+        if (logTestCode()) {
+            testCode.add("ld.externalSizeChangeHappened();"); // NOI18N
+        }
     }
 
     void requireStructureOptimization() {
@@ -609,6 +612,7 @@ public class LayoutDesigner implements LayoutConstants {
                     }
 
                     updateDesignModifications(targetContainer);
+                    imposeSize = true; // can't calculate the correct gap size in all cases
                 }
                 else { // resizing root container
                     assert dragger.isResizing();
@@ -2908,7 +2912,7 @@ public class LayoutDesigner implements LayoutConstants {
     // -----
     // test generation support
 
-    private ErrorManager em = ErrorManager.getDefault().getInstance("org.netbeans.modules.form.layoutdesign.test"); //NOI18N
+    static final String TEST_SWITCH = "netbeans.form.layout_test"; // NOI18N
 
     /* stores test code lines */
     public List testCode = new ArrayList();
@@ -2932,7 +2936,11 @@ public class LayoutDesigner implements LayoutConstants {
         this.modelCounter = modelCounter;
     }
 
+    public static boolean testMode() {
+        return Boolean.getBoolean(TEST_SWITCH);
+    }
+
     public boolean logTestCode() {
-        return modelCounter > -1 && em.isLoggable(ErrorManager.INFORMATIONAL);
+        return modelCounter > -1 && Boolean.getBoolean(TEST_SWITCH);
     }
 }
