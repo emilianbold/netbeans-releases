@@ -424,7 +424,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
     }
     
     private URL createFile(String[] content) throws IOException {
-        File myTemplate = getWorkDir().createTempFile("myTemplate", "html");
+        File myTemplate = new File(getWorkDir(), "myTemplate.html");
         OutputStream myTemplateOS = new FileOutputStream(myTemplate);
         PrintWriter pw = new PrintWriter(myTemplateOS);
         try {
@@ -438,7 +438,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
     }
     
     private File createBinaryFile(String[] content) throws IOException {
-        File myTemplate = getWorkDir().createTempFile("myTemplate", "zip");
+        File myTemplate = new File(getWorkDir(), "myTemplate.zip");
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(myTemplate));
         ZipEntry entry = new ZipEntry("a/b/c/d.txt");
         zos.putNextEntry(entry);
