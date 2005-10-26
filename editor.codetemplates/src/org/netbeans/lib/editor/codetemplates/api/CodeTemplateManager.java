@@ -125,6 +125,10 @@ public final class CodeTemplateManager {
             return manager.getOperation();
         }
 
+        public CodeTemplateManagerOperation getOperation(CodeTemplate codeTemplate) {
+            return codeTemplate.getOperation();
+        }
+        
         public CodeTemplate createCodeTemplate(
         CodeTemplateManagerOperation managerOperation,
         String abbreviation, String description, String parametrizedText) {

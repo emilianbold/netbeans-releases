@@ -40,7 +40,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     
     private static ImageIcon icon;
     
-    private CodeTemplate codeTemplate;
+    private final CodeTemplate codeTemplate;
     
     private String leftText;
     
@@ -217,10 +217,14 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
             // Append abbreviation
             htmlText.append("<br>Abbreviation: &nbsp;");
             htmlText.append(toHtmlText(codeTemplate.getAbbreviation()));
-            htmlText.append("</html>");
+            htmlText.append("&nbsp; [");
+            // Append expansion keystroke
+            String mimeType = CodeTemplateApiPackageAccessor.get().getOperation(codeTemplate).getMimeType();
+            htmlText.append(AbbrevSettings.get(mimeType).getExpandKeyStrokeText());
+            htmlText.append(" for expansion]</html>");
             return htmlText.toString();
         }
-
+        
         public CompletionDocumentation resolveLink(String link) {
             return null;
         }

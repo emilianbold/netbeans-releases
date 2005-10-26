@@ -52,6 +52,9 @@ public abstract class CodeTemplateApiPackageAccessor {
     public abstract CodeTemplateManagerOperation getOperation(
     CodeTemplateManager manager);
 
+    public abstract CodeTemplateManagerOperation getOperation(
+    CodeTemplate codeTemplate);
+
     public abstract CodeTemplate createCodeTemplate(
     CodeTemplateManagerOperation managerOperation,
     String abbreviation, String description, String parametrizedText);

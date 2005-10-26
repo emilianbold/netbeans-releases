@@ -102,6 +102,13 @@ public final class CodeTemplate {
         return parametrizedText;
     }
 
+    /**
+     * Api-package accessor's method.
+     */
+    CodeTemplateManagerOperation getOperation() {
+        return managerOperation;
+    }
+
     public String toString() {
         return "abbrev='" + getAbbreviation() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
     }
