@@ -185,7 +185,8 @@ PropertyChangeListener {
                           backgroundColorChooser,	cc.xyw (5, 9, 3));
         builder.addLabel (loc ("CTL_Effects_label"),	lc.xy  (3, 11),
                           cbEffects,			cc.xyw (5, 11, 3));
-        builder.add (effectsColorChooser,		cc.xyw (5, 13, 3));
+        builder.addLabel (loc ("CTL_Effects_color"),	lc.xy  (3, 13),
+                          effectsColorChooser,		cc.xyw (5, 13, 3));
         builder.addLabel (loc ("CTL_Preview"),	        lc.xyw (1, 15, 7),
                           previewPanel,                 cc.xyw (1, 17, 7));
     }
