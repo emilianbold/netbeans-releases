@@ -236,6 +236,11 @@ public class ServiceRef extends Base {
 	}
 	
 	protected void setDefaultProperties() {
+        setDefaultPorts();
+        getConfig().getMasterDCBRoot().setDirty();
+	}
+    
+    private void setDefaultPorts() {
 		List portInfoList = getDefaultPortInfos();
 		try {
 			setPortInfos(portInfoList);
@@ -243,7 +248,7 @@ public class ServiceRef extends Base {
 			// Should not happen.
 			ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 		}
-	}
+    }
 
     private List getDefaultPortInfos() {
         List result = new ArrayList();
@@ -396,12 +401,8 @@ public class ServiceRef extends Base {
 
 	public void fireXpathEvent(XpathEvent xpathEvent) {
         String xpath = xpathEvent.getBean().getXpath();
-
-        // !PW FIXME calling setDefaultProperties() here is a bad idea even if it
-        // does the right thing.  Proper form in that case is to have both call
-        // a shared private method.
         if(xpath.equals("/web-app/service-ref/port-component-ref")){ //NOI18N
-            setDefaultProperties();
+            setDefaultPorts();
         }
 	}
     
