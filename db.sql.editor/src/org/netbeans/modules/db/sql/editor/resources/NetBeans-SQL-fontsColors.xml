@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fontscolors>
+    <fontcolor name="default" default="default"/>
+    <fontcolor name="sql-whitespace" default="whitespace"/>
+    <fontcolor name="sql-line-comment" default="comment"/>
+    <fontcolor name="sql-block-comment" default="comment"/>
+    <fontcolor name="sql-string-literal" foreColor="ffb20000" default="default"/>
+    <fontcolor name="sql-identifier" foreColor="blue" default="default"/>
+    <fontcolor name="sql-operator" default="operator"/>
+    <fontcolor name="sql-int-literal" foreColor="ffb20000" default="default"/>
+    <fontcolor name="sql-double-literal" foreColor="ffb20000" default="default"/>
+    <fontcolor name="sql-keyword" default="keyword"/>
+    <fontcolor name="sql-errors" default="error"/>
+    <fontcolor name="sql-dot" default="operator"/>
+</fontscolors>
