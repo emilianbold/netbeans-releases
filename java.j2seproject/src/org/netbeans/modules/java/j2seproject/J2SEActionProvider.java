@@ -250,20 +250,27 @@ class J2SEActionProvider implements ActionProvider {
 
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
-            int result;
-            while ((result=isSetMainClass (project.getSourceRoots().getRoots(), mainClass))!=0) {
-                
-                // show warning, if cancel then return
-                if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
-                    return null;
+            int result = isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
+            if (result != 0) {                
+                do {
+                    // show warning, if cancel then return
+                    if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
+                        return null;
+                    }
+                    mainClass = (String)ep.get ("main.class"); // NOI18N
+                    result=isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
+                } while (result != 0);
+                try {
+                    if (updateHelper.requestSave()) {
+                        updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                        ProjectManager.getDefault().saveProject(project);
+                    }
+                    else {
+                        return null;
+                    }
+                } catch (IOException ioe) {           
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
                 }
-                mainClass = (String)ep.get ("main.class"); // NOI18N
-                updateHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-            }
-            try {
-                ProjectManager.getDefault().saveProject(project);
-            } catch (Exception e) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + e);
             }
             if (!command.equals(COMMAND_RUN)) {
                 p.setProperty("debug.class", mainClass); // NOI18N

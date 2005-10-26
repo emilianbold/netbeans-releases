@@ -55,7 +55,6 @@ public class UpdateHelper {
     private final Notifier notifier;
     private boolean alreadyAskedInWriteAccess;
     private Boolean isCurrent;
-    private EditableProperties cachedProperties;
     private Element cachedElement;
 
     /**
@@ -273,20 +272,18 @@ public class UpdateHelper {
     }
     
     private synchronized EditableProperties getUpdatedProjectProperties () {
-        if (cachedProperties == null) {
-            cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            //The javadoc.additionalparam was not in NB 4.0
-            if (cachedProperties.get (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
-                cachedProperties.put (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
-            }
-            if (cachedProperties.get ("build.generated.dir")==null) { //NOI18N
-                cachedProperties.put ("build.generated.dir","${build.dir}/generated"); //NOI18N
-            }
-             if (cachedProperties.get ("meta.inf.dir")==null) { //NOI18N
-                cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); //NOI18N
-            }
+        EditableProperties cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        //The javadoc.additionalparam was not in NB 4.0
+        if (cachedProperties.get (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
+            cachedProperties.put (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
         }
-        return this.cachedProperties;
+        if (cachedProperties.get ("build.generated.dir")==null) { //NOI18N
+            cachedProperties.put ("build.generated.dir","${build.dir}/generated"); //NOI18N
+        }
+         if (cachedProperties.get ("meta.inf.dir")==null) { //NOI18N
+            cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); //NOI18N
+        }
+        return cachedProperties;
     }
 
     private static void copyDocument (Document doc, Element from, Element to) {
