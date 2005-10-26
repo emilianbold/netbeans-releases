@@ -366,7 +366,11 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
                 SwingUtilities.invokeLater(this);
             } else {
                 // AWT thread
-                updateContext();
+                // #67599: This task runs delayed, so it's possible that
+                // navigator was already closed, that's hwy the check
+                if (curNodes != null) {
+                    updateContext();
+                }
             }
         }
         
