@@ -737,6 +737,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         BrokenServerSupport.showAlert();
                     }
                 }
+                
+                // initialize the server configuration
+                ejbModule.getConfigSupport().ensureConfigurationReady();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
