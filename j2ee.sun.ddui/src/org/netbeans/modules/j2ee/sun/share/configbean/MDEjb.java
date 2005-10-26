@@ -187,6 +187,7 @@ public class MDEjb extends BaseEjb {
         // Message driven beans always have a JNDI name.
         try {
             setJndiName(getDefaultJndiName()); // NOI18N // J2EE recommended jndiName
+            getConfig().getMasterDCBRoot().setDirty();
         } catch(PropertyVetoException ex) {
             // suppress.  should never happen.
         }

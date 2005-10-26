@@ -267,6 +267,7 @@ public abstract class BaseEjb extends Base {
         // MDB overrides this to always set the JNDI name.
         if(requiresJndiName()) {
             jndiName = getDefaultJndiName();
+            getConfig().getMasterDCBRoot().setDirty();
         }
 	}
     

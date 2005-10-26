@@ -68,7 +68,6 @@ public class ResourceRef extends Base {
 //		initGroup(dDBean, parent);
 		
 		resRefNameDD = getNameDD("res-ref-name");
-                jndiName = getResRefName();
 
 		loadFromPlanFile(getConfig());
 	}
@@ -357,5 +356,6 @@ public class ResourceRef extends Base {
 	
 	protected void setDefaultProperties() {
 		jndiName = getResRefName();
+        getConfig().getMasterDCBRoot().setDirty();
 	}
 }
