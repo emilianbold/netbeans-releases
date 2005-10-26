@@ -52,7 +52,16 @@ public class StrutsEditorUtilities {
             TokenItem token = sup.getTokenChain(offset, offset+1);
             // find the element, which is on the offset
             while (token != null
-                    && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT)
+                    && !(token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ELEMENT
+                        && !( token.getImage().equals("/>") 
+                            || token.getImage().equals(">")
+                            || token.getImage().equals("<forward")
+                            || token.getImage().equals("<exception")
+                            || token.getImage().equals("</action")
+                            || token.getImage().equals("<description")
+                            || token.getImage().equals("<display-name")
+                            || token.getImage().equals("<set-property")
+                            || token.getImage().equals("<icon"))))
                 token = token.getPrevious();
             if (token != null && token.getImage().equals("<action")){   //NOI18N
                 token = token.getNext();
@@ -96,7 +105,11 @@ public class StrutsEditorUtilities {
                         && !( token.getImage().equals("/>") 
                             || token.getImage().equals(">")
                             || token.getImage().equals("<form-property")
-                            || token.getImage().equals("</form-bean"))))
+                            || token.getImage().equals("</form-bean")
+                            || token.getImage().equals("<description")
+                            || token.getImage().equals("<display-name")
+                            || token.getImage().equals("<set-property")
+                            || token.getImage().equals("<icon"))))
                 token = token.getPrevious();
             if (token != null && token.getImage().equals("<form-bean")){   //NOI18N
                 token = token.getNext();
