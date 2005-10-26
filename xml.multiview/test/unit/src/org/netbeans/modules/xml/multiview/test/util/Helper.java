@@ -30,8 +30,7 @@ import javax.swing.text.Document;
 public class Helper {
 
     public static File getBookFile(File dataDir) {
-        String result = dataDir.getAbsolutePath() + "/projects/book/book.xml";
-        return new File(result);
+        return new File(dataDir, "sample.book");
     }
 
     public static JTextField getChapterTitleTF(final BookDataObject dObj, Chapter chapter) {
