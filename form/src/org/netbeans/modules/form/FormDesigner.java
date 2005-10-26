@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
+import javax.swing.undo.UndoableEdit;
 
 import org.jdesktop.layout.*;
 
@@ -384,21 +385,35 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void updateComponentLayer(final boolean fireChange) {
-        componentLayer.revalidate();
         if (getLayoutDesigner() == null)
             return;
 
-        // after the components are layed out, sync the layout designer
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (getLayoutDesigner().updateCurrentState() && fireChange) {
-                    formModel.fireFormChanged(); // hack: to regenerate code once again
-                }
-                formModel.getLayoutModel().endUndoableEdit();
-                updateResizabilityActions();
-                componentLayer.repaint();
+        // Ensure that the components are laid out
+        componentLayer.revalidate(); // Add componentLayer among components to validate
+        RepaintManager.currentManager(componentLayer).validateInvalidComponents();
+
+        LayoutModel layoutModel = formModel.getLayoutModel();
+        Object layoutUndoMark = layoutModel.getChangeMark();
+        UndoableEdit layoutUndoEdit = layoutModel.getUndoableEdit();
+        boolean autoUndo = true;
+
+        try {
+            if (getLayoutDesigner().updateCurrentState() && fireChange) {
+                formModel.fireFormChanged(); // hack: to regenerate code once again
             }
-        });
+            autoUndo = false;
+        } finally {
+            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                formModel.addUndoableEdit(layoutUndoEdit);
+            }
+            if (autoUndo) {
+                formModel.forceUndoOfCompoundEdit();                
+            }
+        }
+
+        layoutModel.endUndoableEdit();
+        updateResizabilityActions();
+        componentLayer.repaint();
     }
 
     // updates layout of a container - used by HandleLayer when starting and
@@ -1909,17 +1924,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 else { // check if not smaller than minimum size
                     checkDesignerSize();
                 }
-                updateComponentLayer(true);
-                if (getLayoutDesigner() != null) {
-                    LayoutModel layoutModel = formModel.getLayoutModel();
-                    if (!layoutModel.isUndoableEditInProgress() && formModel.isCompoundEditInProgress()) {
-                        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                        formModel.addUndoableEdit(ue);
-                    }
-                    if (formModel.isCompoundEditInProgress()) {
-                        getLayoutDesigner().externalSizeChangeHappened();
-                    }
+                LayoutDesigner layoutDesigner = getLayoutDesigner();
+                if ((layoutDesigner != null) && formModel.isCompoundEditInProgress()) {
+                    getLayoutDesigner().externalSizeChangeHappened();
                 }
+                updateComponentLayer(true);
             }
         }
         
