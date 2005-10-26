@@ -69,10 +69,10 @@ public class HTMLPaletteActions extends PaletteActions {
         public void actionPerformed(ActionEvent e) {
       
             ActiveEditorDrop drop = (ActiveEditorDrop) item.lookup(ActiveEditorDrop.class);
-            if (drop == null) {
-                String body = (String) item.lookup(String.class);
-                drop = new HTMLEditorDropDefault(body);
-            }
+//            if (drop == null) {
+//                String body = (String) item.lookup(String.class);
+//                drop = new HTMLEditorDropDefault(body);
+//            }
             
             JTextComponent target = Utilities.getFocusedComponent();
             if (target == null) {
