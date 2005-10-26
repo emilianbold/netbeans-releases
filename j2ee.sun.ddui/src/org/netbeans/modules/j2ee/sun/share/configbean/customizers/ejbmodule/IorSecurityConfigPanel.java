@@ -299,10 +299,11 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
         estbTrstInClntLabel = new javax.swing.JLabel();
         estbTrstInTrgtComboBox = new javax.swing.JComboBox();
         estbTrstInClntComboBox = new javax.swing.JComboBox();
+        fillerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.TitledBorder(""));
+        setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 formFocusGained(evt);
@@ -311,7 +312,7 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         asContextPanel.setLayout(new java.awt.GridBagLayout());
 
-        asContextPanel.setBorder(new javax.swing.border.EtchedBorder());
+        asContextPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         requiredComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
         requiredComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Tool_Tip"));
         requiredComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -417,7 +418,7 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         sasContextPanel.setLayout(new java.awt.GridBagLayout());
 
-        sasContextPanel.setBorder(new javax.swing.border.EtchedBorder());
+        sasContextPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         callerPropagationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED" }));
         callerPropagationComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Tool_Tip"));
         callerPropagationComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -491,7 +492,7 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         transportConfigPanel.setLayout(new java.awt.GridBagLayout());
 
-        transportConfigPanel.setBorder(new javax.swing.border.EtchedBorder());
+        transportConfigPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         confidentialityLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -502,7 +503,7 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         transportConfigPanelPanel1.setLayout(new java.awt.GridBagLayout());
 
-        transportConfigPanelPanel1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(1, 1, 1, 1)));
+        transportConfigPanelPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         confidentialityLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -583,7 +584,7 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         transportConfigPanel2.setLayout(new java.awt.GridBagLayout());
 
-        transportConfigPanel2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(1, 1, 1, 1)));
+        transportConfigPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         confidentialityLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -664,6 +665,14 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(transportConfigPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(fillerPanel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -755,6 +764,7 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
     private javax.swing.JLabel estbTrstInClntLabel;
     private javax.swing.JComboBox estbTrstInTrgtComboBox;
     private javax.swing.JLabel estbTrstInTrgtLabel;
+    private javax.swing.JPanel fillerPanel;
     private javax.swing.JComboBox integrityComboBox;
     private javax.swing.JLabel integrityLabel;
     private javax.swing.JLabel realmLabel;

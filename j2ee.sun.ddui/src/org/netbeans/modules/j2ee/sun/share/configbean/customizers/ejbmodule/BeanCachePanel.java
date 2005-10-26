@@ -168,6 +168,7 @@ public class BeanCachePanel extends javax.swing.JPanel
         removalTimeoutInSecondsTextField = new javax.swing.JTextField();
         victimSelectionPolicyLabel = new javax.swing.JLabel();
         victimSelectionPolicyComboBox = new javax.swing.JComboBox();
+        fillerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -393,6 +394,14 @@ public class BeanCachePanel extends javax.swing.JPanel
         victimSelectionPolicyComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Victim_Selection_Policy_Acsbl_Name"));
         victimSelectionPolicyComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Victim_Selection_Policy_Acsbl_Desc"));
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(fillerPanel, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
 
@@ -481,6 +490,7 @@ public class BeanCachePanel extends javax.swing.JPanel
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel cacheIdleTimeoutInSecondsLabel;
     private javax.swing.JTextField cacheIdleTimeoutInSecondsTextField;
+    private javax.swing.JPanel fillerPanel;
     private javax.swing.JComboBox isCacheOverflowAllowedComboBox;
     private javax.swing.JLabel isCacheOverflowAllowedLabel;
     private javax.swing.JLabel maxCacheSizeLabel;

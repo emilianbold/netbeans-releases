@@ -151,6 +151,7 @@ public class BeanPoolPanel extends javax.swing.JPanel
         maxPoolSizeTextField = new javax.swing.JTextField();
         poolIdleTimeoutInSecondsLabel = new javax.swing.JLabel();
         poolIdleTimeoutInSecondsTextField = new javax.swing.JTextField();
+        fillerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -308,6 +309,14 @@ public class BeanPoolPanel extends javax.swing.JPanel
         poolIdleTimeoutInSecondsTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Acsbl_Name"));
         poolIdleTimeoutInSecondsTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Acsbl_Desc"));
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(fillerPanel, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
 
@@ -376,6 +385,7 @@ public class BeanPoolPanel extends javax.swing.JPanel
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel fillerPanel;
     private javax.swing.JLabel maxPoolSizeLabel;
     private javax.swing.JTextField maxPoolSizeTextField;
     private javax.swing.JLabel poolIdleTimeoutInSecondsLabel;
