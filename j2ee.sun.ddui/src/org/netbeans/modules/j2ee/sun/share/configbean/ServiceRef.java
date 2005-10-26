@@ -17,11 +17,6 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.netbeans.modules.schema2beans.BaseBean;
-
-import javax.enterprise.deploy.spi.DConfigBean;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
@@ -29,14 +24,15 @@ import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.model.exceptions.DDBeanCreateException;
 import javax.enterprise.deploy.model.XpathEvent;
 
+import org.openide.ErrorManager;
+
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.CallProperty;
 import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
-import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceQname;
-import org.netbeans.modules.j2ee.sun.dd.api.common.StubProperty;
-import org.netbeans.modules.j2ee.sun.dd.api.common.WsdlPort;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
+
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
+
 
 /** Property structure of ServiceRef from DTD:
  *
@@ -129,9 +125,6 @@ public class ServiceRef extends Base {
 	 */    
 	public void notifyDDChange(XpathEvent xpathEvent) {
 		super.notifyDDChange(xpathEvent);
-            //CHANGE events
-            //System.out.println("notifyDDChange - ServiceRef : "); //NOI18N
-            //System.out.println("XPATH : " + xpathEvent.getBean().getXpath()); //NOI18N
 
 		if(serviceRefNameDD == xpathEvent.getBean()) {
 			// name changed...
@@ -247,54 +240,56 @@ public class ServiceRef extends Base {
 		try {
 			setPortInfos(portInfoList);
 		} catch(java.beans.PropertyVetoException ex) {
-			System.out.println(ex.getMessage());
+			// Should not happen.
+			ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 		}
 	}
 
-	private List getDefaultPortInfos() {
-		List result = new ArrayList();
-		try {
-                    DeployableObject dobj = getConfig().getDeployableObject();
+    private List getDefaultPortInfos() {
+        List result = new ArrayList();
+        try {
+            DeployableObject dobj = getConfig().getDeployableObject();
 
-                    DDBeanRoot webRootDD = dobj.getDDBeanRoot("WEB-INF/web.xml"); // NOI18N
-                    if(webRootDD == null) {
-                            jsr88Logger.warning("ServiceRef.getDefaultServiceRefs() failed to retrieve web DDRoot via xpath.  Using fallback method."); 
-                    }
+            // !PW FIXME this does not work for ejb-jar.xml!!!!
+            DDBeanRoot webRootDD = dobj.getDDBeanRoot("WEB-INF/web.xml"); // NOI18N
+            if(webRootDD == null) {
+                jsr88Logger.warning("ServiceRef.getDefaultServiceRefs() failed to retrieve web DDRoot via xpath.  Using fallback method."); 
+            }
 
-                    if(webRootDD != null) {
-                        DDBean[] serviceRefNameDDBean = 
-                            webRootDD.getChildBean("web-app/service-ref/service-ref-name"); //NOI18N
-                        // First, find the service-ref that corresponds to this service
-                        for(int i = 0; i < serviceRefNameDDBean.length; i++) {
-                            if(serviceRefNameDD.getText().equals(serviceRefNameDDBean[i].getText())) {
-                                DDBean[] portComponentRefDDs = 
-                                    serviceRefNameDDBean[i].getChildBean("../port-component-ref"); //NOI18N
-                                String serviceEndpointInterface = null;
-                                for(int j = 0; j < portComponentRefDDs.length; j++) {
-                                    DDBean[] serviceEndpointInterfaceDD = 
-                                        portComponentRefDDs[j].getChildBean("service-endpoint-interface");  //NOI18N
-                                    serviceEndpointInterface = serviceEndpointInterfaceDD[0].getText();
-                                    if(serviceEndpointInterface != null){
-                                        PortInfo portInfo = StorageBeanFactory.getDefault().createPortInfo();
-                                        portInfo.setServiceEndpointInterface(serviceEndpointInterface);
-                                        result.add(portInfo);
-                                    }
-                                }
+            if(webRootDD != null) {
+                DDBean[] serviceRefNameDDBean = 
+                    webRootDD.getChildBean("web-app/service-ref/service-ref-name"); //NOI18N
+                // First, find the service-ref that corresponds to this service
+                for(int i = 0; i < serviceRefNameDDBean.length; i++) {
+                    if(serviceRefNameDD.getText().equals(serviceRefNameDDBean[i].getText())) {
+                        DDBean[] portComponentRefDDs = 
+                            serviceRefNameDDBean[i].getChildBean("../port-component-ref"); //NOI18N
+                        String serviceEndpointInterface = null;
+                        for(int j = 0; j < portComponentRefDDs.length; j++) {
+                            DDBean[] serviceEndpointInterfaceDD = 
+                                portComponentRefDDs[j].getChildBean("service-endpoint-interface");  //NOI18N
+                            serviceEndpointInterface = serviceEndpointInterfaceDD[0].getText();
+                            if(serviceEndpointInterface != null){
+                                PortInfo portInfo = StorageBeanFactory.getDefault().createPortInfo();
+                                portInfo.setServiceEndpointInterface(serviceEndpointInterface);
+                                result.add(portInfo);
                             }
                         }
                     }
-		} catch(DDBeanCreateException ex) {
-			jsr88Logger.warning(ex.getMessage());
-		} catch(java.io.FileNotFoundException ex) {
-			jsr88Logger.warning(ex.getMessage());
-		} catch(java.lang.NullPointerException ex) {
-			// This can happen if the file is being loaded into a new (and thus partially
-			// constructed tree.  Nothing to do but catch it and move on.
-			jsr88Logger.warning(ex.getMessage());
-		}
+                }
+            }
+        } catch(DDBeanCreateException ex) {
+            jsr88Logger.warning(ex.getMessage());
+        } catch(java.io.FileNotFoundException ex) {
+            jsr88Logger.warning(ex.getMessage());
+        } catch(java.lang.NullPointerException ex) {
+            // This can happen if the file is being loaded into a new (and thus partially
+            // constructed tree.  Nothing to do but catch it and move on.
+            jsr88Logger.warning(ex.getMessage());
+        }
 
-		return result;
-	}
+        return result;
+    }
 
 	/* ------------------------------------------------------------------------
 	 * Property getter/setter support
@@ -400,15 +395,14 @@ public class ServiceRef extends Base {
 	}
 
 	public void fireXpathEvent(XpathEvent xpathEvent) {
-            //ADD , REMOVE or CHANGE events
-            String xpath = xpathEvent.getBean().getXpath();
-//            System.out.println("fireXpathEvent - ServiceRef"); //NOI18N
-//            System.out.println("XPATH : " + xpath); //NOI18N
+        String xpath = xpathEvent.getBean().getXpath();
 
-            if(xpath.equals("/web-app/service-ref/port-component-ref")){ //NOI18N
-                setDefaultProperties();
-            }
-            //dumpNotification("fireXpathEvent", xpe);//NOI18N
+        // !PW FIXME calling setDefaultProperties() here is a bad idea even if it
+        // does the right thing.  Proper form in that case is to have both call
+        // a shared private method.
+        if(xpath.equals("/web-app/service-ref/port-component-ref")){ //NOI18N
+            setDefaultProperties();
+        }
 	}
     
     /** Api to retrieve the interface definitions for this bean.  Aids usability
