@@ -276,6 +276,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException();
                        }
+                       superSetName(str);
                    }
                };
     }
