@@ -56,6 +56,7 @@ public class AddDialog extends DialogDescriptor {
                 textComp[i].getDocument().addDocumentListener(list);
             }
         }
+        checkValues();
     }
 
     private static String getTitle(String title) {
