@@ -14,9 +14,6 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap; 
-
-import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -27,6 +24,7 @@ import java.beans.PropertyVetoException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.openide.ErrorManager;
 
 
 
@@ -127,13 +125,40 @@ public class EntityEjb extends BaseEjb {
         super.loadEjbProperties(savedEjb);
 
         isReadOnlyBean = savedEjb.getIsReadOnlyBean();
-
         refreshPeriodInSeconds = savedEjb.getRefreshPeriodInSeconds();
-
         commitOption = savedEjb.getCommitOption();
     }
+    
+    protected void clearProperties() {
+        super.clearProperties();
+        
+        isReadOnlyBean = null;
+        refreshPeriodInSeconds = null;
+        commitOption = null;
+    }
+    
+    public void fireXpathEvent(XpathEvent xpathEvent) {
+        super.fireXpathEvent(xpathEvent);
+//		dumpNotification("EntityEjb.fireXpathEvent", xpathEvent);
+        
+        DDBean eventBean = xpathEvent.getBean();
+        String xpath = eventBean.getXpath();
 
+        if("/ejb-jar/enterprise-beans/entity/remote".equals(xpath)) { // NOI18N
+            try {
+                if(xpathEvent.isAddEvent()) {
+                    setJndiName(getDefaultJndiName());
+                } else if(xpathEvent.isRemoveEvent()) {
+                    setJndiName(null);
+                }
+            } catch(PropertyVetoException ex) {
+                // should never happen.
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+    }
 
+    
     /** Getter for property isReadOnlyBean.
      * @return Value of property isReadOnlyBean.
      *
@@ -258,22 +283,6 @@ public class EntityEjb extends BaseEjb {
         this.commitOption = commitOption;
         getPCS().firePropertyChange("commitOption", oldCommitOption, commitOption);
     }
-
-
-    //this is to Add/Remove jndi-name to/from sun-ejb-jar on
-    //addition/deletion of <remote> interface
-    public void fireXpathEvent(XpathEvent xpathEvent) {
-        //ADD , REMOVE or CHANGE events
-        DDBean bean = xpathEvent.getBean();
-        String xpath = bean.getXpath();
-
-        if( (xpathEvent.isAddEvent()) || (xpathEvent.isRemoveEvent()) ){
-            if("/ejb-jar/enterprise-beans/entity/remote".equals(xpath)) {       // NOI18N
-                setDirty();
-            }
-        }
-    }
-
 
     public String getHelpId() {
         return "AS_CFG_EntityEjb";                                      //NOI18N

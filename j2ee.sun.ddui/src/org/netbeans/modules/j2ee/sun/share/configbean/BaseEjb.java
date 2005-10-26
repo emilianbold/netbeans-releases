@@ -12,19 +12,17 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-
-import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 
+import org.openide.ErrorManager;
+
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanCache;
@@ -73,7 +71,6 @@ public abstract class BaseEjb extends Base {
 		super.init(dDBean,parent);
 
 		ejbNameDD = getNameDD("ejb-name"); // NOI18N
-            setDefaultProperties();
 		loadFromPlanFile(getConfig());
 	}
 	
@@ -103,7 +100,7 @@ public abstract class BaseEjb extends Base {
 	protected class BaseEjbSnippet extends DefaultSnippet {
 		public CommonDDBean getDDSnippet() {
 			Ejb ejb = StorageBeanFactory.getDefault().createEjb();
-                        ejb.setEjbName(getEjbName());
+            ejb.setEjbName(getEjbName());
 
 			if(null != jndiName){
 				ejb.setJndiName(getJndiName());
@@ -121,12 +118,12 @@ public abstract class BaseEjb extends Base {
 
 			IorSecurityConfig iorSecConf = getIorSecurityConfig();
 			if(null != iorSecConf){
-                                ejb.setIorSecurityConfig((IorSecurityConfig)iorSecConf.clone());
+                ejb.setIorSecurityConfig((IorSecurityConfig)iorSecConf.clone());
 			}
 
 			BeanPool beanPool = getBeanPool();
 			if(null != beanPool){
-                                ejb.setBeanPool((BeanPool)beanPool.clone());
+                ejb.setBeanPool((BeanPool)beanPool.clone());
 			}
 
 			BeanCache beanCache = getBeanCache();
@@ -141,37 +138,37 @@ public abstract class BaseEjb extends Base {
 		}
 
 		public boolean hasDDSnippet() {
-                    if(null != jndiName){
-                        return true;
-                    }
+            if(null != jndiName){
+                return true;
+            }
 
-                    if (null != passByReference) {
-                        return true;
-                    }
+            if (null != passByReference) {
+                return true;
+            }
 
-                    if (null != principalName) {
-                        return true;
-                    }
+            if (null != principalName) {
+                return true;
+            }
 
-                    if(null != getIorSecurityConfig()){
-                        return true;
-                    }
+            if(null != getIorSecurityConfig()){
+                return true;
+            }
 
-                    if(null != getBeanPool()){
-                        return true;
-                    }
+            if(null != getBeanPool()){
+                return true;
+            }
 
-                    if(null != getBeanCache()){
-                        return true;
-                    }
+            if(null != getBeanCache()){
+                return true;
+            }
 
-                    //return snippet in case of any child DConfigBeans.
-                    Collection childList = getChildren();
-                    if(childList.size() > 0){
-                        return true;
-                    }
+            //return snippet in case of any child DConfigBeans.
+            Collection childList = getChildren();
+            if(childList.size() > 0){
+                return true;
+            }
 
-                    return false;
+            return false;
 		}
 	}
 
@@ -211,9 +208,13 @@ public abstract class BaseEjb extends Base {
 		Ejb ejb = (Ejb) config.getBeans(uriText, constructFileName(), null, 
 			new EjbFinder(getEjbName()));
 
+        clearProperties();
+        
 		if(null != ejb) {
 			loadEjbProperties(ejb);
-		}
+		} else {
+            setDefaultProperties();
+        }
 		
 		return (ejb != null);
 	}
@@ -251,8 +252,40 @@ public abstract class BaseEjb extends Base {
 			this.beanCache = beanCache;
 		}
 	}
+    
+    protected void clearProperties() {
+        jndiName = null;
+        passByReference = null;
+        principalName = null;
+        iorSecurityConfig = null;
+        beanPool = null;
+        beanCache = null;
+    }
 
+	protected void setDefaultProperties() {
+        // Default behavior - remote interface = has jndi name.
+        // MDB overrides this to always set the JNDI name.
+        if(requiresJndiName()) {
+            jndiName = getDefaultJndiName();
+        }
+	}
+    
+    protected String getDefaultJndiName() {
+        return "ejb/" + getEjbName(); // NOI18N // J2EE recommended jndiName
+    }
+    
+    protected boolean requiresJndiName() {
+        boolean hasRemote = false;
 
+        DDBean [] remoteDDBeans = getDDBean().getChildBean("remote"); // NOI18N
+        if(remoteDDBeans.length > 0 && remoteDDBeans[0] != null) {
+            hasRemote = true;
+        }
+        
+        return hasRemote;
+    }
+    
+        
 	/* ------------------------------------------------------------------------
 	 * XPath to Factory mapping support
 	 */
@@ -283,12 +316,6 @@ public abstract class BaseEjb extends Base {
 		return baseEjbFactoryMap;
 	}		
 
-	protected void setDefaultProperties() {
-            if(writeJndiName()){
-                jndiName = "ejb/" + getEjbName(); // NOI18N // J2EE recommended jndiName
-            }
-	}
-        
 	/* ------------------------------------------------------------------------
 	 * Property support -- methods to manipulate the properties maintained by
 	 * this bean.
@@ -454,29 +481,5 @@ public abstract class BaseEjb extends Base {
         li.add(new ConfigQuery.MethodData("local_method3", java.util.Arrays.asList(new String [] { "arg1", "arg2", "arg3" } )));
         
         return new ConfigQuery.InterfaceData(hi, ri, lhi, li);
-    }
-
-    
-    private boolean writeJndiName(){
-        boolean hasSnippet = false;
-        DDBean ddBean = getDDBean();
-        String xpath = ddBean.getXpath();
-        //xpath - ejb-jar/enterprise-beans/<ejb-type>
-        if("/ejb-jar/enterprise-beans/message-driven".equals(xpath)){           //NOI18N
-            //In case of MDB always write the jndi-name to sun-ejb-jar.xml
-            //jndi-name in case  of MDB represents message destination
-            return true;
-        }else{
-            //In case of all other bean types write the jndi-name to sun-ejb-jar.xml
-            //only if the bean has remote interface
-            DDBean[] remoteBeans = ddBean.getChildBean("./remote");             //NOI18N
-            if(remoteBeans.length > 0){
-                DDBean remoteBean = remoteBeans[0];
-                if(remoteBean != null){
-                    return true;
-                }
-            }
-        }
-        return hasSnippet;
     }
 }

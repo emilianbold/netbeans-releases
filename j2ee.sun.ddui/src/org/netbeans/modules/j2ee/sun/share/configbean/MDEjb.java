@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -157,8 +158,8 @@ public class MDEjb extends BaseEjb {
 	protected void loadEjbProperties(Ejb savedEjb) {
 		super.loadEjbProperties(savedEjb);
 		
-                subscriptionName = savedEjb.getJmsDurableSubscriptionName();
-                maxMessageLoad = savedEjb.getJmsMaxMessagesLoad();
+        subscriptionName = savedEjb.getJmsDurableSubscriptionName();
+        maxMessageLoad = savedEjb.getJmsMaxMessagesLoad();
                 
 		MdbConnectionFactory mdbConnectionFactory = savedEjb.getMdbConnectionFactory();
 		if(null != mdbConnectionFactory){
@@ -170,7 +171,38 @@ public class MDEjb extends BaseEjb {
 			this.mdbResourceAdapter = mdbResourceAdapter;
 		}
 	}
+    
+    protected void clearProperties() {
+        super.clearProperties();
+        
+        subscriptionName = null;
+        maxMessageLoad = null;
+        mdbConnectionFactory = null;
+        mdbResourceAdapter = null;
+    }
+    
+    protected void setDefaultProperties() {
+        super.setDefaultProperties();
+        
+        // Message driven beans always have a JNDI name.
+        try {
+            setJndiName(getDefaultJndiName()); // NOI18N // J2EE recommended jndiName
+        } catch(PropertyVetoException ex) {
+            // suppress.  should never happen.
+        }
+    }
+    
+    // Not really necessary to override this, but do it anyway so the proper name
+    // is always available.
+    protected String getDefaultJndiName() {
+        return "jms/" + getEjbName(); // NOI18N // J2EE recommended jndiName for jms resources.
+    }
 
+    protected boolean requiresJndiName() {
+        return true;
+    }
+
+    
 	/* ------------------------------------------------------------------------
 	 * XPath to Factory mapping support
 	 */
@@ -285,15 +317,6 @@ public class MDEjb extends BaseEjb {
         return "AS_CFG_MDEjb";                                          //NOI18N
     }
 
-
-    protected void setDefaultProperties() {
-        try {
-            setJndiName("jms/" + getEjbName()); //NOI18N
-        } catch (java.beans.PropertyVetoException exception){
-            jsr88Logger.warning(exception.toString());
-        }
-    }
-    
     private String getMessageDestinationInfo(String parameter){
         String msgDstnInfo = null; 
         DDBeanRoot ejbJarRootDD = getDDBean().getRoot();
@@ -325,16 +348,5 @@ public class MDEjb extends BaseEjb {
             }
         }
         return msgDstnInfo;
-    }
- 
-    private void saveJMSResourceDatatoXml(JmsResource jmsResource, String resourceType, String projectDir) {
-        try{
-            java.io.File  targetFolder = new java.io.File(projectDir);
-            Resources res = new Resources();
-            res.addJmsResource(jmsResource);
-            createFile(targetFolder, getEjbName(), resourceType, __SunResourceExt, res);
-        }catch(Exception ex){
-            System.out.println("Unable to saveJMSResourceDatatoXml ");
-        }
     }
 }
