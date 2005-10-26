@@ -72,14 +72,8 @@ public class CmpEntityEjb extends EntityEjb {
     //private String beanName;
     
     /** Creates a new instance of CmpEntityEjb */
-        public CmpEntityEjb() {
-//        addPropertyChangeListener(new PropertyChangeListener() {
-//            public void  propertyChange(PropertyChangeEvent ev) {
-// FIXME what is this listener for?
-//				cmpDDSnippet = null;
-//            }
-//        });
-			}
+    public CmpEntityEjb() {
+    }
     
     /** Getter for property schema.
      * @return Value of property schema.
