@@ -109,17 +109,6 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 	private static int identitySource = 0;
 	private String identity;
 
-        protected static final String __SunResourceExt = "sun-resource"; //NOI18N
-        //Resource Folder
-        protected static final String __SunResourceFolder = "setup"; //NOI18N
-        
-        private final static char BLANK = ' ';
-        private final static char DOT   = '.';
-        private final static char[]	ILLEGAL_FILENAME_CHARS	= {'/', '\\', ':', '*', '?', '"', '<', '>', '|', ',' };
-//      private final static char[]	ILLEGAL_RESOURCE_NAME_CHARS	= {':', '*', '?', '"', '<', '>', '|', ',' };
-        private final static char REPLACEMENT_CHAR = '_';
-        private final static char DASH = '-';
-        
 	public String getIdentity() {
 		return identity;
 	}
@@ -459,6 +448,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 //		
 //		System.out.println(fnName + ": XPATHEVENT: " + type + 
 //			", DCB identity = " + getIdentity() +
+//            ", DCB type = " + getClass().getName() + 
 //			", xpath = " + xpathEvent.getBean().getXpath() + 
 //			", DCB xpath = " + getDDBean().getXpath());		
 //	}
@@ -634,7 +624,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		boolean isFirst = true;
 		CommonDDBean newCurrentBean = null;
 		String newSnippetKey = "";
-		
+
 		Iterator iter = snippets.iterator();
 		while(iter.hasNext()) {
 			try {
@@ -1190,20 +1180,20 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		
 		public CommonDDBean mergeIntoRovingDD(CommonDDBean ddParent) {
 			CommonDDBean newBean = getDDSnippet();
-                        if(newBean != null) {
-                            if(ddParent != null) {
-                                    String propertyName = getPropertyName();
-                                    if(propertyName != null) {
-                                            ddParent.addValue(propertyName, newBean);
-                                    } else {
-                                            jsr88Logger.severe("No property name for " + Base.this.getClass()); // NOI18N
-                                    }
-                            } else {
-                                    jsr88Logger.severe("mergeIntoRovingDD() called with null parent (called on root bean?)"); // NOI18N
-                            }
-                        } else {
-                            jsr88Logger.severe("No snippet to merge for " + Base.this.getClass()); // NOI18N
-                        }
+			if(newBean != null) {
+				if(ddParent != null) {
+					String propertyName = getPropertyName();
+					if(propertyName != null) {
+						ddParent.addValue(propertyName, newBean);
+					} else {
+						jsr88Logger.severe("No property name for " + Base.this.getClass()); // NOI18N
+					}
+				} else {
+					jsr88Logger.severe("mergeIntoRovingDD() called with null parent (called on root bean?)"); // NOI18N
+				}
+			} else {
+				jsr88Logger.severe("No snippet to merge for " + Base.this.getClass()); // NOI18N
+			}
 			return newBean;
 		}
 		
@@ -1239,90 +1229,5 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 			return result;
 		}
 	}
-        
-    //Utility methods needed in case of sun resource creations
-    protected void createFile(File targetFolder, String beanName, String resourceType, String ext, Resources res){
-        try{
-            //jdbc and jdo jndi names might be of format jdbc/ and jdo/
-            if(resourceType.indexOf("/") != -1){ //NOI18N
-                resourceType = resourceType.substring(0, resourceType.indexOf("/")) + "_" + //NOI18N
-                    resourceType.substring(resourceType.indexOf("/")+1, resourceType.length()); //NOI18N
-            }
-            if(resourceType.indexOf("\\") != -1){ //NOI18N
-                resourceType = resourceType.substring(0, resourceType.indexOf("\\")) + "_" +  //NOI18N
-                    resourceType.substring(resourceType.indexOf("\\")+1, resourceType.length()); //NOI18N
-            }
-
-            targetFolder = setUpExists(targetFolder);
-            String filename = getFileName(beanName, resourceType, ext);
-
-            File resourceFile = new File(targetFolder, filename);
-
-            if(!resourceFile.exists()){
-                res.write(new java.io.FileOutputStream(resourceFile));
-            }
-        } catch(Exception ex) {
-            //Unable to create file
-            System.out.println("Error while creating file");
-        }
-    }
-
-    private boolean isLegalFilename(String filename) {
-        for(int i = 0; i < ILLEGAL_FILENAME_CHARS.length; i++)
-            if(filename.indexOf(ILLEGAL_FILENAME_CHARS[i]) >= 0)
-                return false;
-
-        return true;
-    }
-
-    private boolean isFriendlyFilename(String filename) {
-        if(filename.indexOf(BLANK) >= 0 || filename.indexOf(DOT) >= 0)
-            return false;
-
-        return isLegalFilename(filename);
-    }
-
-    private String makeLegalFilename(String filename) {
-        for(int i = 0; i < ILLEGAL_FILENAME_CHARS.length; i++)
-            filename = filename.replace(ILLEGAL_FILENAME_CHARS[i], REPLACEMENT_CHAR);
-
-        return filename;
-    }
-
-    private File setUpExists(File targetFolder){
-        try{
-            File setUpFolder = new File(targetFolder, __SunResourceFolder);
-            if(!setUpFolder.exists()){
-                    setUpFolder.mkdir();
-                }
-                targetFolder = setUpFolder;
-            } catch(Exception exception){
-            //Unable to create setup folder
-            //resource will be created under existing structure 
-        }
-        return targetFolder;
-    }
-
-    private String  getFileName(String beanName, String resourceType, String ext){
-
-        assert (beanName != null);
-        assert (beanName.length() != 0);
-
-        assert (resourceType != null);
-        assert (resourceType.length() != 0);
-
-        String fileName = resourceType;            
-
-        if(!isFriendlyFilename(beanName)){
-            beanName = makeLegalFilename(beanName);
-        }
-
-        if(!isFriendlyFilename(fileName)){
-            fileName = makeLegalFilename(fileName);
-        }
-
-        fileName = fileName + DASH + beanName + DOT + ext;
-        return fileName;
-    }
 }
 
