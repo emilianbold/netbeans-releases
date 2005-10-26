@@ -158,6 +158,12 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         
         // in some ctx, may need event filtering
         if (NbKeymap.getContext().length != 0) {
+            // Ignore anything but KeyPressed inside ctx, #67187
+            if (ev.getID() != KeyEvent.KEY_PRESSED) {
+                ev.consume();
+                return true;
+            }
+
             Component comp = ev.getComponent();
             if (!(comp instanceof JComponent) ||
                 ((JComponent)comp).getClientProperty("context-api-aware") == null) {
