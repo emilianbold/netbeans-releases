@@ -280,7 +280,7 @@ public class WebServiceDescriptor extends Base {
         clearProperties();
 
         // Default endpoint URI's are set in this call.
-        webServiceEndpointMap = getEndpointMap();
+        Map tmpEndpointMap = getEndpointMap();
 
 		if(descGraph != null) {
             wsdlPublishLocation = descGraph.getWsdlPublishLocation();
@@ -295,9 +295,10 @@ public class WebServiceDescriptor extends Base {
                     WebserviceEndpoint [] definedEndpoints = (WebserviceEndpoint []) hosts[i].getValues(helper.getEndpointProperty());
 
                     for(int j = 0; j < definedEndpoints.length; j++) {
-                        DDBean key = findEndpointInMap(hostName, definedEndpoints[j].getPortComponentName());
+                        DDBean key = findEndpointInMap(hostName, definedEndpoints[j].getPortComponentName(), tmpEndpointMap);
                         if(key != null) {
                             // This end point is still valid and has data that has been previously saved.
+                            tmpEndpointMap.remove(key);
                             webServiceEndpointMap.put(key, definedEndpoints[j].clone());
                         }
                     }
@@ -305,7 +306,25 @@ public class WebServiceDescriptor extends Base {
             }
         }
         
-        // No default values, other than endpoint URI, which is set above in getEndpointMap().
+        // This is section is the equivalent of setDefaultProperties() in other
+        // DConfigBean implementations.
+        // Default URI's for any new, or otherwise undefined endpoints were initially
+        // set above in getEndpointMap() and are transferred to the storage map here.
+        //
+        if(tmpEndpointMap.size() > 0) {
+            // handle defaults for the remaining tmp endpoints.
+            Iterator iter = tmpEndpointMap.entrySet().iterator();
+            while(iter.hasNext()) {
+                Map.Entry entry = (Map.Entry) iter.next();
+                webServiceEndpointMap.put(entry.getKey(), entry.getValue());
+            }
+            
+            // Mark master DConfigBean as dirty so we force a save of the new default
+            // values.  We can't just mark this bean dirty because it is still being
+            // constructed and doesn't have any listeners attached yet.
+            config.getMasterDCBRoot().setDirty();
+        }
+        
         
         // Do we want to do anything special for default values, or simply fill in
         // the entries + port component name all the time?
@@ -318,11 +337,11 @@ public class WebServiceDescriptor extends Base {
      *  entry to be retrieved.  If this proves to be a performance bottleneck,
      *  we may have to have an additional index into the map.
      */
-    private DDBean findEndpointInMap(String linkName, String portComponentName) {
+    private DDBean findEndpointInMap(String linkName, String portComponentName, Map endpointMap) {
         DDBean key = null;
 
         if(Utils.notEmpty(linkName) && Utils.notEmpty(portComponentName)) {
-            Iterator iter = webServiceEndpointMap.entrySet().iterator();
+            Iterator iter = endpointMap.entrySet().iterator();
             while(iter.hasNext()) {
                 Map.Entry entry = (Map.Entry) iter.next();
                 DDBean portComponent = (DDBean) entry.getKey();
