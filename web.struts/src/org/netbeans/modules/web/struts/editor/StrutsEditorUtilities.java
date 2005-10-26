@@ -83,6 +83,50 @@ public class StrutsEditorUtilities {
         return null;
     }
     
+    /** Returns the value of the name attribute, when there is an ActionForm Bean
+     * definition on the offset possition. Otherwise returns null.
+     */
+    public static String getActionFormBeanName(BaseDocument doc, int offset){
+        try {
+            ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+            TokenItem token = sup.getTokenChain(offset, offset+1);
+            // find the start of element, which is on the offset
+            while (token != null
+                    && !(token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ELEMENT
+                        && !( token.getImage().equals("/>") 
+                            || token.getImage().equals(">")
+                            || token.getImage().equals("<form-property")
+                            || token.getImage().equals("</form-bean"))))
+                token = token.getPrevious();
+            if (token != null && token.getImage().equals("<form-bean")){   //NOI18N
+                token = token.getNext();
+                while (token!= null 
+                        && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT
+                        && !(token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ATTRIBUTE
+                        && token.getImage().equals("name")))   // NOI18N
+                    token = token.getNext();
+                if (token != null && token.getImage().equals("name")){ // NOI18N
+                    token = token.getNext();
+                    while (token != null 
+                            && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE_VALUE    
+                            && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT
+                            && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE)
+                        token = token.getNext();
+                    if (token != null && token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ATTRIBUTE_VALUE){
+                        String value = token.getImage().trim();
+                        value = value.substring(1);
+                        value = value.substring(0, value.length()-1);
+                        return value;
+                    }
+                }
+            }   
+            return null;
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return null;
+    }
+    
     public static int writeForwardIntoAction(BaseDocument doc, Forward forward, String actionName)
                     throws IOException{
         return writeElementIntoFather(doc, forward, "action", actionName, "forward");           //NOI18N
