@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
-    <property name="jboss.server.path"  value="E:\Work\Appservers\jboss4"/>
+    <property name="jboss.server.path"  value="E:\space\jboss4"/>
     <property name="xtest.optional"  value="../../../../../optional"/>
     <!--property name="jboss.server.path"  value="${xtest.optional}/jboss4"/-->
     <property name="xtest.ide.commandline.suffix" value="-J-Djboss.server.path=${jboss.server.path}" /> 
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <target name="set-jboss-path" unless="jboss.server.path">
-        <condition property="jboss.server.path" value="E:\Work\Appservers\jboss4">
+        <condition property="jboss.server.path" value="E:\space\jboss4">
             <os family="windows"/>
         </condition>
         <condition property="jboss.server.path" value="${xtest.optional}/jboss4">
