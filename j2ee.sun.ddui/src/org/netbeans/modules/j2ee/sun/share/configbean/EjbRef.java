@@ -232,12 +232,14 @@ public class EjbRef extends Base {
 	
 	protected void setDefaultProperties() {
 		// Set default JNDI name
-                jndiName = ejbRefNameDD.getText();
+		jndiName = ejbRefNameDD.getText();
 
-                //Prepend "ejb/" only if, the Ref name does not start with "ejb/"
-                //By blue prints convention, Ref name always starts with "ejb/"
-                if (!jndiName.startsWith("ejb/")) {	// NOI18N
-                    jndiName = "ejb/" + jndiName;	// NOI18N
-                }
+		// Prepend "ejb/" only if, the Ref name does not start with "ejb/"
+		// By blue prints convention, Ref name always starts with "ejb/"
+		if (!jndiName.startsWith("ejb/")) {	// NOI18N
+			jndiName = "ejb/" + jndiName;	// NOI18N
+		}
+        
+        getConfig().getMasterDCBRoot().setDirty();
 	}
 }
