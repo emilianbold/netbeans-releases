@@ -7,26 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup.layers;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
-
-import javax.xml.parsers.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.Stack;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NotImplementedException;
 import org.openide.xml.XMLUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 /** A cache manager which parses the layers according to the Filesystems 1.x DTDs.
  * This class just handles the parsing during cache rewrite time; subclasses are
@@ -124,6 +139,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                 } catch (Exception e) {
                     curr.clear();
                     curr.push(root);
+                    LayerCacheManager.err.log("Caught " + e + " while parsing: " + base);
                     if (carrier == null) {
                         carrier = e;
                     } else {
