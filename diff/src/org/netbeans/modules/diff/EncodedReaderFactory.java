@@ -13,19 +13,7 @@
 
 package org.netbeans.modules.diff;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Method;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
@@ -399,47 +387,62 @@ public class EncodedReaderFactory {
         }
         return w;
     }
-    
+
+    /** Uses heuritisc to detect file encoding or null. */
     public String getEncoding(FileObject fo) {
-        String ext = fo.getExt();
-        if ("properties".equalsIgnoreCase(ext)) {
-            return findPropertiesEncoding();
-        }
-        Object encoding = null;
-        if ("java".equalsIgnoreCase(ext)) {
-            encoding = findJavaEncoding(fo);
-        }
-        if (encoding == null) {
-            encoding = fo.getAttribute(CHAR_SET_ATTRIBUTE);
-        }
-        if (encoding != null) {
-            return encoding.toString();
-        } else {
-            return null;
-        }
+        return getEncoding(FileUtil.toFile(fo));
     }
-    
+
+    public static String decodeName(File fo) {
+        String ret = fo.getName();
+        if (fo.getParent() != null && fo.getParent().endsWith("CVS" + File.separator + "RevisionCache")) { // NOI18N
+            String name = fo.getName();
+            int hashOffset = name.lastIndexOf("#");  // NOI18N
+            if (hashOffset != 1) {
+                ret = name.substring(0, hashOffset);
+            }
+        }
+        return ret;
+    }
+
     public String getEncoding(File file) {
-        String name = file.getName();
-        int endingIndex = name.lastIndexOf('.');
-        String ext = (endingIndex >= 0 && endingIndex < (name.length() - 1)) ? name.substring(endingIndex + 1) : "";
-        if ("properties".equalsIgnoreCase(ext)) {
+        String name = decodeName(file).toLowerCase();
+
+        if (name.endsWith(".properties")) {
             return findPropertiesEncoding();
         }
+        if (name.endsWith(".form")) {
+            return "utf8";
+        }
+
         Object encoding = null;
-        try {
-            file = FileUtil.normalizeFile(file);
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                if ("java".equalsIgnoreCase(ext)) {
-                    encoding = findJavaEncoding(fo);
-                }
-                if (encoding == null) {
-                    encoding = fo.getAttribute(CHAR_SET_ATTRIBUTE);
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            if (name.endsWith(",java")) {
+                encoding = findJavaEncoding(fo); // is not in cache
+            }
+            if (encoding == null) {
+                encoding = fo.getAttribute(CHAR_SET_ATTRIBUTE);  // XXX is not in cache
+            }
+        }
+
+        if (name.endsWith(".xml") || name.endsWith(".dtd") || name.endsWith(".xsd")) {  // NOI18N
+            InputStream in = null;
+            try {
+                in = new BufferedInputStream(new FileInputStream(file), 2048);
+                encoding = XMLEncodingHelper.detectEncoding(in);
+            } catch (IOException e) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.annotate(e, "Can not detect encoding for: " + file);  // NOI18N
+                err.notify(ErrorManager.INFORMATIONAL, e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                    }
                 }
             }
-        } catch (IllegalArgumentException iaex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iaex);
         }
         if (encoding != null) {
             return encoding.toString();
