@@ -241,16 +241,17 @@ class LoggingTestCaseHid extends NbTestCase {
             
             if (switches != null) {
                 boolean log = true;
-                for(;;) {
-                    synchronized (switches) {
+                synchronized (switches) {
+                    boolean expectingMsg = false;
+                    for(;;) {
                         if (switches.isEmpty()) {
                             return;
                         }
 
 
                         Switch w = (Switch)switches.getFirst();
+                        String threadName = Thread.currentThread().getName();
 
-                        boolean expectingMsg = false;
                         if (w.matchesThread()) {
                             if (!w.matchesMessage(s)) {
                                 // same thread but wrong message => go on
@@ -270,13 +271,7 @@ class LoggingTestCaseHid extends NbTestCase {
                             // fall thru
                             expectingMsg = true;
                         } else {
-                            // some other thread is supposed to run
-                            Thread t = (Thread)threads.get(w.name);
-                            if (t != null) {
-                                t.interrupt();
-                            }
-                            threads.put(Thread.currentThread().getName(), Thread.currentThread());
-
+                            // compute whether we shall wait or not
                             java.util.Iterator it = switches.iterator();
                             while (it.hasNext()) {
                                 Switch check = (Switch)it.next();
@@ -286,6 +281,13 @@ class LoggingTestCaseHid extends NbTestCase {
                                 }
                             }                            
                         }
+
+                        // make it other thread run
+                        Thread t = (Thread)threads.get(w.name);
+                        if (t != null) {
+                            t.interrupt();
+                        }
+                        threads.put(Thread.currentThread().getName(), Thread.currentThread());
                         
 //                        
 //                        if (log) {
@@ -297,16 +299,16 @@ class LoggingTestCaseHid extends NbTestCase {
 
                         try {
                             if (log) {
-                                messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " waiting\n");
+                                messages.append("t: " + threadName + " log: " + s + " waiting\n");
                             }
                             switches.wait(300);
                             if (log) {
-                                messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " timeout\n");
+                                messages.append("t: " + threadName + " log: " + s + " timeout\n");
                             }
                         } catch (InterruptedException ex) {
                             // ok, we love to be interrupted => go on
                             if (log) {
-                                messages.append("t: " + Thread.currentThread().getName() + " log: " + s + " interrupted\n");
+                                messages.append("t: " + threadName + " log: " + s + " interrupted\n");
                             }
                         }
                     }
