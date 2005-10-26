@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -24,10 +25,13 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
 
 /**
  * Test basic {@link SuiteProject} stuff.
@@ -70,14 +74,37 @@ public class SuiteProjectTest extends NbTestCase {
     public void testSuiteEvaluatorReturnsUpToDateValues_67314() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         PropertyEvaluator eval = suite1.getEvaluator();
-        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        TestBase.generateSuiteComponent(suite1, "module1");
         
         EditableProperties suiteEP = Util.loadProperties(suite1.getProjectDirectory().getFileObject("nbproject/project.properties"));
         assertEquals("modules property", "${project.org.example.module1}", suiteEP.getProperty("modules"));
         assertEquals("project.org.example.module1 property", "module1", suiteEP.getProperty("project.org.example.module1"));
         
-        SubprojectProvider spp = (SubprojectProvider) suite1.getLookup().lookup(SubprojectProvider.class);
         assertEquals("up-to-date 'modules' property from suite evaluator", "module1", eval.getProperty("modules"));
+    }
+    
+    public void testPlatformPropertiesFromEvaluatorAreUpToDate() throws Exception {
+        final SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1", "custom");
+        assertNbPlatformPropertiesFromEvaluator(suite1.getEvaluator());
+        
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                // simulate change (e.g. through suite properties)
+                FileObject plafProps = suite1.getProjectDirectory().getFileObject("nbproject/platform.properties");
+                EditableProperties ep = Util.loadProperties(plafProps);
+                ep.setProperty("nbplatform.active", "default");
+                Util.storeProperties(plafProps, ep);
+                return null;
+            }
+        });
+        
+        assertNbPlatformPropertiesFromEvaluator(suite1.getEvaluator());
+    }
+    
+    private void assertNbPlatformPropertiesFromEvaluator(PropertyEvaluator propertyEvaluator) {
+        assertEquals("both property are up-to-date",
+                propertyEvaluator.getProperty("netbeans.dest.dir"),
+                NbPlatform.getPlatformByID(propertyEvaluator.getProperty("nbplatform.active")).getDestDir().getPath());
     }
     
 }
