@@ -38,6 +38,7 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
     private JToolBar toolbar = null;
     private InputPanel input = null;
     private AbstractOutputPane outputPane;
+    private Action[] actions = new Action[0];    
     
     private Component toFocus;
     
@@ -147,7 +148,7 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         }
     }
 
-    private Action[] actions = new Action[0];
+
     /**
      * Get the toolbar actions, if any, which have been supplied by the client.
      * Used to add them to the popup menu if they return a non-null name.

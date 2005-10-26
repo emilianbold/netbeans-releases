@@ -838,7 +838,8 @@ public class Controller { //XXX public only for debug access to logging code
             boolean added = false;
             for (int i=0; i < a.length; i++) {
                 if (a[i].getValue(Action.NAME) != null) {
-                    popup.add (a[i]);
+                    // add the proxy that doesn't show icons #67451
+                    popup.add (new ProxyAction(a[i]));
                     added = true;
                 }
             }
@@ -872,6 +873,44 @@ public class Controller { //XXX public only for debug access to logging code
         popup.show(src, p.x, p.y);
         
     }
+    
+    private class ProxyAction implements Action {
+        private Action orig;
+        ProxyAction(Action original) {
+            orig = original;
+        }
+
+        public Object getValue(String key) {
+            if (Action.SMALL_ICON.equals(key)) {
+                return null;
+            }
+            return orig.getValue(key);
+        }
+
+        public void putValue(String key, Object value) {
+            orig.putValue(key, value);
+        }
+
+        public void setEnabled(boolean b) {
+            orig.setEnabled(b);
+        }
+
+        public boolean isEnabled() {
+            return orig.isEnabled();
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            orig.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            orig.removePropertyChangeListener(listener);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            orig.actionPerformed(e);
+        }
+    }    
     
     /**
      * #47166 - a disposed tab which has had its popup menu shown remains
