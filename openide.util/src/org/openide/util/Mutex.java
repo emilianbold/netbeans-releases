@@ -1389,7 +1389,7 @@ public final class Mutex extends Object {
 
                         return;
                     } catch (InterruptedException e) {
-                        ErrorManager.getDefault().notify(e);
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
             } finally {

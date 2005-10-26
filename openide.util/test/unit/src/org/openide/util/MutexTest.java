@@ -826,14 +826,13 @@ public class MutexTest extends NbTestCase {
         fail("should never get here");
     }
 
-    /* Test case for #51911. Failing at the moment */
     public void testThrowingAssertionErrorInSpecialCase() throws Exception {
         exceptionsReporting(new AssertionError());
     }
     
     public void testThrowingRuntimeExceptionInSpecialCase() throws Exception {
         exceptionsReporting(new RuntimeException());
-    } /**/
+    } 
     
     private class ReadWriteChecking implements Runnable {
         public Boolean read;
