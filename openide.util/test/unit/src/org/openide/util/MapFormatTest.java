@@ -59,4 +59,20 @@ public class MapFormatTest extends TestCase {
         assertEquals("Should be ok: " + result, s, result);
         
     }
+    
+    public void testIssue67238() {
+        final String s = "/*___________________________________________________________________________*/";
+        HashMap args = new HashMap();
+        args.put("NAME", "Jaroslav");
+        MapFormat f = new MapFormat(args) {
+            protected Object processKey(String key) {
+                fail("There is no key in \"" + s + "\", processKey() should not be called.");
+                return "not defined";
+            }
+        };
+        f.setLeftBrace("__");
+        f.setRightBrace("__");
+        f.setExactMatch(false);
+        f.format(s);
+    }
 }
