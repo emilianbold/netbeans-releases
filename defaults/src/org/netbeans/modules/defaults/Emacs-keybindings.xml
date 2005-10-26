@@ -4,12 +4,14 @@
     <bind actionName="adjust-window-center" key="C-U$C-L"/>
     <bind actionName="caret-backward" key="C-B"/>
     <bind actionName="caret-backward" key="LEFT"/>
+    <bind actionName="caret-backward" key="KP_LEFT"/>
     <bind actionName="caret-begin" key="AS-COMMA"/>
     <bind actionName="caret-begin" key="C-HOME"/>
     <bind actionName="caret-begin" key="ESCAPE$S-COMMA"/>
     <bind actionName="caret-begin-line" key="HOME"/>
     <bind actionName="caret-down" key="C-N"/>
     <bind actionName="caret-down" key="DOWN"/>
+    <bind actionName="caret-down" key="KP_DOWN"/>
     <bind actionName="caret-end" key="AS-PERIOD"/>
     <bind actionName="caret-end" key="C-END"/>
     <bind actionName="caret-end" key="ESCAPE$S-PERIOD"/>
@@ -24,6 +26,7 @@
     <bind actionName="caret-previous-word" key="C-LEFT"/>
     <bind actionName="caret-up" key="C-P"/>
     <bind actionName="caret-up" key="UP"/>
+    <bind actionName="caret-up" key="KP_UP"/>
     <bind actionName="comment" key="C-C$C-C"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
     <bind actionName="cut-to-clipboard" key="CUT"/>
@@ -50,10 +53,22 @@
     <bind actionName="remove-word-previous" key="A-BACK_SPACE"/>
     <bind actionName="remove-word-previous" key="C-BACK_SPACE"/>
     <bind actionName="replace" key="AS-5"/>
+    <bind actionName="scroll-down" key="C-UP"/>
+    <bind actionName="scroll-up" key="C-DOWN"/>
     <bind actionName="select-all" key="C-X$H"/>
     <bind actionName="select-word" key="CA-W"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
+    <bind actionName="selection-begin" key="DS-HOME"/>
+    <bind actionName="selection-begin-line" key="S-HOME"/>
+    <bind actionName="selection-down" key="S-DOWN"/>
+    <bind actionName="selection-end" key="DS-END"/>
+    <bind actionName="selection-end-line" key="S-END"/>
     <bind actionName="selection-forward" key="S-RIGHT"/>
+    <bind actionName="selection-next-word" key="DS-RIGHT"/>
+    <bind actionName="selection-page-down" key="S-PAGE_DOWN"/>
+    <bind actionName="selection-page-up" key="S-PAGE_UP"/>
+    <bind actionName="selection-previous-word" key="DS-LEFT"/>
+    <bind actionName="selection-up" key="S-UP"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <bind actionName="start-macro-recording" key="C-X$S-9"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
