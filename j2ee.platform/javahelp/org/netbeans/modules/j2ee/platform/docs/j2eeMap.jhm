@@ -188,11 +188,11 @@
 	<mapID target="dd_multiview_references_resRefsNode" url="web/csh/graphic_editor/dd_multiview_references_resRefsNode.html" />
 	<mapID target="dd_multiview_references_resEnvRefsNode" url="web/csh/graphic_editor/dd_multiview_references_resEnvRefsNode.html" />
 	
-	<!-- The Library Manager dialog box: -->
-	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
+	<!-- The Library Manager dialog box csh topic: -->
+	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/csh_library_manager.html" />
 
 	<!-- The Server Manager dialog box (this help id will be moved to server section later): : -->
-	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/server_register.html" />
+	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/csh_server_manager.html" />
 
 	<!--STRUTS AND JSF FRAMEWORK WIZARD PANEL AND PROJECT PROPERTIES DIALOG BOX:-->
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html" />
