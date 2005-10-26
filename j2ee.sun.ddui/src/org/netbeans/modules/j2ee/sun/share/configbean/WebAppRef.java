@@ -106,34 +106,34 @@ public class WebAppRef extends BaseModuleRef {
 		return result;
 	}
 	
-	/** Setter for property contextRoot.
-	 * @param newContextRoot New value of property contextRoot.
-	 * @throws PropertyVetoException if the property change is vetoed
-	 */
-	 public void setContextRoot(String newContextRoot) throws java.beans.PropertyVetoException {
-                if (newContextRoot!=null){
-                    newContextRoot = newContextRoot.replace (' ', '_'); //NOI18N
+    /** Setter for property contextRoot.
+     * @param newContextRoot New value of property contextRoot.
+     * @throws PropertyVetoException if the property change is vetoed
+     */
+    public void setContextRoot(String newContextRoot) throws java.beans.PropertyVetoException {
+        if (newContextRoot!=null){
+            newContextRoot = newContextRoot.replace (' ', '_'); //NOI18N
+        }
+        if (newContextRoot!=null){ //see bug 56280
+            try{
+                String result="";
+                String s[] = newContextRoot.split("/");
+                for (int i=0;i<s.length;i++){
+                    result=result+java.net.URLEncoder.encode(s[i], "UTF-8");
+                    if (i!=s.length -1)
+                        result=result+"/";
                 }
-                if (newContextRoot!=null){ //see bug 56280
-                    try{
-                        String result="";
-                        String s[] = newContextRoot.split("/");
-                        for (int i=0;i<s.length;i++){
-                            result=result+java.net.URLEncoder.encode(s[i], "UTF-8");
-                            if (i!=s.length -1)
-                                result=result+"/";
-                        }
-                        newContextRoot= result;
-                    }
-                    catch (Exception e){
-                        
-                    }
-                }
-                String oldContextRoot = contextRoot;
-		getVCS().fireVetoableChange("contextRoot", oldContextRoot, newContextRoot);
-		contextRoot = newContextRoot;
-		getPCS().firePropertyChange("contextRoot", oldContextRoot, contextRoot);		 
-	 }
+                newContextRoot= result;
+            }
+            catch (Exception e){
+
+            }
+        }
+        String oldContextRoot = contextRoot;
+        getVCS().fireVetoableChange("contextRoot", oldContextRoot, newContextRoot);
+        contextRoot = newContextRoot;
+        getPCS().firePropertyChange("contextRoot", oldContextRoot, contextRoot);		 
+    }
 
 
         public String getHelpId() {
@@ -157,6 +157,14 @@ public class WebAppRef extends BaseModuleRef {
 				return web;
 			}
 			
+            public boolean hasDDSnippet() {
+                if(Utils.notEmpty(contextRoot)) {
+                    return true;
+                }
+
+                return false;
+            }
+             
 			public String getPropertyName() {
 				return SunApplication.WEB;
 			}			
