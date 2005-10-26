@@ -13,16 +13,25 @@
     </head>
     <body>
         <h2>Tagging Files</h2>
-        <p>You can tag version control files for reference purposes.
-        This is helpful when, for example, you want to mark the point when a particular
-        branch was made.</p>
+        <p>It is often helpful to tag version control files for reference purposes 
+        such as when you want to mark the point a particular
+        branch was made, for example. Using the CVS Tag command you can attach 
+        an existing tag to a file or folder or create a new tag.</p>
 
-        <!--<p><b>To apply a tag to a file or directory:</b>
+        <p><b>To apply a tag to a file or directory:</b>
         <ol>
-        <li>do this
-        <li>then do this
-        <p>The IDE dies this...
-        </ol>-->
+        <li>Right-click the file or folder and choosing CVS &gt; Tag.
+        <li>Enter the tag name in the text field. Alternately, 
+        you can click Browse to choose from a list of existing tags.
+        <ul class="note">
+            <li>If the tag you entered does not already exist, a new tag will be created.
+            </ul>
+        <li>If you want to ensure that the tag is not attached to local revisions that 
+        are not up to date, select the Avoid Tagging Locally Modified Files checkbox.
+        <li>If you want to move an existing tag to the current revision in your local 
+        working directory, select the Move Existing Tags checkbox.
+        <p>The IDE attaches the tag on the specified file or directory.
+        </ol>
 
         <hr>
         <small><a href="../credits.html">Legal Notices</a></small>
