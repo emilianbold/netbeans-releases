@@ -196,7 +196,10 @@ public class BasicBrandingModel {
             getBranding().brandBundleKeys(splashKeys);
             getBranding().brandFile(splash);                        
         } else {
-            suiteProps.removeProperty(BRANDING_TOKEN_PROPERTY);
+            suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
+            suiteProps.removeProperty(BasicBrandingModel.NAME_PROPERTY);
+            suiteProps.removeProperty(BasicBrandingModel.TITLE_PROPERTY);
+            suiteProps.removeProperty(BasicBrandingModel.ICON_LOCATION_PROPERTY);            
         }
     }
     
