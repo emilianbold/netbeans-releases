@@ -30,7 +30,9 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     
     private NewProjectNameLocationStepOperator wizard_location;
     
-    private String category, project, project_name;
+    private String category, project, project_name, project_type;
+    
+    int index;
     
     /**
      * Creates a new instance of CreateProject
@@ -56,18 +58,24 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     public void testCreateJavaApplicationProject(){
         category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
         project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SE.xml"); // "Java Application"
+        project_type="JavaApplication";
+        index=1;
         doMeasurement();
     }
     
     public void testCreateJavaLibraryProject(){
         category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
         project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SElibrary.xml"); // "Java Class Library"
+        project_type="JavaLibrary";
+        index=1;
         doMeasurement();
     }
     
     public void testCreateWebApplicationProject(){
         category = "Web"; // org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.projects.Bundle",""); //"Web"
         project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle","Templates/Project/Web/emptyWeb.xml"); //"Web Application"
+        project_type="WebProject";
+        index=1;
         doMeasurement();
     }
 
@@ -87,8 +95,16 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        wizard_location.txtProjectLocation().setText(System.getProperty("xtest.tmpdir.createproject"));
-        project_name = wizard_location.txtProjectName().getText();
+        
+        String directory = System.getProperty("xtest.tmpdir.createproject");
+        wizard_location.txtProjectLocation().clearText();
+        wizard_location.txtProjectLocation().typeText(directory);
+        System.err.println("================= Destination directory={"+directory+"}");
+        
+        project_name = project_type + "_" + (index++);
+        wizard_location.txtProjectName().clearText();
+        wizard_location.txtProjectName().typeText(project_name);
+        System.err.println("================= Project name="+project_name+"}");
     }
     
     public ComponentOperator open(){
