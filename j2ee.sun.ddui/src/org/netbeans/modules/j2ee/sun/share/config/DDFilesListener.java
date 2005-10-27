@@ -106,7 +106,7 @@ public class DDFilesListener extends AbstractFilesListener {
         ConfigurationStorage cs = config.getStorage();
         if (cs != null) {
             cs.updateDDRoot(fo);
-            cs.autoSave();
+//            cs.autoSave();
         }
     }
     
@@ -114,9 +114,9 @@ public class DDFilesListener extends AbstractFilesListener {
     }
     
     protected void targetChanged(FileObject fo) {
-        ConfigurationStorage cs = config.getStorage();
-        if (cs != null) {
-            cs.autoSave();
-        }
+//        ConfigurationStorage cs = config.getStorage();
+//        if (cs != null) {
+//            cs.autoSave();
+//        }
     }
 }
