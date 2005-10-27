@@ -146,16 +146,23 @@ public class ServerResourceNode extends FilterNode {
         if (LOG) {
             LOGGER.log(ErrorManager.INFORMATIONAL, "Refreshing"); // NOI18N
         }
-        DataFolder folderDo = getSetupDataFolder(project);
+        final DataFolder folderDo = getSetupDataFolder(project);
         if (LOG) {
             LOGGER.log(ErrorManager.INFORMATIONAL, "The DataFolder is: " + folderDo); // NOI18N
         }
-        changeOriginal(getDataFolderNode(folderDo, project), false);
-        org.openide.nodes.Children children = getDataFolderNodeChildren(folderDo);
-        setChildren(children);
-        if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "Children count: " + children.getNodes(true).length); // NOI18N
-        }
+        // #64665: should not call FilterNode.changeOriginal() or Node.setChildren() 
+        // under Children.MUTEX read access
+        Children.MUTEX.postWriteRequest(new Runnable() {
+            public void run() {
+                changeOriginal(getDataFolderNode(folderDo, project), false);
+                org.openide.nodes.Children children = getDataFolderNodeChildren(folderDo);
+                setChildren(children);
+                if (LOG) {
+                    LOGGER.log(ErrorManager.INFORMATIONAL, "Children count: " + children.getNodes(true).length); // NOI18N
+                }
+            }
+        });
+
     }
     
     private static DataFolder getSetupDataFolder(Project project) {
