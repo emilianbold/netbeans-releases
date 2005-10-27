@@ -162,7 +162,7 @@ ChangeListener, ActionListener {
                     ((BaseDocument) doc).getFormatter ().reformat (
                         (BaseDocument) doc, 
                         0, 
-                        ((BaseDocument) doc).getEndPosition ().getOffset ()
+                        ((BaseDocument) doc).getEndPosition ().getOffset () - 1
                     );
                 } catch (BadLocationException ex) {
                     ex.printStackTrace ();

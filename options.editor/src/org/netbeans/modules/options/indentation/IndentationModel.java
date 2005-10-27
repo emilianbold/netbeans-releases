@@ -21,6 +21,7 @@ import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
 
 import org.openide.text.IndentEngine;
+import org.openide.util.Lookup;
 
 
 class IndentationModel {
@@ -207,6 +208,25 @@ class IndentationModel {
                 (optionsClass, true);
             IndentEngine indentEngine = baseOptions.getIndentEngine ();
             try {
+                // HACK
+                if (baseOptions.getClass ().getName ().equals ("org.netbeans.modules.java.editor.options.JavaOptions") &&
+                    !indentEngine.getClass ().getName ().equals ("org.netbeans.modules.editor.java.JavaIndentEngine")
+                ) {
+                    Class javaIndentEngineClass = getClassLoader ().loadClass 
+                        ("org.netbeans.modules.editor.java.JavaIndentEngine");
+                    indentEngine = (IndentEngine) Lookup.getDefault ().lookup 
+                        (javaIndentEngineClass);
+                    baseOptions.setIndentEngine (indentEngine);
+                }
+                if (baseOptions.getClass ().getName ().equals ("org.netbeans.modules.web.core.syntax.JSPOptions") &&
+                    !indentEngine.getClass ().getName ().equals ("org.netbeans.modules.web.core.syntax.JspIndentEngine")
+                ) {
+                    Class jspIndentEngineClass = getClassLoader ().loadClass 
+                        ("org.netbeans.modules.web.core.syntax.JspIndentEngine");
+                    indentEngine = (IndentEngine) Lookup.getDefault ().lookup 
+                        (jspIndentEngineClass);
+                    baseOptions.setIndentEngine (indentEngine);
+                }
                 Method method = indentEngine.getClass ().getMethod (
                     parameterName,
                     new Class [] {parameterType}
@@ -215,6 +235,14 @@ class IndentationModel {
             } catch (Exception ex) {
             }
         }
+    }
+    
+    private ClassLoader classLoader;
+    private ClassLoader getClassLoader () {
+        if (classLoader == null)
+            classLoader = (ClassLoader) Lookup.getDefault ().lookup 
+                (ClassLoader.class);
+        return classLoader;
     }
     
     private static BaseOptions getOptions (String mimeType) {
