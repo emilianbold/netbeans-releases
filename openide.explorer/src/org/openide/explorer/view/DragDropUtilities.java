@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.explorer.view;
@@ -35,8 +35,6 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 
 import java.io.IOException;
 
@@ -49,6 +47,7 @@ import java.util.TreeSet;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreeNode;
 
 
 /** Class that provides methods for common tasks needed during
@@ -451,6 +450,7 @@ final class DragDropUtilities extends Object {
      * I don't know (dstrupl).
      */
     static Node secureFindNode(Object o) {
+        assert o instanceof TreeNode : "Object " + o + " is instanceof TreeNode";
         try {
             return Visualizer.findNode(o);
         } catch (ClassCastException e) {

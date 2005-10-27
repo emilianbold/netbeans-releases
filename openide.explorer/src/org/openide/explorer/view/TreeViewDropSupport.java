@@ -143,17 +143,23 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
         // 1. test if I'm over any node
         TreePath tp = getTreePath(dtde, dropAction);
-
-        if (tp == null) {
-            dtde.rejectDrag();
-            removeDropLine();
-
-            return;
-        }
-
+        Node dropNode;
+        
         // 2. find node for drop
         Point p = dtde.getLocation();
-        Node dropNode = getNodeForDrop(p);
+        if (tp == null) {
+            // #64469: Can't drop into empty explorer area
+            dropNode = view.manager.getRootContext ();
+            if (canDrop(dropNode, dropAction)) {
+                // ok, root accept
+                dtde.acceptDrag(dropAction);
+            } else {
+                dtde.rejectDrag();
+            }
+            return ;
+        } else {
+            dropNode = getNodeForDrop(p);
+        }
 
         // if I haven't any node for drop then reject drop
         if (dropNode == null) {
@@ -606,20 +612,15 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
         // find node for the drop perform
         Node dropNode = getNodeForDrop(dtde.getLocation());
-
-        // workaround #56398:
-        // it is possible to get drop event even with no target available.
+        
+        // #64469: Can't drop into empty explorer area
         if (dropNode == null) {
-            return;
-        }
-
-        Node[] dragNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
-        TreePath tp = tree.getPathForLocation(dtde.getLocation().x, dtde.getLocation().y);
-
-        if (pointAt != DragDropUtilities.NODE_CENTRAL) {
+            dropNode = view.manager.getRootContext ();
+        } else if (pointAt != DragDropUtilities.NODE_CENTRAL) {
             dropNode = dropNode.getParentNode();
         }
 
+        Node[] dragNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
         int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
