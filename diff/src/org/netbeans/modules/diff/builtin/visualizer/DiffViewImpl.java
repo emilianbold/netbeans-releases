@@ -50,7 +50,7 @@ import org.netbeans.editor.ext.ExtCaret;
  * 
  * @author Maros Sandor
  */
-public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
+public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api.diff.DiffView, javax.swing.event.CaretListener {
 
 //    static final long serialVersionUID =3683458237532937983L;
     
@@ -82,6 +82,9 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
     private String source2;
     
     private static final String PLAIN_TEXT_MIME = "text/plain";
+
+    public DiffViewImpl() {
+    }
 
     private static void copyStreamsCloseAll(Writer out, Reader in) throws IOException {
         char[] buff = new char[4096];
@@ -247,26 +250,12 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jSplitPane1 = new javax.swing.JSplitPane();
-        filePanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jEditorPane1 = new javax.swing.JEditorPane();
-        fileLabel1 = new javax.swing.JLabel();
-        filePanel2 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jEditorPane2 = new javax.swing.JEditorPane();
-        fileLabel2 = new javax.swing.JLabel();
-
         setLayout(new java.awt.BorderLayout());
 
         jSplitPane1.setDividerSize(4);
         filePanel1.setLayout(new java.awt.GridBagLayout());
 
-        jEditorPane1.addCaretListener(new javax.swing.event.CaretListener() {
-            public void caretUpdate(javax.swing.event.CaretEvent evt) {
-                jEditorPane1CaretUpdate(evt);
-            }
-        });
+        jEditorPane1.addCaretListener(this);
 
         jScrollPane1.setViewportView(jEditorPane1);
 
@@ -280,7 +269,6 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
 
         fileLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         fileLabel1.setLabelFor(jEditorPane1);
-        fileLabel1.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -293,11 +281,7 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
 
         filePanel2.setLayout(new java.awt.GridBagLayout());
 
-        jEditorPane2.addCaretListener(new javax.swing.event.CaretListener() {
-            public void caretUpdate(javax.swing.event.CaretEvent evt) {
-                jEditorPane2CaretUpdate(evt);
-            }
-        });
+        jEditorPane2.addCaretListener(this);
 
         jScrollPane2.setViewportView(jEditorPane2);
 
@@ -311,7 +295,6 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
 
         fileLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         fileLabel2.setLabelFor(jEditorPane2);
-        fileLabel2.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -325,7 +308,17 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
     }
-    // </editor-fold>//GEN-END:initComponents
+
+    // Code for dispatching events from components to event handlers.
+
+    public void caretUpdate(javax.swing.event.CaretEvent evt) {
+        if (evt.getSource() == jEditorPane1) {
+            DiffViewImpl.this.jEditorPane1CaretUpdate(evt);
+        }
+        else if (evt.getSource() == jEditorPane2) {
+            DiffViewImpl.this.jEditorPane2CaretUpdate(evt);
+        }
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jEditorPane1CaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_jEditorPane1CaretUpdate
     // Add your handling code here:
@@ -364,6 +357,12 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
         ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
         EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
         ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+
+        List actions = new ArrayList(2);
+        actions.add(getActionMap().get("jumpNext"));  // NOI18N
+        actions.add(getActionMap().get("jumpPrev"));  // NOI18N
+        jEditorPane1.setPopupActions(actions);
+        jEditorPane2.setPopupActions(actions);
 
         expandFolds();
         initGlobalSizes();
@@ -567,13 +566,6 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
             }
             editor.setDocument(doc);
         }
-        int lastOffset = doc.getEndPosition().getOffset();
-        int numLines = org.openide.text.NbDocument.findLineNumber(doc, lastOffset);
-        int numLength = Integer.toString(numLines).length();
-        for (int line = 0; line <= numLines; line++) {
-            String lineStr = Integer.toString(line+1);
-            if (lineStr.length() < numLength) lineStr = strCharacters(' ', numLength - lineStr.length()) + lineStr;
-        }
     }
     
     private void addChangeListeners() {
@@ -775,15 +767,15 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
     private javax.swing.JViewport jViewport2;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel fileLabel1;
-    private javax.swing.JLabel fileLabel2;
-    private javax.swing.JPanel filePanel1;
-    private javax.swing.JPanel filePanel2;
-    private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JEditorPane jEditorPane2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSplitPane jSplitPane1;
+    final javax.swing.JLabel fileLabel1 = new javax.swing.JLabel();
+    final javax.swing.JLabel fileLabel2 = new javax.swing.JLabel();
+    final javax.swing.JPanel filePanel1 = new javax.swing.JPanel();
+    final javax.swing.JPanel filePanel2 = new javax.swing.JPanel();
+    final org.netbeans.modules.diff.builtin.visualizer.DEditorPane jEditorPane1 = new DEditorPane();
+    final org.netbeans.modules.diff.builtin.visualizer.DEditorPane jEditorPane2 = new DEditorPane();
+    final javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+    final javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
+    final javax.swing.JSplitPane jSplitPane1 = new javax.swing.JSplitPane();
     // End of variables declaration//GEN-END:variables
 
     
