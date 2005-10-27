@@ -17,14 +17,12 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init">
         <path id="compiletest.classpath">
             <pathelement location="${editor/util.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-            <pathelement location="${openide.dir}/core/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
         </path>
     
         <path id="codetest.classpath">
             <pathelement location="${editor/util.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-            <pathelement location="${openide.dir}/core/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
         </path>
     
     </target>
