@@ -40,6 +40,7 @@ import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.modules.java.project.PackageViewSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
@@ -214,6 +215,12 @@ public class PackageView {
         
         private static Node getOriginalNode (SourceGroup group, PackageViewSettings settings) {            
             assert settings != null : "PackageViewSettings can't be null"; //NOI18N
+            FileObject root = group.getRootFolder();
+            //Guard condition, if the project is (closed) and deleted but not yet gced
+            // and the view is switched, the source group is not valid.
+            if ( root == null || !root.isValid()) {
+                return new AbstractNode (Children.LEAF);
+            }
             switch (settings.getPackageViewType()) {
                 case PackageViewSettings.TYPE_PACKAGE_VIEW:
                     return new PackageRootNode(group);
