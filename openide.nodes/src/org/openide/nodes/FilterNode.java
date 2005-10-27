@@ -347,9 +347,8 @@ public class FilterNode extends Node {
      * of this node according to the new original node. If you pass
      * children which are not instance of class
      * {@link FilterNode.Children} into the constructor set this
-     * parameter to <CODE>false</CODE>. If you decide to
-     * also change the children, then please be aware
-     * that call to this method aquires
+     * parameter to <CODE>false</CODE>. Be aware
+     * that this method aquires
      * write lock on the nodes hierarchy ({@link Children#MUTEX}). Take care not to call this method
      * under read lock.
      *
@@ -1238,7 +1237,10 @@ public class FilterNode extends Node {
             original = or;
         }
 
-        /** Sets the original children for this children
+        /** Sets the original children for this children. 
+         * Be aware that this method aquires
+         * write lock on the nodes hierarchy ({@link Children#MUTEX}). 
+         * Take care not to call this method under read lock.
          * @param original The new original node.
          * @since 1.39
          */
