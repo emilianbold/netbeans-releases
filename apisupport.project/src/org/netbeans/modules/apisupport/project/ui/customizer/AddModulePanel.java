@@ -53,7 +53,7 @@ import org.openide.util.RequestProcessor;
  */
 final class AddModulePanel extends JPanel {
 
-    private static final String FILTER_DESCRIPTION = getMessage("LBL_FileterDescription");
+    private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
     
     private ComponentFactory.DependencyListModel universeModules;
     private RequestProcessor.Task filterTask;
