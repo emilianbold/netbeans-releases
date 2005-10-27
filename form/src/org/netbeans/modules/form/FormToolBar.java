@@ -69,7 +69,7 @@ class FormToolBar extends JToolBar {
         selectionButton.addMouseListener(listener);
         selectionButton.setToolTipText(
             FormUtils.getBundleString("CTL_SelectionButtonHint")); // NOI18N
-        HelpCtx.setHelpIDString(selectionButton, "gui.components.palette"); // NOI18N
+        HelpCtx.setHelpIDString(selectionButton, "gui.about"); // NOI18N
         selectionButton.setSelected(true);
         initButton(selectionButton);
 
