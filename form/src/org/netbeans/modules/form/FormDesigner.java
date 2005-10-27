@@ -1563,7 +1563,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             if (baseLinePos == -1) {
                 if (comp != null) {
-                     baseLinePos = Baseline.getBaseline(comp);
+                     baseLinePos = Baseline.getBaseline(comp, width, height);
                 } else {
                     baseLinePos = 0;
                 }
