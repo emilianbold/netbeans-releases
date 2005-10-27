@@ -1819,7 +1819,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     else setupDesignerSize();
                     if (getLayoutDesigner() != null)
                         getLayoutDesigner().externalSizeChangeHappened();
-                    updateComponentLayer(false);
+                    // Must be invoked later. ComponentLayer doesn't have a peer (yet)
+                    // when the form is opened and validate does nothing on components
+                    // without peer.
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            updateComponentLayer(false);
+                        }
+                    });
                 }
                 return;
             }
