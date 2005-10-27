@@ -68,8 +68,8 @@
 			columnclass = java.lang.Integer;
 			alignment = right;
 			default = 0;
-			width = 80;
-			minwidth = 40;
+			width = 30;
+			minwidth = 20;
 		},
 		{
 			name = "scale";
@@ -77,8 +77,8 @@
 			columnclass = java.lang.Integer;
 			alignment = right;
 			default = 0;
-			width = 80;
-			minwidth = 40;
+			width = 30;
+			minwidth = 20;
 		},
 		{
 			name = "comment";

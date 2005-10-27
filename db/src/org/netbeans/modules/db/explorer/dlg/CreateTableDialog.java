@@ -163,7 +163,6 @@ public class CreateTableDialog {
             table.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
             JScrollPane scrollpane = new JScrollPane(table);
             scrollpane.setBorder(new BevelBorder(BevelBorder.LOWERED));
-            scrollpane.setPreferredSize(new Dimension(380,150));
             layout.setConstraints(scrollpane, constr);
             pane.add(scrollpane);
 
@@ -374,18 +373,22 @@ public class CreateTableDialog {
             int i;
             int ccount = model.getColumnCount();
             int columnWidth;
+            int preferredWidth;
             String columnName;
+            int width = 0;
             for (i = 0; i < ccount; i++) {
                 TableColumn col = cmodel.getColumn(i);
                 Map cmap = ColumnItem.getColumnProperty(i);
                 col.setIdentifier(cmap.get("name")); //NOI18N
                 columnName = bundle.getString("CreateTable_" + i); //NOI18N
                 columnWidth = (new Double(getFontMetrics(getFont()).getStringBounds(columnName, getGraphics()).getWidth())).intValue() + 20;
-                if (cmap.containsKey("width")) // NOI18N
+                if (cmap.containsKey("width")) { // NOI18N
                     if (((Integer)cmap.get("width")).intValue() < columnWidth)
                         col.setPreferredWidth(columnWidth);
                     else
                         col.setPreferredWidth(((Integer)cmap.get("width")).intValue()); // NOI18N
+                    preferredWidth = col.getPreferredWidth();
+                }
                 if (cmap.containsKey("minwidth")) // NOI18N
                     if (((Integer)cmap.get("minwidth")).intValue() < columnWidth)
                         col.setMinWidth(columnWidth);
@@ -393,7 +396,12 @@ public class CreateTableDialog {
                         col.setMinWidth(((Integer)cmap.get("minwidth")).intValue()); // NOI18N
                 //				if (cmap.containsKey("alignment")) {}
                 //				if (cmap.containsKey("tip")) ((JComponent)col.getCellRenderer()).setToolTipText((String)cmap.get("tip"));
+                if (i < 7) { // the first 7 columns should be visible
+                    width += col.getPreferredWidth();
+                }
             }
+            width = Math.min(Math.max(width, 380), Toolkit.getDefaultToolkit().getScreenSize().width - 100);
+            setPreferredScrollableViewportSize(new Dimension(width, 150));
         }
     }
 
