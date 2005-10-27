@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,7 +50,7 @@ public class DateEditor extends PropertyEditorSupport {
     
     // #67524: Properties Editor doesn't support Date type. Replaces them with '???'
     public String getJavaInitializationString () {
-	return "new java.util.Date(java.text.DateFormat.getDateTimeInstance().parse(\"" + fmt.format ((Date) getValue ()) + "\")";
+        return "new java.util.Date(" + ((Date) getValue()).getTime() + "L)"; // NOI18N
     }
 
 }
