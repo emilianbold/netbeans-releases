@@ -190,16 +190,19 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
     private static java.lang.reflect.Method method;
     private static Lookup createInfoLookup (XMLDataObject obj, XMLDataObject.Info info) {
         // well, it is a wormhole, but just for default compatibility
-        if (method == null) {
-            try {
-                method = XMLDataObject.class.getDeclaredMethod ("createInfoLookup", new Class[] { // NOI18N
-                    XMLDataObject.class,
-                    XMLDataObject.Info.class
-                });
-                method.setAccessible (true);
-            } catch (Exception ex) {
-                ErrorManager.getDefault ().notify (ex);
-                return null;
+        synchronized (FileEntityResolver.class) {
+            if (method == null) {
+                try {
+                    java.lang.reflect.Method m = XMLDataObject.class.getDeclaredMethod ("createInfoLookup", new Class[] { // NOI18N
+                        XMLDataObject.class,
+                        XMLDataObject.Info.class
+                    });
+                    m.setAccessible (true);
+                    method = m;
+                } catch (Exception ex) {
+                    ErrorManager.getDefault ().notify (ex);
+                    return null;
+                }
             }
         }
         try {
