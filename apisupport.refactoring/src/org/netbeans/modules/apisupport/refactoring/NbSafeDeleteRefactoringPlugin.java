@@ -98,7 +98,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                     if (project != null && project instanceof NbModuleProject) {
                         checkMetaInfServices(project, clzz, refactoringElements);
                         checkManifest((NbModuleProject)project, clzz, refactoringElements);
-//                        checkLayer((NbModuleProject)project, clzz, refactoringElements);
+                        checkLayer((NbModuleProject)project, clzz, refactoringElements);
                     }
                 }
             }
@@ -122,31 +122,31 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         return new ServicesSafeDeleteRefactoringElement(clazz, serviceFile);
     }
 
-//    protected RefactoringElementImplementation createLayerRefactoring(
-//            Constructor constructor,
-//            LayerUtils.LayerHandle handle,
-//            FileObject layerFileObject,
-//            String layerAttribute) {
-//        return new LayerSafeDeleteRefactoringElement(constructor.getName(), handle, layerFileObject);
-//            
-//    }
-//
-//    protected RefactoringElementImplementation createLayerRefactoring(
-//            JavaClass clazz, 
-//            LayerUtils.LayerHandle handle, 
-//            FileObject layerFileObject, 
-//            String layerAttribute) {
-//        return new LayerSafeDeleteRefactoringElement(clazz.getSimpleName(), handle, layerFileObject);
-//    
-//    }
-//
-//    protected RefactoringElementImplementation createLayerRefactoring(
-//            Method method, 
-//            LayerUtils.LayerHandle handle, 
-//            FileObject layerFileObject, 
-//            String layerAttribute) {
-//        return new LayerSafeDeleteRefactoringElement(method.getName(), handle, layerFileObject);
-//    }
+    protected RefactoringElementImplementation createLayerRefactoring(
+            Constructor constructor,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        return new LayerSafeDeleteRefactoringElement(constructor.getName(), handle, layerFileObject);
+            
+    }
+
+    protected RefactoringElementImplementation createLayerRefactoring(
+            JavaClass clazz, 
+            LayerUtils.LayerHandle handle, 
+            FileObject layerFileObject, 
+            String layerAttribute) {
+        return new LayerSafeDeleteRefactoringElement(clazz.getSimpleName(), handle, layerFileObject);
+    
+    }
+
+    protected RefactoringElementImplementation createLayerRefactoring(
+            Method method, 
+            LayerUtils.LayerHandle handle, 
+            FileObject layerFileObject, 
+            String layerAttribute) {
+        return new LayerSafeDeleteRefactoringElement(method.getName(), handle, layerFileObject);
+    }
     
     
     public final class ManifestSafeDeleteRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
