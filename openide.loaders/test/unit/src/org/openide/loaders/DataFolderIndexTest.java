@@ -146,7 +146,7 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
         
         for (int i = 0; i < arr.length; i++) {
             fromNode.indexOf (arr [i]);
-            assertEquals ("Node " + arr [0] + " has as same position in Node's Index [" + Arrays.asList (fromNode.getNodes ()) + "]" +
+            assertEquals (i + "th iteration - Node " + arr [i] + " has as same position in Node's Index [" + Arrays.asList (fromNode.getNodes ()) + "]" +
                     "as in folder's Index [" + Arrays.asList (fromFolder.getNodes ()) + "].",
                     fromFolder.indexOf (arr [i]), fromNode.indexOf (arr [i]));
         }
