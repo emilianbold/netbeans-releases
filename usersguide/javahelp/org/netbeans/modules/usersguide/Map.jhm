@@ -69,11 +69,11 @@
 <mapID target="gui.components.selecting" url="gui/gui_selectcomponents.html" />
 <mapID target="gui.components.editing" url="gui/gui_editcomponentprops.html" />
 
-<mapID target="gui.layouts.about" url="gui/gui_layoutmanagers.html" />
-<mapID target="gui.layouts.setting" url="gui/gui_settinglayout.html" />
-<mapID target="gui.layouts.gbcustomizer" url="gui/gui_gbcustomizer.html" />
-<mapID target="gui.layouts.custom_mgr" url="gui/gui_customlayout.html" />
-<mapID target="gui.layouts.props" url="gui/gui_layoutprops.html" />
+<mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
+<mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
+<mapID target="gui.layouts.gbcustomizer" url="gui/layout_managers/gui_gbcustomizer.html" />
+<mapID target="gui.layouts.custom_mgr" url="gui/layout_managers/gui_customlayout.html" />
+<mapID target="gui.layouts.props" url="gui/layout_managers/gui_layoutprops.html" />
 
 <mapID target="gui.events.managing" url="gui/gui_events_managing.html" />
 <mapID target="gui.connectionwizard" url="gui/gui_events_setting.html" />
