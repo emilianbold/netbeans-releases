@@ -87,7 +87,6 @@ public class CvsVersioningSystem {
 
     private void init() {
         defaultGlobalOptions = CvsVersioningSystem.createGlobalOptions();
-        defaultGlobalOptions.setCompressionLevel(3);
         MetadataAttic.cleanUp();
         sah = new CvsLiteAdminHandler();
         loadCache();
