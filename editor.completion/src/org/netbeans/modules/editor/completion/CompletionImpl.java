@@ -554,7 +554,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             public void run() {
                 int caretOffset = activeComponent.getCaretPosition();
                 // completionResults = null;
-                if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery) {
+                if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
+                        && CompletionSettings.INSTANCE.completionInstantSubstitution()) {
                     try {
                         int[] block = Utilities.getIdentifierBlock(activeComponent, caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N

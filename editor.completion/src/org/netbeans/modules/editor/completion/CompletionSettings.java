@@ -92,6 +92,13 @@ public final class CompletionSettings implements SettingsChangeListener {
                 ExtSettingsDefaults.defaultJavaDocBGColor);
     }
 
+    public boolean completionInstantSubstitution() {
+        return ((Boolean)getValue(
+                ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION,
+                ExtSettingsDefaults.defaultCompletionInstantSubstitution)
+        ).booleanValue();
+    }
+    
     public void notifyEditorComponentChange(JTextComponent newEditorComponent) {
         this.editorComponent = newEditorComponent;
         clearSettingValues();
