@@ -205,6 +205,19 @@ public class TargetListerTest extends NbTestCase {
         assertEquals("correct qname #3", "subdir/importing2.master", t.getQualifiedName());
     }
     
+    public void testIndirectOverride() throws Exception {
+        FileObject a = testdir.getFileObject("indirectoverride/a.xml");
+        assertNotNull("a.xml found", a);
+        List/*<TargetLister.Target>*/ targets = getTargets(a);
+        assertEquals("two targets", 2, targets.size());
+        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        assertEquals("correct qname", "a.x", t.getQualifiedName());
+        assertFalse("not overridden", t.isOverridden());
+        t = (TargetLister.Target) targets.get(1);
+        assertEquals("correct qname", "c.x", t.getQualifiedName());
+        assertTrue("#67694: imported version is overridden", t.isOverridden());
+    }
+    
     private static List/*<TargetLister.Target>*/ getTargets(FileObject fo) throws IOException {
         AntProjectCookie apc = TargetLister.getAntProjectCookie(fo);
         SortedSet/*<Target>*/ targets = new TreeSet(new TargetComparator());

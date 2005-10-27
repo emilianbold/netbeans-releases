@@ -653,10 +653,12 @@ public class TargetLister {
             if (!targets.containsKey(targetName)) {
                 return false;
             }
-            if (importingScript == null) {
-                return true;
+            for (Script s = importingScript; s != null; s = s.importingScript) {
+                if (s.targets.containsKey(targetName)) {
+                    return false;
+                }
             }
-            return !importingScript.defines(targetName);
+            return true;
         }
         
     }
