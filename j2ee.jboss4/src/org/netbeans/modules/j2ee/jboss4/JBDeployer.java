@@ -119,7 +119,7 @@ public class JBDeployer implements ProgressObject, Runnable {
     
     public void run(){
 
-        String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(JBInstantiatingIterator.PROPERTY_DEPLOY_DIR);
+        String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
         FileObject foIn = FileUtil.toFileObject(file);
         FileObject foDestDir = FileUtil.toFileObject(new File(deployDir));
         String fileName = file.getName();

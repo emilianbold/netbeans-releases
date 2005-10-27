@@ -139,7 +139,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         String path = model.getCurrentPath();
         if (!path.equals("")){
             domainPathField.setText(path);
-            portField.setText(JBPluginUtils.getJBPort(domainPathField.getText()));
+            portField.setText(JBPluginUtils.getHTTPConnectorPort(domainPathField.getText()));
         } 
     //    serverChanged();
         fireChangeEvent(); 
@@ -398,7 +398,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         add(panel1, gridBagConstraints);
         
         hostField.setText("localhost");//NOI18N
-        portField.setText(JBPluginUtils.getJBPort(domainPathField.getText()));//NOI18N
+        portField.setText(JBPluginUtils.getHTTPConnectorPort(domainPathField.getText()));//NOI18N
     //    serverTypeChanged();
         domainChanged();
         

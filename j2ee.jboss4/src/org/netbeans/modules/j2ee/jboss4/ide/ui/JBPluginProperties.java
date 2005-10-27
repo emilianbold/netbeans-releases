@@ -26,6 +26,14 @@ import org.openide.ErrorManager;
  */
 public class JBPluginProperties {
     
+    public static final String PROPERTY_DISPLAY_NAME ="displayName";//NOI18N
+    public static final String PROPERTY_SERVER = "server";//NOI18N
+    public static final String PROPERTY_DEPLOY_DIR = "deploy-dir";//NOI18N
+    public static final String PROPERTY_SERVER_DIR = "server-dir";//NOI18N
+    public static final String PROPERTY_ROOT_DIR = "root-dir";//NOI18N
+    public static final String PROPERTY_HOST = "host";//NOI18N
+    public static final String PROPERTY_PORT = "port";//NOI18N
+    
     
     private static JBPluginProperties pluginProperties = null;
     private String installLocation;

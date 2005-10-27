@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import java.net.ServerSocket;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -154,12 +155,12 @@ public class JBStartServer extends StartServer implements ProgressObject{
         java.util.Hashtable env = new java.util.Hashtable();
         
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-        env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR)));
+        env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
         env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
         env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
         env.put("jnp.disableDiscovery", Boolean.TRUE); // NOI18N
         
-        String checkingConfigName = ip.getProperty("server");
+        String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
         
         try{
             InitialContext ctx = new InitialContext(env);
@@ -175,7 +176,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 return false;
             }
         }catch(NameNotFoundException e){
-            if (checkingConfigName.equals("minimal"))
+            if (checkingConfigName.equals("minimal")) // NOI18N
                 return true;
             else
                 return false;
@@ -211,11 +212,11 @@ public class JBStartServer extends StartServer implements ProgressObject{
         }
         
         
-        String logFileName = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) + File.separator+"log"+ File.separator+"server.log" ;//NOI18N
+        String logFileName = (String)ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR) + File.separator+"log"+ File.separator+"server.log" ;//NOI18N
         File logFile = new File(logFileName);
         if (logFile.exists()){
             try{
-                String serverName = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER) ;
+                String serverName = (String)ip.getProperty(JBPluginProperties.PROPERTY_SERVER) ;
                 JBLogWriter logWriter = JBLogWriter.createInstance(io, new FileInputStream(logFile),serverName,true);
                 dm.setLogWriter(logWriter);
                 if (!logWriter.isRunning())
@@ -239,117 +240,158 @@ public class JBStartServer extends StartServer implements ProgressObject{
         private  String JBOSS_INSTANCE ="";
         
         public JBStartRunnable(boolean debug) {
-            JBOSS_INSTANCE = InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty("server");
+            JBOSS_INSTANCE = InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty(JBPluginProperties.PROPERTY_SERVER);
             this.debug = debug;
         }
         
         public void run() {
-//            try {
-                Process serverProcess = null;
-                String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
-                
-                String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH); 
-                
-                File serverRunFile = new File(serverRunFileName);
-                
-                if (!serverRunFile.exists()){
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_FNF")));//NOI18N
-                    return;
-                }
-                
-                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(serverRunFileName, "-c "+JBOSS_INSTANCE);
-                
-                String envp[];
-                
-                if (debug) {
-                    envp = new String[]{"JAVA_OPTS=-classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="+dm.getDebuggingPort()+ ",server=y,suspend=n"};
-                } else {
-                    envp = new String[0];
-                }
-                
-                try {
-                    serverProcess = pd.exec(null, envp, true, null );
-                } catch (java.io.IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-    
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
-                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_PD", serverRunFileName)));//NOI18N
-                    
-                    return;
-                }
-                
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
-                
-                // create an output tab for the server output
-                InputOutput io = UISupport.getServerIO(dm.getUrl());                
-                if (io == null) {
-                    return; // finish, it looks like this server instance has been unregistered
-                }
-                
-                // clear the old output
-                try {
-                    io.getOut().reset();
-                } catch (IOException ioe) {
-                    // no op
-                }
-                io.select();
-                
-                // read the data from the server's output up
-                LineNumberReader reader = new LineNumberReader(new InputStreamReader(serverProcess.getInputStream()));
-                
-                try {
-                    int timeout = 900000;
-                    int elapsed = 0;
-                    while (elapsed < timeout) {
-                        while (reader.ready()) {
-                            String line = reader.readLine();
-                            
-                            io.getOut().write(line + "\n"); //NOI18N
-                            
-                            if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] Starting JBoss \\(MX MicroKernel\\)\\.\\.\\.")) {
-                                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
-                            }
-                            
-                            if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] Core system initialized")) {
-                                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
-                            }
-                            
-                            if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Catalina\\] Server startup in [0-9]+ ms")) {
-                                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
-                            }
-                            
-                            if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] JBoss \\(MX MicroKernel\\) \\[4\\.0[\\S]+ \\(build: CVSTag=[\\S]+ date=[\\d]+\\)\\] Started in [\\d]+s:[\\d]+ms")) {//NOI18N
-                                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STARTED")));//NOI18N
-                                // start logging
-                                JBLogWriter logWriter = JBLogWriter.updateInstance(io, serverProcess.getInputStream(),JBOSS_INSTANCE);
-                                dm.setLogWriter(logWriter);
-                                RequestProcessor.getDefault().post(logWriter, 0, Thread.NORM_PRIORITY);
-                                return;
-                            }
-                            
-                            if (line.indexOf("Shutdown complete")>-1) {
-                                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
-                                return;
-                            }
 
-                        }
-                        
-                        try {
-                            elapsed += 500;
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            // do nothing
-                        }
-                    }
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
+
+            String strHTTPConnectorPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+            try {
+                int HTTPConnectorPort = new Integer(strHTTPConnectorPort).intValue();
+                if (!JBPluginUtils.isPortFree(HTTPConnectorPort)) {
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
+                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_HTTP_PORT_IN_USE", strHTTPConnectorPort)));//NOI18N
+                    return;
                 }
+
+                String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
                 
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
+                String strJNPServicePort = JBPluginUtils.getJnpPort(serverDir);
+                int JNPServicePort = new Integer(strJNPServicePort).intValue();
+                if (!JBPluginUtils.isPortFree(JNPServicePort)) {
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
+                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_JNP_PORT_IN_USE", strJNPServicePort)));//NOI18N
+                    return;
+                }
+
+                String strRMINamingServicePort = JBPluginUtils.getRMINamingServicePort(serverDir);
+                int RMINamingServicePort = new Integer(strRMINamingServicePort).intValue();
+                if (!JBPluginUtils.isPortFree(RMINamingServicePort)) {
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
+                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_RMI_PORT_IN_USE", strRMINamingServicePort)));//NOI18N
+                    return;
+                }
+
+                String serverName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
+                if (!"minimal".equals(serverName)) {
+                    String strRMIInvokerPort = JBPluginUtils.getRMIInvokerPort(serverDir);
+                    int RMIInvokerPort = new Integer(strRMIInvokerPort).intValue();
+                    if (!JBPluginUtils.isPortFree(RMIInvokerPort)) {
+                        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
+                                NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_INVOKER_PORT_IN_USE", strRMIInvokerPort)));//NOI18N
+                        return;
+                    }
+                }
+
+            }
+            catch (NumberFormatException nfe) {} // noop
+
+
+            Process serverProcess = null;
+            String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
+
+            String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH); 
+
+            File serverRunFile = new File(serverRunFileName);
+
+            if (!serverRunFile.exists()){
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_FNF")));//NOI18N
+                return;
+            }
+
+            org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(serverRunFileName, "-c "+JBOSS_INSTANCE);
+
+            String envp[];
+
+            if (debug) {
+                envp = new String[]{"JAVA_OPTS=-classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="+dm.getDebuggingPort()+ ",server=y,suspend=n"};
+            } else {
+                envp = new String[0];
+            }
+
+            try {
+                serverProcess = pd.exec(null, envp, true, null );
+            } catch (java.io.IOException ioe) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
+                        NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_PD", serverRunFileName)));//NOI18N
+
+                return;
+            }
+
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+
+            // create an output tab for the server output
+            InputOutput io = UISupport.getServerIO(dm.getUrl());                
+            if (io == null) {
+                return; // finish, it looks like this server instance has been unregistered
+            }
+
+            // clear the old output
+            try {
+                io.getOut().reset();
+            } catch (IOException ioe) {
+                // no op
+            }
+            io.select();
+
+            // read the data from the server's output up
+            LineNumberReader reader = new LineNumberReader(new InputStreamReader(serverProcess.getInputStream()));
+
+            try {
+                int timeout = 900000;
+                int elapsed = 0;
+                while (elapsed < timeout) {
+                    while (reader.ready()) {
+                        String line = reader.readLine();
+
+                        io.getOut().write(line + "\n"); //NOI18N
+
+                        if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] Starting JBoss \\(MX MicroKernel\\)\\.\\.\\.")) {
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+                        }
+
+                        if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] Core system initialized")) {
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+                        }
+
+                        if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Catalina\\] Server startup in [0-9]+ ms")) {
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+                        }
+
+                        if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] JBoss \\(MX MicroKernel\\) \\[4\\.0[\\S]+ \\(build: CVSTag=[\\S]+ date=[\\d]+\\)\\] Started in [\\d]+s:[\\d]+ms")) {//NOI18N
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STARTED")));//NOI18N
+                            // start logging
+                            JBLogWriter logWriter = JBLogWriter.updateInstance(io, serverProcess.getInputStream(),JBOSS_INSTANCE);
+                            dm.setLogWriter(logWriter);
+                            RequestProcessor.getDefault().post(logWriter, 0, Thread.NORM_PRIORITY);
+                            return;
+                        }
+
+                        if (line.indexOf("Shutdown complete")>-1) {
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
+                            return;
+                        }
+
+                    }
+
+                    try {
+                        elapsed += 500;
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        // do nothing
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
                 
-//            } catch (IOException e) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//            }
         }
         private final static String STARTUP_SH = "/bin/run.sh";
         private final static String STARTUP_BAT = "/bin/run.bat";

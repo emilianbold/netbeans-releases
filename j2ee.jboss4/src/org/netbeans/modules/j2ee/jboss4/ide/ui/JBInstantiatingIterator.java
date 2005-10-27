@@ -42,14 +42,6 @@ import org.openide.util.NbBundle;
 public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
     
-    public static final String PROPERTY_DISPLAY_NAME ="displayName";//NOI18N
-    public static final String PROPERTY_SERVER = "server";//NOI18N
-    public static final String PROPERTY_DEPLOY_DIR = "deploy-dir";//NOI18N
-    public static final String PROPERTY_SERVER_DIR = "server-dir";//NOI18N
-    public static final String PROPERTY_ROOT_DIR = "root-dir";//NOI18N
-    public static final String PROPERTY_HOST = "host";//NOI18N
-    public static final String PROPERTY_PORT = "port";//NOI18N
-    
     /**
      * skipServerLocationStep allow to skip Select Location step in New Instance Wizard
      * if this step allready was passed
@@ -120,13 +112,13 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
       
         try {
             InstanceProperties ip = InstanceProperties.createInstanceProperties(url, userName, password, displayName);
-            ip.setProperty(PROPERTY_SERVER, server);
-            ip.setProperty(PROPERTY_DEPLOY_DIR, deployDir);
-            ip.setProperty(PROPERTY_SERVER_DIR, serverPath);
-            ip.setProperty(PROPERTY_ROOT_DIR, installLocation);
+            ip.setProperty(JBPluginProperties.PROPERTY_SERVER, server);
+            ip.setProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR, deployDir);
+            ip.setProperty(JBPluginProperties.PROPERTY_SERVER_DIR, serverPath);
+            ip.setProperty(JBPluginProperties.PROPERTY_ROOT_DIR, installLocation);
             
-            ip.setProperty(PROPERTY_HOST, host);
-            ip.setProperty(PROPERTY_PORT, port);
+            ip.setProperty(JBPluginProperties.PROPERTY_HOST, host);
+            ip.setProperty(JBPluginProperties.PROPERTY_PORT, port);
             
             result.add(ip);
         } catch (InstanceCreationException e){

@@ -15,7 +15,9 @@ package org.netbeans.modules.j2ee.jboss4.ide.ui;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -142,7 +144,7 @@ public class JBPluginUtils {
         //todo: get real deploy path
     }
     
-    public static String getJBPort(String domainDir){
+    public static String getHTTPConnectorPort(String domainDir){
         String defaultPort = "8080";
         String serverXml = domainDir + SERVER_XML; //NOI18N
         
@@ -184,7 +186,7 @@ public class JBPluginUtils {
     }
 
 
-  public static String getJnpPort(String domainDir){
+    public static String getJnpPort(String domainDir){
         
         String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
         File xmlFile = new File(serviceXml);
@@ -224,4 +226,103 @@ public class JBPluginUtils {
         }
         return "";
     }
+  
+    public static String getRMINamingServicePort(String domainDir){
+        
+        String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
+        File xmlFile = new File(serviceXml);
+        if (!xmlFile.exists()) return "";
+        
+        InputStream inputStream = null;
+        Document document = null;
+        try{
+            inputStream = new FileInputStream(xmlFile);
+            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            
+            // get the root element
+            Element root = document.getDocumentElement();
+            
+            // get the child nodes
+            NodeList children = root.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.item(i);
+                if (child.getNodeName().equals("mbean")) {  // NOI18N
+                    NodeList nl = child.getChildNodes();
+                    if (!child.getAttributes().getNamedItem("name").getNodeValue().equals("jboss:service=Naming")) //NOI18N
+                        continue;
+                    for (int j = 0; j < nl.getLength(); j++){
+                        Node ch = nl.item(j);
+                        
+                        if (ch.getNodeName().equals("attribute")) {  // NOI18N
+                            if (!ch.getAttributes().getNamedItem("name").getNodeValue().equals("RmiPort")) //NOI18N
+                                continue;
+                             return ch.getFirstChild().getNodeValue();
+                        }
+                    }
+                }
+            }
+        }catch(Exception e){
+            // it is ok
+            // it optional functionality so we don't need to look at any exception
+        }
+        return "";
+    }
+  
+    public static String getRMIInvokerPort(String domainDir){
+        
+        String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
+        File xmlFile = new File(serviceXml);
+        if (!xmlFile.exists()) return "";
+        
+        InputStream inputStream = null;
+        Document document = null;
+        try{
+            inputStream = new FileInputStream(xmlFile);
+            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            
+            // get the root element
+            Element root = document.getDocumentElement();
+            
+            // get the child nodes
+            NodeList children = root.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.item(i);
+                if (child.getNodeName().equals("mbean")) {  // NOI18N
+                    NodeList nl = child.getChildNodes();
+                    if (!child.getAttributes().getNamedItem("name").getNodeValue().equals("jboss:service=invoker,type=jrmp")) //NOI18N
+                        continue;
+                    for (int j = 0; j < nl.getLength(); j++){
+                        Node ch = nl.item(j);
+                        
+                        if (ch.getNodeName().equals("attribute")) {  // NOI18N
+                            if (!ch.getAttributes().getNamedItem("name").getNodeValue().equals("RMIObjectPort")) //NOI18N
+                                continue;
+                             return ch.getFirstChild().getNodeValue();
+                        }
+                    }
+                }
+            }
+        }catch(Exception e){
+            // it is ok
+            // it optional functionality so we don't need to look at any exception
+        }
+        return "";
+    }
+  
+      /** Return true if the specified port is free, false otherwise. */
+    public static boolean isPortFree(int port) {
+        ServerSocket soc = null;
+        try {
+            soc = new ServerSocket(port);
+        } catch (IOException ioe) {
+            return false;
+        } finally {
+            if (soc != null)
+                try { soc.close(); } catch (IOException ex) {} // noop
+        }
+        
+        return true;
+    }
+    
+
 }
