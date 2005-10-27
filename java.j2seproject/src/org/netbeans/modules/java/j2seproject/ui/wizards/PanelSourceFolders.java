@@ -133,10 +133,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     }
 
     static String checkValidity (final File projectLocation, final File[] sources, final File[] tests ) {
-        String ploc = projectLocation.getAbsolutePath ();
-        if (sources.length ==0) {
-            return "";  //NOI18N
-        }
+        String ploc = projectLocation.getAbsolutePath ();        
         for (int i=0; i<sources.length;i++) {
             if (!sources[i].isDirectory() || !sources[i].canRead()) {
                 return MessageFormat.format(NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"),
