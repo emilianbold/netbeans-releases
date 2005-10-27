@@ -448,7 +448,7 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.core.windows.view.ui.MainWindow" url="pending.html" />
 
 <!--CSH - Whenever F1 is clicked on property sheet and there is no help button activated:-->
-<mapID target="org.netbeans.core.NbSheet" url="pending.html" />
+<mapID target="org.netbeans.core.NbSheet" url="files/files_properties.html" />
 
 <!--csh page for projects|settings|Java Sources:-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
@@ -511,7 +511,6 @@ under Print Settings in the Options window)
 <!-- Options | Editing | Java Sources | Override Methods :-->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
-
 <!--CSH for GUI Builder:-->
 
 <!-- CSH page for event handler dialog box :-->
@@ -520,14 +519,14 @@ under Print Settings in the Options window)
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/csh/gui_modifiers_editor.html" />
 <!-- GUI Builder Connection Wizard : F1 and Help button-->
 <mapID target="gui.connecting.source" url="gui/csh/gui_connection_wizard.html" />
-
-<mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
-<!--are the following 2 ids still valid? common palette may override them-->
-<mapID target="gui.components.palette" url="pending.html" />
-<mapID target="gui.options.component-palette" url="pending.html" />
-
+<!--CSH topic for Advanced Modify Source dialog-->
+<mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog" />
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
+
+<!--the following 2 ids are no longer used + there is no id for the common palette - should we use one for it?-->
+<!--<mapID target="gui.components.palette" url="pending.html" />-->
+<!--<mapID target="gui.options.component-palette" url="pending.html" />-->
 
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 <!-- note : commenting out because engineer comfirmed these are obsolete-->
@@ -536,14 +535,13 @@ under Print Settings in the Options window)
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />-->
 <!--<mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />-->
 
-<!-- todo- map these 6 to appropriate form topics or have removed-->
+<!-- todo : map these 6 to appropriate form topics or have removed-->
 <!-- note : commenting out because engineer changed id to gui.testing-->
 <!--<mapID target="gui.modes" url="pending.html" />-->
 <!-- note : commenting out because engineer claims it is not needed-->
 <!--<mapID target="gui.components.inplace-editing" url="pending.html" />-->
 <!-- note : commenting out because engineer changed id to correct (existing) id "gui.containers.designing-->
 <!--<mapID target="gui.components.designing" url="pending.html" />-->
-
 
 <!-- To Do window help :-->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
