@@ -113,6 +113,14 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance" />
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="HTMLPalette">
 
         <folder name="HTML">
