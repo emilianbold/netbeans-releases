@@ -756,18 +756,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     
     RADVisualComponent componentToLayoutComponent(RADComponent metacomp) {
         if (metacomp instanceof RADVisualComponent) {
-            RADComponent metacont = metacomp.getParentComponent();
-            if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())) {
-                metacomp = metacont;
+            RADVisualComponent visualComp = (RADVisualComponent) metacomp;
+            RADVisualContainer metacont = visualComp.getParentContainer();
+            if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())
+                 && isInDesignedTree(metacont))
+            {   // substitute with scroll pane...
+                return metacont;
             }
-            RADComponent root = metacomp;
-            while (root.getParentComponent() != null) {
-                root = root.getParentComponent();
-            }
-            // Avoid visual components in others components
-            if (root == formModel.getTopRADComponent()) {
-                return (RADVisualComponent)metacomp;
-            }
+            // otherwise just check if it is visible in the designer
+            return isInDesignedTree(visualComp) ? visualComp : null;
         }
         return null;
     }

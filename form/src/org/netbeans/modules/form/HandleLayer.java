@@ -1091,14 +1091,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         RADComponent parent = null;
         Iterator selected = formDesigner.getSelectedComponents().iterator();
         while (selected.hasNext()) {
-            RADComponent comp = (RADComponent) selected.next();
+            RADComponent comp = formDesigner.componentToLayoutComponent((RADComponent)selected.next());
+            if (comp == null)
+                return false; // not visible in designer
             if (parent == null) {
-                
-                if (!topDesigned.isParentComponent(comp)) {
-                    return false; // selected component not in the designed tree
-                                  // or the top design component itself
-                }
                 parent = comp.getParentComponent();
+                if (!formDesigner.isInDesignedTree(parent))
+                    return false; // not visible in designer
             }
             else if (comp.getParentComponent() != parent) {
                 return false; // different parent
