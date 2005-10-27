@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.io.File;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -64,7 +65,11 @@ public class SuiteUtilsTest extends TestBase {
         SuiteProvider suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);
         assertNotNull("module1 is suite component - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
         
+        assertNull("user.properites.file property doesn't exist", module1.evaluator().getProperty("user.properties.file"));
         SuiteUtils.removeModuleFromSuite(module1);
+        assertEquals("user.properites.file resolved for standalone module",
+                getWorkDirPath() + File.separatorChar + "build.properties",
+                module1.evaluator().getProperty("user.properties.file"));
         spp = SuitePropertiesTest.getSubProjectProvider(suite1);
         assertEquals("doesn't have suite component", 0, spp.getSubprojects().size());
         suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);

@@ -33,6 +33,7 @@ import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -199,6 +200,15 @@ public final class SuiteUtils {
             FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
             if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
                 FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+            }
+            String nbuser = System.getProperty("netbeans.user"); // NOI18N
+            if (nbuser != null) {
+                FileObject propsFO = FileUtil.createData(subModuleNbProject, "private/platform-private.properties"); // NOI18N
+                EditableProperties props = new EditableProperties();
+                props.setProperty("user.properties.file", nbuser + File.separatorChar + "build.properties"); // NOI18N
+                Util.storeProperties(propsFO, props);
+            } else {
+                Util.err.log("netbeans.user system property is not defined. Skipping private/platform-private.properties creation."); // NOI18N
             }
             
             // save subModule
