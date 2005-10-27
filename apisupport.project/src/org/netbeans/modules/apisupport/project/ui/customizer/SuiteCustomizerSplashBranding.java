@@ -80,6 +80,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 runningTextBounds.setValue(afterDrag);
                 double ratio = ((double)afterDrag.height)/original.height;
                 int size = (int)((((Number)fontSize.getValue()).intValue()*ratio));
+                size = (size > 0) ? size : 3;
                 fontSize.setValue(new Integer(size));
             }
         });
@@ -351,7 +352,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         add(fontSize, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(progressBarEnabled, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ProgressBarEnabled"));
-        progressBarEnabled.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        progressBarEnabled.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         progressBarEnabled.setMargin(new java.awt.Insets(0, 0, 0, 0));
         progressBarEnabled.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -370,6 +371,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         add(progressBarEnabled, gridBagConstraints);
         progressBarEnabled.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("ACS_ProgressEnabled"));
 
+        textFontSizeLabel.setLabelFor(fontSize);
         org.openide.awt.Mnemonics.setLocalizedText(textFontSizeLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextFontSize"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

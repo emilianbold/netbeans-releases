@@ -139,14 +139,22 @@ final class DragManager implements DragGestureListener, DragSourceListener,
     }
     
     public void dragDropEnd(DragSourceDropEvent dsde) {
+        if (!dsde.getDropSuccess() && activeDragItem != null) {
+            activeDragItem.dragAccepted();
+        }
+        
     }
     
     public void dragEnter(DropTargetDragEvent dtde) {
     }
     
     public void dragOver(DropTargetDragEvent dtde) {
+        dragOverImpl(dtde.getLocation());
+    }
+
+    private void dragOverImpl(final Point p) {
         if (activeDragItem != null) {
-            activeDragItem.recalculateSize(dtde.getLocation());
+            activeDragItem.recalculateSize(p);
             activeDragItem.updateSize();
             activeDragItem.scroll(component);                    
             component.repaint();
@@ -156,7 +164,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
     public void dropActionChanged(DropTargetDragEvent dtde) {
     }
     
-    public void dragExit(DropTargetEvent dte) {
+    public void dragExit(DropTargetEvent dte) {        
     }
     
     public void drop(DropTargetDropEvent dtde) {
@@ -233,12 +241,12 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         void setDropHandler(DropHandler dHandler) {
             this.dHandler = dHandler;
         }
-        
+                
         public void dragAccepted() {
             if (dHandler != null) {
                 dHandler.dragAccepted(rectangle,currentDragRect);
             }
-        }
+        }                
         
         void setRectangle(Rectangle rectangle) {
             this.rectangle.setBounds(rectangle);
@@ -247,6 +255,10 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         }
         void setGesturePoint(Point gesturePoint) {
             this.gesturePoint = gesturePoint;
+        }
+
+        Point getGesturePoint() {
+            return this.gesturePoint;
         }
         
         public boolean contains(Point point) {
@@ -275,37 +287,39 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         }
         
         public void recalculateSize(Point p) {
-            if (dragMode != null) {
+            if (dragMode != null && !p.equals(gesturePoint)) {
                 Rectangle oldtDragRect = new Rectangle();
                 oldtDragRect.setBounds(currentDragRect);
                 dragMode.recalculateSize(p);
+                int x = currentDragRect.x;
+                int y = currentDragRect.y;
+                int w = currentDragRect.width;
+                int h = currentDragRect.height;
+                
                 if (bounds != null && !bounds.contains(currentDragRect)) {
-                    int x = currentDragRect.x;
-                    int y = currentDragRect.y;
-                    int w = currentDragRect.width;
-                    int h = currentDragRect.height;
-                    
+                    if (h  + y > bounds.height + bounds.y) {
+                        if (y == oldtDragRect.y) {
+                            h = (bounds.height + bounds.y) - y;
+                        } else {
+                            y = (bounds.height + bounds.y) - h;
+                        }
+                    }
+                    if (w + x > bounds.width + bounds.x ) {
+                        if (x == oldtDragRect.x) {
+                            w = (bounds.width + bounds.x) - x;
+                        } else {
+                            x = (bounds.width + bounds.x) - w;
+                        }
+                    }
                     if (x < bounds.x) {
                         x = bounds.x;
                     }
-                    
                     if (y < bounds.y) {
                         y = bounds.y;
-                    }
-
-                    if (h  + y > bounds.height + bounds.y) {
-                        y = (bounds.height + bounds.y) - h;
-                    }
-
-                    if (w + x > bounds.width + bounds.x ) {
-                        x = (bounds.width + bounds.x) - w;
-                    }
-                    
-                    //currentDragRect.setBounds(currentDragRect.intersection(bounds));
+                    }                                        
                     currentDragRect.setBounds(x,y,w,h);
                 }
-                
-                if (currentDragRect.width <=0 || currentDragRect.height <=0) {                    
+                if (w <= 3 || h <= 3 && !(dragMode instanceof MoveMode)) {                    
                     currentDragRect.setBounds(oldtDragRect);
                 } 
             }
@@ -372,8 +386,6 @@ final class DragManager implements DragGestureListener, DragSourceListener,
             
             public void updateSize(Rectangle currentDragRect) {
                 assert resizeMode != -1;
-                //assert rec != null;
-                
                 int inset = Math.min(Math.min(5, currentDragRect.width/5), Math.min(5, currentDragRect.height/5));
                 Dimension d = new Dimension(inset*2,inset*2);
                 Point origin = new Point(currentDragRect.x-inset, currentDragRect.y-inset);
@@ -464,21 +476,20 @@ final class DragManager implements DragGestureListener, DragSourceListener,
             
             public void updateSize(Rectangle currentDragRect) {
                 assert resizeMode != -1;
-                //assert rec != null;
-                int inset = 5;//Math.min(Math.min(5, currentDragRect.width/5), Math.min(5, currentDragRect.height/5));
+                int inset = 5;
                 Dimension d = new Dimension(inset*2,inset*2);
                 switch(resizeMode) {
                     case OneSideScaleMode.N_RESIZE_MODE:
-                        rec = new Rectangle(currentDragRect.x+inset,currentDragRect.y-inset,currentDragRect.width-inset,2*inset);
+                        rec = new Rectangle(currentDragRect.x+inset,currentDragRect.y-2*inset,currentDragRect.width-inset,2*inset);
                         break;
                     case OneSideScaleMode.E_RESIZE_MODE:
-                        rec = new Rectangle(currentDragRect.x+currentDragRect.width-inset,currentDragRect.y+inset,2*inset,currentDragRect.height-inset);
+                        rec = new Rectangle(currentDragRect.x+currentDragRect.width,currentDragRect.y+inset,2*inset,currentDragRect.height-inset);
                         break;
                     case OneSideScaleMode.S_RESIZE_MODE:
-                        rec = new Rectangle(currentDragRect.x+inset,currentDragRect.y+currentDragRect.height-inset,currentDragRect.width-inset,2*inset);
+                        rec = new Rectangle(currentDragRect.x+inset,currentDragRect.y+currentDragRect.height,currentDragRect.width-inset,2*inset);
                         break;
                     case OneSideScaleMode.W_RESIZE_MODE:
-                        rec = new Rectangle(currentDragRect.x-inset,currentDragRect.y+inset,2*inset,currentDragRect.height-inset);
+                        rec = new Rectangle(currentDragRect.x-2*inset,currentDragRect.y+inset,2*inset,currentDragRect.height-inset);
                         break;
                 }
                 
@@ -495,16 +506,16 @@ final class DragManager implements DragGestureListener, DragSourceListener,
                 Line2D line = null;
                 switch(resizeMode) {
                     case OneSideScaleMode.N_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getCenterY(),rec2d.getMaxX()-inset,rec2d.getCenterY());
+                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getMaxY(),rec2d.getMaxX()-inset,rec2d.getMaxY());
                         break;
                     case OneSideScaleMode.E_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getCenterX(),rec2d.getMinY(),rec2d.getCenterX(),rec2d.getMaxY()-inset);
+                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getMinY(),rec2d.getMinX(),rec2d.getMaxY()-inset);
                         break;
                     case OneSideScaleMode.S_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getCenterY(),rec2d.getMaxX()-inset,rec2d.getCenterY());
+                        line = new Line2D.Double(rec2d.getMinX(),rec2d.getMinY(),rec2d.getMaxX()-inset,rec2d.getMinY());
                         break;
                     case OneSideScaleMode.W_RESIZE_MODE:
-                        line = new Line2D.Double(rec2d.getCenterX(),rec2d.getMinY(),rec2d.getCenterX(),rec2d.getMaxY()-inset);
+                        line = new Line2D.Double(rec2d.getMaxX(),rec2d.getMinY(),rec2d.getMaxX(),rec2d.getMaxY()-inset);
                         break;
                 }
                 g2d.draw(line);
