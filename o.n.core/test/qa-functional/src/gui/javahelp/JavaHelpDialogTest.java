@@ -79,6 +79,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
     
     public void testHelpF1(){
         MainWindowOperator.getDefault().pressKey(java.awt.event.KeyEvent.VK_F1);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(7000);
         helpWindow = new HelpOperator();
     }
     

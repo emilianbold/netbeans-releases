@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="temp" executor="ide" name="Temp">
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/propertyeditors/PropertyType_Properties.class"/>
+		<include name="gui/javahelp/JavaHelpDialogTest.class"/>
 	    </patternset>
 	</testset>
     </testbag>
