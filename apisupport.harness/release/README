@@ -755,6 +755,8 @@ test-preinit - I'm not sure, actually.
 
 test-single - run a selected unit test only. Available in the IDE's menus.
 
+testuserdir-delete - deletes just the testing user directory (if not currently in use).
+
 SUITE PROPERTIES
 ----------------
 

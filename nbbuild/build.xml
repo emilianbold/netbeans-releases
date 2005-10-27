@@ -731,9 +731,18 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   </target>
     
   <target name="sanity-check" depends="testuserdir-delete,sanity-start" description="Test whether the build can start up without problems."/>
-  <target name="testuserdir-delete" depends="init">
-    <delete dir="${test.user.dir}"/>
-  </target>
+    <target name="-testuserdir-delete-init" depends="init">
+      <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
+      <available property="app.running" file="${test.user.dir.lock}"/>
+    </target>
+    <target name="-testuserdir-delete-ok" depends="-testuserdir-delete-init" unless="app.running">
+      <delete dir="${test.user.dir}"/>
+    </target>
+    <target name="-testuserdir-delete-fail" depends="-testuserdir-delete-init" if="app.running">
+      <!-- #66799: best to warn about this condition... -->
+      <fail>Will not delete ${test.user.dir} because ${test.user.dir.lock} still exists; kill any running process and delete lock file if necessary</fail>
+    </target>
+  <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail"/>
   <target name="sanity-start" depends="init,maybe-build-nozip">
     <mkdir dir="${test.user.dir}"/>
     <echo>Starting the IDE as a sanity check...</echo>
