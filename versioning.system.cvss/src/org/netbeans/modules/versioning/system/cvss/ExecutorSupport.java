@@ -124,6 +124,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             group = new ExecutorGroup(getDisplayName());
         }
 
+        setup();
         executeImpl();
     }
 
@@ -144,9 +145,22 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                 finishedExecution = true;
                 notifyAll();
             }
+            cleanup();
         }
     }
+    
+    /**
+     * Called once, just before the command is sent to CVS for execution.
+     */ 
+    protected void setup() {
+    }
 
+    /**
+     * Called once, after the command finishes execution.
+     */ 
+    protected void cleanup() {
+    }
+    
     /**
      * Default implementation takes first non-null name:
      * <ul>
@@ -358,6 +372,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             }
         } finally {
             if (terminated) {
+                cleanup();
                 synchronized(this) {
                     finishedExecution = true;
                     notifyAll();

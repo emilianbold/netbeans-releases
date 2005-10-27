@@ -14,6 +14,8 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.DefaultFileInfoContainer;
@@ -28,7 +30,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -38,9 +39,12 @@ import java.util.*;
  * 
  * @author Maros Sandor
  */
-public class UpdateExecutor extends ExecutorSupport {
+public class UpdateExecutor extends ExecutorSupport implements VersioningListener {
     
-    private Set     refreshedFiles;
+    /**
+     * Contains all files that should NOT be set as up-to-date after Update finishes. 
+     */ 
+    private Set     refreshedFiles = Collections.synchronizedSet(new HashSet());
     private boolean rwUpdate;
 
     /**
@@ -76,6 +80,16 @@ public class UpdateExecutor extends ExecutorSupport {
         rwUpdate = options == null || !options.isDoNoChanges();
     }
 
+    protected void setup() {
+        super.setup();
+        cvs.getStatusCache().addVersioningListener(this);
+    }
+
+    protected void cleanup() {
+        cvs.getStatusCache().removeVersioningListener(this);
+        super.cleanup();
+    }
+
     public void fileInfoGenerated(FileInfoEvent e) {
         super.fileInfoGenerated(e);
     }
@@ -86,12 +100,10 @@ public class UpdateExecutor extends ExecutorSupport {
     protected void commandFinished(ClientRuntime.Result result) {
         
         UpdateCommand ucmd = (UpdateCommand) cmd;
-        // files that we have information that changed
         
         cvs.setParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING, Boolean.TRUE);
         
         File [] files = ucmd.getFiles();
-        refreshedFiles = new HashSet(toRefresh.size());
         
         for (int i = 0; i < files.length; i++) {
             cache.clearVirtualDirectoryContents(files[i], ucmd.isRecursive(), ucmd.getGlobalOptions().getExclusions());
@@ -101,6 +113,8 @@ public class UpdateExecutor extends ExecutorSupport {
         boolean hasConflict = false;
         for (Iterator i = toRefresh.iterator(); i.hasNext();) {
             DefaultFileInfoContainer info = (DefaultFileInfoContainer) i.next();
+            File file = info.getFile();
+            if (refreshedFiles.contains(file)) continue;
             int c = info.getType().charAt(0);
             if (c == 'P') c = 'U';                
             if (rwUpdate) {
@@ -108,8 +122,8 @@ public class UpdateExecutor extends ExecutorSupport {
                 if (c == 'G') c = FileStatusCache.REPOSITORY_STATUS_MODIFIED;
                 if (c == 'C') hasConflict = true;
             }
-            cache.refreshCached(info.getFile(), c);
-            refreshedFiles.add(info.getFile());
+            cache.refreshCached(file, c);
+            refreshedFiles.add(file);
         }
                 
         // refresh all command roots
@@ -207,6 +221,26 @@ public class UpdateExecutor extends ExecutorSupport {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
         } else {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
+        }
+    }
+
+    /**
+     * If some file became modified (or got some other status besides up-to-date), make sure Update command
+     * will NOT reset it to up-to-date.
+     * 
+     * @param file file whose status changed
+     * @param newInfo
+     */ 
+    private void onFileChanged(File file, FileInformation newInfo) {
+        // make sure that files that changed state to up-to-date get the chance to receive other status based on server response   
+        if (newInfo.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
+            refreshedFiles.add(file);
+        }
+    }
+    
+    public void versioningEvent(VersioningEvent event) {
+        if (FileStatusCache.EVENT_FILE_STATUS_CHANGED.equals(event.getId())) {
+            onFileChanged((File) event.getParams()[0], (FileInformation) event.getParams()[2]);
         }
     }
 }
