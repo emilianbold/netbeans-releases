@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,9 +27,6 @@ import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
-import org.netbeans.jemmy.operators.DialogOperator;
-
-import org.netbeans.jemmy.operators.FrameOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 
@@ -74,12 +71,12 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     /** Open Property Customizer for <b>propertyName</b>, set value by customizer and press Ok button, verify value with <b>expectance</b>.
      * @param propertyName name of property to be customized
      * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
-     */    
+     */
     public void setByCustomizerOk(String propertyName, boolean expectance){
         try {
             err.println(CAPTION + " Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
-
+            
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
             
@@ -97,14 +94,14 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     /** Open Property Customizer for <b>propertyName</b>, set value by customizer and press Cancel button, verify value with <b>expectance</b>.
      * @param propertyName name of property to be customized
      * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
-     */    
+     */
     public void setByCustomizerCancel(String propertyName, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by customizer-cancel {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
-
+            
             if(propertyCustomizer.isShowing())
                 propertyCustomizer.cancel();
             
@@ -118,9 +115,9 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     /** Set value <b>propertyValue</b> of property <b>propertyName</b> by in-place, verify value with <b>expectance</b>.
      * @param propertyName name of property to be changed
-     * @param propertyValue new value of property 
+     * @param propertyValue new value of property
      * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
-     */    
+     */
     public void setByInPlace(String propertyName, String propertyValue, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"} .");
@@ -128,7 +125,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             
 //            ((TextFieldProperty) findProperty(propertyName, "TextFieldProperty")).setValue(propertyValue);
             new PropertySheetOperator(propertiesWindow).tblSheet().changeCellObject(findProperty(propertyName, "TextFieldProperty").getRow(),1, propertyValue);
-
+            
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"}  - finished.");
             verifyPropertyValue(expectance);
             
@@ -139,9 +136,9 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     /** Set value <b>propertyValue</b> of property <b>propertyName</b> by combobox, verify value with <b>expectance</b>.
      * @param propertyName name of property to be changed
-     * @param propertyValue new value of property 
+     * @param propertyValue new value of property
      * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
-     */    
+     */
     public void setByCombo(String propertyName, String propertyValue, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"} .");
@@ -161,7 +158,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @param propertyName name of property to be changed
      * @param propertyValueIndex index of new value in combobox
      * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
-     */    
+     */
     public void setByCombo(String propertyName, int propertyValueIndex, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"} .");
@@ -179,13 +176,13 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     /** Verify customizer layout for property <b>propertyName</b>.
      * @param propertyName name of property to be changed
-     */    
+     */
     public void verifyCustomizer(String propertyName){
         try {
             err.println(CAPTION + " Trying to verify customizer {name="+propertyName+"} .");
             openAndGetPropertyCustomizer(propertyName);
             verifyCustomizerLayout();
-
+            
             if(propertyCustomizer.isShowing())
                 propertyCustomizer.cancel();
             
@@ -198,8 +195,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     /** Open property customizer for property <b>propertyName</b>.
      * @param propertyName name of property to be changed
-     * @return Property Customizer 
-     */    
+     * @return Property Customizer
+     */
     public static NbDialogOperator openAndGetPropertyCustomizer(String propertyName) {
         // hack for troubles with request focus on already focused property
         new PropertySheetOperator(propertiesWindow).tblSheet().selectCell(0,0);
@@ -211,14 +208,14 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     /** Return Property Customizer.
      * @return Property Customizer.
-     */    
+     */
     public NbDialogOperator getPropertyCustomizer() {
         return propertyCustomizer;
     }
     
     /** Return Informational dialog
      * @return Informational dialog
-     */    
+     */
     public NbDialogOperator getInformationDialog() {
         String title = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
         
@@ -230,8 +227,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     /** Get value of property <b>propertyName</b>
      * @param propertyName name of property asked for value
-     * @return value of property 
-     */    
+     * @return value of property
+     */
     public String getValue(String propertyName) {
         String returnValue = findProperty(propertyName, "").getValue();
         err.println("GET VALUE = [" + returnValue + "].");
@@ -239,20 +236,20 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     }
     
     /** Find Property Cusotmizer by name of property <b>propertyName</b>
-     * @param propertyName name of property 
+     * @param propertyName name of property
      * @return founded Property Customizer
-     */    
+     */
     private static NbDialogOperator findPropertyCustomizer(String propertyName){
         return new NbDialogOperator(propertyName);
     }
     
     /** Verify exceptation value.
-     * @param propertyName name of property 
+     * @param propertyName name of property
      * @param expectation true - expected value must be the same as new value, false - expected value should not be the same
      * @param propertyValueExpectation expected value
      * @param propertyValue new value
      * @param waitDialog true - after changing value Informational dialog about impissibility to set invalid value arise
-     */    
+     */
     public void verifyExpectationValue(String propertyName, boolean expectation, String propertyValueExpectation, String propertyValue, boolean waitDialog){
         
         // Dialog isn't used for informing user about Invalid new value: Class,
@@ -306,7 +303,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         String waitDialogTimeout = "DialogWaiter.WaitDialogTimeout";
         long findTimeout = JemmyProperties.getCurrentTimeout(waitDialogTimeout);
         JemmyProperties.setCurrentTimeout(waitDialogTimeout, 3000);
-
+        
         try{
             propertiesWindow = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }catch(org.netbeans.jemmy.TimeoutExpiredException exception){
@@ -320,12 +317,12 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     }
     
     
-     /** Find Property in Property Sheet and return them. 
+    /** Find Property in Property Sheet and return them.
      * This is first hack for new Jelly2, because it isn't possible to set String Comparator only for one operator.
      * @param propertyName name of property
      * @param type  TextFieldProperty - textfield property, ComboBoxProperty - combobox property
      * @return property by <b>propertyName</b> and <b>type</b>.
-     */    
+     */
     public static Property findProperty(String propertyName, String type) {
         Operator.StringComparator oldComparator = Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
@@ -352,25 +349,25 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     /** Print full stack trace to log files, get message and log to test results if test fails.
      * @param exc Exception logged to description
      * @param message written to test results
-     */    
-    protected void failTest(Exception exc, String message) {
+     */
+    protected static void failTest(Exception exc, String message) {
         err.println("################################");
         exc.printStackTrace(err);
         err.println("################################");
         fail(message);
     }
     
-    /** Make IDE screenshot of whole IDE 
-     * @param testCase it is needed for locate destination directory of saving screenshot file 
-     */    
+    /** Make IDE screenshot of whole IDE
+     * @param testCase it is needed for locate destination directory of saving screenshot file
+     */
     public static void makeIDEScreenshot(JellyTestCase testCase) {
-        try{                                                                                                                                           
-            testCase.getWorkDir();                                                                                                                     
-            org.netbeans.jemmy.util.PNGEncoder.captureScreen(testCase.getWorkDirPath()+System.getProperty("file.separator")+"IDEscreenshot.png");      
-        }catch(Exception ioexc){                                                                                                                       
-            testCase.log("Impossible make IDE screenshot!!! \n" + ioexc.toString());                                                                   
-        }                                                                                                                                              
-    }                                                                                                                                                  
+        try{
+            testCase.getWorkDir();
+            org.netbeans.jemmy.util.PNGEncoder.captureScreen(testCase.getWorkDirPath()+System.getProperty("file.separator")+"IDEscreenshot.png");
+        }catch(Exception ioexc){
+            testCase.log("Impossible make IDE screenshot!!! \n" + ioexc.toString());
+        }
+    }
     
     public abstract void setCustomizerValue();
     

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,14 +51,14 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
     }
     
     public void testByCombo(){
-        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.types.Bundle", "TEXT_DATE_CRITERION"); // Date
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "Services/SearchType/org-netbeans-modules-search-ObjectTypeType.settings"); // Type
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
     public void testCustomizerOk(){
-        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.vcscore.search.Bundle", "CTL_StatusCriterion"); // Status
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.types.Bundle", "TEXT_DATE_CRITERION"); // Date
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);

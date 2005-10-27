@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.propertyeditors;
 
 import gui.propertyeditors.utilities.CoreSupport;
-
 import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
 
 import org.netbeans.jemmy.EventTool;
@@ -40,9 +39,10 @@ public class PropertyType_File extends PropertyEditorsTest {
         super(testName);
     }
     
-    
     public void setUp(){
         propertyName_L = "File";
+        propertyValue_L = new java.io.File(CoreSupport.getSampleProjectPath(this),"build.xml").getPath();
+        log("=========== File to be set {"+propertyValue_L+"}");        
         super.setUp();
     }
     
@@ -56,33 +56,18 @@ public class PropertyType_File extends PropertyEditorsTest {
     }
     
     public void testCustomizerOk() {
-        
-        //TODO write new way for promoD
-        //propertyValue_L = CoreSupport.getSystemPath("gui/data", "clear_JFrame", "java");
-        propertyValue_L = ""; 
-        
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel(){
-        
-        //TODO write new way for promoD
-        //propertyValue_L = CoreSupport.getSystemPath("gui/data", "clear_Frame", "java");
-        propertyValue_L = ""; 
-        
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void testByInPlace(){
-        
-        //TODO write new way for promoD
-        //propertyValue_L = CoreSupport.getSystemPath("gui/data", CoreSupport.beanName, "java");
-        propertyValue_L = ""; 
-        
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByInPlace(propertyName_L, propertyValue_L, true);

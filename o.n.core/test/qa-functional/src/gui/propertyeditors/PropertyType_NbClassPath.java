@@ -7,15 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.propertyeditors;
 
-import org.netbeans.junit.NbTestSuite;
-
 import gui.propertyeditors.utilities.CoreSupport;
+
+import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.jellytools.properties.editors.ClasspathCustomEditorOperator;
 import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
@@ -39,30 +39,19 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     private final String UP = "Up:";
     private final String DOWN = "Down:";
     
-    private static String FS_Data_path;
-    private static String FS_Data_path_data_jar;
+    private static String directoryPath;
+    private static String dataJarPath;
     
     private static String delim;
     
     /** Creates a new instance of PropertyType_NbClassPath */
     public PropertyType_NbClassPath(String testName) {
         super(testName);
-    }
-    
-    
-    public void setUp(){
-        propertyName_L = "NbClassPath";
-        super.setUp();
-    }
-    
-    public static NbTestSuite suite() {
+        directoryPath = CoreSupport.getSampleProjectPath(this);
+        dataJarPath = directoryPath + System.getProperty("file.separator") + "data.jar";
         
-        //TODO write new way for promoD
-        //String path = CoreSupport.getSystemPath("gui/data", CoreSupport.beanName, "java");
-        String path = ""; 
-        
-        FS_Data_path = path.substring(0,path.lastIndexOf(System.getProperty("file.separator")));
-        FS_Data_path_data_jar = FS_Data_path + System.getProperty("file.separator") + "data.jar";
+        log("======= Directory Path={"+directoryPath+"}");
+        log("======= Data.jar Path={"+dataJarPath+"}");
         
         String os = System.getProperty("os.name");
         System.err.println("Os name = {"+os+"}");
@@ -73,6 +62,12 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
             delim = ":";
            
         System.err.println("delim={"+delim+"}");
+
+        propertyName_L = "NbClassPath";
+    }
+    
+    
+    public static NbTestSuite suite() {
         
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_NbClassPath("testByInPlace"));
@@ -90,21 +85,21 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     
     
     public void testCustomizerAddDirectory() {
-        propertyValue_L = ADDDIRECTORY + FS_Data_path;
-        propertyValueExpectation_L =  "one.jar"+delim+"two.zip" + delim + FS_Data_path;
+        propertyValue_L = ADDDIRECTORY + directoryPath;
+        propertyValueExpectation_L =  "one.jar"+delim+"two.zip" + delim + directoryPath;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerAddJar() {
-        propertyValue_L = ADDJAR + FS_Data_path_data_jar;
-        propertyValueExpectation_L = "two.zip"+delim+"one.jar"+ delim + FS_Data_path_data_jar;
+        propertyValue_L = ADDJAR + dataJarPath;
+        propertyValueExpectation_L = "two.zip"+delim+"one.jar"+ delim + dataJarPath;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerRemove() {
-        propertyValue_L = REMOVE + FS_Data_path;
+        propertyValue_L = REMOVE + directoryPath;
         //propertyValueExpectation_L = "one.jar:two.zip:" + FS_Data_path_data_jar;
         propertyValueExpectation_L = "one.jar"+delim+"two.zip";
         waitDialog = false;
@@ -121,7 +116,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     
     public void testCustomizerDown() {
         propertyValue_L = DOWN + "one.jar";
-        propertyValueExpectation_L = "two.zip" + delim + FS_Data_path_data_jar + delim + "one.jar" ;
+        propertyValueExpectation_L = "two.zip" + delim + dataJarPath + delim + "one.jar" ;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }

@@ -17,6 +17,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import java.awt.Component;
 import javax.swing.JDialog;
+import org.netbeans.jellytools.JellyTestCase;
 
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
@@ -41,24 +42,23 @@ public class CoreSupport {
     public CoreSupport() {
     }
     
-    /** Find file object by name and extension.
-     * @param _pack package name
-     * @param _name file name
-     * @param _extension file extension
-     * @return finded file object or null
+    /**
+     * Find path to the Sample Project.
+     * 
+     * @return path to the Sample Project 
+     * @param testCase 
      */
-//    public static FileObject findFileObject(String _package, String _name, String _extension) {
-//        FileObject f = Repository.getDefault().find(_package, _name, _extension);
-//        return f;
-//    }
+    public static String getSampleProjectPath(JellyTestCase testCase) {
+        return new java.io.File(testCase.getDataDir(),"SampleProject").getPath();
+    }
     
     
-    /** Find file system name.
-     * @param _package package name
-     * @param fileName file name
-     * @param fileExtension file extension
-     * @throws FileStateInvalidException
-     * @return  full FileSystem name  */
+    /**
+     * Find file system name.
+     * 
+     * @param exc 
+     * @param err 
+     */
 /*    public static String getFS(String _package, String fileName, String fileExtension){
         FileObject f = findFileObject(_package, fileName, fileExtension);
         
@@ -96,6 +96,10 @@ public class CoreSupport {
         exc.printStackTrace(err);
     }
     
+    /**
+     * 
+     * @param testCase 
+     */
     public static void makeIDEScreenshot(NbTestCase testCase) {
         try{
             testCase.getWorkDir();
@@ -105,6 +109,11 @@ public class CoreSupport {
         }
     }
     
+    /**
+     * 
+     * @param testCase 
+     * @param component 
+     */
     public static void makeWindowScreenshot(NbTestCase testCase, Component component) {
         try{
             testCase.getWorkDir();
