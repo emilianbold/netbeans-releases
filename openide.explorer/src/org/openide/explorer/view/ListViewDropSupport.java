@@ -272,6 +272,7 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
 
         // check location
         int index = list.locationToIndex(dtde.getLocation());
+        if (index == -1) return -1;
         Object obj = list.getModel().getElementAt(index);
 
         if (obj instanceof VisualizerNode) {
