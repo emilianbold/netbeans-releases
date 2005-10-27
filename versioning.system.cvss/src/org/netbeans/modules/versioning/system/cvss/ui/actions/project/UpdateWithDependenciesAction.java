@@ -92,7 +92,6 @@ public final class UpdateWithDependenciesAction extends SystemAction {
             group.execute();
         } finally {
             setEnabled(true);
-            group.executed();
         }
     }
 

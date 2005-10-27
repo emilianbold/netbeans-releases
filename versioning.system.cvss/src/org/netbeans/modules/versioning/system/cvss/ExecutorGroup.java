@@ -329,9 +329,11 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
             executed = true;
         }
         Iterator it = executors.iterator();
+        int i = 0;
         while (it.hasNext()) {
             Groupable support = (Groupable) it.next();
             support.execute();
+            i++;
             if (failed) break;
         }
 
@@ -344,6 +346,12 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         while (it.hasNext()) {
             Groupable support = (Groupable) it.next();
             support.execute();
+            i++;
+        }
+
+        if (i == 0 && progressHandle != null) {  // kill progress provoked by progress()
+            progressHandle.finish();
+            progressHandle = null;
         }
 
     }
