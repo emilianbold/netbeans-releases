@@ -790,9 +790,12 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <property name="debug.server" value="n"/>
     <antcall target="tryme"/>
   </target>
-          
-            
+    
   <target name="tryme-profile" description="Start IDE in debugger. May only be called from within IDE.">
+    <property name="profiler.roots.path" value="profiler.roots.all" />
+    <fileset id="profiler.roots.all" dir="${netbeans.dest.dir}">
+        <include name="**/*.jar"/>
+    </fileset>
     <nbprofiledirect 
         jvmargsprefix="-J" 
         jvmargsproperty="profiler.jvmargs" 
@@ -803,6 +806,9 @@ PKGINST=${pkg.svr4.pkginst}</echo>
           <include name="**/*.jar"/>
         </fileset>
       </classpath>
+      <rootspath>
+          <fileset refid="${profiler.roots.path}" />
+      </rootspath>
     </nbprofiledirect>
     
     <antcall target="tryme">

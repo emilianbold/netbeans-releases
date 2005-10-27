@@ -152,6 +152,11 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="**/*.jar"/>
                 </fileset>
             </classpath>
+            <rootspath>
+                <fileset dir="${cluster}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </rootspath>
         </nbprofiledirect>
         
         <antcall target="run">

@@ -98,7 +98,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="profile" depends="netbeans" >
-        <ant dir="${nb_all}/nbbuild" target="tryme-profile" />
+        <fileset id="profiler.roots.module" dir="${cluster}">
+            <include name="${module.jar}"/>
+        </fileset>
+        <ant dir="${nb_all}/nbbuild" target="tryme-profile" >
+            <property name="profiler.roots.path" value="profiler.roots.module" />
+            <reference refid="profiler.roots.module" />
+        </ant>
     </target>
     
     <target name="reload" depends="netbeans">
