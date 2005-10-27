@@ -538,7 +538,7 @@ class LayoutDragger implements LayoutConstants {
                 best = bestAligned;
             }
             else {
-                boolean preferredNextTo = (dimension == HORIZONTAL);
+                boolean preferredNextTo = isPreferredNextTo(bestNextTo, bestAligned);
                 int nextToDst = smallestDistance(findingsNextTo[dimension]);
                 int alignedDst = smallestDistance(findingsAligned[dimension]);
                 if (!relatedPositions(bestNextTo, bestAligned)) {
@@ -1188,7 +1188,27 @@ class LayoutDragger implements LayoutConstants {
         return bestDst;
     }
 
-    private boolean relatedPositions(PositionDef nextTo, PositionDef aligned) {
+    private boolean isPreferredNextTo(PositionDef bestNextTo, PositionDef bestAligned) {
+        if (operation == RESIZING && bestNextTo != null && bestAligned != null) {
+            LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
+            int fixedEdge = movingEdges[dimension] ^ 1;
+            if (bestAligned.interval.isParentOf(resizing)) {
+                if (LayoutInterval.isAlignedAtBorder(resizing, bestAligned.interval, fixedEdge)) {
+                    return false;
+                }
+            }
+            else {
+                LayoutInterval commonParent = LayoutInterval.getCommonParent(resizing, bestAligned.interval);
+                if (LayoutInterval.isAlignedAtBorder(resizing, commonParent, fixedEdge)
+                    && LayoutInterval.isAlignedAtBorder(bestAligned.interval, commonParent, fixedEdge))
+                    return false;
+            }
+            return true;
+        }
+        return dimension == HORIZONTAL;
+    }
+
+    private static boolean relatedPositions(PositionDef nextTo, PositionDef aligned) {
         if (nextTo.interval == null || aligned.interval == null)
             return false;
 
