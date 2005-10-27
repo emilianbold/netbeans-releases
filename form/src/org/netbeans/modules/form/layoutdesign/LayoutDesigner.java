@@ -245,8 +245,11 @@ public class LayoutDesigner implements LayoutConstants {
                                     updateLayoutStructure(sibling, dimension, imposeGaps);
                                     skipNext = true;
                                 }
-                                currentPref = sibSpace.positions[dimension][LEADING] - space.positions[dimension][TRAILING];
-                                space.reshape(dimension, TRAILING, currentPref);
+                                int sibPos = sibSpace.positions[dimension][LEADING];
+                                if (sibPos != LayoutRegion.UNKNOWN) { // Issue 62320
+                                    currentPref = sibPos - space.positions[dimension][TRAILING];
+                                    space.reshape(dimension, TRAILING, currentPref);
+                                }
                             }
                         }
 
