@@ -7,38 +7,55 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.explorer.view;
 
-import org.openide.ErrorManager;
-import org.openide.awt.MouseUtils;
-import org.openide.explorer.*;
-import org.openide.nodes.*;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
-
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.dnd.Autoscroll;
 import java.awt.dnd.DnDConstants;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.accessibility.*;
-
-import javax.swing.*;
+import javax.accessibility.AccessibleContext;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -46,7 +63,19 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Position;
-
+import org.openide.ErrorManager;
+import org.openide.awt.MouseUtils;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeOp;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.ActionPerformer;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /** Explorer view to display items in a list.
 * @author   Ian Formanek, Jan Jancura, Jaroslav Tulach
@@ -502,7 +531,7 @@ public class ListView extends JScrollPane implements Externalizable {
         // (unless user holds CTRL key what means that we should always dive into the context)
         Action a = node.getPreferredAction();
 
-        if ((a != null) && ((modifiers & java.awt.event.InputEvent.CTRL_MASK) == 0)) {
+        if ((a != null) && ((modifiers & InputEvent.CTRL_MASK) == 0)) {
             if (a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction) a).createContextAwareInstance(node.getLookup());
             }
@@ -574,7 +603,7 @@ public class ListView extends JScrollPane implements Externalizable {
         }
 
         if ((popup != null) && (popup.getSubElements().length > 0)) {
-            java.awt.Point p = getViewport().getViewPosition();
+            Point p = getViewport().getViewPosition();
             p.x = xpos - p.x;
             p.y = ypos - p.y;
 
@@ -625,6 +654,7 @@ public class ListView extends JScrollPane implements Externalizable {
                     //close a modal dialog
                     if (ke.getKeyCode() == ke.VK_ESCAPE) {
                         removeSearchField();
+                        ke.consume(); // #44394
 
                         // bugfix #32909, reqest focus when search field is removed
                         NbList.this.requestFocus();
@@ -1057,7 +1087,7 @@ public class ListView extends JScrollPane implements Externalizable {
         public void focusGained(FocusEvent ev) {
             if (csa == null) {
                 try {
-                    ClassLoader l = (ClassLoader)org.openide.util.Lookup.getDefault().lookup (ClassLoader.class);
+                    ClassLoader l = (ClassLoader)Lookup.getDefault().lookup (ClassLoader.class);
                     if (l == null) {
                         l = getClass ().getClassLoader ();
                     }
@@ -1135,7 +1165,7 @@ public class ListView extends JScrollPane implements Externalizable {
             int[] indices = list.getSelectedIndices();
 
             // bugfix #24193, check if the nodes in selection are in the view's root context
-            java.util.List ll = new java.util.ArrayList(indices.length);
+            List ll = new ArrayList(indices.length);
 
             for (int i = 0; i < indices.length; i++) {
                 if (indices[i] < curSize) {
@@ -1160,7 +1190,7 @@ public class ListView extends JScrollPane implements Externalizable {
 
             try {
                 selectionChanged(nodes, manager);
-            } catch (java.beans.PropertyVetoException ex) {
+            } catch (PropertyVetoException ex) {
                 // selection vetoed - restore previous selection
                 updateSelection();
             } finally {
