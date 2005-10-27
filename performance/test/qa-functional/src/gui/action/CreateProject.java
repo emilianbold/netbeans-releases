@@ -96,15 +96,16 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir.createproject");
         wizard_location.txtProjectLocation().clearText();
-        wizard_location.txtProjectLocation().typeText(directory);
+        wizard_location.txtProjectName().clearText();
+        
+        String directory = System.getProperty("xtest.tmpdir.createproject");
         System.err.println("================= Destination directory={"+directory+"}");
+        wizard_location.txtProjectLocation().typeText(directory);
         
         project_name = project_type + "_" + (index++);
-        wizard_location.txtProjectName().clearText();
-        wizard_location.txtProjectName().typeText(project_name);
         System.err.println("================= Project name="+project_name+"}");
+        wizard_location.txtProjectName().typeText(project_name);
     }
     
     public ComponentOperator open(){
