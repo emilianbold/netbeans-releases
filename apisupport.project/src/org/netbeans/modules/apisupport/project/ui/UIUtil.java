@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,12 +113,19 @@ public final class UIUtil {
         public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
         public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
     }
-    
+
+    private static WeakReference iconChooser;
     /**
      * Returns an instance of {@link javax.swing.JFileChooser} permitting
      * selection only a regular <em>icon</em>.
      */
     public static JFileChooser getIconFileChooser() {
+        if (iconChooser != null) {
+            JFileChooser choose = (JFileChooser)iconChooser.get();
+            if (choose != null) {
+                return choose;
+            }
+        } 
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
@@ -139,6 +147,23 @@ public final class UIUtil {
                 return null;
             }
         });
+        iconChooser = new WeakReference(chooser);
+        return chooser;
+    }
+ 
+    /**
+     * tries to set the selected file according to currently existing data.
+     * Will se it only if the String represents a file path that exists.
+     */
+    public static JFileChooser getIconFileChooser(String oldValue) {
+        JFileChooser chooser = getIconFileChooser();
+        String iconText = oldValue.trim();
+        if ( iconText.length() > 0) {
+            File fil = new File(iconText);
+            if (fil.exists()) {
+                chooser.setSelectedFile(fil);
+            }
+        }
         return chooser;
     }
     

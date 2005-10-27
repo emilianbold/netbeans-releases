@@ -382,8 +382,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     // </editor-fold>//GEN-END:initComponents
     
     private void iconButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iconButtonActionPerformed
-        JFileChooser chooser = UIUtil.getIconFileChooser();
-        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
+        JFileChooser chooser = UIUtil.getIconFileChooser(icon.getText());
+        int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             icon.setText(file.getAbsolutePath());
