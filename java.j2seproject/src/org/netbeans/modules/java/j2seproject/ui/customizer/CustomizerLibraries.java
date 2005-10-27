@@ -110,6 +110,13 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
         jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);               
         jComboBoxTarget.setRenderer(uiProperties.PLATFORM_LIST_RENDERER);
+        jComboBoxTarget.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
+        jComboBoxTarget.addItemListener(new java.awt.event.ItemListener(){ 
+            public void itemStateChanged(java.awt.event.ItemEvent e){ 
+                javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
+                combo.setPopupVisible(false); 
+            } 
+        });
         testBroken();
         
         uiProperties.JAVAC_CLASSPATH_MODEL.addListDataListener( this );
