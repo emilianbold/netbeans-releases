@@ -148,7 +148,7 @@ public final class SuiteProperties extends ModuleProperties {
      * pressed properties will not be saved,.
      */
     void storeProperties() throws IOException {
-        ModuleProperties.storePlatform(getHelper(), activePlatform);
+        ModuleProperties.storePlatform(getHelper(), getActivePlatform());
         getBrandingModel().store();
         
         // store submodules if they've changed

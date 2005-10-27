@@ -585,7 +585,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         
         if (isStandalone()) {
-            ModuleProperties.storePlatform(getHelper(), activePlatform);
+            ModuleProperties.storePlatform(getHelper(), getActivePlatform());
         }
     }
     
