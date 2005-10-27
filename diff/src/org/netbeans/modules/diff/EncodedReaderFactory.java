@@ -416,6 +416,7 @@ public class EncodedReaderFactory {
         }
 
         Object encoding = null;
+        file = FileUtil.normalizeFile(file);
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             if (name.endsWith(",java")) {
