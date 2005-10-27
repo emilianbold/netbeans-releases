@@ -129,7 +129,7 @@ public final class FolderObj extends BaseFileObj {
                 FSException.io("EXC_CannotCreateFolder", name, getPath());// NOI18N   
             }
 
-            if (!BaseFileObj.createRecursiveFolder(folder2Create)) {
+            if (!folder2Create.mkdirs()) {
                 FSException.io("EXC_CannotCreateFolder", getNameExt(), getPath());// NOI18N   
             }
 
@@ -141,6 +141,7 @@ public final class FolderObj extends BaseFileObj {
 
         final FileBasedFileSystem localFileBasedFileSystem = getLocalFileSystem();
         if (localFileBasedFileSystem != null) {
+            assert folder2Create.exists() && folder2Create.isDirectory() : folder2Create.getAbsolutePath();
             retVal = (FolderObj) localFileBasedFileSystem.findFileObject(folder2Create);
         }
         assert retVal != null : folder2Create.getAbsolutePath();
@@ -180,6 +181,7 @@ public final class FolderObj extends BaseFileObj {
         final FileBasedFileSystem localFileBasedFileSystem = getLocalFileSystem();
         retVal = null;
         if (localFileBasedFileSystem != null) {
+            assert f.exists() && !f.isDirectory() : f.getAbsolutePath();            
             retVal = (FileObj) localFileBasedFileSystem.findFileObject(f);
         }
 

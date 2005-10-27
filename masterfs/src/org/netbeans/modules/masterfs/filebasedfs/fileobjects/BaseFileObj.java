@@ -234,7 +234,6 @@ public abstract class BaseFileObj extends FileObject {
             final File file = parent.getFile();
             retVal = localFileSystem.getFactory().get(file);
             retVal = (retVal == null) ? localFileSystem.findFileObject(file) : retVal;
-            assert retVal == null || ((BaseFileObj) retVal).getFileName().getFile().equals(this.getFileName().getFile().getParentFile()) ;
         } else {
             retVal = getLocalFileSystem().getRoot();
         }
@@ -257,18 +256,6 @@ public abstract class BaseFileObj extends FileObject {
     final FileBasedFileSystem getLocalFileSystem() {
         return FileBasedFileSystem.getInstance(getFileName().getFile());
     }
-
-    static boolean createRecursiveFolder(File f) {
-        if (f.exists()) return true;
-        if (!f.isAbsolute())
-            f = f.getAbsoluteFile();
-        final String par = f.getParent();
-        if (par == null) return false;
-        if (!BaseFileObj.createRecursiveFolder(new File(par))) return false;
-        f.mkdir();
-        return f.exists();
-    }
-
 
     final void fireFileDataCreatedEvent(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);

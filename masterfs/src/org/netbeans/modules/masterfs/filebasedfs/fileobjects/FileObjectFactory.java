@@ -83,16 +83,19 @@ public final class FileObjectFactory {
 
         
         if (name.isFile()) {
+            assert name.getFile() != null &&  (name.getFile().isFile() || !name.getFile().isDirectory()) : name;
             final FileObj realRoot = new FileObj(file, name);
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
         
         if (!name.isFile() || fInfo.isUNCFolder()) {            
+            assert name.getFile() != null &&  (!name.getFile().isFile() || name.getFile().isDirectory()) : name;
             final FolderObj realRoot = new FolderObj(file, name);
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 
         if (fInfo.isUnixSpecialFile()) {
+            assert name.getFile() != null &&  (name.getFile().isFile() == name.getFile().isDirectory()) : name;            
             final FileObj realRoot = new FileObj(file, name);
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
