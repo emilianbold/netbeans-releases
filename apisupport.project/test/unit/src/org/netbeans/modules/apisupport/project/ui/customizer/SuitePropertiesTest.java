@@ -30,7 +30,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -89,11 +88,8 @@ public class SuitePropertiesTest extends TestBase {
     
     public void testRemoveAllSubModules() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        assert suite1 != null;
         NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
-        assert module1a != null;
         NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
-        assert module1b != null;
         SuiteProperties suite1Props = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
@@ -113,9 +109,7 @@ public class SuitePropertiesTest extends TestBase {
     
     public void testAddModule() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        assert suite1 != null;
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
-        assert module1 != null;
         
         SubprojectProvider spp = getSubProjectProvider(suite1);
         SuiteProperties suiteProps = getSuiteProperties(suite1);
@@ -124,9 +118,7 @@ public class SuitePropertiesTest extends TestBase {
         assertEquals("one module suite component", 1, model.getSize());
         
         NbModuleProject module2ToAdd = TestBase.generateStandaloneModule(getWorkDir(), "module2");
-        assert module2ToAdd != null;
         NbModuleProject module3ToAdd = TestBase.generateStandaloneModule(getWorkDir(), "module3");
-        assert module3ToAdd != null;
         SuiteProvider suiteProvider = (SuiteProvider) module2ToAdd.getLookup().lookup(SuiteProvider.class);
         assertNull("module2ToAdd is standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
         model.addModule(module2ToAdd);
@@ -143,11 +135,8 @@ public class SuitePropertiesTest extends TestBase {
     
     public void testRemoveOneSubModule() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        assert suite1 != null;
         NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
-        assert module1a != null;
         NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
-        assert module1b != null;
         SuiteProperties suite1Props = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
@@ -180,18 +169,12 @@ public class SuitePropertiesTest extends TestBase {
     
     public void testMoveSubModuleBetweenSuites() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        assert suite1 != null;
         NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
-        assert module1a != null;
         NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
-        assert module1b != null;
         NbModuleProject module1c = TestBase.generateSuiteComponent(suite1, "module1c");
-        assert module1c != null;
         
         SuiteProject suite2 = TestBase.generateSuite(getWorkDir(), "suite2");
-        assert suite2 != null;
         NbModuleProject module2a = TestBase.generateSuiteComponent(suite2, "module2a");
-        assert module2a != null;
         
         // simulate addition of module2a to the suite1
         SuiteProperties suite1Props = getSuiteProperties(suite1);
@@ -219,13 +202,9 @@ public class SuitePropertiesTest extends TestBase {
     
     public void testRemovingSecondModuleFromThree_63307() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        assert suite1 != null;
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
-        assert module1 != null;
         NbModuleProject module2 = TestBase.generateSuiteComponent(suite1, "module2");
-        assert module2 != null;
         NbModuleProject module3 = TestBase.generateSuiteComponent(suite1, "module3");
-        assert module3 != null;
         
         SubprojectProvider spp = getSubProjectProvider(suite1);
         SuiteProperties suiteProps = getSuiteProperties(suite1);
@@ -263,29 +242,29 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testCustomPropertiesReferences_61318() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        assert suite1 != null;
+        final SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
-        assert module1 != null;
         NbModuleProject module2 = TestBase.generateSuiteComponent(suite1, "module2");
-        assert module2 != null;
         NbModuleProject module3 = TestBase.generateSuiteComponent(suite1, "module3");
-        assert module3 != null;
         
         SubprojectProvider spp = getSubProjectProvider(suite1);
-        SuiteProperties suiteProps = getSuiteProperties(suite1);
+        final SuiteProperties suiteProps = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suiteProps.getModulesListModel();
         assertEquals("three module suite components", 3, model.getSize());
         
-        // choose another way to store submodules
-        EditableProperties edProps = suiteProps.getProjectProperties();
-        edProps.setProperty("moddir", ".");
-        edProps.setProperty("modules", "${moddir}/module1:${moddir}/module2:${moddir}/module3");
-        Util.storeProperties(
-                suite1.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH),
-                edProps);
-        
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                // choose another way to store submodules
+                EditableProperties edProps = suiteProps.getProjectProperties();
+                edProps.setProperty("moddir", ".");
+                edProps.setProperty("modules", "${moddir}/module1:${moddir}/module2:${moddir}/module3");
+                Util.storeProperties(
+                        suite1.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+                        edProps);
+                return null;
+            }
+        });
         
         suiteProps.refresh(spp.getSubprojects());
         model = suiteProps.getModulesListModel(); // reload
@@ -298,23 +277,18 @@ public class SuitePropertiesTest extends TestBase {
         assertEquals("two module suite components", 2, model.getSize());
     }
     
-    private void saveProperties(final SuiteProperties props) {
+    private void saveProperties(final SuiteProperties props) throws IOException {
         try {
             // Store properties
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     props.storeProperties();
-                    return Boolean.TRUE;
+                    return null;
                 }
             });
-            // and save the project
-            if (result == Boolean.TRUE) {
-                ProjectManager.getDefault().saveProject(props.getProject());
-            }
+            ProjectManager.getDefault().saveProject(props.getProject());
         } catch (MutexException e) {
-            ErrorManager.getDefault().notify((IOException)e.getException());
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            throw (IOException) e.getException();
         }
     }
     

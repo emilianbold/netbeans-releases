@@ -41,8 +41,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -174,7 +172,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public void actionPerformed(ActionEvent evt) {
-            final Project project = UIUtil.chooseSuiteComponent(
+            Project project = UIUtil.chooseSuiteComponent(
                     WindowManager.getDefault().getMainWindow(),
                     ProjectUtils.getInformation(suite).getDisplayName());
             if (project != null) {
@@ -182,18 +180,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 Set/*<Project>*/ subModules = spp.getSubprojects();
                 if (!subModules.contains(project)) {
                     try {
-                        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                            public Object run() throws IOException {
-                                SuiteUtils.addModule(suite, (NbModuleProject) project);
-                                return Boolean.TRUE;
-                            }
-                        });
-                        // and save the project
-                        if (result == Boolean.TRUE) {
-                            ProjectManager.getDefault().saveProject(suite);
-                        }
-                    } catch (MutexException e) {
-                        ErrorManager.getDefault().notify((IOException)e.getException());
+                        SuiteUtils.addModule(suite, (NbModuleProject) project);
+                        ProjectManager.getDefault().saveProject(suite);
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
@@ -246,22 +234,12 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         protected void performAction(Node[] activatedNodes) {
             for (int i = 0; i < activatedNodes.length; i++) {
-                final NbModuleProject suiteComponent =
+                NbModuleProject suiteComponent =
                         (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
                 assert suiteComponent != null : "NbModuleProject in lookup"; // NOI18N
                 try {
-                    Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                        public Object run() throws IOException {
-                            SuiteUtils.removeModuleFromSuite(suiteComponent);
-                            return Boolean.TRUE;
-                        }
-                    });
-                    // and save the project
-                    if (result == Boolean.TRUE) {
-                        ProjectManager.getDefault().saveProject(suiteComponent);
-                    }
-                } catch (MutexException e) {
-                    ErrorManager.getDefault().notify((IOException)e.getException());
+                    SuiteUtils.removeModuleFromSuite(suiteComponent);
+                    ProjectManager.getDefault().saveProject(suiteComponent);
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
