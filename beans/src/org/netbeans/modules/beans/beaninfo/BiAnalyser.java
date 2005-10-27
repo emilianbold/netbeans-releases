@@ -401,8 +401,8 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                         DialogDisplayer.getDefault().notify( nd );
                         return;
                     }
+                    bis.createFromTemplate(iconBlockRequired());
                 }
-                bis.createFromTemplate(iconBlockRequired());
             }
         }
         else {
