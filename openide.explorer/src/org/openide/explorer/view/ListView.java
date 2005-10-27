@@ -871,7 +871,7 @@ public class ListView extends JScrollPane implements Externalizable {
             if ((searchpanel != null) && searchpanel.isDisplayable()) {
                 Rectangle visibleRect = getVisibleRect();
                 int width = Math.min(
-                        getPreferredSize().width - (SEARCH_FIELD_SPACE * 2),
+                        visibleRect.width - (SEARCH_FIELD_SPACE * 2),
                         SEARCH_FIELD_PREFERRED_SIZE - SEARCH_FIELD_SPACE
                     );
 
@@ -880,7 +880,7 @@ public class ListView extends JScrollPane implements Externalizable {
                     visibleRect.y + SEARCH_FIELD_SPACE, Math.min(visibleRect.width, width) - SEARCH_FIELD_SPACE,
                     heightOfTextField
                 );
-                System.err.println("Laid out search field: " + searchpanel.getBounds());
+                //System.err.println("Laid out search field: " + searchpanel.getBounds());
             }
         }
 
