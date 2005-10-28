@@ -49,6 +49,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.MasterPasswordInputDialog;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -191,6 +194,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     }
 
     public ProgressObject startDeploymentManager() {
+
+
         ct = CommandType.START;
         pes.clearProgressListener();
 
@@ -247,7 +252,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	if (null == irf || !irf.exists()) {
 	    return;
 	}
-	String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+	String installRoot = irf.getAbsolutePath(); 
 	
 	domain = dmProps.getDomainName();
 	domainDir = dmProps.getLocation();
@@ -270,7 +275,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	    }
 	    String arr[] = { asadminCmd, " "};
 	    
-	    errorCode = exec(arr);
+	    errorCode = exec(arr, CMD_STOP);
 	    if (errorCode != 0) {
 		pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
 			ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStoppingServer"), StateType.FAILED));
@@ -307,7 +312,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	    }
 	    
 	    
-	    errorCode = exec(arr);
+	    errorCode = exec(arr, CMD_START);
 	    viewLogFile();
 	    if (errorCode != 0) {
 		
@@ -375,9 +380,16 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     }
     
 
-    private int exec(String[] arr) {
+    private int exec(String[] arr, int type /*can be CMD_START or CMD_STOP*/) {
 
-        int exitValue = -1;        
+        int exitValue = -1;
+        String mpw=null;
+        if (type==CMD_START){// we need a master password in order to start.
+            mpw = readMasterPasswordFile();
+            if (mpw==null){
+                return -2;
+            }
+        }
         try {
             Process process = Runtime.getRuntime().exec(arr);
             String cmdName="";
@@ -386,7 +398,10 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             }
 //            System.out.println("exec cmdName="+cmdName);
             // See is there is input that needs to be sent to the process
-            sendInputToProcessInput(System.in, process);
+            if (type==CMD_START){
+                sendInputToProcessInput(System.in, process,mpw);
+                
+            }
             
             
             // start stream flusher to push output to parent streams and log if they exist
@@ -403,9 +418,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 
             if (shouldStopDeploymentManagerSilently==true){
                 //no need to wait at all, we are closin the ide...
-          /*      pes.fireHandleProgressEvent(null,
-                    new Status(ActionType.EXECUTE,
-                    ct, cmdName,StateType.RUNNING));  */
+
                 shouldStopDeploymentManagerSilently =false;
                 return 0;
             }
@@ -418,7 +431,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 } catch (Exception e) {
                 } 
                 if (hasCommandSucceeded())
-                return 0;
+                    return 0;
                 else return -1;
             }
             else
@@ -437,22 +450,13 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     return exitValue;
                 }
                 if (i==0){
-                    pes.fireHandleProgressEvent(null,
-                    new Status(ActionType.EXECUTE,
+                    pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
                     ct, cmdName,StateType.RUNNING));
                 }
-//                else{//emit the message only cmdName once
-//                    pes.fireHandleProgressEvent(null,
-//                    new Status(ActionType.EXECUTE,
-//                    ct, "",StateType.RUNNING));                    
-//                }
 
 
                 try {
-                    if ((cmd == CMD_STOP)||(i>3))//faster to stop than to start!
                         Thread.sleep(1000);
-                    else
-                        Thread.sleep(6000);
                 } catch (Exception e) {
                 } 
             } 
@@ -468,7 +472,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 
         
 
-    private void sendInputToProcessInput(InputStream in, Process subProcess) {
+    private void sendInputToProcessInput(InputStream in, Process subProcess, String masterPassword) {
         // return if no input
         if (in == null || subProcess == null) return;
         
@@ -489,7 +493,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 //////////            }
             out.println(((SunDeploymentManagerInterface)dm).getUserName());
             out.println(((SunDeploymentManagerInterface)dm).getPassword());
-            out.println(readMasterPasswordFile());
+            out.println(masterPassword);
             out.flush();
         } catch (Exception e) {
          //   getLogger().log(Level.INFO,"WRITE TO INPUT ERROR", e);
@@ -504,6 +508,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         return MASTER_PASSWORD_ALIAS.toCharArray();
     }
     
+    /* can return null if no mpw is known or entered by user
+     **/
     protected String readMasterPasswordFile() {
         String mpw= "changeit";//NOI18N
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
@@ -534,7 +540,14 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 return mpw;
             }
         } else {
-            //Return null if the password file does not exist.
+            MasterPasswordInputDialog d=new MasterPasswordInputDialog();
+            if (DialogDisplayer.getDefault().notify(d) ==NotifyDescriptor.OK_OPTION){
+                
+                mpw = d.getInputText();
+            } else{
+                return null;
+                
+            }
             return mpw;
         }
     }  
