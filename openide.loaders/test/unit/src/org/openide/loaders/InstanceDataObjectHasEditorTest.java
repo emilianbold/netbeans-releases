@@ -47,7 +47,9 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
     
     protected void setUp () throws java.lang.Exception {
         clearWorkDir ();
-        
+
+        // initialize modules
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
     public void testSettingsFileOnSFSShouldHaveEditor () throws Exception {
