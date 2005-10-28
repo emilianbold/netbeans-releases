@@ -216,11 +216,21 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             ErrorManager.getDefault().notify(ex);
         }
 
+        if(!ensureConfigurationLoaded()) {
+            // !PW FIXME Need to properly communicate this to the user.  Might be bad news
+            // depending on why this happened and what they do next.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("DConfigBean storage failed initialization for " + configFiles[0].getName()));
+            // Deliberate NOT throwing an exception here... not sure what the right
+            // course of action is, or if this state can even happen.
+        }
+        
         if(keepUpdated) {
-            // !PW Stepan thinks we might not need this anymore but I'm not so sure.
-            // It was used in j2eeserver to enable autosaving of changes to the server
-            // specific deployment descriptors when a change might have been made indirectly
-            // by the user (for example, a wizard updating web.xml or ejb-jar.xml).
+            // This listener listens to the lifecycle and changes affecting the 
+            // standard deployment descriptors (web.xml, ejb-jar.xml, application.xml,
+            // and webservices.xml for now).  In particular it is used to detect
+            // the creation and deletion of webservices.xml so that we can properly
+            // add and remove the WebServices root DConfigBean that is bound to 
+            // the DDBean at the root of webservices.xml.
             ddFilesListener = new DDFilesListener(this, provider);
         }
     }
@@ -1042,9 +1052,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     /** Loads and initializes the DConfigBean tree for this DeploymentConfiguration
      *  instance if it has not already been done yet.
      */
-    public void ensureConfigurationLoaded() {
+    public boolean ensureConfigurationLoaded() {
         // Retrieve storage, forcing it to be created if necessary, and initialized.
-        getStorage();
+        boolean result = (getStorage() != null);
+        return result;
     }
 
     /** Retrieves the ConfigurationStorage instance from the primary DataObject
@@ -1545,6 +1556,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             if(null != rootToRestore) {*/
         pending.add(rootToRestore);
         
+        
         int index = 0;
         while (index < pending.size()) {
             Base current = (Base) pending.get(index);
@@ -1591,7 +1603,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         int len = getValidatedNumberOfFiles(configFiles);
         for (int i = 0; i < len; i++) {
             if(configFiles[i].exists()) {
-            addFileToPlanForModule(configFiles[i], dObj, storage);
+                addFileToPlanForModule(configFiles[i], dObj, storage);
                 loadGraph = true;
             }
         }
