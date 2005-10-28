@@ -55,6 +55,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     private JCheckBox cbGenerateMnemonics = new JCheckBox ();
 
     private boolean changed = false;
+    private boolean listen = false;
 
     public FormEditorCustomizer () {
         ButtonGroup group = new ButtonGroup ();
@@ -219,6 +220,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     // other methods ...........................................................
     
     void update () {
+        listen = false;
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
         cbFold.setSelected (options.getFoldGeneratedCode ());
@@ -240,6 +242,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         tfVariableName.setText (options.getEventVariableName ());
         sGridX.setValue (new Integer (options.getGridX ()));
         sGridY.setValue (new Integer (options.getGridY ()));
+        listen = true;
         changed = false;
     }
     
@@ -268,6 +271,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     }
     
     void cancel () {
+        changed = false;
     }
     
     boolean dataValid () {
@@ -279,10 +283,12 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     }
     
     public void actionPerformed (ActionEvent e) {
-        changed = true;
+        if (listen)
+            changed = true;
     }
     
     public void stateChanged (ChangeEvent e) {
-        changed = true;
+        if (listen)
+            changed = true;
     }
 }

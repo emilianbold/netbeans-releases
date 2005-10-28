@@ -81,6 +81,7 @@ ActionListener {
     private NbClassPath     classpath;
     private Properties      properties;
     private boolean         changed = false;
+    private boolean         listen = false;
     private File            originalAntHome;
     
     
@@ -181,6 +182,7 @@ ActionListener {
     }
     
     void update () {
+        listen = false;
         AntSettings settings = AntSettings.getDefault ();
         classpath = settings.getExtraClasspath ();
         properties = settings.getProperties ();
@@ -194,6 +196,7 @@ ActionListener {
         lAntVersion.setText ("(" + settings.getAntVersion () + ")");
         changed = false;
         initialized = true;
+        listen = true;
     }
     
     private boolean initialized = false;
@@ -242,6 +245,7 @@ ActionListener {
     }
     
     public void actionPerformed (ActionEvent e) {
+        if (!listen) return;
         Object o = e.getSource ();
         if (o == cbAlwaysShowOutput) {
             changed = true;
