@@ -263,24 +263,32 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     }
     
     protected ConfigurationStorage getStorage() {
+        ConfigurationStorage result = null;
+        
         try {
             J2eeModuleProvider provider = getProvider();
             getPrimaryFile().refresh(); //check for external changes
-            if (storage == null) {
-                storage = new ConfigurationStorage(provider, getDeploymentConfiguration());
-                storage.setSaver(this);
+            synchronized (this) {
+                if (storage == null) {
+                    storage = new ConfigurationStorage(provider, getDeploymentConfiguration());
+                    storage.setSaver(this);
+                }
+                result = storage;
             }
         } catch (Exception ex) {
             ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getLocalizedMessage());
         }
-        return storage;
+        return result;
     }
     
-    public synchronized void resetStorage() {
-        if (storage != null) {
-            storage.cleanup();
-            storage = null;
+    public void resetStorage() {
+        synchronized (this) {
+            if (storage != null) {
+                storage.cleanup();
+                storage = null;
+            }
         }
+        
         if (openTc != null && openTc.isOpened()) {
             openTc.close();
         }
