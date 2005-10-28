@@ -145,10 +145,24 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
         log ("Folder's index: " + Arrays.asList (fromFolder.getNodes ()));
         
         for (int i = 0; i < arr.length; i++) {
-            fromNode.indexOf (arr [i]);
-            assertEquals (i + "th iteration - Node " + arr [i] + " has as same position in Node's Index [" + Arrays.asList (fromNode.getNodes ()) + "]" +
-                    "as in folder's Index [" + Arrays.asList (fromFolder.getNodes ()) + "].",
-                    fromFolder.indexOf (arr [i]), fromNode.indexOf (arr [i]));
+            log("Computing index for [" + i + "] which is node " + arr[i]);
+            int index = fromNode.indexOf (arr [i]);
+            log("Index computed to be " + index);
+            
+            log("Computing index from the folder [" + i + "]: " + arr[i]);
+            int folderIndex = fromFolder.indexOf (arr [i]);
+            log("Folder index is to be " + folderIndex);
+            
+            if (folderIndex != index) {
+                fail(
+                    i + "th iteration - Node " + arr [i] + 
+                    " has as same position in Node's Index [" + 
+                    Arrays.asList (fromNode.getNodes ()) + "]" +
+                    "as in folder's Index [" + 
+                    Arrays.asList (fromFolder.getNodes ()) + "]. folder: " + 
+                    folderIndex + " node: " + index
+                );
+            }
         }
     }
     
