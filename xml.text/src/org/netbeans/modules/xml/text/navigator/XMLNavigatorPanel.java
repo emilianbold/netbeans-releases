@@ -31,6 +31,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.UserQuestionException;
 
 /** An implementation of NavigatorPanel for XML navigator.
  * 
@@ -93,6 +94,9 @@ public class XMLNavigatorPanel implements NavigatorPanel {
                 //create UI
                 if(bdoc != null) navigator.navigate(bdoc);
                 
+            }catch(UserQuestionException uqe) {
+                //do not open a question dialog when the document is just loaded into the navigator
+                navigator.showDocumentTooLarge();
             }catch(IOException e) {
                 ErrorManager.getDefault().notify(e);
             }

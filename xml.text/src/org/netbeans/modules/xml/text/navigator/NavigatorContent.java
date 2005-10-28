@@ -81,16 +81,18 @@ public class NavigatorContent extends JPanel   {
     private JPanel active = null;
     private final JPanel emptyPanel;
     
+    private JLabel msgLabel;
+    
     public NavigatorContent() {
         setLayout(new BorderLayout());
         //init empty panel
         emptyPanel = new JPanel();
         emptyPanel.setBackground(Color.WHITE);
         emptyPanel.setLayout(new BorderLayout());
-        JLabel waitLabel = new JLabel(NbBundle.getMessage(NavigatorContent.class, "LBL_Wait"));
-        waitLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        waitLabel.setForeground(Color.GRAY);
-        emptyPanel.add(waitLabel, BorderLayout.CENTER);
+        msgLabel = new JLabel();
+        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        msgLabel.setForeground(Color.GRAY);
+        emptyPanel.add(msgLabel, BorderLayout.CENTER);
     }
     
     public void navigate(final BaseDocument bdoc) {
@@ -114,6 +116,13 @@ public class NavigatorContent extends JPanel   {
         });
     }
     
+    public void showDocumentTooLarge() {
+        removeAll();
+        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_TooLarge"));
+        add(emptyPanel, BorderLayout.CENTER);
+        repaint();
+    }
+    
     private void showUI(final JPanel ui) {
         //generate the component on background
         SwingUtilities.invokeLater(new Runnable() {
@@ -126,6 +135,7 @@ public class NavigatorContent extends JPanel   {
     
     private void showWaitPanel() {
         removeAll();
+        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_Wait"));
         add(emptyPanel, BorderLayout.CENTER);
         repaint();
     }
