@@ -42,6 +42,7 @@ import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -54,6 +55,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
@@ -154,6 +157,12 @@ public final class LoaderPoolNode extends AbstractNode {
             updatingBatchUsed = false;
             resort();
         }
+    }
+    
+    /** Allows tests to wait while processing of events is finished.
+     */
+    public static void waitFinished() {
+        getNbLoaderPool().fireTask.waitFinished();
     }
 
     /** Adds new loader when previous and following are specified.
@@ -824,10 +833,19 @@ public final class LoaderPoolNode extends AbstractNode {
     * Delegates its work to the outer class LoaderPoolNode.
     */
     public static final class NbLoaderPool extends DataLoaderPool
-        implements PropertyChangeListener, Runnable {
+    implements PropertyChangeListener, Runnable, LookupListener {
         private static final long serialVersionUID =-8488524097175567566L;
 
-        private transient RequestProcessor.Task fireTask = RequestProcessor.getDefault().create(this);
+        private transient RequestProcessor.Task fireTask;
+
+        private transient Lookup.Result mimeResolvers;
+        private static RequestProcessor rp = new RequestProcessor("Refresh Loader Pool"); // NOI18N
+        
+        public NbLoaderPool() {
+            fireTask = rp.create(this);
+            mimeResolvers = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
+            mimeResolvers.addLookupListener(this);            
+        }
 
         /** Enumerates all loaders. Loaders are taken from children
         * structure of LoaderPoolNode. */
@@ -870,13 +888,15 @@ public final class LoaderPoolNode extends AbstractNode {
         * @param che change event
         */
         void superFireChangeEvent () {
+            err.log("Change in loader pool scheduled"); // NOI18N
             fireTask.schedule (1000);
         }
 
         /** Called from the request task */
         public void run () {
+            err.log("going to fire change in loaders"); // NOI18N
             super.fireChangeEvent(new ChangeEvent (this));
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("change event fired");
+            err.log ("change event fired"); // NOI18N
         }
 
 
@@ -897,6 +917,10 @@ public final class LoaderPoolNode extends AbstractNode {
         */
         private Object readResolve () {
             return getNbLoaderPool ();
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            superFireChangeEvent();
         }
     } // end of NbLoaderPool
 

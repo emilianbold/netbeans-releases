@@ -78,7 +78,7 @@ public abstract class ManifestSection {
     
     /** Get the classloader used to load this section. */
     protected final ClassLoader getClassLoader() {
-        return module.getClassLoader();
+        return module != null ? module.getClassLoader() : getClass().getClassLoader();
     }
     
     /** Does this section represent a default instance?
