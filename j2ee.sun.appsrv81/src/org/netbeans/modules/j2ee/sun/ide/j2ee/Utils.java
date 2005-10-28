@@ -18,6 +18,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
  */
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.text.MessageFormat;
 import java.util.Properties;
@@ -131,7 +132,7 @@ public class Utils {
                 File[] resources = null;
                 
                 if(resourceDir != null){
-                    resources = resourceDir.listFiles();
+                    resources = resourceDir.listFiles(new ResourceFileFilter());
                 }
                 
                 File resource = null;
@@ -189,4 +190,11 @@ public class Utils {
         System.out.println(bundle.getString("Msg_ProjResRegisterFinish")); //NOI18N
     }
   
+
+    public static class ResourceFileFilter implements FileFilter {
+        public boolean accept(File f) {
+            return f.isDirectory() || f.getName().toLowerCase().endsWith(".sun-resource"); //NOI18N
+        }
+    }
+
 }
