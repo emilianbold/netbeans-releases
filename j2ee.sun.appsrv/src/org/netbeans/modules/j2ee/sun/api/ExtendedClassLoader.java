@@ -43,7 +43,7 @@ public class ExtendedClassLoader extends URLClassLoader {
         
     public void addURL(File f) throws MalformedURLException, RuntimeException {
             if (f.isFile()){
-                addURL(f.toURL());
+                addURL(f.toURI().toURL());
             }
     }
     
