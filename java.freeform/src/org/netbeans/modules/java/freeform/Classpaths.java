@@ -448,8 +448,20 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                 Specification spec = new Specification("j2se", new SpecificationVersion(level)); // NOI18N
                 JavaPlatform[] matchingPlatforms = jpm.getPlatforms(null, spec);
                 if (matchingPlatforms.length > 0) {
-                    // Pick one.
+                    // Pick one. Prefer one with sources if there is a choice, else with Javadoc.
                     platform = matchingPlatforms[0];
+                    for (int i = 0; i < matchingPlatforms.length; i++) {
+                        if (!matchingPlatforms[i].getJavadocFolders().isEmpty()) {
+                            platform = matchingPlatforms[i];
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < matchingPlatforms.length; i++) {
+                        if (matchingPlatforms[i].getSourceFolders().getRoots().length > 0) {
+                            platform = matchingPlatforms[i];
+                            break;
+                        }
+                    }
                 }
                 break;
             }

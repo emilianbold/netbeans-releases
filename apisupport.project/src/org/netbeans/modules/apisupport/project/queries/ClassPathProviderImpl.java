@@ -203,7 +203,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         Specification spec = new Specification("j2se", new SpecificationVersion(specificationVersion)); // NOI18N
         JavaPlatform[] matchingPlatforms = jpm.getPlatforms(null, spec);
         if (matchingPlatforms.length > 0) {
-            // Pick one.
+            // Pick one. Prefer one with sources if there is a choice.
+            for (int i = 0; i < matchingPlatforms.length; i++) {
+                if (matchingPlatforms[i].getSourceFolders().getRoots().length > 0) {
+                    return matchingPlatforms[i];
+                }
+            }
+            // Javadoc better than nothing, too.
+            for (int i = 0; i < matchingPlatforms.length; i++) {
+                if (!matchingPlatforms[i].getJavadocFolders().isEmpty()) {
+                    return matchingPlatforms[i];
+                }
+            }
+            // OK, binaries only; just pick any of them.
             return matchingPlatforms[0];
         }
         return jpm.getDefaultPlatform();
