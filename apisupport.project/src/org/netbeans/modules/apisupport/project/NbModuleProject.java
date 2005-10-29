@@ -457,7 +457,6 @@ public final class NbModuleProject implements Project {
     
     /**
      * Get an Ant location for the root of nbjunit.jar.
-     * Assume it is installed in the IDE.
      */
     private String findNbJunitJar(PropertyEvaluator eval) {
         String path = "testtools/modules/org-netbeans-modules-nbjunit.jar"; // NOI18N
@@ -465,21 +464,32 @@ public final class NbModuleProject implements Project {
         if (f != null) {
             return f.getAbsolutePath();
         } else {
-            // External module with no ref to nb.org sources.
-            return "${netbeans.dest.dir}/" + path; // NOI18N
+            f = InstalledFileLocator.getDefault().locate("modules/ext/nbjunit.jar", "org.netbeans.modules.nbjunit", false); // NOI18N
+            if (f != null) {
+                // #64120: downloaded from AU.
+                return f.getAbsolutePath();
+            } else {
+                // External module with no ref to nb.org sources.
+                return "${netbeans.dest.dir}/" + path; // NOI18N
+            }
         }
     }
     
     /**
      * Get an Ant location for the root of insanelib.jar.
-     * Currently will only work for netbeans.org modules.
      */
     private String findInsaneLibJar(PropertyEvaluator eval) {
         File f = getNbrootFile("performance/insanelib/dist/insanelib.jar", eval); // NOI18N
         if (f != null) {
             return f.getAbsolutePath();
         } else {
-            return null;
+            f = InstalledFileLocator.getDefault().locate("modules/ext/insanelib.jar", "org.netbeans.modules.nbjunit", false); // NOI18N
+            if (f != null) {
+                // #64120: downloaded from AU.
+                return f.getAbsolutePath();
+            } else {
+                return null;
+            }
         }
     }
     
