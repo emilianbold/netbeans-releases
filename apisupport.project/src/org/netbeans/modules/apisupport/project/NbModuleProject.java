@@ -315,7 +315,7 @@ public final class NbModuleProject implements Project {
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
         }
         // Register *.dir for nb.org modules. There is no equivalent for external modules.
-        Iterator it = ml.getAllEntries().iterator();
+        Iterator it = ml.getAllEntriesSoft().iterator();
         while (it.hasNext()) {
             ModuleEntry e = (ModuleEntry) it.next();
             String nborgPath = e.getNetBeansOrgPath();

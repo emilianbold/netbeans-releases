@@ -467,7 +467,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 SortedSet/*<String>*/ provTokens = new TreeSet();
                 provTokens.addAll(Arrays.asList(IDE_TOKENS));
-                for (Iterator it = getModuleList().getAllEntries().iterator(); it.hasNext(); ) {
+                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     provTokens.addAll(Arrays.asList(me.getProvidedTokens()));
                 }
@@ -680,7 +680,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 SortedSet/*<String>*/ allCategories = new TreeSet(Collator.getInstance());
                 SortedSet/*<ModuleDependency>*/ allDependencies = new TreeSet();
-                for (Iterator it = getModuleList().getAllEntries().iterator(); it.hasNext(); ) {
+                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     if (!me.getCodeNameBase().equals(getCodeNameBase())) {
                         allDependencies.add(new ModuleDependency(me));

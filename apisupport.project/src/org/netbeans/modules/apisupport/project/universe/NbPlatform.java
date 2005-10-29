@@ -602,11 +602,23 @@ public final class NbPlatform implements Comparable {
         Iterator it = listsForSources.iterator();
         while (it.hasNext()) {
             ModuleList l = (ModuleList) it.next();
-            Set/*<ModuleEntry>*/ entries = l.getAllEntries();
+            Set/*<ModuleEntry>*/ entries = l.getAllEntriesSoft();
             Iterator it2 = entries.iterator();
             while (it2.hasNext()) {
                 ModuleEntry entry = (ModuleEntry) it2.next();
                 // XXX should be more strict (e.g. compare also clusters)
+                if (!entry.getJarLocation().getName().equals(jar.getName())) {
+                    continue;
+                }
+                File src = entry.getSourceLocation();
+                if (src != null && src.isDirectory()) {
+                    return src;
+                }
+            }
+            entries = l.getAllEntries();
+            it2 = entries.iterator();
+            while (it2.hasNext()) {
+                ModuleEntry entry = (ModuleEntry) it2.next();
                 if (!entry.getJarLocation().getName().equals(jar.getName())) {
                     continue;
                 }
@@ -627,7 +639,7 @@ public final class NbPlatform implements Comparable {
     public ModuleEntry[] getModules() {
         try {
             SortedSet/*<ModuleEntry>*/ set = new TreeSet(
-                    ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntries());
+                    ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft());
             ModuleEntry[] entries = new ModuleEntry[set.size()];
             set.toArray(entries);
             return entries;

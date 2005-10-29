@@ -638,7 +638,7 @@ public class LayerUtils {
         assert myself != null : project;
         Set/*<NbModuleProject>*/ projects = new HashSet();
         projects.add(project);
-        Iterator it = list.getAllEntries().iterator();
+        Iterator it = list.getAllEntriesSoft().iterator();
         while (it.hasNext()) {
             ModuleEntry other = (ModuleEntry) it.next();
             if (other.getClusterDirectory().getName().equals("extra")) { // NOI18N

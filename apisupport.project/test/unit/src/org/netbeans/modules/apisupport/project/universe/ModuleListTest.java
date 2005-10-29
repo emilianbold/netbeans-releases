@@ -93,8 +93,9 @@ public class ModuleListTest extends TestBase {
     public void testNetBeansOrgEntries() throws Exception {
         long start = System.currentTimeMillis();
         ModuleList ml = ModuleList.getModuleList(file("ant/browsetask")); // should be arbitrary
-        // XXX might be better to have a test/perf/src/.../ModuleListPerfTest.java extending org.netbeans.performance.Benchmark
         System.err.println("Time to scan netbeans.org sources: " + (System.currentTimeMillis() - start) + "msec");
+        System.err.println("Directories traversed: " + ModuleList.directoriesChecked);
+        System.err.println("XML files parsed: " + ModuleList.xmlFilesParsed + " in " + ModuleList.timeSpentInXmlParsing + "msec");
         ModuleEntry e = ml.getEntry("org.netbeans.modules.java.project");
         assertNotNull("have org.netbeans.modules.java.project", e);
         assertEquals("right jarLocation", file("nbbuild/netbeans/ide6/modules/org-netbeans-modules-java-project.jar"), e.getJarLocation());
@@ -149,6 +150,11 @@ public class ModuleListTest extends TestBase {
         assertNotNull(e);
         assertNotNull(e.getProvidedTokens());
         assertTrue("There are some provided tokens", e.getProvidedTokens().length > 0);
+        // XXX test that getAllEntries() also includes nonstandard modules, and so does getKnownEntries() if necessary
+        // Test a nonstandard module:
+        e = ml.getEntry("org.netbeans.modules.looks");
+        assertNotNull(e);
+        assertEquals("right path", "openide/looks", e.getNetBeansOrgPath());
     }
     
     public void testExternalEntries() throws Exception {
