@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -45,7 +44,9 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 
 import org.xml.sax.SAXException;
 
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,6 +57,8 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -91,9 +94,6 @@ import org.netbeans.modules.j2ee.sun.share.config.StandardDDImpl;
  */
 public class SunONEDeploymentConfiguration implements Constants, SunDeploymentConfigurationInterface {
     
-    private static final ResourceBundle beanBundle = ResourceBundle.getBundle(
-        "org.netbeans.modules.j2ee.sun.share.configbean.Bundle");	// NOI18N
-
     // !PW FIXME workaround for linking ConfigDataObjects w/ the correct Deployment
     // Configuration object.  Key is primary File for configuration.
     private static WeakHashMap configurationMap = new WeakHashMap();
@@ -243,12 +243,33 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         }
     }
     
-    public void ensureResourceDefined(DDBean ddBean) {
-        if(resourceDir == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Resource directory field owned by deployment configuration is null!!!"));
-            return;
+    public void updateResourceDir(File resourceDir) {
+        this.resourceDir = resourceDir;
+    }
+    
+    private void postResourceError(String resourceMsg) {
+        // Unable to create JDBC data source for CMP.
+        // JNDI name of CMP resource field not set.
+        String folderMsg;
+        String projectName = getProjectName(configFiles[0]);
+        if(projectName != null) {
+            folderMsg = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_NoResourceFolderForProject", projectName); // NOI18N
+        } else {
+            folderMsg = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_NoResourceFolderUnknown"); // NOI18N
         }
-        
+
+        final String text = folderMsg + " " + resourceMsg;
+        resourceProcessor.post(new Runnable() {
+            public void run() {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(text, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
+            }
+        });
+    }
+    
+    public void ensureResourceDefined(DDBean ddBean) {
         // Determine type of ddbean we have so we know what resource to create.
         String xpath = ddBean.getXpath();
         int finalSlashIndex = xpath.lastIndexOf('/') + 1;
@@ -271,15 +292,23 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 String ejbName = getField(ddBean, "ejb-name"); //NOI18N
                 String messageDestinationName = getField(ddBean, "message-destination-link"); //NOI18N
                 String messageDestinationType = getField(ddBean, "message-destination-type"); //NOI18N
+
+                if(resourceDir == null) {
+                    // Unable to create JMS resource for message driven bean.
+                    postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                            "ERR_NoJMSResource", theEjbDCB.getEjbName()));
+                    // fall through and continue creating the remaining configuration elements though.
+                } else {
+                    rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
+                }
                 
-                rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
                 MdbConnectionFactory mcf = StorageBeanFactory.getDefault().createMdbConnectionFactory();
                 String connectionFactoryJndiName= "jms/" + messageDestinationName + "Factory"; //NOI18N
                 mcf.setJndiName(connectionFactoryJndiName);
                 try {
                     ((MDEjb) theEjbDCB).setMdbConnectionFactory(mcf);
                 } catch (PropertyVetoException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
                 
                 MessageDestination md = StorageBeanFactory.getDefault().createMessageDestination();
@@ -289,7 +318,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 try {
                     root.addMessageDestination(md);
                 } catch (PropertyVetoException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         } else if("resource-ref".equals(type)) { //NOI18N
@@ -304,6 +333,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     } catch(PropertyVetoException ex) {
                         // !PW Should never happen.
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+
+                    if(resourceDir == null) {
+                        // Unable to create JDBC data source for resource ref.
+                        postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                                "ERR_NoRefJdbcDataSource", theResRefDCB.getResRefName()));
+                        return;
                     }
                     
                     final String description = getField(ddBean, "description"); //NOI18N
@@ -341,10 +377,19 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
                 return;
             }
-            
+
             if(theEjbDCB instanceof CmpEntityEjb) {
                 ResourceConfiguratorInterface rci = getResourceConfigurator();
                 CmpEntityEjb cmpEjbDCB = (CmpEntityEjb) theEjbDCB;
+                
+                if(resourceDir == null) {
+                    // Unable to create JDBC data source for CMP.
+                    // JNDI name of CMP resource field not set.
+                    postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                            "ERR_NoCmpOrJdbcDataSource", cmpEjbDCB.getEjbName()));
+                    return;
+                }
+                
                 String description = getField(ddBean, "description"); //NOI18N
                 String jndiName = rci.createJDBCDataSourceForCmp(cmpEjbDCB.getEjbName(), description, resourceDir);
                 
@@ -547,6 +592,21 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         }
         return provider;
     }
+    
+    private String getProjectName(File file) {
+        String result = null;
+        FileObject fo = FileUtil.toFileObject(file);
+        if(fo != null) {
+            Project project = FileOwnerQuery.getOwner(fo);
+            if (project != null) {
+                ProjectInformation info = ProjectUtils.getInformation(project);
+                if(info != null) {
+                    result = info.getName();
+                }
+            }
+        }
+        return result;
+    }
 
     
     /** Retrieves DConfigBeanRoot associated with the specified DDBean root.  If
@@ -644,10 +704,8 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 deadBean = null;
             } else {
                 // If not found, throw appropriate exception per spec.
-                Object [] args = new Object [1];
-                args[0] = dConfigBeanRoot.toString();
-                throw new BeanNotFoundException(MessageFormat.format(
-                    beanBundle.getString("ERR_DConfigBeanRootNotFoundOnRemove"), args));
+                throw new BeanNotFoundException(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                        "ERR_DConfigBeanRootNotFoundOnRemove", dConfigBeanRoot.toString()));
             }
         }
         
