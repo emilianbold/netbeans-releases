@@ -222,7 +222,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             if(watchRename && fileObject.isValid()) {
                 File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
                 if(f.getName().equals(fe.getName())) {
-                    EditableProperties properties = new EditableProperties();
+                    EditableProperties properties = new EditableProperties(true);
                     properties.setProperty(propertyName, new File(f.getParentFile(), fe.getFile().getName()).getPath());
                     Utils.updateProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
                     getWebProjectProperties().store();

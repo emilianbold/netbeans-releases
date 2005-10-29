@@ -254,7 +254,7 @@ public final class GeneratedFilesHelper {
                                 throw (IOException)new IOException(e.toString()).initCause(e);
                             }
                             // Update genfiles.properties too.
-                            final EditableProperties p = new EditableProperties();
+                            final EditableProperties p = new EditableProperties(true);
                             FileObject genfiles = dir.getFileObject(GENFILES_PROPERTIES_PATH);
                             if (genfiles != null && genfiles.isVirtual()) {
                                 // #55164: deleted from CVS?

@@ -419,7 +419,7 @@ public final class BrandingSupport {
     
     
     private static EditableProperties getEditableProperties(final File bundle) throws IOException {
-        EditableProperties p = new EditableProperties();
+        EditableProperties p = new EditableProperties(true);
         InputStream is;
         is = new FileInputStream(bundle);
         try {

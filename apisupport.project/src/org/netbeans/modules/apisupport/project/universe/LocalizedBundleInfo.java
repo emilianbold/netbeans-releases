@@ -81,7 +81,7 @@ public final class LocalizedBundleInfo {
     public static LocalizedBundleInfo load(InputStream[] bundleISs) throws IOException {
         EditableProperties[] props = new EditableProperties[bundleISs.length];
         for (int i = 0; i < props.length; i++) {
-            props[i] = new EditableProperties();
+            props[i] = new EditableProperties(true);
             props[i].load(bundleISs[i]);
         }
         return new LocalizedBundleInfo(props);
@@ -103,7 +103,7 @@ public final class LocalizedBundleInfo {
         for (int i = 0; i < bundleFOs.length; i++) {
             InputStream bundleIS = bundleFOs[i].getInputStream();
             try {
-                props[i] = new EditableProperties();
+                props[i] = new EditableProperties(true);
                 props[i].load(bundleIS);
             } finally {
                 bundleIS.close();
@@ -134,11 +134,11 @@ public final class LocalizedBundleInfo {
         String oldDisplayName = getDisplayName();
         for (int i = 0; i < paths.length; i++) {
             if (paths[i] == null) {
-                props[i] = new EditableProperties();
+                props[i] = new EditableProperties(true);
                 continue;
             }
             FileObject bundleFO = FileUtil.toFileObject(paths[i]);
-            props[i] = bundleFO != null ? Util.loadProperties(bundleFO) : new EditableProperties();
+            props[i] = bundleFO != null ? Util.loadProperties(bundleFO) : new EditableProperties(true);
         }
         firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, getDisplayName());
     }

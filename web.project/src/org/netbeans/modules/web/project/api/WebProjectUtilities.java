@@ -209,7 +209,7 @@ public class WebProjectUtilities {
         final AntProjectHelper antProjectHelper = setupProject(fo, name, serverInstanceID, j2eeLevel);
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         final ReferenceHelper referenceHelper = p.getReferenceHelper();        
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(true);
         
         if (FileUtil.isParentOf(fo, wmFO) || fo.equals(wmFO)) {
             ep.setProperty(WebProjectProperties.SOURCE_ROOT, "."); //NOI18N
