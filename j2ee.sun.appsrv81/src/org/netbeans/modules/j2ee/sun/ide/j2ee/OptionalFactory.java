@@ -30,6 +30,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.FinderUIWizardIterator;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.TargetServerData;
 
 
@@ -65,8 +66,8 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     }
     
     public WizardDescriptor.InstantiatingIterator getAddInstanceIterator() {
-        FinderUIWizardIterator iterator = new FinderUIWizardIterator();
-        iterator.setTargetServerData(new TargetServerData());
-        return iterator;
+        WizardDescriptor.InstantiatingIterator retVal = 
+                new AddDomainWizardIterator();
+        return retVal;
     }
 }

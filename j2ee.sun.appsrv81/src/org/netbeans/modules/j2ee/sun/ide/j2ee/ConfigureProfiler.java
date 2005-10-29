@@ -105,7 +105,8 @@ public class ConfigureProfiler {
     
     // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
     public static boolean removeProfilerInDOmain(DeploymentManagerProperties dmProps) {
-        String domainScriptFilePath =dmProps.getLocation()+ "domain1/config/domain.xml";
+        String domainScriptFilePath = dmProps.getLocation() + dmProps.getDomainName() +
+                "/config/domain.xml";                                           //NOI18N
 
         File domainScriptFile = new File(domainScriptFilePath);
         
@@ -128,7 +129,8 @@ public class ConfigureProfiler {
     }
    // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
     public static boolean instrumentProfilerInDOmain(DeploymentManagerProperties dmProps, String nativeLibraryPath, String[] jvmOptions) {
-        String domainScriptFilePath =dmProps.getLocation()+ "domain1/config/domain.xml";
+        String domainScriptFilePath = dmProps.getLocation() + dmProps.getDomainName() +
+                "/config/domain.xml";                                           //NOI18N
 
         File domainScriptFile = new File(domainScriptFilePath);
         
