@@ -23,13 +23,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -83,7 +88,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
     }
     
     private void refreshPlatforms() {
-        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
+        platformValue.setModel(new ComponentFactory.NbPlatformListModel()); // refresh
         platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.requestFocus();
     }
@@ -295,22 +300,22 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
     
     private static final Set/*<String>*/ DISABLED_PLATFORM_MODULES = new HashSet();
     static {
-	// Probably not needed for most platform apps, and won't even work under JNLP.
-	DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate"); // NOI18N
-	// XXX the following would not be shown in regular apps anyway, because they are autoloads,
-	// but they *are* shown in JNLP apps because currently even unused autoloads are enabled under JNLP:
-	// Just annoying; e.g. shows Runtime tab prominently.
-	DISABLED_PLATFORM_MODULES.add("org.openide.execution"); // NOI18N
-	DISABLED_PLATFORM_MODULES.add("org.netbeans.core.execution"); // NOI18N
-	// Similar - unlikely to really be wanted by typical platform apps, and show some GUI.
-	DISABLED_PLATFORM_MODULES.add("org.openide.io"); // NOI18N
-	DISABLED_PLATFORM_MODULES.add("org.netbeans.core.output2"); // NOI18N
-	DISABLED_PLATFORM_MODULES.add("org.netbeans.core.multiview"); // NOI18N
-    // this one is useful only for writers of apps showing local disk
-	DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.favorites"); // NOI18N
-	// And these are deprecated:
-	DISABLED_PLATFORM_MODULES.add("org.openide.compat"); // NOI18N
-	DISABLED_PLATFORM_MODULES.add("org.openide.util.enumerations"); // NOI18N
+        // Probably not needed for most platform apps, and won't even work under JNLP.
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate"); // NOI18N
+        // XXX the following would not be shown in regular apps anyway, because they are autoloads,
+        // but they *are* shown in JNLP apps because currently even unused autoloads are enabled under JNLP:
+        // Just annoying; e.g. shows Runtime tab prominently.
+        DISABLED_PLATFORM_MODULES.add("org.openide.execution"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.core.execution"); // NOI18N
+        // Similar - unlikely to really be wanted by typical platform apps, and show some GUI.
+        DISABLED_PLATFORM_MODULES.add("org.openide.io"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.core.output2"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.core.multiview"); // NOI18N
+        // this one is useful only for writers of apps showing local disk
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.favorites"); // NOI18N
+        // And these are deprecated:
+        DISABLED_PLATFORM_MODULES.add("org.openide.compat"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.openide.util.enumerations"); // NOI18N
     }
     public void stateChanged(ChangeEvent ev) {
         if (getProperties().getBrandingModel().isBrandingEnabled()) {
@@ -338,6 +343,22 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
                     }
                 }
             }
+            // #64443: prompt first.
+            DialogDescriptor d = new DialogDescriptor(
+                    NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.text.exclude_ide_modules"),
+                    NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.title.exclude_ide_modules"));
+            d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+            d.setModal(true);
+            JButton exclude = new JButton(NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.button.exclude"));
+            exclude.setDefaultCapable(true);
+            d.setOptions(new Object[] {
+                exclude,
+                new JButton(NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.button.skip")),
+            });
+            if (!DialogDisplayer.getDefault().notify(d).equals(exclude)) {
+                return;
+            }
+            // OK, continue.
             for (int i = 0; i < clusters.length; i++) {
                 if (clusters[i] instanceof Enabled) {
                     Enabled e = (Enabled) clusters[i];

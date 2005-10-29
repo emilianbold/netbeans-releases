@@ -101,8 +101,10 @@ public class BasicBrandingModel {
     }
     
     public void setBrandingEnabled(boolean brandingEnabled) {
-        this.brandingEnabled = brandingEnabled;
-        fireChange();        
+        if (this.brandingEnabled != brandingEnabled) {
+            this.brandingEnabled = brandingEnabled;
+            fireChange();
+        }
     }
     
     public String getName() {
