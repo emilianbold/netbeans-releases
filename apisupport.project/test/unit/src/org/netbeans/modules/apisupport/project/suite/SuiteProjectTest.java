@@ -82,13 +82,15 @@ public class SuiteProjectTest extends NbTestCase {
     }
     
     public void testPlatformPropertiesFromEvaluatorAreUpToDate() throws Exception {
-        final SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1", "custom");
-        assertNbPlatformPropertiesFromEvaluator(suite1.getEvaluator());
+        final SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite1", "custom");
+        PropertyEvaluator eval = suite.getEvaluator();
+        assertEquals("custom", eval.getProperty("nbplatform.active"));
+        assertEquals(NbPlatform.getPlatformByID("custom").getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
         
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws Exception {
                 // simulate change (e.g. through suite properties)
-                FileObject plafProps = suite1.getProjectDirectory().getFileObject("nbproject/platform.properties");
+                FileObject plafProps = suite.getProjectDirectory().getFileObject("nbproject/platform.properties");
                 EditableProperties ep = Util.loadProperties(plafProps);
                 ep.setProperty("nbplatform.active", "default");
                 Util.storeProperties(plafProps, ep);
@@ -96,13 +98,8 @@ public class SuiteProjectTest extends NbTestCase {
             }
         });
         
-        assertNbPlatformPropertiesFromEvaluator(suite1.getEvaluator());
-    }
-    
-    private void assertNbPlatformPropertiesFromEvaluator(PropertyEvaluator propertyEvaluator) {
-        assertEquals("both property are up-to-date",
-                propertyEvaluator.getProperty("netbeans.dest.dir"),
-                NbPlatform.getPlatformByID(propertyEvaluator.getProperty("nbplatform.active")).getDestDir().getPath());
+        assertEquals("nbplatform.active change took effect", "default", eval.getProperty("nbplatform.active"));
+        assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
     }
     
 }

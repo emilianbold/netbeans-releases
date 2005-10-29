@@ -12,15 +12,22 @@
  */
 
 package org.netbeans.modules.apisupport.project.suite;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -48,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 /**
@@ -135,15 +143,46 @@ public final class SuiteProject implements Project {
             providers.add(PropertyUtils.globalPropertyProvider());
         }
         baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-        String platformS = baseEval.getProperty("nbplatform.active"); // NOI18N
-        HashMap fixedProps = new HashMap();
-        if (platformS != null) {
-            fixedProps.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
+        class DestDirProvider implements PropertyProvider, PropertyChangeListener {
+            private final PropertyEvaluator eval;
+            private final List/*<ChangeListener>*/ listeners = new ArrayList();
+            public DestDirProvider(PropertyEvaluator eval) {
+                this.eval = eval;
+                eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+            }
+            public Map getProperties() {
+                String platformS = eval.getProperty("nbplatform.active"); // NOI18N
+                if (platformS != null) {
+                    return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
+                } else {
+                    return Collections.EMPTY_MAP;
+                }
+            }
+            public void addChangeListener(ChangeListener l) {
+                synchronized (listeners) {
+                    listeners.add(l);
+                }
+            }
+            public void removeChangeListener(ChangeListener l) {
+                synchronized (listeners) {
+                    listeners.remove(l);
+                }
+            }
+            public void propertyChange(PropertyChangeEvent evt) {
+                ChangeEvent ev = new ChangeEvent(this);
+                Iterator it;
+                synchronized (listeners) {
+                    it = new HashSet(listeners).iterator();
+                }
+                while (it.hasNext()) {
+                    ((ChangeListener) it.next()).stateChanged(ev);
+                }
+            }
         }
-        providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
+        providers.add(new DestDirProvider(baseEval));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-        fixedProps = new HashMap();
+        Map/*<String,String>*/ fixedProps = new HashMap();
         // synchronize with suite.xml
         fixedProps.put("disabled.clusters", ""); // NOI18N
         fixedProps.put("disabled.modules", ""); // NOI18N
