@@ -674,7 +674,20 @@ TARGETS AVAILABLE FOR OVERRIDING IN YOUR build.xml
 --------------------------------------------------
 
 Obscure or mostly internal targets are skipped here, but again examine the
-actual harness script if in doubt.
+actual harness script if in doubt. If you want to keep the original
+implementation and just add a before hook, try e.g.
+
+    <target name="-pre-javahelp">
+        <!-- your stuff here -->
+    </target>
+    <target name="javahelp" depends="-pre-javahelp,harness.javahelp"/>
+
+(some original targets are projectized-common.* rather than harness.*). If you
+want to add an after hook, try e.g.
+
+    <target name="javahelp" depends="harness.javahelp">
+        <!-- your stuff here -->
+    </target>
 
 basic-init - define some properties such as file locations; enough to do a clean
 at least.
