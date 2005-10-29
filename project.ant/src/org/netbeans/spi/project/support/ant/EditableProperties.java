@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -55,12 +56,12 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     
     /** List of Item instances as read from the properties file. Order is important.
      * Saving properties will save then in this order. */
-    private List/*<Item>*/ items;
+    private final LinkedList/*<Item>*/ items;
 
     /** Map of [property key, Item instance] for faster access. */
-    private Map itemIndex;
+    private final Map/*<String,Item>*/ itemIndex;
 
-    private boolean alphabetize = true;
+    private final boolean alphabetize;
     
     private static final String keyValueSeparators = "=: \t\r\n\f";
 
@@ -77,11 +78,10 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     private static final int READING_KEY_VALUE = 2;
     
     /**
-     * Creates empty instance which items will not be sorted by default.
+     * Creates empty instance whose items will not be alphabetized.
      */
     public EditableProperties() {
-        items = new ArrayList();
-        itemIndex = new HashMap();
+        this(/* mentioned in #64174 - documented default */false);
     }
 
     /**
@@ -89,17 +89,19 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
      * @param alphabetize alphabetize new items according to key or not
      */
     public EditableProperties(boolean alphabetize) {
-        this();
         this.alphabetize = alphabetize;
+        items = new LinkedList();
+        itemIndex = new HashMap();
     }
     
     /**
      * Creates instance from an existing map. No comments will be defined.
-     * Any order from the existing map will be retained.
+     * Any order from the existing map will be retained,
+     * and further additions will not be alphabetized.
      * @param map a map from String to String
      */
-    public EditableProperties(Map map) {
-        this();
+    public EditableProperties(Map/*<String,String>*/ map) {
+        this(false);
         putAll(map);
     }
     
@@ -107,12 +109,16 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
      * Creates new instance from an existing one.
      * @param ep an instance of EditableProperties
      */
-    EditableProperties(EditableProperties ep) {
-        this();
+    private EditableProperties(EditableProperties ep) {
+        // #64174: use a simple deep copy for speed
+        alphabetize = ep.alphabetize;
+        items = new LinkedList();
+        itemIndex = new HashMap(ep.items.size() * 4 / 3 + 1);
         Iterator it = ep.items.iterator();
         while (it.hasNext()) {
-            Item item = (Item)it.next();
-            addItem((Item)item.clone(), false);
+            Item i = (Item) ((Item) it.next()).clone();
+            items.add(i);
+            itemIndex.put(i.getKey(), i);
         }
     }
     
@@ -321,8 +327,8 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     // non-key item is block of empty lines/comment not associated with any property
     private void createNonKeyItem(List/*<String>*/ lines) {
         // First check that previous item is not non-key item.
-        if (items.size() > 0) {
-            Item item = (Item)items.get(items.size()-1);
+        if (!items.isEmpty()) {
+            Item item = (Item) items.getLast();
             if (item.getKey() == null) {
                 // it is non-key item:  merge them
                 item.addCommentLines(lines);
@@ -348,10 +354,12 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         String key = item.getKey();
         if (sort) {
             assert key != null;
-            for (int i=0; i<items.size(); i++) {
-                String k = ((Item)items.get(i)).getKey();
+            ListIterator it = items.listIterator();
+            while (it.hasNext()) {
+                String k = ((Item) it.next()).getKey();
                 if (k != null && k.compareToIgnoreCase(key) > 0) {
-                    items.add(i, item);
+                    it.previous();
+                    it.add(item);
                     itemIndex.put(key, item);
                     return;
                 }
@@ -755,12 +763,13 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             }
             item.key = key;
             item.value = value;
+            item.separate = separate;
             return item;
         }
     
     }
     
-    private static class SetImpl extends AbstractSet {
+    private static class SetImpl extends AbstractSet/*<Map.Entry<String,String>>*/ {
 
         private EditableProperties props;
         
@@ -778,53 +787,56 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         
     }
     
-    private static class IteratorImpl implements Iterator {
+    private static class IteratorImpl implements Iterator/*<Map.Entry<String,String>>*/ {
 
-        private EditableProperties props;
-        private int index = -1;
-        private Item item;
+        private final EditableProperties props;
+        private ListIterator/*<Item>*/ delegate;
         
         public IteratorImpl(EditableProperties props) {
             this.props = props;
+            delegate = props.items.listIterator();
         }
         
         public boolean hasNext() {
-            return findNext() != -1;
+            return findNext() != null;
         }
         
         public Object next() {
-            index = findNext();
-            if (index == -1) {
-                throw new NoSuchElementException("There is no more items");
+            Item item = findNext();
+            if (item == null) {
+                throw new NoSuchElementException();
             }
-            item = (Item)props.items.get(index);
+            delegate.next();
             return new MapEntryImpl(item);
         }
         
         public void remove() {
+            delegate.previous();
+            Item item = findNext();
             if (item == null) {
                 throw new IllegalStateException();
             }
-            props.removeItem(item);
-            index--;
-            item = null;
+            int index = delegate.nextIndex();
+            props.items.remove(item);
+            props.itemIndex.remove(item.getKey());
+            delegate = props.items.listIterator(index);
         }
         
-        private int findNext() {
-            int res = index+1;
-            while (res < props.size()) {
-                Item i = (Item)props.items.get(res);
-                if (i.getKey() != null && i.getValue() != null) {
-                    return res;
+        private Item findNext() {
+            while (delegate.hasNext()) {
+                Item item = (Item) delegate.next();
+                if (item.getKey() != null && item.getValue() != null) {
+                    // Found one. Back up!
+                    delegate.previous();
+                    return item;
                 }
-                res++;
             }
-            return -1;
+            return null;
         }
         
     }
     
-    private static class MapEntryImpl implements Map.Entry {
+    private static class MapEntryImpl implements Map.Entry/*<String,String>*/ {
         
         private Item item;
         

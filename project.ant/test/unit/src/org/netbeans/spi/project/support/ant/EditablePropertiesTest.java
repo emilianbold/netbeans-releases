@@ -101,7 +101,7 @@ public class EditablePropertiesTest extends NbTestCase {
         clearWorkDir();
         EditableProperties ep = loadTestProperties();
         
-        EditableProperties ep2 = new EditableProperties(ep);
+        EditableProperties ep2 = ep.cloneProperties();
         String dest = getWorkDirPath()+File.separatorChar+"new2.properties";
         saveProperties(ep2, dest);
         assertFile("Saved cloned properties must be the same as original one", filenameOfTestProperties(), dest, (String)null);
@@ -118,7 +118,7 @@ public class EditablePropertiesTest extends NbTestCase {
         
         EditableProperties ep = loadTestProperties();
         
-        EditableProperties ep2 = new EditableProperties(ep);
+        EditableProperties ep2 = ep.cloneProperties();
         ep2.setProperty("key24", "new value of key 24");
         String dest = getWorkDirPath()+File.separatorChar+"mod1.properties";
         saveProperties(ep2, dest);
@@ -127,7 +127,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("No lines added", 0, res[1]);
         assertEquals("No lines removed", 0, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
         ep2.setProperty("key23", "new value of key23");
         dest = getWorkDirPath()+File.separatorChar+"mod2.properties";
         saveProperties(ep2, dest);
@@ -136,7 +136,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("No lines added", 0, res[1]);
         assertEquals("No lines removed", 0, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
         ep2.put("newkey", "new value");
         dest = getWorkDirPath()+File.separatorChar+"mod3.properties";
         saveProperties(ep2, dest);
@@ -145,8 +145,10 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("One line added", 1, res[1]);
         assertEquals("No lines removed", 0, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
+        assertNotNull(ep2.get("key14"));
         ep2.remove("key14");
+        assertNull(ep2.get("key14"));
         dest = getWorkDirPath()+File.separatorChar+"mod4.properties";
         saveProperties(ep2, dest);
         res = compare(filenameOfTestProperties(), dest);
@@ -154,7 +156,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("No lines added", 0, res[1]);
         assertEquals("Two lines removed", 2, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
         ep2.setProperty("key21", new String[]{"first line;", "second line;", "third line"});
         dest = getWorkDirPath()+File.separatorChar+"mod5.properties";
         saveProperties(ep2, dest);
@@ -224,6 +226,16 @@ public class EditablePropertiesTest extends NbTestCase {
                 System.getProperty("line.separator");
         assertEquals(expected, output);
         
+        ep = new EditableProperties();
+        ep.setProperty("a", "val-a");
+        ep.setProperty("c", "val-c");
+        ep.put("b", "val-b");
+        output = getAsString(ep);
+        expected = "a=val-a"+System.getProperty("line.separator")+"c=val-c"+
+                System.getProperty("line.separator")+"b=val-b"+
+                System.getProperty("line.separator");
+        assertEquals(expected, output);
+        
         ep = new EditableProperties(true);
         ep.setProperty("a", "val-a");
         ep.setProperty("c", "val-c");
@@ -241,7 +253,7 @@ public class EditablePropertiesTest extends NbTestCase {
         
         EditableProperties ep = loadTestProperties();
         
-        EditableProperties ep2 = new EditableProperties(ep);
+        EditableProperties ep2 = ep.cloneProperties();
         ep2.setComment("key10", new String[]{"# this is new comment for property key 10"}, false);
         String dest = getWorkDirPath()+File.separatorChar+"comment1.properties";
         saveProperties(ep2, dest);
@@ -250,7 +262,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("One line added", 1, res[1]);
         assertEquals("No lines removed", 0, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
         ep2.setComment("key1", new String[]{"# new comment", "# new comment second line"}, true);
         dest = getWorkDirPath()+File.separatorChar+"comment2.properties";
         saveProperties(ep2, dest);
@@ -259,7 +271,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("Two lines added", 2, res[1]);
         assertEquals("No lines removed", 0, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
         ep2.setComment("key26", new String[]{"# changed comment"}, false);
         dest = getWorkDirPath()+File.separatorChar+"comment3.properties";
         saveProperties(ep2, dest);
@@ -268,7 +280,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("No lines added", 0, res[1]);
         assertEquals("No lines removed", 0, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
         ep2.setComment("key25", new String[]{"# one line comment"}, false);
         dest = getWorkDirPath()+File.separatorChar+"comment4.properties";
         saveProperties(ep2, dest);
@@ -277,7 +289,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("No lines added", 0, res[1]);
         assertEquals("No lines removed", 0, res[2]);
         
-        ep2 = new EditableProperties(ep);
+        ep2 = ep.cloneProperties();
         ep2.setComment("key26", ep2.getComment("key26"), true);
         dest = getWorkDirPath()+File.separatorChar+"comment5.properties";
         saveProperties(ep2, dest);
@@ -344,8 +356,11 @@ public class EditablePropertiesTest extends NbTestCase {
         }
         it = ep.keySet().iterator();
         while (it.hasNext()) {
-            ep.remove(it.next());
+            it.next();
+            it.remove();
         }
+        ep.put("a", "aval");
+        ep.remove("a");
         ep = loadTestProperties();
         it = ep.entrySet().iterator();
         while (it.hasNext()) {
