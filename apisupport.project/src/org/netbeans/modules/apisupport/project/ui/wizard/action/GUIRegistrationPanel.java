@@ -37,7 +37,7 @@ import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil.LayerItemPresenter;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.openide.DialogDescriptor;
@@ -234,7 +234,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             final JComboBox combo,
             final JComboBox comboPositions,
             final String subFolderName) {
-        combo.setModel(ComponentFactory.COMBO_WAIT_MODEL);
+        combo.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
         SFS_RP.post(new Runnable() {
             public void run() {
                 Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
@@ -285,7 +285,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         assert positionsCombo != null;
         ComboBoxModel model = (ComboBoxModel) cachedPositionModels.get(parent);
         if (model == null) {
-            positionsCombo.setModel(ComponentFactory.COMBO_WAIT_MODEL);
+            positionsCombo.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
             SFS_RP.post(new Runnable() {
                 public void run() {
                     final Enumeration filesEn = parent.getFileObject().getData(false);
@@ -322,7 +322,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     private static Object getSelectedItem(JComboBox combo) {
         Object item = combo.getSelectedItem();
-        return (item == ComponentFactory.WAIT_VALUE || item == EMPTY_VALUE) ? null : item;
+        return (item == CustomizerComponentFactory.WAIT_VALUE || item == EMPTY_VALUE) ? null : item;
     }
     
     private static LayerItemPresenter getSelectedLayerItem(JComboBox combo) {
@@ -914,8 +914,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         public Component getListCellRendererComponent(
                 JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text;
-            if (value == null || value == ComponentFactory.WAIT_VALUE) {
-                text = ComponentFactory.WAIT_VALUE;
+            if (value == null || value == CustomizerComponentFactory.WAIT_VALUE) {
+                text = CustomizerComponentFactory.WAIT_VALUE;
             } else if (value == EMPTY_VALUE) {
                 text = EMPTY_VALUE;
             } else {

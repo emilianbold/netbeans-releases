@@ -33,7 +33,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
         initComponents();
         prjFolderValue.setText(suiteProps.getProjectDirectory());
         refresh();
-        moduleList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
+        moduleList.setCellRenderer(CustomizerComponentFactory.getModuleCellRenderer());
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -52,8 +52,8 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
         removeModuleButton.setEnabled(enabled);
     }
     
-    private ComponentFactory.SuiteSubModulesListModel getModuleListModel() {
-        return (ComponentFactory.SuiteSubModulesListModel) moduleList.getModel();
+    private CustomizerComponentFactory.SuiteSubModulesListModel getModuleListModel() {
+        return (CustomizerComponentFactory.SuiteSubModulesListModel) moduleList.getModel();
     }
     
     /** This method is called from within the constructor to

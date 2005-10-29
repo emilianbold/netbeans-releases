@@ -55,7 +55,7 @@ final class AddModulePanel extends JPanel {
 
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
     
-    private ComponentFactory.DependencyListModel universeModules;
+    private CustomizerComponentFactory.DependencyListModel universeModules;
     private RequestProcessor.Task filterTask;
     private AddModuleFilter filterer;
     private URL currectJavadoc;
@@ -67,7 +67,7 @@ final class AddModulePanel extends JPanel {
         initComponents();
         initAccessibility();
         fillUpUniverseModules();
-        moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(true));
+        moduleList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(true));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!FILTER_DESCRIPTION.equals(filterValue.getText())) {
@@ -129,15 +129,15 @@ final class AddModulePanel extends JPanel {
     
     private void fillUpUniverseModules() {
         filterValue.setEnabled(false);
-        filterValue.setText(ComponentFactory.WAIT_VALUE);
+        filterValue.setText(CustomizerComponentFactory.WAIT_VALUE);
         moduleList.setEnabled(false);
-        moduleList.setModel(ComponentFactory.LIST_WAIT_MODEL);
+        moduleList.setModel(CustomizerComponentFactory.LIST_WAIT_MODEL);
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
                 final SortedSet universeDeps = props.getUniverseDependencies(true);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        universeModules = ComponentFactory.createDependencyListModel(universeDeps);
+                        universeModules = CustomizerComponentFactory.createDependencyListModel(universeDeps);
                         moduleList.setModel(universeModules);
                         moduleList.setEnabled(true);
                         filterValue.setEnabled(true);
@@ -222,7 +222,7 @@ final class AddModulePanel extends JPanel {
                     filterTask = null;
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
-                            moduleList.setModel(ComponentFactory.createDependencyListModel(matches));
+                            moduleList.setModel(CustomizerComponentFactory.createDependencyListModel(matches));
                             int index = matches.isEmpty() ? -1 : 0;
                             moduleList.setSelectedIndex(index);
                             moduleList.ensureIndexIsVisible(index);
@@ -232,7 +232,7 @@ final class AddModulePanel extends JPanel {
             };
             if (filterer == null) {
                 // Slow to create it, so show Please wait...
-                moduleList.setModel(ComponentFactory.LIST_WAIT_MODEL);
+                moduleList.setModel(CustomizerComponentFactory.LIST_WAIT_MODEL);
                 filterTask = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         if (filterer == null) {

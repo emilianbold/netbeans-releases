@@ -26,7 +26,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.RequiredTokenListModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.RequiredTokenListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.openide.DialogDescriptor;
@@ -47,7 +47,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         super(props, CustomizerLibraries.class);
         initComponents();
         refresh();
-        dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(false));
+        dependencyList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         platformValue.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -91,8 +91,8 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         addDepButton.setEnabled(getProperties().isActivePlatformValid());
     }
     
-    private ComponentFactory.DependencyListModel getDepListModel() {
-        return (ComponentFactory.DependencyListModel) dependencyList.getModel();
+    private CustomizerComponentFactory.DependencyListModel getDepListModel() {
+        return (CustomizerComponentFactory.DependencyListModel) dependencyList.getModel();
     }
     
     private String getMessage(String key) {

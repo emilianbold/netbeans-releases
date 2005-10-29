@@ -47,8 +47,8 @@ public class AddFriendPanel extends JPanel {
             });
         };
         friends.setEnabled(false);
-        friends.setModel(ComponentFactory.COMBO_WAIT_MODEL);
-        friends.setSelectedItem(ComponentFactory.WAIT_VALUE);
+        friends.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
+        friends.setSelectedItem(CustomizerComponentFactory.WAIT_VALUE);
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
                 final String[] friendCNBs = props.getAvailableFriends();

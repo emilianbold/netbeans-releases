@@ -42,10 +42,10 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.DependencyListModel;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
-import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.RequiredTokenListModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.DependencyListModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.FriendListModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.PublicPackagesTableModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.RequiredTokenListModel;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -367,10 +367,10 @@ public final class SingleModuleProperties extends ModuleProperties {
                     });
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
-                    dependencyListModel = ComponentFactory.getInvalidDependencyListModel();
+                    dependencyListModel = CustomizerComponentFactory.getInvalidDependencyListModel();
                 }
             } else {
-                dependencyListModel = ComponentFactory.getInvalidDependencyListModel();
+                dependencyListModel = CustomizerComponentFactory.getInvalidDependencyListModel();
             }
         }
         return dependencyListModel;

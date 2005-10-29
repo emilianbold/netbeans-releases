@@ -71,8 +71,8 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private void fillUpCategoryValue() {
         categoryValue.setEnabled(false);
-        categoryValue.setModel(ComponentFactory.COMBO_WAIT_MODEL);
-        categoryValue.setSelectedItem(ComponentFactory.WAIT_VALUE);
+        categoryValue.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
+        categoryValue.setSelectedItem(CustomizerComponentFactory.WAIT_VALUE);
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
                 final SortedSet moduleCategories = getProperties().getModuleCategories();
@@ -111,7 +111,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private String getSelectedCategory() {
         String cat = (String) categoryValue.getSelectedItem();
-        return ComponentFactory.WAIT_VALUE == cat ? getCategory() : cat;
+        return CustomizerComponentFactory.WAIT_VALUE == cat ? getCategory() : cat;
     }
     
     /** This method is called from within the constructor to

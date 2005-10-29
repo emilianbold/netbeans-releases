@@ -202,12 +202,12 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         }
     }
     
-    private ComponentFactory.FriendListModel getFriendModel() {
-        return (ComponentFactory.FriendListModel) friendsList.getModel();
+    private CustomizerComponentFactory.FriendListModel getFriendModel() {
+        return (CustomizerComponentFactory.FriendListModel) friendsList.getModel();
     }
     
-    private ComponentFactory.PublicPackagesTableModel getPublicPackagesModel() {
-        return (ComponentFactory.PublicPackagesTableModel) publicPkgsTable.getModel();
+    private CustomizerComponentFactory.PublicPackagesTableModel getPublicPackagesModel() {
+        return (CustomizerComponentFactory.PublicPackagesTableModel) publicPkgsTable.getModel();
     }
     
     /** This method is called from within the constructor to
