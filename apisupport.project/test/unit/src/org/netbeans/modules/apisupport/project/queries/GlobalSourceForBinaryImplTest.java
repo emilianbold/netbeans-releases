@@ -74,7 +74,8 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     }
     
     // just sanity check that exception is not thrown
-    public void testBehaviourWithNonZipFil() throws Exception {
+    public void testBehaviourWithNonZipFile() throws Exception {
+        GlobalSourceForBinaryImpl.quiet = true;
         File nbSrcZip = new File(getWorkDir(), "wrong-nbsrc.zip");
         nbSrcZip.createNewFile();
         NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));

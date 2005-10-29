@@ -52,6 +52,9 @@ import org.xml.sax.SAXException;
  */
 public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImplementation {
     
+    /** for use from unit tests */
+    static boolean quiet = false;
+    
     /** Default constructor for lookup. */
     public GlobalSourceForBinaryImpl() {}
     
@@ -94,8 +97,10 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     try {
                         nbsp = NetBeansSourcesParser.getInstance(nbSrcF);
                     } catch (ZipException e) {
-                        Util.err.annotate(e, ErrorManager.UNKNOWN, nbSrcF + " does not seem to be a valid ZIP file.", null, null, null); // NOI18N
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        if (!quiet) {
+                            Util.err.annotate(e, ErrorManager.UNKNOWN, nbSrcF + " does not seem to be a valid ZIP file.", null, null, null); // NOI18N
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        }
                         continue;
                     }
                     if (nbsp == null) {
