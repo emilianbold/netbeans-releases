@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.project;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +21,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -30,7 +32,9 @@ import org.openide.util.lookup.Lookups;
 public class ProjectUtilsTest extends NbTestCase {
     
     static {
-        ProjectUtilsTest.class.getClassLoader().setDefaultAssertionStatus(true);
+        TestUtil.setLookup(new Object[] {
+            TestUtil.testProjectFactory(),
+        });
     }
     
     public ProjectUtilsTest(String name) {
@@ -82,6 +86,33 @@ public class ProjectUtilsTest extends NbTestCase {
         assertTrue("cycle introduced by c -> a in a -> b -> c", ProjectUtils.hasSubprojectCycles(c, a));
         c.subprojs = null;
         assertTrue("cycle introduced by c -> a in a -> b -> c (no explicit subprojects in c)", ProjectUtils.hasSubprojectCycles(c, a));
+    }
+    
+    public void testGenericSources() throws Exception {
+        clearWorkDir();
+        File topF = new File(getWorkDir(), "top");
+        assertTrue(new File(topF, "testproject").mkdirs());
+        assertTrue(new File(topF, "nested" + File.separator + "testproject").mkdirs());
+        assertTrue(new File(topF, "file").createNewFile());
+        FileObject top = FileUtil.toFileObject(topF);
+        assertNotNull(top);
+        Project p = ProjectManager.getDefault().findProject(top);
+        assertNotNull(p);
+        Sources s = ProjectUtils.getSources(p);
+        SourceGroup[] grps = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals(1, grps.length);
+        assertEquals(top, grps[0].getRootFolder());
+        assertEquals("top", grps[0].getDisplayName());
+        assertTrue(grps[0].contains(top));
+        FileObject file = top.getFileObject("file");
+        assertNotNull(file);
+        assertTrue(grps[0].contains(file));
+        FileObject nested = top.getFileObject("nested");
+        assertNotNull(nested);
+        assertFalse(grps[0].contains(nested));
+        assertEquals(1, TestUtil.projectLoadCount(top));
+        assertEquals("#67450: did not have to load nested project", 0, TestUtil.projectLoadCount(nested));
+        // XXX could also test contains(...) on unsharable files
     }
     
     /**

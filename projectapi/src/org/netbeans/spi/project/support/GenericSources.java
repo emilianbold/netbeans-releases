@@ -20,6 +20,7 @@ import javax.swing.ImageIcon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -27,8 +28,6 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
-
-// XXX need test
 
 /**
  * Factories for standard {@link Sources} implementations.
@@ -130,6 +129,10 @@ public class GenericSources {
         public boolean contains(FileObject file) throws IllegalArgumentException {
             if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
                 throw new IllegalArgumentException();
+            }
+            if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
+                // #67450: avoid actually loading the nested project.
+                return false;
             }
             if (FileOwnerQuery.getOwner(file) != p) {
                 return false;
