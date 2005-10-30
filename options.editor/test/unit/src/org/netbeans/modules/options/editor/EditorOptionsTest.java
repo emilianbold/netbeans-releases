@@ -193,6 +193,15 @@ public class EditorOptionsTest extends NbTestCase {
             assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
             assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
         }
+        
+        it = controllers.iterator ();
+        while (it.hasNext ()) {
+            PanelController pc = (PanelController) it.next ();
+            JComponent c = pc.getComponent (masterLookup);
+            pc.update ();
+            assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
+            assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
+        }
     }
 
     private List getCategories () {
