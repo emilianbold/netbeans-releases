@@ -99,12 +99,12 @@ public class SuitePropertiesTest extends TestBase {
         JList moduleList = new JList(model);
         moduleList.setSelectedIndices(new int[] {0, model.getSize() - 1});
         model.removeModules(Arrays.asList(moduleList.getSelectedValues()));
-        assertEquals("none subModule should left", 0, model.getSize());
+        assertEquals("no subModule should be left", 0, model.getSize());
         
         saveProperties(suite1Props);
         
         SubprojectProvider spp = getSubProjectProvider(suite1);
-        assertEquals("none module should be left", 0, spp.getSubprojects().size());
+        assertEquals("no module should be left", 0, spp.getSubprojects().size());
     }
     
     public void testAddModule() throws Exception {
@@ -142,7 +142,7 @@ public class SuitePropertiesTest extends TestBase {
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
         
-        // simulate removing all items from the list
+        // simulate removing first item from the list
         JList moduleList = new JList(model);
         moduleList.setSelectedIndex(0);
         model.removeModules(Arrays.asList(moduleList.getSelectedValues()));
