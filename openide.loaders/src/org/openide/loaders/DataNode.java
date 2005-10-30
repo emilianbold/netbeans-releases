@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.Action;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -473,12 +474,8 @@ public class DataNode extends AbstractNode {
         
         public Object getValue() {
             Set files = obj.files();
-            String[] toret = new String[files.size()];
-            int i = 0; for (Iterator it = files.iterator(); it.hasNext(); i++) {
-                toret[i] = name((FileObject)it.next());
-            }
             final String pfilename = name(obj.getPrimaryFile());
-            Arrays.sort(toret, new Comparator() {
+            TreeSet set = new TreeSet(new Comparator() {
                 public int compare(Object o1, Object o2) {
                     String fname1 = (String) o1;
                     String fname2 = (String) o2;
@@ -490,7 +487,11 @@ public class DataNode extends AbstractNode {
                         return fname1.compareTo(fname2);
                 }
             });
-            return toret;
+            
+            for (Iterator it = files.iterator(); it.hasNext(); ) {
+                set.add(name((FileObject)it.next()));
+            }
+            return (String[])set.toArray(new String[0]);
         }
         
         private String name(FileObject fo) {
