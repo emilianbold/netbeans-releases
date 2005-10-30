@@ -348,7 +348,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
 
     public void showSubCategory(String name) {
         if (name.equals(SuiteCustomizer.BASIC_BRANDING_CHECKBOX)) {
-	    //buildWithBranding.requestFocus();
+            //buildWithBranding.requestFocus();
             addOn.requestFocus();
         } else {
             throw new IllegalArgumentException(name);
