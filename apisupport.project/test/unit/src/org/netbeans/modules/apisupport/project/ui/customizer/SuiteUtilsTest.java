@@ -31,11 +31,6 @@ public class SuiteUtilsTest extends TestBase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
-        clearWorkDir();
-        super.setUp();
-    }
-    
     public void testAddModule() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         NbModuleProject module1 = TestBase.generateStandaloneModule(getWorkDir(), "module1");
@@ -67,7 +62,7 @@ public class SuiteUtilsTest extends TestBase {
         
         assertNull("user.properites.file property doesn't exist", module1.evaluator().getProperty("user.properties.file"));
         SuiteUtils.removeModuleFromSuite(module1);
-        assertEquals("user.properites.file resolved for standalone module",
+        assertEquals("user.properties.file resolved for standalone module",
                 getWorkDirPath() + File.separatorChar + "build.properties",
                 module1.evaluator().getProperty("user.properties.file"));
         spp = SuitePropertiesTest.getSubProjectProvider(suite1);
