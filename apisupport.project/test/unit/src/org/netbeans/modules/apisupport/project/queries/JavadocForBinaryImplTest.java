@@ -17,8 +17,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.openide.filesystems.FileUtil;
@@ -48,7 +48,7 @@ public class JavadocForBinaryImplTest extends TestBase {
     
     public void testJavadocForNetBeansOrgModules() throws Exception {
         // Have to load at least one module to get the scan going.
-        ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant")));
+        ClassPath.getClassPath(nbroot.getFileObject("ant/src"), ClassPath.COMPILE);
         File beansJar = file("nbbuild/netbeans/ide6/modules/org-netbeans-modules-beans.jar");
         URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(beansJar)).getRoots();
         URL[] expectedRoots = new URL[] {
@@ -59,7 +59,7 @@ public class JavadocForBinaryImplTest extends TestBase {
     }
     
     public void testJavadocForExternalModules() throws Exception {
-        ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite2/misc-project")));
+        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite2/misc-project/src")), ClassPath.COMPILE);
         File miscJar = file(EEP + "/suite2/build/cluster/modules/org-netbeans-examples-modules-misc.jar");
         URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(miscJar)).getRoots();
         URL[] expectedRoots = new URL[] {
@@ -68,7 +68,7 @@ public class JavadocForBinaryImplTest extends TestBase {
             urlForJar(apisZip, "org-netbeans-examples-modules-misc/"),
         };
         assertEquals("correct Javadoc roots for misc", urlSet(expectedRoots), urlSet(roots));
-        ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project")));
+        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project/src")), ClassPath.COMPILE);
         File dummyJar = file(suite3, "dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar");
         roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(dummyJar)).getRoots();
         expectedRoots = new URL[] {

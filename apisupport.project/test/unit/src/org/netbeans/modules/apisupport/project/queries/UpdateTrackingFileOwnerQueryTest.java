@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -56,9 +57,10 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     private void assertOwnership(String project, String file) throws Exception {
         FileObject projectFO = FileUtil.toFileObject(file(project));
         assertNotNull("have project " + project, projectFO);
-        // This has the side effect of forcing a scan of the module universe:
         Project p = ProjectManager.getDefault().findProject(projectFO);
         assertNotNull("have a project in " + project, p);
+        // This has the side effect of forcing a scan of the module universe:
+        ClassPath.getClassPath(projectFO.getFileObject("src"), ClassPath.COMPILE);
         FileObject fileFO = FileUtil.toFileObject(file(file));
         if (fileFO != null) { // OK if not currently built
             assertEquals("correct owner by FileObject of " + file, p, FileOwnerQuery.getOwner(fileFO));

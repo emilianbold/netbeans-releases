@@ -33,12 +33,12 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -77,18 +77,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_rebuild"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ModuleActions.class, "ACTION_clean"), null));
         actions.add(null);
-        boolean isNetBeansOrg;
-        try {
-            ModuleEntry e = project.getModuleList().getEntry(project.getCodeNameBase());
-            if (e != null) {
-                isNetBeansOrg = e.getNetBeansOrgPath() != null;
-            } else { // #63633
-                isNetBeansOrg = false;
-            }
-        } catch (IOException e) {
-            // What to do?
-            isNetBeansOrg = false;
-        }
+        boolean isNetBeansOrg = ((NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType() == NbModuleTypeProvider.NETBEANS_ORG;
         if (isNetBeansOrg) {
             String path = project.getPathWithinNetBeansOrg();
             actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps")));
@@ -188,15 +177,9 @@ public final class ModuleActions implements ActionProvider {
     private final Map/*<String,String>*/ globalCommands = new HashMap();
     private final String[] supportedActions;
     
-    public ModuleActions(NbModuleProject project) {
+    public ModuleActions(NbModuleProject project, NbModuleTypeProvider.NbModuleType moduleType) {
         this.project = project;
-        boolean isNetBeansOrg;
-        try {
-            isNetBeansOrg = project.getModuleList().getEntry(project.getCodeNameBase()).getNetBeansOrgPath() != null;
-        } catch (IOException e) {
-            // What to do?
-            isNetBeansOrg = false;
-        }
+        boolean isNetBeansOrg = moduleType == NbModuleTypeProvider.NETBEANS_ORG;
         Set/*<String>*/ supportedActionsSet = new HashSet();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N

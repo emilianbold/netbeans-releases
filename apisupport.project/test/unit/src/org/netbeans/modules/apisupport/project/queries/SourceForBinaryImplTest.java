@@ -17,8 +17,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.openide.filesystems.FileObject;
@@ -43,12 +43,13 @@ public class SourceForBinaryImplTest extends TestBase {
     
     public void testExtraCompilationUnits() throws Exception {
         doTestFindSourceRootForCompiledClasses("ant/src-bridge", "ant/build/bridge-classes");
+        // Have to load at least one module to get the scan going.
+        ClassPath.getClassPath(FileUtil.toFileObject(file("beans/src")), ClassPath.COMPILE);
         check("ant/src-bridge", "ide6/ant/nblib/bridge.jar");
     }
     
     public void testFindSourceRootForModuleJar() throws Exception {
-        // Have to load at least one module to get the scan going.
-        ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant")));
+        ClassPath.getClassPath(FileUtil.toFileObject(file("ant/src")), ClassPath.COMPILE);
         check("java/project/src", "ide6/modules/org-netbeans-modules-java-project.jar");
         check("openide/loaders/src", "platform6/modules/org-openide-loaders.jar");
         check("core/bootstrap/src", "platform6/lib/boot.jar");
@@ -58,9 +59,9 @@ public class SourceForBinaryImplTest extends TestBase {
     }
     
     public void testExternalModules() throws Exception {
-        ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite1/action-project")));
+        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite1/action-project/src")), ClassPath.COMPILE);
         check(EEP + "/suite1/action-project/src", file(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"));
-        ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project")));
+        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project/src")), ClassPath.COMPILE);
         check(EEP + "/suite3/dummy-project/src",
               file(EEP + "/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
     }
