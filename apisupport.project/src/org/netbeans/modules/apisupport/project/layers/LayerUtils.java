@@ -634,8 +634,6 @@ public class LayerUtils {
     
     static Set/*<NbModuleProject>*/ getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
         ModuleList list = project.getModuleList();
-        ModuleEntry myself = list.getEntry(project.getCodeNameBase());
-        assert myself != null : project;
         Set/*<NbModuleProject>*/ projects = new HashSet();
         projects.add(project);
         Iterator it = list.getAllEntriesSoft().iterator();
