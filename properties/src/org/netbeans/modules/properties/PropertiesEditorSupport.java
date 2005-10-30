@@ -7,19 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.properties;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.*;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
@@ -40,12 +47,17 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -54,6 +66,7 @@ import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.windows.TopComponent;
 
 /** 
  * Support for viewing .properties files (EditCookie) by opening them in a text editor.
@@ -71,6 +84,15 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     /** New lines in this file was delimited by '\r\n'. */
     private static final byte NEW_LINE_RN = 2;
     
+    /** set of opened <code>PropertiesEditorSupport</code>s */
+    private static Set/*<PropertiesEditorSupport>*/ opened
+	    = Collections.synchronizedSet(
+		    new HashSet/*<PropertiesEditorSupport>*/());
+    
+    /** registry of <code>FileStatusListener</code>s for filesystems */
+    private static Map/*<FileSystem, FileStatusListener>*/ fileStatusListeners
+							   = new HashMap();
+
     /** The type of new lines. Default is <code>NEW_LINE_N</code>. */
     private byte newLineType = NEW_LINE_N;
     
@@ -117,16 +139,97 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return the {@link CloneableEditor} for this support
      */
     protected CloneableEditor createCloneableEditor() {
-        return new PropertiesEditor(this);
+        PropertiesEditor editor = new PropertiesEditor(this);
+	
+	try {
+            attachStatusListener(myEntry.getFile().getFileSystem());
+        } catch (FileStateInvalidException ex) {
+            ex.printStackTrace();
+        }
+
+	return editor;
+    }
+    
+    /**
+     *
+     */
+    static final class FsStatusListener implements FileStatusListener, Runnable {
+        
+        /** */
+        private final PropertiesEditorSupport supp;
+        
+        /**
+         */
+        private FsStatusListener() {
+            this(null);
+        }
+        
+        /**
+         */
+        private FsStatusListener(PropertiesEditorSupport supp) {
+            this.supp = supp;
+        }
+        
+	/**
+	 */
+	public void annotationChanged(FileStatusEvent ev) {
+	    Iterator iter = opened.iterator();
+	    while (iter.hasNext()) {
+		PropertiesEditorSupport supp = (PropertiesEditorSupport)
+					       iter.next();
+		if (ev.hasChanged(supp.myEntry.getFile())) {
+		    Mutex.EVENT.writeAccess(new FsStatusListener(supp));
+		}
+	    }
+	}
+        
+	/**
+	 */
+	public void run() {
+	    supp.updateEditorDisplayNames();
+	}
+    }
+    
+    /**
+     */
+    private void attachStatusListener(FileSystem fs) {
+        FileStatusListener l = (FileStatusListener) fileStatusListeners.get(fs);
+        if (l == null) {
+            l = new FsStatusListener();
+            fs.addFileStatusListener(l);
+            fileStatusListeners.put(fs, l);
+        } // else do nothing - the listener is already added
+    }
+    
+    /**
+     */
+    private void detachStatusListeners() {
+        Iterator i = fileStatusListeners.entrySet().iterator();
+        while (i.hasNext()) {
+            Map.Entry entry = (Map.Entry) i.next();
+            FileSystem fs = (FileSystem) entry.getKey();
+            FileStatusListener l = (FileStatusListener) entry.getValue();
+            fs.removeFileStatusListener(l);
+        }
+        fileStatusListeners.clear();
+    }
+    
+    /**
+     */
+    private void updateEditorDisplayNames() {
+	assert EventQueue.isDispatchThread();
+	
+	final String title = messageName();
+	Enumeration en = allEditors.getComponents();
+	while (en.hasMoreElements()) {
+	    TopComponent tc = (TopComponent) en.nextElement();
+	    tc.setDisplayName(title);
+	}
     }
     
     /**
      */
     protected void initializeCloneableEditor(CloneableEditor editor) {
-
-	// add to CloneableEditorSupport - patch for a bug in deserialization
-	setRef(editor.getReference());
-
 	((PropertiesEditor) editor).initialize(myEntry);
     }
 
@@ -240,8 +343,20 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         ((Environment)env).removeSaveCookie();
     }
     
+    /**
+     */
+    public void open() {
+	super.open();
+	opened.add(this);
+    }
+    
     /** Overrides superclass method. Adds checking for opened Table panel. */
     protected void notifyClosed() {
+	opened.remove(this);
+	if (opened.isEmpty()) {
+	    detachStatusListeners();
+	}
+
         // Close document only in case there is not open table editor.
         if(!hasOpenedTableComponent()) {
             boolean wasModified = isModified();
@@ -291,26 +406,47 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return name of the editor
      */
     protected String messageName () {
-        
-        DataObject obj = myEntry.getDataObject();        
-        if (! obj.isValid()) return ""; // NOI18N       
-        
-        String name = obj.getNodeDelegate().getHtmlDisplayName();
-        FileObject entry = myEntry.getDataObject().getPrimaryFile();        
-        if (name == null) {            
-            name = entry.getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
-        } else {
-            if (!name.startsWith("<html>")) name = "<html>" + name;
-        }               
-        
-        int version;        
-        if(isModified()) {
-            version = entry.canWrite() ? 1 : 2;
-        } else {
-            version = entry.canWrite() ? 3 : 0;
+        if (!myEntry.getDataObject().isValid()) {
+            return "";                                                  //NOI18N       
         }
-        return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_EditorName", // NOI18N
-            new Integer (version), name );
+
+        String rawName = myEntry.getDataObject().getName()        
+                      + '(' + Util.getLocaleLabel(myEntry) + ')';
+        
+        String annotatedName = null;
+        final FileObject entry = myEntry.getFile();
+        try {
+            FileSystem.Status status = entry.getFileSystem().getStatus();
+            if (status == null) {
+                return rawName;
+            }
+            
+            Set files = Collections.singleton(entry);
+            if (status instanceof FileSystem.HtmlStatus) {
+                FileSystem.HtmlStatus hStatus = (FileSystem.HtmlStatus) status;
+                annotatedName = hStatus.annotateNameHtml(rawName, files);
+                if (rawName.equals(annotatedName)) {
+                    annotatedName = null;
+                }
+                if ((annotatedName != null)
+                        && (!annotatedName.startsWith("<html>"))) {     //NOI18N
+                    annotatedName = "<html>" + annotatedName;           //NOI18N
+                }
+            }
+            if (annotatedName == null) {
+                annotatedName = status.annotateName(rawName, files);
+            }
+        } catch (FileStateInvalidException ex) {
+            //do nothing and fall through
+        }
+        
+        String name = (annotatedName != null) ? annotatedName : rawName;
+        int version = isModified() ? (myEntry.getFile().canWrite() ? 1 : 2)
+                                   : (myEntry.getFile().canWrite() ? 3 : 0);
+        return NbBundle.getMessage(PropertiesEditorSupport.class,
+                                   "LBL_EditorName",                    //NOI18N
+                                   new Integer(version),
+                                   name);
     }
     
     /** 
@@ -377,12 +513,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         if (!env.isModified()) {
             myEntry.setModified(false);
         }
-    }
-    
-    /** Helper method. Sets <code>CloneableTopComponent.Ref</code> for this support. 
-     * @see org.openide.windows.CloneableTopComponent.Ref */
-    private void setRef(CloneableTopComponent.Ref ref) {
-        allEditors = ref;
     }
     
     /** Helper method. 

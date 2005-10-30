@@ -33,6 +33,10 @@ import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OpenSupport;
 import org.openide.nodes.Node;
@@ -551,6 +555,15 @@ public class PropertiesOpen extends CloneableOpenSupport
     /** Cloneable top component which represents table view of resource bundles. */
     public static class PropertiesCloneableTopComponent extends CloneableTopComponent {
 
+        /** set of opened <code>PropertiesCloneableTopComponent</code>s */
+        private static Set/*<PropertiesCloneableTopComponent>*/ opened
+                = Collections.synchronizedSet(
+                        new HashSet/*<PropertiesCloneableTopComponent>*/());
+
+        /** registry of <code>FileStatusListener</code>s for filesystems */
+        private static Map/*<FileSystem, FileStatusListener>*/ fileStatusListeners
+                                                               = new HashMap();
+
         /** Reference to underlying <code>PropertiesDataObject</code>. */
         private PropertiesDataObject propDataObject;
         
@@ -561,6 +574,32 @@ public class PropertiesOpen extends CloneableOpenSupport
         /** Generated serial version UID. */
         static final long serialVersionUID =2836248291419024296L;
         
+        
+        /**
+         */
+        private static void attachStatusListener(FileSystem fs) {
+            FileStatusListener l = (FileStatusListener)
+                                   fileStatusListeners.get(fs);
+            if (l == null) {
+                l = new StatusUpdater();
+                fs.addFileStatusListener(l);
+                fileStatusListeners.put(fs, l);
+            } // else do nothing - the listener is already added
+        }
+
+        /**
+         */
+        private static void detachStatusListeners() {
+            Iterator i = fileStatusListeners.entrySet().iterator();
+            while (i.hasNext()) {
+                Map.Entry entry = (Map.Entry) i.next();
+                FileSystem fs = (FileSystem) entry.getKey();
+                FileStatusListener l = (FileStatusListener) entry.getValue();
+                fs.removeFileStatusListener(l);
+            }
+            fileStatusListeners.clear();
+        }
+
         
         /** Default constructor for deserialization. */
         public PropertiesCloneableTopComponent() {
@@ -595,28 +634,124 @@ public class PropertiesOpen extends CloneableOpenSupport
         
         /** Initializes this instance. Used by construction and deserialization. */
         private void initialize() {
-            NodeName.connect (this, propDataObject.getNodeDelegate ());
-            
             initComponents();
+            setupActions();
+            updateName();
+
+            dataObjectListener = new NameUpdater();
+            propDataObject.addPropertyChangeListener(
+                    WeakListeners.propertyChange(dataObjectListener,
+                                                 propDataObject));
+        }
+        
+        /**
+         *
+         */
+        final class NameUpdater implements PropertyChangeListener,
+                                           Runnable {
             
-            // add to CloneableOpenSupport - patch for a bug in deserialization
-            // propDataObject.getOpenSupport().setRef(getReference());
-
-            setNameInAwtThread(propDataObject.getName());
-            setToolTipText(messageToolTip());
-
-            // Listen to saving and renaming.
-            propDataObject.addPropertyChangeListener(WeakListeners.propertyChange(
-                dataObjectListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (!propDataObject.isValid()) return;
-                        if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) {
-                            setNameInAwtThread(propDataObject.getName());
-                            setToolTipText(messageToolTip());
+            /** */
+            private static final int NO_ACTION = 0;
+            /** */
+            private static final int ACTION_UPDATE_NAME = 1;
+            /** */
+            private static final int ACTION_UPDATE_DISPLAY_NAME = 2;
+            
+            /** */
+            private final int action;
+            
+            /**
+             */
+            NameUpdater() {
+                this(NO_ACTION);
+            }
+            
+            /**
+             */
+            NameUpdater(int action) {
+                this.action = action;
+            }
+            
+            /**
+             */
+            public void propertyChange(PropertyChangeEvent e) {
+                final String property = e.getPropertyName();
+                if (property == null) {
+                    return;
+                }
+                if (property.equals(DataObject.PROP_NAME)) {
+                    Mutex.EVENT.writeAccess(
+                            new NameUpdater(ACTION_UPDATE_NAME));
+                } else if (property.equals(DataObject.PROP_COOKIE)
+                           || property.equals(DataObject.PROP_FILES)) {
+                    Mutex.EVENT.writeAccess(
+                            new NameUpdater(ACTION_UPDATE_DISPLAY_NAME));
+                }
+            }
+            
+            /**
+             */
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                
+                if (action == ACTION_UPDATE_NAME) {
+                    updateName();
+                } else if (action == ACTION_UPDATE_DISPLAY_NAME) {
+                    updateDisplayName();
+                } else {
+                    assert false;
+                }
+            }
+            
+        }
+        
+        /**
+         *
+         */
+        static final class StatusUpdater implements FileStatusListener,
+                                                    Runnable {
+            
+            /** */
+            private final PropertiesCloneableTopComponent tc;
+            
+            /**
+             */
+            private StatusUpdater() {
+                this(null);
+            }
+            
+            /**
+             */
+            private StatusUpdater(PropertiesCloneableTopComponent tc) {
+                this.tc = tc;
+            }
+            
+            /**
+             */
+            public void annotationChanged(FileStatusEvent e) {
+                for (Iterator i = opened.iterator(); i.hasNext(); ) {
+                    PropertiesCloneableTopComponent topComp
+                            = (PropertiesCloneableTopComponent) i.next();
+                    PropertiesDataObject propDO = topComp.propDataObject;
+                    final Set/*<FileObject>*/ files = propDO.files();
+                    for (Iterator j = files.iterator(); j.hasNext(); ) {
+                        if (e.hasChanged((FileObject) j.next())) {
+                            Mutex.EVENT.writeAccess(
+                                  new StatusUpdater(topComp));
+                            break;
                         }
                     }
-            }, propDataObject));
-            setupActions();
+                }
+            }
+            
+            /**
+             */
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                
+                tc.updateDisplayName();
+            }
+            
         }
         
         /**
@@ -631,12 +766,74 @@ public class PropertiesOpen extends CloneableOpenSupport
             getActionMap().put(findAction.getActionMapKey(), action);
         }
         
+        /**
+         */
+        private void updateName() {
+            final String name = propDataObject.getName();
+            final String displayName = displayName();
+            final String toolTip = messageToolTip();
+            
+            Enumeration en = getReference().getComponents();
+            while (en.hasMoreElements()) {
+                TopComponent tc = (TopComponent) en.nextElement();
+                tc.setName(name);
+                tc.setDisplayName(displayName);
+                tc.setToolTipText(toolTip);
+            }
+        }
+        
+        /**
+         */
+        private void updateDisplayName() {
+            assert EventQueue.isDispatchThread();
+            
+            final String displayName = displayName();
+            
+            Enumeration en = getReference().getComponents();
+            while (en.hasMoreElements()) {
+                TopComponent tc = (TopComponent) en.nextElement();
+                tc.setDisplayName(displayName);
+            }
+        }
+        
+        /**
+         * Builds a display name for this component.
+         *
+         * @return  the created display name
+         */
+        private String displayName() {
+            final Node node = propDataObject.getNodeDelegate();
+            String displayName = node.getHtmlDisplayName();
+            if (displayName != null) {
+                if (!displayName.startsWith("<html>")) {                //NOI18N
+                    displayName = "<html>" + displayName;               //NOI18N
+                }
+            } else {
+                displayName = node.getDisplayName();
+            }
+            return displayName;
+        }
+        
         /** Gets string for tooltip. */
         private String messageToolTip() {
             FileObject fo = propDataObject.getPrimaryFile();
             return FileUtil.getFileDisplayName(fo);
         }
 
+        /**
+         */
+        protected void componentOpened() {
+            super.componentOpened();
+            
+            opened.add(this);
+            try {
+                attachStatusListener(
+                        propDataObject.getPrimaryFile().getFileSystem());
+            } catch (FileStateInvalidException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
         /** 
          * Overrides superclass method. When closing last view, also close the document.
          * @return <code>true</code> if close succeeded
@@ -646,6 +843,12 @@ public class PropertiesOpen extends CloneableOpenSupport
                 // if we cannot close the last window
                 return false;
             }
+
+            opened.remove(this);
+            if (opened.isEmpty()) {
+                detachStatusListeners();
+            }
+
             propDataObject.getOpenSupport().closeDocuments();
 
             return true;
@@ -671,33 +874,6 @@ public class PropertiesOpen extends CloneableOpenSupport
             return new HelpCtx(Util.HELP_ID_MODIFYING);
         }
 
-        /** Overrides superclass method. Set the name of this top component. Handles saved/not saved state.
-         * Notifies the window manager.
-         * @param name the new name
-         */
-        public void setName(String name) {
-            String saveAwareName = name;
-            if (propDataObject != null) {
-                boolean modified = (propDataObject.getCookie(SaveCookie.class) != null);
-                saveAwareName = NbBundle.getMessage (PropertiesOpen.class, "LBL_EditorName", // NOI18N
-                    new Integer (modified ? 1 : 3), name );
-            }
-
-            super.setName(saveAwareName);
-        }
-        
-        public void setNameInAwtThread(final String name) {
-            if (EventQueue.isDispatchThread()) {
-                setName(name);
-            } else {
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        setName(name);
-                    }
-                });
-            }
-        }
-        
         protected String preferredID() {
             return getName();
         }

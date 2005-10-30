@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.MessageFormat;
@@ -40,6 +42,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.HelpCtx;
@@ -57,6 +60,11 @@ import org.openide.util.NbBundle;
  */
 public class PropertiesDataNode extends DataNode {
 
+    /**
+     * Listener for changes on <code>propDataObject</code> name and cookie properties.
+     * Changes display name of components accordingly.
+     */
+    private final transient PropertyChangeListener dataObjectListener;
     
     /** Creates data node for a given data object.
      * The provided children object will be used to hold all child nodes.
@@ -66,8 +74,32 @@ public class PropertiesDataNode extends DataNode {
     public PropertiesDataNode(DataObject dataObject, Children children) {
         super(dataObject, children);
         setIconBaseWithExtension("org/netbeans/modules/properties/propertiesObject.png"); // NOI18N
+        
+        dataObjectListener = new NameUpdater();
+        dataObject.addPropertyChangeListener(
+                WeakListeners.propertyChange(dataObjectListener, dataObject));
     }
 
+    /**
+     * Listener which listens on changes of the set of
+     * <code>PropertiesDataObject</code>'s files.
+     * When the set of files changes, we fire a change of the DataObject's name,
+     * thus forcing update of the display name. We need this update because
+     * the CVS status of the PropertiesDataObject may change when the set
+     * of files is changed.
+     */
+    final class NameUpdater implements PropertyChangeListener {
+        
+        /**
+         */
+        public void propertyChange(PropertyChangeEvent e) {
+            if (DataObject.PROP_FILES.equals(e.getPropertyName())) {
+                ((PropertiesDataObject) getDataObject()).fireNameChange();
+            }
+        }
+        
+    }
+    
     /** Gets new types that can be created in this node.
      * @return array with <code>NewLocaleType</code> */
     public NewType[] getNewTypes() {
