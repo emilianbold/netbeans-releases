@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.apisupport.project;
 
 import java.beans.PropertyChangeEvent;
@@ -56,16 +57,17 @@ public abstract class TestBase extends NbTestCase {
     
     /** Represents netbeans.org CVS tree this test is run in. */
     protected File nbrootF;
-
+    
     /** Represents netbeans.org CVS tree this test is run in. */
     protected FileObject nbroot;
     
     /** represents destination directory with NetBeans */
     protected File destDirF;
-
+    
     protected File extexamplesF;
     protected FileObject extexamples;
     protected File apisZip;
+    
     protected void setUp() throws Exception {
         super.setUp();
         nbrootF = new File(System.getProperty("test.nbroot"));
@@ -76,7 +78,6 @@ public abstract class TestBase extends NbTestCase {
         
         destDirF = file(nbrootF, "nbbuild/netbeans").getAbsoluteFile();
         assertTrue("Directory really exists: " + destDirF, destDirF.isDirectory());
-
         
         extexamplesF = file(nbrootF, EEP);
         assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
@@ -84,9 +85,9 @@ public abstract class TestBase extends NbTestCase {
         assertNotNull("have a file object for extexamples", extexamples);
         // Need to set up private locations in extexamples, as if they were opened in the IDE.
         clearWorkDir();
-		
+        
         ErrorManagerImpl.registerCase(this);
-		
+        
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
         File userPropertiesFile = initializeBuildProperties(getWorkDir(), apisZip);
@@ -111,12 +112,11 @@ public abstract class TestBase extends NbTestCase {
         }
         NbPlatform.reset();
     }
-	
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		ErrorManagerImpl.registerCase(null);
-	}
-	
+    
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        ErrorManagerImpl.registerCase(null);
+    }
     
     /**
      * Sets up global build.properties for the default platform.
@@ -310,7 +310,7 @@ public abstract class TestBase extends NbTestCase {
         FileObject prjDirFO = generateStandaloneModuleDirectory(workDir, prjDir);
         return (NbModuleProject) ProjectManager.getDefault().findProject(prjDirFO);
     }
-
+    
     /**
      * The same as {@link #generateStandaloneModule(File, String)} but without
      * <em>opening</em> a generated project.
@@ -359,7 +359,7 @@ public abstract class TestBase extends NbTestCase {
         return (NbModuleProject) ProjectManager.getDefault().findProject(
                 FileUtil.toFileObject(prjDirF));
     }
-
+    
     /**
      * Create a fresh JAR file.
      * @param jar the file to create
