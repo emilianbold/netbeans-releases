@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
 final class NbPlatformCustomizerJavadoc extends JPanel {
     
     private NbPlatform plaf;
-    private ComponentFactory.NbPlatformJavadocRootsModel model;
+    private PlatformComponentFactory.NbPlatformJavadocRootsModel model;
     
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerJavadoc() {
@@ -60,7 +60,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
     
     void setPlatform(NbPlatform plaf) {
         this.plaf = plaf;
-        this.model = new ComponentFactory.NbPlatformJavadocRootsModel(plaf);
+        this.model = new PlatformComponentFactory.NbPlatformJavadocRootsModel(plaf);
         javadocList.setModel(model);
     }
     
@@ -93,7 +93,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(javadocLabel, gridBagConstraints);
 
-        javadocList.setCellRenderer(ComponentFactory.URL_RENDERER);
+        javadocList.setCellRenderer(PlatformComponentFactory.URL_RENDERER);
         javadocSP.setViewportView(javadocList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

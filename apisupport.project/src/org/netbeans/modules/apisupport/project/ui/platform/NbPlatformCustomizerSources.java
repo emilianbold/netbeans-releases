@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
 final class NbPlatformCustomizerSources extends JPanel {
     
     private NbPlatform plaf;
-    private ComponentFactory.NbPlatformSourceRootsModel model;
+    private PlatformComponentFactory.NbPlatformSourceRootsModel model;
     
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerSources() {
@@ -52,7 +52,7 @@ final class NbPlatformCustomizerSources extends JPanel {
     
     void setPlatform(NbPlatform plaf) {
         this.plaf = plaf;
-        this.model = new ComponentFactory.NbPlatformSourceRootsModel(plaf);
+        this.model = new PlatformComponentFactory.NbPlatformSourceRootsModel(plaf);
         sourceList.setModel(model);
     }
     
@@ -93,7 +93,7 @@ final class NbPlatformCustomizerSources extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(sourceLabel, gridBagConstraints);
 
-        sourceList.setCellRenderer(ComponentFactory.URL_RENDERER);
+        sourceList.setCellRenderer(PlatformComponentFactory.URL_RENDERER);
         sourceSP.setViewportView(sourceList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

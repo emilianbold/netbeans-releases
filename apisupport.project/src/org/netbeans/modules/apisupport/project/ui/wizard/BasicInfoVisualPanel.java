@@ -29,7 +29,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory;
+import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
@@ -334,18 +334,18 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         filler = new javax.swing.JLabel();
         folderValue = new javax.swing.JTextField();
         suitePlatform = new javax.swing.JLabel();
-        suitePlatformValue = ComponentFactory.getNbPlatformsComboxBox();
+        suitePlatformValue = PlatformComponentFactory.getNbPlatformsComboxBox();
         manageSuitePlatform = new javax.swing.JButton();
         separator3 = new javax.swing.JSeparator();
         mainProject = new javax.swing.JCheckBox();
         typeChooserPanel = new javax.swing.JPanel();
         standAloneModule = new javax.swing.JRadioButton();
         platform = new javax.swing.JLabel();
-        platformValue = ComponentFactory.getNbPlatformsComboxBox();
+        platformValue = PlatformComponentFactory.getNbPlatformsComboxBox();
         managePlatform = new javax.swing.JButton();
         suiteModule = new javax.swing.JRadioButton();
         moduleSuite = new javax.swing.JLabel();
-        moduleSuiteValue = ComponentFactory.getSuitesComboBox();
+        moduleSuiteValue = PlatformComponentFactory.getSuitesComboBox();
         browseSuiteButton = new javax.swing.JButton();
         chooserFiller = new javax.swing.JLabel();
         pnlThouShaltBeholdLayout = new javax.swing.JPanel();
@@ -640,7 +640,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private void managePlatform(final JComboBox platformCombo) {
         NbPlatformCustomizer.showCustomizer();
-        platformCombo.setModel(new ComponentFactory.NbPlatformListModel()); // refresh
+        platformCombo.setModel(new PlatformComponentFactory.NbPlatformListModel()); // refresh
         platformCombo.requestFocus();
     }
     
@@ -673,7 +673,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                     if (sp != null && sp.getSuiteDirectory() != null) {
                         String suiteDir = sp.getSuiteDirectory().getAbsolutePath();
                         // register for this session
-                        ComponentFactory.addUserSuite(suiteDir);
+                        PlatformComponentFactory.addUserSuite(suiteDir);
                         // add to current combobox
                         moduleSuiteValue.addItem(suiteDir);
                         moduleSuiteValue.setSelectedItem(suiteDir);

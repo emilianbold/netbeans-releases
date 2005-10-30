@@ -47,7 +47,7 @@
             <Property name="selectionMode" type="int" value="0"/>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="ComponentFactory.getNbPlatformsList();"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="PlatformComponentFactory.getNbPlatformsList();"/>
           </AuxValues>
         </Component>
       </SubComponents>

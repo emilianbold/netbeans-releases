@@ -28,7 +28,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory;
+import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -88,7 +88,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
     }
     
     private void refreshPlatforms() {
-        platformValue.setModel(new ComponentFactory.NbPlatformListModel()); // refresh
+        platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel()); // refresh
         platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.requestFocus();
     }
@@ -131,7 +131,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         java.awt.GridBagConstraints gridBagConstraints;
 
         platformPanel = new javax.swing.JPanel();
-        platformValue = org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.getNbPlatformsComboxBox();
+        platformValue = org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
         managePlafsButton = new javax.swing.JButton();
         filler = new javax.swing.JLabel();

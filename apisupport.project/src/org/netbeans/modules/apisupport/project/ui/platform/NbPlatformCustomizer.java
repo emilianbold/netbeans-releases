@@ -126,7 +126,7 @@ public final class NbPlatformCustomizer extends JPanel {
 
         platformLbl = new javax.swing.JLabel();
         platformsListSP = new javax.swing.JScrollPane();
-        platformsList = ComponentFactory.getNbPlatformsList();
+        platformsList = PlatformComponentFactory.getNbPlatformsList();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         infoPane = new javax.swing.JPanel();
@@ -246,8 +246,8 @@ public final class NbPlatformCustomizer extends JPanel {
     }
     // </editor-fold>//GEN-END:initComponents
     
-    private ComponentFactory.NbPlatformListModel getPlafListModel() {
-        return (ComponentFactory.NbPlatformListModel) platformsList.getModel();
+    private PlatformComponentFactory.NbPlatformListModel getPlafListModel() {
+        return (PlatformComponentFactory.NbPlatformListModel) platformsList.getModel();
     }
     
     private void removePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePlatform

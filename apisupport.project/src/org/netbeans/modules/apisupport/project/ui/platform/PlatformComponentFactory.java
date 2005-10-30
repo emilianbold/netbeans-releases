@@ -1,0 +1,438 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.apisupport.project.ui.platform;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.text.Collator;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.MutableComboBoxModel;
+import javax.swing.UIManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+
+/**
+ * Factory for creating miscellaneous UI components, their models and renderers
+ * as they are needed through the code of this module.
+ *
+ * @author Martin Krauskopf
+ */
+public final class PlatformComponentFactory {
+    
+    private static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
+    
+    /** Set of suites added by the user in <em>this</em> IDE session. */
+    private static Set/*<String>*/ userSuites = new TreeSet(Collator.getInstance());
+    
+    static final ListCellRenderer URL_RENDERER = new URLListRenderer();
+    
+    private PlatformComponentFactory() {
+        // don't allow instances
+    }
+    
+    /**
+     * Returns <code>JComboBox</code> initialized with {@link
+     * NbPlatformListModel} which contains all NetBeans platform.
+     */
+    public static JComboBox getNbPlatformsComboxBox() {
+        JComboBox plafComboBox = new JComboBox(new NbPlatformListModel());
+        plafComboBox.setRenderer(new NbPlatformListRenderer());
+        return plafComboBox;
+    }
+    
+    /**
+     * Returns <code>JList</code> initialized with {@link NbPlatformListModel}
+     * which contains all NetBeans platform.
+     */
+    public static JList getNbPlatformsList() {
+        JList plafList = new JList(new NbPlatformListModel());
+        plafList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        plafList.setCellRenderer(new NbPlatformListRenderer());
+        return plafList;
+    }
+    
+    /**
+     * Returns <code>JComboBox</code> containing all suites. Also see
+     * {@link #addUserSuite}.
+     */
+    public static JComboBox getSuitesComboBox() {
+        MutableComboBoxModel model = new SuiteListModel(userSuites);
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            SuiteProvider sp = (SuiteProvider) projects[i].getLookup().lookup(SuiteProvider.class);
+            if (sp != null && sp.getSuiteDirectory() != null) {
+                model.addElement(sp.getSuiteDirectory().getAbsolutePath());
+            }
+        }
+        JComboBox suiteCombo = new JComboBox(model);
+        if (model.getSize() > 0) {
+            suiteCombo.setSelectedIndex(0);
+        }
+        return suiteCombo;
+    }
+    
+    /**
+     * Adds <code>suiteDir</code> to the list of suites returned by the
+     * {@link #getSuitesComboBox} method. Such a suites are remembered
+     * <b>only</b> for the current IDE session.
+     */
+    public static void addUserSuite(String suiteDir) {
+        userSuites.add(suiteDir);
+    }
+    
+    /**
+     * Render {@link NbPlatform} using its computed display name. If computation
+     * fails platform ID is used as a fallback. For <code>null</code> values
+     * renders an empty string.
+     * <p>Use in conjuction with {@link NbPlatformListModel}</p>
+     */
+    private static class NbPlatformListRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            NbPlatform plaf = ((NbPlatform) value);
+            // NetBeans.org modules doesn't have platform at all --> null
+            String text = plaf == null ? "" : plaf.getLabel(); // NOI18N
+            Component c = super.getListCellRendererComponent(
+                    list, text, index, isSelected, cellHasFocus);
+            if (plaf != null && !plaf.isValid()) {
+                c.setForeground(INVALID_PLAF_COLOR);
+            }
+            return c;
+        }
+    }
+    
+    /**
+     * Returns model containing all <em>currently</em> registered NbPlatforms.
+     * See also {@link NbPlatform#getPlatforms}.
+     * <p>Use in conjuction with {@link NbPlatformListRenderer}</p>
+     */
+    public static class NbPlatformListModel extends AbstractListModel
+            implements ComboBoxModel {
+        
+        private NbPlatform[] nbPlafs;
+        private Object selectedPlaf;
+        
+        public NbPlatformListModel() {
+            nbPlafs = new NbPlatform[NbPlatform.getPlatforms().size()];
+            NbPlatform.getPlatforms().toArray(nbPlafs);
+            selectedPlaf = nbPlafs[0];
+        }
+        
+        public int getSize() {
+            return nbPlafs.length;
+        }
+        
+        public Object getElementAt(int index) {
+            return index < nbPlafs.length ? nbPlafs[index] : null;
+        }
+
+        public void setSelectedItem(Object plaf) {
+            assert plaf == null || plaf instanceof NbPlatform;
+            if (selectedPlaf != plaf) {
+                selectedPlaf = plaf;
+                fireContentsChanged(this, -1, -1);
+            }
+        }
+        
+        public Object getSelectedItem() {
+            return selectedPlaf;
+        }
+        
+        void removePlatform(NbPlatform plaf) {
+            try {
+                NbPlatform.removePlatform(plaf);
+                nbPlafs = new NbPlatform[NbPlatform.getPlatforms().size()];
+                NbPlatform.getPlatforms().toArray(nbPlafs); // refresh
+                fireContentsChanged(this, 0, nbPlafs.length - 1);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+        
+        NbPlatform addPlatform(String id, String destdir, String label) {
+            try {
+                NbPlatform plaf = NbPlatform.addPlatform(id, new File(destdir), label);
+                nbPlafs = new NbPlatform[NbPlatform.getPlatforms().size()];
+                NbPlatform.getPlatforms().toArray(nbPlafs); // refresh
+                fireContentsChanged(this, 0, nbPlafs.length - 1);
+                return plaf;
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+            return null;
+        }
+    }
+    
+    /**
+     * XXX
+     */
+    static class ModuleEntryListModel extends AbstractListModel {
+        
+        private ModuleEntry[] mes;
+        
+        ModuleEntryListModel(ModuleEntry[] mes) {
+            this.mes = mes;
+        }
+        
+        public int getSize() {
+            return mes.length;
+        }
+        
+        public Object getElementAt(int index) {
+            return mes[index].getLocalizedName();
+        }
+    }
+    
+    /**
+     * XXX
+     */
+    private static class SuiteListModel extends AbstractListModel
+            implements MutableComboBoxModel {
+        
+        private Set/*<String>*/ suites = new TreeSet(Collator.getInstance());
+        private Object selectedSuite;
+        
+        SuiteListModel(Set/*<String>*/ suites) {
+            this.suites.addAll(suites);
+        }
+        
+        public void setSelectedItem(Object suite) {
+            if (suite == null) {
+                return;
+            }
+            assert suite instanceof String;
+            if (selectedSuite != suite) {
+                selectedSuite = suite;
+                fireContentsChanged(this, -1, -1);
+            }
+        }
+        
+        public Object getSelectedItem() {
+            return selectedSuite;
+        }
+        
+        public int getSize() {
+            return suites.size();
+        }
+        
+        public Object getElementAt(int index) {
+            return suites.toArray()[index];
+        }
+        
+        public void addElement(Object obj) {
+            suites.add(obj);
+            fireIntervalAdded(this, 0, suites.size());
+        }
+        
+        /** Shouldn't be needed in the meantime. */
+        public void insertElementAt(Object obj, int index) {
+            assert false : "Who needs to insertElementAt?"; // NOI18N
+        }
+        
+        /** Shouldn't be needed in the meantime. */
+        public void removeElement(Object obj) {
+            assert false : "Who needs to removeElement?"; // NOI18N
+        }
+        
+        /** Shouldn't be needed in the meantime. */
+        public void removeElementAt(int index) {
+            assert false : "Who needs to call removeElementAt?"; // NOI18N
+        }
+    }
+    
+    /**
+     * <code>ListModel</code> capable to manage NetBeans platform source roots.
+     * <p>Can be used in conjuction with {@link URLListRenderer}</p>
+     */
+    static final class NbPlatformSourceRootsModel extends AbstractListModel {
+        
+        private NbPlatform plaf;
+        private URL[] srcRoots;
+        
+        NbPlatformSourceRootsModel(NbPlatform plaf) {
+            this.plaf = plaf;
+            this.srcRoots = plaf.getSourceRoots();
+        }
+        
+        public Object getElementAt(int index) {
+            return srcRoots[index];
+        }
+        
+        public int getSize() {
+            return srcRoots.length;
+        }
+        
+        void removeSourceRoot(URL[] srcRootToRemove) {
+            try {
+                plaf.removeSourceRoots(srcRootToRemove);
+                this.srcRoots = plaf.getSourceRoots(); // refresh
+                fireContentsChanged(this, 0, srcRootToRemove.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+        
+        void addSourceRoot(URL srcRootToAdd) {
+            try {
+                plaf.addSourceRoot(srcRootToAdd);
+                this.srcRoots = plaf.getSourceRoots(); // refresh
+                fireContentsChanged(this, 0, srcRoots.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+        
+        void moveSourceRootsDown(int[] toMoveDown) {
+            try {
+                for (int i = 0; i < toMoveDown.length; i++) {
+                    plaf.moveSourceRootDown(toMoveDown[i]);
+                }
+                this.srcRoots = plaf.getSourceRoots(); // refresh
+                fireContentsChanged(this, 0, srcRoots.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+        
+        void moveSourceRootsUp(int[] toMoveUp) {
+            try {
+                for (int i = 0; i < toMoveUp.length; i++) {
+                    plaf.moveSourceRootUp(toMoveUp[i]);
+                }
+                this.srcRoots = plaf.getSourceRoots(); // refresh
+                fireContentsChanged(this, 0, srcRoots.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+    }
+    
+    /**
+     * <code>ListModel</code> capable to manage NetBeans platform javadoc roots.
+     * <p>Can be used in conjuction with {@link URLListRenderer}</p>
+     */
+    static final class NbPlatformJavadocRootsModel extends AbstractListModel {
+        
+        private NbPlatform plaf;
+        private URL[] javadocRoots;
+        
+        NbPlatformJavadocRootsModel(NbPlatform plaf) {
+            this.plaf = plaf;
+            this.javadocRoots = plaf.getJavadocRoots();
+        }
+        
+        public Object getElementAt(int index) {
+            return javadocRoots[index];
+        }
+        
+        public int getSize() {
+            return javadocRoots.length;
+        }
+        
+        void removeJavadocRoots(URL[] jdRootToRemove) {
+            try {
+                plaf.removeJavadocRoots(jdRootToRemove);
+                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                fireContentsChanged(this, 0, javadocRoots.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+        
+        void addJavadocRoot(URL jdRootToAdd) {
+            try {
+                plaf.addJavadocRoot(jdRootToAdd);
+                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                fireContentsChanged(this, 0, javadocRoots.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+        
+        void moveJavadocRootsDown(int[] toMoveDown) {
+            try {
+                for (int i = 0; i < toMoveDown.length; i++) {
+                    plaf.moveJavadocRootDown(toMoveDown[i]);
+                }
+                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                fireContentsChanged(this, 0, javadocRoots.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+        
+        void moveJavadocRootsUp(int[] toMoveUp) {
+            try {
+                for (int i = 0; i < toMoveUp.length; i++) {
+                    plaf.moveJavadocRootUp(toMoveUp[i]);
+                }
+                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                fireContentsChanged(this, 0, javadocRoots.length);
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                ErrorManager.getDefault().notify(ErrorManager.USER, e);
+            }
+        }
+    }
+    
+    /**
+     * Render {@link java.net.URL} using {@link java.net.URL#getFile}.
+     * <p>Use in conjuction with {@link NbPlatformSourceRootsModel} and
+     * {@link NbPlatformJavadocRootsModel}</p>
+     */
+    static final class URLListRenderer extends DefaultListCellRenderer {
+        
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            URL u = (URL) value;
+            String text = u.toExternalForm();
+            if (u.getProtocol().equals("file")) { // NOI18N
+                text = new File(URI.create(u.toExternalForm())).getAbsolutePath();
+            } else if (u.getProtocol().equals("jar")) { // NOI18N
+                URL baseU = FileUtil.getArchiveFile(u);
+                if (u.equals(FileUtil.getArchiveRoot(baseU)) && baseU.getProtocol().equals("file")) { // NOI18N
+                    text = new File(URI.create(baseU.toExternalForm())).getAbsolutePath();
+                }
+            }
+            return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+        }
+    }
+    
+}

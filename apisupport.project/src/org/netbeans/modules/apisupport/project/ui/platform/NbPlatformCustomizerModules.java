@@ -50,7 +50,7 @@ final class NbPlatformCustomizerModules extends JPanel {
                 final ModuleEntry[] modules = plaf.getModules();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        moduleList.setModel(new ComponentFactory.ModuleEntryListModel(modules));
+                        moduleList.setModel(new PlatformComponentFactory.ModuleEntryListModel(modules));
                     }
                 });
             }

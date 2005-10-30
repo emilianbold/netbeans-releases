@@ -78,7 +78,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }
     
     private void refreshPlatforms() {
-        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
+        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.NbPlatformListModel()); // refresh
         platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.requestFocus();
     }
@@ -117,7 +117,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         dependencySP = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList();
         platformPanel = new javax.swing.JPanel();
-        platformValue = org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.getNbPlatformsComboxBox();
+        platformValue = org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
         managePlafsButton = new javax.swing.JButton();
         reqTokens = new javax.swing.JLabel();
