@@ -353,6 +353,7 @@ public final class CreatedModifiedFilesFactory {
         
         public void run() throws IOException {
             ModuleEntry me = getProject().getModuleList().getEntry(codeNameBase);
+            // XXX this should rather probably be an IAE in AMD's constructor?
             assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
                     codeNameBase + ") in the project's universe"; // NOI18N
             
