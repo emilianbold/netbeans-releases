@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,8 +36,7 @@ import org.openide.text.Line;
  *
  * @author   Jan Jancura
  */
-public class WatchesModel implements TreeModel, NodeModel, TableModel,
-NodeActionsProvider {
+public class WatchesModel implements TreeModel, NodeModel, TableModel {
 
     public static final String WATCH =
     "org/netbeans/modules/debugger/resources/watchesView/Watch";
@@ -82,13 +81,7 @@ NodeActionsProvider {
     public Object[] getChildren (Object parent, int from, int to) 
         throws UnknownTypeException {
         if (parent == ROOT) {
-            Watch[] originalWatches = DebuggerManager.getDebuggerManager ().
-                getWatches ();
-            int i, k = originalWatches.length;
-            MyWatch[] watches = new MyWatch [k];
-            for (i = 0; i < k; i++)
-                watches [i] = new MyWatch (originalWatches [i]);
-            return watches;
+            return DebuggerManager.getDebuggerManager ().getWatches();
         }
         throw new UnknownTypeException (parent);
     }
@@ -103,7 +96,7 @@ NodeActionsProvider {
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == ROOT)
             return false;
-        if (node instanceof MyWatch)
+        if (node instanceof Watch)
             return true;
         throw new UnknownTypeException (node);
     }
@@ -141,8 +134,8 @@ NodeActionsProvider {
      * @return  display name for given node
      */
     public String getDisplayName (Object node) throws UnknownTypeException {
-        if (node instanceof MyWatch) 
-            return ((MyWatch) node).watch.getExpression ();
+        if (node instanceof Watch) 
+            return ((Watch) node).getExpression ();
         throw new UnknownTypeException (node);
     }
     
@@ -156,7 +149,7 @@ NodeActionsProvider {
      * @return  icon for given node
      */
     public String getIconBase (Object node) throws UnknownTypeException {
-        if (node instanceof MyWatch) 
+        if (node instanceof Watch) 
             return WATCH;
         throw new UnknownTypeException (node);
     }
@@ -172,8 +165,8 @@ NodeActionsProvider {
      */
     public String getShortDescription (Object node) 
     throws UnknownTypeException {
-        if (node instanceof MyWatch) {
-            String expression = ((MyWatch) node).watch.getExpression ();
+        if (node instanceof Watch) {
+            String expression = ((Watch) node).getExpression ();
             return debugger.getVariableValue (expression);
         }
         throw new UnknownTypeException (node);
@@ -203,13 +196,13 @@ NodeActionsProvider {
         if (columnID == Constants.WATCH_TO_STRING_COLUMN_ID ||
             columnID == Constants.WATCH_VALUE_COLUMN_ID
         ) {
-            if (node instanceof MyWatch) {
-                String expression = ((MyWatch) node).watch.getExpression ();
+            if (node instanceof Watch) {
+                String expression = ((Watch) node).getExpression ();
                 return debugger.getVariableValue (expression);
             }
         }
         if (columnID == Constants.WATCH_TYPE_COLUMN_ID &&
-            node instanceof MyWatch
+            node instanceof Watch
         )
             return "";
         throw new UnknownTypeException (node);
@@ -234,7 +227,7 @@ NodeActionsProvider {
             columnID == Constants.WATCH_VALUE_COLUMN_ID ||
             columnID == Constants.WATCH_TYPE_COLUMN_ID
         ) {
-            if (node instanceof MyWatch)
+            if (node instanceof Watch)
                 return true;
         }
         throw new UnknownTypeException (node);
@@ -258,40 +251,6 @@ NodeActionsProvider {
     }
         
      
-    // NodeActionsProvider implementation ......................................
-    
-    /**
-     * Performs default action for given node.
-     *
-     * @throws  UnknownTypeException if this NodeActionsProvider implementation 
-     *          is not able to resolve actions for given node type
-     * @return  display name for given node
-     */
-    public void performDefaultAction (Object node) 
-    throws UnknownTypeException {
-        if (node == ROOT)
-            return;
-        if (node instanceof MyWatch)
-            return;
-        throw new UnknownTypeException (node);
-    }
-    
-    /**
-     * Returns set of actions for given node.
-     *
-     * @throws  UnknownTypeException if this NodeActionsProvider implementation 
-     *          is not able to resolve actions for given node type
-     * @return  display name for given node
-     */
-    public Action[] getActions (Object node) 
-    throws UnknownTypeException {
-        if (node == ROOT)
-            return new Action [] {};
-        if (node instanceof MyWatch)
-            return new Action [] {};
-        throw new UnknownTypeException (node);
-    }
-
     /** 
      * Registers given listener.
      * 
@@ -322,14 +281,4 @@ NodeActionsProvider {
             );
     }
     
-    
-    // innerclasses ............................................................
-    
-    static class MyWatch {
-        Watch watch;
-        
-        MyWatch (Watch w) {
-            watch = w;
-        }
-    }
 }
