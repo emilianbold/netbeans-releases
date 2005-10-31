@@ -32,6 +32,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
@@ -303,6 +304,11 @@ public class NewProjectIterator extends BasicWizardIterator {
     private static void collectFiles(FileObject parent, Collection accepted, int parentSharab) {
         FileObject[] fos = parent.getChildren();
         for (int i = 0; i < fos.length; i++) {
+            if (!VisibilityQuery.getDefault().isVisible(fos[i])) {
+                //#66765
+                // ignore invisible files/folders.. like CVS subdirectory
+                continue;
+            }
             int sharab;
             if (parentSharab == SharabilityQuery.UNKNOWN || parentSharab == SharabilityQuery.MIXED) {
                 sharab = SharabilityQuery.getSharability(FileUtil.toFile(fos[i]));
