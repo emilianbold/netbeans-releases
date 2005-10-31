@@ -1189,21 +1189,38 @@ class LayoutDragger implements LayoutConstants {
     }
 
     private boolean isPreferredNextTo(PositionDef bestNextTo, PositionDef bestAligned) {
-        if (operation == RESIZING && bestNextTo != null && bestAligned != null) {
-            LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
-            int fixedEdge = movingEdges[dimension] ^ 1;
-            if (bestAligned.interval.isParentOf(resizing)) {
-                if (LayoutInterval.isAlignedAtBorder(resizing, bestAligned.interval, fixedEdge)) {
-                    return false;
+        if (bestNextTo != null && bestAligned != null) {
+            if (operation == RESIZING) {
+                // prefer aligned resizing if already aligned at the other edge
+                // otherwise prefer next to
+                LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
+                int fixedEdge = movingEdges[dimension] ^ 1;
+                if (bestAligned.interval.isParentOf(resizing)) {
+                    if (LayoutInterval.isAlignedAtBorder(resizing, bestAligned.interval, fixedEdge)) {
+                        return false;
+                    }
+                }
+                else {
+                    LayoutInterval commonParent = LayoutInterval.getCommonParent(resizing, bestAligned.interval);
+                    if (LayoutInterval.isAlignedAtBorder(resizing, commonParent, fixedEdge)
+                        && LayoutInterval.isAlignedAtBorder(bestAligned.interval, commonParent, fixedEdge))
+                        return false;
+                }
+                return true;
+            }
+            // adding or moving
+            else if (bestAligned.alignment == LEADING || bestAligned.alignment == TRAILING) {
+                // prefer aligned position if bestAligned.interval is aligned
+                // in a parallel group and bestNextTo.interval is just next to it
+                LayoutInterval parParent = LayoutInterval.getFirstParent(bestAligned.interval, PARALLEL);
+                if (parParent != null && LayoutInterval.isAlignedAtBorder(bestAligned.interval, parParent, bestAligned.alignment)) {
+                    LayoutInterval neighbor = LayoutInterval.getNeighbor(
+                            parParent, bestAligned.alignment, true, true, false);
+                    if (neighbor != null
+                        && (neighbor == bestNextTo.interval || neighbor.isParentOf(bestNextTo.interval)))
+                        return false;
                 }
             }
-            else {
-                LayoutInterval commonParent = LayoutInterval.getCommonParent(resizing, bestAligned.interval);
-                if (LayoutInterval.isAlignedAtBorder(resizing, commonParent, fixedEdge)
-                    && LayoutInterval.isAlignedAtBorder(bestAligned.interval, commonParent, fixedEdge))
-                    return false;
-            }
-            return true;
         }
         return dimension == HORIZONTAL;
     }
