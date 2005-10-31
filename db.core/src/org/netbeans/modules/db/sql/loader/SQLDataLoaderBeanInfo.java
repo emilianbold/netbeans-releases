@@ -39,9 +39,9 @@ public class SQLDataLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(int type) {
         if (type == java.beans.BeanInfo.ICON_COLOR_16x16 ||
                 type == java.beans.BeanInfo.ICON_MONO_16x16) {
-	    return Utilities.loadImage("org/netbeans/modules/db/sql/loader/resources/sql16.gif");
+	    return Utilities.loadImage("org/netbeans/modules/db/sql/loader/resources/sql16.png"); // NOI18N
         } else {
-	    return Utilities.loadImage ("org/netbeans/modules/db/sql/loader/resources/sql16.gif");
+	    return Utilities.loadImage ("org/netbeans/modules/db/sql/loader/resources/sql32.png"); // NOI18N
         }
     }
 }
