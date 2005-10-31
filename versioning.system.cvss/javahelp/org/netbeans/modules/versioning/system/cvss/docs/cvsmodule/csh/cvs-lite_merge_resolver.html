@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
  * 
- *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
+ *     Copyright 2005 Sun Microsystems, Inc. All rights reserved.
  *     Use is subject to license terms.
  *
  *
@@ -13,13 +13,23 @@
     </head>
     <body>
 	<h2>CVS: Merge Conflicts Resolver</h2>
+	<p><small><a href="#seealso">See Also</a></small></p>
 	<p>Use the Merge Conflicts Resolver to resolve conflicts between version-controlled files before committing files to the repository.</p>
 	
-	<p>When merge conflicts occur, a Merge Conflict badge (<img src="../images/badgeMergeConflict.gif" alt="Merge Conflict Badge">) appears on the file's node.
+	<p>When merge conflicts occur, a Merge Conflict badge (<img src="../images/conflicts-badge.png" alt="Merge Conflict Badge">) appears on the file's node.
 	To resolve merge conflicts in the Merge Conflicts Resolver, right-click the file with the conflict and choose CVS &gt; Resolve Conflicts.</p> 
- 	<p>The Merge Conflicts Resolver displays the two conflicting revisions side by side, with the conflicting areas highlighted.
-	You resolve the conflicts by accepting one of the revisions. Once all conflicts are resolved, click OK.</p>
-	<p>For more, see <a href="../cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a>.</p>
+ 	<p>The Merge Conflicts Resolver displays the two conflicting revisions side by side in the top pane, with the conflicting areas highlighted.
+	You resolve a conflict by accepting a revision. Click the Accept button of the revision you want to accept. 
+	The IDE merges the accepted revision with the source file. 
+	You can see the results of the merge in the bottom pane of the Merge Conflicts Resolver.
+	Once all conflicts are resolved, click OK to exit the Merge Conflicts Resolver and save the modified file.
+ 	The Merge Conflict badge is removed from the file and you can now commit the modified file.</p>
+	<dl>
+	    <dt>
+	    <a name="seealso">See Also</a></dt>
+	    <dd> <a href="../cvs-lite_using.html">Using CVS with the IDE</a></dd> 
+	    <dd> <a href="../cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+	</dl>
 	<hr>
 	<small><a href="../../credits.html">Legal Notices</a></small>
 	<table cellpadding="50" border="0">
