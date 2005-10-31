@@ -467,6 +467,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     
         <folder name="Build">            
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+            
             <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
             </file>
