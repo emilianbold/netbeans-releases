@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.ant.debugger.breakpoints;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.JEditorPane;
@@ -28,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 
@@ -35,7 +38,8 @@ import org.openide.windows.TopComponent;
  *
  * @author  Honza
  */
-public class AntBreakpointActionProvider extends ActionsProviderSupport {
+public class AntBreakpointActionProvider extends ActionsProviderSupport
+                                         implements PropertyChangeListener {
     
     private static final Set actions = Collections.singleton (
         ActionsManager.ACTION_TOGGLE_BREAKPOINT
@@ -44,6 +48,8 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport {
     
     public AntBreakpointActionProvider () {
         setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+        TopComponent.getRegistry().addPropertyChangeListener(
+                WeakListeners.propertyChange(this, TopComponent.getRegistry()));
     }
     
     /**
@@ -53,6 +59,7 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport {
      */
     public void doAction (Object action) {
         Line line = getCurrentLine ();
+        if (line == null) return ;
         FileObject fileObject = (FileObject) line.getLookup ().lookup 
             (FileObject.class);
         if (!fileObject.getExt ().equals ("xml")) return;
@@ -109,4 +116,21 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport {
             return null;
         }
     }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        // We need to push the state there :-(( instead of wait for someone to be interested in...
+        boolean enabled = true;
+        Line line = getCurrentLine ();
+        if (line == null) {
+            enabled = false;
+        } else {
+            FileObject fileObject = (FileObject) line.getLookup ().lookup 
+                (FileObject.class);
+            if (!fileObject.getExt ().equals ("xml")) {
+                enabled = false;
+            }
+        }
+        setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
+    }
+    
 }
