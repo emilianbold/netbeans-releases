@@ -357,6 +357,12 @@ public abstract class WindowManager extends Object implements Serializable {
      * @param displayName newly changed display name value
      * @since 4.13 */
     protected abstract void topComponentDisplayNameChanged(TopComponent tc, String displayName);
+    
+    /** Informs about change of html display name of specified <code>TopComponent</code>.
+     * @param tc <code>TopComponent</code> which display name has changed
+     * @param displayName newly changed html display name value
+     * @since 6.4 */
+    protected abstract void topComponentHtmlDisplayNameChanged(TopComponent tc, String htmlDisplayName);
 
     /** Informs about change of tooltip of specified <code>TopComponent</code>.
      * @param tc <code>TopComponent</code> which tooltip has changed

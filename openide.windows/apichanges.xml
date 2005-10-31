@@ -17,6 +17,31 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+
+<change id="TopComponent-getHtmlDisplayName">
+    <api name="winsys"/>
+    <summary>Added the <code>TopComponent.getHtmlDisplayName</code>, 
+            <code>TopComponent.setHtmlDisplayName</code> and 
+            <code>WindowManager.topComponentHtmlDisplayNameChanged</code> methods.</summary>
+    <version major="6" minor="4"/>
+    <date day="31" month="10" year="2005"/>
+    <author login="dsimonek"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        The <code>TopComponent.getHtmlDisplayName</code> and <code>TopComponent.setHtmlDisplayName</code>
+        methods was added to allow <code>TopComponent</code>s to have display
+        name that contains html tags differentiated from regular display name.
+        Regular display name should be used for tasks like alphabetical sorting
+        while html display name is used for labels and titles that support html,
+        like editor tabs. <code>WindowManager.topComponentHtmlDisplayNameChanged</code>
+        was also added to let window system implementation know about html 
+        display name change.
+    </description>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="66777"/>
+</change>
+
 <change id="TopComponent.toFront">
         <api name="winsys"/>
         <summary>Added the <code>TopComponent</code> ability to bring their parent 

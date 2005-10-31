@@ -487,13 +487,10 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
                                    implements Comparable, Action, PropertyChangeListener {
         
         private TopComponent tc;
-        /** Node asociated to top component, to obtain name from */
-        private Node node;
         
         public TopComponentNode (TopComponent tc) {
             super(Children.LEAF);
             this.tc = tc;
-            this.node = (Node) tc.getLookup().lookup(Node.class);            
             tc.addPropertyChangeListener(WeakListeners.propertyChange(this, tc));
         }
         
@@ -503,17 +500,12 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         }
         public String getDisplayName() {
             // Also #60263. Forms do not have a tc.name??
-            if (node != null) {
-                return node.getDisplayName();
-            }
-            return tc.getDisplayName();
+            String result = tc.getDisplayName();
+            return result != null ? result : tc.getName();
         }
 
         public String getHtmlDisplayName() {
-            if (node != null) {
-                return node.getHtmlDisplayName();
-            }
-            return WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
+            return tc.getHtmlDisplayName();
         }
         
         public Image getIcon (int type) {

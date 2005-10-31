@@ -12,6 +12,7 @@
  */
 package org.openide.windows;
 
+import javax.swing.plaf.basic.BasicHTML;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.*;
@@ -141,11 +142,16 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     /** Localized display name of this <code>TopComponent</code>. */
     private transient String displayName;
 
+    /** Holds localized display name of this <code>TopComponent</code> in html syntax,
+     * or null if not needed */
+    private String htmlDisplayName;
+    
     /** identification of serialization version
     * Used in CloneableTopComponent readObject method.
     */
     short serialVersion = 1;
     private AttentionGetter attentionGetter = null;
+
 
     /** Create a top component.
     */
@@ -686,18 +692,60 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             return;
         }
 
+        /* [dafe] can't put the warning in, because I don't know how to fix 
+         output window, which places html tags into its display name sometimes 
+        if (BasicHTML.isHTMLString(displayName)) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                "WARNING: Call of " + getClass().getName() + ".setDisplayName("" + displayName + "")" +
+                "shouldn't contain any HTML tags. Please use " + getClass().getName() + ".setHtmlDisplayName(String)" +
+                "for such purpose. For details please see http://www.netbeans.org/issues/show_bug.cgi?id=66777.");
+        } */
+        
         this.displayName = displayName;
         firePropertyChange("displayName", old, displayName); // NOI18N
 
         WindowManager.getDefault().topComponentDisplayNameChanged(this, displayName);
     }
 
-    /** Gets localized dipslay name of this <code>TopComponent</code>.
-     * @return localized display name of <code>null</code> if there is none
+    /** Gets localized display name of this <code>TopComponent</code>.
+     * @return localized display name or <code>null</code> if there is none
      * @since 4.13 */
     public String getDisplayName() {
         return displayName;
     }
+    
+    /** Sets localized html display name of this <code>TopComponent</code>.
+     * Hmtl name usually contains basic html tags for text coloring and style.
+     * Html name may be null if not needed.
+     *
+     * @param htmlDisplayName localized html display name which is set
+     *
+     * @since 6.4
+     */
+    public void setHtmlDisplayName(String htmlDisplayName) {
+        String old = this.htmlDisplayName;
+
+        if ((htmlDisplayName == old) || ((htmlDisplayName != null) && htmlDisplayName.equals(old))) {
+            return;
+        }
+
+        this.htmlDisplayName = htmlDisplayName;
+        firePropertyChange("htmlDisplayName", old, htmlDisplayName); // NOI18N
+
+        WindowManager.getDefault().topComponentHtmlDisplayNameChanged(this, htmlDisplayName);
+    }
+
+    /** Gets localized display name of this <code>TopComponent</code> with added
+     * html tags for text coloring and/or font style. May return null.
+     *
+     * @return localized html display name or <code>null</code> if there is none
+     *
+     * @since 6.4
+     */
+    public String getHtmlDisplayName() {
+        return htmlDisplayName;
+    }
+    
 
     /** Sets toolTip for this <code>TopComponent</code>, adds notification
      * about the change to its <code>WindowManager.TopComponentManager</code>. */

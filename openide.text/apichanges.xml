@@ -17,6 +17,27 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    
+    <change id="CloneableEditorSupport-messageHtmlName">
+        <api name="text"/>
+        <summary>Added CloneableEditorSupport.messageHtmlName method</summary>
+        <version major="6" minor="8"/>
+        <date day="31" month="10" year="2005"/>
+        <author login="dsimonek"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <p>A <code>messageHtmlName</code> method has been added to
+            CloneableEditorSupport to allow for display names with html tags.
+            CloneableEditor uses this new method to set its html display name 
+            correctly. Also <code>DataEditorSupport</code> now overrides 
+            <code>messageHtmlName</code> to connect with <code>Node.getHtmlDisplayName</code>.</p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <class package="org.openide.text" name="CloneableEditor"/>
+        <class package="org.openide.text" name="DataEditorSupport" link="no" />
+        <issue number="66777"/>
+    </change>
+
     <change id="ActiveEditorDrop">
         <api name="text"/>
         <summary>Added ActiveEditorDrop interface</summary>

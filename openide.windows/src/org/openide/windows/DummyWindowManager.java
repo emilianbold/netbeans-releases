@@ -297,6 +297,10 @@ final class DummyWindowManager extends WindowManager {
             f.setTitle(displayName);
         }
     }
+    
+    protected void topComponentHtmlDisplayNameChanged(TopComponent tc, String htmlDisplayName) {
+        // no operarion, html looks ugly in frame titles
+    }
 
     protected void topComponentOpen(TopComponent tc) {
         JFrame f = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, tc);
@@ -394,6 +398,7 @@ final class DummyWindowManager extends WindowManager {
     protected void topComponentCancelRequestAttention(TopComponent tc) {
         //TODO what to do here?
     }
+
 
     private final class W implements Workspace {
         private static final long serialVersionUID = 1L;

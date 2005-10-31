@@ -457,7 +457,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             Mutex.EVENT.writeAccess(
                 new Runnable() {
                     public void run() {
-                        String name = ces.messageName();
+                        String name = ces.messageHtmlName();
+                        setHtmlDisplayName(name);
+                        name = ces.messageName();
                         setDisplayName(name);
                         setName(name); // XXX compatibility
 

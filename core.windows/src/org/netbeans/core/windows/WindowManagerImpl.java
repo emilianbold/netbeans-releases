@@ -779,12 +779,22 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     private static final boolean NAME_HACK = Boolean.getBoolean("nb.tabnames.html"); //NOI18N
     
-    /** Helper method to retrieve the display name of TopComponent. */
+    /** Helper method to retrieve soem form of display name of TopComponent.
+     * First tries TopComponent's getHtmlDisplayName, if is it null then continues
+     * with getDisplayName and getName in this order.
+     *
+     * @param tc TopComponent to retrieve display name from. May be null.
+     * @return TopComponent's display name or null if no display name available
+     * or null TopComponent is given
+     */
     public String getTopComponentDisplayName(TopComponent tc) {
         if(tc == null) {
             return null;
         }
-        String displayName = tc.getDisplayName();
+        String displayName = tc.getHtmlDisplayName();
+        if (displayName == null) {
+            displayName = tc.getDisplayName();
+        }
         if (displayName == null) {
             displayName = tc.getName();
         }
@@ -1023,6 +1033,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
     
+    protected void topComponentHtmlDisplayNameChanged(TopComponent tc, String htmlDisplayName) {
+        // do the same thing as for display name, we can because string param is ignored
+        topComponentDisplayNameChanged(tc, null);
+    }
+    
     protected void topComponentToolTipChanged(TopComponent tc, String toolTip) {
         assertEventDispatchThreadWeak();
         
@@ -1122,6 +1137,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 new IllegalStateException("Assertion failed. " + ASSERTION_ERROR_MESSAGE)); // NOI18N
         }
     }
-    
+
 }
 

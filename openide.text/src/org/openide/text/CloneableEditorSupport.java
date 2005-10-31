@@ -233,6 +233,18 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @return name of the editor
     */
     protected abstract String messageName();
+    
+    /** Constructs message that should be used to name the editor component
+     * in html fashion, with possible coloring, text styles etc.
+     *
+     * May return null if no html name is needed or available.
+     *
+     * @return html name of the editor component or null
+     * @since 6.9
+     */
+    protected String messageHtmlName() {
+        return null;
+    }
 
     /** Constructs the ID used for persistence of opened editors.
      * Should be overridden to return sane ID of the underlying document,
