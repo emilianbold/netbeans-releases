@@ -36,6 +36,7 @@ public class ALT_Resizing02Test extends LayoutTestCase {
         }
     }
 
+    // Resize JInternalFrame down-right from its default size, do not snap.
     public void doChanges0() {
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE

@@ -36,6 +36,7 @@ public class ALT_Resizing03Test extends LayoutTestCase {
         }
     }
 
+    // Resize JInternalFrame downwards to snap to container border.
     public void doChanges0() {
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE

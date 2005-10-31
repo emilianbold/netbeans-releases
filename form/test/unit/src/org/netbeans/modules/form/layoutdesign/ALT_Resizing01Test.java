@@ -36,6 +36,8 @@ public class ALT_Resizing01Test extends LayoutTestCase {
         }
     }
 
+    // Resize JInternalFrame down-right from its default size to snap to other components
+    // (jTextArea1 and jButton2).
     public void doChanges0() {
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
