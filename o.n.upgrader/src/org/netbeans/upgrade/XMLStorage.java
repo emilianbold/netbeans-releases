@@ -108,18 +108,20 @@ public class XMLStorage {
         requestProcessor.post (new Runnable () {
             public void run () {
                 FileLock lock = null;
+                Writer writer = null;
                 try {
                     lock = fo.lock ();
                     OutputStream os = fo.getOutputStream (lock);
-                    Writer writer = new OutputStreamWriter (os, "UTF-8"); // NOI18N
+                    writer = new OutputStreamWriter (os, "UTF-8"); // NOI18N
                     writer.write (content);
-                    writer.flush ();
-                    writer.close ();
-                    os.flush ();
-                    os.close ();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 } finally {
+                    try {
+                        writer.flush ();
+                        writer.close ();
+                    } catch (IOException ex) {
+                    }
                     if (lock != null)
                         lock.releaseLock ();
                 }
