@@ -628,6 +628,12 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             JavaMetamodel.getManager().waitScanFinished();
             JavaClass clazz = Utils.findClass(implBeanClass);
             
+            if (clazz == null) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                        "EjbJarWSSupport.addInfrastructure: Class not found: " + implBeanClass + " for package: " + pkg); //NOI18N
+                return;
+            }
+            
             //remove java.rmi.Remote interface
             List interfaces = clazz.getInterfaceNames();
             for (Iterator it = interfaces.iterator(); it.hasNext();) {
