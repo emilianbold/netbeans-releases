@@ -207,37 +207,37 @@ implements OperationListener {
     
     public void operationCopy(org.openide.loaders.OperationEvent.Copy ev) {
         events.add (ev);
-        org.openide.ErrorManager.getDefault().log ("  operationCopy: " + ev);
+        err.log ("  operationCopy: " + ev);
     }
     
     public void operationCreateFromTemplate(org.openide.loaders.OperationEvent.Copy ev) {
         events.add (ev);
-        org.openide.ErrorManager.getDefault().log ("  operationCreateFromTemplate: " + ev);
+        err.log ("  operationCreateFromTemplate: " + ev);
     }
     
     public void operationCreateShadow(org.openide.loaders.OperationEvent.Copy ev) {
         events.add (ev);
-        org.openide.ErrorManager.getDefault().log ("  operationCreateShadow: " + ev);
+        err.log ("  operationCreateShadow: " + ev);
     }
     
     public void operationDelete(OperationEvent ev) {
         events.add (ev);
-        org.openide.ErrorManager.getDefault().log ("  operationDelete: " + ev);
+        err.log ("  operationDelete: " + ev);
     }
     
     public void operationMove(org.openide.loaders.OperationEvent.Move ev) {
         events.add (ev);
-        org.openide.ErrorManager.getDefault().log ("  operationMove: " + ev);
+        err.log ("  operationMove: " + ev);
     }
     
     public void operationPostCreate(OperationEvent ev) {
         events.add (ev);
-        org.openide.ErrorManager.getDefault().log ("  operationPostCreate: " + ev);
+        err.log ("  operationPostCreate: " + ev);
     }
     
     public void operationRename(org.openide.loaders.OperationEvent.Rename ev) {
         events.add (ev);
-        org.openide.ErrorManager.getDefault().log ("  operationRename: " + ev);
+        err.log ("  operationRename: " + ev);
     }
 
     
