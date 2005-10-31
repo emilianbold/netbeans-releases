@@ -314,8 +314,10 @@ public class FormEditorSupport extends JavaEditor
                 if(formDesigner.isShowing()) {
                     // load the form only if its open
                     loadForm();
-                    getFormEditor().reportErrors(FormEditor.LOADING);                    
+		    FormEditor formEditor = getFormEditor();
+                    formEditor.reportErrors(FormEditor.LOADING);                    
                     formDesigner.initialize();
+		    ComponentInspector.getInstance().focusForm(formEditor);
                 }                            
             }
         });
