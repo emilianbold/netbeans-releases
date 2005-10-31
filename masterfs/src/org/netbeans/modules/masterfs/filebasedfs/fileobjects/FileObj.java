@@ -188,7 +188,23 @@ final class FileObj extends BaseFileObj {
 
     public final FileLock lock() throws IOException {
         final File me = getFileName().getFile();
-        return WriteLockFactory.tryLock(me);
+        try {            
+            return WriteLockFactory.tryLock(me);
+        } catch (FileNotFoundException ex) {
+            FileNotFoundException fex = ex;                        
+            if (!me.exists()) {
+                fex = (FileNotFoundException)new FileNotFoundException(ex.getLocalizedMessage()).initCause(ex);
+            } else if (!me.canRead()) {
+                fex = (FileNotFoundException)new FileNotFoundException(ex.getLocalizedMessage()).initCause(ex);
+            } else if (!me.canWrite()) {
+                fex = (FileNotFoundException)new FileNotFoundException(ex.getLocalizedMessage()).initCause(ex);
+            } else if (me.getParentFile() == null) {
+                fex = (FileNotFoundException)new FileNotFoundException(ex.getLocalizedMessage()).initCause(ex);
+            } else if (!me.getParentFile().exists()) {
+                fex = (FileNotFoundException)new FileNotFoundException(ex.getLocalizedMessage()).initCause(ex);
+            }                                                             
+            throw fex;
+        }
     }
 
     final boolean checkLock(final FileLock lock) throws IOException {
