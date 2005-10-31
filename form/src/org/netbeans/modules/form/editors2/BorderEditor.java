@@ -30,7 +30,9 @@ import org.openide.explorer.*;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
-import org.openide.nodes.Node.PropertySet;/**
+import org.openide.nodes.Node.PropertySet;
+
+/**
  * A property editor for swing border class.
  *
  * This editor should be in some subpackage under developerx package,
@@ -290,7 +292,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 bordersList.add(borderNode);
             }
 
-            Node root = new AbstractNode(new Children.Array());
+            final Node root = new AbstractNode(new Children.Array());
             Node noBorder = new NoBorderNode();
             if (border == null)
                 selectNode = noBorder;
@@ -310,14 +312,20 @@ public final class BorderEditor extends PropertyEditorSupport
                 Node unknownBorder = new UnknownBorderNode(border);
                 root.getChildren().add(new Node[] { unknownBorder });
                 selectNode = unknownBorder;
-            }
-
-            getExplorerManager().setRootContext(root);
-
-            try {
-                getExplorerManager().setSelectedNodes(new Node[] { selectNode });
-            } 
-            catch (PropertyVetoException e) {} // should not happen
+            }	    	    
+	    
+	    getExplorerManager().setRootContext(root);	    
+	    
+            final Node selection = selectNode;
+	    EventQueue.invokeLater(new Runnable() {
+                public void run() {		    
+                    try {					
+			getExplorerManager().setSelectedNodes(new Node[] { selection });
+		    } 
+		    catch (PropertyVetoException e) {} // should not happen
+		} 
+            });
+            
         }
 
         // track changes in nodes selection
