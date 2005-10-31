@@ -537,23 +537,28 @@ class LayoutDragger implements LayoutConstants {
             else if (bestNextTo == null) {
                 best = bestAligned;
             }
-            else {
-                boolean preferredNextTo = isPreferredNextTo(bestNextTo, bestAligned);
-                int nextToDst = smallestDistance(findingsNextTo[dimension]);
-                int alignedDst = smallestDistance(findingsAligned[dimension]);
-                if (!relatedPositions(bestNextTo, bestAligned)) {
-                    // penalize the aligned position according to distance in the other dimension
-                    int alignedOrtDst = Math.abs(LayoutRegion.nonOverlapDistance(
-                        bestAligned.interval.getCurrentSpace(), movingSpace, dimension ^ 1));
-                    alignedDst = getDistanceScore(alignedDst, alignedOrtDst);
+            else { // both available
+                int preferredNextTo = isPreferredNextTo(bestNextTo, bestAligned);
+                if (preferredNextTo == -1) { // next to is undesirable in this case
+                    best = bestAligned;
                 }
-                if (preferredNextTo) {
-                    best = alignedDst*2 <= nextToDst && nextToDst - alignedDst >= SNAP_DISTANCE/2 ?
-                           bestAligned : bestNextTo;
-                }
-                else {
-                    best = nextToDst*2 <= alignedDst && alignedDst - nextToDst >= SNAP_DISTANCE/2 ?
-                           bestNextTo : bestAligned;
+                else { // both can win, one is preferred
+                    int nextToDst = smallestDistance(findingsNextTo[dimension]);
+                    int alignedDst = smallestDistance(findingsAligned[dimension]);
+                    if (!relatedPositions(bestNextTo, bestAligned)) {
+                        // penalize the aligned position according to distance in the other dimension
+                        int alignedOrtDst = Math.abs(LayoutRegion.nonOverlapDistance(
+                            bestAligned.interval.getCurrentSpace(), movingSpace, dimension ^ 1));
+                        alignedDst = getDistanceScore(alignedDst, alignedOrtDst);
+                    }
+                    if (preferredNextTo == 1) {
+                        best = alignedDst*2 <= nextToDst && nextToDst - alignedDst >= SNAP_DISTANCE/2 ?
+                               bestAligned : bestNextTo;
+                    }
+                    else {
+                        best = nextToDst*2 <= alignedDst && alignedDst - nextToDst >= SNAP_DISTANCE/2 ?
+                               bestNextTo : bestAligned;
+                    }
                 }
             }
         }
@@ -1188,7 +1193,12 @@ class LayoutDragger implements LayoutConstants {
         return bestDst;
     }
 
-    private boolean isPreferredNextTo(PositionDef bestNextTo, PositionDef bestAligned) {
+    /**
+     * @return 1 if next to is preferred,
+     *         0 if aligned is preferred,
+     *        -1 if next to is undesirable
+     */
+    private int isPreferredNextTo(PositionDef bestNextTo, PositionDef bestAligned) {
         if (bestNextTo != null && bestAligned != null) {
             if (operation == RESIZING) {
                 // prefer aligned resizing if already aligned at the other edge
@@ -1197,32 +1207,29 @@ class LayoutDragger implements LayoutConstants {
                 int fixedEdge = movingEdges[dimension] ^ 1;
                 if (bestAligned.interval.isParentOf(resizing)) {
                     if (LayoutInterval.isAlignedAtBorder(resizing, bestAligned.interval, fixedEdge)) {
-                        return false;
+                        return 0;
                     }
                 }
                 else {
                     LayoutInterval commonParent = LayoutInterval.getCommonParent(resizing, bestAligned.interval);
                     if (LayoutInterval.isAlignedAtBorder(resizing, commonParent, fixedEdge)
                         && LayoutInterval.isAlignedAtBorder(bestAligned.interval, commonParent, fixedEdge))
-                        return false;
+                        return 0;
                 }
-                return true;
+                return 1;
             }
             // adding or moving
             else if (bestAligned.alignment == LEADING || bestAligned.alignment == TRAILING) {
-                // prefer aligned position if bestAligned.interval is aligned
-                // in a parallel group and bestNextTo.interval is just next to it
-                LayoutInterval parParent = LayoutInterval.getFirstParent(bestAligned.interval, PARALLEL);
-                if (parParent != null && LayoutInterval.isAlignedAtBorder(bestAligned.interval, parParent, bestAligned.alignment)) {
-                    LayoutInterval neighbor = LayoutInterval.getNeighbor(
-                            parParent, bestAligned.alignment, true, true, false);
-                    if (neighbor != null
-                        && (neighbor == bestNextTo.interval || neighbor.isParentOf(bestNextTo.interval)))
-                        return false;
-                }
+                // choose aligned position if bestAligned.interval is just next to
+                // bestNextTo.interval (both positions would lead to same result)
+                LayoutInterval neighbor = LayoutInterval.getNeighbor(
+                        bestAligned.interval, bestAligned.alignment, true, true, false);
+                if (neighbor != null
+                    && (neighbor == bestNextTo.interval || neighbor.isParentOf(bestNextTo.interval)))
+                    return -1;
             }
         }
-        return dimension == HORIZONTAL;
+        return dimension == HORIZONTAL ? 1 : 0;
     }
 
     private static boolean relatedPositions(PositionDef nextTo, PositionDef aligned) {
