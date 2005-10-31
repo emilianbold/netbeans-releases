@@ -77,7 +77,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="init">
         <mkdir dir="${build.classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
+        <condition property="javac.target" value="${javac.source}">
+            <not>
+                <isset property="javac.target"/>
+            </not>
+        </condition>
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
             <classpath refid="cp"/>
         </javac>
         <!-- Sanity check: -->
