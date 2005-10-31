@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 
 <bindings>
+    <bind actionName="abbrev-reset" key="S-SPACE"/>
+    <bind actionName="annotations-cycling" key="DS-C"/>
     <bind actionName="caret-backward" key="LEFT"/>
     <bind actionName="caret-backward" key="KP_LEFT"/>
     <bind actionName="caret-begin" key="D-HOME"/>
