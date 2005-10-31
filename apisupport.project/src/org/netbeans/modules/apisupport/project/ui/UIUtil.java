@@ -34,6 +34,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -67,6 +68,13 @@ import org.openide.util.Utilities;
 public final class UIUtil {
     
     private UIUtil() {}
+    
+    public static String keyToLogicalString(KeyStroke keyStroke) {
+        String keyDesc = Utilities.keyToString(keyStroke);
+        int dash = keyDesc.indexOf('-');
+        return dash == -1 ? keyDesc :
+            keyDesc.substring(0, dash).replace('C', 'D').replace('A', 'O') + keyDesc.substring(dash);
+    }
     
     /**
      * Calls in turn {@link ProjectChooser#setProjectsFolder} if the
@@ -113,7 +121,7 @@ public final class UIUtil {
         public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
         public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
     }
-
+    
     private static WeakReference iconChooser;
     /**
      * Returns an instance of {@link javax.swing.JFileChooser} permitting
@@ -125,7 +133,7 @@ public final class UIUtil {
             if (choose != null) {
                 return choose;
             }
-        } 
+        }
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
@@ -150,7 +158,7 @@ public final class UIUtil {
         iconChooser = new WeakReference(chooser);
         return chooser;
     }
- 
+    
     /**
      * tries to set the selected file according to currently existing data.
      * Will se it only if the String represents a file path that exists.
@@ -186,10 +194,12 @@ public final class UIUtil {
         StringTokenizer tukac = new StringTokenizer(str, ".");
         while (tukac.hasMoreTokens()) {
             String token = tukac.nextToken();
-            if ("".equals(token))
+            if ("".equals(token)) {
                 return false;
-            if (!Utilities.isJavaIdentifier(token))
+            }
+            if (!Utilities.isJavaIdentifier(token)) {
                 return false;
+            }
         }
         return true;
     }
@@ -303,9 +313,9 @@ public final class UIUtil {
                 name = fo.getFileSystem().getStatus().annotateName(
                         fo.getNameExt(), Collections.singleton(fo));
             } catch (FileStateInvalidException ex) {
-                // let's use fo.getName()
+                name = fo.getName();
             }
-            return name == null ? fo.getName() : name;
+            return name;
         }
         
         private String computeDisplayName() {

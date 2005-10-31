@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ComboBoxModel;
+import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
@@ -47,5 +48,19 @@ public class UIUtilTest extends LayerTestBase {
         ComboBoxModel excludedModel = UIUtil.createLayerPresenterComboModel(project, sfsRoot, excludes);
         assertTrue("UIUtil.createLayerPresenterComboModel() doesn't work.", allModel.getSize() >= excludedModel.getSize());
     }
-
+    
+    public void testKeyToLogicalString() throws Exception {
+        assertKeyLogicalString("X", "pressed X");
+        assertKeyLogicalString("D-X", "ctrl pressed X");
+        assertKeyLogicalString("DO-X", "ctrl alt pressed X");
+        assertKeyLogicalString("DS-X", "shift ctrl pressed X");
+        assertKeyLogicalString("OS-X", "shift alt pressed X");
+        assertKeyLogicalString("DOS-X", "shift ctrl alt pressed X");
+        assertKeyLogicalString("ENTER", "pressed ENTER");
+    }
+    
+    public void assertKeyLogicalString(String expected, String swingKeyStroke) {
+        assertEquals(swingKeyStroke + " corresponding to " + expected, expected, UIUtil.keyToLogicalString(KeyStroke.getKeyStroke(swingKeyStroke)));
+    }
+    
 }

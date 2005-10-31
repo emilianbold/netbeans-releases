@@ -36,6 +36,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.UIUtil.LayerItemPresenter;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -52,7 +53,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * The second panel in the <em>New Action Wizard</em>.
@@ -796,7 +796,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         addshort.setVisible(true);
         if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
             keyStroke.setText(sepPanel.getKeyText());
-            data.setKeyStroke(Utilities.keyToString(sepPanel.getKeyStroke()));
+            data.setKeyStroke(UIUtil.keyToLogicalString(sepPanel.getKeyStroke()));
             checkValidity();
         }
     }//GEN-LAST:event_keyStrokeChangeActionPerformed
