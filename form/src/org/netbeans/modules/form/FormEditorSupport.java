@@ -302,11 +302,15 @@ public class FormEditorSupport extends JavaEditor
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 FormDesigner formDesigner = getFormEditor(true).getFormDesigner();                                
-                
+		if(formDesigner==null) {
+		    // if formDesigner is null then it haven't been activated yet...
+		    return;
+		}
+		
                 // close
                 getFormEditor().closeForm();
                 formEditor = null;
-                
+		
                 // reset the FormDesigner
                 formDesigner.reset(getFormEditor(true));                                                      
                 getFormEditor().setFormDesigner(formDesigner);                                                         
