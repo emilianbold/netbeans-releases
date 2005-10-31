@@ -61,7 +61,10 @@ public final class GoToOppositeAction extends NodeAction {
      */
     public GoToOppositeAction() {
         super();
-        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        String trimmedName = NbBundle.getMessage(getClass(), "LBL_Action_GoToTest_trimmed"); // NOI18N
+        putValue("PopupMenuText", trimmedName);
+        putValue("trimmed-text", trimmedName);
     }
     
     /**

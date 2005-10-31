@@ -760,7 +760,8 @@ public class NbEditorKit extends ExtKit {
             if (a instanceof BaseAction) {
                 itemText = ((BaseAction)a).getPopupMenuText(target);
             } else {
-                itemText = actionName;
+                Object value = a.getValue(BaseAction.POPUP_MENU_TEXT);
+                itemText = (value instanceof String) ? (String)value : actionName;
             }
             return itemText;
         }
