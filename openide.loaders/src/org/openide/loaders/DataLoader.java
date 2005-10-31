@@ -210,7 +210,12 @@ public abstract class DataLoader extends SharedClassObject {
         return null;
     }
     
-    /** Get default actions.
+    /** Get default actions. In fact this method is now a bit deprecated 
+    * (while still working) and instead of specifying actions here it 
+    * is believed that it is better to provide correct {@link #actionsContext}
+    * as that is going to allow declarative extensibility of the set of actions
+    * by other modules.
+    *
     * @return array of default system actions or <CODE>null</CODE> if this loader
     * does not have any actions or is using {@link #actionsContext} instead.
     * Typical example of usage:
