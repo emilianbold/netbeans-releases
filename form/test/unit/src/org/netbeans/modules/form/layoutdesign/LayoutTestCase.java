@@ -79,7 +79,7 @@ public abstract class LayoutTestCase extends TestCase {
                     System.out.println("Invoking " + m.getName());
                     m.invoke(this, null);
                     
-                    String methodCount = m.getName().substring(9);
+                    String methodCount = m.getName().substring(9); // "doChanges".length()
                     
                     String currentLayout = getCurrentLayoutDump();
                     String expectedLayout = getExpectedLayoutDump(methodCount);
@@ -94,7 +94,7 @@ public abstract class LayoutTestCase extends TestCase {
 
                     boolean same = expectedLayout.equals(currentLayout);
                     if (!same) {
-                        writeCurrentWrongLayout(currentLayout);
+                        writeCurrentWrongLayout(methodCount, currentLayout);
                     }
 
                     assertTrue("Model dump in step " + methodCount + " gives different result than expected", same);
@@ -159,7 +159,7 @@ public abstract class LayoutTestCase extends TestCase {
     }
     
     private String getExpectedLayoutDump(String methodCount) throws IOException {        
-        expectedLayoutFile = new File(url.getFile() + goldenFilesPath + className + "-ExpectedEndModel" + methodCount + ".txt").getCanonicalFile();
+        expectedLayoutFile = new File(url.getFile() + goldenFilesPath + getExpectedResultFileName(methodCount) + ".txt").getCanonicalFile();
         int length = (int) expectedLayoutFile.length();
         FileReader fr = null;
         try {
@@ -180,14 +180,18 @@ public abstract class LayoutTestCase extends TestCase {
         }
         return null;
     }
-        
-    private void writeCurrentWrongLayout(String dump) throws IOException {
+
+    private String getExpectedResultFileName(String methodCount) {
+        return className + "-ExpectedEndModel" + methodCount;
+    }
+
+    private void writeCurrentWrongLayout(String methodCount, String dump) throws IOException {
         // will go to form/build/test/unit/results
         File file = new File(url.getFile() + "../results").getCanonicalFile();
         if (!file.exists()) {
             file.mkdirs();
         }
-        file = new File(file, "layoutModelDump.fail");
+        file = new File(file, getExpectedResultFileName(methodCount)+".fail");
         if (file.exists()) {
             file.delete();
         }
