@@ -416,8 +416,8 @@ public class AntDebugger extends ActionsProviderSupport {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();
         jj = callStackList.size();
-        for (j = 0; j < jj; j++) {
-            Object frame = callStackList.get(j);
+        if (jj >= 1) {
+            Object frame = callStackList.getFirst();
             if (frame instanceof TargetOriginating) {
                 frame = ((TargetOriginating) frame).getOriginatingTarget();
             }
@@ -427,6 +427,9 @@ public class AntDebugger extends ActionsProviderSupport {
                     (TargetLister.Target) frame, 
                     null
                 );
+            if (line != null) {
+                line = new Annotatable[] { ((Annotatable[]) line)[0] };
+            }
             int i, k = breakpoints.length;
             for (i = 0; i < k; i++)
                 if ( breakpoints [i] instanceof AntBreakpoint &&
@@ -588,17 +591,18 @@ public class AntDebugger extends ActionsProviderSupport {
         String end
     ) {
         TargetLister.Target t = findTarget(start, file);
+        if (t == null) {
+            return null; // A non-existing target referenced
+        }
         if (start.equals (end)) {
             LinkedList ll = new LinkedList ();
-            if (t == null)
-                return null;// The target is not defined there.//throw new NullPointerException ();
             ll.addFirst (new TargetOriginating(null, t));
             return ll;
         }
         String depends = t.getElement ().getAttribute ("depends");
         StringTokenizer st = new StringTokenizer (depends, ",");
         while (st.hasMoreTokens ()) {
-            String newStart = st.nextToken ();
+            String newStart = st.nextToken ().trim();
             LinkedList ll = findPath (
                 file,
                 newStart,
