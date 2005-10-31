@@ -484,7 +484,9 @@ class HtmlLabelUI extends LabelUI {
 
                 //Lighten it a bit because disabled text will use controlShadow/
                 //gray
-                unfocusedSelBg = unfocusedSelBg.brighter();
+                if (!Color.WHITE.equals(unfocusedSelBg.brighter())) {
+                    unfocusedSelBg = unfocusedSelBg.brighter();
+                }
             }
         }
 
