@@ -84,18 +84,20 @@ public abstract class LayoutTestCase extends TestCase {
                     String currentLayout = getCurrentLayoutDump();
                     String expectedLayout = getExpectedLayoutDump(methodCount);
 
-                    System.out.println("Comparing ... ");
-                    System.out.println("EXPECTED: ");
-                    System.out.println(expectedLayout);
-                    System.out.println("");
-                    System.out.println("CURRENT: ");
-                    System.out.println(currentLayout);
-                    System.out.println("");
+                    System.out.print("Comparing ... ");
 
                     boolean same = expectedLayout.equals(currentLayout);
                     if (!same) {
+                        System.out.println("failed");
+                        System.out.println("EXPECTED: ");
+                        System.out.println(expectedLayout);
+                        System.out.println("");
+                        System.out.println("CURRENT: ");
+                        System.out.println(currentLayout);
                         writeCurrentWrongLayout(methodCount, currentLayout);
                     }
+                    else System.out.println("OK");
+                    System.out.println("");
 
                     assertTrue("Model dump in step " + methodCount + " gives different result than expected", same);
                     
