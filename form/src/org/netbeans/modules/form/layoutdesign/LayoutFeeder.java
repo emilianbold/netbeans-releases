@@ -41,6 +41,7 @@ class LayoutFeeder implements LayoutConstants {
     private LayoutDragger.PositionDef[] newPositions = new LayoutDragger.PositionDef[DIM_COUNT];
     private LayoutInterval[] addingIntervals; // horizontal, vertical
     private boolean[] becomeResizing = new boolean[DIM_COUNT];
+    private boolean encounteredOverlap;
 
     // working context (actual dimension)
     private int dimension;
@@ -117,7 +118,8 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    void add() {
+    boolean add() {
+        encounteredOverlap = false;
         int overlapDim = getDimensionSolvingOverlap(newPositions);
 
         for (int dim=overlapDim, dc=0; dc < DIM_COUNT; dim^=1, dc++) {
@@ -270,6 +272,7 @@ class LayoutFeeder implements LayoutConstants {
 
             addInterval(inclusion1, inclusion2);
         }
+        return encounteredOverlap;
     }
 
     private static IncludeDesc findOutCurrentPosition(LayoutInterval interval, int dimension, int alignment) {
@@ -1816,6 +1819,9 @@ class LayoutFeeder implements LayoutConstants {
                     // matter as the other edge of adding component resides
                     // inside 'sub', so this position should be in sequence
                 }
+                if (dimOverlap)
+                    encounteredOverlap = true;
+
                 int distance = LayoutRegion.UNKNOWN;
                 if (aSnappedNextTo != null) {
                     // check if aSnappedNextTo is related to this position with 'sub' as neighbor
@@ -1910,6 +1916,9 @@ class LayoutFeeder implements LayoutConstants {
                         // matter as the other edge of adding component resides
                         // inside 'sub', so this position should be in sequence
                     }
+                    if (ortOverlap)
+                        encounteredOverlap = true;
+
                     inSequence = true;
                     distance = ortDistance = 0;
                 }

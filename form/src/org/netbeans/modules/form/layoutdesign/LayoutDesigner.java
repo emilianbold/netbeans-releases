@@ -130,13 +130,14 @@ public class LayoutDesigner implements LayoutConstants {
             if (!comp.isLayoutContainer())
                 continue;
 
-            if (optimizeStructure || imposeSize) { // make sure the layout definition reflects the current size
-                boolean built = imposeCurrentContainerSize(comp, null, false);
-                if (built && optimizeStructure) {
+            if (optimizeStructure || imposeSize) {
+                // make sure the layout definition reflects the current size
+                if (imposeCurrentContainerSize(comp, null, false)) {
                     updatedContainers.add(comp);
                     for (int i=0; i < DIM_COUNT; i++) {
                         LayoutInterval root = comp.getLayoutRoot(i);
-                        optimizeGaps(root, i, true);
+                        if (optimizeStructure)
+                            optimizeGaps(root, i, true);
                         updateDesignModifications(root, i);
                     }
                 }
@@ -603,7 +604,11 @@ public class LayoutDesigner implements LayoutConstants {
                     }
 
                     // add the intervals
-                    layoutFeeder.add();
+                    imposeSize = layoutFeeder.add();
+                    // if an overlap occurred we can't calculate the correct sizes
+                    // of resizing intervals, thus need to do real layout first (to
+                    // get the right picture), then update the actual sizes, and then
+                    // re-layout with design specific attributes (container resizing gap)
 
                     for (int dim=0; dim < DIM_COUNT; dim++) {
                         destroyGroupIfRedundant(addingInts[dim], addingInts[dim].getParent());
@@ -615,7 +620,6 @@ public class LayoutDesigner implements LayoutConstants {
                     }
 
                     updateDesignModifications(targetContainer);
-                    imposeSize = true; // can't calculate the correct gap size in all cases
                 }
                 else { // resizing root container
                     assert dragger.isResizing();
@@ -2225,6 +2229,7 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     private void setDefaultSize(LayoutComponent component) {
+        imposeSize = true;
         if (component.isLayoutContainer()) {
             for (Iterator it=component.getSubcomponents(); it.hasNext(); ) {
                 LayoutComponent comp = (LayoutComponent) it.next();
@@ -2239,7 +2244,6 @@ public class LayoutDesigner implements LayoutConstants {
             operations.resizeInterval(component.getLayoutInterval(HORIZONTAL), NOT_EXPLICITLY_DEFINED);
             operations.resizeInterval(component.getLayoutInterval(VERTICAL), NOT_EXPLICITLY_DEFINED);
         }
-        imposeSize = true;
     }
 
     private void setDefaultSizeInContainer(LayoutInterval interval) {
@@ -2256,8 +2260,16 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     private void updateDesignModifications(LayoutComponent container) {
-        updateDesignModifications(container.getLayoutRoot(HORIZONTAL), HORIZONTAL);
-        updateDesignModifications(container.getLayoutRoot(VERTICAL), VERTICAL);
+        if (imposeSize || optimizeStructure) {
+            // additional update (after layout) is going to happen - so now just
+            // clean the design attrs, container resizing gap will be found later
+            cleanDesignAttrs(container.getLayoutRoot(HORIZONTAL));
+            cleanDesignAttrs(container.getLayoutRoot(VERTICAL));
+        }
+        else {
+            updateDesignModifications(container.getLayoutRoot(HORIZONTAL), HORIZONTAL);
+            updateDesignModifications(container.getLayoutRoot(VERTICAL), VERTICAL);
+        }
     }
 
     private void updateDesignModifications(LayoutInterval root, int dimension) {
