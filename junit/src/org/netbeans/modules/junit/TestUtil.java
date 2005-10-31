@@ -416,8 +416,9 @@ public class TestUtil {
      */
     public static List collectFeatures(JavaClass c, Class cls, 
                                    int modifiers, boolean recursive) {
-
-        return collectFeatures(c, cls, modifiers, recursive, new LinkedList(), new HashSet());
+        Set visited = new HashSet();
+        visited.add(c);
+        return collectFeatures(c, cls, modifiers, recursive, new LinkedList(), visited);
     }
         
 
