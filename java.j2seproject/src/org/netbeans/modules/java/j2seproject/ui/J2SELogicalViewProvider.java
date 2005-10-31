@@ -824,7 +824,11 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         private final class WsdlCreationListener extends FileChangeAdapter {
             public void fileFolderCreated (FileEvent fe) {
-                refreshKey(KEY_SERVICE_REFS);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        refreshKey(KEY_SERVICE_REFS);
+                    }
+                });
             }
         }
     }
