@@ -30,7 +30,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.db.ExecSupport;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -327,6 +329,8 @@ public final class AddDomainWizardIterator implements
                         (String) wizard.getProperty(DOMAIN));
                 instanceProperties.setProperty("LOCATION",                      //NOI18N
                         domainDir);
+                RegisterPointbase.getDefault().register((File) wizard.getProperty(PLATFORM_LOCATION));
+                RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
                 return instanceProperties;
             }
             
