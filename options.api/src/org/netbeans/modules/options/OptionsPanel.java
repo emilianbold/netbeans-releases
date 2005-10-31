@@ -18,6 +18,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -25,6 +26,8 @@ import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -38,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.FocusManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -45,6 +49,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -186,6 +191,11 @@ public class OptionsPanel extends JPanel {
         );
         getActionMap ().put ("UP", new UpAction ());
         inputMap.put (
+            KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, 0), 
+            "SPACE"
+        );
+        getActionMap ().put ("SPACE", new SelectCurrentAction ());
+        inputMap.put (
             KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0), 
             "DOWN"
         );
@@ -250,7 +260,7 @@ public class OptionsPanel extends JPanel {
         return currentCategory;
     }
     
-    void setCurrentIndex (int i) {
+    void setCurrentIndex (final int i) {
         if (currentCategory != -1)
             buttons [currentCategory].setNormal ();
         if (i != -1)
@@ -259,12 +269,14 @@ public class OptionsPanel extends JPanel {
         OptionsCategory category = (OptionsCategory) 
             optionCategories.get (i);
         pOptions.removeAll ();
-        if (updatedCategories.contains (category))
+        if (updatedCategories.contains (category)) {
+            JComponent component = (JComponent) categoryToPanel.get (category);
             pOptions.add (
                 "Center",
-                (JComponent) categoryToPanel.get (category)
+                component
             );
-        else {
+            
+        } else {
             JLabel label = new JLabel (loc ("CTL_Loading_Options"));
             label.setHorizontalAlignment (label.CENTER);
             pOptions.add ("Center", label);
@@ -274,6 +286,12 @@ public class OptionsPanel extends JPanel {
         invalidate ();
         validate ();
         repaint ();
+        if (i != -1)
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    buttons [i].requestFocus ();
+                }
+            });
         firePropertyChange ("buran" + PanelController.PROP_HELP_CTX, null, null);
     }
     
@@ -315,12 +333,6 @@ public class OptionsPanel extends JPanel {
     }
     
     boolean isChanged () {
-//        System.out.println("\nChanged panels: ");
-//        Iterator it = categoryToController.values ().iterator ();
-//        while (it.hasNext ()) {
-//            PanelController p = (PanelController) it.next ();
-//            if (p.isChanged ()) System.out.println("  " + p);
-//        }
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
             if (((PanelController) it.next ()).isChanged ()) return true;
@@ -338,6 +350,17 @@ public class OptionsPanel extends JPanel {
         }
         public void actionPerformed (ActionEvent e) {
             setCurrentIndex (index);
+        }
+    }
+    
+    private class SelectCurrentAction extends AbstractAction {
+        
+        public void actionPerformed (ActionEvent e) {
+            Component c = FocusManager.getCurrentManager ().getFocusOwner ();
+            if (c instanceof Button) {
+                setCurrentIndex (((Button) c).index);
+                ((Button) c).setSelected ();
+            }
         }
     }
     
@@ -387,23 +410,21 @@ public class OptionsPanel extends JPanel {
             addMouseListener (this);
             setFocusable (true);
             setFocusTraversalKeysEnabled (true);
-            Set s = new HashSet ();
-            s.add (AWTKeyStroke.getAWTKeyStroke (KeyEvent.VK_DOWN, 0));
-            setFocusTraversalKeys (
-                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                s
-            );
-            s = new HashSet ();
-            s.add (AWTKeyStroke.getAWTKeyStroke (KeyEvent.VK_UP, 0));
-            setFocusTraversalKeys (
-                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                s
-            );
             setForeground (Color.black);
             if (index == currentCategory)
                 setSelected ();
             else
                 setNormal ();
+            addFocusListener (new FocusListener () {
+                public void focusGained (FocusEvent e) {
+                    if (Button.this.index != currentCategory)
+                        setHighlighted ();
+                }
+                public void focusLost (FocusEvent e) {
+                    if (Button.this.index != currentCategory)
+                        setNormal ();
+                }
+            });
         }
         
         void setNormal () {
@@ -435,7 +456,7 @@ public class OptionsPanel extends JPanel {
         
         public void mouseClicked (MouseEvent e) {
             setCurrentIndex (index);
-            setSelected ();
+//            setSelected ();
         }
 
         public void mousePressed (MouseEvent e) {
