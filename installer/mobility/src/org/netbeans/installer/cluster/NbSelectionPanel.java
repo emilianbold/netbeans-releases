@@ -447,6 +447,13 @@ public class NbSelectionPanel extends DirectoryChooserPanel
             }
             //Run uninstaller is separate thread and disable navigation buttons.
             disableNavigation();
+            
+            //RegistryService must be finalized here so that uninstaller can access VPD.
+            //Current VPD impl does not allow simultaneous access from more processes
+            RegistryService regserv = (RegistryService) getService(RegistryService.NAME);
+            regserv.finalizeRegistry();
+            logEvent(this, Log.DBG, "Call of finalizeRegistry");
+            
             RunUninstaller runUninstaller = new RunUninstaller(uninstallerPath,this);
             runUninstaller.start();
             return false;
@@ -561,6 +568,14 @@ public class NbSelectionPanel extends DirectoryChooserPanel
                     (ProductResourcesConst.NAME,"DestinationPanel.destinationDirectory");
                     String msg = resolveString(BUNDLE + "NetBeansDirChooser.uninstallerFailed)");
                     showErrorMsg(title,msg);
+                }
+                //RegistryService must be reinitialized here so that installer can update VPD
+                try {
+                    RegistryService regserv = (RegistryService) getService(RegistryService.NAME);
+                    regserv.initializeRegistry();
+                    logEvent(this, Log.DBG, "Call of initializeRegistry");
+                } catch (ServiceException ex) {
+                    Util.logStackTrace(log,ex);
                 }
             }
 	}
