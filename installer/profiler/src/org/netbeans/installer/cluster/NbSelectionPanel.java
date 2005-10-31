@@ -375,8 +375,16 @@ public class NbSelectionPanel extends DirectoryChooserPanel
                     } else {
                         //The same version
                         String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty3," + dest + ")");
-                        showErrorMsg(title,msg);
-                        return false;
+                        String uninstall = "Uninstall";
+                        String cancel = "Cancel";
+                        Object ret = getWizard().getServices().getUserInput(title, msg, new Object [] {uninstall,cancel},cancel);
+                        if (ret == uninstall) {
+                            logEvent(this, Log.DBG,"UNINSTALL");
+                            return uninstallPrevious();
+                        } else {
+                            logEvent(this, Log.DBG,"CANCEL");
+                            return false;
+                        }
                     }
                 } else {
                     if (currentUID.compareTo(installedUID) < 0) {
