@@ -148,7 +148,16 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
       @return parsing task so caller may listen on its completion.
     */
     Task autoParse() {
-        return parseObject(Thread.MIN_PRIORITY);
+        //do not parse if it is not necessary
+        //this is the BaseJspEditorSupport optimalization since the autoParse causes the webmodule
+        //to be reparsed even if it has already been reparsed.
+        if(!isDocumentDirty()) {
+            return requestProcessor.post(new Runnable() {
+                public void run() {
+                    //do nothing, just a dummy task
+                }
+            });
+        } else return parseObject(Thread.MIN_PRIORITY);
     }
 
     /** Method that instructs the implementation of the source element
@@ -298,6 +307,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
         
         public void run() {
+            System.out.println("parsing started...");
             //wait with the parsing until an editor pane is opened
             synchronized(TagLibParseSupport.this.openedLock) {
                 if(!opened) {
@@ -312,7 +322,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                     Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 1);
                 }
             }
-            
+            System.out.println("parsing unlocked...");
+            long a = System.currentTimeMillis();
             //test whether the parsing task has been cancelled -
             //someone called EditorCookie.close() during the parsing was waiting
             //on openedLock
@@ -384,6 +395,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                                                               pageInfo.isELIgnored(), getCachedOpenInfo(false, false).isXmlSyntax(), 
                                                               locResult.isParsingSuccess());
                 }
+                System.out.println("parsing finished in " + (System.currentTimeMillis() - a));
             }
             
             
