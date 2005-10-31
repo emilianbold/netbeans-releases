@@ -484,7 +484,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             DeploymentConfiguration config = getDeploymentConfiguration();
             ConfigurationSupport serverConfig = server.getConfigurationSupport();
             Object newValue = evt.getNewValue();
-            if (!(newValue instanceof File)) {
+            if (newValue != null && !(newValue instanceof File)) {
                 throw new IllegalArgumentException("Enterprise resource directory property value is not a File"); // NIO18N
             }
             serverConfig.updateResourceDir(config, (File)newValue);
