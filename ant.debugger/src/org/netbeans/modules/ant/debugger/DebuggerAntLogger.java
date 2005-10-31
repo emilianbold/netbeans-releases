@@ -110,9 +110,9 @@ public class DebuggerAntLogger extends AntLogger {
      * @param event the associated event object
      */
     public void targetStarted (AntEvent event) {
-//        AntDebugger d = getDebugger (event.getSession (), event);
-//        if (d == null) return;
-        //d.targetStarted (event);
+        AntDebugger d = getDebugger (event.getSession (), event);
+        if (d == null) return;
+        d.targetStarted (event);
     }
     
     /**
@@ -123,9 +123,9 @@ public class DebuggerAntLogger extends AntLogger {
      * @param event the associated event object
      */
     public void targetFinished (AntEvent event) {
-//        AntDebugger d = getDebugger (event.getSession (), event);
-//        if (d == null) return;
-        //d.targetFinished (event);
+        AntDebugger d = getDebugger (event.getSession (), event);
+        if (d == null) return;
+        d.targetFinished (event);
     }
     
     /**
@@ -152,9 +152,9 @@ public class DebuggerAntLogger extends AntLogger {
      * @param event the associated event object
      */
     public void taskFinished (AntEvent event) {
-//        AntDebugger d = getDebugger (event.getSession (), event);
-//        if (d == null) return;
-        //d.taskFinished (event);
+        AntDebugger d = getDebugger (event.getSession (), event);
+        if (d == null) return;
+        d.taskFinished (event);
     }
 
     /**
