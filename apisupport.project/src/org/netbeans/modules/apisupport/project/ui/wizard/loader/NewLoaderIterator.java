@@ -223,7 +223,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         
         // 4. mimetyperesolver file
         template = NewLoaderIterator.class.getResource("templateresolver.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "resolver.xml", //NOI18N
+        fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "Resolver.xml", //NOI18N
                                                      template,
                                                      replaceTokens,
                                                      NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix),//NOI18N
