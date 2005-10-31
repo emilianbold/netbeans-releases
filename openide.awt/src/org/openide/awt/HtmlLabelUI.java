@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.awt;
 
 import org.openide.ErrorManager;
@@ -33,19 +34,23 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.LabelUI;
 
-
 /**
- * A LabelUI which uses the lightweight HTML renderer.  Stateless - only one instance should ever exist.
+ * A LabelUI which uses the lightweight HTML renderer. Stateless - only one
+ * instance should ever exist.
  */
 class HtmlLabelUI extends LabelUI {
+
     /** System property to automatically turn on antialiasing for html strings */
     static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
+    
     private static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
          ||Boolean.getBoolean("swing.aatext") // NOI18N
          ||(GTK && gtkShouldAntialias()) // NOI18N
          ||"Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-    private static HtmlLabelUI uiInstance = null;
-    private static int FIXED_HEIGHT = 0;
+    
+    private static HtmlLabelUI uiInstance;
+    
+    private static int FIXED_HEIGHT;
 
     static {
         //Jesse mode
@@ -60,10 +65,10 @@ class HtmlLabelUI extends LabelUI {
         }
     }
 
-    private static Map hintsMap = null;
-    private static Color unfocusedSelBg = null;
-    private static Color unfocusedSelFg = null;
-    private static Boolean gtkAA = null;
+    private static Map hintsMap;
+    private static Color unfocusedSelBg;
+    private static Color unfocusedSelFg;
+    private static Boolean gtkAA;
 
     public static ComponentUI createUI(JComponent c) {
         assert c instanceof HtmlRendererImpl;
@@ -160,8 +165,9 @@ class HtmlLabelUI extends LabelUI {
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
                 hintsMap = new HashMap();
-                if (antialias)
+                if (antialias) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
             }
         }
         return hintsMap;
@@ -397,14 +403,6 @@ class HtmlLabelUI extends LabelUI {
 
         if (r.isSelected() && !r.isParentFocused() && !isGTK()) {
             return getUnfocusedSelectionBackground();
-        }
-
-        if (GTK) {
-            //GTK does its own thing, we'll only screw it up by painting 
-            //the background ourselves
-            //XXX - Tim - Why was this line commented out?  It mangles painting
-            //on GTK L&F.
-            return null;
         }
 
         Color result = null;
