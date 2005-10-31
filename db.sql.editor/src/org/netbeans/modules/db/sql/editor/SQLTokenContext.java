@@ -40,8 +40,7 @@ public class SQLTokenContext extends TokenContext {
     public static final int INCOMPLETE_STRING_ID = STRING_ID + 1; // inside string constant after '
     public static final int IDENTIFIER_ID = INCOMPLETE_STRING_ID + 1; // inside identifier
     public static final int OPERATOR_ID = IDENTIFIER_ID + 1; // slash char
-    public static final int INVALID_CHARACTER_ID = OPERATOR_ID + 1; // after '='
-    public static final int INVALID_COMMENT_END_ID = INVALID_CHARACTER_ID + 1; // after '0'
+    public static final int INVALID_COMMENT_END_ID = OPERATOR_ID + 1; // after '0'
     public static final int INT_LITERAL_ID = INVALID_COMMENT_END_ID + 1; // integer number
     public static final int DOUBLE_LITERAL_ID = INT_LITERAL_ID + 1; // double number
     public static final int DOT_ID = DOUBLE_LITERAL_ID + 1; // after '.'
@@ -66,8 +65,6 @@ public class SQLTokenContext extends TokenContext {
             new BaseTokenID( "identifier", IDENTIFIER_ID ); // NOI18N
     public static final BaseTokenID OPERATOR = 
             new BaseTokenID( "operator", OPERATOR_ID ); // NOI18N
-    public static final BaseTokenID INVALID_CHARACTER = 
-            new BaseTokenID( "invalid-character", INVALID_CHARACTER_ID, ERRORS ); // NOI18N
     public static final BaseTokenID INVALID_COMMENT_END = 
             new BaseTokenID( "invalid-comment-end", INVALID_COMMENT_END_ID, ERRORS ); // NOI18N
     public static final BaseTokenID INT_LITERAL = 

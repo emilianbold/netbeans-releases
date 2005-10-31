@@ -268,17 +268,9 @@ public class SQLSyntax extends Syntax {
                             if (Character.isDigit(actChar)) { 
                                 state = ISI_INT;
                                 break;
-                            }
-                            else if (Character.isWhitespace(actChar) || 
-                                 actChar == '(' || actChar ==',' || actChar ==';' || actChar == ')') {
+                            } else {
                                 state = INIT;
                                 return SQLTokenContext.INT_LITERAL;
-                            }
-                            else {
-                                offset++;
-                                state = INIT;
-                                return SQLTokenContext.INVALID_CHARACTER;
-
                             }
                     }
                     break;
@@ -293,17 +285,9 @@ public class SQLSyntax extends Syntax {
                             if (Character.isDigit(actChar)) { 
                                 state = ISI_INT;
                                 break;
-                            }
-                            else if (Character.isWhitespace(actChar) || 
-                                 actChar == '(' || actChar ==',' || actChar ==';' || actChar == ')') {
+                            } else {
                                 state = INIT;
                                 return SQLTokenContext.INT_LITERAL;
-                            }
-                            else {
-                                offset++;
-                                state = INIT;
-                                return SQLTokenContext.INVALID_CHARACTER;
-
                             }
                     }
                     break;
@@ -312,19 +296,11 @@ public class SQLSyntax extends Syntax {
                 //number
                 case ISI_DOUBLE:
                     if (actChar >= '0' && actChar <= '9') {
-
                         state = ISI_DOUBLE;
                         break;
-                    }
-                    else if (Character.isWhitespace(actChar) || 
-                         actChar == '(' || actChar ==',' || actChar ==';' || actChar == ')') {
+                    } else {
                         state = INIT;
                         return SQLTokenContext.DOUBLE_LITERAL;
-                    }
-                    else {
-                        offset++;
-                        state = INIT;
-                        return SQLTokenContext.INVALID_CHARACTER;
                     }
 
                 //if we are after a period
@@ -463,5 +439,4 @@ public class SQLSyntax extends Syntax {
         
         return null;
     }
-
 }
