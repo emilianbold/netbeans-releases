@@ -13,9 +13,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="java/j2seproject">
+<mconfig name="db/core">
     
-    <testbag testattribs="stable" executor="unit-executor" name="java/j2seproject">
+    <testbag testattribs="stable" executor="unit-executor" name="db/core">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
