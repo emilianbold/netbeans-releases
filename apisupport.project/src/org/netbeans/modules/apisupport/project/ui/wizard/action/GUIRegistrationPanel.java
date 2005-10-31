@@ -241,7 +241,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 final FileObject parent = getSFS().getRoot().getFileObject(startFolder);
                 final DataFolder parentDF = (parent != null ? DataFolder.findFolder(parent) : null);
                 if (parentDF == null) {
-                    Util.err.log(ErrorManager.WARNING, "Could not find " + startFolder); // NOI18N
+                    Util.err.log("Could not find " + startFolder);
                     setEmptyModel(combo);
                     setEmptyModel(comboPositions);
                     return;
