@@ -175,9 +175,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="C-X 1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             </file>
-            <file name="C-D.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-            </file>
             <file name="D-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
             </file>
