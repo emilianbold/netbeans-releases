@@ -1,5 +1,5 @@
 <LayoutModel>
-  <Root>
+  <Root id="1">
     <DimensionLayout dim="horizontal">
       <Group type="parallel" groupAlignment="leading" attributes="0">
           <Group type="sequential" attributes="0">
