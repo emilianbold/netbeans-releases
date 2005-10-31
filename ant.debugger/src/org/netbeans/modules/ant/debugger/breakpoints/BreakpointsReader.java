@@ -46,10 +46,11 @@ public class BreakpointsReader implements Properties.Reader {
         if (!(typeID.equals (AntBreakpoint.class.getName ())))
             return null;
         
-        return new AntBreakpoint (getLine (
+        Line line = getLine (
             properties.getString ("url", null),
-            properties.getInt ("lineNumber", 1)
-        ));
+            properties.getInt ("lineNumber", 1));
+        if (line == null) return null;
+        return new AntBreakpoint (line);
     }
     
     public void write (Object object, Properties properties) {
@@ -89,7 +90,7 @@ public class BreakpointsReader implements Properties.Reader {
         Line.Set ls = lineCookie.getLineSet ();
         if (ls == null) return null;
         try {
-            return ls.getCurrent (lineNumber - 1);
+            return ls.getCurrent (lineNumber);
         } catch (IndexOutOfBoundsException e) {
         } catch (IllegalArgumentException e) {
         }
