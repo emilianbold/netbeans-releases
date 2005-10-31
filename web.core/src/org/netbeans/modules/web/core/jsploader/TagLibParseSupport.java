@@ -307,7 +307,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
         
         public void run() {
-            System.out.println("parsing started...");
             //wait with the parsing until an editor pane is opened
             synchronized(TagLibParseSupport.this.openedLock) {
                 if(!opened) {
@@ -322,7 +321,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                     Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 1);
                 }
             }
-            System.out.println("parsing unlocked...");
             long a = System.currentTimeMillis();
             //test whether the parsing task has been cancelled -
             //someone called EditorCookie.close() during the parsing was waiting
@@ -395,7 +393,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                                                               pageInfo.isELIgnored(), getCachedOpenInfo(false, false).isXmlSyntax(), 
                                                               locResult.isParsingSuccess());
                 }
-                System.out.println("parsing finished in " + (System.currentTimeMillis() - a));
             }
             
             

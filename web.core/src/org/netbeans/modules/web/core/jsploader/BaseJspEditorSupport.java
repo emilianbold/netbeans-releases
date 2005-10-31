@@ -49,6 +49,8 @@ import org.openide.util.TaskListener;
 import org.openide.util.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -139,25 +141,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             }
         });
     
-        //add a property change listener - we needs to get know when the document is opened to start parsing after it happen
-        //this is a performance improvements - the parsing thread doesn't slow down the editor opening
-        addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if(e.getPropertyName().equals(EditorCookie.Observable.PROP_OPENED_PANES)) {
-                    TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
-                    //test whether there is at least one opened pane for this document
-                    if(getOpenedPanes() != null && getOpenedPanes().length > 0) {
-                        //notify the parsing thread to start it's work
-                        sup.setEditorOpened(true);                    
-                    }
-                    if(getOpenedPanes() == null || getOpenedPanes().length == 0) {
-                        //close the semaphore - the next parsing will wait for the editor to be opened
-                        sup.setEditorOpened(false);
-                    }
-                }
-            }
-        });
-        
         encoding = null;
         
         JspParserAccess
@@ -217,7 +200,9 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     }
     
     public void open(){
+        long a = System.currentTimeMillis();
         encoding = getObjectEncoding(false, false); //use encoding from fileobject & cache it
+        
         if (!isSupportedEncoding(encoding)){
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
@@ -420,6 +405,9 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
         public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
 
+        private TagLibParseSupport taglibParseSupport;
+        private InstanceContent instanceContent;
+        
         /** Listener on caret movements */
         CaretListener caretListener;
         //BaseJspEditorSupport support;
@@ -433,11 +421,8 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             FileObject fileObject = (dataObject != null) ? dataObject.getPrimaryFile() : null;
             if (fileObject == null)
                 return false;
-            WebModule wm = ((BaseJspEditorSupport)cloneableEditorSupport()).getWebModule(fileObject);
-            JspParserAPI.JspOpenInfo info = JspParserFactory.getJspParser().getJspOpenInfo(fileObject, JspParserAccess.getJspParserWM (wm), false);
-            boolean isXmlSyntax = info.isXmlSyntax();
             
-            return isXmlSyntax;
+            return taglibParseSupport.getCachedOpenInfo(false, false).isXmlSyntax();
         }
         
         void associatePalette(BaseJspEditorSupport s) {
@@ -447,11 +432,8 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             if (dataObject instanceof JspDataObject && mimeType.equals(JSP_MIME_TYPE) && !isXmlSyntax(dataObject)) {
                 try {
                     PaletteController pc = JSPPaletteFactory.getPalette();
-                    Lookup pcl = Lookups.singleton(pc);
-                    Lookup anl = getActivatedNodes()[0].getLookup();
-                    Lookup actionMap = Lookups.singleton(getActionMap());
-                    ProxyLookup l = new ProxyLookup(new Lookup[] { anl, actionMap, pcl });
-                    associateLookup(l);
+                    instanceContent.add(pc);
+                    instanceContent.add(getActionMap());
                 } 
                 catch (IOException ioe) {
                     //TODO exception handling
@@ -463,20 +445,8 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         /** Creates new editor */
         public BaseJspEditor(BaseJspEditorSupport s) {
             super(s);
-            //this.support = s;
             initialize();
         }
-        
-//        public Action[] getActions() {
-//            Action[] sa = super.getActions();
-//            Action[] jspServletActions = new SystemAction[] {
-//                null,
-//                SystemAction.get(EditServletAction.class),
-//            };
-//            List acs = new ArrayList(Arrays.asList(sa));
-//            acs.addAll(Arrays.asList(jspServletActions));
-//            return (Action[])acs.toArray(new Action[0]);
-//        }
 
         protected void notifyParsingDone() {
         }
@@ -489,66 +459,14 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                     ((BaseJspEditorSupport)cloneableEditorSupport()).restartTimer(true);
                 }
             };
-//            getActionMap().put("org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction", new ToggleBreakpointAction()); // NOI18N  
-            associatePalette((BaseJspEditorSupport)cloneableEditorSupport());
+            
+            taglibParseSupport = (TagLibParseSupport)((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject().getCookie(TagLibParseSupport.class);
+
+            //init lookup
+            instanceContent = new InstanceContent();
+            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), getActivatedNodes()[0].getLookup()}));
+            
         }
-        
-        
-        /**
-         * Locally bound action to toggle breakpoint on the current line.
-         * @see "#29914"
-         */
-//        private final class ToggleBreakpointAction extends AbstractAction implements LookupListener {
-//            private final Lookup.Result debuggerR;
-//            
-//            public ToggleBreakpointAction() {
-//                debuggerR = Lookup.getDefault().lookup(new Lookup.Template(Debugger.class));
-//                debuggerR.addLookupListener((LookupListener)WeakListener.create(LookupListener.class, this, debuggerR));
-//                resultChanged(null);
-//            }
-//            
-//            public boolean isEnabled() {
-//                DataObject data = ((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject();
-//                if ((data instanceof JspDataObject) && (data != null)) {
-//                    if (JspLoader.getMimeType((JspDataObject)data).equals(JspLoader.JSP_MIME_TYPE)) {
-//                        if (WebModule.getWebModule (data.getPrimaryFile ()) != null) {
-//                            return true;
-//                        }
-//                    }
-//                }
-//                return false;
-//            }
-//            
-//            public void actionPerformed(ActionEvent e) {
-//                int lineNumber = NbDocument.findLineNumber (
-//                ((BaseJspEditorSupport)cloneableEditorSupport()).getDocument(), 
-//                    getEditorPane ().getCaret ().getDot ()
-//                );
-//
-//                Line line = ((BaseJspEditorSupport)cloneableEditorSupport()).getLineSet ().getCurrent (lineNumber);
-//                synchronized (this) {
-//                    Iterator it = debuggerR.allInstances().iterator();
-//                    if (it.hasNext()) {
-//                        Debugger debugger = (Debugger)it.next();
-//                        Breakpoint breakpoint = debugger.findBreakpoint (line);
-//                        if (breakpoint == null)
-//                            debugger.createBreakpoint (line);
-//                        else
-//                            breakpoint.remove ();
-//                    }
-//                }
-//            }
-//            public void resultChanged(LookupEvent e) {
-//                setEnabled(!debuggerR.allInstances().isEmpty());
-//            }
-//        }        
-        
-//        /** Returns Editor pane for private use.
-//         * @return Editor pane for private use.
-//         */
-//        protected JEditorPane getEditorPane() {
-//            return pane;
-//        }
         
         /* This method is called when parent window of this component has focus,
          * and this component is preferred one in it.
@@ -560,6 +478,12 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                 super.componentActivated();
             }
             ((BaseJspEditorSupport)cloneableEditorSupport()).restartTimer(false);
+            
+            //allow resumed parser to perform parsing of the webproject
+            taglibParseSupport.setEditorOpened(true);
+            //show up the component palette
+            associatePalette((BaseJspEditorSupport)cloneableEditorSupport());
+            
         }
         
         /*
@@ -569,6 +493,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         protected void componentDeactivated() {
             getEditorPane().removeCaretListener(caretListener);
             super.componentDeactivated();
+            taglibParseSupport.setEditorOpened(false);
         }
         
         /* When closing last view, also close the document.
@@ -586,6 +511,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             initialize();
+            associatePalette((BaseJspEditorSupport)cloneableEditorSupport());
         }
         
     } // end of JavaEditorComponent inner class
