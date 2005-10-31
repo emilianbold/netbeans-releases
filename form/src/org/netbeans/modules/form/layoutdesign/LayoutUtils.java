@@ -392,6 +392,32 @@ public class LayoutUtils implements LayoutConstants {
         return false;
     }
 
+    /**
+     * Checks the layout structure of the orthogonal dimension whether
+     * an overlap of a component interval with another interval (or its
+     * subintervals) is prevented - i.e. if in the orthogonal dimension the
+     * intervals of the same components are placed sequentially.
+     */
+    static boolean isOverlapPreventedInOtherDimension(LayoutInterval compInterval,
+                                                      LayoutInterval interval,
+                                                      int dimension)
+    {
+        int otherDim = dimension^1;
+        LayoutComponent component = compInterval.getComponent();
+        LayoutInterval otherCompInterval = component.getLayoutInterval(otherDim);
+        Iterator it = getComponentIterator(interval);
+        assert it.hasNext();
+        do {
+            LayoutComponent comp = ((LayoutInterval)it.next()).getComponent();
+            LayoutInterval otherInterval = comp.getLayoutInterval(otherDim);
+            LayoutInterval parent = LayoutInterval.getCommonParent(otherCompInterval, otherInterval);
+            if (parent == null || parent.isParallel())
+                return false;
+        }
+        while (it.hasNext());
+        return true;
+    }
+
     static Iterator getComponentIterator(LayoutInterval interval) {
         return new ComponentIterator(interval, 0, interval.getSubIntervalCount()-1);
     }

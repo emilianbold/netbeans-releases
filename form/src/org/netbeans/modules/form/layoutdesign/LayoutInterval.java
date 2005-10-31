@@ -945,6 +945,13 @@ public final class LayoutInterval implements LayoutConstants {
         return DEFAULT; // !leadingFixed && !trailingFixed
     }
 
+    /**
+     * Computes effective alignment of given interval's edge in its direct
+     * parent. In case of a sequential parent, the effective interval alignment
+     * depends on other intervals and their resizability.
+     * @return effective alignment within parent, or DEFAULT in case of
+     *         ambiguous alignment in sequential parent
+     */
     static int getEffectiveAlignment(LayoutInterval interval, int edge) {
         assert edge == LEADING || edge == TRAILING;
 
@@ -982,6 +989,30 @@ public final class LayoutInterval implements LayoutConstants {
             return wantResize ? edge : parent.getAlignment();
 
         return DEFAULT; // !leadingFixed && !trailingFixed
+    }
+
+    /**
+     * Computes effective alignment of an interval's edge relatively to given
+     * parent.
+     * @return effective alignment within parent, or DEFAULT in case of
+     *         ambiguous alignment in sequential parent
+     */
+    static int getEffectiveAlignmentInParent(LayoutInterval interval, LayoutInterval parent, int edge) {
+        assert parent.isParentOf(interval);
+        int alignment = edge;
+        do {
+            alignment = getEffectiveAlignment(interval, alignment);
+            interval = interval.getParent();
+            if (alignment != LEADING && alignment != TRAILING) {
+                while (interval != parent) {
+                    if (getEffectiveAlignment(interval) != alignment)
+                        return DEFAULT;
+                    interval = interval.getParent();
+                }
+            }
+        }
+        while (interval != parent);
+        return alignment;
     }
 
     /**
