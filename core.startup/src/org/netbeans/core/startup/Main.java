@@ -131,7 +131,11 @@ public final class Main extends Object {
    * Sets up the custom font size and theme url for the plaf library to
    * process.
    */
-  private static void initUICustomizations() {
+  static void initUICustomizations() {
+      if (!CLIOptions.isGui ()) {
+          return;
+      }
+    
       URL themeURL = null;
       boolean wantTheme = Boolean.getBoolean ("netbeans.useTheme") ||
           CLIOptions.uiClass != null && CLIOptions.uiClass.getName().indexOf("MetalLookAndFeel") >= 0;
@@ -362,11 +366,6 @@ public final class Main extends Object {
     
     getModuleSystem ();
     
-    if (CLIOptions.isGui ()) {
-        initUICustomizations();
-    }
-    
-
     // property editors are registered in modules, so wait a while before loading them
     registerPropertyEditors();
 

@@ -238,7 +238,7 @@ final class NbInstaller extends ModuleInstaller {
         ev.log(Events.PERF_TICK, "layers loaded"); // NOI18N
 	
         it = modules.iterator();
-	ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
+        ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
         ev.log(Events.LOAD_SECTION);
         CoreBridge.conditionallyLoaderPoolTransaction(true);
         try {
@@ -256,7 +256,7 @@ final class NbInstaller extends ModuleInstaller {
         } finally {
             CoreBridge.conditionallyLoaderPoolTransaction(false);
         }
-	ev.log(Events.PERF_END, "NbInstaller.load - sections"); // NOI18N
+        ev.log(Events.PERF_END, "NbInstaller.load - sections"); // NOI18N
 
         // Yarda says to put this here.
         if (! initializedFolderLookup) {
@@ -264,9 +264,12 @@ final class NbInstaller extends ModuleInstaller {
             MainLookup.modulesClassPathInitialized();
             initializedFolderLookup = true;
         }
+        
+        // we need to initialize UI before we let modules run ModuleInstall.restore
+        Main.initUICustomizations();
 
         it = modules.iterator();
-	ev.log(Events.PERF_START, "NbInstaller.load - ModuleInstalls"); // NOI18N
+        ev.log(Events.PERF_START, "NbInstaller.load - ModuleInstalls"); // NOI18N
         while (it.hasNext()) {
             Module m = (Module)it.next();
             try {
@@ -280,7 +283,7 @@ final class NbInstaller extends ModuleInstaller {
             }
 	    ev.log(Events.PERF_TICK, "ModuleInstall for " + m.getCodeName() + " called"); // NOI18N
         }
-	ev.log(Events.PERF_END, "NbInstaller.load - ModuleInstalls"); // NOI18N
+        ev.log(Events.PERF_END, "NbInstaller.load - ModuleInstalls"); // NOI18N
 
         ev.log(Events.FINISH_LOAD, modules);
         
