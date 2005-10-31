@@ -60,9 +60,9 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
     public void doAction (Object action) {
         Line line = getCurrentLine ();
         if (line == null) return ;
-        FileObject fileObject = (FileObject) line.getLookup ().lookup 
-            (FileObject.class);
-        if (!fileObject.getExt ().equals ("xml")) return;
+        if (!isAntFile((FileObject) line.getLookup ().lookup(FileObject.class))) {
+            return ;
+        }
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();
         int i, k = breakpoints.length;
@@ -117,6 +117,10 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
         }
     }
     
+    private static boolean isAntFile(FileObject fo) {
+        return fo.getMIMEType().equals("text/x-ant+xml");
+    }
+    
     public void propertyChange(PropertyChangeEvent evt) {
         // We need to push the state there :-(( instead of wait for someone to be interested in...
         boolean enabled = true;
@@ -124,11 +128,7 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
         if (line == null) {
             enabled = false;
         } else {
-            FileObject fileObject = (FileObject) line.getLookup ().lookup 
-                (FileObject.class);
-            if (!fileObject.getExt ().equals ("xml")) {
-                enabled = false;
-            }
+            enabled = isAntFile((FileObject) line.getLookup ().lookup(FileObject.class));
         }
         setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
     }
