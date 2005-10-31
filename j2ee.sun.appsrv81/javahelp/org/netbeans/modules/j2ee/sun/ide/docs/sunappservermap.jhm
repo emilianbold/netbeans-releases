@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN" "http://java.sun.com/products/javahelp/map_1_0.dtd">
 <map version="1.0">
-    <mapID target="BLANK"            				url="general/blank.html" />
+    <!--<mapID target="BLANK"            				url="general/blank.html" />-->
     <mapID target="credits"             			url="credits.html" />
     <mapID target="aboutplugin"      				url="general/aboutplugin.html" />
     <mapID target="register_appserver"                          url="general/register_appserver.html" />
@@ -17,8 +17,8 @@
     <mapID target="sjs_undeploy"                                url="general/sjs_undeploy.html" />
     <mapID target="sjs_jvm"                                     url="general/JVM.html" />
     <mapID target="adminconsole"                                url="general/adminconsole.html" />
-    <mapID target="lookup_jms"                                  url="general/def_jms_lookup.html" />
-    <mapID target="lookup_jdbc"                                 url="general/def_jdbcresource_lookup.html" />
+    <!--<mapID target="lookup_jms"                                  url="general/def_jms_lookup.html" />
+    <mapID target="lookup_jdbc"                                 url="general/def_jdbcresource_lookup.html" />-->
     <mapID target="tbd"                                         url="tbd.html" />
     
     <!-- CMP pages -->
