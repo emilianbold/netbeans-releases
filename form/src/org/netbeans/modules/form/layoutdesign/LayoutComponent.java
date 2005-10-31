@@ -230,10 +230,6 @@ public final class LayoutComponent implements LayoutConstants {
         Iterator parents2 = parentsOfComponent(comp2).iterator();
         LayoutComponent parent1 = (LayoutComponent)parents1.next();
         LayoutComponent parent2 = (LayoutComponent)parents2.next();
-        if (parent1 != parent2) {
-            // The common parent doesn't exist in LC hierarchy
-            return null;
-        }
 
         // Candidate for the common parent
         LayoutComponent parent = null;
