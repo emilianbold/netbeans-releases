@@ -141,6 +141,7 @@ class DynaMenuModel {
     public void checkSubmenu(JMenu menu) {
         Iterator it = actionToMenuMap.entrySet().iterator();
         boolean oldisWithIcons = isWithIcons;
+        boolean changed = false;
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry)it.next();
             DynamicMenuContent pres = (DynamicMenuContent)entry.getKey();
@@ -166,6 +167,7 @@ class DynaMenuModel {
                     ///TODO now what to do with icon alignments..
                     JComponent one = newones[i];
                     menu.getPopupMenu().add(one, i + menuIndex);
+                    changed = true;
                     menuItems.add(one);
                     boolean thisOneHasIcon = checkIcon(one, false);
                     if (!thisOneHasIcon && isWithIcons) {
@@ -195,7 +197,10 @@ class DynaMenuModel {
         if (oldisWithIcons != isWithIcons) {
             menuItems = alignVertically(menuItems);
         }
-        
+        if (changed && Utilities.isWindows()) {
+            //#67847 on windows, we need revalidation otherwise strange effects kick in..
+            menu.getPopupMenu().revalidate();
+        }
     }
     
     private JComponent[] convertArray(JComponent[] arr) {
