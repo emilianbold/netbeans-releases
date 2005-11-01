@@ -55,6 +55,7 @@ public class DocumentationScrollPane extends JScrollPane {
     private static final String JAVADOC_OPEN_IN_BROWSER = "javadoc-open-in-browser"; //NOI18N    
     private static final String JAVADOC_OPEN_SOURCE = "javadoc-open-source"; //NOI18N    
     
+    private static final int ACTION_ESCAPE = 0;
     private static final int ACTION_JAVADOC_BACK = 1;
     private static final int ACTION_JAVADOC_FORWARD = 2;
     private static final int ACTION_JAVADOC_OPEN_IN_BROWSER = 3;
@@ -276,6 +277,10 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private void installKeybindings() {
+	// Register Escape key
+	getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape"); // NOI18N
+	getActionMap().put("escape", new DocPaneAction(ACTION_ESCAPE)); // NOI18N
+
         // Register javadoc back key
         registerKeybinding(ACTION_JAVADOC_BACK, JAVADOC_BACK,
         KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK),
@@ -417,6 +422,9 @@ public class DocumentationScrollPane extends JScrollPane {
         
         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
             switch (action) {
+		case ACTION_ESCAPE:
+		    CompletionImpl.get().hideDocumentation();
+		    break;
                 case ACTION_JAVADOC_BACK:
                     backHistory();
                     break;

@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
@@ -164,6 +165,10 @@ public final class CompletionLayout {
     
     public boolean isToolTipVisible() {
         return tipPopup.isVisible();
+    }
+
+    public void toolTipProcessKeyEvent(KeyEvent evt) {
+        tipPopup.toolTipProcessKeyEvent(evt);
     }
 
     /**
@@ -380,8 +385,19 @@ public final class CompletionLayout {
             if (!getPreferredSize().equals(lastSize)) { // preferred sizes differ
                 getLayout().updateLayout(this);
             }
-        }
+	}
 
+        public void toolTipProcessKeyEvent(KeyEvent evt) {
+            if (isVisible()) {
+		if (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0).equals(
+			KeyStroke.getKeyStrokeForEvent(evt))
+		) {
+		    evt.consume();
+		    CompletionImpl.get().hideToolTip();
+		}
+            }
+        }
+        
     }
     
 }

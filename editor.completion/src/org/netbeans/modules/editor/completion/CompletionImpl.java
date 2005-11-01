@@ -431,7 +431,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 return;
             }
         }
-        layout.documentationProcessKeyEvent(e);
+	if (!e.isConsumed()) {
+	    layout.documentationProcessKeyEvent(e);
+	}
+	if (!e.isConsumed()) {
+	    layout.toolTipProcessKeyEvent(e);
+	}
     }
     
     void completionQuery() {
@@ -739,7 +744,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     boolean hideDocumentationPane() {
         // Ensure the documentation popup timer is stopped
         docAutoPopupTimer.stop();
-        return layout.hideDocumentation();
+        boolean hidePerformed = layout.hideDocumentation();
+	// Also hide completion if documentation pops automatically
+        if (hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
+            hideCompletion();
+        }
+        return hidePerformed;
     }
 
     
@@ -896,15 +906,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private void installKeybindings() {
         actionMap = new ActionMap();
         inputMap = new InputMap();
-        // Register escape key
-        KeyStroke[] keys = findEditorKeys(ExtKit.escapeAction, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
-        for (int i = 0; i < keys.length; i++) {
-            inputMap.put(keys[i], POPUP_HIDE);
-        }
-        actionMap.put(POPUP_HIDE, new PopupHideAction());
         
         // Register completion show
-        keys = findEditorKeys(ExtKit.completionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK));
+        KeyStroke[] keys = findEditorKeys(ExtKit.completionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK));
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], COMPLETION_SHOW);
         }
@@ -1037,16 +1041,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
     }
 
-    private final class PopupHideAction extends AbstractAction {
-        public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
-            if (hideCompletion())
-                return;
-            if (hideDocumentation())
-                return;
-            hideToolTip();
-        }
-    }
-    
     private final class ParamRunnable implements Runnable {
         
         private static final int SHOW_COMPLETION = 0;

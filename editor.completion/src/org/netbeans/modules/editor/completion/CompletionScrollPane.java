@@ -53,6 +53,7 @@ public class CompletionScrollPane extends JScrollPane {
     private static final String COMPLETION_BEGIN = "completion-begin"; //NOI18N
     private static final String COMPLETION_END = "completion-end"; //NOI18N
 
+    private static final int ACTION_ESCAPE = 0;
     private static final int ACTION_COMPLETION_UP = 1;
     private static final int ACTION_COMPLETION_DOWN = 2;
     private static final int ACTION_COMPLETION_PGUP = 3;
@@ -166,6 +167,10 @@ public class CompletionScrollPane extends JScrollPane {
     }
 
     private void installKeybindings() {
+	// Register Escape key
+	getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape"); // NOI18N
+	getActionMap().put("escape", new CompletionPaneAction(ACTION_ESCAPE)); // NOI18N
+
         // Register up key
         registerKeybinding(ACTION_COMPLETION_UP, COMPLETION_UP,
         KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
@@ -212,6 +217,9 @@ public class CompletionScrollPane extends JScrollPane {
 
         public void actionPerformed(ActionEvent actionEvent) {
             switch (action) {
+		case ACTION_ESCAPE:
+		    CompletionImpl.get().hideCompletion();
+		    break;
                 case ACTION_COMPLETION_UP:
                     view.up();
                     break;
