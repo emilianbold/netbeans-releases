@@ -91,6 +91,13 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         if (layoutDelegateClass != null) {
             delegate = layoutRegistry.createSupportInstance(layoutDelegateClass);
+            if (!fromCode && !delegate.checkEmptyContainer(getPrimaryContainer())) {
+                RuntimeException ex = new IllegalArgumentException();
+                org.openide.ErrorManager.getDefault().annotate(
+                    ex, AbstractLayoutSupport.getBundle().getString(
+                                        "MSG_ERR_NonEmptyContainer")); // NOI18N
+                throw ex;
+            }
         }
         else {
             // find a general layout delegate (for LayoutManager of the container)

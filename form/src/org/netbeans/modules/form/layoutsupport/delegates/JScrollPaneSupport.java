@@ -37,6 +37,17 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
         return JScrollPane.class;
     }
 
+    /** For dedicated supports: check whether given default container instance
+     * is empty. In case of JScrollPane it means to check for empty viewport.
+     * @param cont default instance of Container
+     * @return true if the container can be used as default (empty) instance
+     *         with this layout support
+     */
+    public boolean checkEmptyContainer(Container cont) {
+        return cont instanceof JScrollPane
+               && ((JScrollPane)cont).getViewport().getView() == null;
+    }
+
     /** This method should calculate position (index) for a component dragged
      * over a container (or just for mouse cursor being moved over container,
      * without any component).

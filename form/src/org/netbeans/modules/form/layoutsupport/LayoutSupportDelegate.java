@@ -82,6 +82,14 @@ public interface LayoutSupportDelegate {
      */
     boolean isDedicated();
 
+    /** For dedicated supports: check whether given default container instance
+     * is empty.
+     * @param cont default instance of Container
+     * @return true if the container can be used as default (empty) instance
+     *         with this layout support
+     */
+    boolean checkEmptyContainer(Container cont);
+
     /** Indicates whether the layout should be presented as a node in Component
      * Inspector (for setting properties). The node is provided for layout
      * managers typically (except null layou), and not for dedicated containers

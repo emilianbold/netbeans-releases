@@ -804,8 +804,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
 
             visualContainer.initSubComponents(childComponents);
-            if (layoutSupport != null)
-                layoutSupport.updatePrimaryContainer();
+            if (layoutSupport != null) {
+                try { // some weird problems might occur - see issue 67890
+                    layoutSupport.updatePrimaryContainer();
+                }
+                // can't do anything reasonable on failure, just log stack trace
+                catch (Exception ex) { 
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+                catch (Error ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
         }
         else // non-visual container
             container.initSubComponents(childComponents);
