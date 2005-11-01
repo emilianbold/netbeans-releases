@@ -52,6 +52,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
+import org.w3c.dom.Element;
 
 /**
  * Ant debugger.
@@ -149,6 +150,7 @@ public class AntDebugger extends ActionsProviderSupport {
                           taskLine, 
                           event.getScriptLocation ()));
         currentTaskName = event.getTaskStructure().getName();
+        originatingIndex = 0;
         elementStarted(event);
     }
     
@@ -223,7 +225,7 @@ public class AntDebugger extends ActionsProviderSupport {
             if (topFrame instanceof Task) {
                 Task t1 = (Task) topFrame;
                 String startingTargetName = t1.getTaskStructure().getAttribute("target");
-                if (startingTargetName != null) {
+                if (startingTargetName != null && !targetName.equals(startingTargetName)) {
                     originatingTargets = findPath(event.getScriptLocation(), startingTargetName, targetName);
                 }
             } else if (topFrame instanceof TargetLister.Target) {
@@ -263,6 +265,8 @@ public class AntDebugger extends ActionsProviderSupport {
         if (originatingTargets != null) {
             originatingIndex = originatingTargets.size();
             callStackList.addAll(0, originatingTargets);
+        } else {
+            originatingIndex = 0;
         }
         //callStackList.add(getOriginatingTargets(start, target));
         
@@ -626,6 +630,10 @@ public class AntDebugger extends ActionsProviderSupport {
      * File as a script location is a key. Values are maps of name to Target.
      */
     private Map nameToTargetByFiles = new HashMap();
+    /**
+     * File as a script location is a key, values are project names.
+     */
+    private Map projectNamesByFiles = new HashMap();
     
     private synchronized TargetLister.Target findTarget(String name, File file) {
         Map nameToTarget = (Map) nameToTargetByFiles.get(file);
@@ -640,6 +648,11 @@ public class AntDebugger extends ActionsProviderSupport {
             }
             AntProjectCookie ant = (AntProjectCookie) dob.getCookie 
                 (AntProjectCookie.class);
+            Element proj = ant.getProjectElement();
+            if (proj != null) {
+                String projName = proj.getAttribute("name");
+                projectNamesByFiles.put(file, projName);
+            }
             try {
                 Set targets = TargetLister.getTargets (ant);
                 Iterator it = targets.iterator ();
@@ -650,9 +663,17 @@ public class AntDebugger extends ActionsProviderSupport {
             } catch (IOException ioex) {
                 // Ignore - we'll have an empty map
             }
-            nameToTargetByFiles.put(ant, nameToTarget);
+            nameToTargetByFiles.put(file, nameToTarget);
         }
-        return (TargetLister.Target) nameToTarget.get(name);
+        TargetLister.Target target = (TargetLister.Target) nameToTarget.get(name);
+        if (target == null) {
+            String projName = (String) projectNamesByFiles.get(file);
+            if (name.startsWith(projName+".")) {
+                name = name.substring(projName.length() + 1);
+                target = (TargetLister.Target) nameToTarget.get(name);
+            }
+        }
+        return target;
     }
     
     
