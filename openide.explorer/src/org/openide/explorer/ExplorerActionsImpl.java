@@ -450,8 +450,9 @@ final class ExplorerActionsImpl {
         }
 
         public void actionPerformed(ActionEvent e) {
+            PasteType[] arr = this.pasteTypes;
             throw new IllegalStateException(
-                "Should not be invoked at all. Paste types: " + pasteTypes == null ? null : java.util.Arrays.asList(pasteTypes).toString () // NOI18N
+                "Should not be invoked at all. Paste types: " + arr == null ? null : java.util.Arrays.asList(arr).toString () // NOI18N
             );
         }
 
