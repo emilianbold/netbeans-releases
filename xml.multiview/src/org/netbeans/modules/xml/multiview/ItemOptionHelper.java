@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import javax.accessibility.AccessibleContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +39,7 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
      *              is used as "unmatched option". The "unmatched option" is selected,
      */
     public ItemOptionHelper(XmlMultiViewDataSynchronizer synchronizer, ButtonGroup group) {
+        
         this.synchronizer = synchronizer;
         buttons = (AbstractButton[]) Collections.list(group.getElements()).toArray(new AbstractButton[0]);
         AbstractButton unmatchedOption = null;
@@ -97,22 +97,16 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
     }
 
     private String getOptionText(AbstractButton button) {
-        final AccessibleContext context = button.getAccessibleContext();
-        if (context != null) {
-            final String accessibleName = context.getAccessibleName();
-            if (accessibleName != null) {
-                return accessibleName;
-            }
-        }
-        return button.getText();
+        String fixedValue = (String)button.getClientProperty(PROPERTY_FIXED_VALUE);
+        if (fixedValue!=null) return fixedValue;
+        else return button.getText();
     }
 
     /**
      * Retrieves the text value represented by the selected option.
      *
-     * @return an accessibleName property of the AccessibleContext object related
-     *         to the button representing the selected option. If the accessibleName property
-     *         is null, a text property of the button is used instead.
+     * @return client property:prop_fixed_value of the button representing the selected option. 
+     * If the client property is null, a text property of the button is used.
      */
     public String getOption() {
         for (int i = 0; i < buttons.length; i++) {

@@ -17,5 +17,7 @@ package org.netbeans.modules.xml.multiview;
  */
 public interface Refreshable {
 
+    public static final String PROPERTY_FIXED_VALUE="prop_fixed_value"; //NOI18N
+    
     void refresh();
 }
