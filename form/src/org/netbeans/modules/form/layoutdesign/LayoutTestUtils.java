@@ -56,65 +56,40 @@ public class LayoutTestUtils implements LayoutConstants {
     }
 
     static void writeLayoutComponentArray(List codeList, String arrayName, String lcName) {
-        codeList.add("LayoutComponent[] " + arrayName + " = new LayoutComponent[] { " + lcName + "  };"); //NOI18N
+        codeList.add("LayoutComponent[] " + arrayName + " = new LayoutComponent[] { " + lcName + " };"); //NOI18N
     }
     
     static void writeCollection(List codeList, String name, Collection c) {
         codeList.add("Collection " + name + " = new ArrayList();"); //NOI18N
 	Iterator i = c.iterator();
-	boolean first = true;
         while (i.hasNext()) {
-            String line = ""; //NOI18N
-            if (first) {
-                line += ","; //NOI18N
-		first = false;
-            }
-	    String id = (String)i.next();
-            line += "\"" + id + "\""; //NOI18N
-            codeList.add(line);
+            codeList.add(name + ".add(\"" + (String)i.next() + "\");"); // NOI18N
         }
-        codeList.add("};"); //NOI18N
     }
 
     static void writeStringArray(List codeList, String name, String[] compIds) {
         codeList.add("String[] " + name + " = new String[] {"); //NOI18N
         for (int i=0; i < compIds.length; i++) {
-            String line = ""; //NOI18N
-            if (i != 0) {
-                line += ","; //NOI18N
-            }
-            line += "\"" + compIds[i] + "\""; //NOI18N
-            codeList.add(line);
+            codeList.add("\"" + compIds[i] + "\"" + (i+1 < compIds.length ? "," : "")); // NOI18N
         }
         codeList.add("};"); //NOI18N
     }
 
     static void writeIntArray(List codeList, String name, int[] values) {
-        codeList.add("int[] " + name + " = new int[] {"); //NOI18Ns
+        codeList.add("int[] " + name + " = new int[] {"); //NOI18N
         for (int i=0; i < values.length; i++) {
-            String line = ""; //NOI18N
-            if (i != 0) {
-                line += ","; //NOI18N
-            }
-            line += values[i];
-            codeList.add(line);
+            codeList.add(Integer.toString(values[i]) + (i+1 < values.length ? "," : "")); // NOI18N
         }
         codeList.add("};"); //NOI18N
-    }    
+    }
     
     static void writeRectangleArray(List codeList, String name, Rectangle[] bounds) {
-        // write bounds parameter
         codeList.add("Rectangle[] " + name + " = new Rectangle[] {"); //NOI18N
         for (int i=0; i < bounds.length; i++) {
-            String line = ""; //NOI18N
-            if (i != 0) {
-                line += ","; //NOI18N
-            }
-            line += "new Rectangle(" + new Double(bounds[i].getX()).intValue() + ", " + //NOI18N
-                                       new Double(bounds[i].getY()).intValue() + ", " +  //NOI18N
-                                       new Double(bounds[i].getWidth()).intValue() + ", " +  //NOI18N
-                                       new Double(bounds[i].getHeight()).intValue() + ")"; //NOI18N
-            codeList.add(line);
+            codeList.add("new Rectangle(" + bounds[i].x + ", " // NOI18N
+                                                        + bounds[i].y + ", " // NOI18N
+                                                        + bounds[i].width + ", " // NOI18N
+                                                        + bounds[i].height + (i+1 < bounds.length ? "), " : ")")); // NOI18N
         }
         codeList.add("};"); // NOI18N
     }

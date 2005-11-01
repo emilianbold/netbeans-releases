@@ -1563,9 +1563,9 @@ public class LayoutDesigner implements LayoutConstants {
         if (logTestCode()) {
             testCode.add("// > SET COMPONENT RESIZING"); //NOI18N
             testCode.add("{"); //NOI18N
-            testCode.add("LayoutComponent comp = model.getLayoutComponent(\"${" + comp.getId() + "}\");"); //NOI18N
-            testCode.add("int dimension = " + dimension);	   //NOI18N
-            testCode.add("boolean resizing = " + resizing);        //NOI18N   
+            testCode.add("LayoutComponent comp = lm.getLayoutComponent(\"" + comp.getId() + "\");"); //NOI18N
+            testCode.add("int dimension = " + dimension + ";"); //NOI18N
+            testCode.add("boolean resizing = " + resizing + ";"); //NOI18N   
             testCode.add("ld.setComponentResizing(comp, dimension, resizing);"); //NOI18N
             testCode.add("}"); //NOI18N
         }
@@ -1782,9 +1782,9 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("// > ALIGN"); //NOI18N
             testCode.add("{"); //NOI18N
 	    LayoutTestUtils.writeCollection(testCode, "componentIds", componentIds); //NOI18N
-            testCode.add("boolean closed = " + closed); //NOI18N
-            testCode.add("int dimension = " + dimension);        //NOI18N   
-            testCode.add("int alignment = " + alignment);         //NOI18N  
+            testCode.add("boolean closed = " + closed + ";"); //NOI18N
+            testCode.add("int dimension = " + dimension + ";");        //NOI18N   
+            testCode.add("int alignment = " + alignment + ";");         //NOI18N  
             testCode.add("ld.align(componentIds, closed, dimension, alignment);"); //NOI18N
             testCode.add("}"); //NOI18N
         }
