@@ -403,7 +403,8 @@ public class LayoutUtils implements LayoutConstants {
                                                       int dimension)
     {
         int otherDim = dimension^1;
-        LayoutComponent component = (LayoutComponent) getComponentIterator(compInterval).next();
+        compInterval = (LayoutInterval) getComponentIterator(compInterval).next();
+        LayoutComponent component = compInterval.getComponent();
         LayoutInterval otherCompInterval = component.getLayoutInterval(otherDim);
         Iterator it = getComponentIterator(interval);
         assert it.hasNext();
