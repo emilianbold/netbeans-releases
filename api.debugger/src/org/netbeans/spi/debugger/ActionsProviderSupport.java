@@ -41,6 +41,10 @@ public abstract class ActionsProviderSupport extends ActionsProvider {
      * Returns a state of given action defined by {@link #setEnabled} 
      * method call.
      *
+     * Do not override. Should be final - the enabled state is cached,
+     * therefore this method is not consulted unless the state change
+     * is fired.
+     *
      * @param action action
      */
     public boolean isEnabled (Object action) {
