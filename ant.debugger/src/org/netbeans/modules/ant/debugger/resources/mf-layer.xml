@@ -43,7 +43,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CurrentPCLinePart.xml" url="CurrentPCLinePart.xml"/>
             <file name="CurrentPC2.xml" url="CurrentPC2.xml"/>
             <file name="CurrentPC2LinePart.xml" url="CurrentPC2LinePart.xml"/>
-            <file name="NextTargetName.xml" url="NextTargetName.xml"/>
         </folder>
     </folder>
     <folder name="Loaders">

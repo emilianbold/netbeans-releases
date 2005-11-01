@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,9 +47,6 @@ public class DebuggerAnnotation extends Annotation {
     /** Annotation type constant. */
     public static final String CURRENT_LINE_PART_ANNOTATION_TYPE =
         new String ("CurrentPCLinePart");
-    /** Annotation type constant. */
-    public static final String NEXT_TARGET_NAME =
-        new String ("NextTargetName");
     /** Annotation type constant. */
     public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 =
         new String ("CurrentPC2LinePart");
