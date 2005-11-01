@@ -420,7 +420,9 @@ public class CvsVersioningSystem {
         for (int i = 0; i < files.length; i++) {
             try {
                 if (FILENAME_CVSIGNORE.equals(files[i].getName())) continue;
-                addToCvsIgnore(files[i]);
+                if (files[i].exists()) {
+                    addToCvsIgnore(files[i]);
+                }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
