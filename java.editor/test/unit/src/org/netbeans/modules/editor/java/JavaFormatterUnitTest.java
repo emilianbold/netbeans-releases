@@ -15,8 +15,10 @@ package org.netbeans.modules.editor.java;
 
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Settings;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 
 
@@ -419,9 +421,43 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "    (anotherComplexCalculation);");
     }
     
-    //TODO #47069
     
-    //TODO #48926
+    /**
+     * Test reformatting of array initializer with newlines on
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
+     */
+    public void testReformatArrayInitializerWithNewline() {
+        Settings.setValue(JavaKit.class, JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
+        setLoadDocumentText(
+                "int[] foo = new int[] {1, 2, 3};");
+        reformat();
+        assertDocumentText("Incorrect array initializer with newline reformatting",
+                "int[] foo = new int[] {1, 2, 3};");
+        Settings.setValue(JavaKit.class, JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.FALSE);
+    }
+    
+    /**
+     * Test reformatting of newline braces to normal ones
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=48926
+     */
+    public void testReformatNewlineBracesToNormalOnes() {
+        setLoadDocumentText(
+                "try\n" +
+                "{\n" +
+                "System.out.println(\"test\");\n" +
+                "}\n" +
+                "catch (ClassCastException e)\n" +
+                "{\n" +
+                "System.err.println(\"exception\");\n" +
+                "}");
+        reformat();
+        assertDocumentText("Incorrect array initializer with newline reformatting",
+                "try {\n" +
+                "    System.out.println(\"test\");\n" +
+                "} catch (ClassCastException e) {\n" +
+                "    System.err.println(\"exception\");\n" +
+                "}");
+    }
     
     /**
      * Test reformatting of multiline constructors
@@ -467,7 +503,7 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "    return performanceSum / getCount()");
     }
     
-
+    
     // ------- Private methods -------------
     
     private void indentNewLine() {
