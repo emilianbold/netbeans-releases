@@ -144,7 +144,10 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     }
 
     static String checkValidity (final String projectName, final String projectLocation) {
-        if ( projectName.length() == 0 ) {
+        if ( projectName.length() == 0 
+             || projectName.indexOf('/')  > 0           //NOI18N
+             || projectName.indexOf('\\') > 0           //NOI18N
+             || projectName.indexOf(':')  > 0) {        //NOI18N
             // Display name not specified
             return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName");
         }

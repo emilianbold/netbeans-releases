@@ -177,7 +177,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
-        if ( projectNameTextField.getText().length() == 0 ) {
+        if ( projectNameTextField.getText().length() == 0 
+            || projectNameTextField.getText().indexOf('/')  > 0         //NOI18N
+            || projectNameTextField.getText().indexOf('\\') > 0         //NOI18N
+            || projectNameTextField.getText().indexOf(':')  > 0) {      //NOI18N
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
