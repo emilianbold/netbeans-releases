@@ -285,13 +285,13 @@
     </tocitem>
   </tocitem>
 
-<!--begin GUI Builder section-->
+<!-- GUI Builder section -->
   <tocitem text="Building Java GUIs">
     <tocitem text="About Building Java GUIs" target="gui.about"/>
     <tocitem text="Working with the GUI Builder" target="gui.overview"/>
     <tocitem text="GUI Builder Tasks: Quick Reference" target="gui.quickref"/>
-    <tocitem text="Working with Forms">      
-      <tocitem text="Designing Java GUIs with the GUI Builder" target="gui.designing" />            
+    <tocitem text="Designing Java GUIs with the GUI Builder">      
+      <tocitem text="About Designing Java GUIs" target="gui.designing" />            
       <tocitem text="Creating a New Form" target="gui.creatingforms" />
       <tocitem text="Working with Containers" target="gui.containers.designing" />
       <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
@@ -315,7 +315,7 @@
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
   </tocitem>
 
-<!--begin Ant section-->
+<!-- Ant section -->
   <tocitem text="Working with Ant">
     <tocitem text="About Working with Ant" target="ant_intro" />
     <tocitem text="Editing an Ant Script" target="ant_editing" />
