@@ -24,37 +24,38 @@
         the IDE. This prompt occurs only if you have a user directory on your 
         system from a previous version of the IDE and the user directory is in 
         the default location.</p>
-        <!--<p>The settings that are imported include:</p>
+        <p>The settings that are imported include the following items:</p>
         <ul>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-        </ul>-->
+            <li>Keyboard shortcuts</li>
+            <li>Most Source Editor font and color settings</li>
+            <li>Java Platform Manager contents</li>
+            <li>Library Manager contents</li>
+            <li>Database drivers</li>
+            <li>Servers</li>            
+        </ul>
 
-        <p>If you do not import the settings at the first launch, you can manually import the settings.</p>
-        <!--<p>
-Source Editor settings that you have customized are stored in XML files 
-in your user directory. This makes it easy to share your settings 
-with another user or  installation of the IDE.
-</p>
+        <h3>Importing Editor Settings After the First Launch</h3>
+        <p>If you do not import the settings at the first launch, you can manually import 
+        selected settings later. In particular, you might want to import Source Editor 
+        settings if you have carefully customized your previous installation.</p>
+        <p>Source Editor settings that you have customized are stored in XML files 
+in your user directory. </p>
 
-<p>The settings stored in XML files include code templates, macros, fonts and colors,
+<!--<p>The settings stored in XML files include code templates, macros, fonts and colors,
 and keyboard shortcuts.  In addition, a general properties file exists for other 
-properties not covered by the categories listed above.</p>
+properties not covered by the categories listed above.</p>-->
 
-<p>Most of the editor settings are in 
+<!--<p>Source Editor settings are in the 
 <tt>config/Editors/text/&lt;mime type&gt;</tt>.  Substitute 
 <tt>&lt;mime type&gt;</tt> with the type of editor settings you want. 
 For example, the Java editor settings are found in the <tt>x-java</tt>
-directory. The name of the file reflects the type of settings it contains.</p>
+directory. The name of the file reflects the type of settings it contains.</p>-->
 
 <p>If you created named editor profiles in the Options window of the IDE, the default settings for that profile are located within the Editors folder. 
 For example, if you created a profile called MyNetbeansProfile, the default settings for that profile are located in
 <tt>config/Editors/MyNetbeansProfile</tt>, the Java editor specific settings for that profile are located
 in <tt>config/Editors/text/x-java/MyNetbeansProfile</tt>, the HTML editor specific settings are located in
-<tt>config/Editors/text/html/MyNetbeansProfile</tt> and so on.</p>-->
+<tt>config/Editors/text/html/MyNetbeansProfile</tt> and so on.</p>
 
 <p><b>To copy settings from a previous version of the IDE:</b></p>
 
@@ -63,18 +64,28 @@ in <tt>config/Editors/text/x-java/MyNetbeansProfile</tt>, the HTML editor specif
 IDE installation.
 <p>To find your user directory choose Help  &gt; About and click
 the Detail tab in the About dialog box.  User Dir is listed last in the dialog box.</p></li>
-<li>From the old IDE's user directory, navigate to <tt>config</tt>.</li>
-<li>Find the settings file you are interested in.
-<p>In particular, you probably would want to copy the settings in the <tt>Editor</tt> folder.</li>
-<li>Copy the desired settings file to the corresponding location in the user directory of 
-the new version of the IDE.</li>
+<li>From the old IDE's user directory, navigate to <tt>config/Editors</tt>.</li>
+<li>Copy the folders within the <tt>config/Editors</tt> folder.</li>
+<li>Navigate to the user directory in your new installation and open the <tt>config/Editors</tt> folder.</li>
+<li>In the <tt>config/Editors</tt> folder, create a new folder and give it a name such as <tt>NetBeans41</tt>.
+<p>The name of the folder becomes the name of a profile in the IDE that you can switch to in order to 
+adopt a group of settings.</li>
+<li>Paste the copied folders inside of the new folder.
+<p>The pasted files become part of the new profile.</li>
+<!--<li>Find the settings file you are interested in.
+<p>In particular, you probably would want to copy the settings in the <tt>Editor</tt> folder.</li>-->
+<!--<li>Copy the desired settings file to the corresponding location in the user directory of 
+the new version of the IDE.</li>-->
+<li>Restart the new version of the IDE.</li>
+<li>Choose Tools &gt; Options and click Fonts &amp; Colors.</li><!--TODO check ampersand-->
+<li>In the Profile drop-down list, select the name .</li>
 </ol>
-<p><b>Notes:</b></p>
+<!--<p><b>Notes:</b></p>
 <ul class="note">
     <li>When copying properties between XML files, pay attention to the XML syntax for the properties, especially when copying properties from previous versions of the IDE.<li>
 <li>There might not be an XML file for certain settings if you are using the default settings.
 If you delete an XML settings file, the default settings are restored.</li>
-</ul>
+</ul>-->
 
         <dl>
             <dt>
