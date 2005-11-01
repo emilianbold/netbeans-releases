@@ -283,15 +283,15 @@ public class OptionsPanel extends JPanel {
         }
         lTitle.setIcon (new ImageIcon (Utilities.loadImage (category.getIconBase () + ".png")));
         lTitle.setText (category.getTitle ());
-        invalidate ();
-        validate ();
-        repaint ();
-        if (i != -1)
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                invalidate ();
+                validate ();
+                repaint ();
+                if (i != -1)
                     buttons [i].requestFocus ();
-                }
-            });
+            }
+        });
         firePropertyChange ("buran" + PanelController.PROP_HELP_CTX, null, null);
     }
     
