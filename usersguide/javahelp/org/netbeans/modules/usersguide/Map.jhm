@@ -520,7 +520,7 @@ under Print Settings in the Options window)
 <!-- GUI Builder Connection Wizard : F1 and Help button-->
 <mapID target="gui.connecting.source" url="gui/csh/gui_connection_wizard.html" />
 <!--CSH topic for Advanced Modify Source dialog-->
-<mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog" />
+<mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog.html" />
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
 
