@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -30,285 +30,285 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
     public JavaFormatterUnitTest(String testMethodName) {
         super(testMethodName);
     }
-
+    
     // indent new line tests
     
     public void testJavadocEnterNothingAfterCaret() {
         setLoadDocumentText(
-            "/**\n"
-          + " * text|\n"
-          + " */\n"
-        );
+                "/**\n"
+                + " * text|\n"
+                + " */\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "/**\n"
-          + " * text\n"
-          + " *|\n"
-          + " */\n"
-        );
+                "/**\n"
+                + " * text\n"
+                + " *|\n"
+                + " */\n"
+                );
         
     }
-
+    
     public void testJavadocEnterTextAfterCaret() {
         setLoadDocumentText(
-            "/**\n"
-          + " * break|text\n"
-          + " */\n"
-        );
+                "/**\n"
+                + " * break|text\n"
+                + " */\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "/**\n"
-          + " * break\n"
-          + " * |text\n"
-          + " */\n"
-        );
+                "/**\n"
+                + " * break\n"
+                + " * |text\n"
+                + " */\n"
+                );
         
     }
     
     public void testJavadocEnterStarAfterCaret() {
         setLoadDocumentText(
-            "/**\n"
-          + " * text|*/\n"
-        );
+                "/**\n"
+                + " * text|*/\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "/**\n"
-          + " * text\n"
-          + " |*/\n"
-        );
+                "/**\n"
+                + " * text\n"
+                + " |*/\n"
+                );
         
     }
     
     public void testEnterInMultiLineSystemOutPrintln() {
         setLoadDocumentText(
-            "void m() {\n"
-          + "    System.out.println(|\n"
-          + "\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(|\n"
+                + "\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "void m() {\n"
-          + "    System.out.println(\n"
-          + "            |\n"
-          + "\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(\n"
+                + "            |\n"
+                + "\n"
+                );
         
     }
     
     public void testEnterInMultiLineSystemOutPrintlnLineThree() {
         setLoadDocumentText(
-            "void m() {\n"
-          + "    System.out.println(\n"
-          + "            \"haf\"|\n"
-          + "\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(\n"
+                + "            \"haf\"|\n"
+                + "\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "void m() {\n"
-          + "    System.out.println(\n"
-          + "            \"haf\"\n"
-          + "            |\n"
-          + "\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(\n"
+                + "            \"haf\"\n"
+                + "            |\n"
+                + "\n"
+                );
         
     }
     
     public void testEnterInMultiLineSystemOutPrintlnAfterSemiColon() {
         setLoadDocumentText(
-            "void m() {\n"
-          + "    System.out.println(\n"
-          + "            \"haf\");|\n"
-          + "\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(\n"
+                + "            \"haf\");|\n"
+                + "\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "void m() {\n"
-          + "    System.out.println(\n"
-          + "            \"haf\");\n"
-          + "    |\n"
-          + "\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(\n"
+                + "            \"haf\");\n"
+                + "    |\n"
+                + "\n"
+                );
         
     }
     
     public void testEnterInMultiLineClassDeclaration() {
         setLoadDocumentText(
-            "public class C\n"
-          + "        implements Runnable\n"
-          + "        throws Exception {|\n"
-          + "}\n"
-        );
+                "public class C\n"
+                + "        implements Runnable\n"
+                + "        throws Exception {|\n"
+                + "}\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "public class C\n"
-          + "        implements Runnable\n"
-          + "        throws Exception {\n"
-          + "    |\n"
-          + "}\n"
-        );
+                "public class C\n"
+                + "        implements Runnable\n"
+                + "        throws Exception {\n"
+                + "    |\n"
+                + "}\n"
+                );
         
     }
     
     public void testEnterAfterIf() {
         setLoadDocumentText(
-            "if (true)|\n"
-        );
+                "if (true)|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "if (true)\n"
-          + "    |\n"
-        );
+                "if (true)\n"
+                + "    |\n"
+                );
     }
-
+    
     public void testEnterAfterFor() {
         setLoadDocumentText(
-            "if (int i = 0; i < 10; i++)|\n"
-        );
+                "if (int i = 0; i < 10; i++)|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "if (int i = 0; i < 10; i++)\n"
-          + "    |\n"
-        );
+                "if (int i = 0; i < 10; i++)\n"
+                + "    |\n"
+                );
     }
-
+    
     public void testEnterAfterWhile() {
         setLoadDocumentText(
-            "while (true)|\n"
-        );
+                "while (true)|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "while (true)\n"
-          + "    |\n"
-        );
+                "while (true)\n"
+                + "    |\n"
+                );
     }
-
+    
     public void testEnterAfterDo() {
         setLoadDocumentText(
-            "do|\n"
-        );
+                "do|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "do\n"
-          + "    |\n"
-        );
+                "do\n"
+                + "    |\n"
+                );
     }
-
-
+    
+    
     public void testEnterAfterIfStmt() {
         setLoadDocumentText(
-            "if (true)\n"
-          + "    stmt;|\n"
-        );
+                "if (true)\n"
+                + "    stmt;|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "if (true)\n"
-          + "    stmt;\n"
-          + "|\n"
-        );
+                "if (true)\n"
+                + "    stmt;\n"
+                + "|\n"
+                );
     }
-
+    
     public void testEnterAfterIfElse() {
         setLoadDocumentText(
-            "if (true)\n"
-          + "    stmt;\n"
-          + "else|\n"
-        );
+                "if (true)\n"
+                + "    stmt;\n"
+                + "else|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "if (true)\n"
-          + "    stmt;\n"
-          + "else\n"
-          + "    |\n"
-        );
+                "if (true)\n"
+                + "    stmt;\n"
+                + "else\n"
+                + "    |\n"
+                );
     }
-
+    
     public void testEnterAfterIfElseStmt() {
         setLoadDocumentText(
-            "if (true)\n"
-          + "    stmt;\n"
-          + "else\n"
-          + "    stmt;|\n"
-        );
+                "if (true)\n"
+                + "    stmt;\n"
+                + "else\n"
+                + "    stmt;|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "if (true)\n"
-          + "    stmt;\n"
-          + "else\n"
-          + "    stmt;\n"
-          + "|\n"
-        );
+                "if (true)\n"
+                + "    stmt;\n"
+                + "else\n"
+                + "    stmt;\n"
+                + "|\n"
+                );
     }
-
+    
     public void testEnterAfterIfMultiLine() {
         setLoadDocumentText(
-            "if (1 < 5|\n"
-        );
+                "if (1 < 5|\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "if (1 < 5\n"
-          + "        |\n"
-        );
+                "if (1 < 5\n"
+                + "        |\n"
+                );
     }
-
+    
     public void testEnterAfterIfMultiLine2() {
         setLoadDocumentText(
-            "if (1 < 5|)\n"
-        );
+                "if (1 < 5|)\n"
+                );
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line indent",
-            "if (1 < 5\n"
-          + "        |)\n"
-        );
+                "if (1 < 5\n"
+                + "        |)\n"
+                );
     }
-
+    
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
         setLoadDocumentText(
-            "void m() {\n"
-          + "    System.out.println(\n"
-          + "    \"haf\");\n"
-          + "}\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(\n"
+                + "    \"haf\");\n"
+                + "}\n"
+                );
         reformat();
         assertDocumentText("Incorrect new-line indent",
-            "void m() {\n"
-          + "    System.out.println(\n"
-          + "            \"haf\");\n"
-          + "}\n"
-        );
+                "void m() {\n"
+                + "    System.out.println(\n"
+                + "            \"haf\");\n"
+                + "}\n"
+                );
         
     }
-
+    
     public void testReformatMultiLineClassDeclaration() {
         setLoadDocumentText(
-            "public class C\n"
-          + "implements Runnable\n"
-          + "throws Exception {|\n"
-          + "System.out.println(\"haf\");\n"
-          + "}\n"
-        );
+                "public class C\n"
+                + "implements Runnable\n"
+                + "throws Exception {|\n"
+                + "System.out.println(\"haf\");\n"
+                + "}\n"
+                );
         reformat();
         assertDocumentText("Incorrect new-line indent",
-            "public class C\n"
-          + "        implements Runnable\n"
-          + "        throws Exception {\n"
-          + "    System.out.println(\"haf\");\n"
-          + "}\n"
-        );
+                "public class C\n"
+                + "        implements Runnable\n"
+                + "        throws Exception {\n"
+                + "    System.out.println(\"haf\");\n"
+                + "}\n"
+                );
         
     }
     
     public void testReformatMultiArray(){
         setLoadDocumentText(
-            "static int[][] CONVERT_TABLE={{1,2},{2,3},\n"
-          + "{3,4},{4,5},{5,6},|\n"
-          + "{6,7},{7,8},{8,9}};\n");
+                "static int[][] CONVERT_TABLE={{1,2},{2,3},\n"
+                + "{3,4},{4,5},{5,6},|\n"
+                + "{6,7},{7,8},{8,9}};\n");
         reformat();
         assertDocumentText("Incorrect multi-array && multi-line reformating",
-            "static int[][] CONVERT_TABLE={{1,2},{2,3},\n"
-          + "        {3,4},{4,5},{5,6},\n"
-          + "        {6,7},{7,8},{8,9}};\n");
+                "static int[][] CONVERT_TABLE={{1,2},{2,3},\n"
+                + "        {3,4},{4,5},{5,6},\n"
+                + "        {6,7},{7,8},{8,9}};\n");
     }
     
     public void testReformatSimpleEnum() {
@@ -319,14 +319,14 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "THREE\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect simple enum reformating", 
+        assertDocumentText("Incorrect simple enum reformating",
                 "public enum SimpleEnum {\n" +
                 "    ONE,\n" +
                 "    TWO,\n" +
                 "    THREE\n" +
-                "}\n");        
+                "}\n");
     }
-
+    
     public void testReformatNestedEnum() {
         setLoadDocumentText(
                 "public enum SimpleEnum {\n" +
@@ -339,7 +339,7 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "}\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect nested enum reformating", 
+        assertDocumentText("Incorrect nested enum reformating",
                 "public enum SimpleEnum {\n" +
                 "    ONE,\n" +
                 "    TWO,\n" +
@@ -348,7 +348,7 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "        A,\n" +
                 "        B\n" +
                 "    }\n" +
-                "}\n");        
+                "}\n");
     }
     
     public void testReformatComplexEnum() {
@@ -369,7 +369,7 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "THREE\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect complex enum reformating", 
+        assertDocumentText("Incorrect complex enum reformating",
                 "public enum ComplexEnum {\n" +
                 "    ONE,\n" +
                 "    TWO {\n" +
@@ -384,28 +384,28 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "        }\n" +
                 "    },\n" +
                 "    THREE\n" +
-                "}\n");        
+                "}\n");
     }
-
+    
     // tests for regressions
     
     /**
      * Tests reformatting of new on two lines
-     * @see issue 6065
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id6065
      */
     public void testReformatNewOnTwoLines() {
         setLoadDocumentText(
                 "javax.swing.JPanel =\n" +
                 "new java.swing.JPanel();");
         reformat();
-        assertDocumentText("Incorrect new on two lines reformating", 
+        assertDocumentText("Incorrect new on two lines reformating",
                 "javax.swing.JPanel =\n" +
                 "        new java.swing.JPanel();");
     }
     
     /**
      * Tests reformatting of ternary conditional operators on multiple lines
-     * @see issue 23508
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=23508
      */
     public void testReformatTernaryConditionalOperator() {
         setLoadDocumentText(
@@ -418,10 +418,56 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "    (aComplexCalculation) :\n" +
                 "    (anotherComplexCalculation);");
     }
-
-        
-            
     
+    //TODO #47069
+    
+    //TODO #48926
+    
+    /**
+     * Test reformatting of multiline constructors
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
+     */
+    public void testReformatMultilineConstructor() {
+        setLoadDocumentText(
+                "public class Test {\n" +
+                "public Test(int one,\n" +
+                "int two,\n" +
+                "int three,\n" +
+                "int four) {\n" +
+                "this.one = one;\n" +
+                "}\n" +
+                "}");
+        reformat();
+        assertDocumentText("Incorrect multiline constructor reformatting",
+                "public class Test {\n" +
+                "    public Test(int one,\n" +
+                "            int two,\n" +
+                "            int three,\n" +
+                "            int four) {\n" +
+                "        this.one = one;\n" +
+                "    }\n" +
+                "}");
+    }
+    
+    /**
+     * Test reformatting of if else without brackets
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
+     */
+    public void testReformatIfElseWithoutBrackets() {
+        setLoadDocumentText(
+                "if (count == 0)\n" +
+                "return 0.0f;\n" +
+                "else\n" +
+                "return performanceSum / getCount()");
+        reformat();
+        assertDocumentText("Incorrect reformatting of if-else without brackets",
+                "if (count == 0)\n" +
+                "    return 0.0f;\n" +
+                "else\n" +
+                "    return performanceSum / getCount()");
+    }
+    
+
     // ------- Private methods -------------
     
     private void indentNewLine() {
@@ -439,5 +485,5 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
             fail(e.getMessage());
         }
     }
-        
+    
 }
