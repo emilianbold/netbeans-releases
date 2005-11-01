@@ -92,10 +92,17 @@ public class DebuggerAnnotation extends Annotation {
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
         else
+        if (type == CURRENT_LINE_ANNOTATION_TYPE2)
+            return NbBundle.getMessage 
+                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC_2"); // NOI18N
+        else
+        if (type == CURRENT_LINE_PART_ANNOTATION_TYPE)
+            return NbBundle.getMessage
+                    (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
+        else
         if (type == CALL_STACK_FRAME_ANNOTATION_TYPE)
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 
                 ("TOOLTIP_CALLSITE"); // NOI18N
-        return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-            ("TOOLTIP_ANNOTATION"); // NOI18N
+        return null;
     }
 }
