@@ -140,30 +140,34 @@ public class JSFConfigUtilities {
                         return mappings[i].getUrlPattern();
                 }
             } catch (java.io.IOException e) {
-                
+                ErrorManager.getDefault().notify(e);
             }
         }
         return null;
     }
     
     public static boolean validateXML(FileObject dd){
-        try{
-            WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.validateXml"); //NOI18N
-            return  "true".equals(param.getParamValue().trim());
-        } catch (java.io.IOException e) {
-            
+        if (dd != null){
+            try{
+                WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
+                InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.validateXml"); //NOI18N
+                return  "true".equals(param.getParamValue().trim());
+            } catch (java.io.IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
         return false;
     }
     
     public static boolean verifyObjects(FileObject dd){
-        try{
-            WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.verifyObjects"); //NOI18N
-            return  "true".equals(param.getParamValue().trim());
-        } catch (java.io.IOException e) {
-            ErrorManager.getDefault().notify(e);
+        if (dd != null){
+            try{
+                WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
+                InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.verifyObjects"); //NOI18N
+                return  "true".equals(param.getParamValue().trim());
+            } catch (java.io.IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
         return false;
     }
