@@ -21,6 +21,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -176,8 +177,18 @@ public class DocumentationScrollPane extends JScrollPane {
     
     private synchronized void setDocumentation(CompletionDocumentation doc) {
         currentDocumentation = doc;
-        view.setContent(currentDocumentation.getText());
-        bShowWeb.setEnabled(currentDocumentation.getURL() != null);
+        String text = currentDocumentation.getText();
+        URL url = currentDocumentation.getURL();
+        if (text != null){
+            view.setContent(text);
+        } else if (url != null){
+            try{
+                view.setPage(url);
+            }catch(IOException ioe){
+                ioe.printStackTrace();
+            }
+        }
+        bShowWeb.setEnabled(url != null);
         bGoToSource.setEnabled(currentDocumentation.getGotoSourceAction() != null);
     }
     

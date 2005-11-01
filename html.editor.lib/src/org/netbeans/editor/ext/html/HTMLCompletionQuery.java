@@ -789,11 +789,14 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         
         public String getText() {
+            return null;
+            /*
             String anchor = HelpManager.getDefault().getAnchorText(url);
             if(anchor != null)
                 return HelpManager.getDefault().getHelpText(url, anchor);
             else
                 return HelpManager.getDefault().getHelpText(url);
+             */
         }
         
         public URL getURL() {
