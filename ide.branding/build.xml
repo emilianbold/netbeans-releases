@@ -85,17 +85,21 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
         <exclude name="netbeans.png"/>
         <exclude name="netbeans.icns"/>
         <exclude name="shortcuts.pdf"/>
+<!-- Issue 67806
         <exclude name="LICENSE.txt"/>
         <exclude name="DISTRIBUTION.txt"/>
         <exclude name="THIRDPARTYLICENSE.txt"/>
+-->
       </fileset>
     </copy>
     <copy todir="${cluster}" file="release/netbeans.png"/>
     <copy todir="${cluster}" file="release/netbeans.icns"/>
     <copy todir="${cluster}" file="release/shortcuts.pdf"/>
+<!-- Issue 67806
     <copy todir="${cluster}" file="release/LICENSE.txt"/>
     <copy todir="${cluster}" file="release/DISTRIBUTION.txt"/>
     <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
+-->
     <copy todir="${cluster}" file="../launcher/os2/nbos2icons.zip"/>
   </target>
   
