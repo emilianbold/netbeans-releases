@@ -488,9 +488,6 @@ public class ComponentInspector extends TopComponent
                 if (!selected[i].canDestroy())
                     return;
 
-            if (!confirmDelete(selected)) // ExplorerPanel.isConfirmDelete() ??
-                return;
-
             try { // clear nodes selection first
                 getExplorerManager().setSelectedNodes(new Node[0]);
             }
@@ -521,33 +518,8 @@ public class ComponentInspector extends TopComponent
                 nodesToDestroy = null;
             }
         }
-
-        private boolean confirmDelete(Node[] selected) {
-            String message;
-            String title;
-            if (selected.length == 1) {
-                message = NbBundle.getMessage(ExplorerUtils.class,
-                                              "MSG_ConfirmDeleteObject", // NOI18N
-                                              selected[0].getDisplayName());
-                title = NbBundle.getMessage(ExplorerUtils.class,
-                                            "MSG_ConfirmDeleteObjectTitle"); // NOI18N
-            }
-            else {
-                message = NbBundle.getMessage(ExplorerUtils.class,
-                                              "MSG_ConfirmDeleteObjects", // NOI18N
-                                               new Integer(selected.length));
-                title = NbBundle.getMessage(ExplorerUtils.class,
-                                            "MSG_ConfirmDeleteObjectsTitle"); // NOI18N
-            }
-
-            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
-                        message, title, NotifyDescriptor.YES_NO_OPTION);
-
-            return NotifyDescriptor.YES_OPTION.equals (
-                   DialogDisplayer.getDefault().notify(desc));
-        }
     }
-
+    
     // performer for CopyAction and CutAction
     private class CopyCutActionPerformer extends javax.swing.AbstractAction
                                          implements ActionPerformer
