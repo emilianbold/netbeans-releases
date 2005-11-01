@@ -52,6 +52,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
 
 /**
@@ -62,12 +63,15 @@ import org.w3c.dom.Element;
 public class AntDebugger extends ActionsProviderSupport {
 
     
+    /** The ReqeustProcessor used by action performers. */
+    private static RequestProcessor     actionsRequestProcessor;
+    
     private AntProjectCookie            antCookie;
     private AntDebuggerEngineProvider   engineProvider;
     private ContextProvider             contextProvider;
     private Object                      LOCK = new Object ();
+    private Object                      LOCK_ACTIONS = new Object();
     private IOManager                   ioManager;
-    private boolean                     doNotStop = false;
     private Object                      currentLine;
     private LinkedList                  callStackList = new LinkedList();
     private File                        currentFile;
@@ -91,12 +95,9 @@ public class AntDebugger extends ActionsProviderSupport {
             (null, DebuggerEngineProvider.class);
                 
         // init actions
-        setEnabled (ActionsManager.ACTION_KILL, true);
-        setEnabled (ActionsManager.ACTION_STEP_INTO, true);
-        setEnabled (ActionsManager.ACTION_STEP_OVER, true);
-        setEnabled (ActionsManager.ACTION_STEP_OUT, true);
-        setEnabled (ActionsManager.ACTION_CONTINUE, true);
-        setEnabled (ActionsManager.ACTION_START, true);
+        for (Iterator it = actions.iterator(); it.hasNext(); ) {
+            setEnabled (it.next(), true);
+        }
                 
         ioManager = new IOManager (antCookie.getFile ().getName ());
     }
@@ -104,7 +105,7 @@ public class AntDebugger extends ActionsProviderSupport {
     
     // ActionsProvider .........................................................
     
-    private static Set actions = new HashSet ();
+    private static final Set actions = new HashSet ();
     static {
         actions.add (ActionsManager.ACTION_KILL);
         actions.add (ActionsManager.ACTION_CONTINUE);
@@ -133,6 +134,34 @@ public class AntDebugger extends ActionsProviderSupport {
         ) {
             doStep (action);
         }
+        synchronized (LOCK_ACTIONS) {
+            try {
+                LOCK_ACTIONS.wait();
+            } catch (InterruptedException iex) {}
+        }
+    }
+    
+    public void postAction(final Object action, final Runnable actionPerformedNotifier) {
+        for (Iterator it = actions.iterator(); it.hasNext(); ) {
+            setEnabled (it.next(), false);
+        }
+        synchronized (AntDebugger.class) {
+            if (actionsRequestProcessor == null) {
+                actionsRequestProcessor = new RequestProcessor("Ant debugger actions RP", 1);
+            }
+        }
+        actionsRequestProcessor.post(new Runnable() {
+            public void run() {
+                try {
+                    doAction(action);
+                } finally {
+                    actionPerformedNotifier.run();
+                    for (Iterator it = actions.iterator(); it.hasNext(); ) {
+                        setEnabled (it.next(), true);
+                    }
+                }
+            }
+        });
     }
     
     
@@ -174,6 +203,11 @@ public class AntDebugger extends ActionsProviderSupport {
         getVariablesModel ().fireChanges ();
         getBreakpointModel ().fireChanges ();
         
+        // enable actions
+        synchronized (LOCK_ACTIONS) {
+            LOCK_ACTIONS.notifyAll();
+        }
+        
         // wait for next stepping orders
         synchronized (LOCK) {
             try {
@@ -212,6 +246,10 @@ public class AntDebugger extends ActionsProviderSupport {
         engineProvider.getDestructor ().killEngine ();
         ioManager.closeStream ();
         Utils.unmarkCurrent ();
+        // finish actions
+        synchronized (LOCK_ACTIONS) {
+            LOCK_ACTIONS.notifyAll();
+        }
     }
     
     void targetStarted(AntEvent event) {
