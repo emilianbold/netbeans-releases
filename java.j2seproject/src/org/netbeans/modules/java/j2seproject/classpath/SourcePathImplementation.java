@@ -13,6 +13,7 @@
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Utilities;
 
 
 /**
@@ -36,8 +38,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List resources;
-    private SourceRoots sourceRoots;
-    private AntProjectHelper projectHelper;
+    private WeakReference/*<SourceRoots>*/ sourceRoots;
+    private WeakReference/*<AntProjectHelper>*/ projectHelper;
     
     /**
      * Construct the implementation.
@@ -45,8 +47,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
      */
     public SourcePathImplementation(SourceRoots sourceRoots) {
         assert sourceRoots != null;
-        this.sourceRoots = sourceRoots;
-        this.sourceRoots.addPropertyChangeListener (this);
+        this.sourceRoots = new CleanableWeakReference (sourceRoots);
+        sourceRoots.addPropertyChangeListener (this);
     }
     
     /**
@@ -55,10 +57,10 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
      * @param projectHelper used to obtain the project root
      */
     public SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper) {
-        assert sourceRoots != null;
-        this.sourceRoots = sourceRoots;
-        this.sourceRoots.addPropertyChangeListener (this);
-        this.projectHelper=projectHelper;
+        assert sourceRoots != null && projectHelper != null;
+        this.sourceRoots = new CleanableWeakReference (sourceRoots);
+        sourceRoots.addPropertyChangeListener (this);
+        this.projectHelper= new CleanableWeakReference (projectHelper);
     }
 
     public List /*<PathResourceImplementation>*/ getResources() {
@@ -67,7 +69,13 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 return this.resources;
             }
         }        
-        URL[] roots = this.sourceRoots.getRootURLs();                                
+        
+        SourceRoots sourceRoots = (SourceRoots) this.sourceRoots.get();        
+        if (sourceRoots == null) {
+            return Collections.EMPTY_LIST;
+        }
+        AntProjectHelper projectHelper = this.projectHelper == null ? null : (AntProjectHelper) this.projectHelper.get ();
+        URL[] roots = sourceRoots.getRootURLs();                                
         synchronized (this) {
             if (this.resources == null) {
                 List result = new ArrayList (roots.length);
@@ -78,7 +86,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 // adds build/generated/wsclient to resources to be available for code completion
                 if (projectHelper!=null) {
                     try {
-                        String rootURL =projectHelper.getProjectDirectory().getURL().toString();
+                        String rootURL = projectHelper.getProjectDirectory().getURL().toString();
                         URL url = new URL(rootURL+"build/generated/wsclient/"); //NOI18N
                         if (url!=null) result.add(ClassPathSupport.createResource(url));
                     } catch (MalformedURLException ex) {
@@ -107,6 +115,22 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             }
             this.support.firePropertyChange (PROP_RESOURCES,null,null);
         }
+    }
+    
+    
+    private class CleanableWeakReference extends WeakReference implements Runnable {
+        
+        public CleanableWeakReference (Object obj) {
+            super (obj, Utilities.activeReferenceQueue());
+        }
+        
+        public void run () {
+            synchronized (SourcePathImplementation.this) {
+                SourcePathImplementation.this.resources = null;
+            }
+            SourcePathImplementation.this.support.firePropertyChange (PROP_RESOURCES,null,null);
+        }
+        
     }
 
 }
