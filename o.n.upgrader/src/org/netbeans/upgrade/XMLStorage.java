@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
@@ -107,23 +108,21 @@ public class XMLStorage {
         if (content == null) throw new NullPointerException ();
         requestProcessor.post (new Runnable () {
             public void run () {
-                FileLock lock = null;
-                Writer writer = null;
                 try {
-                    lock = fo.lock ();
-                    OutputStream os = fo.getOutputStream (lock);
-                    writer = new OutputStreamWriter (os, "UTF-8"); // NOI18N
-                    writer.write (content);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                } finally {
+                    FileLock lock = fo.lock ();
                     try {
-                        writer.flush ();
-                        writer.close ();
-                    } catch (IOException ex) {
-                    }
-                    if (lock != null)
+                        OutputStream os = fo.getOutputStream (lock);
+                        Writer writer = new OutputStreamWriter (os, "UTF-8"); // NOI18N
+                        try {
+                            writer.write (content);
+                        } finally {
+                            writer.close ();
+                        } 
+                    } finally {
                         lock.releaseLock ();
+                    }
+                } catch (IOException ex) {
+                    ErrorManager.getDefault ().notify (ex);
                 }
             }
         });
