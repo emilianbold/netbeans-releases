@@ -95,18 +95,6 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         
         //the initFolds is called when the document is disposed - I need to filter this call
         if(getDocument().getLength() > 0) {
-            //get document structure model
-            try {
-                model = DocumentModel.getDocumentModel((BaseDocument)getDocument());
-                //add changes listener which listenes to model changes
-                model.addDocumentModelListener(this);
-                
-                //init the folds - it must be done since the folds
-                //are created based on events fired from model and the model
-                initFolds();
-            } catch (DocumentModelException e) {
-                ErrorManager.getDefault().notify(e);
-            }
             //start folds updater timer
             //put off the initial fold search due to the processor overhead during page opening
             timer = new Timer();
@@ -114,10 +102,20 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         }
     }
     
-    private void initFolds() {
-        //add all existing elements to the changes list
-        //the changes will be subsequently transformed to folds
-        addElementsRecursivelly(changes, model.getRootElement());
+    
+    //init the folds - it must be done since the folds
+    //are created based on events fired from model and the model
+    private void initModelAndFolds() {
+        try {
+            model = DocumentModel.getDocumentModel((BaseDocument)getDocument());
+            //add changes listener which listenes to model changes
+            model.addDocumentModelListener(this);
+            //add all existing elements to the changes list
+            //the changes will be subsequently transformed to folds
+            addElementsRecursivelly(changes, model.getRootElement());
+        } catch (DocumentModelException e) {
+            ErrorManager.getDefault().notify(e);
+        }
     }
     
     private void addElementsRecursivelly(Vector changes, DocumentElement de) {
@@ -239,9 +237,8 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         return new TimerTask() {
             public void run() {
                 try {
-                    if(lightDebug) System.out.println("updating folds...");
+                    if(model == null) initModelAndFolds();
                     updateFolds();
-                    if(lightDebug) System.out.println("done.");
                 }catch(Exception e) {
                     //catch all exceptions to prevent the timer to be cancelled
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
