@@ -299,7 +299,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
          * @return an <code>InstanceCookie</code> for the specified folder
          */
         protected InstanceCookie acceptFolder (DataFolder df) {
-	    return new InstanceSupport.Instance(new LazyMenu(df, false));
+            return new LazyMenu(df, false).slave;
         }
 
         /** Updates the <code>MenuBar</code> represented by this folder.
@@ -313,6 +313,11 @@ public class MenuBar extends JMenuBar implements Externalizable {
             allInstances(cookies, ll);
 
             final MenuBar mb = MenuBar.this;
+            
+            if (ll.equals(Arrays.asList(mb.getComponents()))) {
+                return mb;
+            }
+            
             cleanUp(); //remove the stuff we've added last time
             // fill with new content
             Iterator it = ll.iterator();
@@ -374,21 +379,22 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     /** Menu based on the folder content whith lazy items creation. */
     private static class LazyMenu extends JMenu implements NodeListener, Runnable, ChangeListener {
-	DataFolder master;
-	boolean icon;
-	MenuFolder slave;
+        DataFolder master;
+        boolean icon;
+        MenuFolder slave;
         DynaMenuModel dynaModel;
 	
-	/** Constructor. */
+        /** Constructor. */
         public LazyMenu(final DataFolder df, boolean icon) {
-	    master = df;
-	    this.icon = icon;
-            dynaModel = new DynaMenuModel();
+            this.master = df;
+            this.icon = icon;
+            this.dynaModel = new DynaMenuModel();
+            this.slave = new MenuFolder();
 
-	    // Listen for changes in Node's DisplayName/Icon
+            // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
             n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
-	    updateProps();
+            updateProps();
             getModel().addChangeListener(this);
 
         }
@@ -434,18 +440,18 @@ public class MenuBar extends JMenuBar implements Externalizable {
             }                     
         }            
 
-	private void updateProps() {
+        private void updateProps() {
             // set the text and be aware of mnemonics
             Node n = master.getNodeDelegate ();
             Actions.setMenuText(this, n.getDisplayName (), true);
             if (icon) setIcon (new ImageIcon (
 		    n.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16)));
-	}
+        }
 
         /** Update the properties. Exported via Runnable interface so it
          * can be rescheduled. */
         public void run() {
-		updateProps();
+            updateProps();
         }
 
         /** If the display name changes, than change the name of the menu.*/
@@ -464,7 +470,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
             }
         }
 
-	// The rest of the NodeListener implementation
+        // The rest of the NodeListener implementation
         public void childrenAdded (NodeMemberEvent ev) {}
         public void childrenRemoved (NodeMemberEvent ev) {}
         public void childrenReordered(NodeReorderEvent ev) {}
@@ -502,10 +508,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 //    }        
         
 	private void doInitialize() {
-	    if(slave == null) {
-		slave = new MenuFolder(); // will do the tracking
-		slave.waitFinished();
-	    }
+        slave.waitFinishedSuper();
 	}
 	    
 	/** This class can be used to update a <code>JMenu</code> instance
@@ -515,11 +518,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
             
     	    /**
              * Start tracking the content of the master folder.
-	     * It will cause initial update of the Menu
+             * It will cause initial update of the Menu
              */
     	    public MenuFolder () {
-        	super(master);
-        	recreate ();
+                super(master);
     	    }
 
 
@@ -527,27 +529,41 @@ public class MenuBar extends JMenuBar implements Externalizable {
              * @return the name
              */
     	    public String instanceName () {
-        	return LazyMenu.class.getName();
+                return LazyMenu.class.getName();
     	    }
 
     	    /** Returns the class of represented menu.
              * @return JMenu.class
              */
     	    public Class instanceClass () {
-    		return JMenu.class;
+                return JMenu.class;
     	    }
+            
+            
+            public Object instanceCreate() throws IOException, ClassNotFoundException {
+                return LazyMenu.this;
+            }
+
+            public void waitFinished() {
+//                super.waitFinished();
+            }
+            
+            void waitFinishedSuper() {
+                super.waitFinished();
+            }
+            
 
     	    /** If no instance cookie, tries to create execution action on the
              * data object.
              */
     	    protected InstanceCookie acceptDataObject (DataObject dob) {
-        	InstanceCookie ic = super.acceptDataObject (dob);
-        	if (ic == null) {
-            	    JMenuItem item = ExecBridge.createMenuItem (dob);
-            	    return item != null ? new InstanceSupport.Instance (item) : null;
-        	} else {
-            	    return ic;
-        	}
+                InstanceCookie ic = super.acceptDataObject(dob);
+                if (ic == null) {
+                    JMenuItem item = ExecBridge.createMenuItem(dob);
+                    return item != null ? new InstanceSupport.Instance(item) : null;
+                } else {
+                    return ic;
+                }
     	    }
 
     	    /**
@@ -566,7 +582,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 	JMenuItem.class.isAssignableFrom (c) ||
                 	JSeparator.class.isAssignableFrom (c) ||
                 	Action.class.isAssignableFrom (c);
-        	return is ? cookie : null;
+            	return is ? cookie : null;
     	    }
 
     	    /**
@@ -577,7 +593,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	     */
     	    protected InstanceCookie acceptFolder(DataFolder df) {
                 boolean hasIcon = df.getPrimaryFile().getAttribute("SystemFileSystem.icon") != null;
-		return new InstanceSupport.Instance(new LazyMenu(df, hasIcon));
+            	return new LazyMenu(df, hasIcon).slave;
     	    }
 
     	    /** Updates the <code>JMenu</code> represented by this folder.
@@ -586,7 +602,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	     */
     	    protected Object createInstance(InstanceCookie[] cookies)
     			    throws IOException, ClassNotFoundException {
-		LazyMenu m = LazyMenu.this;
+        	LazyMenu m = LazyMenu.this;
 
         	//synchronized (this) { // see #15917 - attachment from 2001/09/27
         	LinkedList cInstances = new LinkedList();
@@ -629,7 +645,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	    /** Recreate the instance in AWT thread.
     	     */
     	    protected Task postCreationTask (Runnable run) {
-        	return new AWTTask (run);
+            	return new AWTTask (run);
     	    }
 	}
     }
