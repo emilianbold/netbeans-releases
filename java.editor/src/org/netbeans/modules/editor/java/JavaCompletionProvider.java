@@ -49,8 +49,8 @@ import org.openide.util.NbBundle;
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        SyntaxSupport sup = Utilities.getSyntaxSupport(component);
-        if (".".equals(typedText) && !((sup instanceof JavaSyntaxSupport) && ((JavaSyntaxSupport)sup).isCompletionDisabled(component.getCaret().getDot()))) { // NOI18N
+        JavaSyntaxSupport sup = (JavaSyntaxSupport)Utilities.getSyntaxSupport(component).get(JavaSyntaxSupport.class);
+        if (".".equals(typedText) && !sup.isCompletionDisabled(component.getCaret().getDot())) { // NOI18N
             return COMPLETION_QUERY_TYPE;
         }
         return 0;
