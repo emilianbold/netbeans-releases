@@ -118,7 +118,11 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
     }
     
     private static boolean isAntFile(FileObject fo) {
-        return fo.getMIMEType().equals("text/x-ant+xml");
+        if (fo == null) {
+            return false;
+        } else {
+            return fo.getMIMEType().equals("text/x-ant+xml");
+        }
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
