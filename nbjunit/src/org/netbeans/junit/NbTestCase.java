@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -42,9 +42,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     
     
     /**
- * Constructs a test case with the given name.
- * @param name name of the testcase
- */
+     * Constructs a test case with the given name.
+     * @param name name of the testcase
+     */
     public NbTestCase(String name) {
         super(name);
     }
@@ -63,15 +63,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @return expected fail message if it's expected this test fail, null otherwise.
      */
     public String getExpectedFail() {
-        if (filter == null) 
+        if (filter == null)
             return null;
         return filter.getExpectedFail(this.getName());
     }
     
     /**
- * Checks if a test isn't filtered out by the active filter.
- * @return true if the test can run
- */
+     * Checks if a test isn't filtered out by the active filter.
+     * @return true if the test can run
+     */
     public boolean canRun() {
         if (null == filter) {
             //System.out.println("NBTestCase.canRun(): filter == null name=" + name ());
@@ -123,163 +123,159 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
         }
     }
-
-	/**
-	 * Runs the bare test sequence.
-	 * @exception Throwable if any exception is thrown
-	 */
-	public void runBare() throws Throwable {
-		setUp();
-        long now = System.currentTimeMillis ();
-		try {
-			runTest();
-		}
-		finally {
-            long last = System.currentTimeMillis () - now;
+    
+    /**
+     * Runs the bare test sequence.
+     * @exception Throwable if any exception is thrown
+     */
+    public void runBare() throws Throwable {
+        setUp();
+        long now = System.currentTimeMillis();
+        try {
+            runTest();
+        } finally {
+            long last = System.currentTimeMillis() - now;
             if (last < 1) {
                 last = 1;
             }
             this.time = last;
-			tearDown();
-		}
-	}
+            tearDown();
+        }
+    }
     
     /** Parses the test name to find out whether it encodes a number. The
      * testSomeName1343 represents nubmer 1343.
      * @return the number
      * @exception may throw AssertionFailedError if the number is not found in the test name
      */
-    protected final int getTestNumber () {
+    protected final int getTestNumber() {
         try {
-            java.util.regex.Matcher m = java.util.regex.Pattern.compile ("test[a-zA-Z]*([0-9]+)").matcher (getName ());
-            assertTrue ("Name does not contain numbers: " + getName (), m.find ());
-            return Integer.valueOf (m.group (1)).intValue ();
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("test[a-zA-Z]*([0-9]+)").matcher(getName());
+            assertTrue("Name does not contain numbers: " + getName(), m.find());
+            return Integer.valueOf(m.group(1)).intValue();
         } catch (Exception ex) {
             ex.printStackTrace();
-            fail ("Name: " + getName () + " does not represent number");
+            fail("Name: " + getName() + " does not represent number");
             return 0;
         }
     }
     
     
-
-    final long getExecutionTime () {
+    
+    final long getExecutionTime() {
         return time;
     }
     
     // additional asserts !!!!
-
     
-            /**
-         * Asserts that two files are the same (their content is identical), when files
-         * differ {@link org.netbeans.junit.AssertionFileFailedError AssertionFileFailedError} exception is thrown. 
-         * Depending on the Diff implementation additional output can be generated to the file/dir specified by the
-         * <b>diff</b> param.
-         * @param message the detail message for this assertion
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines 
-         * the correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be 
-         * already initialized, when passed in this assertFile function.
-         */
+    
+    /**
+     * Asserts that two files are the same (their content is identical), when files
+     * differ {@link org.netbeans.junit.AssertionFileFailedError AssertionFileFailedError} exception is thrown.
+     * Depending on the Diff implementation additional output can be generated to the file/dir specified by the
+     * <b>diff</b> param.
+     * @param message the detail message for this assertion
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines
+     * the correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be
+     * already initialized, when passed in this assertFile function.
+     */
     static public void assertFile(String message, String test, String pass, String diff, Diff externalDiff) {
         Diff diffImpl = null == externalDiff ? Manager.getSystemDiff() : externalDiff;
         File    diffFile = getDiffName(pass, null == diff ? null : new File(diff));
         
         if (null == diffImpl) {
             fail("diff is not available");
-        }
-        else {
+        } else {
             try {
                 if (null == diffFile) {
                     if (diffImpl.diff(test, pass, null))
                         throw new AssertionFileFailedError(message, "");
-                }
-                else {
+                } else {
                     if (diffImpl.diff(test, pass, diffFile.getAbsolutePath()))
                         throw new AssertionFileFailedError(message, diffFile.getAbsolutePath());
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 fail("exception in assertFile : " + e.getMessage());
             }
         }
     }
-        /**
-         * Asserts that two files are the same, it uses specific {@link org.netbeans.junit.diff.Diff Diff} implementation to 
-         * compare two files and stores possible differencies in the output file.
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be 
-         * already initialized, when passed in this assertFile function.
-         */
+    /**
+     * Asserts that two files are the same, it uses specific {@link org.netbeans.junit.diff.Diff Diff} implementation to
+     * compare two files and stores possible differencies in the output file.
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be
+     * already initialized, when passed in this assertFile function.
+     */
     static public void assertFile(String test, String pass, String diff, Diff externalDiff) {
         assertFile(null, test, pass, diff, externalDiff);
     }
-        /**
-         * Asserts that two files are the same, it compares two files and stores possible differencies 
-         * in the output file, the message is displayed when assertion fails.
-         * @param message the detail message for this assertion
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         */
+    /**
+     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * in the output file, the message is displayed when assertion fails.
+     * @param message the detail message for this assertion
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     */
     static public void assertFile(String message, String test, String pass, String diff) {
         assertFile(message, test, pass, diff, null);
     }
-        /**
-         * Asserts that two files are the same, it compares two files and stores possible differencies 
-         * in the output file.
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         */
+    /**
+     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * in the output file.
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     */
     static public void assertFile(String test, String pass, String diff) {
         assertFile(null, test, pass, diff, null);
     }
-        /**
-         * Asserts that two files are the same, it just compares two files and doesn't produce any additional output.
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         */
+    /**
+     * Asserts that two files are the same, it just compares two files and doesn't produce any additional output.
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     */
     static public void assertFile(String test, String pass) {
         assertFile(null, test, pass, null, null);
     }
-
-        /**
-         * Asserts that two files are the same (their content is identical), when files
-         * differ {@link org.netbeans.junit.AssertionFileFailedError AssertionFileFailedError} exception is thrown. 
-         * Depending on the Diff implementation additional output can be generated to the file/dir specified by the
-         * <b>diff</b> param.
-         * @param message the detail message for this assertion
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines 
-         * the correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be 
-         * already initialized, when passed in this assertFile function.
-         */
+    
+    /**
+     * Asserts that two files are the same (their content is identical), when files
+     * differ {@link org.netbeans.junit.AssertionFileFailedError AssertionFileFailedError} exception is thrown.
+     * Depending on the Diff implementation additional output can be generated to the file/dir specified by the
+     * <b>diff</b> param.
+     * @param message the detail message for this assertion
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines
+     * the correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be
+     * already initialized, when passed in this assertFile function.
+     */
     static public void assertFile(String message, File test, File pass, File diff, Diff externalDiff) {
         Diff diffImpl = null == externalDiff ? Manager.getSystemDiff() : externalDiff;
         File    diffFile = getDiffName(pass.getAbsolutePath(), diff);
@@ -288,79 +284,77 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         System.out.println("NbTestCase.assertFile(): diffFile="+diffFile);
         System.out.println("NbTestCase.assertFile(): diffImpl="+diffImpl);
         System.out.println("NbTestCase.assertFile(): externalDiff="+externalDiff);
-        */
+         */
         
         if (null == diffImpl) {
             fail("diff is not available");
-        }
-        else {
+        } else {
             try {
                 if (diffImpl.diff(test, pass, diffFile)) {
                     throw new AssertionFileFailedError(message, null == diffFile ? "" : diffFile.getAbsolutePath());
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 fail("exception in assertFile : " + e.getMessage());
             }
         }
     }
-        /**
-         * Asserts that two files are the same, it uses specific {@link org.netbeans.junit.diff.Diff Diff} implementation to 
-         * compare two files and stores possible differencies in the output file.
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be 
-         * already initialized, when passed in this assertFile function.
-         */
+    /**
+     * Asserts that two files are the same, it uses specific {@link org.netbeans.junit.diff.Diff Diff} implementation to
+     * compare two files and stores possible differencies in the output file.
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     * @param externalDiff instance of class implementing the {@link org.netbeans.junit.diff.Diff} interface, it has to be
+     * already initialized, when passed in this assertFile function.
+     */
     static public void assertFile(File test, File pass, File diff, Diff externalDiff) {
         assertFile(null, test, pass, diff, externalDiff);
     }
-        /**
-         * Asserts that two files are the same, it compares two files and stores possible differencies 
-         * in the output file, the message is displayed when assertion fails.
-         * @param message the detail message for this assertion
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         */
+    /**
+     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * in the output file, the message is displayed when assertion fails.
+     * @param message the detail message for this assertion
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     */
     static public void assertFile(String message, File test, File pass, File diff) {
         assertFile(message, test, pass, diff, null);
     }
-        /**
-         * Asserts that two files are the same, it compares two files and stores possible differencies 
-         * in the output file.
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         * @param diff file, where differences will be stored, when null differences will not be stored. In case 
-         * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that 
-         * directory. Constructed file name consists from the name of pass file (without extension and path) appended 
-         * by the '.diff'.
-         */
+    /**
+     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * in the output file.
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     * @param diff file, where differences will be stored, when null differences will not be stored. In case
+     * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
+     * directory. Constructed file name consists from the name of pass file (without extension and path) appended
+     * by the '.diff'.
+     */
     static public void assertFile(File test, File pass, File diff) {
         assertFile(null, test, pass, diff, null);
     }
-        /**
-         * Asserts that two files are the same, it just compares two files and doesn't produce any additional output.
-         * @param test first file to be compared, by the convention this should be the test-generated file
-         * @param pass second file to be comapred, it should be so called 'golden' file, which defines the 
-         * correct content for the test-generated file. 
-         */
+    /**
+     * Asserts that two files are the same, it just compares two files and doesn't produce any additional output.
+     * @param test first file to be compared, by the convention this should be the test-generated file
+     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * correct content for the test-generated file.
+     */
     static public void assertFile(File test, File pass) {
         assertFile("Difference between " + test + " and " + pass, test, pass, null, null);
     }
-
-/**
- */
+    
+    /**
+     */
     static private File getDiffName(String pass, File diff) {
         if (null == diff)
             return null;
@@ -389,19 +383,19 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     // methods for work with tests' workdirs
-
+    
     
     /** Returns path to test method working directory as a String. Path is constructed
      * as ${nbjunit.workdir}/${package}.${classname}/${testmethodname}. (The nbjunit.workdir
      * property should be set in junit.properties; otherwise the default is ${java.io.tmpdir}/tests.)
      * Please note that this method does not guarantee that the working directory really exists.
      * @return a path to a test method working directory
-     */    
+     */
     public String getWorkDirPath() {
         String name = getName();
         // start - PerformanceTestCase overrides getName() method and then
         // name can contain illegal characters
-        String osName = System.getProperty ("os.name");
+        String osName = System.getProperty("os.name");
         if (osName != null && osName.startsWith("Windows")) {
             char ntfsIllegal[] ={'"','/','\\','?','<','>','|',':'};
             for (int i=0; i<ntfsIllegal.length; i++) {
@@ -410,10 +404,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
         // end
         return Manager.getWorkDirPath() +
-            File.separator + getClass().getName() +
-            File.separator + name;
+                File.separator + getClass().getName() +
+                File.separator + name;
     }
-
+    
     /** Returns unique working directory for a test (each test method has a unique dir).
      * If not available, method tries to create it. This method uses {@link #getWorkDirPath}
      * method to determine the unique path.
@@ -423,10 +417,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * test run starts with a clean slate.</p>
      * @throws IOException if the directory cannot be created
      * @return file to the working directory directory
-     */    
+     */
     public File getWorkDir() throws IOException {
         // construct path from workdir classpath + classname + methodname
-               
+        
         /*
         String path = this.getClass().getResource("").getFile().toString();
         String srcElement="src";
@@ -438,7 +432,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         path += "/"+this.getClass().getName().replace('.','/');
         // method name
         path += "/"+getName();
-        */
+         */
         
         // new way how to get path - from defined property + classname +methodname
         
@@ -478,13 +472,13 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 deleteFile(files[i]);
             }
             
-        }        
+        }
         // file is a File :-)
         boolean result = file.delete();
         if (result == false ) {
             // a problem has appeared
             throw new IOException("Cannot delete file, file = "+file.getPath());
-        }                
+        }
     }
     
     // private method for deleting every subfiles/subdirectories of a file object
@@ -496,36 +490,36 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
         } else {
             // probably do nothing - file is not a directory
-        }        
+        }
     }
     
     /** Deletes all files including subdirectories in test's working directory.
      * @throws IOException if any problem has occured during deleting files/directories
-     */    
+     */
     public void clearWorkDir() throws IOException {;
-        File workdir = getWorkDir();
-        deleteSubFiles(workdir);
-        //boolean result = workdir.delete();
+    File workdir = getWorkDir();
+    deleteSubFiles(workdir);
+    //boolean result = workdir.delete();
         /*
         if (result == false) {
             throw new IOException("Workdir cannot be erased, workdir = "+path);
-        } 
-        */
+        }
+         */
     }
     
     
     // Logging stuff
-
-        
+    
+    
     
     
     /** return PrintStream poiting at the log file. If the file cannot be created
      * (see getLogFile), PrintStream constructed from System.out is used.
      *
      * @return PrintStream to the log
-     */    
+     */
 /*
-    
+ 
     public PrintStream getLog() {
        OutputStream logStream;
        try {
@@ -536,9 +530,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
        }
        return new PrintStream(logStream,true);
     }
-  */  
+ */
     
-    /* 
+    /*
      * get log file
      */
     /** Tries to create log file for a particular test method. This file is
@@ -546,19 +540,19 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * has name methodname.log.
      * @throws IOException if the logfile cannot be created
      * @return log file
-     */    
+     */
     /*
-    public File getLogFile() throws IOException {        
+    public File getLogFile() throws IOException {
         String logFilename = getName() + ".log";
         File logFile = new File(getWorkDir(),logFilename);
         return logFile;
     }
-*/
-    // we need to close all logs     
+     */
+    // we need to close all logs
     
-
+    
     private OutputStream gettOutputStreamInWorkDir(String filename) throws IOException {
-        File aStreamFile = new File(getWorkDir(),filename);        
+        File aStreamFile = new File(getWorkDir(),filename);
         return null;
     }
     
@@ -581,21 +575,21 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         FileOutputStream fileOutputStream;
         
         if ((logStreamTable == null)|(hasTestMethodChanged())) {
-            // we haven't used logging capability - create hashtables            
+            // we haven't used logging capability - create hashtables
             logStreamTable = new Hashtable();
             //System.out.println("Created new hashtable");
         } else {
             if (logStreamTable.containsKey(logName)) {
                 //System.out.println("Getting stream from cache:"+logName);
                 return (PrintStream)logStreamTable.get(logName);
-            } 
+            }
         }
         // we didn't used this log, so let's create it
         FileOutputStream fileLog = new FileOutputStream(new File(getWorkDir(),logName));
         PrintStream printStreamLog = new PrintStream(fileLog,true);
         logStreamTable.put(logName,printStreamLog);
         //System.out.println("Created new stream:"+logName);
-        return printStreamLog;        
+        return printStreamLog;
     }
     
     // private PrintStream wrapper for System.out
@@ -607,30 +601,30 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * to use this log anymore.
      * @param logName name of the log - file in the working directory
      * @return Log PrintStream
-     */    
+     */
     public PrintStream getLog(String logName) {
         try {
             return getFileLog(logName);
         } catch (IOException ioe) {
             /// hey, file is not available - log will be made to System.out
-            // we should probably write a little note about it 
+            // we should probably write a little note about it
             //System.err.println("Test method "+this.getName()+" - cannot open file log to file:"+logName
             //                                +" - defaulting to System.out");
-            return systemOutPSWrapper;            
+            return systemOutPSWrapper;
         }
     }
     
     /** Return default log named as ${testmethod}.log. If the log cannot be created
      * as a file in testmethod working directory, PrinterStream to System.out is returned
      * @return log
-     */    
+     */
     public PrintStream getLog() {
         return getLog(this.getName()+".log");
     }
     
     /** Simple and easy to use method for printing a message to a default log
      * @param message meesage to log
-     */    
+     */
     public void log(String message) {
         getLog().println(message);
     }
@@ -639,7 +633,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /** Easy to use method for logging a message to a named log
      * @param log which log to use
      * @param message message to log
-     */    
+     */
     public void log(String log, String message) {
         getLog(log).println(message);
     }
@@ -651,23 +645,23 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * log is stored as a file named ${testmethod}.ref in test method working directory.
      * If the file cannot be created, the testcase will automatically fail.
      * @return PrintStream to referencing log
-     */    
+     */
     public PrintStream getRef() {
         String refFilename = this.getName()+".ref";
         try {
             return getFileLog(refFilename);
         } catch (IOException ioe) {
-            // canot get ref file - return system.out 
+            // canot get ref file - return system.out
             //System.err.println("Test method "+this.getName()+" - cannot open ref file:"+refFilename
             //                                +" - defaulting to System.out and failing test");
             fail("Could not open reference file: "+refFilename);
-            return  systemOutPSWrapper;           
+            return  systemOutPSWrapper;
         }
     }
     
     /** Easy to use logging method for printing a message to a reference log.
      * @param message message to log
-     */    
+     */
     public void ref(String message) {
         getRef().println(message);
     }
@@ -677,7 +671,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * resource directory.
      * @param filename filename to get from golden files directory
      * @return golden file
-     */    
+     */
     public File getGoldenFile(String filename) {
         String fullClassName = this.getClass().getName();
         String goldenFileName = fullClassName.replace('.', '/')+"/"+filename;
@@ -696,19 +690,19 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         int lastDot = fullClassName.lastIndexOf('.');
         if (lastDot != -1) {
             className = fullClassName.substring(lastDot+1);
-        }  
+        }
         goldenFileName = className+"/"+filename;
         URL url = this.getClass().getResource("data/goldenfiles/"+goldenFileName);
         assertNotNull("Golden file not found in any of the following locations:\n  "+
                 goldenFile+"\n  "+
                 "src/"+fullClassName.replace('.', '/').substring(0, fullClassName.indexOf(className))+"data/goldenfiles/"+goldenFileName,
                 url);
-        String resString = convertNBFSURL(url);        
+        String resString = convertNBFSURL(url);
         goldenFile = new File(resString);
         return goldenFile;
         /** Deprecated end. */
     }
-
+    
     /** Returns pointer to directory with test data (golden files, sample files, ...).
      * It is the same from xtest.data property.
      * @return data directory
@@ -734,7 +728,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /** Get the default testmethod specific golden file from
      * data/goldenfiles/${classname}/${testmethodname}.pass
      * @return filename to get from golden files resource directory
-     */    
+     */
     public File getGoldenFile() {
         return getGoldenFile(this.getName()+".pass");
     }
@@ -747,7 +741,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param testFilename reference log file name
      * @param goldenFilename golden file name
      * @param diffFilename diff file name (optional, if null, then no diff is created)
-     */    
+     */
     public void compareReferenceFiles(String testFilename, String goldenFilename, String diffFilename) {
         try {
             if (!getRef().equals(systemOutPSWrapper)) {
@@ -768,17 +762,17 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * same, test passes. If files differ, test fails and default diff (${methodname}.diff)
      * file is created (diff is created only when using native diff, for details
      * see JUnit module documentation)
-     */    
+     */
     public void compareReferenceFiles() {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".pass",this.getName()+".diff");
     }
     
     // utility stuff for getting resources from NetBeans' filesystems
     
-     /** Converts NetBeans filesystem URL to absolute path.
-      * @param url URL to convert
-      * @return absolute path
-      */
+    /** Converts NetBeans filesystem URL to absolute path.
+     * @param url URL to convert
+     * @return absolute path
+     */
     public static String convertNBFSURL(URL url) {
         if(url == null) {
             throw new IllegalArgumentException("Given URL should not be null.");
@@ -789,13 +783,13 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             return convertNewNBFSURL(url);
         } else {
             // old nbfsurl (and non nbfs urls)
-            return convertOldNBFSURL(url);            
+            return convertOldNBFSURL(url);
         }
     }
     
     // radix for new nbfsurl
     private final static int radix = 16;
-    // new nbfsurl decoder - assumes the external form 
+    // new nbfsurl decoder - assumes the external form
     // begins with nbfs://
     private static String convertNewNBFSURL(URL url) {
         String externalForm = url.toExternalForm();
@@ -871,7 +865,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
         return path;
     }
-
+    
     
     /** Assert GC. Tries to GC ref's referent.
      * @param text the text to show when test fails.
@@ -879,7 +873,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * should be GCed
      */
     public static void assertGC(String text, java.lang.ref.Reference ref) {
-        ArrayList alloc = new ArrayList ();
+        ArrayList alloc = new ArrayList();
         int size = 100000;
         for (int i = 0; i < 50; i++) {
             if (ref.get() == null) {
@@ -888,7 +882,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             System.gc();
             System.runFinalization();
             try {
-                alloc.add (new byte[size]);
+                alloc.add(new byte[size]);
                 size = (int)(((double)size) * 1.3);
             } catch (OutOfMemoryError error) {
                 size = size / 2;
@@ -902,7 +896,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         alloc = null;
         fail(text + ":\n" + findRefsFromRoot(ref.get()));
     }
-
+    
     /** Assert size of some structure. Traverses the whole reference
      * graph of objects accessible from given root object and check its size
      * against the limit.
@@ -911,9 +905,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param root the root object from which to traverse
      */
     public static void assertSize(String message, int limit, Object root ) {
-	assertSize(message, Arrays.asList( new Object[] {root} ), limit);
+        assertSize(message, Arrays.asList( new Object[] {root} ), limit);
     }
-
+    
     /** Assert size of some structure. Traverses the whole reference
      * graph of objects accessible from given roots and check its size
      * against the limit.
@@ -922,9 +916,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param limit maximal allowed heap size of the structure
      */
     public static void assertSize(String message, Collection roots, int limit) {
-	assertSize(message, roots, limit, new Object[0]);
+        assertSize(message, roots, limit, new Object[0]);
     }
-
+    
     /** Assert size of some structure. Traverses the whole reference
      * graph of objects accessible from given roots and check its size
      * against the limit.
@@ -939,8 +933,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         org.netbeans.insane.scanner.Filter f = ScannerUtils.skipObjectsFilter(Arrays.asList(skip), false);
         assertSize(message, roots, limit, f);
     }
-
-
+    
+    
     /** Assert size of some structure. Traverses the whole reference
      * graph of objects accessible from given roots and check its size
      * against the limit.
@@ -958,64 +952,64 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         };
         return assertSize(message, roots, limit, f);
     }
-
+    
     private static int assertSize(String message, Collection roots, int limit,
-	org.netbeans.insane.scanner.Filter f) {
+            org.netbeans.insane.scanner.Filter f) {
         try {
             CountingVisitor counter = new CountingVisitor();
             ScannerUtils.scan(f, counter, roots, false);
             int sum = counter.getTotalSize();
             if (sum > limit) {
-                StringBuffer sb = new StringBuffer (4096);
-                sb.append (message); 
-                sb.append (": leak " + (sum-limit) + " bytes ");
-                sb.append (" over limit of ");
-                sb.append (limit + " bytes");
-                sb.append ('\n');
+                StringBuffer sb = new StringBuffer(4096);
+                sb.append(message);
+                sb.append(": leak " + (sum-limit) + " bytes ");
+                sb.append(" over limit of ");
+                sb.append(limit + " bytes");
+                sb.append('\n');
                 for(Iterator it = counter.getClasses().iterator(); it.hasNext(); ) {
-                    sb.append ("  ");
+                    sb.append("  ");
                     Class cls = (Class)it.next();
                     if (counter.getCountForClass(cls) == 0) continue;
-                    sb.append (cls.getName()).append(": ").
-                        append(counter.getCountForClass(cls)).append(", ").
-                        append(counter.getSizeForClass(cls)).append("B\n");
+                    sb.append(cls.getName()).append(": ").
+                            append(counter.getCountForClass(cls)).append(", ").
+                            append(counter.getSizeForClass(cls)).append("B\n");
                 }
-		fail(sb.toString());
+                fail(sb.toString());
             }
-            return sum; 
+            return sum;
         } catch (Exception e) {
             fail("Could not traverse reference graph");
         }
         return -1; // fail throws for sure
     }
-
-
+    
+    
     private static String findRefsFromRoot(final Object target) {
         final Map objects = new IdentityHashMap();
         boolean found = false;
-
+        
         Visitor vis = new Visitor() {
             public void visitClass(Class cls) {}
-
+            
             public void visitObject(ObjectMap map, Object object) {
                 objects.put(object, new Entry(object));
             }
-
+            
             public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {
                 visitRef(from, to);
             }
-
+            
             public void visitObjectReference(ObjectMap map, Object from, Object to, java.lang.reflect.Field ref) {
                 visitRef(from, to);
             }
-        
+            
             private void visitRef(Object from, Object to) {
                 ((Entry)objects.get(from)).addOut(to);
                 ((Entry)objects.get(to)).addIn(from);
                 if (to == target) throw new RuntimeException("Done");
             }
-
-
+            
+            
             public void visitStaticReference(ObjectMap map, Object to, java.lang.reflect.Field ref) {
                 ((Entry)objects.get(to)).addStatic(ref);
                 if (to == target) throw new RuntimeException("Done");
@@ -1035,11 +1029,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             return "Not found!!!";
         }
     }
-        /** BFS scan of incomming refs*/
+    /** BFS scan of incomming refs*/
     private static String  findRoots(Map objects, Object obj) {
         class PathElement {
             private Entry item;
-            private PathElement next; 
+            private PathElement next;
             public PathElement(Entry item, PathElement next) {
                 this.item = item;
                 this.next = next;
@@ -1056,7 +1050,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
             }
         }
-
+        
         Set visited = new HashSet();
         Entry fin = (Entry)objects.get(obj);
         assert fin != null;
@@ -1087,7 +1081,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return "Error";
     }
     
-
+    
     static Object[] EMPTY = new Object[0];
     
     /** Entry represents one object and its incomming/outgoing refs */
@@ -1119,11 +1113,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         public Iterator incommingRefs() {
             return Arrays.asList(in).iterator();
         }
-
+        
         public Iterator staticRefs() {
             return Arrays.asList(stat).iterator();
         }
-
+        
         public Iterator outgoingRefs() {
             return Arrays.asList(stat).iterator();
         }
