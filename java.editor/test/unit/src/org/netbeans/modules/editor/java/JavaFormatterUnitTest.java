@@ -21,7 +21,7 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
 
 
 /**
- * Test java bracket completion.
+ * Java formatter tests.
  *
  * @autor Miloslav Metelka
  */
@@ -30,12 +30,9 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
     public JavaFormatterUnitTest(String testMethodName) {
         super(testMethodName);
     }
+
+    // indent new line tests
     
-    // ------- Tests for completion of right parenthesis ')' -------------
-    
-    /**
-     *
-     */
     public void testJavadocEnterNothingAfterCaret() {
         setLoadDocumentText(
             "/**\n"
@@ -390,6 +387,41 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "}\n");        
     }
 
+    // tests for regressions
+    
+    /**
+     * Tests reformatting of new on two lines
+     * @see issue 6065
+     */
+    public void testReformatNewOnTwoLines() {
+        setLoadDocumentText(
+                "javax.swing.JPanel =\n" +
+                "new java.swing.JPanel();");
+        reformat();
+        assertDocumentText("Incorrect new on two lines reformating", 
+                "javax.swing.JPanel =\n" +
+                "        new java.swing.JPanel();");
+    }
+    
+    /**
+     * Tests reformatting of ternary conditional operators on multiple lines
+     * @see issue 23508
+     */
+    public void testReformatTernaryConditionalOperator() {
+        setLoadDocumentText(
+                "something = (someComplicatedExpression != null) ?\n" +
+                "(aComplexCalculation) :\n" +
+                "(anotherComplexCalculation);");
+        reformat();
+        assertDocumentText("Incorrect ternary conditional operator reformatting",
+                "something = (someComplicatedExpression != null) ?\n" +
+                "    (aComplexCalculation) :\n" +
+                "    (anotherComplexCalculation);");
+    }
+
+        
+            
+    
     // ------- Private methods -------------
     
     private void indentNewLine() {
