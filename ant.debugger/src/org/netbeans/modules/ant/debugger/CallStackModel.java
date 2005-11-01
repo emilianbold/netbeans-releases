@@ -158,6 +158,9 @@ NodeActionsProvider, TableModel {
             return ((TargetLister.Target) node).getName ();
         if (node instanceof Task) 
             return ((Task) node).getTaskStructure ().getName ();
+        if (node == ROOT) {
+            return ROOT.toString();
+        }
         throw new UnknownTypeException (node);
     }
     
@@ -175,6 +178,9 @@ NodeActionsProvider, TableModel {
             return CALL_STACK;
         if (node instanceof Task) 
             return CURRENT_CALL_STACK;
+        if (node == ROOT) {
+            return null;
+        }
         throw new UnknownTypeException (node);
     }
     
