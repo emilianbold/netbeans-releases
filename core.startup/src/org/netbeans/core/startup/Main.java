@@ -210,6 +210,16 @@ public final class Main extends Object {
         
         return moduleSystem;
     }
+    
+    /** Is used to find out whether the system has already been initialized
+     * for the first time or not yet.
+     * @return true if changes in the lookup shall mean real changes, false if it just
+     *   the first initalization
+     */
+    public static boolean isInitialized() {
+        return moduleSystemInitialized;
+    }
+    
   
   /**
   * @exception SecurityException if it is called multiple times

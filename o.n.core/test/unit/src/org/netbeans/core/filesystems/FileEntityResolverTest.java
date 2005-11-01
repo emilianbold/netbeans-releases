@@ -18,6 +18,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.jar.Attributes;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
@@ -27,6 +29,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -41,12 +44,14 @@ import org.openide.util.LookupListener;
  *
  * @author Jaroslav Tulach
  */
-public class FileEntityResolverTest extends NbTestCase implements LookupListener {
+public class FileEntityResolverTest extends NbTestCase 
+implements LookupListener, ChangeListener {
     private FileObject fo;
     private Lenka loader;
     private ManifestSection.LoaderSection ls;
     private Lookup.Result mimeResolvers;
     private int change;
+    private int poolChange;
     
     public FileEntityResolverTest(String testName) {
         super(testName);
@@ -55,7 +60,13 @@ public class FileEntityResolverTest extends NbTestCase implements LookupListener
     protected void setUp() throws Exception {
         clearWorkDir();
         
+        DataLoaderPool.getDefault().addChangeListener(this);
+        
         org.netbeans.core.startup.Main.getModuleSystem();
+        
+        Thread.sleep(2000);
+        
+        assertEquals("No change in pool during initialization of module system", 0, poolChange);
         
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
@@ -120,6 +131,10 @@ public class FileEntityResolverTest extends NbTestCase implements LookupListener
 
     public void resultChanged(LookupEvent ev) {
         change++;
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        poolChange++;
     }
     
     public static final class Lenka extends UniFileLoader {

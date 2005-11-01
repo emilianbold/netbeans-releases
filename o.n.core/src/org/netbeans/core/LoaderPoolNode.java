@@ -920,7 +920,9 @@ public final class LoaderPoolNode extends AbstractNode {
         }
 
         public void resultChanged(LookupEvent ev) {
-            superFireChangeEvent();
+            if (org.netbeans.core.startup.Main.isInitialized()) {
+                superFireChangeEvent();
+            }
         }
     } // end of NbLoaderPool
 
