@@ -51,8 +51,8 @@ public class JspCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int completionAutoPopup = ((JspSyntaxSupport)Utilities.getDocument(component).getSyntaxSupport()).checkCompletion(component, typedText, false);
-        if(completionAutoPopup == ExtSyntaxSupport.COMPLETION_POPUP) return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
+        int type = ((JspSyntaxSupport)Utilities.getDocument(component).getSyntaxSupport()).checkCompletion(component, typedText, false);
+        if(type == ExtSyntaxSupport.COMPLETION_POPUP) return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
         else return 0;
     }
     

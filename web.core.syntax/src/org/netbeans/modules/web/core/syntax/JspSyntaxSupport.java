@@ -291,11 +291,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
         
         if(tcp.contains(JavaTokenContext.contextPath)) {
-            //we are in scripting language
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("SCRIPTINGL_COMPLETION_CONTEXT" );   // NOI18N
-            if (JspUtils.getScriptingLanguage().equals("text/x-java")) { // NOI18N
-                return ((ExtSyntaxSupport)get( org.netbeans.editor.ext.java.JavaSyntaxSupport.class )).checkCompletion( target, typedText, visible );
-            }
+            return COMPLETION_CANCEL; //the JavaCompletionProvider handles this
         }
         
         //JSP tag or directive
