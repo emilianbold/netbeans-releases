@@ -95,14 +95,15 @@ public class IOManager {
                         }
                     }
                 }
-            }, 500, Thread.MIN_PRIORITY);
+            }, 100, Thread.MIN_PRIORITY);
         else 
-            task.schedule (500);
+            task.schedule (100);
     }
 
     void closeStream () {
         debuggerOut.close ();
         closed = true;
+        close();
     }
 
     void close () {
