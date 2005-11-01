@@ -76,8 +76,10 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jComboBoxSuperclass, gridBagConstraints);
+        jComboBoxSuperclass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_jComboBoxSuperclass"));
 
         jLabelConfigFile.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ActionPanelVisual.class, "LBL_ConfigFile_mnem").charAt(0));
+        jLabelConfigFile.setLabelFor(jComboBoxConfigFile);
         jLabelConfigFile.setText(org.openide.util.NbBundle.getMessage(ActionPanelVisual.class, "LBL_ConfigFile"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -92,6 +94,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jComboBoxConfigFile, gridBagConstraints);
+        jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_jComboBoxConfigFile"));
 
         jLabelPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ActionPanelVisual.class, "LBL_ActionPath").charAt(0));
         jLabelPath.setLabelFor(jTextFieldPath);
@@ -112,9 +115,9 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jTextFieldPath, gridBagConstraints);
+        jTextFieldPath.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_jTextFieldPath"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
