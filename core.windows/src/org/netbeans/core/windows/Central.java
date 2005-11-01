@@ -609,7 +609,7 @@ final class Central implements ControllerHandler {
             return;
         }
         
-        if(getModeTopComponents(mode).contains(tc) && !opened) {
+        if(containsModeTopComponent(mode,tc) && !opened) {
             return;
         }
         
