@@ -1,26 +1,28 @@
 /*
- * FakeLayoutMapper.java
- *
- * Created on 19 September 2005, 11:30
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.form.layoutdesign;
+
 import java.awt.Dimension;
-import java.awt.MenuComponent;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.util.HashMap;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.form.FormModel;
-import org.netbeans.modules.form.VisualReplicator;
 
 /**
- *
- * @author mg116726
+ * VisualMapper implementation for layout tests. Works based on explicitly set
+ * bounds and baseline positions.
  */
+
 public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
 
     private FormModel fm = null;
@@ -33,8 +35,6 @@ public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
     private HashMap compPrefSize = null;
     private HashMap hasExplicitPrefSize = null;
     
-    private VisualReplicator replicator = null;
-            
     public FakeLayoutMapper(FormModel fm, 
                             HashMap contInterior, 
                             HashMap baselinePosition, 
@@ -53,14 +53,6 @@ public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
         this.compPrefSize = compPrefSize;
         this.hasExplicitPrefSize = hasExplicitPrefSize;
         this.prefPadding = prefPadding;
-        
-        replicator = new VisualReplicator(
-            null,
-            new Class[] { Window.class,
-                          java.applet.Applet.class,
-                          MenuComponent.class },
-            1 | 2 /* ==> VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING*/);
-        
     }
     
     // -------
@@ -117,9 +109,6 @@ public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
     }
 
     public void rebuildLayout(String contId) {
-        System.out.println("FAKE!!!!!! rebuildlayout "); //NOI18N
-//        replicator.updateContainerLayout((RADVisualContainer)getMetaComponent(contId));
-//        replicator.getLayoutBuilder(contId).doLayout();
     }
     
 }

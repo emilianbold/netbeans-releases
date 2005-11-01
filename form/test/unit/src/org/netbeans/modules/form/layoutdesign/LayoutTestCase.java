@@ -33,7 +33,7 @@ public abstract class LayoutTestCase extends TestCase {
 
     private String testSwitch;
 
-    private LayoutModel lm = null;
+    protected LayoutModel lm = null;
     protected LayoutDesigner ld = null;
     
     protected URL url = getClass().getClassLoader().getResource("");
@@ -76,7 +76,7 @@ public abstract class LayoutTestCase extends TestCase {
             Method m = methods[i];
             if (m.getName().startsWith("doChanges")) {
                 try {
-                    System.out.println("Invoking " + m.getName());
+                    System.out.println("Invoking " + getClass().getSimpleName()+"."+m.getName());
                     m.invoke(this, null);
                     
                     String methodCount = m.getName().substring(9); // "doChanges".length()
@@ -193,7 +193,7 @@ public abstract class LayoutTestCase extends TestCase {
         if (!file.exists()) {
             file.mkdirs();
         }
-        file = new File(file, getExpectedResultFileName(methodCount)+".fail");
+        file = new File(file, getExpectedResultFileName(methodCount)+".txt");
         if (file.exists()) {
             file.delete();
         }
