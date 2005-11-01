@@ -7,25 +7,28 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project;
 
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+
+import javax.swing.*;
+
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
 
 public class Utils {
 
@@ -56,17 +59,42 @@ public class Utils {
     }
 
     public static FileObject getValidDir(File dir) throws IOException {
-        final File f = dir.getCanonicalFile();
-        f.mkdirs();
-        if (!f.exists()) {
-            throw new IOException("No such dir on disk: " + f);
+        FileObject dirFO;
+        if(!dir.exists()) {
+            //Refresh before mkdir not to depend on window focus, refreshFileSystem does not work correctly
+            refreshFolder (dir);
+            if (!dir.mkdirs()) {
+                throw new IOException ("Can not create project folder.");   //NOI18N
+            }
+            refreshFileSystem (dir);
         }
-        if (!f.isDirectory()) {
-            throw new IOException("Not really a dir" + ": " + f);
-        }
-        return FileUtil.toFileObject(f);
+        dirFO = FileUtil.toFileObject(dir);
+        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N        
+        return dirFO;
     }
 
+    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
+        File rootF = dir;
+        while (rootF.getParentFile() != null) {
+            rootF = rootF.getParentFile();
+        }
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        dirFO.getFileSystem().refresh(false);
+    }
+    
+    private static void refreshFolder (File dir) {
+        while (!dir.exists()) {
+            dir = dir.getParentFile();
+        }        
+        FileObject fo = FileUtil.toFileObject(dir);
+        if (fo != null) {
+            fo.getChildren();
+            fo.refresh();
+        }
+    }
+    
     public static FileObject getValidEmptyDir(File dir) throws IOException {
         final FileObject fo = getValidDir(dir);
         if (fo.getChildren().length != 0) {
