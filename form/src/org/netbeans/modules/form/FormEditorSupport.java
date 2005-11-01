@@ -301,28 +301,35 @@ public class FormEditorSupport extends JavaEditor
         // after reloading is done, open the form editor again
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                FormDesigner formDesigner = getFormEditor(true).getFormDesigner();                                
+                FormDesigner formDesigner = getFormEditor(true).getFormDesigner();
+                if (formDesigner == null) {                    
+                    formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
+                }
 		if(formDesigner==null) {
 		    // if formDesigner is null then it haven't been activated yet...
 		    return;
 		}
-		
+
                 // close
                 getFormEditor().closeForm();
                 formEditor = null;
 		
-                // reset the FormDesigner
-                formDesigner.reset(getFormEditor(true));                                                      
-                getFormEditor().setFormDesigner(formDesigner);                                                         
-                
+                formDesigner.reset(getFormEditor(true));
+                getFormEditor().setFormDesigner(formDesigner);
+
                 if(formDesigner.isShowing()) {
                     // load the form only if its open
                     loadForm();
-		    FormEditor formEditor = getFormEditor();
-                    formEditor.reportErrors(FormEditor.LOADING);                    
-                    formDesigner.initialize();
-		    ComponentInspector.getInstance().focusForm(formEditor);
-                }                            
+                    FormEditor formEditor = getFormEditor();
+                    formEditor.reportErrors(FormEditor.LOADING);
+                    if (!formEditor.isFormLoaded()) { // there was a loading error
+                        formDesigner.removeAll();
+                        formDesigner.repaint();
+                    } else {
+                        formDesigner.initialize();
+                    }
+                    ComponentInspector.getInstance().focusForm(formEditor);
+                }
             }
         });
 

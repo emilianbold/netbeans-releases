@@ -241,9 +241,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
     
     void reset(FormEditor formEditor) {
+        if (initialized) {
+            clearSelection();
+        }
         initialized = false;
-            
-        clearSelection();
+
         removeAll();
                 
         componentLayer = null;
