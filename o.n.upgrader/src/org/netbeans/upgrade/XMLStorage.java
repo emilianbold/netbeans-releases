@@ -130,11 +130,15 @@ public class XMLStorage {
     
     static Object load (InputStream is, String name, Handler handler) {
         try {
-            XMLReader reader = XMLUtil.createXMLReader ();
-            reader.setEntityResolver (handler);
-            reader.setContentHandler (handler);
-            reader.parse (new InputSource (is));
-            return handler.getResult ();
+            try {
+                XMLReader reader = XMLUtil.createXMLReader ();
+                reader.setEntityResolver (handler);
+                reader.setContentHandler (handler);
+                reader.parse (new InputSource (is));
+                return handler.getResult ();
+            } finally {
+                is.close ();
+            }
         } catch (SAXException ex) {
 	    if (System.getProperty ("org.netbeans.optionsDialog") != null) {
                 System.out.println("File: " + name);
