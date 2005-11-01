@@ -130,19 +130,15 @@ class CommitTableModel extends AbstractTableModel {
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
         if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
-            CommitOptions now = commitOptions[rowIndex]; 
             commitOptions[rowIndex] = (CommitOptions) aValue;
-            if (now == CommitOptions.EXCLUDE && aValue != CommitOptions.EXCLUDE) {
-                CvsModuleConfig.getDefault().removeExclusionPath(nodes[rowIndex].getFile().getAbsolutePath());
-            } else if (aValue == CommitOptions.EXCLUDE && now != CommitOptions.EXCLUDE) {
-                CvsModuleConfig.getDefault().addExclusionPath(nodes[rowIndex].getFile().getAbsolutePath());
-            }
+            fireTableCellUpdated(rowIndex, columnIndex);
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex);
         }
     }
 
     private void createCommitOptions() {
+        boolean excludeNew = System.getProperty("cvs.excludeNewFiles") != null;
         commitOptions = new CommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             CvsFileNode node = nodes[i];
@@ -151,7 +147,7 @@ class CommitTableModel extends AbstractTableModel {
             } else {
                 switch (node.getInformation().getStatus()) {
                 case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                    commitOptions[i] = getDefaultCommitOptions(node.getFile());
+                    commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
                     break;
                 case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
                 case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
@@ -164,8 +160,8 @@ class CommitTableModel extends AbstractTableModel {
         }
     }
 
-    CvsFileNode getNodeAt(int row) {
-        return nodes[row];
+    CommitSettings.CommitFile getCommitFile(int row) {
+        return new CommitSettings.CommitFile(nodes[row], commitOptions[row]);
     }
     
     private CommitOptions getDefaultCommitOptions(File file) {

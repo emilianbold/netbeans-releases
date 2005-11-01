@@ -14,7 +14,6 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
 import org.netbeans.modules.versioning.system.cvss.*;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.TableSorter;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
@@ -23,6 +22,8 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableColumnModel;
@@ -34,7 +35,7 @@ import java.util.*;
  * 
  * @author Maros Sandor
  */
-class CommitTable implements AncestorListener {
+class CommitTable implements AncestorListener, TableModelListener {
 
     private CommitTableModel    tableModel;
     private JTable              table;
@@ -45,6 +46,7 @@ class CommitTable implements AncestorListener {
 
     public CommitTable(JLabel label) {
         tableModel = new CommitTableModel();
+        tableModel.addTableModelListener(this);
         sorter = new TableSorter(tableModel);
         table = new JTable(sorter);
         table.getTableHeader().setReorderingAllowed(false);
@@ -147,6 +149,11 @@ class CommitTable implements AncestorListener {
         return tableModel;
     }
 
+    public void tableChanged(TableModelEvent e) {
+        // change in commit options may alter name rendering (strikethrough)
+        table.repaint();
+    }
+    
     private class CommitOptionsCellEditor extends DefaultCellEditor {
         
         private final Object[] addOptions = new Object [] {
@@ -169,7 +176,7 @@ class CommitTable implements AncestorListener {
         }
 
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            int fileStatus = tableModel.getNodeAt(sorter.modelIndex(row)).getInformation().getStatus();
+            int fileStatus = tableModel.getCommitFile(sorter.modelIndex(row)).getNode().getInformation().getStatus();
             JComboBox combo = (JComboBox) editorComponent;
             if (fileStatus == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || fileStatus == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 combo.setModel(new DefaultComboBoxModel(removeOptions));
@@ -191,11 +198,12 @@ class CommitTable implements AncestorListener {
             if (col == 0) {
                 TableSorter sorter = (TableSorter) table.getModel();
                 CommitTableModel model = (CommitTableModel) sorter.getTableModel();
-                CvsFileNode node = model.getNodeAt(sorter.modelIndex(row));
+                CommitSettings.CommitFile commitFile = model.getCommitFile(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), node.getInformation(), null);
+                    value = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(
+                            commitFile.getNode().getFile().getName(), commitFile.getNode().getInformation(), null);
                 }
-                if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+                if (commitFile.getOptions() == CommitOptions.EXCLUDE) {
                     value = "<html><s>" + value + "</s></html>";
                 }
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -211,7 +219,8 @@ class CommitTable implements AncestorListener {
         public int compare(Object o1, Object o2) {
             Integer row1 = (Integer) o1;
             Integer row2 = (Integer) o2;
-            return super.compare(tableModel.getNodeAt(row1.intValue()).getInformation(), tableModel.getNodeAt(row2.intValue()).getInformation());
+            return super.compare(tableModel.getCommitFile(row1.intValue()).getNode().getInformation(), 
+                                 tableModel.getCommitFile(row2.intValue()).getNode().getInformation());
         }
     }
     
@@ -219,7 +228,8 @@ class CommitTable implements AncestorListener {
         public int compare(Object o1, Object o2) {
             Integer row1 = (Integer) o1;
             Integer row2 = (Integer) o2;
-            return tableModel.getNodeAt(row1.intValue()).getName().compareToIgnoreCase(tableModel.getNodeAt(row2.intValue()).getName());
+            return tableModel.getCommitFile(row1.intValue()).getNode().getName().compareToIgnoreCase(
+                    tableModel.getCommitFile(row2.intValue()).getNode().getName());
         }
     }
 }

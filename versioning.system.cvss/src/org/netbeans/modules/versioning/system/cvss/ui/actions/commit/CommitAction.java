@@ -23,6 +23,7 @@ import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
 import org.netbeans.lib.cvsclient.command.remove.RemoveCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.executor.RemoveExecutor;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
@@ -109,6 +110,7 @@ public class CommitAction extends AbstractSystemAction {
         dialog.setVisible(true);
         if (descriptor.getValue() != commit) return;
 
+        saveExclusions(settings);
 
         settings.updateCommand(cmd);
         copy(commandTemplate, cmd);
@@ -120,6 +122,18 @@ public class CommitAction extends AbstractSystemAction {
         group.execute();
     }
     
+    private static void saveExclusions(CommitSettings settings) {
+        CommitSettings.CommitFile [] files = settings.getCommitFiles();
+        for (int i = 0; i < files.length; i++) {
+            CommitSettings.CommitFile file = files[i];
+            if (file.getOptions() == CommitOptions.EXCLUDE) {
+                CvsModuleConfig.getDefault().addExclusionPath(file.getNode().getFile().getAbsolutePath());
+            } else {
+                CvsModuleConfig.getDefault().removeExclusionPath(file.getNode().getFile().getAbsolutePath());
+            }
+        }
+    }
+
     private static void setupNodes(CommitSettings settings, Context context) {
         CvsFileNode [] filesToCommit = CvsVersioningSystem.getInstance().getFileTableModel(context, FileInformation.STATUS_LOCAL_CHANGE).getNodes();
         settings.setNodes(filesToCommit);
