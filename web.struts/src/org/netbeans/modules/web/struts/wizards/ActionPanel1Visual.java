@@ -75,6 +75,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_ActionPanel1"));
         jLabelFormName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "LBL_FormName_mnem").charAt(0));
         jLabelFormName.setLabelFor(CBFormName);
         jLabelFormName.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "LBL_FormName"));
@@ -92,6 +93,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBFormName, gridBagConstraints);
+        CBFormName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_CBFormName"));
 
         CBInputAction.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -100,6 +102,8 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBInputAction, gridBagConstraints);
+        CBInputAction.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("RB_InputAction"));
+        CBInputAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_CBInputAction"));
 
         TFInputResource.setText("/");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -108,6 +112,8 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFInputResource, gridBagConstraints);
+        TFInputResource.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("RB_InputResource"));
+        TFInputResource.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_TFInputResource"));
 
         CHBUseFormBean.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "LBL_UseFormBean_mnem").charAt(0));
         CHBUseFormBean.setSelected(true);
@@ -123,6 +129,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(CHBUseFormBean, gridBagConstraints);
+        CHBUseFormBean.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_CHBUseFormBean"));
 
         jButtonBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "LBL_BrowseButton_mnem").charAt(0));
         jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "LBL_BrowseButton"));
@@ -137,6 +144,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jButtonBrowse, gridBagConstraints);
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_jButtonBrowse"));
 
         buttonGroup1.add(RBSession);
         RBSession.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_Session_mnem").charAt(0));
@@ -145,6 +153,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         RBSession.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBSession.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBSession);
+        RBSession.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_RBSession"));
 
         buttonGroup1.add(RBRequest);
         RBRequest.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_Request_mnem").charAt(0));
@@ -152,6 +161,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         RBRequest.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBRequest.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBRequest);
+        RBRequest.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_Request"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -184,6 +194,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFAttribute, gridBagConstraints);
+        TFAttribute.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_TFAttribute"));
 
         CHBValidate.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "CB_Validate_mnem").charAt(0));
         CHBValidate.setSelected(true);
@@ -196,6 +207,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(CHBValidate, gridBagConstraints);
+        CHBValidate.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_CHBValidate"));
 
         jLabelParameter.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "LBL_Parameter_mnem").charAt(0));
         jLabelParameter.setLabelFor(TFParameter);
@@ -213,6 +225,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
         add(TFParameter, gridBagConstraints);
+        TFParameter.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_TFParameter"));
 
         buttonGroup2.add(RBInputResource);
         RBInputResource.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_InputResource_mnem").charAt(0));
@@ -232,6 +245,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(RBInputResource, gridBagConstraints);
+        RBInputResource.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_RBInputResource"));
 
         buttonGroup2.add(RBInputAction);
         RBInputAction.setMnemonic(org.openide.util.NbBundle.getMessage(ActionPanel1Visual.class, "RB_InputAction_mnem").charAt(0));
@@ -250,6 +264,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(RBInputAction, gridBagConstraints);
+        RBInputAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("RBInputAction"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -259,8 +274,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jParameterSpecificLabel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
 // TODO add your handling code here:
