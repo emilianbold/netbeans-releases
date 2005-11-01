@@ -25,6 +25,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.*;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
@@ -48,7 +49,8 @@ import org.openide.util.NbBundle;
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (".".equals(typedText) && !((JavaSyntaxSupport)Utilities.getSyntaxSupport(component)).isCompletionDisabled(component.getCaret().getDot())) { // NOI18N
+        SyntaxSupport sup = Utilities.getSyntaxSupport(component);
+        if (".".equals(typedText) && !((sup instanceof JavaSyntaxSupport) && ((JavaSyntaxSupport)sup).isCompletionDisabled(component.getCaret().getDot()))) { // NOI18N
             return COMPLETION_QUERY_TYPE;
         }
         return 0;
