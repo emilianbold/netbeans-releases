@@ -264,18 +264,23 @@ final class NbEvents extends Events {
             System.err.println(text);
         } else {
             // Normal - display dialog.
-            int type = warn ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
-            javax.swing.JOptionPane p = new javax.swing.JOptionPane (text, type);
-            RequestProcessor.getDefault().post(new Notifier(p));
+            new Notifier(text, warn);
         }
     }
     private static final class Notifier implements Runnable {
-        private final javax.swing.JOptionPane desc;
-        public Notifier(javax.swing.JOptionPane desc) {
-            this.desc = desc;
+        private boolean warn;
+        private String text;
+        private static RequestProcessor RP = new RequestProcessor("Notify About Module System"); // NOI18N
+        
+        public Notifier(String text, boolean type) {
+            this.warn = type;
+            this.text = text;
+            RP.post(this, 0, Thread.MIN_PRIORITY);
         }
         public void run() {
-             desc.setVisible (true);
+            int type = warn ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
+            String msg = NbBundle.getMessage(Notifier.class, warn ? "MSG_warning" : "MSG_info"); // NOI18N
+            JOptionPane.showMessageDialog(null, text, msg, type);
         }
     }
 
