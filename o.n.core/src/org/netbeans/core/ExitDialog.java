@@ -42,7 +42,7 @@ import org.openide.util.NbBundle;
  */
 
 public class ExitDialog extends JPanel implements java.awt.event.ActionListener {
-
+    private final static boolean isAqua = UIManager.getLookAndFeel().getID().equals("Aqua");
 
     private static Object[] exitOptions;
 
@@ -74,7 +74,6 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     */
     private void draw () {
         list = new JList(listModel);
-        list.setBorder(new EmptyBorder(2, 2, 2, 2));
         list.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
                                            public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
                                                updateSaveButton ();
@@ -88,7 +87,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             updateSaveButton ();
         }
         JScrollPane scroll = new JScrollPane (list);
-        scroll.setBorder (new CompoundBorder (new EmptyBorder (12, 12, 11, 0), scroll.getBorder ()));
+	    setBorder(BorderFactory.createEmptyBorder( 12, 12, 11, 12));
         add(scroll, java.awt.BorderLayout.CENTER);
         list.setCellRenderer(new ExitDlgListCellRenderer());
         list.getAccessibleContext().setAccessibleName((NbBundle.getBundle(ExitDialog.class)).getString("ACSN_ListOfChangedFiles"));
@@ -258,8 +257,12 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         public ExitDlgListCellRenderer() {
             this.setOpaque(true);
             this.setBorder(noFocusBorder);
-            hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
-            noFocusBorder = new EmptyBorder(1, 1, 1, 1);
+            if (isAqua) {
+                 hasFocusBorder = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+	        } else {
+                 hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
+	        }
+            noFocusBorder = BorderFactory.createEmptyBorder(1, 1, 1, 1);
         }
 
         public java.awt.Component getListCellRendererComponent(JList list,
