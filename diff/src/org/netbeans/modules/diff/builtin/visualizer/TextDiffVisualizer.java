@@ -36,7 +36,7 @@ import org.netbeans.modules.diff.builtin.DiffPresenter;
  */
 public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
     
-    private boolean contextMode = false;
+    private boolean contextMode = true;
     private int contextNumLines = 3;
 
     static final long serialVersionUID =-2481513747957146261L;
@@ -208,7 +208,7 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
         content.append(CONTEXT_MARK2B);
         content.append(diffInfo.getName2());
         content.append("\n");
-        int contextNumLines = diffInfo.getContextNumLines();
+        final int contextNumLines = diffInfo.getContextNumLines();
         Difference[] diffs = diffInfo.getDifferences();
         BufferedReader br1 = new BufferedReader(diffInfo.createFirstReader());
         BufferedReader br2 = new BufferedReader(diffInfo.createSecondReader());
@@ -225,11 +225,13 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
             if (begin < 1) begin = 1;
             StringBuffer context = new StringBuffer();
             line1 = dumpContext(0, diffs, i, cr[0], context, contextNumLines, br1, line1);
-            if (line1 <= cr[1]) cr[1] = line1 - 1;
+            int end1 = line1 <= cr[1] ?
+                    line1 + contextNumLines :
+                    cr[1];
             content.append(CONTEXT_MARK1B);
             content.append(begin);
             content.append(CONTEXT_MARK_DELIMETER);
-            content.append(cr[1]);
+            content.append(end1);
             content.append(CONTEXT_MARK1E);
             content.append(context);
 
@@ -238,11 +240,13 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
             if (begin < 1) begin = 1;
             context = new StringBuffer();
             line2 = dumpContext(1, diffs, i, cr[0], context, contextNumLines, br2, line2);
-            if (line2 <= cr[2]) cr[2] = line2 - 1;
+            int end2 = line2 <= cr[2] ?
+                    line2 + contextNumLines :
+                    cr[2];
             content.append(CONTEXT_MARK2B);
             content.append(begin);
             content.append(CONTEXT_MARK_DELIMETER);
-            content.append(cr[2]);
+            content.append(end2);
             content.append(CONTEXT_MARK2E);
             content.append(context);
 
@@ -276,7 +280,7 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
     }
     
     private static int dumpContext(int which, Difference[] diffs, int i, int j,
-        StringBuffer content, int contextNumLines, BufferedReader br, int line)
+        StringBuffer content, final int contextNumLines, BufferedReader br, int line)
         throws IOException {
 
         int startLine;
