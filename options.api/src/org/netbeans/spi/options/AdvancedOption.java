@@ -16,7 +16,7 @@ package org.netbeans.spi.options;
 
 /**
  * Implementation of this class represents one category (like "Ant" 
- * or "Form Editor") in Advanced Panel of Options Dialog. It should 
+ * or "Form Editor") in Miscellaneous Panel of Options Dialog. It should 
  * be registerred in layers:
  *
  * <pre style="background-color: rgb(255, 255, 153);">
