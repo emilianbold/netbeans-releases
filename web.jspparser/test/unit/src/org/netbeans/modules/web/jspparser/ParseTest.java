@@ -75,7 +75,12 @@ public class ParseTest extends NbTestCase {
     }
     
     public void testAnalysisXMLTextRotate() throws Exception {
-        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx");
+        String javaVersion = System.getProperty("java.version");
+        if (javaVersion.startsWith("1.4"))
+            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate4.jspx");
+        else
+            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx");
+            
     }
     
     public void testAnalysisTagLibFromTagFiles() throws Exception {
