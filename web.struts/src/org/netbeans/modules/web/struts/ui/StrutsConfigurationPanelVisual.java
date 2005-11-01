@@ -85,6 +85,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jTextFieldServletName, gridBagConstraints);
+        jTextFieldServletName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/ui/Bundle").getString("ACSD_jTextFieldServletName"));
 
         jLabelURLPattern.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MNE_ConfigPanel_URLPattern_Mnemonic").charAt(0));
         jLabelURLPattern.setLabelFor(jComboBoxURLPattern);
@@ -105,6 +106,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jComboBoxURLPattern, gridBagConstraints);
+        jComboBoxURLPattern.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/ui/Bundle").getString("ACSD_jComboBoxURLPattern"));
 
         jLabelAppResource.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MNE_ConfigPanel_ApplicationResource_Mnemonic").charAt(0));
         jLabelAppResource.setLabelFor(jTextFieldAppResource);
@@ -126,6 +128,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         gridBagConstraints.weighty = 0.01;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jTextFieldAppResource, gridBagConstraints);
+        jTextFieldAppResource.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/ui/Bundle").getString("ACSD_jTextFieldAppResource"));
 
         jCheckBoxTLD.setMnemonic(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MNE_ConfigPanel_InstallStrutsTLDs_Mnemonic").charAt(0));
         jCheckBoxTLD.setText(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "LBL_ConfigPanel_InstallStrutsTLDs"));
@@ -139,6 +142,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jCheckBoxTLD, gridBagConstraints);
+        jCheckBoxTLD.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/ui/Bundle").getString("ACSD_jCheckBoxTLD"));
 
         jCheckBoxWAR.setMnemonic(org.openide.util.NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MNE_ConfigPanel_PackageStrutsJars_Mnemonic").charAt(0));
         jCheckBoxWAR.setSelected(true);
@@ -154,8 +158,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         gridBagConstraints.weighty = 1.0;
         add(jCheckBoxWAR, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

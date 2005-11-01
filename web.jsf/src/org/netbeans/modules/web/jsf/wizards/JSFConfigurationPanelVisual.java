@@ -57,6 +57,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         setLayout(new java.awt.GridBagLayout());
 
+        lServletName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lServletName").charAt(0));
         lServletName.setLabelFor(tServletName);
         lServletName.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Servlet_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -73,6 +74,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         add(tServletName, gridBagConstraints);
         tServletName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ServletName"));
 
+        lURLPattern.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lURLPattern").charAt(0));
         lURLPattern.setLabelFor(tURLPattern);
         lURLPattern.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_URL_Pattern"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -91,6 +93,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         add(tURLPattern, gridBagConstraints);
         tURLPattern.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_Mapping"));
 
+        cbValidate.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_cbValidate").charAt(0));
         cbValidate.setSelected(true);
         cbValidate.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Validate_XML"));
         cbValidate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -103,6 +106,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         add(cbValidate, gridBagConstraints);
         cbValidate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ValidateXML"));
 
+        cbVerify.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_cbVerify").charAt(0));
         cbVerify.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Verify_Objects"));
         cbVerify.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbVerify.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -138,8 +142,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jPanel1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
