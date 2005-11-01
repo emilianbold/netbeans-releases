@@ -71,6 +71,7 @@ public class AntDebugger extends ActionsProviderSupport {
     private ContextProvider             contextProvider;
     private Object                      LOCK = new Object ();
     private Object                      LOCK_ACTIONS = new Object();
+    private boolean                     actionRunning = false;
     private IOManager                   ioManager;
     private Object                      currentLine;
     private LinkedList                  callStackList = new LinkedList();
@@ -120,6 +121,9 @@ public class AntDebugger extends ActionsProviderSupport {
     }
         
     public void doAction (Object action) {
+        synchronized (LOCK_ACTIONS) {
+            actionRunning = true;
+        }
         if (action == ActionsManager.ACTION_KILL) {
             finish ();
         } else
@@ -135,9 +139,11 @@ public class AntDebugger extends ActionsProviderSupport {
             doStep (action);
         }
         synchronized (LOCK_ACTIONS) {
-            try {
-                LOCK_ACTIONS.wait();
-            } catch (InterruptedException iex) {}
+            if (actionRunning) {
+                try {
+                    LOCK_ACTIONS.wait();
+                } catch (InterruptedException iex) {}
+            }
         }
     }
     
@@ -205,6 +211,7 @@ public class AntDebugger extends ActionsProviderSupport {
         
         // enable actions
         synchronized (LOCK_ACTIONS) {
+            actionRunning = false;
             LOCK_ACTIONS.notifyAll();
         }
         
@@ -248,6 +255,7 @@ public class AntDebugger extends ActionsProviderSupport {
         Utils.unmarkCurrent ();
         // finish actions
         synchronized (LOCK_ACTIONS) {
+            actionRunning = false;
             LOCK_ACTIONS.notifyAll();
         }
     }
@@ -524,6 +532,11 @@ public class AntDebugger extends ActionsProviderSupport {
             if (originatingIndex > 0) {
                 originatingIndex--;
                 updateUI();
+                // enable actions
+                synchronized (LOCK_ACTIONS) {
+                    actionRunning = false;
+                    LOCK_ACTIONS.notifyAll();
+                }
                 return ;
             }
             doStop = true;
