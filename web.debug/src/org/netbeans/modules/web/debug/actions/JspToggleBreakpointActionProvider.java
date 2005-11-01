@@ -57,6 +57,12 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
     
     public void propertyChange (PropertyChangeEvent evt) {
         String url = Context.getCurrentURL();
+
+        //#67910 - setting of a bp allowed only in JSP contained in some web module
+        FileObject fo = Utils.getFileObjectFromUrl(url);
+        Object owner = null;
+        if (fo != null)
+            owner = WebModule.getWebModule(fo);
         
         boolean isJsp = Utils.isJsp(url) || Utils.isTag(url);
 
@@ -66,7 +72,7 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         //supports JSP debugging or not
         String serverID = Utils.getTargetServerID(url);
 
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isJsp && !"WebLogic9".equals(serverID)); //NOI18N
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, owner != null && isJsp && !"WebLogic9".equals(serverID)); //NOI18N
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
         ) 
