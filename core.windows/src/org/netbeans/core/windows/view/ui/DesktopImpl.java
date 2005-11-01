@@ -31,6 +31,7 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.SlidingView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
+import org.openide.windows.TopComponent;
 
 
 /** Implementation of compact mode desktop, containing split views as well
@@ -262,13 +263,18 @@ public final class DesktopImpl {
         Rectangle result = new Rectangle();
         Rectangle viewRect = view.getComponent().getBounds();
         Dimension viewPreferred = view.getComponent().getPreferredSize();
+        int minThick = MIN_EDITOR_ALIGN_THICK;
+        
+        TopComponent tc = view.getSelectedTopComponent();
+        if( null != tc && Boolean.TRUE.equals( tc.getClientProperty( "keepPreferredSizeWhenSlideIn" ) ) ) // NOI18N
+            minThick = 20;
         
         if (Constants.LEFT.equals(side)) {
             result.x = viewRect.x + Math.max(viewRect.width, viewPreferred.width);
             result.y = 0;
             result.height = splitRootRect.height;
             result.width = view.getSlideBounds().width;
-            if (result.width < MIN_EDITOR_ALIGN_THICK) {
+            if (result.width < minThick) {
                 result.width = splitRootRect.width / 3;
             }
             if (result.width > splitRootRect.width) {
@@ -277,7 +283,7 @@ public final class DesktopImpl {
             }
         } else if (Constants.RIGHT.equals(side)) {
             int rightLimit = /*layeredPane.getBounds().x  + */ layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
-            result.x = (view.getSlideBounds().width < MIN_EDITOR_ALIGN_THICK)
+            result.x = (view.getSlideBounds().width < minThick)
                         ? rightLimit - splitRootRect.width / 3 : rightLimit - view.getSlideBounds().width;
             if (result.x < 0) {
                 // make sure we are not bigger than the current window..
@@ -290,7 +296,7 @@ public final class DesktopImpl {
         } else if (Constants.BOTTOM.equals(side)) {
             int lowerLimit = viewRect.y + viewRect.height - Math.max(viewRect.height, viewPreferred.height);
             result.x = splitRootRect.x;
-            result.y = (view.getSlideBounds().height < MIN_EDITOR_ALIGN_THICK)
+            result.y = (view.getSlideBounds().height < minThick)
                         ? lowerLimit - splitRootRect.height / 3 : lowerLimit - view.getSlideBounds().height;
             if (result.y < 0) {
                 // make sure we are not bigger than the current window..

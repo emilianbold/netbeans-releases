@@ -55,6 +55,8 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(505, 88));
         add( PalettePanel.getDefault().getScrollPane(), BorderLayout.CENTER );
+        
+        putClientProperty( "keepPreferredSizeWhenSlideIn", Boolean.TRUE ); // NOI18N
     }
     
     public void requestActive() {
