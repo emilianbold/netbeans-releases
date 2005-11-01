@@ -106,12 +106,12 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         Helper.waitForDispatchThread();
         // open XML View
         ((EditCookie) bookDO.getCookie(EditCookie.class)).edit();
-        Helper.waitForDispatchThread();
         // handle consequent calls of SwingUtilities.invokeLater();
         Helper.waitForDispatchThread();
 
         // test if data object was modified
-        SaveCookie cookie = Helper.getSaveCookie(bookDO);
+        SaveCookie cookie = Helper.getSaveCookie(bookDO);      
+        Helper.waitForDispatchThread();
         assertNotNull("Data Object Not Modified", cookie);
         cookie.save();
 
