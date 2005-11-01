@@ -1495,38 +1495,54 @@ public final class TestCreator {
         
         JavaModel.getJavaRepository().beginTrans(true);
         try {
+            TesteableResult result = isClassTestableSingle(jc);
             
-            TesteableResult result = TesteableResult.OK;
-            
-            /*
-             * If the class is a test class and test classes should be skipped,
-             * do not check nested classes (skip all):
-             */
-            /* Check if the class itself (w/o nested classes) is testable: */
-            final int modifiers = jc.getModifiers();
-
-            if (skipTestClasses && TestUtil.isClassImplementingTestInterface(jc)) 
-                result = TesteableResult.combine(result, TesteableResult.TEST_CLASS);
-            if (skipPkgPrivateClasses && !Modifier.isPublic(modifiers) && !Modifier.isPrivate(modifiers))
-                result = TesteableResult.combine(result, TesteableResult.PACKAGE_PRIVATE_CLASS);
-            if (skipAbstractClasses && Modifier.isAbstract(modifiers))
-                result = TesteableResult.combine(result, TesteableResult.ABSTRACT_CLASS);
-            if (!Modifier.isStatic(modifiers) && jc.isInner())
-                result = TesteableResult.combine(result, TesteableResult.NONSTATIC_INNER_CLASS);
-            if (!hasTestableMethods(jc))
-                result = TesteableResult.combine(result, TesteableResult.NO_TESTEABLE_METHODS);
-            if (skipExceptionClasses && TestUtil.isClassException(jc)) 
-                result = TesteableResult.combine(result, TesteableResult.EXCEPTION_CLASS);
-            
-            
-            /* Not testeable. But maybe one of its nested classes is testable: */
-            if (result.isFailed()) {
-                Iterator it  = TestUtil.collectFeatures(jc, JavaClass.class, 0, true).iterator();
-                while (it.hasNext()) {
-                    if (isClassTestable((JavaClass)it.next()).isTesteable()) 
-                        return TesteableResult.OK;
-                }
+            if (result.isTesteable()) {
+                return TesteableResult.OK;
             }
+            
+            List containedClasses
+                    = TestUtil.collectFeatures(jc, JavaClass.class, 0, true);
+            if (containedClasses.isEmpty()) {
+                
+                /* Not testable, no contained classes - no more chance: */
+                return result;
+            }
+            
+            /* Not testeable but maybe one of its nested classes is testable: */
+            List stack = new ArrayList(Math.max(10, containedClasses.size()));
+            stack.addAll(containedClasses);
+            int stackSize = stack.size();
+
+            Set nonTestable = new HashSet(64);
+            nonTestable.add(jc);
+            
+            do {
+                JavaClass classToCheck = (JavaClass) stack.remove(--stackSize);
+                
+                if (!nonTestable.add(classToCheck)) {
+                    continue; //we already know this single class is nontestable
+                }
+                
+                TesteableResult resultSingle
+                                        = isClassTestableSingle(classToCheck);
+                if (resultSingle.isTesteable()) {
+                    return TesteableResult.OK;
+                } else {
+                    result = TesteableResult.combine(result, resultSingle);
+                }
+                
+                containedClasses = TestUtil.collectFeatures(classToCheck,
+                                                            JavaClass.class,
+                                                            0,
+                                                            true);
+                if (!containedClasses.isEmpty()) {
+                    stack.addAll(containedClasses);
+                    stackSize = stack.size();
+                }
+            } while (stackSize != 0);
+            
+            /* So not a single contained class is testable - no more chance: */
             return result;
         } finally {
             JavaModel.getJavaRepository().endTrans();
@@ -1535,6 +1551,41 @@ public final class TestCreator {
     
     
     /* private methods */
+    
+    /**
+     * Checks whether the given class is testable.
+     *
+     * @param  jc  class to be checked
+     * @return  TesteableResult that isOk, if the class is testeable or carries
+     *          the information why the class is not testeable
+     */
+    private TesteableResult isClassTestableSingle(JavaClass jc) {
+        assert jc != null;
+        
+        TesteableResult result = TesteableResult.OK;
+
+        /*
+         * If the class is a test class and test classes should be skipped,
+         * do not check nested classes (skip all):
+         */
+        /* Check if the class itself (w/o nested classes) is testable: */
+        final int modifiers = jc.getModifiers();
+
+        if (skipTestClasses && TestUtil.isClassImplementingTestInterface(jc)) 
+            result = TesteableResult.combine(result, TesteableResult.TEST_CLASS);
+        if (skipPkgPrivateClasses && !Modifier.isPublic(modifiers) && !Modifier.isPrivate(modifiers))
+            result = TesteableResult.combine(result, TesteableResult.PACKAGE_PRIVATE_CLASS);
+        if (skipAbstractClasses && Modifier.isAbstract(modifiers))
+            result = TesteableResult.combine(result, TesteableResult.ABSTRACT_CLASS);
+        if (!Modifier.isStatic(modifiers) && jc.isInner())
+            result = TesteableResult.combine(result, TesteableResult.NONSTATIC_INNER_CLASS);
+        if (!hasTestableMethods(jc))
+            result = TesteableResult.combine(result, TesteableResult.NO_TESTEABLE_METHODS);
+        if (skipExceptionClasses && TestUtil.isClassException(jc)) 
+            result = TesteableResult.combine(result, TesteableResult.EXCEPTION_CLASS);
+
+        return result;
+    }
     
     /**
      * Returns true if tgtClass contains suite() method
