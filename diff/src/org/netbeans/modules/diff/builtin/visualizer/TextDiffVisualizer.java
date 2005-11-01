@@ -228,6 +228,21 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
             int end1 = line1 <= cr[1] ?
                     line1 + contextNumLines :
                     cr[1];
+            if (line1 <= cr[1] && i == diffs.length -1) {
+                // determine how many lines remains to EOF
+                int buffer = contextNumLines;
+                int existingLines = 0;
+                while (buffer-- > 0) {
+                    String l = br1.readLine();
+                    if (l == null) {
+                        break;
+                    }
+                    existingLines++;
+                }
+                if (existingLines<contextNumLines) {
+                    end1 = line1 + existingLines - 1;
+                }
+            }
             content.append(CONTEXT_MARK1B);
             content.append(begin);
             content.append(CONTEXT_MARK_DELIMETER);
@@ -243,6 +258,21 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
             int end2 = line2 <= cr[2] ?
                     line2 + contextNumLines :
                     cr[2];
+            if (line2 <= cr[2] && i == diffs.length -1) {
+                // determine how many lines remains to EOF
+                int buffer = contextNumLines;                
+                int existingLines = 0;
+                while (buffer-- > 0) {
+                    String l = br2.readLine();
+                    if (l == null) {
+                        break;
+                    }               
+                    existingLines++;
+                }
+                if (existingLines<contextNumLines) {
+                    end2 = line2 + existingLines - 1;
+                }
+            }            
             content.append(CONTEXT_MARK2B);
             content.append(begin);
             content.append(CONTEXT_MARK_DELIMETER);
