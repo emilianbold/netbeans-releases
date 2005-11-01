@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="JSP_Servlet">
             <attr name="JSFManagedBean.java/StrutsAction.java" boolvalue="true"/>
             <attr name="Html.html/StrutsAction.java" boolvalue="true"/>
-            <attr name="StrutsAction.java/StrutsFormBean.java" boolvalue="true"/>
+            <attr name="StrutsAction.java/StrutsActionForm.java" boolvalue="true"/>
             <file name="StrutsAction.java" url="templates/StrutsAction.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DispatchAction.java" url="templates/DispatchAction.template"/>
             <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template"/>
             <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template"/>
-            <file name="StrutsFormBean.java" url="templates/StrutsFormBean.template">
+            <file name="StrutsActionForm.java" url="templates/StrutsActionForm.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>

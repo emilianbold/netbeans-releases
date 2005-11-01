@@ -1,0 +1,57 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+ 
+package Templates.JSP_Servlet;           
+
+/** 
+ *
+ * @author __USER__
+ * @version 
+ */
+
+public class NewActionForm extends __SUPERCLASS__ {
+    
+   private String name;
+
+   private int number;
+
+   /**
+    * @return
+    */
+   public String getName() {
+       return name;
+   }
+
+   /**
+    * @param string
+    */
+   public void setName(String string) {
+       name = string;
+   }
+
+   /**
+    * @return
+    */
+   public int getNumber() {
+       return number;
+   }
+
+   /**
+    * @param i
+    */
+   public void setNumber(int i) {
+       number = i;
+   }
+
+   /**
+    *
+    */
+   public FirstNewBean() {
+       super();
+       // TODO Auto-generated constructor stub
+   }
+
+}
