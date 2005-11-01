@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
+import org.netbeans.modules.xml.multiview.Refreshable;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -22,7 +23,9 @@ import javax.swing.*;
  * @author pfiala
  */
 public class MessageDrivenOverviewForm extends SectionNodeInnerPanel {
-
+    
+    private static final String ACKNOWLEDGE_MODE_AUTO = "Auto-acknowledge"; //NOI18N
+    private static final String ACKNOWLEDGE_MODE_DUPS_OK = "Dups-ok-acknowledge"; //NOI18N
     /**
      * Creates new form MessageDrivenOverviewForm
      *
@@ -31,6 +34,10 @@ public class MessageDrivenOverviewForm extends SectionNodeInnerPanel {
     public MessageDrivenOverviewForm(SectionNodeView sectionNodeView) {
         super(sectionNodeView);
         initComponents();
+        beanTransactionTypeRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, SessionOverviewForm.TRANSACTION_TYPE_BEAN);
+        containerTransactionTypeRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, SessionOverviewForm.TRANSACTION_TYPE_CONTAINER);
+        autoAckModeRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, ACKNOWLEDGE_MODE_AUTO);
+        dupsOkAckModeRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, ACKNOWLEDGE_MODE_DUPS_OK);
     }
 
     /**
@@ -125,7 +132,7 @@ public class MessageDrivenOverviewForm extends SectionNodeInnerPanel {
         add(nameTextField, gridBagConstraints);
 
         transactionTypeButtonGroup.add(beanTransactionTypeRadioButton);
-        beanTransactionTypeRadioButton.setText("Bean");
+        beanTransactionTypeRadioButton.setText(org.openide.util.NbBundle.getMessage(MessageDrivenOverviewForm.class, "LBL_Bean"));
         beanTransactionTypeRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -135,7 +142,7 @@ public class MessageDrivenOverviewForm extends SectionNodeInnerPanel {
         add(beanTransactionTypeRadioButton, gridBagConstraints);
 
         transactionTypeButtonGroup.add(containerTransactionTypeRadioButton);
-        containerTransactionTypeRadioButton.setText("Container");
+        containerTransactionTypeRadioButton.setText(org.openide.util.NbBundle.getMessage(MessageDrivenOverviewForm.class, "LBL_Container"));
         containerTransactionTypeRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -162,7 +169,6 @@ public class MessageDrivenOverviewForm extends SectionNodeInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(autoAckModeRadioButton, gridBagConstraints);
-        autoAckModeRadioButton.getAccessibleContext().setAccessibleName("Auto-acknowledge");
 
         acknowledgeModeButtonGroup.add(dupsOkAckModeRadioButton);
         dupsOkAckModeRadioButton.setText(org.openide.util.NbBundle.getMessage(MessageDrivenOverviewForm.class, "LBL_DupsOk"));
@@ -173,7 +179,6 @@ public class MessageDrivenOverviewForm extends SectionNodeInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(dupsOkAckModeRadioButton, gridBagConstraints);
-        dupsOkAckModeRadioButton.getAccessibleContext().setAccessibleName("Dups-ok-acknowledge");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

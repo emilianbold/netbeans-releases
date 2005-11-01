@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
+import org.netbeans.modules.xml.multiview.Refreshable;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -22,6 +23,11 @@ import javax.swing.*;
  * @author pfiala
  */
 public class SessionOverviewForm extends SectionNodeInnerPanel {
+    
+    static final String SESSION_TYPE_STATELESS="Stateless"; //NOI18N
+    static final String SESSION_TYPE_STATEFUL="Stateful"; //NOI18N
+    static final String TRANSACTION_TYPE_BEAN="Bean"; //NOI18N
+    static final String TRANSACTION_TYPE_CONTAINER="Container"; //NOI18N
 
     /**
      * Creates new form SessionOverviewForm
@@ -29,6 +35,10 @@ public class SessionOverviewForm extends SectionNodeInnerPanel {
     public SessionOverviewForm(SectionNodeView sectionNodeView) {
         super(sectionNodeView);
         initComponents();
+        statelessRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, SESSION_TYPE_STATELESS);
+        statefulRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, SESSION_TYPE_STATEFUL);
+        beanRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, TRANSACTION_TYPE_BEAN);
+        containerRadioButton.putClientProperty(Refreshable.PROPERTY_FIXED_VALUE, TRANSACTION_TYPE_CONTAINER);
     }
 
     /**
@@ -88,7 +98,7 @@ public class SessionOverviewForm extends SectionNodeInnerPanel {
         add(sessionTypeLabel, gridBagConstraints);
 
         sessionTypeButtonGroup.add(statelessRadioButton);
-        statelessRadioButton.setText("Stateless");
+        statelessRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Stateless"));
         statelessRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -98,7 +108,7 @@ public class SessionOverviewForm extends SectionNodeInnerPanel {
         add(statelessRadioButton, gridBagConstraints);
 
         sessionTypeButtonGroup.add(statefulRadioButton);
-        statefulRadioButton.setText("Stateful");
+        statefulRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Stateful"));
         statefulRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -108,7 +118,7 @@ public class SessionOverviewForm extends SectionNodeInnerPanel {
         add(statefulRadioButton, gridBagConstraints);
 
         transactionTypeButtonGroup.add(beanRadioButton);
-        beanRadioButton.setText("Bean");
+        beanRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Bean"));
         beanRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -118,7 +128,7 @@ public class SessionOverviewForm extends SectionNodeInnerPanel {
         add(beanRadioButton, gridBagConstraints);
 
         transactionTypeButtonGroup.add(containerRadioButton);
-        containerRadioButton.setText("Container");
+        containerRadioButton.setText(org.openide.util.NbBundle.getMessage(SessionOverviewForm.class, "LBL_Container"));
         containerRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
