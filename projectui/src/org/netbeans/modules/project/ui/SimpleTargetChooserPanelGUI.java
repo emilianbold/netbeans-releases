@@ -361,7 +361,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
     private SourceGroup getPreselectedGroup( SourceGroup[] groups, FileObject folder ) {        
         for( int i = 0; folder != null && i < groups.length; i++ ) {
-            if( FileUtil.isParentOf( groups[i].getRootFolder(), folder ) ) {
+            if( FileUtil.isParentOf( groups[i].getRootFolder(), folder )
+                || groups[i].getRootFolder().equals(folder)) {
                 return groups[i];
             }
         }
