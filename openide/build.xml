@@ -51,66 +51,46 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="test" target="buildtests" />
     </target>
     
-    <target name="test-single" depends="init,compile-test-single" >
+    <target name="test-single" depends="init" >
         <fail unless="test.includes">Must set test.includes</fail>
         <mkdir dir="${build.test.unit.results.dir}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-            <jvmarg value="-ea" />
-            <batchtest todir="test/results">
-                <fileset dir="test/unit/src" includes="${test.includes}"/>
-            </batchtest>
-            <classpath>
-                <!-- XXX what now?
-                <pathelement location="${cluster}/core/openide.jar"/>
-                -->
-                <pathelement location="${cluster}/core/openide-loaders.jar" />
-                <pathelement location="build/test/unit/classes" />
-                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
-                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
-                <pathelement location="${nb_all}/xtest/lib/insanelib.jar"/>
-            </classpath>
-            <formatter type="brief" usefile="false"/>
-        </junit>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
+        <pathconvert property="xtest.includes" >
+            <path location="${test.includes}" />
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*.java" to="*.class" />
+            </chainedmapper>
+        </pathconvert>
+        <ant dir="test" target="runtests" >
+            <property name="xtest.attribs" value="empty" />
+            <property name="xtest.includes" value="**/${xtest.includes}" />
+        </ant>
+        <nbbrowse file="test/results/index.html"/>
     </target>
     
-    <target name="debug-test-single-nb" depends="init,compile-test-single" if="netbeans.home" >
+    <target name="debug-test-single-nb" depends="init" if="netbeans.home" >
         <fail unless="test.class">Must set test.class</fail>
+        
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
             <classpath> 
-                <!-- XXX what now?
-                <pathelement location="${cluster}/core/openide.jar"/>
-                -->
-                <pathelement location="${cluster}/core/openide-loaders.jar" />
-                <pathelement location="build/test/unit/classes" />
-                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
-                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
-                <pathelement location="${nb_all}/xtest/lib/insanelib.jar"/>
-                <fileset dir="${netbeans.dest.dir}" >
-                    <patternset refid="openide.files" />
+                <fileset dir="${openide/util.dir}" >
+                    <include name="**/*.jar" />
                 </fileset>
+                <pathelement location="build/test/unit/classes" />
             </classpath>
         </nbjpdastart>
         
-        <java fork="true" classname="junit.textui.TestRunner">
-            <jvmarg value="-ea" />
-            <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xnoagent"/>
-            <jvmarg value="-Djava.compiler=none"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
-            <classpath>
-                <!-- XXX what now?
-                <pathelement location="${cluster}/core/openide.jar"/>
-                -->
-                <pathelement location="${cluster}/core/openide-loaders.jar" />
-                <pathelement location="build/test/unit/classes" />
-                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
-                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
-                <pathelement location="${nb_all}/xtest/lib/insanelib.jar"/>
-            </classpath>
-            <arg line="${test.class}"/>
-        </java>
-        
+        <pathconvert property="xtest.includes"  >
+            <path location="${test.class}" />
+            <regexpmapper from="^.*\.(.*)" to="\1.class" />
+        </pathconvert>
+        <ant dir="test" target="runtests" >
+            <property name="xtest.attribs" value="empty" />
+            <property name="xtest.includes" value="**/${xtest.includes}" />
+            <property name="xtest.debug.address" value="${jpda.address}" />
+            <property name="xtest.debug.pause" value="false" />
+        </ant>
+        <nbbrowse file="test/results/index.html"/>
     </target>
 
     
