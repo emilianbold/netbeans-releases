@@ -21,6 +21,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Adds property to IDE command line: suppress scanning of classpath -->
     <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
     
+    <property name="xtest.ide.open.project" location="${xtest.data}/TestWebApplication"/>
+    
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
@@ -29,6 +31,13 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="test.qa-functional.run.cp"/>
         </executeTests>
     </target>
+    
+    <target name="unit-compiler">
+        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
+            <classpath refid="test.qa-functional.run.cp"/>
+        </buildTests>
+    </target>
+    
     
 </project>
 
