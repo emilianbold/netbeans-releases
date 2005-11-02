@@ -375,6 +375,36 @@ public class SingleModulePropertiesTest extends TestBase {
                 props.getBundleInfo().getDisplayName());
     }
     
+    public void testSimulateIllLocalizedBundlePackageRefactoring_67961() throws Exception {
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        SingleModuleProperties props = loadProperties(p);
+        assertEquals("display name from ProjectInformation", "Testing Module",
+                ProjectUtils.getInformation(p).getDisplayName());
+        assertEquals("display name from LocalizedBundleInfo", "Testing Module",
+                props.getBundleInfo().getDisplayName());
+        
+        // change manifest (will fire a change event before the package is actually renamed)
+        FileObject pDir = p.getProjectDirectory();
+        FileObject manifestFO = pDir.getFileObject("manifest.mf");
+        EditableManifest mf = Util.loadManifest(manifestFO);
+        mf.setAttribute(ManifestManager.OPENIDE_MODULE_LOCALIZING_BUNDLE, "org/example/module1Renamed/resources/Bundle.properties", null);
+        Util.storeManifest(manifestFO, mf);
+        
+        // rename package
+        FileObject pkg = pDir.getFileObject("src/org/example/module1");
+        FileLock lock = pkg.lock();
+        pkg.rename(lock, "module1Renamed", null);
+        lock.releaseLock();
+        
+        simulatePropertiesOpening(props, p);
+        
+        // make sure that properties are not damaged
+        assertEquals("display name was refreshed in ProjectInformation", "Testing Module",
+                ProjectUtils.getInformation(p).getDisplayName());
+        assertEquals("display name was refreshed in LocalizedBundleInfo", "Testing Module",
+                props.getBundleInfo().getDisplayName());
+    }
+    
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
 //        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),

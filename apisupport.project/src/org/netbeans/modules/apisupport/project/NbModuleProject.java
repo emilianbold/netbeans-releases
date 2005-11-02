@@ -113,6 +113,8 @@ public final class NbModuleProject implements Project {
     private LocalizedBundleInfo bundleInfo;
     private boolean needNewEvaluator;
     
+    private boolean manifestChanged;
+    
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         genFilesHelper = new GeneratedFilesHelper(helper);
@@ -199,7 +201,8 @@ public final class NbModuleProject implements Project {
             bundleInfo.addPropertyChangeListener(info);
             getManifestFile().addFileChangeListener(new FileChangeAdapter() {
                 public void fileChanged(FileEvent fe) {
-                    bundleInfo = Util.findLocalizedBundleInfo(getSourceDirectory(), getManifest());
+                    // cannot reload manifest-depended things immediatelly (see 67961 for more details)
+                    manifestChanged = true;
                 }
             });
         }
@@ -1185,6 +1188,10 @@ public final class NbModuleProject implements Project {
 
     private final class LocalizedBundleInfoProvider implements LocalizedBundleInfo.Provider {
         public LocalizedBundleInfo getLocalizedBundleInfo() {
+            if (manifestChanged) {
+                bundleInfo = Util.findLocalizedBundleInfo(getSourceDirectory(), getManifest());
+                manifestChanged = false;
+            }
             return bundleInfo;
         }
     }
