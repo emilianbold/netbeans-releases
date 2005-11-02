@@ -138,12 +138,6 @@ public class NbJavaSettingsInitializer extends Settings.AbstractInitializer {
                        org.netbeans.editor.ext.ExtKit.gotoDeclarationAction
                    ),
                    new MultiKeyBinding(
-                       KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
-                           mask | InputEvent.SHIFT_MASK),
-                       JavaKit.javaDocShowAction
-                   ),
-                   
-                   new MultiKeyBinding(
                        KeyStroke.getKeyStroke(KeyEvent.VK_S,
                            InputEvent.SHIFT_MASK | ALT_MASK),
                        JavaKit.selectNextElementAction

@@ -99,8 +99,6 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     public static final String tryCatchAction = "try-catch"; // NOI18N
 
-    public static final String javaDocShowAction = "javadoc-show-action"; // NOI18N
-    
     public static final String expandAllJavadocFolds = "expand-all-javadoc-folds"; //NOI18N
     
     public static final String collapseAllJavadocFolds = "collapse-all-javadoc-folds"; //NOI18N
@@ -235,7 +233,6 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                                    new JavaJMIGotoHelpAction(),
                                    new JavaJMIGotoSourceAction(),
                                    new JavaJMIGotoDeclarationAction(),
-                                   new JavaDocJMIShowAction(),
                                    new JavaFixAllImports(),
                                    new TryCatchAction(),
                                 };
@@ -652,53 +649,6 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
     
     }
-    
-
-    public static class JavaDocShowAction extends BaseAction {
-
-        public JavaDocShowAction() {
-            super(javaDocShowAction);
-            putValue ("helpID", JavaDocShowAction.class.getName ()); // NOI18N
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                Object obj = JCExtension.findItemAtCaretPos(target);
-                CompletionJavaDoc javadoc = ExtUtilities.getCompletionJavaDoc(target);
-                if (javadoc!=null){
-                    javadoc.setContent(obj);
-                    javadoc.addToHistory(obj);
-                }
-            }
-        }
-    }
-    
-    public static class JavaDocJMIShowAction extends JavaDocShowAction {
-
-        protected boolean asynchonous() {
-            return true;
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                JMIUtils jmiUtils = JMIUtils.get(doc);
-
-                jmiUtils.beginTrans(false);
-                try {
-                    Object obj = jmiUtils.findItemAtCaretPos(target);
-                    CompletionJavaDoc javadoc = ExtUtilities.getCompletionJavaDoc(target);
-                    if (javadoc!=null){
-                        javadoc.setContent(obj);
-                        javadoc.addToHistory(obj);
-                    }
-                } finally {
-                    jmiUtils.endTrans(false);
-                }
-            }
-        }
-    }
-    
     
     public static class JavaGotoHelpAction extends BaseAction {
 
