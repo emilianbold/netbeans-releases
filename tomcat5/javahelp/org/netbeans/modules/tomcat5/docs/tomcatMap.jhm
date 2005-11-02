@@ -35,7 +35,9 @@ help\
 	<mapID target="tomcat_enable_1_5" url="tomcat/tomcat_enable_1_5.html" />
 	<mapID target="tomcat_websvc" url="tomcat/tomcat_websvc.html" />
 	<mapID target="tomcat_websvc_client" url="tomcat/tomcat_websvc_client.html" />
-        <!-- this is for the instance node -->
+	<mapID target="tomcat_websvc_jwsdp" url="tomcat/tomcat_websvc_jwsdp.html" />
+	<mapID target="tomcat_websvc_client_jwsdp" url="tomcat/tomcat_websvc_client_jwsdp.html" />
+	<!-- this is for the instance node -->
 	<mapID target="tomcat_internal_node" url="tomcat/tomcat_internal_node.html" />
 	<mapID target="tomcat_internal_props" url="tomcat/tomcat_internal_props.html" />
 	<mapID target="tomcat_plugin" url="tomcat/tomcat_plugintro.html" />
