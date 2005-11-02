@@ -76,37 +76,30 @@ public class EjbViewController {
     }
     
     public void delete(boolean deleteClasses) throws IOException {
-        boolean rollback = true;
-        JMIUtils.beginJmiTransaction(true);
-        try {
-            EnterpriseBeans beans = module.getEnterpriseBeans();
-            J2eeModuleProvider pwm = (J2eeModuleProvider) myProject.getLookup ().lookup (J2eeModuleProvider.class);
-            pwm.getConfigSupport().ensureConfigurationReady();
-            deleteTraces();
-            // for MDBs remove message destination from assembly descriptor
-            if (model instanceof MessageDriven) { 
-                try {
-                    AssemblyDescriptor assemblyDescriptor = module.getSingleAssemblyDescriptor();
-                    String mdLinkName = ((MessageDriven) model).getMessageDestinationLink();
-                    MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
-                    for (int i = 0; i < messageDestinations.length; i++) {
-                        if (messageDestinations[i].getMessageDestinationName().equals(mdLinkName)) {
-                            assemblyDescriptor.removeMessageDestination(messageDestinations[i]);
-                            break;
-                        }
+        EnterpriseBeans beans = module.getEnterpriseBeans();
+        J2eeModuleProvider pwm = (J2eeModuleProvider) myProject.getLookup ().lookup (J2eeModuleProvider.class);
+        pwm.getConfigSupport().ensureConfigurationReady();
+        deleteTraces();
+        // for MDBs remove message destination from assembly descriptor
+        if (model instanceof MessageDriven) { 
+            try {
+                AssemblyDescriptor assemblyDescriptor = module.getSingleAssemblyDescriptor();
+                String mdLinkName = ((MessageDriven) model).getMessageDestinationLink();
+                MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
+                for (int i = 0; i < messageDestinations.length; i++) {
+                    if (messageDestinations[i].getMessageDestinationName().equals(mdLinkName)) {
+                        assemblyDescriptor.removeMessageDestination(messageDestinations[i]);
+                        break;
                     }
-                } catch (VersionNotSupportedException ex) {
-                    ErrorManager.getDefault().notify(ex);
                 }
+            } catch (VersionNotSupportedException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-            beans.removeEjb(model);
-            writeDD();
-            if (deleteClasses) {
-                deleteClasses();
-            }
-            rollback = false;
-        } finally {
-            JMIUtils.endJmiTransaction(rollback);
+        }
+        beans.removeEjb(model);
+        writeDD();
+        if (deleteClasses) {
+            deleteClasses();
         }
     }
     
