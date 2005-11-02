@@ -245,6 +245,12 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
     }
     
     private void findResourcePath(String path, BaseDocument doc){
+        path = path.trim();
+        if (debug) debug("path: " + path);
+        if (path.indexOf('?') > 0){
+            // remove query from the path
+            path = path.substring(0, path.indexOf('?'));
+        }
         WebModule wm = WebModule.getWebModule(NbEditorUtilities.getFileObject(doc));
         if (wm != null){
             FileObject docBase= wm.getDocumentBase();
@@ -252,18 +258,33 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             if (fo == null){
                 // maybe an action
                 String servletMapping = StrutsConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor());
-                if (servletMapping != null && servletMapping.lastIndexOf('.')>0){
-                    String extension = servletMapping.substring(servletMapping.lastIndexOf('.'));
-                    String actionPath;
-                    if (path.endsWith(extension))
-                        actionPath = path.substring(0, path.length()-extension.length());
-                    else
-                        actionPath = path;
-                    ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-                    int offset = findDefinitionInSection(sup, "action-mappings","action","path", actionPath);
-                    if (offset > 0){
-                        JTextComponent target = Utilities.getFocusedComponent();
-                        target.setCaretPosition(offset);
+                if (servletMapping != null){
+                    String actionPath = null;
+                    if (servletMapping != null && servletMapping.lastIndexOf('.')>0){
+                        // the mapping is in *.xx way
+                        String extension = servletMapping.substring(servletMapping.lastIndexOf('.'));
+                        if (path.endsWith(extension))
+                            actionPath = path.substring(0, path.length()-extension.length());
+                        else
+                            actionPath = path;
+                    }
+                    else{
+                        // the mapping is /xx/* way
+                        servletMapping = servletMapping.trim();
+                        String prefix = servletMapping.substring(0, servletMapping.length()-2);
+                        if (path.startsWith(prefix))
+                            actionPath = path.substring(prefix.length(), path.length());
+                        else
+                            actionPath = path;
+                    }
+                    if (debug) debug (" actionPath: " + actionPath);
+                    if(actionPath != null){
+                        ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+                        int offset = findDefinitionInSection(sup, "action-mappings","action","path", actionPath);
+                        if (offset > 0){
+                            JTextComponent target = Utilities.getFocusedComponent();
+                            target.setCaretPosition(offset);
+                        }
                     }
                 }
             }
