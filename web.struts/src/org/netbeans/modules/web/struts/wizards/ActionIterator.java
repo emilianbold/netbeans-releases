@@ -80,7 +80,7 @@ public class ActionIterator implements TemplateWizard.Iterator {
             log ("\tsourceGroups.length: " + sourceGroups.length);  //NOI18N
         }
         
-        WizardDescriptor.Panel secondPanel = new ActionPanel(project);
+        WizardDescriptor.Panel secondPanel = new ActionPanel(project, wizard);
         WizardDescriptor.Panel thirdPanel = new ActionPanel1(project);
         
         panels = new WizardDescriptor.Panel[] {

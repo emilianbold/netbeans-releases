@@ -13,15 +13,12 @@
 
 package org.netbeans.modules.web.struts.wizards;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
+import org.openide.util.NbBundle;
 
 public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider {
     
@@ -130,6 +127,18 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
     // End of variables declaration//GEN-END:variables
  
     boolean valid(WizardDescriptor wizardDescriptor) {
+        String superclass = (String) jComboBoxSuperclass.getEditor().getItem();
+        String configFile = (String) jComboBoxConfigFile.getSelectedItem();
+        
+        if (superclass == null || superclass.trim().equals("")){
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoSuperClassSelected"));
+        }
+        if (configFile == null || configFile.trim().equals("")){
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));
+            return false;
+        }
         return true;
     }
     

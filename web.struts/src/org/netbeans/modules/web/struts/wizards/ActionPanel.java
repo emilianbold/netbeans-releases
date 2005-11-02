@@ -34,8 +34,9 @@ public class ActionPanel implements WizardDescriptor.Panel, WizardDescriptor.Fin
     private Project project;
 
     /** Creates a new instance of ActionPanel */
-    public ActionPanel(Project project) {
+    public ActionPanel(Project project, WizardDescriptor wizardDescriptor) {
         this.project=project;
+        this.wizardDescriptor = wizardDescriptor;
     }
     
     Project getProject() {
