@@ -35,6 +35,8 @@
         </tocitem>
         <tocitem text="Deploying to the Tomcat Web Server">
 	<tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
+	<tocitem text="Deploying a Web Service to the Tomcat Web Server" target="tomcat_websvc" />
+	<tocitem text="Consuming a Web Service Client via the Tomcat Web Server" target="tomcat_websvc_client" />
 	<tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
 	<tocitem text="Writing Ant Targets to Deploy to Tomcat Web Server 4" target="tomcat_setup_unsupported" />
         </tocitem>
