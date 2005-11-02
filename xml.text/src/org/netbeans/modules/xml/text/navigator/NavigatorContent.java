@@ -129,6 +129,7 @@ public class NavigatorContent extends JPanel   {
             public void run() {
                 removeAll();
                 add(ui, BorderLayout.CENTER);
+                revalidate();
             }
         });
     }
