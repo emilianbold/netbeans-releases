@@ -417,6 +417,29 @@ Microsystems, Inc. All Rights Reserved.
         </nbjpdareload>
     </target>
 
+    <target name="profile-test-single" depends="init,test-init,test-build">
+        <fail unless="profile.class">Must set profile.class</fail>
+        <mkdir dir="${build.test.unit.results.dir}"/>
+        <nbprofiledirect
+            jvmargsproperty="profiler.jvmargs"
+            >
+            <classpath refid="test.unit.run.cp"/>
+        </nbprofiledirect>
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}">
+            <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
+            <jvmarg value="${profiler.info.jvmargs.agent}"/>
+            <jvmarg line="${profiler.info.jvmargs}"/>
+            <test name="${profile.class}"/>
+            <classpath refid="test.unit.run.cp"/>
+            <syspropertyset refid="test.unit.properties"/>
+            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
+            <jvmarg value="-ea"/>
+            <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+        </junit>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+    
     <target name="arch" depends="init" description="Process an arch.xml, creating it if it does not yet exist.">
         <fail unless="javadoc.arch">You must define e.g. javadoc.arch=$${basedir}/arch.xml in project.properties</fail>
         <mkdir dir="build"/>
