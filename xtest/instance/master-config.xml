@@ -77,6 +77,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
         <!-- removed (not runnable): html, schema2beans -->
         <module name="xml/text-edit" testtypes="unit" attributes="stable"/>
+	<module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
 
         <!-- these two need depend on each other -->
         <module name="openide/execution" testtypes="unit" attributes="stable"/>
