@@ -63,7 +63,21 @@ final class ProxyNode extends AbstractNode {
                         } else if (PROP_PARENT_NODE.equals(nm)) {
                             //Not interesting to property sheet
                         } else {
-                            firePropertyChange(pce.getPropertyName(), pce.getOldValue(), pce.getNewValue());
+                            Node.PropertySet[] pss = getPropertySets();
+                            boolean exists = false;
+
+                            for (int i = 0; i < pss.length && !exists; i++) {
+                                Node.Property[] ps = pss[i].getProperties();
+
+                                for (int j = 0; j < ps.length && !exists; j++) {
+                                    if (ps[j].getName().equals(nm)) {
+                                        exists = true;
+                                    }
+                                }
+                            }
+                            if( exists ) {
+                                firePropertyChange(pce.getPropertyName(), pce.getOldValue(), pce.getNewValue());
+                            }
                         }
                     }
 
