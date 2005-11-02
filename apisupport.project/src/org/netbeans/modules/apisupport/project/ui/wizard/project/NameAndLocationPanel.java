@@ -14,12 +14,14 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
@@ -34,10 +36,13 @@ import org.openide.util.Utilities;
  */
 final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
+    private static final String PROJECT_TEMPLATES_DIR = "Templates/Project"; // NOI18N
+    private static final String DEFAULT_CATEGORY_PATH = PROJECT_TEMPLATES_DIR + "/Other"; // NOI18N
+    
     private NewProjectIterator.DataModel data;
     
     /** Creates new NameAndLocationPanel */
-    public NameAndLocationPanel(WizardDescriptor setting, NewProjectIterator.DataModel data) {
+    NameAndLocationPanel(WizardDescriptor setting, NewProjectIterator.DataModel data) {
         super(setting);
         this.data = data;
         initComponents();
@@ -58,10 +63,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         txtName.getDocument().addDocumentListener(dListener);
         txtDisplayName.getDocument().addDocumentListener(dListener);
         if (comCategory.getEditor().getEditorComponent() instanceof JTextField) {
-            JTextField txt = (JTextField)comCategory.getEditor().getEditorComponent();
+            JTextField txt = (JTextField) comCategory.getEditor().getEditorComponent();
             txt.getDocument().addDocumentListener(dListener);
         }
-        
         if (comPackageName.getEditor().getEditorComponent() instanceof JTextField) {
             JTextField txt = (JTextField)comPackageName.getEditor().getEditorComponent();
             txt.getDocument().addDocumentListener(dListener);
@@ -72,16 +76,16 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         updateData();
     }
     
+    private String getCategoryPath() {
+        String path = UIUtil.getSFSPath(comCategory, PROJECT_TEMPLATES_DIR);
+        return path == null ? DEFAULT_CATEGORY_PATH : path;
+    }
+    
     private void updateData() {
         data.setPackageName(comPackageName.getEditor().getItem().toString());
         data.setName(txtName.getText().trim());
         data.setDisplayName(txtDisplayName.getText().trim());
-        Object item = comCategory.getSelectedItem();
-        if (item != null && item instanceof UIUtil.LayerItemPresenter) {
-            data.setCategory(((UIUtil.LayerItemPresenter) item).getFullPath());
-        } else {
-            data.setCategory("Templates/Project/Other"); //NOI18N
-        }
+        data.setCategory(getCategoryPath());
         NewProjectIterator.generateFileChanges(data);
         CreatedModifiedFiles fls = data.getCreatedModifiedFiles();
         createdFilesValue.setText(generateText(fls.getCreatedPaths()));
@@ -114,13 +118,16 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("ERR_Package_Invalid"));
             return;
         }
-        
+        if (!Util.isValidSFSPath(getCategoryPath())) {
+            setErrorMessage(getMessage("ERR_Category_Invalid"));
+            return;
+        }
         setErrorMessage(null);
     }
     
     private void loadCombo() {
         comCategory.setModel(UIUtil.createLayerPresenterComboModel(
-                data.getProject(), "Templates/Project")); // NOI18N
+                data.getProject(), PROJECT_TEMPLATES_DIR));
     }
     
     protected HelpCtx getHelp() {
@@ -196,6 +203,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(lblCategory, gridBagConstraints);
 
+        comCategory.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -294,8 +302,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.weightx = 1.0;
         add(modifiedFilesValue, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameAndLocationPanel"));

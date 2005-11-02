@@ -50,11 +50,18 @@ public final class CustomizerComponentFactory {
     public static final String WAIT_VALUE =
             NbBundle.getMessage(CustomizerDisplay.class, "ComponentFactory_please_wait");
     
+    /** Generally usable in conjuction with {@link #COMBO_WAIT_MODEL}. */
+    public static final String EMPTY_VALUE =
+            NbBundle.getMessage(CustomizerDisplay.class, "LBL_Empty");
+    
     /**
      * Use this model in situation when you need to populate combo in the
      * background. The only item in this model is {@link #WAIT_VALUE}.
      */
     public static final ComboBoxModel COMBO_WAIT_MODEL = new DefaultComboBoxModel(new Object[] { WAIT_VALUE });
+    
+    /** The only item in this model is {@link #EMPTY_MODEL}. */
+    public static final ComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel(new Object[] { EMPTY_VALUE });
     
     /**
      * Use this model in situation when you need to populate list in the
@@ -478,4 +485,5 @@ public final class CustomizerComponentFactory {
             return result;
         }
     }
+    
 }
