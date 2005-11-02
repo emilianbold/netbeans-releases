@@ -750,6 +750,9 @@ copying libraries to the cluster, etc.
 profile - used from inside the IDE if NetBeans's profiler is installed to 
 profile the entire application
 
+profile-test-single - run one unit test under the profiler. Available
+from the IDE's menus if the NetBeans's profiler is installed.
+
 release - copies contents of ${release.dir} to ${cluster}.
 
 reload - reloads the module in the target IDE/app to try out changes interactively.
