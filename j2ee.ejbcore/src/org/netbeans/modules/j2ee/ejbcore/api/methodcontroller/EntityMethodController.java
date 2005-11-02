@@ -18,6 +18,7 @@ import java.util.*;
 import java.rmi.RemoteException;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.jmi.javamodel.ClassMember;
 import org.netbeans.jmi.javamodel.Field;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
@@ -155,7 +156,7 @@ public class EntityMethodController extends AbstractMethodController {
                 if (me != null) {
                     JavaClass declaringClass = (JavaClass) me.getDeclaringClass();
                     registerClassForSave(declaringClass);
-                    declaringClass.getContents().remove(method);
+                    declaringClass.getFeatures().remove(me);
                 }
             }
             if (hasRemote()) {
@@ -163,7 +164,7 @@ public class EntityMethodController extends AbstractMethodController {
                 if (me != null) {
                     JavaClass declaringClass = (JavaClass) me.getDeclaringClass();
                     registerClassForSave(declaringClass);
-                    declaringClass.getContents().remove(method);
+                    declaringClass.getContents().remove(me);
                 }
             }
             // remove get/set<field> from main bean class
