@@ -30,6 +30,7 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -127,6 +128,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                             // not be ended with slash. Fix that.
                             assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
                             entry = new URL(entry.toExternalForm() + "/"); // NOI18N
+                        }
+                        else if (f.isFile()) {
+                            ErrorManager.getDefault().log(ErrorManager.ERROR,"ProjectClassPathImplementation: file: "+f.getAbsolutePath()
+                            +" is not a valid archive file.");   //NOI18N
+                            continue;
                         }
                         result.add(ClassPathSupport.createResource(entry));
                     } catch (MalformedURLException mue) {
