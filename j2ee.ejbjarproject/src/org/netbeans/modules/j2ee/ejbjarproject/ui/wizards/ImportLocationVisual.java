@@ -48,6 +48,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -465,8 +466,22 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
         } else {
-            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+            // honor the contract in issue 58987
+            File currentDirectory = null;
+            FileObject existingSourcesFO = Templates.getExistingSourcesFolder(wizardDescriptor);
+            if (existingSourcesFO != null) {
+                File existingSourcesFile = FileUtil.toFile(existingSourcesFO);
+                if (existingSourcesFile != null && existingSourcesFile.isDirectory()) {
+                    currentDirectory = existingSourcesFile;
+                }
+            }
+            if (currentDirectory != null) {
+                chooser.setCurrentDirectory(currentDirectory);
+            } else {
+                chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+            }
         }
+        
         chooser.setDialogTitle(NbBundle.getMessage(ImportLocationVisual.class, "LBL_SelectExistingLocation")); // NOI18N
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
