@@ -18,11 +18,11 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.openide.nodes.Node;
 
 import java.io.File;
-import java.awt.event.ActionEvent;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,8 +47,8 @@ public class DiffAction extends AbstractSystemAction {
         return "CTL_MenuItem_Diff";  // NOI18N
     }
 
-    protected int getFileEnabledStatus() {
-        return enabledForStatus;
+    protected boolean enable(Node[] nodes) {
+        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), enabledForStatus).getNodes().length > 0;
     }
 
     public void performCvsAction(Node[] nodes) {

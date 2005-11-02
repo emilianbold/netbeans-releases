@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
@@ -42,15 +43,10 @@ public class GetCleanAction extends AbstractSystemAction {
         return "CTL_MenuItem_GetClean";  // NOI18N
     }
 
-    protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_IN_REPOSITORY & 
-                ~FileInformation.STATUS_VERSIONED_UPTODATE;
+    protected boolean enable(Node[] nodes) {
+        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).getNodes().length > 0;
     }
     
-    protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
-    }
-
     protected boolean asynchronous() {
         return false;
     }

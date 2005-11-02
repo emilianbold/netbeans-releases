@@ -56,12 +56,8 @@ public class CommitAction extends AbstractSystemAction {
         return "CTL_MenuItem_Commit";  // NOI18N
     }
 
-    protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_LOCAL_CHANGE;
-    }
-
-    protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    protected boolean enable(Node[] nodes) {
+        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).getNodes().length > 0;
     }
 
     /**

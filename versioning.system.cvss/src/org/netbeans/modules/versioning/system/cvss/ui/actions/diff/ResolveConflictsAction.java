@@ -17,6 +17,7 @@ import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.NotifyDescriptor;
@@ -25,7 +26,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import java.io.File;
-import java.awt.event.ActionEvent;
 
 /**
  * Opens the Visual Merge component. 
@@ -34,8 +34,6 @@ import java.awt.event.ActionEvent;
  */
 public class ResolveConflictsAction extends AbstractSystemAction {
     
-    private static final int enabledForStatus = FileInformation.STATUS_VERSIONED_CONFLICT;  
-
     public ResolveConflictsAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
@@ -45,12 +43,8 @@ public class ResolveConflictsAction extends AbstractSystemAction {
         return "CTL_MenuItem_ResolveConflicts";
     }
 
-    protected int getFileEnabledStatus() {
-        return enabledForStatus;
-    }
-
-    protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    protected boolean enable(Node[] nodes) {
+        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_VERSIONED_CONFLICT).getNodes().length > 0;
     }
 
     public void performCvsAction(Node[] nodes) {
