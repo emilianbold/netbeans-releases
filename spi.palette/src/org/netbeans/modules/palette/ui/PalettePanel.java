@@ -459,9 +459,10 @@ public class PalettePanel extends JPanel implements Scrollable {
         
         public Dimension preferredLayoutSize(Container parent) {
             int height = 0;
+            int width = getWidth();
             for( int i=0; i<descriptors.length; i++ ) {
                 CategoryDescriptor descriptor = descriptors[i];
-                height += descriptor.getPreferredHeight()+1;
+                height += descriptor.getPreferredHeight( width )+1;
             }
             return new Dimension( 10 /* not used - tracks viewports width*/, height );
         }

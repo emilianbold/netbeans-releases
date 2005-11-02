@@ -191,9 +191,9 @@ class CategoryDescriptor implements CategoryListener {
         return wholePanel;
     }
     
-    int getPreferredHeight() {
+    int getPreferredHeight( int width ) {
         return isOpened() ?
-            getComponent().getPreferredSize().height :
+            itemsList.getPreferredHeight( width ) + categoryButton.getPreferredSize().height :
             categoryButton.getPreferredSize().height;
     }
 
