@@ -33,25 +33,24 @@ import org.openide.util.Utilities;
  */
 public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     
-    private static final String TAG_16 = "/org/netbeans/modules/xml/text/navigator/resources/tag.png";
-    private static final String PI_16 = "/org/netbeans/modules/xml/text/navigator/resources/xml_declaration.png";
-    private static final String DOCTYPE_16 = "/org/netbeans/modules/xml/text/navigator/resources/doc_type.png";
-    private static final String CDATA_16 = "/org/netbeans/modules/xml/text/navigator/resources/cdata.png";
+    private static final String TAG_16 = "org/netbeans/modules/xml/text/navigator/resources/tag.png";
+    private static final String PI_16 = "org/netbeans/modules/xml/text/navigator/resources/xml_declaration.png";
+    private static final String DOCTYPE_16 = "org/netbeans/modules/xml/text/navigator/resources/doc_type.png";
+    private static final String CDATA_16 = "org/netbeans/modules/xml/text/navigator/resources/cdata.png";
     
     private static final String ERROR_16 = "org/netbeans/modules/xml/text/navigator/resources/badge_error.png";
     
-    private static final Image ERROR_IMAGE = Utilities.loadImage(ERROR_16, true);
+    private final Image ERROR_IMAGE = Utilities.loadImage(ERROR_16, true);
    
-    private static final Icon[] TAG_ICON = new Icon[]{getImageIcon(TAG_16, false), getImageIcon(TAG_16, true)};
-    private static final Icon[] PI_ICON = new Icon[]{getImageIcon(PI_16, false), getImageIcon(PI_16, true)};
-    private static final Icon[] DOCTYPE_ICON = new Icon[]{getImageIcon(DOCTYPE_16, false), getImageIcon(DOCTYPE_16, true)};
-    private static final Icon[] CDATA_ICON = new Icon[]{getImageIcon(CDATA_16, false), getImageIcon(CDATA_16, true)};
-    
+    private final Icon[] TAG_ICON = new Icon[]{getImageIcon(TAG_16, false), getImageIcon(TAG_16, true)};
+    private final Icon[] PI_ICON = new Icon[]{getImageIcon(PI_16, false), getImageIcon(PI_16, true)};
+    private final Icon[] DOCTYPE_ICON = new Icon[]{getImageIcon(DOCTYPE_16, false), getImageIcon(DOCTYPE_16, true)};
+    private final Icon[] CDATA_ICON = new Icon[]{getImageIcon(CDATA_16, false), getImageIcon(CDATA_16, true)};
+     
     private HtmlRenderer.Renderer renderer;
     
     public NavigatorTreeCellRenderer() {
         super();
-        
         renderer = HtmlRenderer.createRenderer();
         renderer.setHtml(true);
     }
@@ -87,8 +86,8 @@ public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
         renderer.setIcon(icons[containsError ? 1 : 0]);
     }
     
-    private static ImageIcon getImageIcon(String name, boolean error){
-        ImageIcon icon = new ImageIcon(NavigatorTreeCellRenderer.class.getResource(name));
+    private ImageIcon getImageIcon(String name, boolean error){
+        ImageIcon icon = new ImageIcon(Utilities.loadImage(name));
         if(error)
             return new ImageIcon(Utilities.mergeImages( icon.getImage(), ERROR_IMAGE, 15, 7 ));
         else
