@@ -44,7 +44,7 @@ import org.openide.util.LookupListener;
  *
  * @author Jaroslav Tulach
  */
-public class FileEntityResolverTest extends NbTestCase 
+public class FileEntityResolverTest extends org.netbeans.core.LoggingTestCaseHid 
 implements LookupListener, ChangeListener {
     private FileObject fo;
     private Lenka loader;
