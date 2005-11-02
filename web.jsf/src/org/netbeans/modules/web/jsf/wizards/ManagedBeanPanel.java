@@ -36,8 +36,9 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
     
     private Project project;
     /** Create the wizard panel descriptor. */
-    public ManagedBeanPanel(Project project) {
+    public ManagedBeanPanel(Project project, WizardDescriptor wizardDescriptor) {
         this.project = project;
+        this.wizardDescriptor = wizardDescriptor;
     }
     
     public boolean isFinishPanel() {

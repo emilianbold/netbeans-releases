@@ -55,7 +55,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
     private int index;
     
     private transient WizardDescriptor.Panel[] panels;
-
+    
     private transient boolean debug = false;
     
     public void initialize (TemplateWizard wizard) {
@@ -77,10 +77,9 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             log ("\tsourceGroups.length: " + sourceGroups.length);
         }
         
-        WizardDescriptor.Panel secondPanel = new ManagedBeanPanel(project);               
-        panels = new WizardDescriptor.Panel[] {
-            JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel),
-        };
+        WizardDescriptor.Panel secondPanel = new ManagedBeanPanel(project, wizard);               
+        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
+        panels = new WizardDescriptor.Panel[] { javaPanel };
         
         // Creating steps.
         Object prop = wizard.getProperty ("WizardPanel_contentData"); // NOI18N
@@ -110,7 +109,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         
         if (debug)
             log("instantiate"); //NOI18N
-        
+
         FileObject dir = Templates.getTargetFolder( wizard );
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wizard );

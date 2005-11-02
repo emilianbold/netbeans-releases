@@ -20,6 +20,7 @@ import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener {
@@ -128,12 +129,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     // End of variables declaration//GEN-END:variables
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-//        String superclass = (String) jComboBoxSuperclass.getEditor().getItem();
-//        String configFile = (String) jComboBoxConfigFile.getSelectedItem();
-        
-//        return (superclass != null && !superclass.trim().equals("") && configFile != null && !configFile.trim().equals(""));
-        
-        return true;
+        String configFile = (String) jComboBoxConfigFile.getSelectedItem();
+        boolean result = (configFile != null && !configFile.trim().equals("")); 
+        if (!result){
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfFileSelected"));
+        }
+        return result;
     }
     
     void read(WizardDescriptor settings) {
