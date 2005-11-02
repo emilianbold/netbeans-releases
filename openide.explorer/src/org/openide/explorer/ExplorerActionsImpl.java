@@ -10,31 +10,41 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.explorer;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Timer;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.ActionPerformer;
-import org.openide.util.datatransfer.*;
-
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import java.io.IOException;
-
-import java.util.HashMap;
-
-import javax.swing.*;
-
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ClipboardEvent;
+import org.openide.util.datatransfer.ClipboardListener;
+import org.openide.util.datatransfer.ExClipboard;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.MultiTransferObject;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * This class contains the default implementation of reactions to the standard
@@ -114,14 +124,14 @@ final class ExplorerActionsImpl {
         // Sets action state updater and registers listening on manager and
         // exclipboard.
         actionStateUpdater = new ActionStateUpdater();
-        manager.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(actionStateUpdater, manager));
+        manager.addPropertyChangeListener(WeakListeners.propertyChange(actionStateUpdater, manager));
 
         Clipboard c = getClipboard();
 
         if (c instanceof ExClipboard) {
             ExClipboard clip = (ExClipboard) c;
             clip.addClipboardListener(
-                (ClipboardListener) org.openide.util.WeakListeners.create(
+                (ClipboardListener) WeakListeners.create(
                     ClipboardListener.class, actionStateUpdater, clip
                 )
             );
@@ -313,16 +323,7 @@ final class ExplorerActionsImpl {
                 return;
             }
 
-            boolean flavorSupported = false;
-
-            try {
-                flavorSupported = trans.isDataFlavorSupported(ExTransferable.multiFlavor);
-            } catch (java.lang.Exception e) {
-                // patch to get the Netbeans start under Solaris
-                // [PENDINGworkaround]
-            }
-
-            if (flavorSupported) {
+            if (trans.isDataFlavorSupported(ExTransferable.multiFlavor)) {
                 // The node did not accept this multitransfer as is--try to break it into
                 // individual transfers and paste them in sequence instead.
                 try {
@@ -365,12 +366,12 @@ final class ExplorerActionsImpl {
 
     /** If our clipboard is not found return the default system clipboard. */
     private static Clipboard getClipboard() {
-        Clipboard c = (java.awt.datatransfer.Clipboard) org.openide.util.Lookup.getDefault().lookup(
-                java.awt.datatransfer.Clipboard.class
+        Clipboard c = (Clipboard) Lookup.getDefault().lookup(
+                Clipboard.class
             );
 
         if (c == null) {
-            c = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+            c = Toolkit.getDefaultToolkit().getSystemClipboard();
         }
 
         return c;
@@ -452,7 +453,7 @@ final class ExplorerActionsImpl {
         public void actionPerformed(ActionEvent e) {
             PasteType[] arr = this.pasteTypes;
             throw new IllegalStateException(
-                "Should not be invoked at all. Paste types: " + arr == null ? null : java.util.Arrays.asList(arr).toString () // NOI18N
+                "Should not be invoked at all. Paste types: " + (arr == null ? null : Arrays.asList(arr)) // NOI18N
             );
         }
 
@@ -469,7 +470,7 @@ final class ExplorerActionsImpl {
     }
 
     /** Class which performs copy and cut actions */
-    private class CopyCutActionPerformer extends AbstractAction implements org.openide.util.actions.ActionPerformer {
+    private class CopyCutActionPerformer extends AbstractAction implements ActionPerformer {
         /** determine if adapter is used for copy or cut action. */
         private boolean copyCut;
 
@@ -485,7 +486,7 @@ final class ExplorerActionsImpl {
         }
 
         /** Perform copy or cut action. */
-        public void performAction(org.openide.util.actions.SystemAction action) {
+        public void performAction(SystemAction action) {
             Transferable trans = null;
             Node[] sel = manager.getSelectedNodes();
 
@@ -512,7 +513,7 @@ final class ExplorerActionsImpl {
         private Transferable getTransferableOwner(Node node) {
             try {
                 return copyCut ? node.clipboardCopy() : node.clipboardCut();
-            } catch (java.io.IOException e) {
+            } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 
                 return null;
@@ -542,7 +543,7 @@ final class ExplorerActionsImpl {
         }
 
         /** Perform delete action. */
-        public void performAction(org.openide.util.actions.SystemAction action) {
+        public void performAction(SystemAction action) {
             final Node[] sel = manager.getSelectedNodes();
 
             if ((sel == null) || (sel.length == 0)) {
@@ -556,7 +557,7 @@ final class ExplorerActionsImpl {
                     if (manager != null) {
                         manager.setSelectedNodes(new Node[] {  });
                     }
-                } catch (java.beans.PropertyVetoException e) {
+                } catch (PropertyVetoException e) {
                     // never thrown, setting empty selected nodes cannot be vetoed
                 }
 
@@ -607,20 +608,6 @@ final class ExplorerActionsImpl {
             return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
         }
 
-        /*
-        private String fullName(org.openide.loaders.DataObject obj) {
-            FileObject f = obj.getPrimaryFile();
-            if (f.isRoot()) {
-                try {
-                    return f.getFileSystem().getDisplayName();
-                } catch (FileStateInvalidException e) {
-                    return ""; //NOI18N
-                }
-            } else {
-                return f.toString();
-            }
-        }
-        */
         private void doDestroy(final Node[] sel) {
             for (int i = 0; i < sel.length; i++) {
                 try {
@@ -695,7 +682,7 @@ final class ExplorerActionsImpl {
     }
 
     /** Timer which fixes problem with running status (issue #29405). */
-    private static class FixIssue29405Timer extends javax.swing.Timer {
+    private static class FixIssue29405Timer extends Timer {
         private boolean running;
 
         public FixIssue29405Timer(int delay, ActionListener l) {

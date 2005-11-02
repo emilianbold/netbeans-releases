@@ -10,12 +10,36 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.explorer.view;
 
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.TreeNode;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -26,29 +50,6 @@ import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.ExTransferable.Multi;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
-
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragSource;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeSet;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.tree.TreeNode;
-
 
 /** Class that provides methods for common tasks needed during
 * drag and drop when working with explorer views.
@@ -299,17 +300,7 @@ final class DragDropUtilities extends Object {
     * @param trans transferable to discover
     */
     static PasteType[] getPasteTypes(Node node, Transferable trans) {
-        // find out if given transferable is multi
-        boolean isMulti = false;
-
-        try {
-            isMulti = trans.isDataFlavorSupported(ExTransferable.multiFlavor);
-        } catch (Exception e) {
-            // patch to get the Netbeans start under Solaris
-            // [PENDINGworkaround]
-        }
-
-        if (!isMulti) {
+        if (!trans.isDataFlavorSupported(ExTransferable.multiFlavor)) {
             // only single, so return paste types
             PasteType[] pt = null;
 
@@ -368,17 +359,7 @@ final class DragDropUtilities extends Object {
     * @param action drop action
     */
     static PasteType getDropType(Node node, Transferable trans, int action) {
-        // find out if given transferable is multi
-        boolean isMulti = false;
-
-        try {
-            isMulti = trans.isDataFlavorSupported(ExTransferable.multiFlavor);
-        } catch (Exception e) {
-            // patch to get the Netbeans start under Solaris
-            // [PENDINGworkaround]
-        }
-
-        if (!isMulti) {
+        if (!trans.isDataFlavorSupported(ExTransferable.multiFlavor)) {
             // only single, so return drop type
             PasteType pt = null;
 
@@ -494,7 +475,7 @@ final class DragDropUtilities extends Object {
 
         for (int i = 0; it.hasNext(); i++) {
             items_[i] = new JMenuItem();
-            org.openide.awt.Mnemonics.setLocalizedText(items_[i], ((PasteType) it.next()).getName());
+            Mnemonics.setLocalizedText(items_[i], ((PasteType) it.next()).getName());
             items_[i].addActionListener(aListener);
             menu.add(items_[i]);
         }
