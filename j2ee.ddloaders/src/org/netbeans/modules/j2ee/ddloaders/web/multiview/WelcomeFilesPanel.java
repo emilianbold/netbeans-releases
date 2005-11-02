@@ -49,6 +49,7 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     /** This will be called before model is changed from this panel
      */
     protected void signalUIChange() {
+        dObj.setChangedFromUI(false);
         dObj.modelUpdatedFromUI();
     }
 
@@ -59,6 +60,7 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     }
     
     private void setWelcomeFiles(WebApp webApp, String text) {
+        dObj.setChangedFromUI(true);
         if (text.length()==0) {
             webApp.setWelcomeFileList(null);
         } else {

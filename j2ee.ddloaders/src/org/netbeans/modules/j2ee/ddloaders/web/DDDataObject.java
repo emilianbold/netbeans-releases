@@ -805,4 +805,8 @@ public class DDDataObject extends  DDMultiViewDataObject
     public boolean isChangedFromUI() {
         return changedFromUI;
     }
+    
+    public void setChangedFromUI(boolean changedFromUI) {
+        this.changedFromUI=changedFromUI;
+    }
 }
