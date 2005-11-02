@@ -363,7 +363,7 @@ public final class CheckoutWizard implements ChangeListener{
                     File file = new File(path);
                     File parent = file.getParentFile();
                     if (parent != null && parent.exists() && parent.isDirectory()) {
-                        defaultDir = parent;
+                        defaultDir = file;
                         break;
                     }
                 }
