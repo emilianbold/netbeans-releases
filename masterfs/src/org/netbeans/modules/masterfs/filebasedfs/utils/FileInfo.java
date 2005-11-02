@@ -141,7 +141,7 @@ public final class FileInfo {
 
     public boolean isConvertibleToFileObject() {
         if (isConvertibleToFileObject == -1) {
-            isConvertibleToFileObject = (exists() && 
+            isConvertibleToFileObject = (exists() && !getFile().getName().equals(".nbattrs") &&
                     !WriteLockUtils.hasActiveLockFileSigns(getFile().getAbsolutePath()) && 
                     (getFile().getParent() != null || !isWindowsFloppy())) ?  1 : 0;
         }
