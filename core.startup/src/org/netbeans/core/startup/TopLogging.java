@@ -13,18 +13,24 @@
 
 package org.netbeans.core.startup;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.text.DateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
-
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  * A class that provides logging facility for the IDE - once instantiated, it
  * redirects the System.err into a log file.
- * @author Ian Formanek, Ales Novak, Jesse Glick
  */
 public class TopLogging
 {
@@ -53,7 +59,7 @@ public class TopLogging
         topLogging = this;
 
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
-        java.util.Date date = new java.util.Date();
+        Date date = new Date();
         if (logDir == null) {
             // no demultiplexing -- everything goes just to stderr.
             logPrintStream = System.err;
@@ -108,7 +114,7 @@ public class TopLogging
             try {
                 new TopLogging(CLIOptions.getLogDir());
             } catch (IOException x) {
-                org.openide.ErrorManager.getDefault().notify(x);
+                ErrorManager.getDefault().notify(x);
             }
         }
         return topLogging;
@@ -151,30 +157,35 @@ public class TopLogging
     public static void printSystemInfo(PrintStream ps) {
         String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
         String currentVersion = NbBundle.getMessage(TopLogging.class, "currentVersion", buildNumber );
-        ps.println("  Product Version       = " + currentVersion); // NOI18N
-        ps.println("  Operating System      = " + System.getProperty("os.name", "unknown")
+        ps.println("  Product Version         = " + currentVersion); // NOI18N
+        ps.println("  Operating System        = " + System.getProperty("os.name", "unknown")
                    + " version " + System.getProperty("os.version", "unknown")
                    + " running on " +  System.getProperty("os.arch", "unknown"));
-        ps.println("  Java; VM; Vendor      = " + System.getProperty("java.version", "unknown") + "; " +
+        ps.println("  Java; VM; Vendor; Home  = " + System.getProperty("java.version", "unknown") + "; " +
                    System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "") + "; " +
-                   System.getProperty("java.vendor", "unknown"));
-        //ps.println("  Java Vendor URL          = " + System.getProperty("java.vendor.url", "unknown"));
-        ps.println("  Java Home             = " + System.getProperty("java.home", "unknown"));
-        //ps.println("  Java Class Version       = " + System.getProperty("java.class.version", "unknown"));
-        ps.print  ("  System Locale; Encod. = " + Locale.getDefault()); // NOI18N
+                   System.getProperty("java.vendor", "unknown") + "; " +
+                   System.getProperty("java.home", "unknown"));
+        ps.print(  "  System Locale; Encoding = " + Locale.getDefault()); // NOI18N
         String branding = NbBundle.getBranding ();
         if (branding != null) {
             ps.print(" (" + branding + ")"); // NOI18N
         }
         ps.println("; " + System.getProperty("file.encoding", "unknown")); // NOI18N
-        ps.println("  Home Dir; Current Dir = " + System.getProperty("user.home", "unknown") + "; " +
+        ps.println("  Home Dir.; Current Dir. = " + System.getProperty("user.home", "unknown") + "; " +
                    System.getProperty("user.dir", "unknown"));
-        ps.println("  IDE Install; User Dir = " + CLIOptions.getHomeDir () + "; " + // NOI18N
-                   CLIOptions.getUserDir ()); // NOI18N
-        //ps.println("  System Directory         = " + Main.getSystemDir ()); // NOI18N
-        ps.println("  CLASSPATH             = " + System.getProperty("java.class.path", "unknown")); // NOI18N
-        ps.println("  Boot & ext classpath  = " + createBootClassPath()); // NOI18N
-        ps.println("  Dynamic classpath     = " + System.getProperty("netbeans.dynamic.classpath", "unknown")); // NOI18N
+        ps.print(  "  Installation; User Dir. = "); // NOI18N
+        String nbdirs = System.getProperty("netbeans.dirs");
+        if (nbdirs != null) { // noted in #67862: should show all clusters here.
+            StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
+            while (tok.hasMoreTokens()) {
+                ps.print(FileUtil.normalizeFile(new File(tok.nextToken())));
+                ps.print(File.pathSeparatorChar);
+            }
+        }
+        ps.println(CLIOptions.getHomeDir() + "; " + CLIOptions.getUserDir()); // NOI18N
+        ps.println("  Boot & Ext. Classpath   = " + createBootClassPath()); // NOI18N
+        ps.println("  Application Classpath   = " + System.getProperty("java.class.path", "unknown")); // NOI18N
+        ps.println("  Startup Classpath       = " + System.getProperty("netbeans.dynamic.classpath", "unknown")); // NOI18N
     }
 
     // Copied from NbClassPath:
