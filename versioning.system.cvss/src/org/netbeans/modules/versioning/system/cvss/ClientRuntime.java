@@ -244,6 +244,11 @@ public class ClientRuntime {
         String t9yRoot = System.getProperty("netbeans.t9y.cvs.connection.CVSROOT"); // NOI18N
         CVSRoot patchedCvsRoot = cvsRoot;
         if (t9yRoot != null) {
+            int idx = t9yRoot.indexOf(','); 
+            if (idx != -1) {
+                System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", t9yRoot.substring(idx + 1)); // NOI18N
+                t9yRoot = t9yRoot.substring(0, idx);
+            }
             try {
                 patchedCvsRoot = CVSRoot.parse(t9yRoot);
                 assert patchedCvsRoot.getRepository().equals(cvsRoot.getRepository());
