@@ -599,22 +599,20 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                     0, // dimCount
                     false);
             params.add(paramType);
-            doc.append("@param " + param.getParamName() + " <code>" +  // NOI18N
-                    param.getParamType() + "</code> " +  // NOI18N
-                    param.getParamDescription() +"\n"); // NOI18N
+            doc.append("@param " + param.getParamName() + " " +  // NOI18N
+                        param.getParamDescription() +"\n"); // NOI18N
         }
         
         ArrayList exceptions = new ArrayList();
         for (int i = 0; i < operation.getExceptionsSize(); i ++) {
             MBeanOperationException exception = operation.getException(i);
             exceptions.add(getTypeRef(pkg, exception.getExceptionClass()));
-            doc.append("@throws <code>" + exception.getExceptionClass() + "</code> " + // NOI18N 
+            doc.append("@throws " + exception.getExceptionClass() + " " + // NOI18N 
                     exception.getExceptionDescription() + "\n"); // NOI18N
         }
         
         if (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
-            doc.append("@return <code>" + operation.getReturnTypeName() +  // NOI18N
-                    "</code>\n"); // NOI18N
+            doc.append("@return " + operation.getReturnTypeName() +  "\n"); // NOI18N
         }
         
             Method method = pkg.getMethod().createMethod(
