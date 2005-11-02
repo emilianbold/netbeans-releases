@@ -512,7 +512,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         public void run() {
             Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
 
-            if (w.isAncestorOf(ComboInplaceEditor.this)) {
+            //in Java 1.5+ KeyboardFocusManager.getActiveWindow() may return null
+            if (null != w && w.isAncestorOf(ComboInplaceEditor.this)) {
                 if (isShowing() && !isPopupVisible()) {
                     log("Popup checker ensuring editor prepared or popup visible");
 
