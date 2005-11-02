@@ -35,6 +35,8 @@ import java.util.*;
 import java.util.List;
 import java.io.IOException;
 import java.io.File;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -228,7 +230,17 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
 
     public void messageSent(MessageEvent e) {
         if (e.isError()) {
-            errorMessages.add(e.getMessage());
+            String msg = e.getMessage();
+            if (msg == null) {
+                // null is not too descriptive, pass it's source
+                RuntimeException rex = new RuntimeException("Received null MessageEvent from:");
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                rex.printStackTrace(pw);
+                pw.close();
+                msg = sw.getBuffer().toString();
+            }
+            errorMessages.add(msg);
         }
         else if (e.getMessage().startsWith("W ")) { // NOI18N
             warningMessages.add(e.getMessage().substring(2));
