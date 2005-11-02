@@ -393,21 +393,23 @@ public final class FileUtil extends Object {
      * If you are running with the MasterFS module enabled, that will guarantee
      * that this method never returns null for a file which exists on disk.
      * </p>
-     * @param file a disk file (may or may not exist)
+     * @param file a disk file (may or may not exist). This file
+     * must be normalized {@link #normalizeFile normalized}.
      * @return a corresponding file object, or null if the file does not exist
      *         or there is no {@link URLMapper} available to convert it
-     * @throws IllegalArgumentException if the file is not {@link #normalizeFile normalized}
      * @since 4.29
      */
-    public static FileObject toFileObject(File file) throws IllegalArgumentException {
-        FileObject retVal = null;
-
-        if (!file.equals(normalizeFile(file))) {
+    public static FileObject toFileObject(File file) {
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts && !file.equals(normalizeFile(file))) {
             throw new IllegalArgumentException(
                 "Parameter file was not " + // NOI18N
                 "normalized. Was " + file + " instead of " + normalizeFile(file)
             ); // NOI18N
         }
+
+        FileObject retVal = null;
 
         try {
             URL url = fileToURL(file);
@@ -428,7 +430,7 @@ public final class FileUtil extends Object {
 
         return retVal;
     }
-
+        
     static URL fileToURL(File file) throws MalformedURLException {
         URL retVal = null;
 

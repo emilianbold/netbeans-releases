@@ -17,6 +17,22 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileUtil.toFileObject">
+            <api name="filesystems"/>
+            <summary> <code>IllegalArgumentException</code> isn't thrown anymore.</summary>
+            <version major="6" minor="3"/>
+            <date day="25" month="10" year="2005"/>
+            <author login="rmatous"/>
+            <compatibility  modification="yes"/>
+            <description>
+                <p>Because of performance reasons from method
+                <code>FileUtil.toFileObject</code> was removed piece of code
+                checking whether file was properly normalized and thus
+                <code>IllegalArgumentException</code> can't be thrown.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+        </change>
         <change id="no-static-file-ext-mappings">
             <api name="filesystems"/>
             <summary>Removed most static MIME type mappings</summary>
