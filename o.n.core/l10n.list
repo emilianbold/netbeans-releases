@@ -1,7 +1,6 @@
 core/src/**/Bundle.properties
 core/src/**/*.gif
 core/src/**/*.png
-core/src/org/netbeans/core/resources/templatesRootDescription.html
 core/bootstrap/src/**/Bundle.properties
 core/execution/src/**/Bundle.properties
 core/execution/src/**/*.gif

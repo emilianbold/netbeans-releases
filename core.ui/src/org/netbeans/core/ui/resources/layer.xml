@@ -253,8 +253,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Toolbars -->
     
     <folder name="Templates">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
         <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$Templates"/>
         
         <folder name="Services">

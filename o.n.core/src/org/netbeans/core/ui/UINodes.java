@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,36 +15,25 @@ package org.netbeans.core.ui;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
-import java.io.*;
+import javax.swing.Action;
 import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.core.NbPlaces;
-
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.modules.*;
-import org.openide.options.*;
-import org.openide.nodes.*;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.ReorderAction;
+import org.openide.actions.ToolsAction;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.nodes.Node.PropertySet;
-import org.openide.util.actions.*;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.datatransfer.NewType;
+import org.openide.util.actions.SystemAction;
 
-/** Set of basic nodes for the visualization of IDE state (originally org.netbeans.core.DesktopNode)
-*
-* @author Petr Hamernik, Dafe Simonek
-*/
-public final class UINodes extends Object {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 4457929339850358728L;
-
-    private static java.util.ResourceBundle bundle = NbBundle.getBundle (UINodes.class);
-
-    private final static String templatesIconURL = "org/netbeans/core/resources/templates.gif"; // NOI18N
-    private final static String templatesIcon32URL = "org/netbeans/core/resources/templates32.gif"; // NOI18N
+/**
+ * Set of basic nodes for the visualization of IDE state
+ * @author Petr Hamernik, Dafe Simonek
+ */
+public final class UINodes {
+    
     private final static String objectTypesIconURL = "org/netbeans/core/resources/objectTypes.gif"; // NOI18N
     private final static String objectTypesIcon32URL = "org/netbeans/core/resources/objectTypes32.gif"; // NOI18N
 
@@ -60,7 +49,7 @@ public final class UINodes extends Object {
     */
     public static Node createEnvironmentNode () {
         Node environmentNode = NbPlaces.getDefault().environment ().cloneNode ();
-        environmentNode.setShortDescription (bundle.getString ("CTL_Environment_Hint"));
+        environmentNode.setShortDescription(NbBundle.getMessage(UINodes.class, "CTL_Environment_Hint"));
         return environmentNode;
     }
 
@@ -69,17 +58,12 @@ public final class UINodes extends Object {
     */
     public static Node createSessionNode () {
         Node sessionNode = NbPlaces.getDefault().session ().cloneNode ();
-        sessionNode.setShortDescription (bundle.getString ("CTL_Session_Settings_Hint"));
+        sessionNode.setShortDescription(NbBundle.getMessage(UINodes.class, "CTL_Session_Settings_Hint"));
         return sessionNode;
     }
 
-    /** Creates template node.
-    */
-    public static Node createTemplate () {
-        return new TemplatesNode ();
-    }
-
     /** Creates object types node.
+     * @see "core/ui/src/org/netbeans/core/ui/resources/layer.xml"
     */
     public static Node createObjectTypes () {
         return new ObjectTypesNode ();
@@ -87,10 +71,6 @@ public final class UINodes extends Object {
 
 
     private static class IconSubstituteNode extends FilterNode {
-        /** generated Serialized Version UID */
-        static final long serialVersionUID = -2098259549820241091L;
-
-        private static SystemAction[] staticActions;
 
         /** icons for the IconSubstituteNode */
         private String iconURL, icon32URL;
@@ -118,16 +98,6 @@ public final class UINodes extends Object {
             return null;
         }
 
-        public SystemAction[] getActions () {
-            if (staticActions == null) {
-                staticActions = new SystemAction[] {
-                                    SystemAction.get(ToolsAction.class),
-                                    SystemAction.get(PropertiesAction.class)
-                                };
-            }
-            return staticActions;
-        }
-
         /** @return empty property sets. */
         public PropertySet[] getPropertySets () {
             return NO_PROPERTY_SETS;
@@ -146,79 +116,8 @@ public final class UINodes extends Object {
         }
     }
 
-    /** Node representing templates folder */
-    private static class TemplatesNode extends IconSubstituteNode {
-        /** generated Serialized Version UID */
-        static final long serialVersionUID = -8202001968004798680L;
-
-        private static SystemAction[] staticActions;
-        private DataFolder root;
-
-        public TemplatesNode () {
-            this (NbPlaces.getDefault().templates ().getNodeDelegate ());
-            root = NbPlaces.getDefault().templates ();
-        }
-
-        public TemplatesNode(Node ref) {
-            super(ref, templatesIconURL, templatesIcon32URL);
-            super.setDisplayName(bundle.getString("CTL_Templates_name"));
-            super.setShortDescription(bundle.getString("CTL_Templates_hint"));
-        }
-
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (TemplatesNode.class);
-        }
-        
-        public NewType[] getNewTypes () {
-            NewType type = new NewType () {
-                public String getName () {
-                    return NbBundle.getMessage (UINodes.class, "MSG_ActionName"); // NOI18N
-                }
-                
-                public void create () throws IOException {
-                    NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine (
-                            NbBundle.getMessage (UINodes.class, "MSG_FolderName"), // NOI18N
-                            NbBundle.getMessage (UINodes.class, "MSG_InputNameDialogTitle"), // NOI18N
-                            NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.QUESTION_MESSAGE);
-                    
-                    if (!NotifyDescriptor.OK_OPTION.equals (DialogDisplayer.getDefault ().notify (input))) {
-                        return;
-                    }
-                    String newFolderName = input.getInputText ();
-                    if (newFolderName.length () == 0) {
-                        // same as cancel
-                        return ;
-                    }
-                    if (root.getPrimaryFile ().getFileObject (newFolderName) != null) {
-                        DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (
-                                    NbBundle.getMessage (UINodes.class, "MSG_FolderExists", newFolderName))); // NOI18N
-                        return ;
-                    }
-                    DataFolder.create (root, newFolderName);
-                }
-            };
-            return new NewType[] {type};
-        }
-        
-        public SystemAction[] getActions () {
-            if (staticActions == null) {
-                staticActions = new SystemAction[] {
-                                    SystemAction.get(NewAction.class),
-                                    null,
-                                    SystemAction.get(PasteAction.class),
-                                };
-            }
-            return staticActions;
-        }
-    }
-
     /** Node representing object types folder */
     private static class ObjectTypesNode extends IconSubstituteNode {
-        /** generated Serialized Version UID */
-        static final long serialVersionUID = -8202001968004798680L;
-
-        private static SystemAction[] staticActions;
 
         public ObjectTypesNode() {
             this (LoaderPoolNode.getLoaderPoolNode());
@@ -228,16 +127,14 @@ public final class UINodes extends Object {
             super(ref, objectTypesIconURL, objectTypesIcon32URL);
         }
 
-        public SystemAction[] getActions () {
-            if (staticActions == null) {
-                staticActions = new SystemAction[] {
-                                    SystemAction.get(ReorderAction.class),
-                                    null,
-                                    SystemAction.get(ToolsAction.class),
-                                    SystemAction.get(PropertiesAction.class)
-                                };
-            }
-            return staticActions;
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                SystemAction.get(ReorderAction.class),
+                null,
+                SystemAction.get(ToolsAction.class),
+                SystemAction.get(PropertiesAction.class)
+            };
         }
     }
+    
 }
