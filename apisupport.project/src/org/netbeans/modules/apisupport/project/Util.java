@@ -47,15 +47,18 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+
 /**
  * Utility methods for the module.
  * @author Jesse Glick
  */
-public class Util {
+public final class Util {
     
     private Util() {}
     
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project"); // NOI18N
+    
+    private static final String SFS_VALID_PATH_RE = "(\\p{Alnum}|\\/|_)+"; // NOI18N
     
     // COPIED FROM org.netbeans.modules.project.ant:
     // (except for namespace == null support in findElement)
@@ -523,6 +526,10 @@ public class Util {
         String cnbdashes = dep.getModuleEntry().getCodeNameBase().replace('.', '-');
         URL[] roots = platform.getJavadocRoots();
         return roots == null ? null : findJavadocURL(cnbdashes, roots);
+    }
+    
+    public static boolean isValidSFSPath(final String path) {
+        return path.matches(SFS_VALID_PATH_RE);
     }
     
     private static URL findJavadocURL(final String cnbdashes, final URL[] roots) {

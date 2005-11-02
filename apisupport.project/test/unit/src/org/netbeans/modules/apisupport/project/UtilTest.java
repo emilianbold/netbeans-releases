@@ -33,6 +33,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
 /**
  * Tests {@link Util}.
  *
@@ -221,5 +222,17 @@ public class UtilTest extends TestBase {
         assertTrue(Util.isValidCodeNameBase("a"));
         assertTrue(Util.isValidCodeNameBase("a.b.c1"));
     }
-    
+
+    public void testIsValidSFSFolderName() throws Exception {
+        assertTrue(Util.isValidSFSPath("a"));
+        assertTrue(Util.isValidSFSPath("a/b/c"));
+        assertTrue(Util.isValidSFSPath("a/b/c_c/"));
+        assertTrue(Util.isValidSFSPath("/a/b/c_c"));
+        assertTrue(Util.isValidSFSPath("a/1a/b/c/1d_d/"));
+        assertTrue(Util.isValidSFSPath("_a/b/c_"));
+        assertFalse(Util.isValidSFSPath("a/b/c/dd+"));
+        assertFalse(Util.isValidSFSPath("a+b"));
+        assertFalse(Util.isValidSFSPath(""));
+        assertFalse(Util.isValidSFSPath(" "));
+    }
 }
