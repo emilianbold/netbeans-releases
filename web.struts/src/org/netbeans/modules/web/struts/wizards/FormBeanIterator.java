@@ -82,7 +82,7 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
             log ("\tsourceGroups.length: " + sourceGroups.length);  //NOI18N
         }
         
-        WizardDescriptor.Panel secondPanel = new FormBeanNewPanel(project);               
+        WizardDescriptor.Panel secondPanel = new FormBeanNewPanel(project, wizard);               
         panels = new WizardDescriptor.Panel[] {
             JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel),
         };

@@ -19,6 +19,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 public class FormBeanNewPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener {
@@ -107,7 +108,16 @@ public class FormBeanNewPanelVisual extends javax.swing.JPanel implements HelpCt
         String superclass = (String) jComboBoxSuperclass.getEditor().getItem();
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         
-        return (superclass != null && !superclass.trim().equals("") && configFile != null && !configFile.trim().equals(""));
+        if (superclass == null || superclass.trim().equals("")){
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    NbBundle.getMessage(FormBeanNewPanelVisual.class, "MSG_NoSuperClassSelected"));
+        }
+        if (configFile == null || configFile.trim().equals("")){
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    NbBundle.getMessage(FormBeanNewPanelVisual.class, "MSG_NoConfFileSelectedForBean"));
+            return false;
+        }
+        return true;
     }
     
     void read(WizardDescriptor settings) {

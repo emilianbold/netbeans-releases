@@ -36,8 +36,9 @@ final class FormBeanNewPanel implements WizardDescriptor.Panel, WizardDescriptor
     
     private Project project;
     /** Create the wizard panel descriptor. */
-    public FormBeanNewPanel(Project project) {
+    public FormBeanNewPanel(Project project, WizardDescriptor wizardDescriptor) {
         this.project = project;
+        this.wizardDescriptor = wizardDescriptor;
     }
     
     public boolean isFinishPanel() {
