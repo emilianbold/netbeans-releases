@@ -747,11 +747,11 @@ netbeans-extra - hook target: does nothing unless overridden, but called when
 building a module. Override to insert any additional build tasks you need to do:
 copying libraries to the cluster, etc.
 
-profile - used from inside the IDE if NetBeans's profiler is installed to 
-profile the entire application
+profile - used from inside the IDE (if the NetBeans profiler is installed) to
+profile the entire application.
 
-profile-test-single - run one unit test under the profiler. Available
-from the IDE's menus if the NetBeans's profiler is installed.
+profile-test-single - run one unit test under the profiler. Available from the
+IDE's menus if the NetBeans profiler is installed.
 
 release - copies contents of ${release.dir} to ${cluster}.
 
