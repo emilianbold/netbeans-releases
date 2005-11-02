@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -40,15 +39,7 @@ final class NewActionIterator extends BasicWizardIterator {
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();
-        String[] paths = cmf.getCreatedPaths();
-        Set set = new HashSet();
-        for (int i = 0; i < paths.length; i++) {
-            FileObject fo = data.getProject().getProjectDirectory().getFileObject(paths[i]);
-            if (fo != null && !isIcon(fo)) {
-                set.add(fo);
-            }
-        }
-        return set;
+        return getCreatedFiles(cmf, data.getProject());
     }
     
     private boolean isIcon(FileObject icon) {

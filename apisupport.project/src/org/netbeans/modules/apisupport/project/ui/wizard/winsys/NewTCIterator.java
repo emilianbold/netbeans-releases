@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
@@ -40,7 +39,7 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
-public class NewTCIterator extends BasicWizardIterator {
+final class NewTCIterator extends BasicWizardIterator {
 
     private static final long serialVersionUID = 1L;
     private NewTCIterator.DataModel data;
@@ -50,20 +49,9 @@ public class NewTCIterator extends BasicWizardIterator {
     }
     
     public Set instantiate() throws IOException {
-        assert data != null;
-        CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
-        if (fileOperations != null) {
-            fileOperations.run();
-        }
-        String[] paths = fileOperations.getCreatedPaths();
-        HashSet set = new HashSet();
-        for (int i =0; i < paths.length; i++) {
-            FileObject fo = data.getProject().getProjectDirectory().getFileObject(paths[i]);
-            if (fo != null) {
-                set.add(fo);
-            }
-        }
-        return set;
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        cmf.run();
+        return getCreatedFiles(cmf, data.getProject());
     }
     
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {

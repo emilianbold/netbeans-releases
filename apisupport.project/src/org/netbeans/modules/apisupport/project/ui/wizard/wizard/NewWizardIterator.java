@@ -14,12 +14,10 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 
 /**
  * Wizard for creating new Wizards.
@@ -40,13 +38,7 @@ final class NewWizardIterator extends BasicWizardIterator {
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();
-        String[] paths = cmf.getCreatedPaths();
-        Set set = new HashSet();
-        for (int i = 0; i < paths.length; i++) {
-            FileObject fo = data.getProject().getProjectDirectory().getFileObject(paths[i]);
-            set.add(fo);
-        }
-        return set;
+        return getCreatedFiles(cmf, data.getProject());
     }
     
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {

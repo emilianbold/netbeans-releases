@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
@@ -27,7 +26,7 @@ import org.openide.WizardDescriptor;
  *
  * @author Radek Matous
  */
-public class NewLibraryDescriptor extends BasicWizardIterator {
+final class NewLibraryDescriptor extends BasicWizardIterator {
     
     private static final long serialVersionUID = 1L;
     NewLibraryDescriptor.DataModel data;
@@ -37,30 +36,26 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
     }
     
     public Set instantiate() throws IOException {
-        assert data != null;
-        CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
-        if (fileOperations != null) { // XXX why would it be null??
-            fileOperations.run();
-        }
-        //TODO: if this returns empty list, it will never get to the list of recent items in New action popup
-        return new HashSet();
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        cmf.run();
+        return getCreatedFiles(cmf, data.getProject());
     }
     
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {
         data = new NewLibraryDescriptor.DataModel(wiz);
         return new BasicWizardIterator.Panel[] {
             new SelectLibraryPanel(wiz,data ),
-            new NameAndLocationPanel(wiz,data )
+                    new NameAndLocationPanel(wiz,data )
         };
     }
-
+    
     public void uninitialize(WizardDescriptor wiz) {
         super.uninitialize(wiz);
         data = null;
     }
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-
+        
         private Library library;
         private String libraryName;
         private String libraryDisplayName;
@@ -79,30 +74,31 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
         public void setLibrary(Library library) {
             this.library = library;
         }
-
+        
         public CreatedModifiedFiles getCreatedModifiedFiles() {
             return files;
         }
-
+        
         public void setCreatedModifiedFiles(CreatedModifiedFiles files) {
             this.files = files;
         }
-
+        
         public String getLibraryName() {
             return libraryName;
         }
-
+        
         public void setLibraryName(String libraryName) {
             this.libraryName = libraryName;
         }
-
+        
         public String getLibraryDisplayName() {
             return libraryDisplayName;
         }
-
+        
         public void setLibraryDisplayName(String libraryDisplayName) {
             this.libraryDisplayName = libraryDisplayName;
         }
-
+        
     }
+    
 }

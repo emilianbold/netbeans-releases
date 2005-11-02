@@ -15,31 +15,41 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Position;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Convenient class for implementing {@link org.openide.WizardDescriptor.InstantiatingIterator}
+ * Convenient class for implementing {@link org.openide.WizardDescriptor.InstantiatingIterator}.
  *
  * @author Radek Matous
  */
-abstract public class BasicWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public abstract class BasicWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     private transient int position = 0;
@@ -82,7 +92,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         protected abstract void readFromDataModel();
         
         protected abstract HelpCtx getHelp();
-  
+        
     }
     
     /** DataModel that is passed through individual panels.*/
@@ -161,7 +171,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
          * CreatedModifiedFiles are run, is copied (into the package) icon
          * representing given <code>origIconPath</code>. If the origIconPath is
          * already inside the project's source directory nothing happens.
-         * 
+         *
          * @return path of the icon relative to the project's source directory
          */
         public String addCreateIconOperation(CreatedModifiedFiles cmf, String origIconPath) {
@@ -266,6 +276,70 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     public final void addChangeListener(ChangeListener  l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
+    protected Set getCreatedFiles(final CreatedModifiedFiles cmf, final Project project) throws IOException {
+        String[] paths = cmf.getCreatedPaths();
+        Set set = new HashSet();
+        for (int i = 0; i < paths.length; i++) {
+            FileObject fo = project.getProjectDirectory().getFileObject(paths[i]);
+            formatFile(fo);
+            set.add(fo);
+        }
+        return set;
+    }
+    
+    private static BaseDocument getDocument(final FileObject fo) throws DataObjectNotFoundException, IOException {
+        BaseDocument doc = null;
+        DataObject dObj = DataObject.find(fo);
+        if (dObj != null) {
+            EditorCookie editor = (EditorCookie) dObj.getCookie(EditorCookie.class);
+            if (editor != null) {
+                doc = (BaseDocument) editor.openDocument();
+            }
+        }
+        return doc;
+    }
+    
+    // copy-pasted-adjusted from org.netbeans.editor.ActionFactory.FormatAction
+    private static void formatFile(final FileObject fo) {
+        BaseDocument doc = null;
+        try {
+            doc = BasicWizardIterator.getDocument(fo);
+            if (doc == null) {
+                return;
+            }
+            GuardedDocument gdoc = (doc instanceof GuardedDocument) ? (GuardedDocument) doc : null;
+            doc.atomicLock();
+            int startPos = 0;
+            Position endPosition = doc.createPosition(doc.getLength());
+            int pos = startPos;
+            if (gdoc != null) {
+                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+            }
+            
+            while (pos < endPosition.getOffset()) {
+                int stopPos = endPosition.getOffset();
+                if (gdoc != null) { // adjust to start of the next guarded block
+                    stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
+                    if (stopPos == -1) {
+                        stopPos = endPosition.getOffset();
+                    }
+                }
+                int reformattedLen = doc.getFormatter().reformat(doc, pos, stopPos);
+                pos = pos + reformattedLen;
+                if (gdoc != null) { // adjust to end of current block
+                    pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                }
+            }
+        } catch (Exception ex) {
+            // no disaster
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot reformat the file: " + fo.getPath()); // NOI18N
+        } finally {
+            if (doc != null) {
+                doc.atomicUnlock();
+            }
+        }
+    }
+    
     private static final class PrivateWizardPanel extends BasicWizardPanel {
         
         private BasicWizardIterator.Panel panel;
@@ -293,7 +367,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         
         public void storeSettings(Object settings) {
             WizardDescriptor wiz = (WizardDescriptor) settings;
-            if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue()) || 
+            if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue()) ||
                     WizardDescriptor.FINISH_OPTION.equals(wiz.getValue())) {
                 panel.storeToDataModel();
             }

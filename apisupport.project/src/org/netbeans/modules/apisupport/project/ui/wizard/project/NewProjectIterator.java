@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
@@ -51,32 +50,21 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Milos Kleint
  */
-public class NewProjectIterator extends BasicWizardIterator {
+final class NewProjectIterator extends BasicWizardIterator {
     
     private static final long serialVersionUID = 1L;
-    private NewProjectIterator.DataModel data = null;
+    private NewProjectIterator.DataModel data;
     
     public static NewProjectIterator createIterator() {
         return new NewProjectIterator();
     }
     
     public Set instantiate() throws IOException {
-        assert data != null;
-        CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
-        if (fileOperations != null) {
-            fileOperations.run();
-        }
-        String[] paths = fileOperations.getCreatedPaths();
-        HashSet set = new HashSet();
-        for (int i =0; i < paths.length; i++) {
-            FileObject fo = data.getProject().getProjectDirectory().getFileObject(paths[i]);
-            if (fo != null) {
-                set.add(fo);
-            }
-        }
-        return set;
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        cmf.run();
+        return getCreatedFiles(cmf, data.getProject());
     }
-    
+
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {
         data = new NewProjectIterator.DataModel(wiz);
         return new BasicWizardIterator.Panel[] {

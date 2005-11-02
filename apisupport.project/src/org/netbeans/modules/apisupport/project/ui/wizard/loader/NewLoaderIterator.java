@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,7 @@ import org.openide.xml.XMLUtil;
  * @author Milos Kleint
  */
 public class NewLoaderIterator extends BasicWizardIterator {
-
+    
     private static final long serialVersionUID = 1L;
     private NewLoaderIterator.DataModel data;
     
@@ -58,20 +57,9 @@ public class NewLoaderIterator extends BasicWizardIterator {
     }
     
     public Set instantiate() throws IOException {
-        assert data != null;
-        CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
-        if (fileOperations != null) {
-            fileOperations.run();
-        }
-        String[] paths = fileOperations.getCreatedPaths();
-        HashSet set = new HashSet();
-        for (int i =0; i < paths.length; i++) {
-            FileObject fo = data.getProject().getProjectDirectory().getFileObject(paths[i]);
-            if (fo != null) {
-                set.add(fo);
-            }
-        }
-        return set;
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        cmf.run();
+        return getCreatedFiles(cmf, data.getProject());
     }
     
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {
@@ -81,15 +69,15 @@ public class NewLoaderIterator extends BasicWizardIterator {
             new NameAndLocationPanel(wiz, data)
         };
     }
-
+    
     public void uninitialize(WizardDescriptor wiz) {
         super.uninitialize(wiz);
         data = null;
     }
-
+    
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-
+        
         private String prefix;
         private String iconPath;
         private String mimeType;
@@ -102,68 +90,68 @@ public class NewLoaderIterator extends BasicWizardIterator {
         DataModel(WizardDescriptor wiz) {
             super(wiz);
         }
-
+        
         public CreatedModifiedFiles getCreatedModifiedFiles() {
             return files;
         }
-
+        
         public void setCreatedModifiedFiles(CreatedModifiedFiles files) {
             this.files = files;
         }
-
+        
         public String getPrefix() {
             return prefix;
         }
-
+        
         public void setPrefix(String prefix) {
             this.prefix = prefix;
         }
-
+        
         public String getIconPath() {
             return iconPath;
         }
-
+        
         public void setIconPath(String iconPath) {
             this.iconPath = iconPath;
         }
-
+        
         public String getMimeType() {
             return mimeType;
         }
-
+        
         public void setMimeType(String mimeType) {
             this.mimeType = mimeType;
         }
-
+        
         public boolean isExtensionBased() {
             return extensionBased;
         }
-
+        
         public void setExtensionBased(boolean extensionBased) {
             this.extensionBased = extensionBased;
         }
-
+        
         public String getExtension() {
             return extension;
         }
-
+        
         public void setExtension(String extension) {
             this.extension = extension;
         }
-
+        
         public String getNamespace() {
             return namespace;
         }
-
+        
         public void setNamespace(String namespace) {
             this.namespace = namespace;
         }
-
+        
     }
     
     public static void generateFileChanges(DataModel model) {
         CreatedModifiedFiles fileChanges = new CreatedModifiedFiles(model.getProject());
-
+        
         String namePrefix = model.getPrefix();
         String packageName = model.getPackageName();
         final String mime = model.getMimeType();
@@ -199,7 +187,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         
         // 2. dataobject file
         final boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.+-])*)", //NOI18N
-                                               mime);
+                mime);
         if (isEditable) {
             StringBuffer editorBuf = new StringBuffer();
             editorBuf.append("        CookieSet cookies = getCookieSet();\n");//NOI18N
@@ -224,10 +212,10 @@ public class NewLoaderIterator extends BasicWizardIterator {
         // 4. mimetyperesolver file
         template = NewLoaderIterator.class.getResource("templateresolver.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "Resolver.xml", //NOI18N
-                                                     template,
-                                                     replaceTokens,
-                                                     NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix),//NOI18N
-                                                     null));
+                template,
+                replaceTokens,
+                NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix),//NOI18N
+                null));
         
         //5. update project.xml with dependencies
         ProjectXMLManager manager = new ProjectXMLManager(model.getProject().getHelper());
@@ -288,11 +276,11 @@ public class NewLoaderIterator extends BasicWizardIterator {
         // 6. update/create bundle file
         String bundlePath = model.getDefaultPackagePath("Bundle.properties"); // NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
-                                NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
+                NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
         
         // 7. register manifest entry
         boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
-                                               mime);
+                mime);
         String installBefore = null;
         if (isXml) {
             installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject"; //NOI18N
@@ -358,10 +346,10 @@ public class NewLoaderIterator extends BasicWizardIterator {
         Map attrs = new HashMap();
         attrs.put("template", Boolean.TRUE); // NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
-                                                     template,
-                                                     replaceTokens,
-                                                     NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix),
-                                                     attrs)); //NOI18N
+                template,
+                replaceTokens,
+                NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix),
+                attrs)); //NOI18N
         model.setCreatedModifiedFiles(fileChanges);
     }
     
@@ -414,7 +402,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
     
     private static String formatImageSnippet(String path) {
         if (path == null) {
-        // XXX Utilities is unconditionally imported
+            // XXX Utilities is unconditionally imported
             return "return super.getIcon(type); // TODO add a custom icon here\n"; //NOI18N
         }
         StringBuffer buff = new StringBuffer();
