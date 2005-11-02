@@ -14,19 +14,12 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
 import javax.swing.JButton;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
@@ -111,8 +104,6 @@ public class ServerInstance implements Node.Cookie {
         this.server = server;
         this.url = url;
         instanceProperties = new InstancePropertiesImpl(url);
-        // listen to debugger changes so that we can update server status accordingly
-        DebuggerManager.getDebuggerManager().addDebuggerListener(new DebuggerStateListener());
     }
     
     /** Return this server instance InstanceProperties. */
@@ -540,9 +531,9 @@ public class ServerInstance implements Node.Cookie {
                     }
                 }
             } else {
-                String host = stripHostName(attCookie.getHostName());
+                String host = attCookie.getHostName();
                 if (host == null) continue;
-                if (host.equalsIgnoreCase(stripHostName(sdi.getHost()))) {
+                if (host.equalsIgnoreCase(sdi.getHost())) {
                     if (attCookie.getPortNumber() == sdi.getPort()) {
                         Object d = s.lookupFirst(null, JPDADebugger.class);
                         if (d != null) {
@@ -555,6 +546,7 @@ public class ServerInstance implements Node.Cookie {
                 }
             }
         }
+        
         return false;
     }
     
@@ -1515,67 +1507,4 @@ public class ServerInstance implements Node.Cookie {
         return t;
     }
     
-    /** Take for example myhost.xyz.org and return myhost */
-    private String stripHostName(String host) {
-        if (host == null) {
-            return null;
-        }
-        int idx = host.indexOf('.');
-        return idx != -1 ? host.substring(0, idx) : host;
-    }
-    
-    /** DebugStatusListener listens to debugger state changes and calls refresh() 
-     *  if needed. If the debugger stops at a breakpoint, the server status will
-     *  thus change to suspended, etc. */
-    private class DebuggerStateListener extends DebuggerManagerAdapter {
-            
-            private RequestProcessor.Task refreshTask;
-            
-            public void sessionAdded(Session session) {
-                Target target = _retrieveTarget(null);
-                ServerDebugInfo sdi = getServerDebugInfo(target);
-                if (sdi == null) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + ServerInstance.this);
-                    return; // give it up
-                }
-                AttachingDICookie attCookie = (AttachingDICookie)session.lookupFirst(null, AttachingDICookie.class);
-                if (attCookie == null) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "AttachingDICookie cannot be found for: " + ServerInstance.this);
-                    return; // give it up
-                }
-                if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {
-                    String shmem = attCookie.getSharedMemoryName();
-                    if (shmem != null && shmem.equalsIgnoreCase(sdi.getShmemName())) {
-                        registerListener(session);
-                    }
-                } else {
-                    String host = stripHostName(attCookie.getHostName());                    
-                    if (host != null && host.equalsIgnoreCase(stripHostName(sdi.getHost()))) {
-                        if (attCookie.getPortNumber() == sdi.getPort()) {
-                            registerListener(session);
-                        }
-                    }
-                }
-            }
-            
-            private void registerListener(Session session) {
-                JPDADebugger jpda = (JPDADebugger)session.lookupFirst(null, JPDADebugger.class);
-                if (jpda != null) {
-                    jpda.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if (refreshTask == null) {
-                                refreshTask = RequestProcessor.getDefault().create(new Runnable() {
-                                    public void run() {
-                                        refresh();
-                                    }
-                                });
-                            }
-                            // group fast arriving refresh calls
-                            refreshTask.schedule(500);
-                        }
-                    });
-                }
-                
-            }
-        }
 }
