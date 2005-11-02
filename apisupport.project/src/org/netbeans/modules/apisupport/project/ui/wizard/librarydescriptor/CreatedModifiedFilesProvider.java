@@ -197,6 +197,8 @@ final class CreatedModifiedFilesProvider  {
         }
         
         public void run() throws java.io.IOException {
+            Collection files = Collections.list(folderToZip.getChildren(true));
+            if (files.isEmpty()) return;
             FileObject prjDir = getProject().getProjectDirectory();
             assert prjDir != null;
             
@@ -212,7 +214,7 @@ final class CreatedModifiedFilesProvider  {
             try {
                 fLock = zipedTarget.lock();
                 os = zipedTarget.getOutputStream(fLock);
-                createZipFile(os, folderToZip, Collections.list(folderToZip.getData(true)));
+                createZipFile(os, folderToZip, files);
             } finally {
                 if (os != null) {
                     os.close();
@@ -231,15 +233,25 @@ final class CreatedModifiedFilesProvider  {
                 Iterator it = files.iterator();
                 while (it.hasNext()) {
                     FileObject fo = (FileObject)it.next();
-                    ZipEntry entry = new ZipEntry(FileUtil.getRelativePath(root, fo));
+                    String relativePath = FileUtil.getRelativePath(root, fo);
+                    if (fo.isFolder()) {
+                        if (fo.getChildren().length > 0) {
+                            continue;
+                        } else if (!relativePath.endsWith("/")) {
+                            relativePath += "/";
+                        }
+                    }
+                    ZipEntry entry = new ZipEntry(relativePath);
                     str.putNextEntry(entry);
-                    InputStream in = null;
-                    try {
-                        in = fo.getInputStream();
-                        FileUtil.copy(in, str);
-                    } finally {
-                        if (in != null) {
-                            in.close();
+                    if (fo.isData()) {
+                        InputStream in = null;
+                        try {
+                            in = fo.getInputStream();
+                            FileUtil.copy(in, str);
+                        } finally {
+                            if (in != null) {
+                                in.close();
+                            }
                         }
                     }
                     str.closeEntry();
