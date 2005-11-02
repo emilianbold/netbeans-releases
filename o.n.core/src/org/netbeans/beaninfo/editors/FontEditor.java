@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,21 +38,6 @@ import org.openide.util.Utilities;
 public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
     // static .....................................................................................
-
-    static String[] fonts;
-    static {
-        try {
-            fonts = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
-        } catch (RuntimeException e) {
-            fonts = new String[0];//NOI18N
-            if (org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_MAC) {
-                String msg = NbBundle.getMessage(FontEditor.class, "MSG_AppleBug"); //NOI18N
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-            } else {
-                throw e;
-            }
-        }
-    }
 
     static final Integer[] sizes = new Integer [] {
                                        new Integer (3),
@@ -95,22 +80,30 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public void setValue (Object object) {
-        if (!(object instanceof Font )) {
-            //Mac bug workaround
-            if (fonts.length > 0) {
-                font = new Font( fonts[0], Font.PLAIN, 10 );
-            }
-        } else font = (Font) object;
-        if (font != null) {
-            //Mac bug workaround
-            fontName = font.getName () + " " + font.getSize () + " " + getStyleName (font.getStyle ()); // NOI18N
-            support.firePropertyChange ("", null, null); // NOI18N
+        if (font != null && font.equals (object)) {
+            return ;
+        } else if (font == null && object == null) {
+            return ;
         }
+        
+        if (object instanceof Font) {
+            font = (Font) object;
+        } else if (object == null) {
+            font = null;
+        } else {
+            assert false : "Object " + object + " is instanceof Font or null";
+        }
+        
+        if (font != null) {
+            fontName = font.getName () + " " + font.getSize () + " " + getStyleName (font.getStyle ()); // NOI18N
+        } else {
+            fontName = null;
+        }
+        
+        support.firePropertyChange ("", null, null); // NOI18N
     }
 
     public String getAsText () {
-        // bugfix #21981 can't return null
-        // due to getAccessibleName() from PropertyShow.AccessiblePropertyShow
         return fontName;
     }
 
@@ -128,15 +121,18 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public boolean isPaintable () {
-        return fonts.length > 0;
+        return true;
     }
 
     public void paintValue (Graphics g, Rectangle rectangle) {
-        Font f = g.getFont ();
+        Font originalFont = g.getFont ();
         
         // Fix of 21713, set default value
         if ( font == null ) setValue( null );
-        Font paintFont = font;
+        
+        Font paintFont = font == null ? originalFont : font; // NOI18N
+        assert paintFont != null : "paintFont must exist.";
+        
         FontMetrics fm = g.getFontMetrics (paintFont);
         if (fm.getHeight() > rectangle.height) {
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
@@ -148,14 +144,14 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             fm = g.getFontMetrics (paintFont);
         }
         g.setFont (paintFont);
-        g.drawString (fontName,
-                      rectangle.x,  // + (rectangle.width - fm.stringWidth(fontName)) / 2,
+        g.drawString (fontName == null ? "null" : fontName, // NOI18N
+                      rectangle.x,
                       rectangle.y + (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
-        g.setFont (f);
+        g.setFont (originalFont);
     }
 
     public boolean supportsCustomEditor () {
-        return fonts.length > 0; //Mac bug workaround
+        return true;
     }
 
     public Component getCustomEditor () {
@@ -181,6 +177,25 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             if ((i & Font.ITALIC) > 0) return NbBundle.getMessage(FontEditor.class, "CTL_Italic");
             else return NbBundle.getMessage(FontEditor.class, "CTL_Plain");
     }
+    
+    static private String[] fonts;
+    static private String [] getFonts () {
+        if (fonts == null) {
+            try {
+                fonts = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
+            } catch (RuntimeException e) {
+                fonts = new String[0]; //NOI18N
+                if (org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_MAC) {
+                    String msg = NbBundle.getMessage(FontEditor.class, "MSG_AppleBug"); //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                } else {
+                    throw e;
+                }
+            }
+        }
+        return fonts;
+    }
+
 
     // innerclasses ............................................................................................
 
@@ -194,14 +209,23 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         FontPanel () {
             setLayout (new BorderLayout ());
             setBorder(new EmptyBorder(12, 12, 0, 11));
+            
+            Font font = (Font) getValue ();
+            if (font == null) {
+                if (getFonts ().length > 0) {
+                    font = new Font (fonts[0], Font.PLAIN, 10);
+                } else {
+                    font = UIManager.getFont ("Label.font"); // NOI18N
+                }
+            }
 
-            lFont = new JList (fonts);
+            lFont = new JList (getFonts ());
             lFont.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_Font"));
             lStyle = new JList (styles);
             lStyle.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_FontStyle"));
             lSize = new JList (sizes);
             lSize.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_Size"));
-            tfSize = new JTextField ("" + FontEditor.this.font.getSize ()); // NOI18N
+            tfSize = new JTextField ("" + font.getSize ()); // NOI18N
             tfSize.getAccessibleContext().setAccessibleDescription(lSize.getAccessibleContext().getAccessibleDescription());
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_FontCustomEditor"));
 
@@ -237,13 +261,13 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.insets = new Insets (5, 0, 0, 0);
             c.gridwidth = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
-            tfFont = new JTextField (FontEditor.this.font.getName ());
+            tfFont = new JTextField (font.getName ());
             tfFont.setEnabled (false);
             la.setConstraints (tfFont, c);
             add (tfFont);
 
             c.insets = new Insets (5, 5, 0, 0);
-            tfStyle = new JTextField (getStyleName (FontEditor.this.font.getStyle ()));
+            tfStyle = new JTextField (getStyleName (font.getStyle ()));
             tfStyle.setEnabled (false);
             la.setConstraints (tfStyle, c);
             add (tfStyle);
@@ -272,13 +296,13 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.weightx = 1.0;
             c.weighty = 1.0;
             lFont.setVisibleRowCount (5);
-            lFont.setSelectedValue(FontEditor.this.font.getName (), true);
+            lFont.setSelectedValue(font.getName (), true);
             lFont.addListSelectionListener (new ListSelectionListener () {
                                                 public void valueChanged (ListSelectionEvent e) {
                                                     if (!lFont.isSelectionEmpty ()) {
-                                                        if (fonts.length > 0) { //Mac bug workaround
+                                                        if (getFonts ().length > 0) { //Mac bug workaround
                                                             int i = lFont.getSelectedIndex ();
-                                                            tfFont.setText (fonts [i]);
+                                                            tfFont.setText (getFonts () [i]);
                                                             setValue ();
                                                         }
                                                     }
@@ -291,7 +315,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             add (sp);
 
             lStyle.setVisibleRowCount (5);
-            lStyle.setSelectedValue(getStyleName (FontEditor.this.font.getStyle ()), true);
+            lStyle.setSelectedValue(getStyleName (font.getStyle ()), true);
             lStyle.addListSelectionListener (new ListSelectionListener () {
                                                  public void valueChanged (ListSelectionEvent e) {
                                                      if (!lStyle.isSelectionEmpty ()) {
@@ -311,7 +335,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.gridwidth = GridBagConstraints.REMAINDER;
             lSize.getAccessibleContext().setAccessibleName(tfSize.getAccessibleContext().getAccessibleName());
             lSize.setVisibleRowCount (5);
-            updateSizeList(FontEditor.this.font.getSize ());
+            updateSizeList(font.getSize ());
             lSize.addListSelectionListener (new ListSelectionListener () {
                                                 public void valueChanged (ListSelectionEvent e) {
                                                     if (!lSize.isSelectionEmpty ()) {
