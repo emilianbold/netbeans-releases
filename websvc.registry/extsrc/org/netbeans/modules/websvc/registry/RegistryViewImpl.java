@@ -98,10 +98,11 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
         Set registeredServices = model.getWebServiceSet();
         List serviceNames = getServiceNames(wsdlFile);
 
-        for(Iterator nameIter = serviceNames.iterator(); nameIter.hasNext(); ) {
+        for (Iterator nameIter = serviceNames.iterator(); nameIter.hasNext(); ) {
             String searchName = (String) nameIter.next();
+            searchName = org.openide.util.Utilities.replaceString(searchName, " ", ""); //NOI18N
 
-            for(Iterator iter = registeredServices.iterator(); iter.hasNext(); ) {
+            for (Iterator iter = registeredServices.iterator(); iter.hasNext(); ) {
                 WebServiceData wsData = (WebServiceData) iter.next();
                 if(searchName.equalsIgnoreCase(wsData.getName())) {
                     foundServices.add(new WebServicesNode(wsData));
