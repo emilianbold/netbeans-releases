@@ -338,6 +338,30 @@ public final class UIUtil {
         
     }
     
+    /** 
+     * Returns path relative to the root of the SFS. May return
+     * <code>null</code> for empty String or user's custom non-string items.
+     * Also see {@link Util#isValidSFSPath(String)}.
+     */
+    public static String getSFSPath(final JComboBox lpCombo, final String supposedRoot) {
+        Object editorItem = lpCombo.getEditor().getItem();
+        String path = null;
+        if (editorItem instanceof LayerItemPresenter) {
+            path = ((LayerItemPresenter) editorItem).getFullPath();
+        } else if (editorItem instanceof String) {
+            String editorItemS = ((String) editorItem).trim();
+            if (editorItemS.length() > 0) {
+                path = searchLIPCategoryCombo(lpCombo, editorItemS);
+                if (path == null) {
+                    // entered by user - absolute and relative are supported...
+                    path = editorItemS.startsWith(supposedRoot) ? editorItemS :
+                        supposedRoot + '/' + editorItemS;
+                }
+            }
+        }
+        return path;
+    }
+    
     public static Project chooseSuiteComponent(Component parent, String suiteDisplayName) {
         Project suiteComponent = null;
         Project project = chooseProject(parent);
@@ -371,6 +395,25 @@ public final class UIUtil {
             }
         }
         return suiteComponent;
+    }
+    
+    /**
+     * Searches LayerItemPresenter combobox by the item's display name.
+     */
+    private static String searchLIPCategoryCombo(final JComboBox lpCombo, final String displayName) {
+        String path = null;
+        for (int i = 0; i < lpCombo.getItemCount(); i++) {
+            Object item = lpCombo.getItemAt(i);
+            if (!(item instanceof LayerItemPresenter)) {
+                continue;
+            }
+            LayerItemPresenter presenter = (LayerItemPresenter) lpCombo.getItemAt(i);
+            if (displayName.equals(presenter.getDisplayName())) {
+                path = presenter.getFullPath();
+                break;
+            }
+        }
+        return path;
     }
     
     private static Project chooseProject(Component parent) {
