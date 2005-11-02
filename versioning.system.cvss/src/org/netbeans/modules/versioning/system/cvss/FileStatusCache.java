@@ -191,7 +191,12 @@ public class FileStatusCache {
         if (fi != null) {
             return fi;            
         }
-        return exists(file) ? new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false) : FILE_INFORMATION_UNKNOWN;
+        if (!exists(file)) return FILE_INFORMATION_UNKNOWN;
+        if (file.isDirectory()) {
+            return refresh(file, REPOSITORY_STATUS_UNKNOWN);
+        } else {
+            return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
+        }
     }
 
     /**
