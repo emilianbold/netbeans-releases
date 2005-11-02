@@ -20,7 +20,88 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p>tbd</p>
+<ol>
+
+	<li>Copy all JAR files from <i>$NB_HOME</i><tt>/ide6/modules/ext/jaxrpc16</tt> to
+	<i>$NB_HOME</i><tt>\enterprise2\jakarta-tomcat-5.5.9\server\lib</tt>.
+
+	<li>Make sure that the Sun Java System Application Server is registered in the IDE.
+
+	<li>Create a web application project. Set the Sun Java System Application Server
+	as your target server.
+
+	<li>Create the web service.
+
+	<li>Add this target to the <tt>build.xml</tt> file and change <tt>full_path_to_$NB_USER_DIR</tt>
+	to the full path, such as <tt>c:\.netbeans</tt>:
+
+<pre>&lt;target name="-pre-init"&gt;
+  &lt;property name="j2ee.platform.wscompile.classpath" value="${libs.jaxrpc16.classpath}"/&gt;
+  &lt;property name="tomcat.home" value="<i>full_path_to_$NB_USER_DIR\</i><tt>5.0\jakarta-tomcat-5.5.9_base</tt>"/&gt;
+&lt;/target&gt;</pre>
+
+	<li>Add the following target to the <tt>build.xml</tt> file:
+
+<pre>&lt;target name="run-deploy" depends="init,compile,compile-jsps,-do-compile-single-jsp,dist"&gt;
+ &lt;property name="raw.war.name" value="${dist.dir}/raw-${war.name}"/&gt;
+ &lt;copy file="${dist.war}" tofile="${raw.war.name}"/&gt;
+ &lt;delete file="${dist.war}"/&gt;
+ &lt;taskdef name="wsdeploy" classname="com.sun.xml.rpc.tools.ant.Wsdeploy" classpath="${wscompile.classpath}"/&gt;
+ &lt;wsdeploy
+   inWarFile="${raw.war.name}"
+   outWarFile="${dist.war}"
+   fork="true"
+   classpath="${wscompile.classpath}:${build.classes.dir.real}:${javac.classpath}"
+   keep="true"
+   verbose="true"
+   source="1.1.2"/&gt;
+ &lt;delete file="${raw.war.name}"/&gt;
+ &lt;copy file="${dist.war}" todir="${tomcat.home}/webapps"/&gt;
+&lt;/target&gt;</pre>
+
+	<li>Add the following target to the <tt>build.xml</tt> file and change <tt>my-host</tt> to your
+	 environment's host name and change <tt>my-port-number</tt> to your environment's port number:
+
+<pre>&lt;target name="run-display-browser" if="do.display.browser" depends="run-deploy"&gt;
+   &lt;nbbrowse url="http://<i>my-host</i>:<i>my-port-number</i>/${ant.project.name}/${client.urlPart}"/&gt;
+&lt;/target&gt;</pre>
+
+	 <li>Create an XML document in the <tt>WEB-INF</tt> folder. Call the XML document <tt>jaxrpc-ri</tt>.
+	 Add this content to <tt>jaxrpc.ri.xml</tt> and change <tt>mypackage.mysubpackage.myclassSEI</tt>
+	 to the fully qualified name of the SEI class and <tt>mypackage.mysubpackage.myclassImpl</tt> to
+	 the fully qualified name of the implementation class:
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;webServices
+    xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/dd"
+    version="1.0"
+    targetNamespaceBase="http://java.sun.com/xml/ns/jax-rpc/wsi/wsdl"
+    typeNamespaceBase="http://java.sun.com/xml/ns/jax-rpc/wsi/types"
+    urlPatternBase="/webservice"&gt;
+    &lt;endpoint
+    name="MyTomcatWS"
+    displayName="TomcatService"
+    description="Tomcat Web Service endpoint"
+    interface="<i>mypackage.mysubpackage.myclassSEI</i>"
+    implementation="<i>mypackage.mysubpackage.myclassImpl</i>"/&gt;
+    &lt;endpointMapping
+    endpointName="MyTomcatWS"
+    urlPattern="/MyTomcatWS"/&gt;
+&lt;/webServices&gt;</pre>
+
+	 <p>Now right-click the project node, choose Properties, select the Run pane,
+	 and type <tt>MyTomcatWS</tt> in Relative URL. In <tt>WEB-INF/web.xml</tt>, change
+	 the <tt>&lt;url-pattern&gt;</tt> to <tt>/MyTomcatWS</tt>.
+
+	 <li>Right-click the project node and choose Build Project.
+	 <li>In the Runtime window (Ctrl-5), manually start the Tomcat Web Server.
+	 <li>In the Projects window, right-click the project and choose Run Project.
+ </ol>
+
+The web service deploys and is displayed in the browser, using the host name and port number
+specified in the <tt>&lt;run-display-browser&gt;</tt> target.
+
+
 
 <table>
 
