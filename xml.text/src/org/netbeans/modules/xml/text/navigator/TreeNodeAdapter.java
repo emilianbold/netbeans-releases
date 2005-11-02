@@ -162,10 +162,10 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             
             StringBuffer text = new StringBuffer();
             text.append(html ? "<html>" : "");
-            text.append(html && containsError ? "<font color=red><b>": "");
+            text.append(html && containsError ? "<font color=FF0000><b>": ""); //red
             text.append(getDocumentElement().getName());
             text.append(html && containsError ? "</b></font>": "");
-            text.append(html ? "<font color=gray>" : "");
+            text.append(html ? "<font color=888888>" : "");//gray
             if(attribsVisibleText.trim().length() > 0) {
                 text.append(" ");
                 text.append(attribsVisibleText);

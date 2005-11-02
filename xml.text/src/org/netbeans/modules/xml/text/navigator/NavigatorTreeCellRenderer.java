@@ -16,10 +16,13 @@ import java.awt.Component;
 import java.awt.Image;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
+import org.openide.awt.HtmlRenderer;
 import org.openide.util.Utilities;
 
 
@@ -44,23 +47,27 @@ public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final Icon[] DOCTYPE_ICON = new Icon[]{getImageIcon(DOCTYPE_16, false), getImageIcon(DOCTYPE_16, true)};
     private static final Icon[] CDATA_ICON = new Icon[]{getImageIcon(CDATA_16, false), getImageIcon(CDATA_16, true)};
     
+    private HtmlRenderer.Renderer renderer;
+    
     public NavigatorTreeCellRenderer() {
         super();
+        
+        renderer = HtmlRenderer.createRenderer();
+        renderer.setHtml(true);
     }
     
     public Component getTreeCellRendererComponent(JTree tree, Object value,
             boolean sel, boolean expanded, boolean leaf, int row,
             boolean hasFocus) {
-        Component orig = super.getTreeCellRendererComponent(tree, value, sel, expanded,
-                leaf, row, hasFocus );
         TreeNodeAdapter tna = (TreeNodeAdapter)value;
         DocumentElement de = (DocumentElement)tna.getDocumentElement();
         
-        setToolTipText(tna.getToolTipText().trim().length() > 0 ? tna.getToolTipText() : null);
-        setText(tna.getText(true)); //set HTML text
+        String htmlText = tna.getText(true);
+        Component comp = renderer.getTreeCellRendererComponent(tree, htmlText, sel, expanded, leaf, row, hasFocus);
+        comp.setEnabled(tree.isEnabled());
+        ((JLabel)comp).setToolTipText(tna.getToolTipText().trim().length() > 0 ? tna.getToolTipText() : null);
         
         boolean containsError = tna.getChildrenErrorCount() > 0;
-        
         //normal icons
         if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
         || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
@@ -73,11 +80,11 @@ public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
             setIcon(CDATA_ICON, containsError);
         }
         
-        return this;
+        return comp;
     }
     
     public void setIcon(Icon[] icons, boolean containsError) {
-        setIcon(icons[containsError ? 1 : 0]);
+        renderer.setIcon(icons[containsError ? 1 : 0]);
     }
     
     private static ImageIcon getImageIcon(String name, boolean error){

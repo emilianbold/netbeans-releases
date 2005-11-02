@@ -153,6 +153,7 @@ public class NavigatorContent extends JPanel   {
             tree = new PatchedJTree();
             TreeModel model = createTreeModel(dm);
             tree.setModel(model);
+            //tree.setLargeModel(true);
             tree.setShowsRootHandles(true);
             tree.setRootVisible(false);
             tree.setCellRenderer(new NavigatorTreeCellRenderer());
