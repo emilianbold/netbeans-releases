@@ -32,6 +32,7 @@ import javax.swing.plaf.TextUI;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import javax.swing.text.html.HTMLDocument;
 
 import org.netbeans.editor.*;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -181,6 +182,13 @@ public class DocumentationScrollPane extends JScrollPane {
         String text = currentDocumentation.getText();
         URL url = currentDocumentation.getURL();
         if (text != null){
+            if (url!=null){
+                // fix of issue #58658
+                javax.swing.text.Document document = view.getDocument();
+                if (document instanceof HTMLDocument){
+                    ((HTMLDocument)document).setBase(url);
+                }
+            }
             view.setContent(text);
         } else if (url != null){
             try{
