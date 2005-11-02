@@ -19,6 +19,8 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -34,7 +36,7 @@ import java.util.List;
  *
  * @author Libor Kotouc
  */
-public class CallStackFilter implements TreeModelFilter, NodeModel {
+public class CallStackFilter implements TreeModelFilter, NodeModel, TableModelFilter {
     
     private ContextProvider lookupProvider;
     private JPDADebugger debugger;
@@ -259,6 +261,29 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
         if (node instanceof HiddenFrames)
             return NbBundle.getMessage(CallStackFilter.class, "TLT_HIDDEN_FRAMES");
         throw new UnknownTypeException (node);
+    }
+
+    //----------------------- TableModelFilter implementation ----------------------------
+    
+    public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
+        
+        original.setValueAt(node, columnID, value);
+    }
+
+    public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        
+        if (node instanceof HiddenFrames)
+            return true;
+        
+        return original.isReadOnly(node, columnID);
+    }
+
+    public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        
+        if (node instanceof HiddenFrames)
+            return "";
+        
+        return original.getValueAt(node, columnID);
     }
     
     
