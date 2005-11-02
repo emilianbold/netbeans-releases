@@ -914,10 +914,18 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction());
         
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)), DOC_SHOW);
+        // Register documentation show
+        keys = findEditorKeys(ExtKit.documentationShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
+        for (int i = 0; i < keys.length; i++) {
+            inputMap.put(keys[i], DOC_SHOW);
+        }
         actionMap.put(DOC_SHOW, new DocShowAction());
         
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_MASK), TOOLTIP_SHOW);
+        // Register tooltip show
+        keys = findEditorKeys(ExtKit.completionTooltipShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_MASK));
+        for (int i = 0; i < keys.length; i++) {
+            inputMap.put(keys[i], TOOLTIP_SHOW);
+        }
         actionMap.put(TOOLTIP_SHOW, new ToolTipShowAction());
     }
     

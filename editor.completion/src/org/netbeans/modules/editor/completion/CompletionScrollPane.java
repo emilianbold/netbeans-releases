@@ -34,6 +34,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
@@ -46,6 +47,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 
 public class CompletionScrollPane extends JScrollPane {
     
+    private static final String ESCAPE = "escape"; //NOI18N
     private static final String COMPLETION_UP = "completion-up"; //NOI18N
     private static final String COMPLETION_DOWN = "completion-down"; //NOI18N
     private static final String COMPLETION_PGUP = "completion-pgup"; //NOI18N
@@ -168,8 +170,10 @@ public class CompletionScrollPane extends JScrollPane {
 
     private void installKeybindings() {
 	// Register Escape key
-	getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape"); // NOI18N
-	getActionMap().put("escape", new CompletionPaneAction(ACTION_ESCAPE)); // NOI18N
+        registerKeybinding(ACTION_ESCAPE, ESCAPE,
+        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+        ExtKit.escapeAction
+        );
 
         // Register up key
         registerKeybinding(ACTION_COMPLETION_UP, COMPLETION_UP,
