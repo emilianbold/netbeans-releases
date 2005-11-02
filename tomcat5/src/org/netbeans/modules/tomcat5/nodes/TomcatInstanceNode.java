@@ -53,12 +53,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         super(children);
         tm = (TomcatManager)lookup.lookup(TomcatManager.class);
         setIconBaseWithExtension("org/netbeans/modules/tomcat5/resources/tomcat.png"); // NOI18N
-        setDisplayName(tm.getTomcatProperties().getDisplayName());
-        setShortDescription(NbBundle.getMessage(
-                TomcatInstanceNode.class, 
-                "LBL_TomcatInstanceNode", 
-                Integer.toString(tm.getCurrentServerPort())));
         getCookieSet().add(this);
+    }
+    
+    public String getShortDescription() {
+        return NbBundle.getMessage(
+                    TomcatInstanceNode.class, 
+                    "LBL_TomcatInstanceNode", 
+                    String.valueOf(tm.getCurrentServerPort()));
     }
     
     public boolean hasCustomizer() {
