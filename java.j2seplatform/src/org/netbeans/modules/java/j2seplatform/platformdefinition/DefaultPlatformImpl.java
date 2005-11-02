@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -93,7 +93,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         return standardLibs = Util.createClassPath (s);
     }
 
-    private static List getSources (File javaHome) {
+    static List getSources (File javaHome) {
         if (javaHome != null) {
             try {
                 File f;
@@ -137,7 +137,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
     }
     
     
-    private static List getJavadoc (File javaHome) {
+    static List getJavadoc (File javaHome) {
         if (javaHome != null ) {
             File f = new File (javaHome,"docs"); //NOI18N
             if (f.isDirectory() && f.canRead()) {
