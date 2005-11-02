@@ -134,6 +134,9 @@ public class SendJMSMessageAction extends NodeAction {
             return false;
         }
 	JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
+        if (jc == null) {
+            return false;
+        }
         FileObject srcFile = JavaModel.getFileObject(jc.getResource());
         Project project = FileOwnerQuery.getOwner(srcFile);
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
