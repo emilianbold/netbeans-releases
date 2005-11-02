@@ -1499,7 +1499,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     else if (resizeType == 0
                              && (e.getClickCount() != 2
                                  || !processDoubleClick(e))
-                             && !e.isShiftDown()) // selection with shift only on mouse release
+                             && (!e.isShiftDown() || e.isAltDown())) // selection with shift only on mouse release
                     {   // no resizing, no doubleclick - select component
                         RADComponent hitMetaComp = selectComponent(e); 
                         if (hitMetaComp != null && !modifier) // plain single click
