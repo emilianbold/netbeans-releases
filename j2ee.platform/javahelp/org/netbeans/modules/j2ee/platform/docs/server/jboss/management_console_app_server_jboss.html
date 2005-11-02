@@ -11,35 +11,19 @@
 <body>
 <h2>Accessing the JBoss Application Server Management Console</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>Before you can start developing and deploying applications to an application server, you must register your application server with the IDE. </p>
-<p><b>To register an instance of a JBoss application server:</b></p>
+<p>The JBoss Application Server instance node in the IDE provides access to the Management Console of the JBoss Application Server. 
+You can manage server resources, such as connection pools, through the Management Console.</p>
+
+<p><b>To access the JBoss Application Server Management Console:</b>
 <ol>
-<li>Choose Tools &gt; Server Manager, and in the Server Manager, click Add Server.
-<ul class="note">
-<li>Alternatively, right-click the Servers node in the Runtime window and choose Add Server from the contextual menu.</li>
-</ul>
-The Add Server Instance wizard starts.</li>
-<li>In the Choose Server pane, do the following:
-<ol type="a">
-<li>From the Server drop-down list, select your application server.</li>
-<li>In the Name field, type a name for the server instance. <br>
-This name is used to identify the server in the IDE.</li>
-<li>Click Next.</li>
-</ol>
-</li>
-<li>In the Server Location pane, use the Browse button to navigate to and select the installation directory of your application server.
-<ul class="note">
-<li>The Next button is only enabled when you have selected the correct installation directory.</li>
-</ul>
-</li>
-<li>Click Next.</li>
-<li>In the Instance Properties pane, from the Domain drop-down list, select the JBoss application server domain you want to use for this server instance.<br>
-The IDE automatically updates the Domain path field.</li>
-<li>Use the Port field to define the port for the server instance.</li>
-<li>Click Finish.</li>
-<li>If you started the Add Server Instance wizard from the Server Manager, click Close in the Server Manager dialog box.<br>
-The IDE displays a server node for your application server in the Runtime window under the Servers node.</li>
-</ol>
+  <li>In the Runtime window, expand the Servers node and the JBoss Application Server 
+ instance node.</li>
+<li>Start the server by right-clicking the JBoss Application Server instance node and choosing Start.</li>
+<li>Once the server has started, right-click the node and choose View Admin Console.
+
+
+</ol>	
+
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Registering 
