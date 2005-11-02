@@ -261,7 +261,7 @@ public class VisualReplicator { //implements VisualMapper
                     FakePeerSupport.attachFakePeerRecursively((Container)comps[i]);
             }
 
-            layoutBuilder.setupContainerLayout(comps, compIds);
+            setupContainerLayout(layoutBuilder, comps, compIds);
         }
     }
 
@@ -646,7 +646,7 @@ public class VisualReplicator { //implements VisualMapper
                 laysup.arrangeContainer(cont, contDelegate);
             }
             else { // new layout support
-                getLayoutBuilder(metacont.getId()).setupContainerLayout(comps, compIds);
+                setupContainerLayout(getLayoutBuilder(metacont.getId()), comps, compIds);
             }
         }
         else if (metacomp instanceof RADMenuComponent) {
@@ -705,6 +705,21 @@ public class VisualReplicator { //implements VisualMapper
         // Mnemonics support - end -
 
         return clone;
+    }
+    
+    private void setupContainerLayout(SwingLayoutBuilder layoutBuilder, Component[] comps, String[] compIds) {
+        Throwable th = null;
+        try {
+            layoutBuilder.setupContainerLayout(comps, compIds);
+        } catch (Exception ex) {
+            th = ex;
+        } catch (Error err) {
+            th = err;
+        }
+        if (th != null) {
+            ErrorManager.getDefault().notify(th);
+            getFormModel().forceUndoOfCompoundEdit();            
+        }
     }
 
     private boolean needsConversion(RADComponent metacomp) {
