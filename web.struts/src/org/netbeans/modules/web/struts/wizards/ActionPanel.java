@@ -85,9 +85,7 @@ public class ActionPanel implements WizardDescriptor.Panel, WizardDescriptor.Fin
         }
     }
     public boolean isFinishPanel() {
-        System.out.println("isFinishPanel");
-        return true;
-        //return isValid();
+        return isValid();
     }
     
     public void stateChanged(ChangeEvent e) {
