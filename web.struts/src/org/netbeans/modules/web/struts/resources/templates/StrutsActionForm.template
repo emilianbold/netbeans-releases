@@ -6,6 +6,11 @@
  
 package Templates.JSP_Servlet;           
 
+import javax.servlet.http.HttpServletRequest;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+
 /** 
  *
  * @author __USER__
@@ -54,4 +59,12 @@ public class NewActionForm extends __SUPERCLASS__ {
        // TODO Auto-generated constructor stub
    }
 
+   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
+       ActionErrors errors = new ActionErrors();
+       if (getName() == null || getName().length() < 1) {
+           errors.add("name", new ActionMessage("error.name.required"));
+           // TODO: add 'error.name.required' key to your resources
+       }
+       return errors;
+   }
 }
