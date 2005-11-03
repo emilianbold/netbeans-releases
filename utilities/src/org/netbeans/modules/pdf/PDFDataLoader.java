@@ -11,18 +11,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.pdf;
 
-
 import java.io.IOException;
-
-import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.ExtensionList;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-
 
 /** Loader for PDF files (Portable Document Format).
  * Permits simple viewing of them.
@@ -77,16 +74,6 @@ public class PDFDataLoader extends UniFileLoader {
         return "Loaders/application/pdf/Actions/";                      //NOI18N
     }
     
-    /**
-     * This method returns <code>null</code> because it uses method
-     * {@link #actionsContext}.
-     *
-     * @return  <code>null</code>
-     */
-    protected SystemAction[] defaultActions() {
-        return null;
-    }
-
     /** Creates multi data objcte for specified primary file.
      * Implements superclass abstract method. */
     protected MultiDataObject createMultiObject (FileObject primaryFile)

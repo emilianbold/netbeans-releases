@@ -10,29 +10,16 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
 
 import java.io.IOException;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions.RegisterAction;
-
-import org.openide.actions.CutAction;
-import org.openide.actions.CopyAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.FileSystemAction;
-import org.openide.actions.OpenAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.RenameAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
-
-import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObjectExistsException;
-
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /** Recognizes single files in the Repository as being of a certain type.
  *
@@ -67,58 +54,8 @@ public class SunResourceDataLoader extends UniFileLoader {
         return "Loaders/xml/sun-resource/Actions/"; // NOI18N
     }
     
-    static SystemAction[] standardActions;
-    
-    protected SystemAction[] defaultActions() {
-        if (standardActions != null)
-            return standardActions;
-        synchronized (SunResourceDataLoader.class) {
-            if (standardActions == null) {
-                standardActions = createDefaultActions();
-            }
-        }
-        return standardActions;
-    }
-    
-    private SystemAction[] createDefaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(RegisterAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
-    }        
-
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new SunResourceDataObject(primaryFile, this);
     }
-    
-       
-    // Additional user-configurable properties:
-    /*
-    public String getMyProp() {
-        return (String)getProperty("myProp");
-    }
-    public void setMyProp(String nue) {
-        putProperty("myProp", nue, true);
-    }
-    public void writeExternal(ObjectOutput out) throws IOException {
-        super.writeExternal(out);
-        out.writeUTF(getMyProp());
-    }
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal(in);
-        setMyProp(in.readUTF());
-    }
-     */
     
 }

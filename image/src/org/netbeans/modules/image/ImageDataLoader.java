@@ -14,13 +14,11 @@
 package org.netbeans.modules.image;
 
 import javax.imageio.ImageIO;
-import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
 /** 
@@ -85,16 +83,6 @@ public class ImageDataLoader extends UniFileLoader {
         return "Loaders/image/png-gif-jpeg-bmp/Actions/";               //NOI18N
     }
     
-    /**
-     * This method returns <code>null</code> because it uses method
-     * {@link #actionsContext}.
-     *
-     * @return  <code>null</code>
-     */
-    protected SystemAction[] defaultActions() {
-        return null;
-    }
-
     /** Create the image data object.
      * @param primaryFile the primary file (e.g. <code>*.gif</code>)
      * @return the data object for this file

@@ -11,16 +11,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.url;
 
-
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.actions.*;
-import org.openide.util.actions.SystemAction;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.ExtensionList;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
-
 
 /**
  * Data loader which recognizes URL files.
@@ -71,20 +70,10 @@ public class URLDataLoader extends UniFileLoader {
     }
     
     /**
-     * This method returns <code>null</code> because it uses method
-     * {@link #actionsContext}.
-     *
-     * @return  <code>null</code>
-     */
-    protected SystemAction[] defaultActions() {
-        return null;
-    }
-    
-    /**
      * @return  <code>URLDataObject</code> for the specified file
      */
     protected MultiDataObject createMultiObject(FileObject primaryFile)
-            throws DataObjectExistsException, java.io.IOException {
+            throws DataObjectExistsException, IOException {
         return new URLDataObject(primaryFile, this);
     }
 
