@@ -303,8 +303,8 @@ public class ClassPathProviderImplTest extends TestBase {
         // junit.classpath:
         expectedRoots.add(urlForJar("xtest/lib/junit.jar")); // note: in running IDE this is different! modules/ext/junit-3.8.1.jar
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
-        expectedRoots.add(urlForJar("xtest/lib/nbjunit-ide.jar"));
-        expectedRoots.add(urlForJar("xtest/lib/insanelib.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/ext/nbjunit-ide.jar"));
+        expectedRoots.add(urlForJar("performance/insanelib/dist/insanelib.jar"));
         // jemmy.and.jelly.path:
         expectedRoots.add(urlForJar("jemmy/builds/jemmy.jar"));
         expectedRoots.add(urlForJar("jellytools/builds/jelly2-nb.jar"));
@@ -328,11 +328,22 @@ public class ClassPathProviderImplTest extends TestBase {
         Set/*<String>*/ expectedRoots = new TreeSet();
         expectedRoots.add(urlForJar("xtest/lib/junit.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
-        expectedRoots.add(urlForJar("xtest/lib/nbjunit-ide.jar"));
-        expectedRoots.add(urlForJar("xtest/lib/insanelib.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/ext/nbjunit-ide.jar"));
+        expectedRoots.add(urlForJar("performance/insanelib/dist/insanelib.jar"));
         expectedRoots.add(urlForJar("jemmy/builds/jemmy.jar"));
         expectedRoots.add(urlForJar("jellytools/builds/jelly2-nb.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
+        TestBase.TestPCL l = new TestBase.TestPCL();
+        cp.addPropertyChangeListener(l);
+        NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(qaftsrc);
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        File added = file("xtest/lib/xtest.jar");
+        ep.setProperty("test.qa-functional.cp.extra", added.getAbsolutePath());
+        p.getHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        // do not save! just want to test change, not actually make it...
+        assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
+        expectedRoots.add(urlForJar("xtest/lib/xtest.jar"));
+        assertEquals("right COMPILE classpath after added to .extra", expectedRoots.toString(), urlsOfCp(cp).toString());
     }
     
     public void testBuildClassPath () throws Exception {
@@ -420,8 +431,16 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull(ioEntry);
         copyOfMiscXMLManager.addDependencies(Collections.singleton(new ModuleDependency(ioEntry)));
         assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
+        l.changed.clear();
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-io.jar"));
         assertEquals("right COMPILE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
+        ModuleEntry utilEntry = copyOfMiscProject.getModuleList().getEntry("org.openide.util");
+        assertNotNull(utilEntry);
+        copyOfMiscXMLManager.addDependencies(Collections.singleton(new ModuleDependency(utilEntry)));
+        assertTrue("got changes again", l.changed.contains(ClassPath.PROP_ROOTS));
+        l.changed.clear();
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        assertEquals("right COMPILE classpath after changing project.xml again", expectedRoots, urlsOfCp(cp));
     }
     
     public void testExecuteClasspathChanges() throws Exception {

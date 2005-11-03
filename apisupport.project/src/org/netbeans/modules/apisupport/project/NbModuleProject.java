@@ -442,6 +442,23 @@ public final class NbModuleProject implements Project {
             buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:${junit.jar}:${nbjunit.jar}:${insanelib.jar}:${test.unit.cp.extra}"); // NOI18N
             buildDefaults.put("test.unit.run.cp.extra", ""); // NOI18N
             buildDefaults.put("test.unit.run.cp", "${test.unit.cp}:${build.test.unit.classes.dir}:${test.unit.run.cp.extra}"); // NOI18N
+            // #61085: need to treat qa-functional tests the same way...
+            buildDefaults.put("test.qa-functional.cp.extra", ""); // NOI18N
+            String nbJunitIdeJar = findNbJunitIdeJar(baseEval);
+            if (nbJunitIdeJar != null) {
+                buildDefaults.put("nbjunit-ide.jar", nbJunitIdeJar); // NOI18N
+            }
+            String jemmyJar = findJemmyJar(baseEval);
+            if (jemmyJar != null) {
+                buildDefaults.put("jemmy.jar", jemmyJar); // NOI18N
+            }
+            String jelly2NbJar = findJelly2NbJar(baseEval);
+            if (jelly2NbJar != null) {
+                buildDefaults.put("jelly2-nb.jar", jelly2NbJar); // NOI18N
+            }
+            buildDefaults.put("test.qa-functional.cp", "${nbjunit.jar}:${nbjunit-ide.jar}:${insanelib.jar}:${jemmy.jar}:${jelly2-nb.jar}:${junit.jar}:${test.qa-functional.cp.extra}"); // NOI18N
+            buildDefaults.put("build.test.qa-functional.classes.dir", "build/test/qa-functional/classes"); // NOI18N
+            buildDefaults.put("test.qa-functional.run.cp", "${test.qa-functional.cp}:${build.test.qa-functional.classes.dir}"); // NOI18N
             providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
         }
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
@@ -454,6 +471,7 @@ public final class NbModuleProject implements Project {
                 private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
                 private PropertyChangeListener delegatingListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
+                        Util.err.log("Refiring property change from delegate in " + evt.getPropertyName() + " for " + NbModuleProject.this);
                         pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
                     }
                 };
@@ -470,6 +488,9 @@ public final class NbModuleProject implements Project {
                         currentEval.removePropertyChangeListener(delegatingListener);
                         PropertyEvaluator nue = evaluator();
                         nue.addPropertyChangeListener(delegatingListener);
+                        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                            Util.err.log("Needed to reset evaluator in " + NbModuleProject.this + "due to use of module-list-dependent property; now cp=" + nue.getProperty("cp"));
+                        }
                         return nue;
                     } else {
                         return currentEval;
@@ -547,6 +568,7 @@ public final class NbModuleProject implements Project {
      * Get an Ant location for the root of nbjunit.jar.
      */
     private String findNbJunitJar(PropertyEvaluator eval) {
+        // NOT modules/ext/nbjunit.jar... we want to have it be associated with sources.
         String path = "testtools/modules/org-netbeans-modules-nbjunit.jar"; // NOI18N
         File f = getNbrootFile("nbbuild/netbeans/" + path, eval); // NOI18N
         if (f != null) {
@@ -558,6 +580,24 @@ public final class NbModuleProject implements Project {
                 return f.getAbsolutePath();
             } else {
                 // External module with no ref to nb.org sources.
+                return "${netbeans.dest.dir}/" + path; // NOI18N
+            }
+        }
+    }
+    
+    /**
+     * Get an Ant location for the root of nbjunit-ide.jar.
+     */
+    private String findNbJunitIdeJar(PropertyEvaluator eval) {
+        String path = "testtools/modules/ext/nbjunit-ide.jar"; // NOI18N
+        File f = getNbrootFile("nbbuild/netbeans/" + path, eval); // NOI18N
+        if (f != null) {
+            return f.getAbsolutePath();
+        } else {
+            f = InstalledFileLocator.getDefault().locate("modules/ext/nbjunit-ide.jar", "org.netbeans.modules.nbjunit", false); // NOI18N
+            if (f != null) {
+                return f.getAbsolutePath();
+            } else {
                 return "${netbeans.dest.dir}/" + path; // NOI18N
             }
         }
@@ -578,6 +618,30 @@ public final class NbModuleProject implements Project {
             } else {
                 return null;
             }
+        }
+    }
+    
+    /**
+     * Get an Ant location for the root of jemmy.jar.
+     */
+    private String findJemmyJar(PropertyEvaluator eval) {
+        File f = getNbrootFile("jemmy/builds/jemmy.jar", eval); // NOI18N
+        if (f != null) {
+            return f.getAbsolutePath();
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Get an Ant location for the root of jemmy.jar.
+     */
+    private String findJelly2NbJar(PropertyEvaluator eval) {
+        File f = getNbrootFile("jellytools/builds/jelly2-nb.jar", eval); // NOI18N
+        if (f != null) {
+            return f.getAbsolutePath();
+        } else {
+            return null;
         }
     }
     
@@ -681,8 +745,9 @@ public final class NbModuleProject implements Project {
     
     public PropertyEvaluator evaluator() {
         if (needNewEvaluator) {
-            ProjectManager.mutex().readAccess(new Runnable() {
-                public void run() {
+            Util.err.log("Resetting evaluator in " + this);
+            ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
                     try {
                         eval = createEvaluator(getModuleList());
                     } catch (IOException ex) {
@@ -690,6 +755,7 @@ public final class NbModuleProject implements Project {
                         Util.err.notify(ErrorManager.INFORMATIONAL, ex);
                     }
                     needNewEvaluator = false;
+                    return null;
                 }
             });
         }
@@ -698,6 +764,7 @@ public final class NbModuleProject implements Project {
     
     // package-private for unit tests only
     void resetEvaluator() {
+        Util.err.log("Will reset evaluator in " + this);
         needNewEvaluator = true;
     }
     

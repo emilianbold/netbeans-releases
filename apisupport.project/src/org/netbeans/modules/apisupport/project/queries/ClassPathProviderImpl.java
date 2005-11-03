@@ -131,13 +131,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             } else if (type.equals(ClassPath.COMPILE)) {
                 // See #42331.
                 if (funcTestCompile == null) {
-                    funcTestCompile = ClassPathSupport.createClassPath(createFuncTestCompileClasspath());
+                    funcTestCompile = ClassPathFactory.createClassPath(createFuncTestCompileClasspath());
                     Util.err.log("compile-time classpath for func tests in " + project + ": " + funcTestCompile);
                 }
                 return funcTestCompile;
             } else if (type.equals(ClassPath.EXECUTE)) {
                 if (funcTestExecute == null) {
-                    funcTestExecute = ClassPathSupport.createClassPath(createFuncTestExecuteClasspath());
+                    funcTestExecute = ClassPathFactory.createClassPath(createFuncTestExecuteClasspath());
                 }
                 return funcTestExecute;
             }
@@ -253,41 +253,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return createPathFromProperty("test.unit.run.cp"); // NOI18N
     }
     
-    private List/*<PathResourceImplementation>*/ createFuncTestCompileClasspath() {
-        // XXX ought to define a property for this in NbModuleProject.createEvaluator, then use createPathFromProperty
-        List/*<PathResourceImplementation>*/ entries = new ArrayList();
-        String[] jars = {
-            "nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar", // NOI18N
-            // XXX ideally would be some way to get sources/Javadoc for these too:
-            "xtest/lib/nbjunit-ide.jar", // NOI18N
-            "xtest/lib/insanelib.jar", // NOI18N
-            "jemmy/builds/jemmy.jar", // NOI18N
-            "jellytools/builds/jelly2-nb.jar", // NOI18N
-        };
-        for (int i = 0; i < jars.length; i++) {
-            File f = project.getNbrootFile(jars[i]);
-            if (f != null) { // #59446
-                entries.add(ClassPathSupport.createResource(Util.urlForJar(f)));
-            }
-        }
-        addPathFromProject(entries, "junit.jar"); // NOI18N
-        addPathFromProject(entries, "test.qa-functional.cp.extra"); // NOI18N
-        return entries;
+    private ClassPathImplementation createFuncTestCompileClasspath() {
+        return createPathFromProperty("test.qa-functional.cp"); // NOI18N
     }
     
-    private List/*<PathResourceImplementation>*/ createFuncTestExecuteClasspath() {
-        List/*<PathResourceImplementation>*/ entries = new ArrayList(createFuncTestCompileClasspath());
-        File funcTestClassesDir = project.getHelper().resolveFile("build/test/qa-functional/classes"); // NOI18N
-        entries.add(ClassPathSupport.createResource(Util.urlForDir(funcTestClassesDir)));
-        return entries;
+    private ClassPathImplementation createFuncTestExecuteClasspath() {
+        return createPathFromProperty("test.qa-functional.run.cp"); // NOI18N
     }
     
-    /**
-     * compile + source, used for manifest.mf as well as sources
-     * &lt;run-dependency&gt; in project.xml means that the module should be enabled,
-     * but this module need not be able to access its classes. Just use
-     * &lt;compile-dependency&gt;s plus our classes dir.
-     */
     private ClassPathImplementation createExecuteClasspath() {
         return createPathFromProperty("run.cp"); // NOI18N
     }
