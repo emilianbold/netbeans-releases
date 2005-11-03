@@ -138,7 +138,7 @@ class CommitTableModel extends AbstractTableModel {
     }
 
     private void createCommitOptions() {
-        boolean excludeNew = System.getProperty("cvs.excludeNewFiles") != null; // NOI18N
+        boolean excludeNew = System.getProperty("netbeans.javacvs.excludeNewFiles") != null; // NOI18N
         commitOptions = new CommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             CvsFileNode node = nodes[i];
