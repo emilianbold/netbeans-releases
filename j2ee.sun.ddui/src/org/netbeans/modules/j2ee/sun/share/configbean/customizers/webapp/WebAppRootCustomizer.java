@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp;
 import java.util.ResourceBundle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
@@ -339,7 +340,12 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	
 	public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
 		if(WebAppRoot.SERVLET_LIST_CHANGED.equals(propertyChangeEvent.getPropertyName())) {
-			firePropertyChange(WebAppRootCustomizer.SERVLET_LIST_CHANGED, false, true);
+            // Make sure we handle this on the swing event thread from here on out.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    firePropertyChange(WebAppRootCustomizer.SERVLET_LIST_CHANGED, false, true);
+                }
+            });
 		}
 	}
     
