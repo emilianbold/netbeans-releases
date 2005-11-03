@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 import java.io.File;
 
 /**
@@ -48,5 +51,9 @@ public class CvsFileNode {
 
     public int hashCode() {
         return file.hashCode();
+    }
+
+    public FileObject getFileObject() {
+        return FileUtil.toFileObject(file);
     }
 }

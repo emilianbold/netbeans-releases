@@ -54,7 +54,7 @@ public class SyncFileNode extends AbstractNode {
     }
 
     private SyncFileNode(Children children, CvsFileNode node) {
-        super(children, Lookups.singleton(node));
+        super(children, Lookups.fixed(new Object[] {node, node.getFileObject()}));
         this.node = node;
         initProperties();
         refreshHtmlDisplayName();
