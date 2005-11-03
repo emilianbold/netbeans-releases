@@ -285,30 +285,26 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     }
     
     public void actionPerformed(ActionEvent actionEvent) {
-        final String actionCommand = actionEvent.getActionCommand();
-        org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                if (MergePanel.ACTION_FIRST_CONFLICT.equals(actionCommand)) {
-                    currentDiffLine = 0;
-                    showCurrentLine();
-                } else if (MergePanel.ACTION_LAST_CONFLICT.equals(actionCommand)) {
-                    currentDiffLine = diffs.length - 1;
-                    showCurrentLine();
-                } else if (MergePanel.ACTION_PREVIOUS_CONFLICT.equals(actionCommand)) {
-                    currentDiffLine--;
-                    if (currentDiffLine < 0) currentDiffLine = diffs.length - 1;
-                    showCurrentLine();
-                } else if (MergePanel.ACTION_NEXT_CONFLICT.equals(actionCommand)) {
-                    currentDiffLine++;
-                    if (currentDiffLine >= diffs.length) currentDiffLine = 0;
-                    showCurrentLine();
-                } else if (MergePanel.ACTION_ACCEPT_RIGHT.equals(actionCommand)) {
-                    doResolveConflict(true, currentDiffLine);
-                } else if (MergePanel.ACTION_ACCEPT_LEFT.equals(actionCommand)) {
-                    doResolveConflict(false, currentDiffLine);
-                }
-            }
-        });
+        String actionCommand = actionEvent.getActionCommand();
+        if (MergePanel.ACTION_FIRST_CONFLICT.equals(actionCommand)) {
+            currentDiffLine = 0;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_LAST_CONFLICT.equals(actionCommand)) {
+            currentDiffLine = diffs.length - 1;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_PREVIOUS_CONFLICT.equals(actionCommand)) {
+            currentDiffLine--;
+            if (currentDiffLine < 0) currentDiffLine = diffs.length - 1;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_NEXT_CONFLICT.equals(actionCommand)) {
+            currentDiffLine++;
+            if (currentDiffLine >= diffs.length) currentDiffLine = 0;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_ACCEPT_RIGHT.equals(actionCommand)) {
+            doResolveConflict(true, currentDiffLine);
+        } else if (MergePanel.ACTION_ACCEPT_LEFT.equals(actionCommand)) {
+            doResolveConflict(false, currentDiffLine);
+        }
     }
     
     public void vetoableChange(PropertyChangeEvent propertyChangeEvent) throws PropertyVetoException {
