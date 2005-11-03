@@ -1995,21 +1995,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 showingComponents = null;
             }
             else {
-                // re-init in next AWT round - to finish compound undo edit of
-                // this round and start a new one properly
-                // UGLY temporary fix of issue 64808
+                // re-init in next AWT round - to have the designer updated
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                EventQueue.invokeLater(new Runnable() {
-                                    public void run() {
-                                        init();
-                                        move(e);
-                                    }
-                                });
-                            }
-                        });
+                        init();
+                        move(e);
                     }
                 });
             }
@@ -2561,13 +2551,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
                 if (movingComponents != null) { // there is a precreated visual component
                     addedComponent = movingComponents[0];
+                    LayoutComponent layoutComponent = getComponentCreator().getPrecreatedLayoutComponent();
+                    getComponentCreator().addPrecreatedComponent(targetContainer, constraints);
                     if (getLayoutModel() != null) { // Some beans don't have layout
                         createLayoutUndoableEdit();
                         boolean autoUndo = true;
                         try {
                             formDesigner.getLayoutDesigner().endMoving(newLayout);
-                            LayoutComponent layoutComponent =
-                                    getComponentCreator().getPrecreatedLayoutComponent();
                             if (layoutComponent.isLayoutContainer()) {
                                 if (!newLayout) { // always add layout container to the model 
                                     getLayoutModel().addRootComponent(layoutComponent);
@@ -2578,8 +2568,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                             placeLayoutUndoableEdit(autoUndo);
                         }
                     }
-                    getComponentCreator().addPrecreatedComponent(
-                                            targetContainer, constraints);
                 }
                 else { // component not precreated ...
                     RADComponent targetComponent = targetContainer;

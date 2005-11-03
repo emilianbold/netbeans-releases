@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.lang.reflect.Method;
 
 import org.netbeans.modules.form.layoutsupport.*;
+import org.openide.ErrorManager;
 
 
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
@@ -50,8 +51,24 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
         super.setBeanInstance(beanInstance);
 
-        if (layoutSupport != null)
-            layoutSupport.initialize(this, getFormModel().getCodeStructure());
+        if (layoutSupport != null) // need new layout support for new container bean
+            layoutSupport = new LayoutSupportManager(this, getFormModel().getCodeStructure());
+    }
+
+    void setInModel(boolean in) {
+        boolean alreadyIn = isInModel();
+        super.setInModel(in);
+        if (in && !alreadyIn && layoutSupport != null) {
+            // deferred initialization from pre-creation
+            try {
+                layoutSupport.initializeLayoutDelegate();
+            }
+            catch (Exception ex) {
+                // [not reported - but very unlikely to happen - only for new container with custom layout]
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                layoutSupport.setUnknownLayoutDelegate(false);
+            }
+        }
     }
 
     public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate,
@@ -73,9 +90,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     void setOldLayoutSupport(boolean old) {
         if (old) {
             if (layoutSupport == null) {
-                layoutSupport = new LayoutSupportManager();
-                if (getBeanClass() != null)
-                    layoutSupport.initialize(this, getFormModel().getCodeStructure());
+                layoutSupport = new LayoutSupportManager(this, getFormModel().getCodeStructure());
             }
         }
         else {
@@ -83,7 +98,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                 try {
                     layoutSupport.setLayoutDelegate(null, null, false);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
             layoutSupport = null;

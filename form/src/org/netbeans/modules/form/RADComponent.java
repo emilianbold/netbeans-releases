@@ -136,7 +136,6 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
         Object bean = createBeanInstance();
         getBeanInfo(); // force BeanInfo creation here - will be needed, may fail
-        createCodeExpression();
         setBeanInstance(bean);
 
         return beanInstance;
@@ -157,7 +156,6 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         this.beanClass = beanInstance.getClass();
 
         getBeanInfo(); // force BeanInfo creation here - will be needed, may fail
-        createCodeExpression();
         setBeanInstance(beanInstance);
 
         getAllBeanProperties();
@@ -205,6 +203,17 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         this.beanInstance = beanInstance;
     }
 
+    void setInModel(boolean in) {
+        if (inModel != in) {
+            inModel = in;
+            formModel.updateMapping(this, in);
+            if (in)
+                createCodeExpression();
+            else
+                releaseCodeExpression();
+        }
+    }
+
     void setNodeReference(RADComponentNode node) {
         this.componentNode = node;
     }
@@ -224,14 +233,14 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         }
     }
 
-    final void removeCodeExpression() {
+/*    final void removeCodeExpression() {
         if (componentCodeExpression != null) {
             CodeVariable var = componentCodeExpression.getVariable();
             if (var != null)
                 storedName = var.getName();
             CodeStructure.removeExpression(componentCodeExpression);
         }
-    }
+    } */
 
     final void releaseCodeExpression() {
         if (componentCodeExpression != null) {
@@ -535,11 +544,6 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
     public final boolean isInModel() {
         return inModel;
-    }
-
-    final void setInModel(boolean in) {
-        inModel = in;
-        formModel.updateMapping(this, in);
     }
 
     /** @return the map of all component's aux value-pairs of <String, Object>

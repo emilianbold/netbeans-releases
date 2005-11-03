@@ -41,6 +41,9 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     public static final int RESIZE_RIGHT = 8;
 
     private LayoutSupportDelegate layoutDelegate;
+    private boolean needInit;
+    private boolean initializeFromInstance;
+    private boolean initializeFromCode;
 
     private Node.PropertySet[] propertySets;
 
@@ -60,22 +63,19 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     // initialization
 
     // initialization for a new container, layout delegate is set to null
-    public void initialize(RADVisualContainer container,
-                           CodeStructure codeStructure)
+    public LayoutSupportManager(RADVisualContainer container,
+                                CodeStructure codeStructure)
     {
-        if (layoutDelegate != null)
-            removeLayoutDelegate(false);
-
         this.metaContainer = container;
         this.codeStructure = codeStructure;
-
-        containerCodeExpression = metaContainer.getCodeExpression();
-        containerDelegateCodeExpression = null;
     }
 
-    // Creation and initialization of a layout delegate for a new container.
-    // Method initialize(...) must be called first.
-    public boolean initializeLayoutDelegate(boolean fromCode)
+    /**
+     * Creation and initialization of a layout delegate for a new container.
+     * @return false if suitable layout delegate is not found
+     * @throw IllegalArgumentException if the container instance is not empty
+     */
+    public boolean prepareLayoutDelegate(boolean fromCode, boolean initialize)
         throws Exception
     {
         LayoutSupportDelegate delegate = null;
@@ -149,9 +149,27 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         if (delegate == null)
             return false;
 
-        setLayoutDelegate(delegate, lmInstance, fromCode);
+        if (initialize) {
+            setLayoutDelegate(delegate, lmInstance, fromCode);
+        }
+        else {
+            layoutDelegate = delegate;
+            needInit = true;
+            initializeFromInstance = lmInstance != null;
+            initializeFromCode = fromCode;
+        }
 
         return true;
+    }
+
+    public void initializeLayoutDelegate() throws Exception {
+        if (layoutDelegate != null && needInit) {
+            LayoutManager lmInstance = initializeFromInstance ?
+                    getPrimaryContainerDelegate().getLayout() : null;
+            layoutDelegate.initialize(this, lmInstance, initializeFromCode);
+            getPropertySets(); // force properties and listeners creation
+            needInit = false;
+        }
     }
 
     public void setLayoutDelegate(LayoutSupportDelegate newDelegate,
@@ -170,6 +188,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         layoutDelegate = newDelegate;
         propertySets = null;
+        needInit = false;
 
         if (layoutDelegate != null) {
             try {
@@ -708,21 +727,27 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     public CodeExpression getContainerCodeExpression() {
+        if (containerCodeExpression == null) {
+            containerCodeExpression = metaContainer.getCodeExpression();
+            containerDelegateCodeExpression = null;
+        }
         return containerCodeExpression;
     }
 
     public CodeExpression getContainerDelegateCodeExpression() {
         if (containerDelegateCodeExpression == null) {
-            containerDelegateCodeExpression = containerDelegateCodeExpression(
-                metaContainer, containerCodeExpression, codeStructure);
+            containerDelegateCodeExpression =
+                    containerDelegateCodeExpression(metaContainer, codeStructure);
         }
 
         return containerDelegateCodeExpression;
     }
     
     public static CodeExpression containerDelegateCodeExpression(
-        RADVisualContainer metaContainer, CodeExpression containerCodeExpression,
-        CodeStructure codeStructure) {
+                                     RADVisualContainer metaContainer,
+                                     CodeStructure codeStructure)
+    {
+        CodeExpression containerCodeExpression = metaContainer.getCodeExpression();
         CodeExpression containerDelegateCodeExpression;
         java.lang.reflect.Method delegateGetter =
             metaContainer.getContainerDelegateMethod();

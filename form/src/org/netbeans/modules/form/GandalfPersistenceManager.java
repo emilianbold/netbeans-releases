@@ -748,7 +748,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             } else if (convIndex >= 0 || layoutCodeNode != null) {
                 try {
                     layoutInitialized =
-                        layoutSupport.initializeLayoutDelegate(true);
+                        layoutSupport.prepareLayoutDelegate(true, true);
                 }
                 catch (Exception ex) {
                     layoutEx = ex;
@@ -758,7 +758,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             } else if (layoutNode == null) { // Issue 63394: Bean form that is container
                 try {
-                    layoutInitialized = layoutSupport.initializeLayoutDelegate(false);
+                    layoutInitialized = layoutSupport.prepareLayoutDelegate(false, true);
                 } catch (Exception ex) {
                     layoutEx = ex;
                 }

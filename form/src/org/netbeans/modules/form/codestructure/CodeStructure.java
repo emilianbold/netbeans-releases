@@ -531,13 +531,15 @@ public class CodeStructure {
 	return name;
     }        
     
-    public String getExternalVariableName(Class type) {
+    public String getExternalVariableName(Class type, boolean register) {
 	String name = getFreeVariableName(null, type);
-	createVariable(CodeVariable.LOCAL, type, name);    
-	if(externalVariables == null) {
-	    externalVariables = new HashSet();
-	}	
-	externalVariables.add(name);
+        if (register) {
+            createVariable(CodeVariable.LOCAL, type, name);    
+            if(externalVariables == null) {
+                externalVariables = new HashSet();
+            }	
+            externalVariables.add(name);
+        }
 	return name;
     }
     

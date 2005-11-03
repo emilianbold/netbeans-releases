@@ -582,19 +582,34 @@ public class FormModelEvent extends EventObject
         }
 
         private void undoComponentAddition() {
-            redoComponentRemoval();
-        }
-
-        private void redoComponentAddition() {
-            undoComponentRemoval();
+            removeComponent();
+            if (codeUndoRedoStart != null) {
+                getFormModel().getCodeStructure().undoToMark(codeUndoRedoStart);
+            }
         }
 
         private void undoComponentRemoval() {
-            if (codeUndoRedoStart != null // is null when called from redoComponentAddition()
-                && !getFormModel().getCodeStructure().undoToMark(
-                                               codeUndoRedoStart))
-                return;
+            if (codeUndoRedoStart != null) {
+                getFormModel().getCodeStructure().undoToMark(codeUndoRedoStart);
+            }
+            addComponent();
+        }
 
+        private void redoComponentAddition() {
+            if (codeUndoRedoEnd != null) {
+                getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
+            }
+            addComponent();
+        }
+
+        private void redoComponentRemoval() {
+            removeComponent();
+            if (codeUndoRedoEnd != null) {
+                getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
+            }
+        }
+
+        private void addComponent() {
             RADComponent[] currentSubComps = getContainer().getSubBeans();
             RADComponent[] undoneSubComps =
                 new RADComponent[currentSubComps.length+1];
@@ -612,6 +627,9 @@ public class FormModelEvent extends EventObject
                 undoneSubComps[j] = currentSubComps[i];
             }
 
+            if (getCreatedDeleted())
+                FormModel.setInModelRecursively(getComponent(), true);
+
             getContainer().initSubComponents(undoneSubComps);
 
             if (getContainer() instanceof RADVisualContainer
@@ -626,17 +644,11 @@ public class FormModelEvent extends EventObject
                         componentIndex);
             }
 
-            if (getCreatedDeleted())
-                FormModel.setInModelRecursively(getComponent(), true);
-
             getFormModel().fireComponentAdded(getComponent(), getCreatedDeleted());
         }
 
-        private void redoComponentRemoval() {
+        private void removeComponent() {
             getFormModel().removeComponentImpl(getComponent(), getCreatedDeleted());
-
-            if (codeUndoRedoEnd != null)
-                getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
         }
 
         private void undoComponentsReorder() {

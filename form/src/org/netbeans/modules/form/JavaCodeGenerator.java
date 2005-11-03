@@ -1077,7 +1077,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             infos[i] = info;
                         }
                         CodeExpression contExpr = LayoutSupportManager.containerDelegateCodeExpression(
-                            cont, cont.getCodeExpression(), formModel.getCodeStructure());
+                                                    cont, formModel.getCodeStructure());
                         String contExprStr = getExpressionJavaString(contExpr, ""); // NOI18N
                         CodeVariable contVar = cont.getCodeExpression().getVariable();
                         String contVarName = (contVar == null) ? null : contVar.getName();
@@ -1613,7 +1613,7 @@ class JavaCodeGenerator extends CodeGenerator {
 					      Writer initCodeWriter) 
 	throws IOException					    
     {
-	String variableName = formModel.getCodeStructure().getExternalVariableName(propertyType);	
+	String variableName = formModel.getCodeStructure().getExternalVariableName(propertyType, true);	
 
 	String javaStr = propertyType.getName() + " " + variableName + " = " + propertyInitializationString; // NOI18N		
 	initCodeWriter.write(javaStr);

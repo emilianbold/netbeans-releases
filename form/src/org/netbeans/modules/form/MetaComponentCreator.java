@@ -57,8 +57,6 @@ public class MetaComponentCreator {
 
     FormModel formModel;
 
-    CreatorCodeUndoableEdit undoEdit;
-
     private RADVisualComponent preMetaComp;
     private LayoutComponent preLayoutComp;
 
@@ -184,16 +182,11 @@ public class MetaComponentCreator {
         if (preMetaComp != null)
             releasePrecreatedComponent();
 
-        formModel.startCompoundEdit(true);
-
         try { // Look&Feel UI defaults remapping needed
             FormLAF.executeWithLookAndFeel(
                 new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
                         preMetaComp = createVisualComponent(compClass);
-                        if (preMetaComp == null) { // creation failed
-                            formModel.endCompoundEdit(false);
-                        }
                         return preMetaComp;
                     }
                 }
@@ -253,7 +246,6 @@ public class MetaComponentCreator {
                     if (preMetaComp.getAuxValue("autoScrollPane") != null) { // NOI18N
                         RADVisualContainer metaCont = (RADVisualContainer)preMetaComp;
                         preMetaComp = metaCont.getSubComponent(0);
-                        metaCont.removeCodeExpression();
                     }
                 }
             }
@@ -269,10 +261,6 @@ public class MetaComponentCreator {
 
     void releasePrecreatedComponent() {
         if (preMetaComp != null) {
-            UndoableEdit edit = formModel.endCompoundEdit(false);
-            if (edit != null) {
-                edit.undo(); // to release component expression and variable name from CodeStructure
-            }
             preMetaComp = null;
             preLayoutComp = null;
         }
@@ -384,20 +372,12 @@ public class MetaComponentCreator {
             LayoutSupportManager.storeConstraints(
                                      (RADVisualComponent) sourceComp);
 
-        startCreatorCodeUndoableEdit();
-
         // copy the source metacomponent
         RADComponent newMetaComp = makeCopy(sourceComp, targetPlacement);
 
         if (newMetaComp == null) { // copying failed (for a mystic reason)
-            if (undoEdit != null) {
-                formModel.getCodeStructure().setUndoRedoRecording(false);
-                undoEdit = null;
-            }
             return null;
         }
-
-        finishCreatorCodeUndoableEdit();
 
         if (targetPlacement == TARGET_MENU) {
             addMenuComponent(newMetaComp, targetComp);
@@ -781,22 +761,22 @@ public class MetaComponentCreator {
             if (newMetaCont == null)
                 break; // not a container, the component is done
 
-            // initialize layout support (the new component is a container)
-            boolean layoutInitialized = false;
+            // prepare layout support (the new component is a container)
+            boolean knownLayout = false;
             Throwable layoutEx = null;
             try {
 		newMetaCont.setOldLayoutSupport(true);
                 LayoutSupportManager laysup = newMetaCont.getLayoutSupport();
-                layoutInitialized = laysup.initializeLayoutDelegate(false);
+                knownLayout = laysup.prepareLayoutDelegate(false, false);
                 // general containers should use the new layout support when created
-                if (!laysup.isDedicated() && formModel.isFreeDesignDefaultLayout()) {
+                if ((!knownLayout || !laysup.isDedicated()) && formModel.isFreeDesignDefaultLayout()) {
                     newMetaCont.setOldLayoutSupport(false);
                     FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+                    knownLayout = true;
                 }
             }
             catch (RuntimeException ex) { // silently ignore, try again as non-container
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                newMetaComp.removeCodeExpression(); // created in initComponentInstance
                 newMetaComp = null;
                 newMetaCont = null;
                 continue;
@@ -808,7 +788,7 @@ public class MetaComponentCreator {
                 layoutEx = ex;
             }
 
-            if (!layoutInitialized) {
+            if (!knownLayout) {
                 if (layoutEx == null) {
                     // no LayoutSupportDelegate found for the container
                     DialogDisplayer.getDefault().notify(
@@ -828,6 +808,8 @@ public class MetaComponentCreator {
                 newMetaCont.getLayoutSupport().setUnknownLayoutDelegate(false);
             }
         }
+
+        newMetaComp.setStoredName(formModel.getCodeStructure().getExternalVariableName(compClass, false));
 
         // for some components, we initialize their properties with some
         // non-default values e.g. a label on buttons, checkboxes
@@ -1257,29 +1239,18 @@ public class MetaComponentCreator {
     private boolean initComponentInstance(RADComponent metacomp,
                                           Class compClass)
     {
-        startCreatorCodeUndoableEdit();
 
         try {
             metacomp.initInstance(compClass);
         }
         catch (Exception ex) {
-            if (undoEdit != null) {
-                formModel.getCodeStructure().setUndoRedoRecording(false);
-                undoEdit = null;
-            }
             showInstErrorMessage(ex);
             return false;
         }
         catch (LinkageError ex) {
-            if (undoEdit != null) {
-                formModel.getCodeStructure().setUndoRedoRecording(false);
-                undoEdit = null;
-            }
             showInstErrorMessage(ex);
             return false;
         }
-
-        finishCreatorCodeUndoableEdit();
         return true;
     }
 
@@ -1519,70 +1490,5 @@ public class MetaComponentCreator {
             ((JComponent)comp).setPreferredSize(size);
         }
         return size;
-    }
-
-    //---------
-
-    /** Turns on undo/redo recording on code structure (if allowed). Needed for
-     * components holding expressions with field variable (i.e. the component's
-     * variable), otherwise redo would not work.
-     */
-    private void startCreatorCodeUndoableEdit() {
-        CodeStructure codeStructure = formModel.getCodeStructure();
-        if (formModel.isUndoRedoRecording()
-            && !codeStructure.isUndoRedoRecording())
-        {
-            codeStructure.setUndoRedoRecording(true);
-            undoEdit = new CreatorCodeUndoableEdit();
-            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
-        }
-        else undoEdit = null;
-    }
-
-    private void finishCreatorCodeUndoableEdit() {
-        if (undoEdit != null) { // finish undo/redo recording on code structure
-            CodeStructure codeStructure = formModel.getCodeStructure();
-            undoEdit.codeUndoRedoEnd = codeStructure.markForUndo();
-            codeStructure.setUndoRedoRecording(false);
-            if (!formModel.isCompoundEditInProgress())
-                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
-            formModel.addUndoableEdit(undoEdit);
-            undoEdit = null;
-        }
-    }
-
-    private class CreatorCodeUndoableEdit extends AbstractUndoableEdit {
-        private Object codeUndoRedoStart;
-        private Object codeUndoRedoEnd;
-
-        public void undo() throws CannotUndoException {
-            super.undo();
-
-            if (codeUndoRedoStart != null
-                    && !codeUndoRedoStart.equals(codeUndoRedoEnd))
-                formModel.getCodeStructure().undoToMark(codeUndoRedoStart);
-        }
-
-        public void redo() throws CannotRedoException {
-            super.redo();
-
-            if (codeUndoRedoEnd != null
-                    && !codeUndoRedoEnd.equals(codeUndoRedoStart))
-                formModel.getCodeStructure().redoToMark(codeUndoRedoEnd);
-        }
-
-        public String getUndoPresentationName() {
-            return ""; // NOI18N
-        }
-        public String getRedoPresentationName() {
-            return ""; // NOI18N
-        }
-
-        public void die() {
-            // it's important to release undo changes from CodeStructure
-            if (codeUndoRedoStart != null && codeUndoRedoEnd != null)
-                formModel.getCodeStructure().releaseUndoableChanges(
-                                  codeUndoRedoStart, codeUndoRedoEnd);
-        }
     }
 }
