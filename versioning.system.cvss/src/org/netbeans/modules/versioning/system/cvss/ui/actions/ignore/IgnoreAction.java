@@ -39,11 +39,11 @@ public class IgnoreAction extends AbstractSystemAction {
         switch (actionStatus) {
         case UNDEFINED:
         case IGNORING:
-            return "CTL_MenuItem_Ignore";
+            return "CTL_MenuItem_Ignore";  // NOI18N
         case UNIGNORING:
-            return "CTL_MenuItem_Unignore";
+            return "CTL_MenuItem_Unignore"; // NOI18N
         default:
-            throw new RuntimeException("Invalid action status: " + actionStatus);
+            throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
         }
     }
 
@@ -52,7 +52,7 @@ public class IgnoreAction extends AbstractSystemAction {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         File [] files = Utils.getCurrentContext(null).getFiles();
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().equals(".cvsignore")) {
+            if (files[i].getName().equals(".cvsignore")) { // NOI18N
                 actionStatus = UNDEFINED;
                 break;
             }
@@ -84,7 +84,7 @@ public class IgnoreAction extends AbstractSystemAction {
         } else if (actionStatus == UNIGNORING) {
             CvsVersioningSystem.getInstance().setNotignored(Utils.getCurrentContext(nodes).getFiles());
         } else {
-            throw new RuntimeException("Invalid action status: " + actionStatus);
+            throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
         }
     }
 
