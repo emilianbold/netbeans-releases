@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
+import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
@@ -115,7 +116,8 @@ class RevisionNode extends AbstractNode {
             try {
                 return getValue().toString();
             } catch (Exception e) {
-                return NbBundle.getMessage(RevisionNode.class, "BK1001");
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return e.getLocalizedMessage()();
             }
         }
 
