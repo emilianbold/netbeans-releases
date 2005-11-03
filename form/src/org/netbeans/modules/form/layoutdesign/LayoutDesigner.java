@@ -66,6 +66,7 @@ public class LayoutDesigner implements LayoutConstants {
         try {
             if (changeRequired) {
                 modelListener.deactivate(); // some changes may happen...
+                destroyRedundantGroups(updatedContainers);
                 operations.mergeAdjacentGaps(updatedContainers);
             }
 
@@ -1808,6 +1809,38 @@ public class LayoutDesigner implements LayoutConstants {
 	}
     }
 
+    private void destroyRedundantGroups(Set updatedContainers) {
+        Iterator it = layoutModel.getAllComponents();
+        while (it.hasNext()) {
+            LayoutComponent comp = (LayoutComponent) it.next();
+            if (!comp.isLayoutContainer())
+                continue;
+            
+            boolean updated = false;
+            for (int dim=0; dim<DIM_COUNT; dim++) {
+                LayoutInterval interval = comp.getLayoutRoot(dim);
+                updated = updated || destroyRedundantGroups(interval);
+            }
+            if (updated) {
+                updatedContainers.add(comp);
+            }
+        }
+    }
+    
+    private boolean destroyRedundantGroups(LayoutInterval interval) {
+        boolean updated = false;
+        for (int i=interval.getSubIntervalCount()-1; i>=0; i--) {
+            if (i >= interval.getSubIntervalCount()) continue;
+            LayoutInterval subInterval = interval.getSubInterval(i);
+            if (subInterval.isGroup()) {
+                destroyRedundantGroups(subInterval);
+                destroyGroupIfRedundant(subInterval, interval);
+                updated |= (subInterval.getParent() == null);
+            }
+        }
+        return updated;
+    }
+
     /**
      * Destroys the given group if it is redundant in the layout model.
      *
@@ -1846,13 +1879,12 @@ public class LayoutDesigner implements LayoutConstants {
         boolean dissolve = parent.isSequential() && group.isSequential();
         
         // Parallel groups can be sometimes dissolved in parallel parent
-        if (parent.isParallel() && group.isParallel()
-            && (parent.getGroupAlignment() == group.getGroupAlignment())) {
+        if (parent.isParallel() && group.isParallel()) {
             dissolve = true;
             Iterator iter = group.getSubIntervals();
             while (iter.hasNext()) {
                 LayoutInterval subInterval = (LayoutInterval)iter.next();
-                if (subInterval.getAlignment() != group.getGroupAlignment()) {
+                if (subInterval.getAlignment() != group.getAlignment()) {
                     dissolve = false;
                     break;
                 }
