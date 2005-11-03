@@ -15,6 +15,7 @@ package org.openide.explorer.view;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.*;
 import org.openide.nodes.Node;
+
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
@@ -367,10 +368,6 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         //Okay, the property panel has already grabbed the beans, clear
         //them so no references are held.
         return editor;
-    }
-
-    private PropertyPanel obtainPanel(Node node, Property prop) {
-        return getEditor(prop, node);
     }
 
     private static String getString(String key) {
