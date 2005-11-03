@@ -718,7 +718,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     escapedAuthor = XMLUtil.toElementContent(al.getAuthor());
                 } catch (CharConversionException e1) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e1, "CVS.AB: can not HTML escape: " + al.getAuthor());
+                    err.annotate(e1, "CVS.AB: can not HTML escape: " + al.getAuthor());  // NOI18N
                     err.notify(ErrorManager.INFORMATIONAL, e1);
                 }
 
@@ -732,7 +732,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                             escaped = XMLUtil.toElementContent(message);
                         } catch (CharConversionException e1) {
                             ErrorManager err = ErrorManager.getDefault();
-                            err.annotate(e1, "CVS.AB: can not HTML escape: " + message);
+                            err.annotate(e1, "CVS.AB: can not HTML escape: " + message); // NOI18N
                             err.notify(ErrorManager.INFORMATIONAL, e1);
                         }
                         if (escaped != null) {
@@ -779,7 +779,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
             } catch (BadLocationException e) {
                 ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "CVS.AB: can not locate line annotation.");
+                err.annotate(e, "CVS.AB: can not locate line annotation."); // NOI18N
                 err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
