@@ -19,6 +19,7 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.Action;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -143,7 +144,7 @@ public abstract class DataLoader extends SharedClassObject {
     *   actions
     */
     public final SystemAction[] getActions () {
-        javax.swing.Action[] arr = getSwingActions ();
+        Action[] arr = getSwingActions ();
         
         ArrayList list = new ArrayList ();
         for (int i = 0; i < arr.length; i++) {
@@ -156,7 +157,7 @@ public abstract class DataLoader extends SharedClassObject {
     }
     
     /** Swing actions getter, used from DataNode */
-    final javax.swing.Action[] getSwingActions () {
+    final Action[] getSwingActions () {
         DataLdrActions mgr = findManager ();
         if (mgr != null) {
             Object actions;
@@ -170,10 +171,10 @@ public abstract class DataLoader extends SharedClassObject {
                 actions = null;
             }
             if (actions == null) {
-                return new javax.swing.Action[0];
+                return new Action[0];
             }
         
-            return (javax.swing.Action[])actions;
+            return (Action[])actions;
         } else {
             // old behaviour, that stores actions in properties
             SystemAction[] actions = (SystemAction[])getProperty (PROP_ACTIONS);
@@ -210,22 +211,12 @@ public abstract class DataLoader extends SharedClassObject {
         return null;
     }
     
-    /** Get default actions. In fact this method is now a bit deprecated 
-    * (while still working) and instead of specifying actions here it 
-    * is believed that it is better to provide correct {@link #actionsContext}
-    * as that is going to allow declarative extensibility of the set of actions
-    * by other modules.
-    *
-    * @return array of default system actions or <CODE>null</CODE> if this loader
-    * does not have any actions or is using {@link #actionsContext} instead.
-    * Typical example of usage:
-    * <pre>
-    * return new SystemAction[] {
-    *                    SystemAction.get (OpenAction.class), ...
-    *                    SystemAction.get (PropertiesAction.class)
-    *                };
-    * </pre>
-    */
+    /**
+     * Get default actions. Now deprecated;
+     * instead of overriding this method it 
+     * is preferable to override {@link #actionsContext}.
+     * @return array of default system actions
+     */
     protected SystemAction[] defaultActions () {
         SystemAction[] actions = NodeOp.getDefaultActions();
         return actions;
@@ -501,7 +492,7 @@ public abstract class DataLoader extends SharedClassObject {
                         isdefault = false;
                 } catch (ClassNotFoundException ex) {
                     ERR.annotate (
-                        ex, org.openide.ErrorManager.INFORMATIONAL, 
+                        ex, ErrorManager.INFORMATIONAL, 
                         null, null, null, null
                     );
                     if (main == null) {

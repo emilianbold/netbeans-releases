@@ -14,13 +14,12 @@
 package org.netbeans.modules.properties;
 
 import java.io.IOException;
-
-import org.openide.actions.*;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.ExtensionList;
+import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.io.SafeException;
 
@@ -79,16 +78,6 @@ public final class PropertiesDataLoader extends MultiFileLoader {
         return "Loaders/text/x-properties/Actions/";                    //NOI18N
     }
     
-    /**
-     * This method returns <code>null</code> because it uses method
-     * {@link #actionsContext}.
-     *
-     * @return  <code>null</code>
-     */
-    protected SystemAction[] defaultActions() {
-        return null;
-    }
-
     /**
      * @return  <code>PropertiesDataObject</code> for the specified
      *          <code>FileObject</code>
@@ -172,7 +161,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     /** Writes extensions to the stream.
     * @param oo ignored
     */
-    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
+    public void writeExternal (ObjectOutput oo) throws IOException {
         super.writeExternal (oo);
 
         oo.writeObject (getProperty (PROP_EXTENSIONS));
@@ -181,7 +170,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     /** Reads nothing from the stream.
     * @param oi ignored
     */
-    public void readExternal (java.io.ObjectInput oi)
+    public void readExternal (ObjectInput oi)
     throws IOException, ClassNotFoundException {
         SafeException se;
         try {
