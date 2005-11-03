@@ -16,20 +16,20 @@
 <body>
 <h2>Generating Database Tables at Deployment</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>During development, you might not have access to the database schema or database 
-  to which your CMP beans connect. In this case, you can create your CMP entity 
-  beans, the bean fields, and the relationships in the IDE. You then configure 
-  the application to create the <tt>sun-cmp-mappings.xml</tt> file and create 
-  the database tables on the database server when you deploy the application.</p>
+<p>When developing CMP entity beans, you often do not want to work with the actual tables themselves, but
+  only want to work with the general structure of the database. In this case, you can create your CMP entity beans, the 
+  bean fields, and the relationships in the IDE. You then configure the application 
+  to configure the mappings and create the database tables on the database server 
+  when you deploy the application.</p>
 <ul class="note">
   <li>Unless you <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/editing/generate_cmp_beans.html">generate 
     entity beans from a database connection</a>, the IDE assumes you want to generate 
     the <tt>sun-cmp-mappings.xml</tt> file automatically. If you create CMP entity 
     beans using the <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/csh/ejb_new_entity.html">New 
-    Entity Bean template</a> and add your custom <tt>sun-cmp-mappings.xml</tt> 
-    file to the project, the IDE ignores the file when building the module JAR 
-    and packages the generated <tt>sun-cmp-mappings.xml</tt> file instead. To 
-    use your own <tt>sun-cmp-mappings.xml</tt> file, do one of the following: 
+    Entity Bean template</a> and manually set up your mappings, either in the 
+    Sun Configuration Editor or by hand in a <tt>sun-cmp-mappings.xml</tt> file, 
+    the IDE ignores your settings and configures the mappings during deployment. 
+    To use your own <tt>sun-cmp-mappings.xml</tt> file, do one of the following: 
     <ul>
       <li>Generate a CMP entity bean from any database. You can then delete the 
         bean. The IDE automatically switches your project to pick up the existing 
@@ -42,7 +42,7 @@
 </ul>
 <p><b>To generate database tables at runtime:</b></p>
 <ol>
-  <li>Make sure that your entity beans are set to use container-manage persistence 
+  <li>Make sure that your entity beans are set to use container-managed persistence 
     and have their CMP fields and container-managed relationships correctly configured.</li>
   <li>In the Projects window, expand Configuration Files and double-click <tt>sun-ejb-jar.xml</tt> 
     to open the Sun Configuration editor. </li>
