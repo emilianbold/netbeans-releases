@@ -348,6 +348,23 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.api.debugger.jpda" name="JPDAThread" />
         <issue number="59072"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Added canBeModified() method to JPDADebugger class</summary>
+        <version major="2" minor="3"/>
+        <date day="3" month="11" year="2005"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                A possibility to detect whether the debuggee is read-only is added.
+                This check works fine on JDK 1.5 and higher, on JDK 1.4 it returns
+                <code>true</code> by default.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
+        <issue number="67046"/>
+    </change>
 
 </changes>
 

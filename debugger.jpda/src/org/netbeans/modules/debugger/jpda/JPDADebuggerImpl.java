@@ -331,6 +331,33 @@ public class JPDADebuggerImpl extends JPDADebugger {
             
         }
     }
+    
+    private Boolean canBeModified;
+    private Object canBeModifiedLock = new Object();
+    
+    public boolean canBeModified() {
+        VirtualMachine vm = getVirtualMachine ();
+        if (vm == null) return false;
+        synchronized (canBeModifiedLock) {
+            if (canBeModified == null) {
+                try {
+                    java.lang.reflect.Method canBeModifiedMethod =
+                            com.sun.jdi.VirtualMachine.class.getMethod("canBeModified", new Class[] {});
+                    Object modifiable = canBeModifiedMethod.invoke(vm, new Object[] {});
+                    canBeModified = (Boolean) modifiable;
+                } catch (NoSuchMethodException nsmex) {
+                    // On JDK 1.4 we do not know... we suppose that can
+                    canBeModified = Boolean.TRUE;
+                } catch (IllegalAccessException iaex) {
+                    canBeModified = Boolean.TRUE;
+                } catch (InvocationTargetException itex) {
+                    canBeModified = Boolean.TRUE;
+                }
+            }
+            return canBeModified.booleanValue();
+        }
+        // return vm.canBeModified(); -- After we'll build on JDK 1.5
+    }
 
     private SmartSteppingFilter smartSteppingFilter;
 
@@ -675,6 +702,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             JPDAUtils.printFeatures (vm);
         }
         virtualMachine = vm;
+        synchronized (canBeModifiedLock) {
+            canBeModified = null; // Reset the can be modified flag
+        }
         
         initGenericsSupport ();
         

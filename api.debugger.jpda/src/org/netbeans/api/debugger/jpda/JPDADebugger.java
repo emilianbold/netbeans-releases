@@ -322,6 +322,17 @@ public abstract class JPDADebugger {
      * @return <code>true</code> if this debugger supports Pop action
      */
     public abstract boolean canPopFrames ();
+    
+    /**
+     * Determines if the target debuggee can be modified.
+     *
+     * @return <code>true</code> if the target debuggee can be modified or when
+     *         this information is not available (on JDK 1.4).
+     * @since 2.3
+     */
+    public boolean canBeModified() {
+        return true;
+    }
 
     /**
      * Implements fix & continue (HotSwap). Map should contain class names
