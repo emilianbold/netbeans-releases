@@ -215,13 +215,13 @@ Microsystems, Inc. All Rights Reserved.
         Multiview environment, where more views of one document exists.</p>
          
         <p>The solution is to bind content of your Navigator view directly to your
-        Node. Then, whenever your node gets activated in the system, Navigator UI
+        TopComponent. Then, whenever your TopComponent gets activated in the system, Navigator UI
         will show th content you connected to it.</p>
         
         <b>Steps to do:</b>
          
         <ul>
-            <li>Choose your content type, could be either known or arbitrary,
+            <li>Choose your content type, could be either well known or arbitrary,
             say <b>'text/my-amazing-type'</b> and
             do all basic steps described in above use case.<p></p></li>
             
@@ -236,11 +236,25 @@ Microsystems, Inc. All Rights Reserved.
              </pre>
              <p></p></li>
              
-            <li>Alter your <a href="@org-openide-nodes@/org/openide/nodes/Node.html">Node</a>
+            <li>Alter your <a href="@org-openide-windows@/org/openide/windows/TopComponent.html">TopComponent</a>
              to contain your NavigatorLookupHint implementation (AmazingTypeLookupHint in this case)
             in its lookup, returned from 
-            <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()">Node.getLookup()</a>
+            <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getLookup()">TopComponent.getLookup()</a>
              method.<p></p></li>
+             
+             <li>
+             Another option you have is to alter lookup of your <code>Node</code> subclass 
+             instead of directly altering lookup of your <code>TopComponent</code>.
+             See <a href="@org-openide-nodes@/org/openide/nodes/Nodes.html#getLookup()">Node.getLookup()</a> method.
+             Then Navigator will show your desired content whenever your <code>Node</code>
+             subclass will be active in the system.<br></br>             
+             However, keep in mind that this option is less preferred, because it
+             only uses implementation detail knowledge that default implementation
+             of <code>TopComponent.getLookup()</code> includes also results from 
+             lookup of asociated <code>Node</code>. So this approach will stop
+             working if you change default behaviour of <code>TopComponent.getLookup()</code> method.
+             <p></p>
+             </li>
              
         </ul>
    
