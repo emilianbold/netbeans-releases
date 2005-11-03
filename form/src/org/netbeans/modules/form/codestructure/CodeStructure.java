@@ -19,6 +19,7 @@ import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
 
@@ -43,7 +44,7 @@ public class CodeStructure {
 
     private Map namesToVariables = new HashMap(50);
     private Map expressionsToVariables = new HashMap(50);
-    private Set externalVariables = null;
+    private Set externalVariables = null;    
 
     private static int globalDefaultVariableType = CodeVariable.FIELD
                                                    | CodeVariable.PRIVATE;
@@ -395,7 +396,7 @@ public class CodeStructure {
 
         Variable var = new Variable(type, declaredType, name);
         namesToVariables.put(name, var);
-
+	
         if (undoRedoRecording)
             logUndoableChange(new VariableChange(VARIABLE_CREATE, var));
 
@@ -426,7 +427,7 @@ public class CodeStructure {
 
     /** Releases variable of given name. */
     public CodeVariable releaseVariable(String name) {
-        Variable var = (Variable) namesToVariables.remove(name);
+        Variable var = (Variable) namesToVariables.remove(name);	
         if (var == null)
             return null; // there is no such variable
 
@@ -445,7 +446,7 @@ public class CodeStructure {
     }
 
     /** Checks whether given name is already used by some variable. */
-    public boolean isVariableNameReserved(String name) {	
+    public boolean isVariableNameReserved(String name) {		
         return namesToVariables.get(name) != null || javaSource.containsField(name, true);
     }
 
@@ -526,7 +527,7 @@ public class CodeStructure {
             do { // find a free name
                 name = baseName + (++n);
             }
-            while ( namesToVariables.get(name) != null || javaSource.containsField(name, false) );
+	    while ( namesToVariables.get(name) != null || javaSource.containsField(name, false) );
         }	
 	return name;
     }        
@@ -551,7 +552,7 @@ public class CodeStructure {
 	    externalVariables.clear();	  	    
 	}
     }
-    
+
     /** Attaches an expression to a variable. The variable will be used in the
      * code instead of the expression. */
     public void attachExpressionToVariable(CodeExpression expression,
@@ -1024,12 +1025,12 @@ public class CodeStructure {
     }
 
     private class JavaSource {
-	
-	private FormDataObject formDataObject;	
-	private List fields = null;
-	
+		
+	private FormDataObject formDataObject = null;	
+	private List fields = null;	
+		
 	public void setFormDataObject(FormDataObject formDataObject) {
-	    this.formDataObject = formDataObject;	    	    	    	
+	    this.formDataObject = formDataObject;
 	}
 	
 	public void refresh() {
@@ -1046,19 +1047,54 @@ public class CodeStructure {
 	    }
 	    if(refresh) {
 		refresh();
-	    }
+	    }	    
+	    
 	    return fields != null && fields.contains(name);
 	}	
 	
 	private List getFieldNames() {
 	    List fields = new ArrayList();
-	    try{	    
+	    try{	    		
 
+		ClassDefinition javaClass = getClassDefinition();		    	    
+		if(javaClass==null) {
+		    return null;
+		}
+		
+		JavaEditor.SimpleSection variablesSection = 
+		    formDataObject.getFormEditorSupport().getVariablesSection();
+		String variablesText = "";
+		if(variablesSection!=null) {
+		    variablesText = variablesSection.getText();
+		}
+		
+		java.util.List children = javaClass.getChildren();
+		for (Iterator childrenIter = children.iterator(); childrenIter.hasNext();) {
+		    org.netbeans.jmi.javamodel.Element child = (org.netbeans.jmi.javamodel.Element)childrenIter.next();
+		    if(child instanceof org.netbeans.jmi.javamodel.Field) {																					
+			String childName = ((org.netbeans.jmi.javamodel.Field)child).getName();			
+			if( variablesText.indexOf(" " + childName + ";") < 0 ) {
+			    fields.add(childName);   			    
+			} 				
+		    }
+		}
+		
+	    } catch (Exception e) {
+		org.openide.ErrorManager.getDefault().notify(e);	    
+		// null will be ignored, so if something went wrong
+		// a variable name will still be generated ...
+		return null;
+	    }
+	    return fields;
+	}	
+	
+	private ClassDefinition getClassDefinition() {
+	    try{	    		
 		FileObject javaFileObject = formDataObject.getPrimaryFile();		
 		ClassPath classPath = ClassPath.getClassPath(javaFileObject, ClassPath.SOURCE);
                 Resource resource = JavaModel.getResource(classPath.findOwnerRoot(javaFileObject),
 					 classPath.getResourceName(javaFileObject));
-				
+						
 		java.util.List classifiers = resource.getClassifiers();
 		Iterator classIter = classifiers.iterator();
 
@@ -1067,24 +1103,19 @@ public class CodeStructure {
 		    String className = javaClass.getName();
 		    int dotIndex = className.lastIndexOf('.');
 		    className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
-		    if (className.equals(javaFileObject.getName())) {
-			java.util.List children = javaClass.getChildren();
-			for (Iterator childrenIter = children.iterator(); childrenIter.hasNext();) {
-			    org.netbeans.jmi.javamodel.Element child = (org.netbeans.jmi.javamodel.Element)childrenIter.next();
-			    if(child instanceof org.netbeans.jmi.javamodel.Field) {			
-				fields.add(((org.netbeans.jmi.javamodel.Field)child).getName());
-			    }
-			}
+		    if( className.equals(javaFileObject.getName()) ) {			
+			return javaClass;
 		    }
 		}	
 	    } catch (Exception e) {
 		org.openide.ErrorManager.getDefault().notify(e);	    
-		// null will be ignored, so if something should be wrong
+		// null will be ignored, so if something went wrong
 		// a variable name will still be generated ...
 		return null;
-	    }
-	    return fields;
-	}	
+	    }	    
+	    return null;
+	}
+	
     }
     
     // ---------------

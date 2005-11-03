@@ -19,6 +19,7 @@ import java.awt.EventQueue;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.text.Document;
+import org.netbeans.modules.java.JavaEditor.SimpleSection;
 
 import org.openide.*;
 import org.openide.nodes.Node;
@@ -55,6 +56,9 @@ public class FormEditorSupport extends JavaEditor
     private static final int FORM_ELEMENT_INDEX = 1;
     private int elementToOpen; // default element index when multiview TC is created
 
+    private static final String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
+    private static final String SECTION_VARIABLES = "variables"; // NOI18N
+    
     /** Icon for the form editor multiview window */
     private static final String iconURL =
         "org/netbeans/modules/form/resources/form.gif"; // NOI18N
@@ -683,6 +687,14 @@ public class FormEditorSupport extends JavaEditor
         return -1;
     }
 
+    public JavaEditor.SimpleSection getVariablesSection() {
+	return findSimpleSection(SECTION_VARIABLES);	
+    }
+    
+    public JavaEditor.SimpleSection getInitComponentSection() {
+	return findSimpleSection(SECTION_INIT_COMPONENTS);
+    }    
+    
     // --------
 
     /** A descriptor for the FormDesigner element of multiview. Allows lazy

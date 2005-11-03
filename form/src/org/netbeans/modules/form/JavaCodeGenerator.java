@@ -88,8 +88,6 @@ class JavaCodeGenerator extends CodeGenerator {
     static final int CEDL_INNERCLASS = 1;
     static final int CEDL_MAINCLASS = 2;
 
-    private static final String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
-    private static final String SECTION_VARIABLES = "variables"; // NOI18N
     private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
 
     private static final String DEFAULT_LISTENER_CLASS_NAME = "FormListener"; // NOI18N
@@ -159,10 +157,8 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             else canGenerate = false;
 
-            initComponentsSection =
-                formEditorSupport.findSimpleSection(SECTION_INIT_COMPONENTS);
-            variablesSection =
-                formEditorSupport.findSimpleSection(SECTION_VARIABLES);
+            initComponentsSection = formEditorSupport.getInitComponentSection();
+            variablesSection = formEditorSupport.getVariablesSection();
 
             if (initComponentsSection == null || variablesSection == null) {
                 System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
