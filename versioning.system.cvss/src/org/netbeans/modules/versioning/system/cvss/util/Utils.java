@@ -278,7 +278,7 @@ public class Utils {
     public static String getCVSRootFor(File file) throws IOException {
         if (file.isFile()) file = file.getParentFile();
         for (; file != null; file = file.getParentFile()) {
-            File rootFile = new File(file, "CVS/Root");
+            File rootFile = new File(file, "CVS/Root"); // NOI18N
             BufferedReader br = null;
             try {
                 br = new BufferedReader(new FileReader(rootFile));
@@ -289,7 +289,7 @@ public class Utils {
                 if (br != null) br.close();
             }
         }
-        throw new IOException("CVS/Root not found");
+        throw new IOException("CVS/Root not found"); // NOI18N
     }
     
     public static Window getCurrentWindow() {
@@ -332,9 +332,9 @@ public class Utils {
      */
     public static String getRelativePath(File file) {
         try {
-            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParent(), "").substring(1);
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParent(), "").substring(1); // NOI18N
         } catch (IOException e) {
-            return "";
+            return ""; // NOI18N
         }
     }
 
@@ -354,8 +354,8 @@ public class Utils {
                 return CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
             }
             String stickyInfo = null;
-            if (entry.getTag() != null) stickyInfo = "T" + entry.getTag();
-            else if (entry.getDate() != null) stickyInfo = "D" + entry.getDateFormatted();
+            if (entry.getTag() != null) stickyInfo = "T" + entry.getTag(); // NOI18N
+            else if (entry.getDate() != null) stickyInfo = "D" + entry.getDateFormatted(); // NOI18N
             return stickyInfo;
         }
         if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
@@ -527,7 +527,7 @@ public class Utils {
         case FileInformation.STATUS_UNKNOWN:
             return 102;
         default:
-            throw new IllegalArgumentException("Unknown status: " + status);
+            throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
     }
     

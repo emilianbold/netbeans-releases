@@ -33,7 +33,7 @@ public abstract class CommandDuplicator {
         if (src instanceof RemoveCommand) return new RemoveCloner((RemoveCommand) src);
         if (src instanceof RtagCommand) return new RtagCloner((RtagCommand) src);
         if (src instanceof RlogCommand) return new RlogCloner((RlogCommand) src);
-        throw new IllegalArgumentException("Clone not supported for command type: " + src.getClass().getName());
+        throw new IllegalArgumentException("Clone not supported for command type: " + src.getClass().getName()); // NOI18N
     }
 
     public abstract Command duplicate();
