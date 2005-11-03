@@ -134,44 +134,47 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
 
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        dir = wm.getDocumentBase();
-        String configFile = (String) wizard.getProperty(WizardProperties.FORMBEAN_CONFIG_FILE);
-        FileObject fo = dir.getFileObject(configFile); //NOI18N
-        StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
-        StrutsConfig config= configDO.getStrutsConfig();
-        
-        FormBean formBean = new FormBean();
-        String targetName = Templates.getTargetName(wizard);
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        String packageName = null;
-        org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
-        for (int i = 0; i < groups.length && packageName == null; i++) {
-            packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
-            if (packageName!=null) break;
+        if (wm != null){
+            // write to a struts configuration file, only when it's inside wm. 
+            dir = wm.getDocumentBase();
+            String configFile = (String) wizard.getProperty(WizardProperties.FORMBEAN_CONFIG_FILE);
+            FileObject fo = dir.getFileObject(configFile); //NOI18N
+            StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
+            StrutsConfig config= configDO.getStrutsConfig();
+
+            FormBean formBean = new FormBean();
+            String targetName = Templates.getTargetName(wizard);
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String packageName = null;
+            org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
+            for (int i = 0; i < groups.length && packageName == null; i++) {
+                packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
+                if (packageName!=null) break;
+            }
+            if (packageName!=null) packageName = packageName.replace('/','.');
+            else packageName="";    //NOI18N
+            String className=null;
+            if (packageName.length()>0)
+                className=packageName+"."+targetName;//NOI18N
+            else
+                className=targetName;
+
+            formBean.setAttributeValue("name", targetName); //NOI18N
+            formBean.setAttributeValue("type", className); //NOI18N     
+            if (config != null && config.getFormBeans()==null){
+                config.setFormBeans(new FormBeans());
+            }
+
+            config.getFormBeans().addFormBean(formBean);
+            BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+            if (doc == null){
+                ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
+                doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+            }
+            StrutsEditorUtilities.writeBean(doc, formBean, "form-bean", "form-beans"); //NOI18N
+            configDO.getEditorSupport().saveDocument();
         }
-        if (packageName!=null) packageName = packageName.replace('/','.');
-        else packageName="";    //NOI18N
-        String className=null;
-        if (packageName.length()>0)
-            className=packageName+"."+targetName;//NOI18N
-        else
-            className=targetName;
-        
-        formBean.setAttributeValue("name", targetName); //NOI18N
-        formBean.setAttributeValue("type", className); //NOI18N     
-        if (config != null && config.getFormBeans()==null){
-            config.setFormBeans(new FormBeans());
-        }
-             
-        config.getFormBeans().addFormBean(formBean);
-        BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
-        if (doc == null){
-            ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
-            doc = (BaseDocument)configDO.getEditorSupport().getDocument();
-        }
-        StrutsEditorUtilities.writeBean(doc, formBean, "form-bean", "form-beans"); //NOI18N
-        configDO.getEditorSupport().saveDocument();
         return Collections.singleton(dobj);
     }
     

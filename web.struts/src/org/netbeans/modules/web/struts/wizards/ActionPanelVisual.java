@@ -157,9 +157,11 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         // check configuration file
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         if (configFile == null || configFile.trim().equals("")){
+            // Should dislpay only warning. We should allow to create action outside module. #68034
             wizardDescriptor.putProperty("WizardPanel_errorMessage",                            //NOI18N
                     NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));//NOI18N
-            return false;
+            // don't check the action path, when the configuration file is not needed. 
+            return true;
         }
         // check Action path
         String actionPath = jTextFieldPath.getText();

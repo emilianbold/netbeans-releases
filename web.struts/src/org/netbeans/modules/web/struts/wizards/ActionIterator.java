@@ -83,7 +83,8 @@ public class ActionIterator implements TemplateWizard.Iterator {
         
         WizardDescriptor.Panel secondPanel = new ActionPanel(project, wizard);
         WizardDescriptor.Panel thirdPanel = new ActionPanel1(project);
-        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
+        WizardDescriptor.Panel javaPanel = new FinishableProxyWizardPanel(
+                    JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel));
         panels = new WizardDescriptor.Panel[] { javaPanel, thirdPanel };
         
         // Creating steps.
@@ -154,55 +155,58 @@ public class ActionIterator implements TemplateWizard.Iterator {
         
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        dir = wm.getDocumentBase();
-        String configFile = (String) wizard.getProperty(WizardProperties.ACTION_CONFIG_FILE);
-        FileObject fo = dir.getFileObject(configFile); 
-        StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
-        StrutsConfig config= configDO.getStrutsConfig();
-        Action action = new Action();
-        
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        String packageName = null;
-        org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
-        for (int i = 0; i < groups.length && packageName == null; i++) {
-            packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
-            if (packageName!=null) break;
+        if (wm != null) {
+            // the file is created outside a wm -> we don't need to write the declaration.
+            dir = wm.getDocumentBase();
+            String configFile = (String) wizard.getProperty(WizardProperties.ACTION_CONFIG_FILE);
+            FileObject fo = dir.getFileObject(configFile); 
+            StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
+            StrutsConfig config= configDO.getStrutsConfig();
+            Action action = new Action();
+
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String packageName = null;
+            org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
+            for (int i = 0; i < groups.length && packageName == null; i++) {
+                packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
+                if (packageName!=null) break;
+            }
+            if (packageName!=null) packageName = packageName.replace('/','.');
+            else packageName="";                        //NOI18N
+            String className=null;
+            if (packageName.length()>0)
+                className=packageName+"."+targetName;//NOI18N
+            else
+                className=targetName;
+            action.setAttributeValue("type", className);                    //NOI18N
+
+            String path = (String) wizard.getProperty(WizardProperties.ACTION_PATH);
+            action.setAttributeValue("path", path.startsWith("/") ? path : "/" + path);     //NOI18N
+
+            String formName = (String) wizard.getProperty(WizardProperties.ACTION_FORM_NAME);
+            if (formName!=null) {
+                action.setAttributeValue("name", formName);         //NOI18N
+                action.setAttributeValue("scope",(String) wizard.getProperty(WizardProperties.ACTION_SCOPE));   //NOI18N
+                action.setAttributeValue("input",(String) wizard.getProperty(WizardProperties.ACTION_INPUT));   //NOI18N
+                action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));   //NOI18N
+                Boolean validate = (Boolean) wizard.getProperty(WizardProperties.ACTION_VALIDATE);
+                if (Boolean.FALSE.equals(validate)) action.setAttributeValue("validate","false"); //NOI18N
+                action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));   //NOI18N
+            }
+            action.setAttributeValue("parameter",(String) wizard.getProperty(WizardProperties.ACTION_PARAMETER));       //NOI18N
+
+            if (config != null && config.getActionMappings() == null)
+                config.setActionMappings(new ActionMappings());
+            config.getActionMappings().addAction(action);
+            BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+            if (doc == null){
+                ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
+                doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+            }
+            StrutsEditorUtilities.writeBean(doc, action, "action", "action-mappings");                                  //NOI18N
+            configDO.getEditorSupport().saveDocument();        
         }
-        if (packageName!=null) packageName = packageName.replace('/','.');
-        else packageName="";                        //NOI18N
-        String className=null;
-        if (packageName.length()>0)
-            className=packageName+"."+targetName;//NOI18N
-        else
-            className=targetName;
-        action.setAttributeValue("type", className);                    //NOI18N
-        
-        String path = (String) wizard.getProperty(WizardProperties.ACTION_PATH);
-        action.setAttributeValue("path", path.startsWith("/") ? path : "/" + path);     //NOI18N
-        
-        String formName = (String) wizard.getProperty(WizardProperties.ACTION_FORM_NAME);
-        if (formName!=null) {
-            action.setAttributeValue("name", formName);         //NOI18N
-            action.setAttributeValue("scope",(String) wizard.getProperty(WizardProperties.ACTION_SCOPE));   //NOI18N
-            action.setAttributeValue("input",(String) wizard.getProperty(WizardProperties.ACTION_INPUT));   //NOI18N
-            action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));   //NOI18N
-            Boolean validate = (Boolean) wizard.getProperty(WizardProperties.ACTION_VALIDATE);
-            if (Boolean.FALSE.equals(validate)) action.setAttributeValue("validate","false"); //NOI18N
-            action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));   //NOI18N
-        }
-        action.setAttributeValue("parameter",(String) wizard.getProperty(WizardProperties.ACTION_PARAMETER));       //NOI18N
-        
-        if (config != null && config.getActionMappings() == null)
-            config.setActionMappings(new ActionMappings());
-        config.getActionMappings().addAction(action);
-        BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
-        if (doc == null){
-            ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
-            doc = (BaseDocument)configDO.getEditorSupport().getDocument();
-        }
-        StrutsEditorUtilities.writeBean(doc, action, "action", "action-mappings");                                  //NOI18N
-        configDO.getEditorSupport().saveDocument();        
         return Collections.singleton(dobj);
     }
     

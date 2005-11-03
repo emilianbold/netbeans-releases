@@ -115,9 +115,9 @@ public class FormBeanNewPanelVisual extends javax.swing.JPanel implements HelpCt
                     NbBundle.getMessage(FormBeanNewPanelVisual.class, "MSG_NoSuperClassSelected"));
         }
         if (configFile == null || configFile.trim().equals("")){
+            // Should dislpay only warning. We should allow to create bean outside module. #68034
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     NbBundle.getMessage(FormBeanNewPanelVisual.class, "MSG_NoConfFileSelectedForBean"));
-            return false;
         }
         return true;
     }

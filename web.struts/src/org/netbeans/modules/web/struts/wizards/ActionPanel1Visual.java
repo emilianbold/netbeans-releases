@@ -35,11 +35,11 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
     private ActionPanel1 panel;
     
     /** Creates new form ActionPanel1Visual */
-    public ActionPanel1Visual(ActionPanel1 panel) {  
+    public ActionPanel1Visual(ActionPanel1 panel) {
         this.panel=panel;
         initComponents();
         setName(NbBundle.getMessage(ActionPanel1Visual.class,"TITLE_FormBean&Parameter"));
-        putClientProperty ("NewFileWizard_Title",  //NOI18N
+        putClientProperty("NewFileWizard_Title",  //NOI18N
                 NbBundle.getMessage(ActionPanel1Visual.class, "TITLE_StrutsAction"));
     }
     
@@ -275,7 +275,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         add(jParameterSpecificLabel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
 // TODO add your handling code here:
         Project proj = panel.getProject();
@@ -293,11 +293,10 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
                         TFInputResource.setText(res);
                     }
                 }
-            } catch (DataObjectNotFoundException ex) {}
-            catch (java.io.IOException ex) {}
+            } catch (DataObjectNotFoundException ex) {} catch (java.io.IOException ex) {}
         }
     }//GEN-LAST:event_jButtonBrowseActionPerformed
-
+    
     private void RBInputActionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_RBInputActionItemStateChanged
 // TODO add your handling code here:
         boolean selected = RBInputAction.isSelected();
@@ -305,7 +304,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         jButtonBrowse.setEnabled(!selected);
         CBInputAction.setEnabled(selected);
     }//GEN-LAST:event_RBInputActionItemStateChanged
-
+    
     private void RBInputResourceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_RBInputResourceItemStateChanged
 // TODO add your handling code here:
         boolean selected = RBInputResource.isSelected();
@@ -313,7 +312,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         jButtonBrowse.setEnabled(selected);
         CBInputAction.setEnabled(!selected);
     }//GEN-LAST:event_RBInputResourceItemStateChanged
-
+    
     private void CHBUseFormBeanItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_CHBUseFormBeanItemStateChanged
 // TODO add your handling code here:
         boolean selected = CHBUseFormBean.isSelected();
@@ -362,12 +361,12 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel jParameterSpecificLabel;
     // End of variables declaration//GEN-END:variables
- 
+    
     boolean valid(WizardDescriptor wizardDescriptor) {
         return true;
     }
     
-    void read (WizardDescriptor settings) {
+    void read(WizardDescriptor settings) {
         
         // initialize the parameter value
         if (settings.getProperty(WizardProperties.ACTION_PARAMETER)==null) {
@@ -375,16 +374,13 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
             if (ActionPanelVisual.DISPATCH_ACTION.equals(actionClass)){
                 TFParameter.setText("method"); //NOI18N
                 jParameterSpecificLabel.setText(NbBundle.getMessage(ActionPanel1Visual.class, "LBL_Dispatch_Action"));//NOI18
-            }
-            else if (ActionPanelVisual.MAPPING_DISPATCH_ACTION.equals(actionClass)){
+            } else if (ActionPanelVisual.MAPPING_DISPATCH_ACTION.equals(actionClass)){
                 TFParameter.setText("customMethod"); //NOI18
                 jParameterSpecificLabel.setText(NbBundle.getMessage(ActionPanel1Visual.class, "LBL_Mapping_Dispatch_Action"));//NOI18
-            }
-            else if (ActionPanelVisual.LOOKUP_DISPATCH_ACTION.equals(actionClass)){
+            } else if (ActionPanelVisual.LOOKUP_DISPATCH_ACTION.equals(actionClass)){
                 TFParameter.setText(""); //NOI18
                 jParameterSpecificLabel.setText(NbBundle.getMessage(ActionPanel1Visual.class, "LBL_Lookup_Dispatch_Action"));//NOI18
-            }
-            else{
+            } else{
                 TFParameter.setText(""); //NOI18
                 jParameterSpecificLabel.setText("");   //NOI18
             }
@@ -392,49 +388,51 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         configFile = (String)settings.getProperty(WizardProperties.ACTION_CONFIG_FILE);
         Project proj = panel.getProject();
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
-        org.openide.filesystems.FileObject fo = wm.getDocumentBase().getFileObject(configFile);
-        if (fo!=null) {
-            try {
-                DataObject dObj = DataObject.find(fo);
-                if (dObj instanceof StrutsConfigDataObject) {
-                    StrutsConfigDataObject strutsDO = (StrutsConfigDataObject)dObj;
-                    
-                    // initialize Input Actions Combo Box
-                    List actions = StrutsConfigUtilities.getAllActionsInModule(strutsDO);
-                    String[] actionPaths = new String[actions.size()];
-                    for (int i=0;i<actionPaths.length;i++) {
-                        actionPaths[i]=((Action)actions.get(i)).getAttributeValue("path"); //NOI18N
-                        if (actionPaths[i]==null) actionPaths[i]="???"; //NOI18N
+        if (wm != null){
+            org.openide.filesystems.FileObject fo = wm.getDocumentBase().getFileObject(configFile);
+            if (fo!=null) {
+                try {
+                    DataObject dObj = DataObject.find(fo);
+                    if (dObj instanceof StrutsConfigDataObject) {
+                        StrutsConfigDataObject strutsDO = (StrutsConfigDataObject)dObj;
+                        
+                        // initialize Input Actions Combo Box
+                        List actions = StrutsConfigUtilities.getAllActionsInModule(strutsDO);
+                        String[] actionPaths = new String[actions.size()];
+                        for (int i=0;i<actionPaths.length;i++) {
+                            actionPaths[i]=((Action)actions.get(i)).getAttributeValue("path"); //NOI18N
+                            if (actionPaths[i]==null) actionPaths[i]="???"; //NOI18N
+                        }
+                        CBInputAction.setModel(new javax.swing.DefaultComboBoxModel(actionPaths));
+                        
+                        // initialize Form Name Combo Box
+                        List formBeans = StrutsConfigUtilities.getAllFormBeansInModule(strutsDO);
+                        String[] beans = new String[formBeans.size()];
+                        for (int i=0;i<beans.length;i++) {
+                            beans[i]=((FormBean)formBeans.get(i)).getAttributeValue("name"); //NOI18N
+                            if (beans[i]==null) beans[i]="???"; //NOI18N
+                        }
+                        CBFormName.setModel(new javax.swing.DefaultComboBoxModel(beans));
+                        
+                        return;
                     }
-                    CBInputAction.setModel(new javax.swing.DefaultComboBoxModel(actionPaths));
-                    
-                    // initialize Form Name Combo Box
-                    List formBeans = StrutsConfigUtilities.getAllFormBeansInModule(strutsDO);
-                    String[] beans = new String[formBeans.size()];
-                    for (int i=0;i<beans.length;i++) {
-                        beans[i]=((FormBean)formBeans.get(i)).getAttributeValue("name"); //NOI18N
-                        if (beans[i]==null) beans[i]="???"; //NOI18N
-                    }
-                    CBFormName.setModel(new javax.swing.DefaultComboBoxModel(beans));
-                    
-                    return;
-                }
-            } catch (DataObjectNotFoundException ex) {}
+                } catch (DataObjectNotFoundException ex) {}
+            }
         }
         CBInputAction.setModel(new javax.swing.DefaultComboBoxModel(new String[]{}));
         CBFormName.setModel(new javax.swing.DefaultComboBoxModel(new String[]{}));
     }
-
+    
     void store(WizardDescriptor settings) {
-        settings.putProperty(WizardProperties.ACTION_FORM_NAME, 
+        settings.putProperty(WizardProperties.ACTION_FORM_NAME,
                 CHBUseFormBean.isSelected()?CBFormName.getSelectedItem():null);
-        settings.putProperty(WizardProperties.ACTION_INPUT, 
+        settings.putProperty(WizardProperties.ACTION_INPUT,
                 CHBUseFormBean.isSelected()?getInput():null);
-        settings.putProperty(WizardProperties.ACTION_SCOPE, 
+        settings.putProperty(WizardProperties.ACTION_SCOPE,
                 CHBUseFormBean.isSelected()?getScope():null);
-        settings.putProperty(WizardProperties.ACTION_ATTRIBUTE, 
+        settings.putProperty(WizardProperties.ACTION_ATTRIBUTE,
                 CHBUseFormBean.isSelected()?getAttribute():null);
-        settings.putProperty(WizardProperties.ACTION_VALIDATE, 
+        settings.putProperty(WizardProperties.ACTION_VALIDATE,
                 CHBUseFormBean.isSelected()?isValidate():null);
         // set the parameter property only when other than default
         String param = getParameter();
@@ -480,5 +478,5 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ActionPanel1Visual.class);
     }
-
+    
 }
