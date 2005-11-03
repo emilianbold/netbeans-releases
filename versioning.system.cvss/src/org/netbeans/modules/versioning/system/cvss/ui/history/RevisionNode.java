@@ -117,7 +117,7 @@ class RevisionNode extends AbstractNode {
                 return getValue().toString();
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                return e.getLocalizedMessage()();
+                return e.getLocalizedMessage();
             }
         }
 
