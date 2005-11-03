@@ -52,7 +52,7 @@ import org.openide.util.RequestProcessor;
  * @author  mkrauskopf
  */
 final class AddModulePanel extends JPanel {
-
+    
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
     
     private CustomizerComponentFactory.DependencyListModel universeModules;
@@ -222,6 +222,10 @@ final class AddModulePanel extends JPanel {
                     filterTask = null;
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
+                            // XXX would be better to have more fine-grained control over the thread
+                            if (!text.equals(filterValue.getText())) {
+                                return; // no longer valid, don't apply
+                            }
                             moduleList.setModel(CustomizerComponentFactory.createDependencyListModel(matches));
                             int index = matches.isEmpty() ? -1 : 0;
                             moduleList.setSelectedIndex(index);
@@ -360,8 +364,7 @@ final class AddModulePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(showJavadocButton, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void showJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showJavadoc
         HtmlBrowser.URLDisplayer.getDefault().showURL(currectJavadoc);
@@ -373,9 +376,9 @@ final class AddModulePanel extends JPanel {
     private javax.swing.JTextPane descValue;
     private javax.swing.JScrollPane descValueSP;
     private javax.swing.JLabel filter;
-    private javax.swing.JTextField filterValue;
+    javax.swing.JTextField filterValue;
     private javax.swing.JLabel moduleLabel;
-    private javax.swing.JList moduleList;
+    javax.swing.JList moduleList;
     private javax.swing.JScrollPane moduleSP;
     private javax.swing.JButton showJavadocButton;
     // End of variables declaration//GEN-END:variables

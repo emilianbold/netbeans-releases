@@ -425,7 +425,7 @@ public class SingleModulePropertiesTest extends TestBase {
 //        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
 //    }
     
-    private static SingleModuleProperties loadProperties(NbModuleProject project) throws IOException {
+    static SingleModuleProperties loadProperties(NbModuleProject project) throws IOException {
         return new SingleModuleProperties(project.getHelper(), project.evaluator(),
                 getSuiteProvider(project), getModuleType(project),
                 (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
