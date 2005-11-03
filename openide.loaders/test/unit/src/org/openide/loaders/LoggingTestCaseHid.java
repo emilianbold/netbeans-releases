@@ -261,7 +261,8 @@ class LoggingTestCaseHid extends NbTestCase {
                             // the correct message from the right thread found
                             switches.removeFirst();
                             if (switches.isEmpty()) {
-                                // end of sample
+                                // end of sample, make all run
+                                switches.notifyAll();
                                 return;
                             }
                             w = (Switch)switches.getFirst();
@@ -307,7 +308,7 @@ class LoggingTestCaseHid extends NbTestCase {
                             if (log) {
                                 messages.append("t: " + threadName + " log: " + s + " waiting\n");
                             }
-                            switches.wait(300);
+                            switches.wait();
                             if (log) {
                                 messages.append("t: " + threadName + " log: " + s + " timeout\n");
                             }

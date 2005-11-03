@@ -75,7 +75,9 @@ public class LoggingControlTest extends LoggingTestCaseHid {
         RequestProcessor rp = new RequestProcessor("Para");
         RequestProcessor.Task task = rp.post(run);
         run.directly();
-        task.waitFinished();
+        if (!task.waitFinished(10000)) {
+            fail("Runnable deadlocked");
+        }
         
         String res = run.events.toString();
         
@@ -123,7 +125,9 @@ public class LoggingControlTest extends LoggingTestCaseHid {
         RequestProcessor rp = new RequestProcessor("Para");
         RequestProcessor.Task task = rp.post(run);
         run.directly();
-        task.waitFinished();
+        if (!task.waitFinished(10000)) {
+            fail("Runnable deadlocked");
+        }
         
         String res = run.events.toString();
         
@@ -171,7 +175,9 @@ public class LoggingControlTest extends LoggingTestCaseHid {
         RequestProcessor rp = new RequestProcessor("Para");
         RequestProcessor.Task task = rp.post(run);
         run.directly();
-        task.waitFinished();
+        if (!task.waitFinished(10000)) {
+            fail("Runnable deadlocked");
+        }
         
         String res = run.events.toString();
         
