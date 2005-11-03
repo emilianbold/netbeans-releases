@@ -76,7 +76,9 @@
         <!-- Merge it before the last group of helpset TOC entries: -->
         <attr name="com-sun-enterprise-tools-studio-j2ee-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" 
                    boolvalue="true"/>
-     </folder>
+ <attr name="org-netbeans-modules-usersguide-above-regular.txt/com-sun-jdo-modules-persistence-mapping-core-helpset.xml" boolvalue="true"/>
+ <file name="com-sun-jdo-modules-persistence-mapping-core-helpset.xml" url="helpset-decl.xml"/>
+ <attr name="com-sun-jdo-modules-persistence-mapping-core-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>      </folder>
      
      <folder name="J2EEServers">
         <file name="PluginOptions.settings" url="PluginOptions.xml">
