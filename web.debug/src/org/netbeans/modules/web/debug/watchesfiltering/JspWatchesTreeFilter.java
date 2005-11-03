@@ -48,6 +48,11 @@ public class JspWatchesTreeFilter implements TreeModelFilter {
             Watch [] allWatches = DebuggerManager.getDebuggerManager().getWatches();
             Object [] result = original.getChildren(parent, from, to);
             
+            //original model returns array of JPDAWatch-es, thus we must create an Object array 
+            //to allow merging with JspElWatch-es
+            Object[] ch = new Object[result.length];
+            System.arraycopy(result, 0, ch, 0, result.length);
+            
             for (int i = from; i < to; i++) {
                 Watch w = allWatches[i];
                 String expression = w.getExpression();
@@ -57,10 +62,10 @@ public class JspWatchesTreeFilter implements TreeModelFilter {
                         jw = new JspElWatch(w, debugger);
                         watch2JspElWatch.put(w, jw);
                     }
-                    result[i - from] = jw;
+                    ch[i - from] = jw;
                 }
             }
-            return result;
+            return ch;
         } else {
             return original.getChildren(parent, from, to);
         }
