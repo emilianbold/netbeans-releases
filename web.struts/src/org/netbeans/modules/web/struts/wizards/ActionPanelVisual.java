@@ -46,8 +46,10 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         jComboBoxSuperclass.getEditor().addActionListener( this );
         Project proj = panel.getProject();
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
-        String[] configFiles = StrutsConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
-        jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        if (wm != null){
+            String[] configFiles = StrutsConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
+            jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        }
         jComboBoxConfigFile.getEditor().addActionListener( this );
         jTextFieldPath.getDocument().addDocumentListener( this );
         

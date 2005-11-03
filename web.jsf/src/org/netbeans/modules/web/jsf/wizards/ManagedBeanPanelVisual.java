@@ -32,8 +32,10 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         initComponents();
         
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
-        String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
-        jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        if (wm != null){
+            String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
+            jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        }
         
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N

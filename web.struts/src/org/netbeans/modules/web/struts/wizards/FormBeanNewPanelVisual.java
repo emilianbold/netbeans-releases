@@ -32,8 +32,10 @@ public class FormBeanNewPanelVisual extends javax.swing.JPanel implements HelpCt
         
         jComboBoxSuperclass.getModel().addListDataListener(this);
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
-        String[] configFiles = StrutsConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
-        jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        if (wm!=null){
+            String[] configFiles = StrutsConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
+            jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        }
         
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
