@@ -1293,6 +1293,9 @@ public final class FileUtil extends Object {
             throw new IllegalArgumentException("Cannot pass null to FileUtil.isArchiveFile"); // NOI18N
         }
 
+        if (!fo.isValid()) {
+            return false;
+        }
         // XXX Special handling of virtual file objects: try to determine it using its name, but don't cache the
         // result; when the file is checked out the more correct method can be used
         if (fo.isVirtual()) {
