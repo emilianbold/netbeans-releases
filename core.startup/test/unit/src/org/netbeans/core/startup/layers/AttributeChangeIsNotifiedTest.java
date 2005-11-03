@@ -83,8 +83,13 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
         FSListener l = new FSListener();
         file.addFileChangeListener(l);
         
-        String v = (String) file.getAttribute("value");
-        assertEquals("The first value is list", "java.awt.List", v);
+        FileObject nochange = sfs.findResource("NoChange/empty.xml");
+        assertNotNull("File found in layer", nochange);
+        FSListener no = new FSListener();
+        nochange.addFileChangeListener(no);
+        
+        assertAttr("The first value is list", file, "value", "java.awt.List");
+        assertAttr("Imutable value is nochange", nochange, "value", "nochange");
         
         fs.setURLs (Collections.singletonList(f2.toURL()));
         String v2 = (String) file.getAttribute("value");
@@ -95,7 +100,17 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
         if (!(l.events.get(0) instanceof FileAttributeEvent)) {
             fail("Wrong event: " + l.events);
         }
+        
+        assertAttr("Imutable value is still nochange", nochange, "value", "nochange");
+        // DOES NOT WORK RIGHT NOW 
+        // WOULD FIX 67163
+        // assertEquals("No change in this attribute: "  + no.events, 0, no.events.size());
     }    
+    
+    private static void assertAttr(String msg, FileObject fo, String attr, String value) throws IOException {
+        Object v = fo.getAttribute(attr);
+        assertEquals(msg + "[" + fo + "]", value, v);
+    }
 
     int cnt;
     private File changeOfAnAttributeInLayerIsFiredgenerateLayer(String string) throws IOException {
@@ -106,6 +121,11 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
             "<folder name=\"Folder\">" +
             "  <file name='empty.xml' >" +
             "    <attr name='value' stringvalue='" + string + "' />" +
+            "  </file>" +
+            "</folder>" +
+            "<folder name=\"NoChange\">" +
+            "  <file name='empty.xml' >" +
+            "    <attr name='value' stringvalue='nochange' />" +
             "  </file>" +
             "</folder>" +
             "</filesystem>"
