@@ -1113,12 +1113,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     
-    public ModeImpl getPreviousModeForTopComponent(TopComponent tc, ModeImpl slidingMode) {
-        return getCentral().getModeTopComponentPreviousMode(tc, slidingMode);
+    public ModeImpl getPreviousModeForTopComponent(String tcID, ModeImpl slidingMode) {
+        return getCentral().getModeTopComponentPreviousMode(tcID, slidingMode);
     }
     
-    public void setPreviousModeForTopComponent(TopComponent tc, ModeImpl slidingMode, ModeImpl prevMode) {
-        getCentral().setModeTopComponentPreviousMode(tc, slidingMode, prevMode);
+    public void setPreviousModeForTopComponent(String tcID, ModeImpl slidingMode, ModeImpl prevMode) {
+        getCentral().setModeTopComponentPreviousMode(tcID, slidingMode, prevMode);
     }
     
     

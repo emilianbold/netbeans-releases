@@ -167,9 +167,9 @@ public interface Model {
     // Info about previous top component context, used by sliding kind of modes
     
     /** Sets information of previous mode top component was in. */
-    public void setModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc, ModeImpl previousMode);
+    public void setModeTopComponentPreviousMode(ModeImpl mode, String tcID, ModeImpl previousMode);
     /** Sets information of previous constraints of mode top component was in. */
-    public void setModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc, SplitConstraint[] constraints);
+    public void setModeTopComponentPreviousConstraints(ModeImpl mode, String tcID, SplitConstraint[] constraints);
     
     
     // Mutators (mode level) <<
@@ -210,8 +210,8 @@ public interface Model {
     
     // Info about previous top component context, used by sliding kind of modes
     
-    public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc);
-    public SplitConstraint[] getModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc);
+    public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, String tcID);
+    public SplitConstraint[] getModeTopComponentPreviousConstraints(ModeImpl mode, String tcID);
     
     // Accessors (mode level) <<
     ////////////////////////////

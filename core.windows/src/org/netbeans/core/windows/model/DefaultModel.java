@@ -542,10 +542,10 @@ final class DefaultModel implements Model {
      * @param mode - sliding mode
      */
     
-    public void setModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc, SplitConstraint[] constraints) {
+    public void setModeTopComponentPreviousConstraints(ModeImpl mode, String tcID, SplitConstraint[] constraints) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            modeModel.setTopComponentPreviousConstraints(tc, constraints);
+            modeModel.setTopComponentPreviousConstraints(tcID, constraints);
         }
     }
     
@@ -553,10 +553,10 @@ final class DefaultModel implements Model {
      * @param mode - sliding mode
      * @param previousMode - the original mode.
      */
-    public void setModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc, ModeImpl previousMode) {
+    public void setModeTopComponentPreviousMode(ModeImpl mode, String tcID, ModeImpl previousMode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            modeModel.setTopComponentPreviousMode(tc, previousMode);
+            modeModel.setTopComponentPreviousMode(tcID, previousMode);
         }
     }
     
@@ -714,14 +714,14 @@ final class DefaultModel implements Model {
         }
     }
     
-    public SplitConstraint[] getModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc) {
+    public SplitConstraint[] getModeTopComponentPreviousConstraints(ModeImpl mode, String tcID) {
         ModeModel modeModel = getModelForMode(mode);
-        return modeModel == null ? null : modeModel.getTopComponentPreviousConstraints(tc);
+        return modeModel == null ? null : modeModel.getTopComponentPreviousConstraints(tcID);
     }
     
-    public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc) {
+    public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, String tcID) {
         ModeModel modeModel = getModelForMode(mode);
-        return modeModel == null ? null : modeModel.getTopComponentPreviousMode(tc);
+        return modeModel == null ? null : modeModel.getTopComponentPreviousMode(tcID);
     }
     
     // End of mode specific.

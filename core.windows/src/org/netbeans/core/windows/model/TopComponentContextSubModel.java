@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,38 +37,39 @@ final class TopComponentContextSubModel {
         SplitConstraint[] constraints;
     } // end of Context
 
-    /** Mapping <TopComponent, Context> between top component and context holding
+    /** Mapping <TopComponentID, Context> between top component and context holding
      its previous location */
-    private final Map tcs2Contexts = new HashMap(10);
+    private final Map tcID2Contexts = new HashMap(10);
 
     
     public TopComponentContextSubModel() {
     }
 
-    public void setTopComponentPreviousConstraints(TopComponent tc, SplitConstraint[] constraints) {
-        Context context = (Context)tcs2Contexts.get(tc);
+    public void setTopComponentPreviousConstraints(String tcID, SplitConstraint[] constraints) {
+        Context context = (Context)tcID2Contexts.get(tcID);
         if (context == null) {
             context = new Context();
+            tcID2Contexts.put(tcID, context);
         }
         context.constraints = constraints;
     }
     
-    public void setTopComponentPreviousMode(TopComponent tc, ModeImpl mode) {
-        Context context = (Context)tcs2Contexts.get(tc);
+    public void setTopComponentPreviousMode(String tcID, ModeImpl mode) {
+        Context context = (Context)tcID2Contexts.get(tcID);
         if (context == null) {
             context = new Context();
-            tcs2Contexts.put(tc, context);
+            tcID2Contexts.put(tcID, context);
         }
         context.mode = mode;
     }
     
-    public SplitConstraint[] getTopComponentPreviousConstraints(TopComponent tc) {
-        Context context = (Context)tcs2Contexts.get(tc);
+    public SplitConstraint[] getTopComponentPreviousConstraints(String tcID) {
+        Context context = (Context)tcID2Contexts.get(tcID);
         return context == null ? null : context.constraints;
     }
     
-    public ModeImpl getTopComponentPreviousMode(TopComponent tc) {
-        Context context = (Context)tcs2Contexts.get(tc);
+    public ModeImpl getTopComponentPreviousMode(String tcID) {
+        Context context = (Context)tcID2Contexts.get(tcID);
         return context == null ? null : context.mode;
     }
     

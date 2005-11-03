@@ -60,9 +60,9 @@ interface ModeModel {
     // Info about previous top component context, used by sliding kind of modes
     
     /** Sets information of previous mode top component was in. */
-    public void setTopComponentPreviousMode(TopComponent tc, ModeImpl mode);
+    public void setTopComponentPreviousMode(String tcID, ModeImpl mode);
     /** Sets information of previous constraints of mode top component was in. */
-    public void setTopComponentPreviousConstraints(TopComponent tc, SplitConstraint[] constraints);
+    public void setTopComponentPreviousConstraints(String tcID, SplitConstraint[] constraints);
 
     // Accessors
     /** Gets programatic name of mode. */
@@ -96,9 +96,9 @@ interface ModeModel {
     
     // Info about previous top component context, used by sliding kind of modes
     
-    public ModeImpl getTopComponentPreviousMode(TopComponent tc);
+    public ModeImpl getTopComponentPreviousMode(String tcID);
     
-    public SplitConstraint[] getTopComponentPreviousConstraints(TopComponent tc);
+    public SplitConstraint[] getTopComponentPreviousConstraints(String tcID);
     
 }
 

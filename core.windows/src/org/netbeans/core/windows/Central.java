@@ -251,9 +251,10 @@ final class Central implements ControllerHandler {
             if (mode.getKind() == Constants.MODE_KIND_SLIDING && editorAreaState == Constants.EDITOR_AREA_SEPARATED) {
                 TopComponent[] tcs = mode.getTopComponents();
                 for (int i = 0; i < tcs.length;i++) {
-                    ModeImpl targetMode = model.getModeTopComponentPreviousMode(mode, tcs[i]);
+                    String tcID = WindowManagerImpl.getInstance().findTopComponentID(tcs[i]);
+                    ModeImpl targetMode = model.getModeTopComponentPreviousMode(mode, tcID);
                     if ((targetMode == null) || !model.getModes().contains(targetMode)) {
-                        SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(mode, tcs[i]);
+                        SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(mode, tcID);
                         constraints = constraints == null ? new SplitConstraint[0] : constraints;
                         // create mode to dock topcomponent back into
                         targetMode = WindowManagerImpl.getInstance().createModeImpl(
@@ -795,7 +796,8 @@ final class Central implements ControllerHandler {
         if (slid != null) {
             TopComponent[] tcs = slid.getTopComponents();
             for (int i = 0; i < tcs.length; i++) {
-                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcs[i]);
+                String tcID = WindowManagerImpl.getInstance().findTopComponentID(tcs[i]);
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcID);
                 if (impl == mode) {
                     return false;
                 }
@@ -805,7 +807,8 @@ final class Central implements ControllerHandler {
         if (slid != null) {
             TopComponent[] tcs = slid.getTopComponents();
             for (int i = 0; i < tcs.length; i++) {
-                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcs[i]);
+                String tcID = WindowManagerImpl.getInstance().findTopComponentID(tcs[i]);
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcID);
                 if (impl == mode) {
                     return false;
                 }
@@ -815,7 +818,8 @@ final class Central implements ControllerHandler {
         if (slid != null) {
             TopComponent[] tcs = slid.getTopComponents();
             for (int i = 0; i < tcs.length; i++) {
-                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcs[i]);
+                String tcID = WindowManagerImpl.getInstance().findTopComponentID(tcs[i]);
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcID);
                 if (impl == mode) {
                     return false;
                 }
@@ -1610,6 +1614,7 @@ final class Central implements ControllerHandler {
         ModeImpl prevMode = null;
         for(int i = 0; i < tcs.length; i++) {
             TopComponent tc = tcs[i];
+            String tcID = WindowManagerImpl.getInstance().findTopComponentID(tc);
             // XXX
             if(!mode.canContain(tc)) {
                 continue;
@@ -1618,7 +1623,7 @@ final class Central implements ControllerHandler {
                 ModeImpl m = (ModeImpl)it.next();
                 if(model.containsModeTopComponent(m, tc)) {
                     if (m.getKind() == Constants.MODE_KIND_SLIDING) {
-                        prevMode = model.getModeTopComponentPreviousMode(m, tc);
+                        prevMode = model.getModeTopComponentPreviousMode(m, tcID);
                     } else {
                         prevMode = m;
                     }
@@ -1635,8 +1640,8 @@ final class Central implements ControllerHandler {
             }
             if (prevMode != null && intoSliding) {
                 // remember previous mode and constraints for precise de-auto-hide
-                model.setModeTopComponentPreviousMode(mode, tc, prevMode);
-                model.setModeTopComponentPreviousConstraints(mode, tc, model.getModeConstraints(prevMode));
+                model.setModeTopComponentPreviousMode(mode, tcID, prevMode);
+                model.setModeTopComponentPreviousConstraints(mode, tcID, model.getModeConstraints(prevMode));
             }
         }
         if (! intoSliding) {
@@ -1741,13 +1746,14 @@ final class Central implements ControllerHandler {
             model.setMaximizedMode(null);
         }
         
-        ModeImpl targetMode = getModeTopComponentPreviousMode(tc, source);
+        String tcID = WindowManagerImpl.getInstance().findTopComponentID(tc);        
+        ModeImpl targetMode = getModeTopComponentPreviousMode(tcID, source);
 //        debugLog("userDisabledAutoHide()=" + targetMode);
         
         if ((targetMode == null) || !model.getModes().contains(targetMode)) {
 //            debugLog("userDisabledAutoHide- previous one doesn't exist");
             // mode to return to isn't valid anymore, try constraints
-            SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tc);
+            SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tcID);
             constraints = constraints == null ? new SplitConstraint[0] : constraints;
             // create mode to dock topcomponent back into
             targetMode = WindowManagerImpl.getInstance().createModeImpl(
@@ -1773,12 +1779,12 @@ final class Central implements ControllerHandler {
 
     
     
-    public ModeImpl getModeTopComponentPreviousMode(TopComponent tc, ModeImpl currentSlidingMode) {
-        return  model.getModeTopComponentPreviousMode(currentSlidingMode, tc);
+    public ModeImpl getModeTopComponentPreviousMode(String tcID, ModeImpl currentSlidingMode) {
+        return  model.getModeTopComponentPreviousMode(currentSlidingMode, tcID);
     }
     
-    public void setModeTopComponentPreviousMode(TopComponent tc, ModeImpl currentSlidingMode, ModeImpl prevMode) {
-        model.setModeTopComponentPreviousMode(currentSlidingMode, tc, prevMode);
+    public void setModeTopComponentPreviousMode(String tcID, ModeImpl currentSlidingMode, ModeImpl prevMode) {
+        model.setModeTopComponentPreviousMode(currentSlidingMode, tcID, prevMode);
     }
     
     // ControllerHandler <<

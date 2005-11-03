@@ -271,27 +271,27 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
-    public SplitConstraint[] getTopComponentPreviousConstraints(TopComponent tc) {
+    public SplitConstraint[] getTopComponentPreviousConstraints(String tcID) {
         synchronized(LOCK_TC_CONTEXTS) {
-            return getContextSubModel().getTopComponentPreviousConstraints(tc);
+            return getContextSubModel().getTopComponentPreviousConstraints(tcID);
         }
     }
     
-    public ModeImpl getTopComponentPreviousMode(TopComponent tc) {
+    public ModeImpl getTopComponentPreviousMode(String tcID) {
         synchronized(LOCK_TC_CONTEXTS) {
-            return getContextSubModel().getTopComponentPreviousMode(tc);
+            return getContextSubModel().getTopComponentPreviousMode(tcID);
         }
     }
     
-    public void setTopComponentPreviousConstraints(TopComponent tc, SplitConstraint[] constraints) {
+    public void setTopComponentPreviousConstraints(String tcID, SplitConstraint[] constraints) {
         synchronized(LOCK_TC_CONTEXTS) {
-            getContextSubModel().setTopComponentPreviousConstraints(tc, constraints);
+            getContextSubModel().setTopComponentPreviousConstraints(tcID, constraints);
         }
     }
     
-    public void setTopComponentPreviousMode(TopComponent tc, ModeImpl mode) {
+    public void setTopComponentPreviousMode(String tcID, ModeImpl mode) {
         synchronized(LOCK_TC_CONTEXTS) {
-            getContextSubModel().setTopComponentPreviousMode(tc, mode);
+            getContextSubModel().setTopComponentPreviousMode(tcID, mode);
         }
     }
     
