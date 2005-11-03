@@ -32,6 +32,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -264,13 +265,17 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
         if (node != null) {
             DataObject dObj = (DataObject)node.getLookup().lookup(DataObject.class);
             if (dObj != null) {
-                String contentType = dObj.getPrimaryFile().getMIMEType();
-                List providers = ProviderRegistry.getInstance().getProviders(contentType);
-                if (providers != null && !providers.isEmpty()) {
-                    if (result == null) {
-                        result = new ArrayList(providers.size());
+                FileObject fo = dObj.getPrimaryFile();
+                // #65589: be no friend with virtual files
+                if (!fo.isVirtual()) {
+                String contentType = fo.getMIMEType();
+                    List providers = ProviderRegistry.getInstance().getProviders(contentType);
+                    if (providers != null && !providers.isEmpty()) {
+                        if (result == null) {
+                            result = new ArrayList(providers.size());
+                        }
+                        result.addAll(providers);
                     }
-                    result.addAll(providers);
                 }
             }
         }
