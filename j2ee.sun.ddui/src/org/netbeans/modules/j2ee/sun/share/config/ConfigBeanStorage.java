@@ -40,9 +40,6 @@ public class ConfigBeanStorage implements PropertyChangeListener {
         this.bean = bean; 
         this.parent = parent; 
         this.storage = storage;
-        if (parent == null) {
-            this.parent = this;
-        }
         // need to ensure that the basebean events are caught?
         // synchronize new CBS and event handling
         initChildren();
@@ -83,6 +80,7 @@ public class ConfigBeanStorage implements PropertyChangeListener {
         if(parent != null) {
             try {
                 parent.bean.removeDConfigBean(bean);
+                storage.setChanged();
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -154,7 +152,7 @@ public class ConfigBeanStorage implements PropertyChangeListener {
                 config.ensureResourceDefined(dd);
             }
         }
-        ConfigBeanStorage cbs = new ConfigBeanStorage(cb, parent, storage);
+        ConfigBeanStorage cbs = new ConfigBeanStorage(cb, this, storage);
         Collection c = (Collection) childMap.get(dd.getXpath());
         if(c == null) {
             c = new HashSet();
@@ -166,7 +164,9 @@ public class ConfigBeanStorage implements PropertyChangeListener {
     
     private void removeChild(DDBean remBean) {
         Collection c = (Collection) childMap.get(remBean.getXpath());
-        if(c == null) return;
+        if(c == null) {
+            return;
+        }
         for(Iterator i = c.iterator(); i.hasNext(); ) {
             ConfigBeanStorage cbs = (ConfigBeanStorage) i.next();
             if (cbs.bean.getDDBean().equals(remBean)) {
