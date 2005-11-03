@@ -44,13 +44,11 @@ import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
-import org.openide.util.WeakListeners;
+import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
+import org.netbeans.api.javahelp.Help;
 
 /**
  * This is a component, that acts as a non modal dialog.
@@ -255,7 +253,8 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     }//GEN-LAST:event_okButtonActionPerformed
     
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-        // Add your handling code here:
+        Help help = (Help) Lookup.getDefault().lookup(Help.class);
+        help.showHelp(getHelpCtx());
     }//GEN-LAST:event_helpButtonActionPerformed
     
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
