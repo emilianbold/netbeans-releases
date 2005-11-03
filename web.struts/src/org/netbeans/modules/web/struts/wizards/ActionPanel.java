@@ -15,7 +15,9 @@ package org.netbeans.modules.web.struts.wizards;
 
 import java.awt.Component;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
@@ -27,7 +29,7 @@ import org.netbeans.api.project.Project;
  *
  * @author radko
  */
-public class ActionPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+public class ActionPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
     
     private WizardDescriptor wizardDescriptor;
     private ActionPanelVisual component;
@@ -44,9 +46,10 @@ public class ActionPanel implements WizardDescriptor.Panel, WizardDescriptor.Fin
     }
     
     public Component getComponent() {
-        if (component == null)
+        if (component == null){
             component = new ActionPanelVisual(this);
-
+            component.addChangeListener(this);
+        }
         return component;
     }
     
@@ -84,5 +87,16 @@ public class ActionPanel implements WizardDescriptor.Panel, WizardDescriptor.Fin
     public boolean isFinishPanel() {
         return isValid();
     }
-
+    
+    public void stateChanged(ChangeEvent e) {
+        fireChange();
+    }
+    
+     private void fireChange() {
+        ChangeEvent e = new ChangeEvent(this);
+        Iterator it = listeners.iterator();
+        while (it.hasNext()) {
+            ((ChangeListener)it.next()).stateChanged(e);
+        }
+    }
 }

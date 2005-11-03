@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
@@ -82,11 +83,8 @@ public class ActionIterator implements TemplateWizard.Iterator {
         
         WizardDescriptor.Panel secondPanel = new ActionPanel(project, wizard);
         WizardDescriptor.Panel thirdPanel = new ActionPanel1(project);
-        
-        panels = new WizardDescriptor.Panel[] {
-            JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel),
-            thirdPanel
-        };
+        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
+        panels = new WizardDescriptor.Panel[] { javaPanel, thirdPanel };
         
         // Creating steps.
         Object prop = wizard.getProperty ("WizardPanel_contentData"); // NOI18N

@@ -13,6 +13,14 @@
 
 package org.netbeans.modules.web.struts.wizards;
 
+import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.project.Project;
@@ -20,7 +28,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.openide.util.NbBundle;
 
-public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider {
+public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ActionListener, DocumentListener {
     
     static final String DEFAULT_ACTION = "org.apache.struts.action.Action"; //NOI18N
     static final String DISPATCH_ACTION = "org.apache.struts.actions.DispatchAction"; //NOI18N
@@ -29,14 +37,24 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
 
     private static final String[] SUPERCLASS_LIST = {DEFAULT_ACTION, DISPATCH_ACTION, MAPPING_DISPATCH_ACTION, LOOKUP_DISPATCH_ACTION};
     
+    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    
     /** Creates new form ActionPanelVisual */
     public ActionPanelVisual(ActionPanel panel) {    
         initComponents();
         jComboBoxSuperclass.setModel(new javax.swing.DefaultComboBoxModel(SUPERCLASS_LIST));
+        jComboBoxSuperclass.getEditor().addActionListener( this );
         Project proj = panel.getProject();
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
         String[] configFiles = StrutsConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
         jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        jComboBoxConfigFile.getEditor().addActionListener( this );
+        jTextFieldPath.getDocument().addDocumentListener( this );
+        
+        Component superclassEditor = jComboBoxSuperclass.getEditor().getEditorComponent();
+        if ( superclassEditor instanceof javax.swing.JTextField ) {
+            ((javax.swing.JTextField)superclassEditor).getDocument().addDocumentListener( this );
+        }
     }
     
     /** This method is called from within the constructor to
@@ -127,16 +145,25 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
     // End of variables declaration//GEN-END:variables
  
     boolean valid(WizardDescriptor wizardDescriptor) {
+        // check super class
         String superclass = (String) jComboBoxSuperclass.getEditor().getItem();
-        String configFile = (String) jComboBoxConfigFile.getSelectedItem();
-        
         if (superclass == null || superclass.trim().equals("")){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
-                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoSuperClassSelected"));
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",                            //NOI18N             
+                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoSuperClassSelected"));  //NOI18N
+            return false;
         }
+        // check configuration file
+        String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         if (configFile == null || configFile.trim().equals("")){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
-                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",                            //NOI18N
+                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));//NOI18N
+            return false;
+        }
+        // check Action path
+        String actionPath = jTextFieldPath.getText();
+        if (actionPath == null || actionPath.trim().equals("") || actionPath.trim().equals("/")){//NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",                            //NOI18N
+                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_WrongActionPath"));       //NOI18N
             return false;
         }
         return true;
@@ -154,5 +181,38 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ActionPanelVisual.class);
     }
-
+    
+    public void actionPerformed(java.awt.event.ActionEvent e) {
+         fireChange();
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        listeners.add(l);
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        listeners.remove(l);
+    }
+    
+    private void fireChange() {
+        ChangeEvent e = new ChangeEvent(this);
+        Iterator it = listeners.iterator();
+        while (it.hasNext()) {
+            ((ChangeListener)it.next()).stateChanged(e);
+        }
+    }
+    
+    // DocumentListener implementation -----------------------------------------
+    
+    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+        fireChange();        
+    }    
+    
+    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+        changedUpdate( e );
+    }
+    
+    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+        changedUpdate( e );
+    }
 }
