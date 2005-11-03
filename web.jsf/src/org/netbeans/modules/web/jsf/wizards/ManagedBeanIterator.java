@@ -143,7 +143,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         else
             className=targetName;
         
-        bean.setManagedBeanName(targetName);
+        bean.setManagedBeanName(getUniqueName(targetName, config));
         bean.setManagedBeanClass(className);
         bean.setManagedBeanScope((String) wizard.getProperty(WizardProperties.SCOPE));
         
@@ -228,6 +228,24 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
                 index = content.lastIndexOf(replaceFrom);
             }
         } catch (javax.swing.text.BadLocationException ex){}
+    }
+    
+    private String getUniqueName(String original, FacesConfig config){
+        String value = original;
+        ManagedBean [] beans = config.getManagedBean();
+        int index = 0;
+        int count = 0;
+        while (index < beans.length){
+            if (!beans[index].getManagedBeanName().equals(value)){
+                index++;
+            }
+            else {
+                index = 0;
+                count++;
+                value = original+count;
+            }
+        }
+        return value;
     }
 
 }
