@@ -35,7 +35,7 @@ import java.io.File;
 public class SearchHistoryAction extends AbstractSystemAction  {
 
     protected String getBaseName() {
-        return "CTL_MenuItem_SearchHistory";
+        return "CTL_MenuItem_SearchHistory"; // NOI18N
     }
 
     protected int getFileEnabledStatus() {

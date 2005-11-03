@@ -70,7 +70,7 @@ public class RLogExecutor extends ExecutorSupport {
                 for (int j = 0; j < files.length; j++) {
                     File file = files[j];
                     File dir = file.isDirectory() ? file : file.getParentFile();
-                    String repository = ah.getRepositoryForDirectory(dir.getAbsolutePath(), "").substring(1);
+                    String repository = ah.getRepositoryForDirectory(dir.getAbsolutePath(), "").substring(1); // NOI18N
                     if (remoteRepository == null || remoteRepository.equals(repository)) {
                         remoteRepository = repository;
                         directory = dir;
@@ -126,7 +126,7 @@ public class RLogExecutor extends ExecutorSupport {
         String repository;
         try {
             // /javacvs/cvsmodule
-            repository = ah.getRepositoryForDirectory(localRoot.getAbsolutePath(), "").substring(1);
+            repository = ah.getRepositoryForDirectory(localRoot.getAbsolutePath(), "").substring(1); // NOI18N
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
             return null;
@@ -149,7 +149,7 @@ public class RLogExecutor extends ExecutorSupport {
 
         idx = remoteRelativePath.lastIndexOf('/');
         if (idx != -1 && idx >= 6) {
-            if ("/Attic".equals(remoteRelativePath.substring(idx - 6, idx))) {
+            if ("/Attic".equals(remoteRelativePath.substring(idx - 6, idx))) { // NOI18N
                 remoteRelativePath = remoteRelativePath.substring(0, idx - 6) + remoteRelativePath.substring(idx);
             }
         }
