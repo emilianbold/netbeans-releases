@@ -50,6 +50,9 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     private Set resolvedConflicts = new HashSet();
     private StreamSource resultSource;
     
+    private boolean firstNewlineIsFake;
+    private boolean secondNewlineIsFake;
+
     /** Creates a new instance of MergeControl */
     public MergeControl(MergePanel panel) {
         this.panel = panel;
@@ -59,6 +62,22 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                            StreamSource source2, StreamSource result,
                            Color colorUnresolvedConflict, Color colorResolvedConflict,
                            Color colorOtherConflict) {
+        if (diffs.length > 0) {
+            // all lines must end with a newline
+            Difference ld = diffs[diffs.length - 1];
+            if (!ld.getFirstText().endsWith("\n")) {
+                firstNewlineIsFake = true;
+            }
+            if (!ld.getSecondText().endsWith("\n")) {
+                secondNewlineIsFake = true;
+            }
+            if (firstNewlineIsFake || secondNewlineIsFake) {
+                diffs[diffs.length - 1] = new Difference(
+                        ld.getType(), ld.getFirstStart(), ld.getFirstEnd(), ld.getSecondStart(), ld.getSecondEnd(), 
+                        ld.getFirstText() + (firstNewlineIsFake ? "\n" : ""), 
+                        ld.getSecondText() + (secondNewlineIsFake ? "\n" : ""));
+            }
+        }
         this.diffs = diffs;
         this.diffShifts = new int[diffs.length][2];
         this.resultDiffLocations = new int[diffs.length];
@@ -315,7 +334,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                 }
                 try {
                     panel.writeResult(resultSource.createWriter((Difference[]) unresolvedConflicts.toArray(
-                        new Difference[unresolvedConflicts.size()])));
+                        new Difference[unresolvedConflicts.size()])), firstNewlineIsFake | secondNewlineIsFake);
                     panel.setNeedsSaveState(false);
                 } catch (IOException ioex) {
                     PropertyVetoException pvex =

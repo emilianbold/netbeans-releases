@@ -1393,7 +1393,7 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
      * @param w The writer to write the result into.
      * @throws IOException When the writing process fails.
      */
-    public void writeResult(Writer w) throws IOException {
+    public void writeResult(Writer w, boolean stripLastNewline) throws IOException {
         //System.out.println("writeResult()");
         /*
         try {
@@ -1417,7 +1417,7 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
                         //System.out.println("  Have text(<l="+(startSetLine-1)+",off="+offsetStart+";l="+(i-1)+",off="+offsetEnd+">), length = "+doc.getLength());
                         try {
                             //System.out.println("'"+doc.getText(offsetStart, offsetEnd - offsetStart)+"'");
-                            w.write(doc.getText(offsetStart, offsetEnd - offsetStart));
+                            writeText(w, doc.getText(offsetStart, offsetEnd - offsetStart));
                         } catch (BadLocationException blex) {
                             throw new IOException(blex.getLocalizedMessage());
                         }
@@ -1435,7 +1435,11 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
                 int offsetStart = org.openide.text.NbDocument.findLineOffset(doc, startSetLine - 1);
                 int offsetEnd = doc.getLength();
                 try {
-                    w.write(doc.getText(offsetStart, offsetEnd - offsetStart));
+                    String text = doc.getText(offsetStart, offsetEnd - offsetStart);
+                    if (stripLastNewline && text.endsWith("\n")) {
+                        text = text.substring(0, text.length() - 1);
+                    }
+                    writeText(w, text);
                 } catch (BadLocationException blex) {
                     throw new IOException(blex.getLocalizedMessage());
                 }
@@ -1446,6 +1450,11 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         }
     }
     
+    private void writeText(Writer w, String text) throws IOException {
+        text = text.replaceAll("\n", System.getProperty("line.separator"));
+        w.write(text);
+    }
+
     private void setHighlight(final StyledDocument doc, final int line1,
                               final int line2, final java.awt.Color color) {
         if (!SwingUtilities.isEventDispatchThread()) {

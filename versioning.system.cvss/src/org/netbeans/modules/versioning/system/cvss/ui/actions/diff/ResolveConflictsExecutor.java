@@ -231,7 +231,7 @@ public class ResolveConflictsExecutor {
                     isChangeRight = !isChangeRight;
                     continue;
                 } else if (isChangeRight && line.indexOf(CHANGE_RIGHT) != -1) {
-                    String lineText = line.substring(0, line.lastIndexOf(CHANGE_RIGHT)) + "\n"; // NOI18N
+                    String lineText = line.substring(0, line.lastIndexOf(CHANGE_RIGHT));
                     if (generateDiffs) {
                         if (rightFileRevision == null) {
                             rightFileRevision = line.substring(line.lastIndexOf(CHANGE_RIGHT) + CHANGE_RIGHT.length());
@@ -254,7 +254,10 @@ public class ResolveConflictsExecutor {
                         text1.delete(0, text1.length());
                         text2.delete(0, text2.length());
                     }
-                    if (!leftPart) w.write(lineText);
+                    if (!leftPart) {
+                        w.write(lineText);
+                        w.newLine();
+                    }
                     isChangeRight = !isChangeRight;
                     continue;
                 } else if (line.equals(CHANGE_DELIMETER)) {
@@ -275,14 +278,20 @@ public class ResolveConflictsExecutor {
                     String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + "\n"; // NOI18N
                     if (isChangeLeft) {
                         text1.append(lineText);
-                        if (leftPart) w.write(lineText);
+                        if (leftPart) {
+                            w.write(lineText);
+                            w.newLine();
+                        }
                         isChangeLeft = false;
                         isChangeRight = true;
                         f1l2 = i;
                         f2l1 = j;
                     } else if (isChangeRight) {
                         text2.append(lineText);
-                        if (!leftPart) w.write(lineText);
+                        if (!leftPart) {
+                            w.write(lineText);
+                            w.newLine();
+                        }
                         isChangeRight = false;
                         isChangeLeft = true;
                         f2l2 = j;
