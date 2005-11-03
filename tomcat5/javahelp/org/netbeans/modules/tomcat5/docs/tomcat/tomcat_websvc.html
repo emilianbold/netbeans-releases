@@ -20,21 +20,33 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p><b>To deploy a web service:</b>
+<p><b>To prepare to use Ant targets to deploy a web service on the Tomcat Web Server:</b>
 
 <ol>
 
 	<li>Copy all JAR files from <i>$NB_HOME</i><tt>/ide6/modules/ext/jaxrpc16</tt> to
 	<i>$NB_HOME</i><tt>\enterprise2\jakarta-tomcat-5.5.9\server\lib</tt>.
 
-	<li>Make sure that the Sun Java System Application Server is registered in the IDE.
+	<li>Make sure that the Sun Java System Application Server is <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/j2ee/register_appserver.html">registered</a> in the IDE.
+</ol>
 
+<p><b>To create the web service:</b>
+
+<ol>
 	<li>Create a web application project. Set the Sun Java System Application Server
 	as your target server.
 
-	<li>Create the web service.
+	<li>Do one of the following:
+	<ul><li>If you want to deploy a web service, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/create/about_implement_ws.html">create the web service</a>.
+		<li>If you want to consume a web service, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_create.html">create the web service client</a>. Make sure
+	 that you select IDE-generated static stub in the Specify Web Service Client information page.</ul>
+</ol>
 
-	<li>Add this target to the <tt>build.xml</tt> file and change <tt>full_path_to_$NB_USER_DIR</tt>
+<p><b>To write Ant targets to deploy a web service on the Tomcat Web Server:</b>
+
+<ol>
+
+	<li>Add the following target to the <tt>build.xml</tt> file and change <tt>full_path_to_$NB_USER_DIR</tt>
 	to the full path, such as <tt>c:\.netbeans</tt>:
 
 <pre>&lt;target name="-pre-init"&gt;
@@ -68,7 +80,7 @@
    &lt;nbbrowse url="http://<i>my-host</i>:<i>my-port-number</i>/${ant.project.name}/${client.urlPart}"/&gt;
 &lt;/target&gt;</pre>
 
-	 <li>Create an XML document in the <tt>WEB-INF</tt> folder. Call the XML document <tt>jaxrpc-ri</tt>.
+	 <p>Create an XML document in the <tt>WEB-INF</tt> folder. Call the XML document <tt>jaxrpc-ri</tt>.
 	 Add this content to <tt>jaxrpc.ri.xml</tt> and change <tt>mypackage.mysubpackage.myclassSEI</tt>
 	 to the fully qualified name of the SEI class and <tt>mypackage.mysubpackage.myclassImpl</tt> to
 	 the fully qualified name of the implementation class:
@@ -93,10 +105,20 @@
 
 	 <p>Now right-click the project node, choose Properties, select the Run pane,
 	 and type <tt>MyTomcatWS</tt> in Relative URL. In <tt>WEB-INF/web.xml</tt>, change
-	 the <tt>&lt;url-pattern&gt;</tt> to <tt>/MyTomcatWS</tt>.
+	 the <tt>&lt;url-pattern&gt;</tt> to <tt>/MyTomcatWS</tt>.</ol>
 
-	 <li>Right-click the project node and choose Build Project.
-	 <li>In the Runtime window (Ctrl-5), manually start the Tomcat Web Server.
+<p><b>To deploy a web service or web service client on the Tomcat Web Server:</b>
+
+<ol>
+
+	<li>Right-click the project node, choose Properties, select the Run pane, 
+	and select the Tomcat Web Server from the Server drop-down list.	
+	<li>Right-click the project node and choose Build Project.
+	<li>Do one of the following:
+	<ul>
+	<li>For web service clients, set the proxy host and port number, if necessary.
+	<li>For web services, you must start the server manually.
+	In the Runtime window (Ctrl-5), right-click the Tomcat Web Server instance node and choose Start.</ul>
 	 <li>In the Projects window, right-click the project and choose Run Project.
  </ol>
 
