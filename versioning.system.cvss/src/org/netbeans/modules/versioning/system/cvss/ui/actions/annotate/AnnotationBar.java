@@ -245,8 +245,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
             } catch (IOException e) {
                 ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "Cannot compute local diff required for annotations, ignoring...");
-                err.notify(e);
+                err.annotate(e, "Cannot compute local diff required for annotations, ignoring...");  // NOI18N
+                err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
 
@@ -337,7 +337,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
 
         // register with tooltip manager
-        setToolTipText("");
+        setToolTipText(""); // NOI18N
 
     }
 
@@ -472,7 +472,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private RequestProcessor getRequestProcessor() {
         if (requestProcessor == null) {
-            requestProcessor = new RequestProcessor("AnnotationBarRP", 1, true);
+            requestProcessor = new RequestProcessor("AnnotationBarRP", 1, true);  // NOI18N
         }
         
         return requestProcessor;
@@ -587,7 +587,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private void clearRecentFeedback() {
         StatusBar statusBar = editorUI.getStatusBar();
         if (statusBar.getText(StatusBar.CELL_MAIN) == recentStatusMessage) {
-            statusBar.setText(StatusBar.CELL_MAIN, "");  // NOi18N
+            statusBar.setText(StatusBar.CELL_MAIN, "");  // NOI18N
         }
     }
 
@@ -631,7 +631,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 Iterator it = elementAnnotations.values().iterator();
                 while (it.hasNext()) {
                     AnnotateLine line = (AnnotateLine) it.next();
-                    String displayName = line.getRevision() + " " + line.getAuthor();
+                    String displayName = line.getRevision() + " " + line.getAuthor(); // NOI18N
                     if (displayName.length() > longestString.length()) {
                         longestString = displayName;
                     }
@@ -681,12 +681,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         Element rootElem = textUI.getRootView(component).getElement();
         int line = rootElem.getElementIndex(view.getStartOffset());
 
-        String annotation = "";  // NOi18N
+        String annotation = "";  // NOI18N
         AnnotateLine al = null;
         if (elementAnnotations != null) {
             al = getAnnotateLine(line);
             if (al != null) {
-                annotation = al.getRevision() + " " + al.getAuthor();
+                annotation = al.getRevision() + " " + al.getAuthor();  // NOI18N
             }
         } else {
             annotation = elementAnnotationsSubstitute;
@@ -713,13 +713,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             AnnotateLine al = getAnnotateLine(line);
 
             if (al != null) {
-                String escapedAuthor = "<unknown>";
+                String escapedAuthor = NbBundle.getMessage(AnnotationBar.class, "BK0001");
                 try {
                     escapedAuthor = XMLUtil.toElementContent(al.getAuthor());
                 } catch (CharConversionException e1) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e1, "Can not HTML escape: " + al.getAuthor());
-                    err.notify(e1);
+                    err.annotate(e1, "CVS.AB: can not HTML escape: " + al.getAuthor());
+                    err.notify(ErrorManager.INFORMATIONAL, e1);
                 }
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
@@ -732,8 +732,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                             escaped = XMLUtil.toElementContent(message);
                         } catch (CharConversionException e1) {
                             ErrorManager err = ErrorManager.getDefault();
-                            err.annotate(e1, "Can not HTML escape: " + message);
-                            err.notify(e1);
+                            err.annotate(e1, "CVS.AB: can not HTML escape: " + message);
+                            err.notify(ErrorManager.INFORMATIONAL, e1);
                         }
                         if (escaped != null) {
                             String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
@@ -779,8 +779,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
             } catch (BadLocationException e) {
                 ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "Can not locate line annotation.");
-                err.notify(e);
+                err.annotate(e, "CVS.AB: can not locate line annotation.");
+                err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
 
