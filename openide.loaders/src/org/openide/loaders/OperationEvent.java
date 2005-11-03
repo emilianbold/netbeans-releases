@@ -43,6 +43,20 @@ public class OperationEvent extends EventObject {
         return obj;
     }
 
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(super.toString());
+        sb.append(":");
+        sb.append(" for ");
+        sb.append(obj);
+        writeDebug(sb);
+        return sb.toString();
+    }
+
+    /** For subclasses in this package to write debug info */
+    void writeDebug(StringBuffer sb) {
+    }
+
     /** Notification of a rename of a data object.
     */
     public static final class Rename extends OperationEvent {
@@ -63,6 +77,11 @@ public class OperationEvent extends EventObject {
         */
         public String getOriginalName () {
             return name;
+        }
+
+        final void writeDebug(StringBuffer sb) {
+            sb.append(" originalname: ");
+            sb.append(name);
         }
     }
 
@@ -86,6 +105,11 @@ public class OperationEvent extends EventObject {
         */
         public FileObject getOriginalPrimaryFile () {
             return file;
+        }
+        
+        final void writeDebug(StringBuffer sb) {
+            sb.append(" originalfile: ");
+            sb.append(file);
         }
     }
 
@@ -111,6 +135,12 @@ public class OperationEvent extends EventObject {
         */
         public DataObject getOriginalDataObject () {
             return orig;
+        }
+        
+        
+        final void writeDebug(StringBuffer sb) {
+            sb.append(" originalobj: ");
+            sb.append(orig);
         }
     }
 }
