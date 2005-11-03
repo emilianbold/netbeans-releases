@@ -564,6 +564,9 @@ implements CloneableEditorSupport.Env {
         int len = doc.getLength ();
         
         assertEquals ("Content opened", "Somecontent", doc.getText (0, len));
+
+        err.log("wait so first modification really happens later in time then the lastSaveTime is set to");
+        Thread.sleep(300);
         
         doc.remove (0, len);
         
@@ -572,7 +575,7 @@ implements CloneableEditorSupport.Env {
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
         err.log("Before save");
-        support.saveDocument (); Thread.sleep(300);
+        Thread.sleep(300); support.saveDocument (); Thread.sleep(300);
         waitEQ ();
         err.log("After save");
         
