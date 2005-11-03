@@ -20,6 +20,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
+import org.openide.util.*;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
@@ -64,7 +65,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
     }
 
     protected String getBaseName() {
-        return "Delete";  // NOI18M
+        return "Delete";  // NOI18N
     }
 
     protected boolean asynchronous() {
@@ -84,7 +85,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
                     fo.delete(lock);
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not lock " + file.toString());  // NOi18N
+                    err.annotate(e, NbBundle.getMessage(DeleteLocalAction.class, "BK0001", file.getAbsolutePath()));
                     err.notify(e);
                 } finally {
                     if (lock != null) {
