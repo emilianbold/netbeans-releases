@@ -17,7 +17,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /** 
@@ -43,7 +41,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final File projectFolder;
     private List/*<PathResourceImplementation>*/ resources;
-    private final WeakReference/*<PropertyEvaluator>*/ evaluator;
+    private final PropertyEvaluator evaluator;
     private boolean dirty = false;
     private final List/*<String>*/ propertyNames;
 
@@ -56,7 +54,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     public ProjectClassPathImplementation(File projectFolder, String[] propertyNames, PropertyEvaluator evaluator) {
         assert projectFolder != null && propertyNames != null && evaluator != null;
         this.projectFolder = projectFolder;
-        this.evaluator = new CleanableWeakReference(evaluator);
+        this.evaluator = evaluator;
         this.propertyNames = Arrays.asList(propertyNames);
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
@@ -106,10 +104,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     }
     
     private List/*<PathResourceImplementation>*/ getPath() {
-        PropertyEvaluator evaluator = (PropertyEvaluator) this.evaluator.get();
-        if (evaluator == null) {
-            return Collections.EMPTY_LIST;
-        }
         List/*<PathResourceImplementation>*/ result = new ArrayList();
         Iterator it = propertyNames.iterator();
         while (it.hasNext()) {
@@ -142,22 +136,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             }
         }
         return Collections.unmodifiableList(result);
-    }
-    
-    
-    private class CleanableWeakReference extends WeakReference implements Runnable {
-        
-        public CleanableWeakReference (Object obj) {
-            super (obj, Utilities.activeReferenceQueue());
-        }
-        
-        public void run () {
-            synchronized (ProjectClassPathImplementation.this) {
-                ProjectClassPathImplementation.this.resources = null;
-            }
-            ProjectClassPathImplementation.this.support.firePropertyChange (PROP_RESOURCES,null,null);
-        }
-        
     }
 
 }
