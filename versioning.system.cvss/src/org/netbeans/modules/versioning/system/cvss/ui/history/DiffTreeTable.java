@@ -77,6 +77,8 @@ class DiffTreeTable extends TreeTableView {
     }
 
     void setSelection(int idx) {
+        treeTable.getSelectionModel().setValueIsAdjusting(false);
+        treeTable.scrollRectToVisible(treeTable.getCellRect(idx, 1, true));
         treeTable.getSelectionModel().setSelectionInterval(idx, idx);
     }
 
