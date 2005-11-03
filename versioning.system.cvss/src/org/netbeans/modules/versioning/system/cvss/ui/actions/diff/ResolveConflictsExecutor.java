@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.Iterator;
 import java.awt.*;
+import org.netbeans.lib.cvsclient.file.*;
 
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -355,10 +356,7 @@ public class ResolveConflictsExecutor {
                 if (reader != null) reader.close();
                 if (writer != null) writer.close();
             }
-            if (!backup.renameTo(entries)) {
-                entries.delete();
-                backup.renameTo(entries);
-            }
+            FileUtils.renameFile(backup, entries);
         } finally {
             if (backup.exists()) backup.delete();
         }
