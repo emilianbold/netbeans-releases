@@ -107,9 +107,11 @@ Microsystems, Inc. All Rights Reserved.
             <!-- #58298: strip comments to save some space -->
             <fileset dir="${src.dir}" includes="**/*.properties"/>
             <filterchain>
-                <filterreader classname="org.apache.tools.ant.filters.StripLineComments">
-                    <param type="comment" value="#"/>
-                </filterreader>
+                <tokenfilter>
+                    <!-- #61965: preserve #NOI18N and similar comments -->
+                    <filetokenizer/>
+                    <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
+                </tokenfilter>
             </filterchain>
         </copy>
         <copy todir="${build.classes.dir}">
