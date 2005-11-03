@@ -17,18 +17,22 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
-        <change id="FileUtil.toFileObject">
+        <change id="semantic-change-in-FileUtil.toFileObject">
             <api name="filesystems"/>
-            <summary> <code>IllegalArgumentException</code> isn't thrown anymore.</summary>
+            <summary>
+                The way how <code>IllegalArgumentException</code> is thrown from 
+                <code>FileUtil.toFileObject</code> was changed
+            </summary>
             <version major="6" minor="3"/>
             <date day="25" month="10" year="2005"/>
             <author login="rmatous"/>
-            <compatibility  modification="yes"/>
+            <compatibility  modification="yes" semantic="incompatible"/>
             <description>
-                <p>Because of performance reasons from method
-                <code>FileUtil.toFileObject</code> was removed piece of code
-                checking whether file was properly normalized and thus
-                <code>IllegalArgumentException</code> can't be thrown.
+                <p>Because of performance reason piece of code
+                checking whether file was properly normalized is called conditionally just
+                in case that assertions are enabled. Then 
+                <code>IllegalArgumentException</code> can't be thrown if
+                assertions are disabled.
                 </p>
             </description>
             <class package="org.openide.filesystems" name="FileUtil"/>
