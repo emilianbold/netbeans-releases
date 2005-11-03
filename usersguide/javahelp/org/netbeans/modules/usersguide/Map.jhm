@@ -336,7 +336,7 @@ under Print Settings in the Options window)
 <mapID target="update.offline" url="configure/modules/updateoffline.html" />
 <mapID target="update.globally" url="configure/modules/updateglobally.html" />
 <mapID target="configure.enable.module" url="configure/modules/enablemodule.html" />
-<mapID target="configure.module" url="configure/modules/modulenodes.html" />
+
 
 
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
@@ -647,11 +647,6 @@ under Print Settings in the Options window)
    <!-- remove id; Issue 54894-->
       <mapID target="org.netbeans.modules.form.editors2.CustomTableModelEditor" url="pending.html" /> 
    
-<!--for Modules node in Options window:-->
-   <mapID target="org.netbeans.core.ui.ModuleNode" url="configure/modules/modulenodes.html" />
-   <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="configure/modules/modulenodes.html" />   
-   <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="configure/modules/modulenodes.html" />   
-
 <!--generic node; for example, used for Runtime | VCS Commands node; remove after 4.1-->         
    <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />   
    
@@ -838,7 +833,6 @@ right now the IDs don't seem towork:-->
 
 <mapID target="org.netbeans.modules.web.core.syntax.JspIndentEngine" 
   url="editing/configuring/indentation.html" />
-
 
 
 <!-- XML Module CSH :-->
