@@ -109,7 +109,7 @@ final class ImportExecutor extends ExecutorSupport implements Runnable {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if (file.isDirectory()) {
-                if ("CVS".equals(file.getName())) {
+                if ("CVS".equals(file.getName())) { // NOI18N
                     copyCvsMeta(file, dest);
                 } else {
                     File destDir = new File(dest, file.getName());
@@ -122,18 +122,18 @@ final class ImportExecutor extends ExecutorSupport implements Runnable {
     }
 
     private void copyCvsMeta(File src, File dest) {
-        File destCvsDir = new File(dest, "CVS");
+        File destCvsDir = new File(dest, "CVS"); // NOI18N
         if (destCvsDir.exists() == false || (destCvsDir.isDirectory() && destCvsDir.listFiles().length == 0) ) {
             destCvsDir.mkdirs();
             if (destCvsDir.isDirectory()) {
                 // be on safe side copy only Root, Entries, Repository
                 try {
-                    File root = new File(src, "Root");
-                    copyFile(root, new File(destCvsDir, "Root"));
-                    File repository = new File(src, "Repository");
-                    copyFile(repository, new File(destCvsDir, "Repository"));
-                    File entries = new File(src, "Entries");
-                    copyFile(entries, new File(destCvsDir, "Entries"));
+                    File root = new File(src, "Root"); // NOI18N
+                    copyFile(root, new File(destCvsDir, "Root")); // NOI18N
+                    File repository = new File(src, "Repository"); // NOI18N
+                    copyFile(repository, new File(destCvsDir, "Repository")); // NOI18N
+                    File entries = new File(src, "Entries"); // NOI18N
+                    copyFile(entries, new File(destCvsDir, "Entries")); // NOI18N
 
                     // set file timestamps according to entries
                     StandardAdminHandler parser = new StandardAdminHandler();
@@ -151,7 +151,7 @@ final class ImportExecutor extends ExecutorSupport implements Runnable {
                     }
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not copy CVS metadata");
+                    err.annotate(e, NbBundle.getMessage(ImportExecutor.class, "BK3001"));
                     err.notify(e);
                 }
             }
@@ -162,7 +162,7 @@ final class ImportExecutor extends ExecutorSupport implements Runnable {
         FileOutputStream fos = new FileOutputStream(dst);
         FileInputStream fis = new FileInputStream(src);
         long len = src.length();
-        assert ((int) len) == len : "Unsupported file size:" + len;
+        assert ((int) len) == len : "Unsupported file size:" + len; // NOI18N
         copyStream(fos, fis, (int) len);
     }
 
