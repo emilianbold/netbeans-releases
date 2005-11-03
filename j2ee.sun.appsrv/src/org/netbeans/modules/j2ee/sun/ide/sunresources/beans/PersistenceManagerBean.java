@@ -77,7 +77,7 @@ public class PersistenceManagerBean extends PersistenceManagerResource implement
         pmfresource.setDescription(getDescription());
         pmfresource.setJndiName(getJndiName());
         pmfresource.setFactoryClass(getFactoryClass());
-        pmfresource.setJndiName(getDatasourceJndiName());
+        pmfresource.setJdbcResourceJndiName(getDatasourceJndiName());
         pmfresource.setEnabled(getIsEnabled());
         
         // set properties
