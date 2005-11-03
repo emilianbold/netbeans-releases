@@ -219,19 +219,23 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         Value value
     ) {
         try {
-            StackFrame sf = thread.frame (0);
             try {
-                boolean result = evaluateConditionIn (condition, sf);
-                JPDABreakpointEvent ev = new JPDABreakpointEvent (
-                    getBreakpoint (),
-                    debugger,
-                    result ? 
-                        JPDABreakpointEvent.CONDITION_TRUE : 
-                        JPDABreakpointEvent.CONDITION_FALSE,
-                    debugger.getThread (thread), 
-                    referenceType, 
-                    debugger.getVariable (value)
-                );
+                boolean result;
+                JPDABreakpointEvent ev;
+                synchronized (debugger.LOCK) {
+                    StackFrame sf = thread.frame (0);
+                    result = evaluateConditionIn (condition, sf);
+                    ev = new JPDABreakpointEvent (
+                        getBreakpoint (),
+                        debugger,
+                        result ? 
+                            JPDABreakpointEvent.CONDITION_TRUE : 
+                            JPDABreakpointEvent.CONDITION_FALSE,
+                        debugger.getThread (thread), 
+                        referenceType, 
+                        debugger.getVariable (value)
+                    );
+                }
                 getDebugger ().fireBreakpointEvent (
                     getBreakpoint (),
                     ev
@@ -299,16 +303,15 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             );
         
         // 2) evaluate expression
-        synchronized (debugger.LOCK) {
-            com.sun.jdi.Value value = getDebugger ().evaluateIn (
-                compiledCondition, 
-                frame
-            );
-            try {
-                return ((com.sun.jdi.BooleanValue) value).booleanValue ();
-            } catch (ClassCastException e) {
-                throw new InvalidExpressionException (e);
-            }
+        // already synchronized (debugger.LOCK)
+        com.sun.jdi.Value value = getDebugger ().evaluateIn (
+            compiledCondition, 
+            frame
+        );
+        try {
+            return ((com.sun.jdi.BooleanValue) value).booleanValue ();
+        } catch (ClassCastException e) {
+            throw new InvalidExpressionException (e);
         }
     }
     
