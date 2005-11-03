@@ -64,6 +64,18 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
     
     protected String messageName() {
         String name = super.messageName();
+        return annotateWithProjectName(name);
+    }
+    
+    protected String messageHtmlName () {
+        String name = super.messageHtmlName();
+        return name != null ? annotateWithProjectName(name) : null;
+    }
+    
+    /** #25793 fix - adds project name to given ant script name if needed.
+     * @return ant script name annotated with project name or ant script name unchanged
+     */
+    private String annotateWithProjectName (String name) {
         DataObject d = getDataObject();
         if (d.getPrimaryFile().getNameExt().equals("build.xml")) { // NOI18N
             // #25793: show project name in case the script name does not suffice
@@ -83,6 +95,7 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
         }
         return name;
     }
+    
     
     /**
      * Overridden to ensure that the displayName of the node in the editor has
