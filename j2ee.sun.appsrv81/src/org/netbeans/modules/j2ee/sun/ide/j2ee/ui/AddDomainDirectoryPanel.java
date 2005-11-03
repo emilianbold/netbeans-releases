@@ -106,7 +106,7 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
             }
             wiz.putProperty(AddDomainWizardIterator.DOMAIN,domainDir.getName());
             wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,
-                    domainDir.getParentFile().getAbsolutePath()+"/");
+                    domainDir.getParentFile().getAbsolutePath());
             wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,null);
             return true;
         }

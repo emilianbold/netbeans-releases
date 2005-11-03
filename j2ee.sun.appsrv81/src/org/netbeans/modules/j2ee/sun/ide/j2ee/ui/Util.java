@@ -228,7 +228,7 @@ public class Util {
         wiz.putProperty(AddDomainWizardIterator.PORT,hp.substring(sepDex+1));
         wiz.putProperty(AddDomainWizardIterator.DOMAIN,domainDir.getName());
         wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,
-                domainDir.getParentFile().getAbsolutePath()+"/");
+                domainDir.getParentFile().getAbsolutePath());
         wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,null);
     }
     

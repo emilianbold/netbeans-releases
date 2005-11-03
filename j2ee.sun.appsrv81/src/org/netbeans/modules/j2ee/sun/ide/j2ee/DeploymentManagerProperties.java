@@ -139,7 +139,7 @@ public class DeploymentManagerProperties {
         if (ret.equals( installRoot )){
             //upgrade from previous semantic of this field in EA2: it was the app server location
             //not the domain location...
-            ret = ret +File.separator+"domains"+File.separator;
+            ret = ret +File.separator+"domains";
             instanceProperties.setProperty(LOCATION_ATTR, ret);
             
         }

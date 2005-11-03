@@ -125,7 +125,7 @@ public class HttpMonitorSupport {
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager)tm);
         
         //String loc = dmProps.getLocation()+"/domains/"+dmProps.getDomainName()+"/config/default-web.xml";
-        String loc = dmProps.getLocation()+dmProps.getDomainName()+"/config/default-web.xml";
+        String loc = dmProps.getLocation()+"/"+dmProps.getDomainName()+"/config/default-web.xml";
         File webXML = new File(loc);
         if (webXML.exists())
             return webXML;
@@ -137,7 +137,7 @@ public class HttpMonitorSupport {
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager)tm);
         
 //        String loc = dmProps.getLocation()+"/domains/"+dmProps.getDomainName();
-        String loc = dmProps.getLocation()+dmProps.getDomainName();
+        String loc = dmProps.getLocation()+"/"+dmProps.getDomainName();
         File instDir = new File(loc);
         if (instDir==null) return;
         

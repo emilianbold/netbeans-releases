@@ -644,13 +644,18 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
      */
     public boolean isDebuggable(Target target) {
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;        
-
+        if (sunDm.isRunning()==false){ //not running? Then not debuggable
+            return false;
+        }
         return  (null!=debugInfoMap.get(sunDm.getHost()+sunDm.getPort()));//we need a debuginfo there if in debug
 
     }        
     
     public boolean isDebugged() {
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
+        if (sunDm.isRunning()==false){ //not running? Then not debugged
+            return false;
+        }
         return  (null!=debugInfoMap.get(sunDm.getHost()+sunDm.getPort()));//we need a debuginfo there if in debug
     }
 /*
@@ -724,7 +729,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private ServerDebugInfo  getDebugInfo() {
 
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
-        
+        if (sunDm.isRunning()==false){
+            return null;
+        }
         try{
             String addr= sunDm.getDebugAddressValue();
 

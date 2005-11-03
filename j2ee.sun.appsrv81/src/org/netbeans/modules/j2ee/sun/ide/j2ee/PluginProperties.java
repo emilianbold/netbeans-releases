@@ -579,7 +579,7 @@ public class PluginProperties  {
                             instanceProperties.setProperty("displayName", displayName);
                             instanceProperties.setProperty("DOMAIN", domainsList[i].getName());
                             //  The LOCATION is the domains directory, not the install root now...
-                            instanceProperties.setProperty("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains"+File.separator);
+                            instanceProperties.setProperty("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains");
                         }
                     }
                 } catch (InstanceCreationException e){
