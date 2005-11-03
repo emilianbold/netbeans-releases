@@ -16,12 +16,14 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -35,7 +37,12 @@ import org.openide.NotifyDescriptor;
  * @author   Jan Jancura
  */
 public class VariablesTableModel implements TableModel, Constants {
+    
+    private JPDADebugger debugger;
 
+    public VariablesTableModel(ContextProvider contextProvider) {
+        debugger = (JPDADebugger) contextProvider.lookupFirst(null, JPDADebugger.class);
+    }
     
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
@@ -100,7 +107,7 @@ public class VariablesTableModel implements TableModel, Constants {
                      row instanceof Field ||
                      row instanceof JPDAWatch
                 )
-                    return false;
+                    return !debugger.canBeModified();
                 else
                     return true;
             }
