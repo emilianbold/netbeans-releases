@@ -59,22 +59,22 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     }
 
     public void setFrom(String from) {
-        if (from == null) from = "";
+        if (from == null) from = "";  // NOI18N
         tfFrom.setText(from);
     }
 
     public void setTo(String to) {
-        if (to == null) to = "";
+        if (to == null) to = "";  // NOI18N
         tfTo.setText(to);
     }
     
     public void setCommitMessage(String message) {
-        if (message == null) message = "";
+        if (message == null) message = ""; // NOI18N
         tfCommitMessage.setText(message);
     }
 
     public void setUsername(String username) {
-        if (username == null) username = "";
+        if (username == null) username = ""; // NOI18N
         tfUsername.setText(username);
     }
     

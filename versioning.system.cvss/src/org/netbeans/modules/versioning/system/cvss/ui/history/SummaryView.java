@@ -59,8 +59,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     public SummaryView(SearchHistoryPanel master, List results) {
         this.master = master;
         this.dispResults = expandResults(results);
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class);
-        searchHiliteAttrs = fcs.getFontColors("highlight-search");
+        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
+        searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
         message = master.getCriteria().getCommitMessage();
         resultsList = new JList(new SummaryListModel());
         resultsList.setFixedCellHeight(-1);
@@ -134,15 +134,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (idx == -1) return;
         Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx);
+        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             diffPrevious(idx);
         }
-        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acp-" + idx);
+        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acp-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             associatedChangesInProject(idx);
         }
-        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acop-" + idx);
+        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acop-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             associatedChangesInOpenProjects(idx);
         }
@@ -176,17 +176,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (idx == -1) return;
         Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx);
+        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
         }
-        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acp-" + idx);
+        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acp-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
         }
-        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acop-" + idx);
+        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acop-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
@@ -247,7 +247,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
         }));
         if (drev != null) {
-            if (!"dead".equals(drev.getRevision().getState())) {
+            if (!"dead".equals(drev.getRevision().getState())) { // NOI18N
                 menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", drev.getRevision().getNumber())) {
                     {
                         setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
@@ -387,7 +387,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     
     private class SummaryCellRenderer extends JPanel implements ListCellRenderer {
 
-        private static final String FIELDS_SEPARATOR = "        ";
+        private static final String FIELDS_SEPARATOR = "        "; // NOI18N
         private static final double DARKEN_FACTOR = 0.95;
 
         private Style selectedStyle;
@@ -408,19 +408,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private HyperlinkLabel  acopLink;
 
         public SummaryCellRenderer() {
-            selectedStyle = textPane.addStyle("selected", null);
-            StyleConstants.setForeground(selectedStyle, UIManager.getColor("List.selectionForeground"));
-            normalStyle = textPane.addStyle("normal", null);
-            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground"));
-            filenameStyle = textPane.addStyle("filename", normalStyle);
+            selectedStyle = textPane.addStyle("selected", null); // NOI18N
+            StyleConstants.setForeground(selectedStyle, UIManager.getColor("List.selectionForeground")); // NOI18N
+            normalStyle = textPane.addStyle("normal", null); // NOI18N
+            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
+            filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
             StyleConstants.setBold(filenameStyle, true);
-            indentStyle = textPane.addStyle("indent", null);
+            indentStyle = textPane.addStyle("indent", null); // NOI18N
             StyleConstants.setLeftIndent(indentStyle, 50);
-            noindentStyle = textPane.addStyle("noindent", null);
+            noindentStyle = textPane.addStyle("noindent", null); // NOI18N
             StyleConstants.setLeftIndent(noindentStyle, 0);
             defaultFormat = DateFormat.getDateTimeInstance();
 
-            hiliteStyle = textPane.addStyle("hilite", normalStyle);
+            hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
             StyleConstants.setBackground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background));
             StyleConstants.setForeground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground));
             
@@ -452,11 +452,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
             Style style;
             if (isSelected) {
-                textPane.setBackground(UIManager.getColor("List.selectionBackground"));
-                actionsPane.setBackground(UIManager.getColor("List.selectionBackground"));
+                textPane.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
+                actionsPane.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
                 style = selectedStyle;
             } else {
-                Color c = UIManager.getColor("List.background");
+                Color c = UIManager.getColor("List.background"); // NOI18N
                 textPane.setBackground((index & 1) == 0 ? c : darker(c));
                 actionsPane.setBackground((index & 1) == 0 ? c : darker(c));
                 style = normalStyle;
@@ -488,12 +488,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             Color foregroundColor;
             
             if (isSelected) {
-                foregroundColor = UIManager.getColor("List.selectionForeground");
-                backgroundColor = UIManager.getColor("List.selectionBackground"); 
+                foregroundColor = UIManager.getColor("List.selectionForeground"); // NOI18N
+                backgroundColor = UIManager.getColor("List.selectionBackground"); // NOI18N
                 style = selectedStyle;
             } else {
-                foregroundColor = UIManager.getColor("List.foreground");
-                backgroundColor = UIManager.getColor("List.background");
+                foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
+                backgroundColor = UIManager.getColor("List.background"); // NOI18N
                 backgroundColor = (index & 1) == 0 ? backgroundColor : darker(backgroundColor); 
                 style = normalStyle;
             }
@@ -502,7 +502,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             
             LogInformation.Revision revision = dispRevision.getRevision();
             String commitMessage = revision.getMessage();
-            if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1);
+            if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); // NOI18N
             int indentation = dispRevision.getIndentation();
             try {
                 sd.remove(0, sd.getLength());
@@ -510,15 +510,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 if (indentation == 0) {
                     sd.insertString(0, dispRevision.getRevision().getLogInfoHeader().getFile().getName(), null);
                     sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getName().substring(0, dispRevision.getName().lastIndexOf('/')) + "\n", null);
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getName().substring(0, dispRevision.getName().lastIndexOf('/')) + "\n", null); // NOI18N
                 }
                 sd.insertString(sd.getLength(), revision.getNumber() + FIELDS_SEPARATOR, null);
                 sd.insertString(sd.getLength(), defaultFormat.format(revision.getDate()) + FIELDS_SEPARATOR, null);
                 sd.insertString(sd.getLength(), revision.getAuthor(), null);
-                if ("dead".equalsIgnoreCase(dispRevision.getRevision().getState())) {
+                if ("dead".equalsIgnoreCase(dispRevision.getRevision().getState())) { // NOI18N
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR + NbBundle.getMessage(SummaryView.class, "MSG_SummaryView_DeadState"), null);
                 }
-                sd.insertString(sd.getLength(), "\n", null);
+                sd.insertString(sd.getLength(), "\n", null); // NOI18N
                 sd.insertString(sd.getLength(), commitMessage, null);
                 if (message != null && !isSelected) {
                     int idx = revision.getMessage().indexOf(message);
@@ -571,9 +571,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitIn"));
                 l1.setForeground(foregroundColor);
                 actionsPane.add(l1);
-                acpLink = new HyperlinkLabel("\"" + prjName + "\"", foregroundColor, backgroundColor);
+                acpLink = new HyperlinkLabel("\"" + prjName + "\"", foregroundColor, backgroundColor); // NOI18N
                 actionsPane.add(acpLink);
-                JLabel l2 = new JLabel(",");
+                JLabel l2 = new JLabel(","); // NOI18N
                 l2.setForeground(foregroundColor);
                 actionsPane.add(l2);
             } else {
@@ -590,17 +590,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             if (diffLink != null) {
                 Rectangle bounds = diffLink.getBounds();
                 bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty("Summary-Diff-" + index, bounds);
+                resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
             }
             if (acpLink != null) {
                 Rectangle bounds = acpLink.getBounds();
                 bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty("Summary-Acp-" + index, bounds);
+                resultsList.putClientProperty("Summary-Acp-" + index, bounds); // NOI18N
             }
             if (acopLink != null) {
                 Rectangle bounds = acopLink.getBounds();
                 bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty("Summary-Acop-" + index, bounds);
+                resultsList.putClientProperty("Summary-Acop-" + index, bounds); // NOI18N
             }
         }
     }
@@ -608,11 +608,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     private static class HyperlinkLabel extends JLabel {
         
         public HyperlinkLabel(String text, Color foreground, Color background) {
-            if (foreground.equals(UIManager.getColor("List.foreground"))) {
-                setText("<html><a href=\"\">" + text + "</a></html>");
+            if (foreground.equals(UIManager.getColor("List.foreground"))) { // NOI18N
+                setText("<html><a href=\"\">" + text + "</a></html>"); // NOI18N
             } else {
-                String clr = "rgb(" + foreground.getRed() + "," + foreground.getGreen() + "," + foreground.getBlue() + ")";
-                setText("<html><a href=\"\" style=\"color:" + clr + "\">" + text + "</a></html>");
+                String clr = "rgb(" + foreground.getRed() + "," + foreground.getGreen() + "," + foreground.getBlue() + ")"; // NOI18N
+                setText("<html><a href=\"\" style=\"color:" + clr + "\">" + text + "</a></html>"); // NOI18N
             }
             setBackground(background);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

@@ -70,7 +70,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
     
     protected String preferredID(){
-       return "SearchHistoryTopComponent";    //NOI18N       
+       return "SearchHistoryTopComponent";    // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

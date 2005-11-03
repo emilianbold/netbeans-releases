@@ -40,10 +40,10 @@ import java.beans.PropertyEditorSupport;
  */
 class RevisionNode extends AbstractNode {
     
-    static final String COLUMN_NAME_NAME        = "name";
-    static final String COLUMN_NAME_DATE        = "date";
-    static final String COLUMN_NAME_USERNAME    = "username";
-    static final String COLUMN_NAME_MESSAGE     = "message";
+    static final String COLUMN_NAME_NAME        = "name"; // NOI18N
+    static final String COLUMN_NAME_DATE        = "date"; // NOI18N
+    static final String COLUMN_NAME_USERNAME    = "username"; // NOI18N
+    static final String COLUMN_NAME_MESSAGE     = "message"; // NOI18N
         
     private LogInformation.Revision                 revision;
     private SearchHistoryPanel.ResultsContainer     container;
@@ -115,7 +115,7 @@ class RevisionNode extends AbstractNode {
             try {
                 return getValue().toString();
             } catch (Exception e) {
-                return "<error>";
+                return NbBundle.getMessage(RevisionNode.class, "BK1001");
             }
         }
 
@@ -138,7 +138,7 @@ class RevisionNode extends AbstractNode {
             if (revision != null) {
                 return revision.getAuthor();
             } else {
-                return "";
+                return ""; // NOI18N
             }
         }
     }
@@ -153,7 +153,7 @@ class RevisionNode extends AbstractNode {
             if (revision != null) {
                 return revision.getDateString();
             } else {
-                return "";
+                return ""; // NOI18N
             }
         }
     }
@@ -168,7 +168,7 @@ class RevisionNode extends AbstractNode {
             if (revision != null) {
                 return revision.getMessage();
             } else {
-                return "";
+                return ""; // NOI18N
             }
         }
     }

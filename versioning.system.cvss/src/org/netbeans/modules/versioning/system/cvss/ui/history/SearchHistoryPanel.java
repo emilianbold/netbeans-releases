@@ -94,8 +94,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 search();
             }
         };
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); //NOI18N
-        getActionMap().put("search", searchAction);//NOI18N
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
+        getActionMap().put("search", searchAction); // NOI18N
         bSearch.setAction(searchAction);
         Mnemonics.setLocalizedText(bSearch, NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search"));
         
@@ -105,7 +105,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             tbDiff.setPreferredSize(d1);
         }
         
-        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png"))) {
+        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png"))) { // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
                                                    getString("CTL_DiffPanel_Next_Tooltip"));                
@@ -114,7 +114,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 diffView.onNextButton();
             }
         };
-        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png"))) {
+        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png"))) { // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
                                                    getString("CTL_DiffPanel_Prev_Tooltip"));                
@@ -126,8 +126,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         bNext.setAction(nextAction);
         bPrev.setAction(prevAction);
 
-        getActionMap().put("jumpNext", nextAction);
-        getActionMap().put("jumpPrev", prevAction);
+        getActionMap().put("jumpNext", nextAction); // NOI18N
+        getActionMap().put("jumpPrev", prevAction); // NOI18N
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -366,10 +366,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             this.header = header;
             File file = header.getFile();
             try {
-                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName();
+                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName(); // NOI18N
             } catch (Exception e) {
                 name = header.getRepositoryFilename();
-                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
+                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v")); // NOI18N
             }
             path = name.substring(0, name.lastIndexOf('/'));
             name = name.substring(path.length() + 1); 
@@ -426,10 +426,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             this.revision = revision;
             File file = revision.getLogInfoHeader().getFile();
             try {
-                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName();
+                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName(); // NOI18N
             } catch (Exception e) {
                 name = revision.getLogInfoHeader().getRepositoryFilename();
-                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
+                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v")); // NOI18N
             }
             path = name.substring(0, name.lastIndexOf('/'));            
         }
@@ -477,12 +477,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         /** Goes into clipboard */
         public String toString() {
-            StringBuffer indent = new StringBuffer("  ");  // NOi18N
+            StringBuffer indent = new StringBuffer("  ");  // NOI18N
             for (int i = 0; i<getIndentation(); i++) {
                 indent.append("  "); // NOI18N
             }
             StringBuffer text = new StringBuffer();
-            text.append(indent).append(getRevision().getNumber()).append("\t").append(getRevision().getDateString()).append(" ").append(getRevision().getAuthor());
+            text.append(indent).append(getRevision().getNumber()).append("\t").append(getRevision().getDateString()).append(" ").append(getRevision().getAuthor()); // NOI18N
             text.append("\n"); // NOI18N
             text.append(getRevision().getMessage());
 
@@ -508,8 +508,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
     
     public static int compareRevisions(String r1, String r2) {
-        StringTokenizer st1 = new StringTokenizer(r1, ".");
-        StringTokenizer st2 = new StringTokenizer(r2, ".");
+        StringTokenizer st1 = new StringTokenizer(r1, "."); // NOI18N
+        StringTokenizer st2 = new StringTokenizer(r2, "."); // NOI18N
         for (;;) {
             if (!st1.hasMoreTokens()) {
                 return st2.hasMoreTokens() ? -1 : 0;

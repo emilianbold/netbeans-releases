@@ -42,9 +42,9 @@ class Divider extends JPanel {
         this.listener = listener;
         enableEvents(MouseEvent.MOUSE_ENTERED | MouseEvent.MOUSE_EXITED | MouseEvent.MOUSE_CLICKED);
         bkg = getBackground();
-        sbkg = UIManager.getColor("TextField.selectionBackground");
-        selectedArrowColor = UIManager.getColor("TextField.selectionForeground");
-        arrowColor = UIManager.getColor("TextField.inactiveForeground");
+        sbkg = UIManager.getColor("TextField.selectionBackground"); // NOI18N
+        selectedArrowColor = UIManager.getColor("TextField.selectionForeground"); // NOI18N
+        arrowColor = UIManager.getColor("TextField.inactiveForeground"); // NOI18N
     }
 
     public Dimension getPreferredSize() {
@@ -70,7 +70,7 @@ class Divider extends JPanel {
             repaint();
         }
         if (e.getID() == MouseEvent.MOUSE_CLICKED) {
-            listener.actionPerformed(new ActionEvent(this, DIVIDER_CLICKED, ""));
+            listener.actionPerformed(new ActionEvent(this, DIVIDER_CLICKED, "")); // NOI18N
         }
     }
 

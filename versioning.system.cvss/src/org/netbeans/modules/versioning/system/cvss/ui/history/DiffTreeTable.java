@@ -56,8 +56,8 @@ class DiffTreeTable extends TreeTableView {
     private void setupColumns() {
         Node.Property [] columns = new Node.Property[4];
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
-        columns[0] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_NAME, String.class, "", "");
-        columns[0].setValue("TreeColumnTTV", Boolean.TRUE);
+        columns[0] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_NAME, String.class, "", "");  // NOI18N
+        columns[0].setValue("TreeColumnTTV", Boolean.TRUE); // NOI18N
         columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
         columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
         columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
@@ -156,7 +156,7 @@ class DiffTreeTable extends TreeTableView {
         }
 
         public String getName() {
-            return "revision";
+            return "revision"; // NOI18N
         }
 
         public String getDisplayName() {
