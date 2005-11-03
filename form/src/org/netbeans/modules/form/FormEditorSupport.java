@@ -551,7 +551,7 @@ public class FormEditorSupport extends JavaEditor
         else {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    if (multiviewTC == null)
+                    if ((multiviewTC == null) || (!formDataObject.isValid())) // Issue 67544
                         return;
 
                     String title = getMVTCDisplayName(formDataObject);
