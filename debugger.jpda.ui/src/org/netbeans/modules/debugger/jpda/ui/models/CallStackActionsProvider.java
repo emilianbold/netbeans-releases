@@ -85,20 +85,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         if (!(node instanceof CallStackFrame))
             throw new UnknownTypeException (node);
         
-        CallStackFrame csf = (CallStackFrame) node;
-        JPDAThread t = csf.getThread ();
-        boolean popToHere = debugger.canPopFrames (); /*&& 
-                            //(t.getStackDepth () > 0);
-        Do not do the check here - it can freeze AWT and it's too early
-        Implement the check on individual actions.
-        if (popToHere)
-            try {
-                popToHere = ! debugger.getCurrentThread ().getCallStack (0, 1) [0].
-                    equals (csf);
-            } catch (AbsentInformationException ex) {
-                popToHere = false;
-            }
-        */
+        boolean popToHere = debugger.canPopFrames ();
         if (popToHere)
             return new Action [] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION };
         else

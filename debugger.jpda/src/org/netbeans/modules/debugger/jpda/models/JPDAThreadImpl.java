@@ -22,6 +22,8 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 import java.util.List;
 
@@ -36,10 +38,17 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 /**
  * The implementation of JPDAThread.
  */
-public class JPDAThreadImpl implements JPDAThread {
+public final class JPDAThreadImpl implements JPDAThread {
+    
+    /**
+     * Suspended property of the thread. Fired when isSuspended() changes.
+     */
+    public static final String PROP_SUSPENDED = "suspended";
     
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
+    private boolean             suspended;
+    private PropertyChangeSupport pch = new PropertyChangeSupport(this);
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -47,6 +56,7 @@ public class JPDAThreadImpl implements JPDAThread {
     ) {
         this.threadReference = threadReference;
         this.debugger = debugger;
+        suspended = threadReference.isSuspended();
     }
 
     /**
@@ -214,6 +224,8 @@ public class JPDAThreadImpl implements JPDAThread {
         return getCallStack (0, getStackDepth ());
     }
     
+    private Object lastBottomSF;
+    
     /**
      * Returns call stack for this thread on the given indexes.
      *
@@ -237,7 +249,7 @@ public class JPDAThreadImpl implements JPDAThread {
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
-                frames[i] = debugger.getCallStackFrame((StackFrame) l.get(i));
+                frames[i] = new CallStackFrameImpl((StackFrame) l.get(i), from + i, debugger);
             }
             return frames;
         } catch (IncompatibleThreadStateException ex) {
@@ -270,29 +282,80 @@ public class JPDAThreadImpl implements JPDAThread {
     /**
      * Suspends thread.
      */
-    public synchronized void suspend () {
-        try {
-            if (isSuspended ()) return;
-            threadReference.suspend ();
-        } catch (ObjectCollectedException ex) {
-        } catch (VMDisconnectedException ex) {
+    public void suspend () {
+        Boolean suspendedToFire = null;
+        synchronized (this) {
+            try {
+                if (!isSuspended ()) {
+                    threadReference.suspend ();
+                    suspendedToFire = Boolean.TRUE;
+                }
+                suspended = true;
+            } catch (ObjectCollectedException ex) {
+            } catch (VMDisconnectedException ex) {
+            }
+        }
+        if (suspendedToFire != null) {
+            pch.firePropertyChange(PROP_SUSPENDED,
+                    Boolean.valueOf(!suspendedToFire.booleanValue()),
+                    suspendedToFire);
         }
     }
     
     /**
      * Unsuspends thread.
      */
-    public synchronized void resume () {
-        try {
-            if (!isSuspended ()) return;
-            int count = threadReference.suspendCount ();
-            while (count > 0) {
-                threadReference.resume (); count--;
+    public void resume () {
+        Boolean suspendedToFire = null;
+        synchronized (this) {
+            try {
+                if (isSuspended ()) {
+                    int count = threadReference.suspendCount ();
+                    while (count > 0) {
+                        threadReference.resume (); count--;
+                    }
+                    suspendedToFire = Boolean.FALSE;
+                }
+                suspended = false;
+            } catch (ObjectCollectedException ex) {
+            } catch (VMDisconnectedException ex) {
             }
-        } catch (ObjectCollectedException ex) {
-        } catch (VMDisconnectedException ex) {
+        }        
+        if (suspendedToFire != null) {
+            pch.firePropertyChange(PROP_SUSPENDED,
+                    Boolean.valueOf(!suspendedToFire.booleanValue()),
+                    suspendedToFire);
         }
-        
+    }
+    
+    public void notifyToBeRunning() {
+        Boolean suspendedToFire = null;
+        synchronized (this) {
+            if (suspended) {
+                suspended = false;
+                suspendedToFire = Boolean.FALSE;
+            }
+        }
+        if (suspendedToFire != null) {
+            pch.firePropertyChange(PROP_SUSPENDED,
+                    Boolean.valueOf(!suspendedToFire.booleanValue()),
+                    suspendedToFire);
+        }
+    }
+    
+    public void notifySuspended() {
+        Boolean suspendedToFire = null;
+        synchronized (this) {
+            if (!suspended && isSuspended()) {
+                suspended = true;
+                suspendedToFire = Boolean.TRUE;
+            }
+        }
+        if (suspendedToFire != null) {
+            pch.firePropertyChange(PROP_SUSPENDED,
+                    Boolean.valueOf(!suspendedToFire.booleanValue()),
+                    suspendedToFire);
+        }
     }
     
     public void interrupt() {
@@ -354,5 +417,18 @@ public class JPDAThreadImpl implements JPDAThread {
     
     public ThreadReference getThreadReference () {
         return threadReference;
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pch.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pch.removePropertyChangeListener(l);
+    }
+    
+    private void fireSuspended(boolean suspended) {
+        pch.firePropertyChange(PROP_SUSPENDED,
+                Boolean.valueOf(!suspended), Boolean.valueOf(suspended));
     }
 }

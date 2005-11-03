@@ -32,6 +32,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -187,6 +188,11 @@ public class CallStackTreeModel implements TreeModel {
             this.debugger = debugger;
             model = new WeakReference (tm);
             debugger.addPropertyChangeListener (this);
+            JPDAThreadImpl lastCurrentThread = (JPDAThreadImpl) debugger.getCurrentThread();
+            if (lastCurrentThread != null) {
+                lastCurrentThread.addPropertyChangeListener(
+                        WeakListeners.propertyChange(this, lastCurrentThread));
+            }
         }
         
         private CallStackTreeModel getModel () {
@@ -212,46 +218,48 @@ public class CallStackTreeModel implements TreeModel {
         // there is at most one
         private RequestProcessor.Task task;
         
-        public void propertyChange (PropertyChangeEvent e) {
-            if ( ( (e.getPropertyName () == 
-                     debugger.PROP_CURRENT_THREAD) ||
-                   (e.getPropertyName () == debugger.PROP_STATE)
-                 ) && (debugger.getState () == debugger.STATE_STOPPED)
-            ) {
-                final CallStackTreeModel tm = getModel ();
-                if (tm == null) return;
-                if (task != null) {
-                    // cancel old task
-                    task.cancel ();
-                    if (verbose)
-                        System.out.println("CSTM cancel old task " + task);
-                    task = null;
+        // check also whether the current thread was resumed/suspended
+        // the call stack needs to be refreshed after invokeMethod() which resumes the thread
+        public synchronized void propertyChange (PropertyChangeEvent e) {
+            boolean refresh = false;
+            String propertyName = e.getPropertyName();
+            if (propertyName == debugger.PROP_CURRENT_THREAD) {
+                JPDAThreadImpl lastCurrentThread = (JPDAThreadImpl) debugger.getCurrentThread();
+                if (lastCurrentThread != null) {
+                    lastCurrentThread.addPropertyChangeListener(
+                            WeakListeners.propertyChange(this, lastCurrentThread));
+                    refresh = true;
                 }
-                task = RequestProcessor.getDefault ().post (new Runnable () {
-                    public void run () {
-                        if (debugger.getState () != debugger.STATE_STOPPED) {
-                            if (verbose)
-                                System.out.println("CSTM cancel started task " + task);
-                            return;
-                        }
-                        if (verbose)
-                            System.out.println("CSTM do task " + task);
-                        tm.fireTreeChanged ();
-                    }
-                }, 500);
-                if (verbose)
-                    System.out.println("CSTM  create task " + task);
-            } else
-            if ( (e.getPropertyName () == debugger.PROP_STATE) &&
-                 (debugger.getState () != debugger.STATE_STOPPED) &&
-                 (task != null)
+            }
+            if (propertyName == JPDAThreadImpl.PROP_SUSPENDED
+                    && Boolean.TRUE.equals(e.getNewValue())) {
+                if (e.getSource() == debugger.getCurrentThread()) {
+                    refresh = true;
+                }
+            }
+            if ((propertyName == debugger.PROP_STATE)
+                 && (debugger.getState() == debugger.STATE_STOPPED)
             ) {
-                // debugger has been resumed
-                // =>> cancel task
-                task.cancel ();
-                if (verbose)
-                    System.out.println("CSTM cancel task " + task);
-                task = null;
+                refresh = true;
+            }
+            if (refresh) {
+                synchronized (this) {
+                    if (task == null) {
+                        task = RequestProcessor.getDefault().create(new Refresher());
+                    }
+                    task.schedule(200);
+                }
+            }
+        }
+        
+        private class Refresher extends Object implements Runnable {
+            public void run() {
+                if (debugger.getState () == debugger.STATE_STOPPED) {
+                    CallStackTreeModel tm = getModel ();
+                    if (tm != null) {
+                        tm.fireTreeChanged();
+                    }
+                }
             }
         }
     }

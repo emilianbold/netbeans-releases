@@ -116,7 +116,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private String                      lastStratumn;
     private ContextProvider             lookupProvider;
     private ObjectTranslation           threadsTranslation;
-    private ObjectTranslation           stackFrameTranslation;
     private ObjectTranslation           localsTranslation;
 
     private StackFrame      altCSF = null;  //PATCH 48174
@@ -137,7 +136,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         languages = new HashSet ();
         languages.add ("Java");
         threadsTranslation = ObjectTranslation.createThreadTranslation(this);
-        stackFrameTranslation = ObjectTranslation.createStackTranslation(this);
         localsTranslation = ObjectTranslation.createLocalsTranslation(this);
     }
 
@@ -520,7 +518,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Used by BreakpointImpl.
      */
-    public  Value evaluateIn (Expression expression, StackFrame frame) 
+    public  Value evaluateIn (Expression expression, final StackFrame frame) 
     throws InvalidExpressionException {
         synchronized (LOCK) {
             if (frame == null)
@@ -535,6 +533,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     getEngineContext ().getURL (frame, "Java")
                 )));
                 final List[] disabledBreakpoints = new List[] { null };
+                final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
                 EvaluationContext context;
                 org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = 
                     expression.evaluator (
@@ -547,6 +546,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                 public void run() {
                                     if (disabledBreakpoints[0] == null) {
                                         disabledBreakpoints[0] = disableAllBreakpoints ();
+                                        ThreadReference tr = frame.thread();
+                                        resumedThread[0] = (JPDAThreadImpl) getThread(tr);
+                                        resumedThread[0].notifyToBeRunning();
                                     }
                                 }
                             }
@@ -561,6 +563,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     }
                     if (disabledBreakpoints[0] != null) {
                         enableAllBreakpoints (disabledBreakpoints[0]);
+                    }
+                    if (resumedThread[0] != null) {
+                        resumedThread[0].notifySuspended();
                     }
                 }
             } catch (EvaluationException e) {
@@ -591,12 +596,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 throw methodCallsUnsupportedExc;
             }
             List l = disableAllBreakpoints ();
+            ThreadReference tr = getEvaluationThread();
+            JPDAThreadImpl thread = (JPDAThreadImpl) getThread(tr);
+            boolean threadSuspended = thread.isSuspended();
+            thread.notifyToBeRunning();
             try {
                 return org.netbeans.modules.debugger.jpda.expr.Evaluator.
                     invokeVirtual (
                         reference,
                         method,
-                        getEvaluationThread (),
+                        tr,
                         Arrays.asList (arguments)
                     );
             } catch (InvalidExpressionException ieex) {
@@ -605,6 +614,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 throw ieex;
             } finally {
+                if (threadSuspended) {
+                    thread.notifySuspended();
+                }
                 enableAllBreakpoints (l);
             }
         }
@@ -824,10 +836,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public JPDAThreadGroup getThreadGroup (ThreadGroupReference tgr) {
         return (JPDAThreadGroup) threadsTranslation.translate (tgr);
-    }
-    
-    public CallStackFrame getCallStackFrame (StackFrame sf) {
-        return (CallStackFrame) stackFrameTranslation.translate (sf);
     }
     
     public Variable getLocalVariable(LocalVariable lv, Value v) {

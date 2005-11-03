@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import java.util.Iterator;
 
 import java.util.List;
 
@@ -72,12 +73,22 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     
     // XXX Add some synchronization so that the threads can not be resumed at any time
     public void resume () {
+        List threads = tgr.threads();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread((ThreadReference) it.next());
+            thread.notifyToBeRunning();
+        }
         tgr.resume ();
     }
     
     // XXX Add some synchronization
     public void suspend () {
         tgr.suspend ();
+        List threads = tgr.threads();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread((ThreadReference) it.next());
+            thread.notifySuspended();
+        }
     }
     
 }

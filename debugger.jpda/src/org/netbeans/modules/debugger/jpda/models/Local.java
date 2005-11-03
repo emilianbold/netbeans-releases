@@ -13,12 +13,15 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
@@ -29,7 +32,8 @@ class Local extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.LocalVariable {
         
     protected LocalVariable     local;
-    private CallStackFrameImpl  frame;
+    private JPDAThread          thread;
+    private int                 depth;
     private String              className;
 
     
@@ -47,7 +51,10 @@ org.netbeans.api.debugger.jpda.LocalVariable {
                 (value instanceof ObjectReference ? "^" : "")
         );
         this.local = local;
-        this.frame = frame;
+        if (frame != null) {
+            this.thread = frame.getThread();
+            this.depth = frame.getFrameDepth();
+        }
         this.className = className;
     }
 
@@ -67,7 +74,10 @@ org.netbeans.api.debugger.jpda.LocalVariable {
                 (value instanceof ObjectReference ? "^" : "")
         );
         this.local = local;
-        this.frame = frame;
+        if (frame != null) {
+            this.thread = frame.getThread();
+            this.depth = frame.getFrameDepth();
+        }
         this.className = className;
     }
 
@@ -107,7 +117,10 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     
     protected final void setValue (Value value) throws InvalidExpressionException {
         try {
-            frame.getStackFrame ().setValue (local, value);
+            StackFrame sf = ((CallStackFrameImpl) thread.getCallStack(depth, depth + 1)[0]).getStackFrame();
+            sf.setValue (local, value);
+        } catch (AbsentInformationException aiex) {
+            throw new InvalidExpressionException(aiex);
         } catch (InvalidTypeException ex) {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {
@@ -117,8 +130,9 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     
     // other methods ...........................................................
     
-    protected final void setFrame(CallStackFrameImpl frame) {
-        this.frame = frame;
+    final void setFrame(CallStackFrameImpl frame) {
+        this.thread = frame.getThread();
+        this.depth = frame.getFrameDepth();
     }
     
     public String toString () {

@@ -40,14 +40,17 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 public class CallStackFrameImpl implements CallStackFrame {
     
     private StackFrame          sf;
+    private int                 depth;
     private JPDADebuggerImpl    debugger;
     private boolean             valid;
     
     public CallStackFrameImpl (
         StackFrame          sf,
+        int                 depth,
         JPDADebuggerImpl    debugger
     ) {
         this.sf = sf;
+        this.depth = depth;
         this.debugger = debugger;
         this.valid = true; // suppose we're valid when we're new
     }
@@ -287,6 +290,13 @@ public class CallStackFrameImpl implements CallStackFrame {
      */
     public StackFrame getStackFrame () {
         return sf;
+    }
+    
+    /**
+     * Get the depth of this stack frame in the thread stack.
+     */
+    public int getFrameDepth() {
+        return depth;
     }
 
     public boolean equals (Object o) {

@@ -36,7 +36,6 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 public final class ObjectTranslation {
     
     private static final int THREAD_ID = 0;
-    private static final int STACK_ID = 1;
     private static final int LOCALS_ID = 2;
     
     private JPDADebuggerImpl debugger;
@@ -73,16 +72,6 @@ public final class ObjectTranslation {
                 } else {
                     return null;
                 }
-            case STACK_ID:
-                if (o instanceof StackFrame) {
-                    return new CallStackFrameImpl ((StackFrame) o, debugger);
-                }
-            case LOCALS_ID:
-                /*
-                if (o instanceof LocalVariable) {
-                    return new Local(debugger, null, null, (LocalVariable) o, null);
-                }
-                 */
             default:
                 throw new IllegalStateException(""+o);
         }
@@ -121,11 +110,6 @@ public final class ObjectTranslation {
      *         is not possible to translate.
      */
     public Object translate (Mirror o) {
-        if (o instanceof StackFrame) {
-            // StackFrame is not cachable - hashCode() and equals()
-            // throws exceptions as soon as the StackFrame becomes invalid
-            return createTranslation(o);
-        }
         Object r = null;
         synchronized (cache) {
             WeakReference wr = (WeakReference) cache.get (o);
@@ -161,10 +145,6 @@ public final class ObjectTranslation {
     
     public static ObjectTranslation createThreadTranslation(JPDADebuggerImpl debugger) {
         return new ObjectTranslation(debugger, THREAD_ID);
-    }
-    
-    public static ObjectTranslation createStackTranslation(JPDADebuggerImpl debugger) {
-        return new ObjectTranslation(debugger, STACK_ID);
     }
     
     public static ObjectTranslation createLocalsTranslation(JPDADebuggerImpl debugger) {
