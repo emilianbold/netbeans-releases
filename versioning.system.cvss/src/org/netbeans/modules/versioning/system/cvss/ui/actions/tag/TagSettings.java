@@ -98,7 +98,6 @@ public class TagSettings extends javax.swing.JPanel {
 
         nameLabel.setLabelFor(tfName);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_TagForm_TagName"));
-        nameLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -129,8 +128,7 @@ public class TagSettings extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(jButton1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void onBrowseTag(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseTag
         for (int i = 0; i < roots.length; i++) {

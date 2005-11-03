@@ -65,7 +65,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle.properties" key="CTL_TagForm_TagName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
-        <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>

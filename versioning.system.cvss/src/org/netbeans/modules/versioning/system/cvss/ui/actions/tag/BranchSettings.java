@@ -25,6 +25,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import java.io.IOException;
 import java.io.File;
+import org.openide.util.*;
 
 /**
  * Settings panel for the Branch command.
@@ -39,8 +40,8 @@ class BranchSettings extends javax.swing.JPanel {
     public BranchSettings(File [] roots) {
         this.roots = roots;
         initComponents();
-        cbTagBase.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBase", true));
-        tfBaseTagName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBaseName", "new_branch_root"));
+        cbTagBase.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBase", true)); // NOI18N
+        tfBaseTagName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBaseName", NbBundle.getMessage(BranchSettings.class, "BK0001")));  // NOI18N
         tfBaseTagName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
@@ -54,8 +55,8 @@ class BranchSettings extends javax.swing.JPanel {
                 autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
             }
         });
-        cbCheckoutBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.checkout", true));
-        tfName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.branchName", "new_branch"));
+        cbCheckoutBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.checkout", true)); // NOI18N
+        tfName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.branchName", NbBundle.getMessage(BranchSettings.class, "BK0002"))); // NOI18N
         tfName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 refreshComponents();
@@ -89,13 +90,13 @@ class BranchSettings extends javax.swing.JPanel {
     }
     
     public void saveSettings() {
-        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.tagBase", cbTagBase.isSelected());
-        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.checkout", cbCheckoutBranch.isSelected());
-        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.branchName", tfName.getText());
+        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.tagBase", cbTagBase.isSelected());  // NOI18N
+        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.checkout", cbCheckoutBranch.isSelected()); // NOI18N
+        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.branchName", tfName.getText()); // NOI18N
     }
 
     private String computeBaseTagName() {
-        return tfName.getText() + "_root";
+        return tfName.getText() + NbBundle.getMessage(BranchSettings.class, "BK0003");
     }
     
     private void refreshComponents() {
@@ -104,7 +105,7 @@ class BranchSettings extends javax.swing.JPanel {
         if (autoComputeBaseTagName && cbTagBase.isSelected()) {
             tfBaseTagName.setText(computeBaseTagName());
         }
-        DialogDescriptor dd = (DialogDescriptor) getClientProperty("org.openide.DialogDescriptor");
+        DialogDescriptor dd = (DialogDescriptor) getClientProperty("org.openide.DialogDescriptor"); // NOI18N
         if (dd != null) {
             dd.setValid(tfName.getText().trim().length() > 0);
         }
@@ -164,7 +165,6 @@ class BranchSettings extends javax.swing.JPanel {
         nameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("MNE_BranchForm_BranchName").charAt(0));
         nameLabel.setLabelFor(tfName);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BranchName"));
-        nameLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -217,8 +217,7 @@ class BranchSettings extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(tfBaseTagName, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void browseBranches(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseBranches
         for (int i = 0; i < roots.length; i++) {

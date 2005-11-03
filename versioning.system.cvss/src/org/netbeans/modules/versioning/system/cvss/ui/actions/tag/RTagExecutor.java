@@ -70,7 +70,7 @@ public class RTagExecutor extends ExecutorSupport {
                 File file = files[j];
                 File directory = file.isDirectory() ? file : file.getParentFile();
                 try {
-                    String repository = ah.getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1);
+                    String repository = ah.getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1); // NOI18N
                     remoteRepositories.add(repository);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);

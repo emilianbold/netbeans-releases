@@ -45,7 +45,7 @@ public class TagAction extends AbstractSystemAction {
 
 
     protected String getBaseName() {
-        return "CTL_MenuItem_Tag";
+        return "CTL_MenuItem_Tag";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
