@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
+import org.openide.*;
 import org.openide.nodes.*;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileObject;
@@ -41,10 +43,10 @@ public class SyncFileNode extends AbstractNode {
     
     private CvsFileNode node;
 
-    static final String COLUMN_NAME_NAME        = "name";
-    static final String COLUMN_NAME_PATH        = "path";
-    static final String COLUMN_NAME_STATUS      = "status";
-    static final String COLUMN_NAME_STICKY      = "sticky";
+    static final String COLUMN_NAME_NAME        = "name"; // NOI18N
+    static final String COLUMN_NAME_PATH        = "path"; // NOI18N
+    static final String COLUMN_NAME_STATUS      = "status"; // NOI18N
+    static final String COLUMN_NAME_STICKY      = "sticky"; // NOI18N
     
     private String htmlDisplayName;
     private String sticky;
@@ -117,7 +119,7 @@ public class SyncFileNode extends AbstractNode {
     }
 
     private void initProperties() {
-        if (node.getFile().isDirectory()) setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif");
+        if (node.getFile().isDirectory()) setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif"); // NOI18N
 
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
@@ -158,12 +160,12 @@ public class SyncFileNode extends AbstractNode {
     public String getSticky() {
         if (sticky == null) {
             if ((sticky = Utils.getSticky(node.getFile())) == null) {
-                sticky = "";
+                sticky = ""; // NOI18N
             } else {
                 sticky = sticky.substring(1);
             }
         }
-        return sticky == null || sticky.length() == 0 ? "" : sticky;
+        return sticky == null || sticky.length() == 0 ? "" : sticky; // NOI18N
     }
 
     private abstract class SyncFileProperty extends PropertySupport.ReadOnly {
@@ -176,7 +178,8 @@ public class SyncFileNode extends AbstractNode {
             try {
                 return getValue().toString();
             } catch (Exception e) {
-                return "<error>";
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return e.getLocalizedMessage();
             }
         }
     }
@@ -184,7 +187,7 @@ public class SyncFileNode extends AbstractNode {
     private class StickyProperty extends SyncFileProperty {
 
         public StickyProperty() {
-            super(COLUMN_NAME_STICKY, String.class, "Sticky", "Sticky");
+            super(COLUMN_NAME_STICKY, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002"));
         }
 
         public Object getValue() {
@@ -197,9 +200,9 @@ public class SyncFileNode extends AbstractNode {
         private String shortPath;
 
         public PathProperty() {
-            super(COLUMN_NAME_PATH, String.class, "Path", "Path");
+            super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004"));
             shortPath = Utils.getRelativePath(node.getFile());
-            setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName());
+            setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -210,8 +213,8 @@ public class SyncFileNode extends AbstractNode {
     private class NameProperty extends SyncFileProperty {
 
         public NameProperty() {
-            super(COLUMN_NAME_NAME, String.class, "File name", "File name");
-            setValue("sortkey", SyncFileNode.this.getName());
+            super(COLUMN_NAME_NAME, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2005"), NbBundle.getMessage(SyncFileNode.class, "BK2006"));
+            setValue("sortkey", SyncFileNode.this.getName()); // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -219,15 +222,15 @@ public class SyncFileNode extends AbstractNode {
         }
     }
 
-    private static final String [] zeros = new String [] { "", "00", "0", "" };
+    private static final String [] zeros = new String [] { "", "00", "0", "" }; // NOI18N
     
     private class StatusProperty extends SyncFileProperty {
         
         public StatusProperty() {
-            super(COLUMN_NAME_STATUS, String.class, "Status", "Status");
+            super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2007"), NbBundle.getMessage(SyncFileNode.class, "BK2008"));
             String shortPath = Utils.getRelativePath(node.getFile());
             String sortable = Integer.toString(Utils.getComparableStatus(node.getInformation().getStatus()));
-            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + SyncFileNode.this.getName());
+            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {

@@ -97,9 +97,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
-            String sk1 = (String) p1.getValue("sortkey");
+            String sk1 = (String) p1.getValue("sortkey"); // NOI18N
             if (sk1 != null) {
-                String sk2 = (String) p2.getValue("sortkey");
+                String sk2 = (String) p2.getValue("sortkey"); // NOI18N
                 return sk1.compareToIgnoreCase(sk2);
             } else {
                 try {
@@ -123,8 +123,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
-        Color borderColor = UIManager.getColor("scrollpane_border");
-        if (borderColor == null) borderColor = UIManager.getColor("controlShadow");
+        Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
+        if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new SyncTableCellRenderer());
@@ -274,32 +274,30 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      */
     private JPopupMenu getPopup() {
 
-        ResourceBundle actionsLoc = NbBundle.getBundle(Annotator.class);
-
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
-
+        
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
-        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionsLoc.getString("CTL_PopupMenuItem_Diff")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(UpdateAction.class), actionsLoc.getString("CTL_PopupMenuItem_Update")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(UpdateAction.class), actionString("CTL_PopupMenuItem_Update"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionsLoc.getString("CTL_PopupMenuItem_Commit")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
-        item = menu.add(new SystemActionBridge(SystemAction.get(TagAction.class), actionsLoc.getString("CTL_PopupMenuItem_Tag")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(TagAction.class), actionString("CTL_PopupMenuItem_Tag"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(BranchAction.class), actionsLoc.getString("CTL_PopupMenuItem_Branch")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(BranchAction.class), actionString("CTL_PopupMenuItem_Branch"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
         item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
                                                ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
-                                               actionsLoc.getString("CTL_PopupMenuItem_HideAnnotations") : 
-                                               actionsLoc.getString("CTL_PopupMenuItem_ShowAnnotations")));
+                                               actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
+                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionsLoc.getString("CTL_PopupMenuItem_SearchHistory")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
         item = menu.add(new ExcludeFromCommitAction());
@@ -322,26 +320,35 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
         if (allLocallyNew) {
             SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
-            revertAction = new SystemActionBridge(systemAction, actionsLoc.getString("CTL_PopupMenuItem_Delete"));
+            revertAction = new SystemActionBridge(systemAction, actionString("CTL_PopupMenuItem_Delete")); // NOI18N
         } else if (allLocallyDeleted) {
-            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionsLoc.getString("CTL_PopupMenuItem_RevertDelete"));
+            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionString("CTL_PopupMenuItem_RevertDelete")); // NOI18N
         } else {
-            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionsLoc.getString("CTL_PopupMenuItem_GetClean"));
+            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionString("CTL_PopupMenuItem_GetClean")); // NOI18N
         }
         item = menu.add(revertAction);
         Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionsLoc.getString("CTL_PopupMenuItem_ResolveConflicts")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
            ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus() == IgnoreAction.UNIGNORING ?
-           actionsLoc.getString("CTL_PopupMenuItem_Unignore") :
-           actionsLoc.getString("CTL_PopupMenuItem_Ignore"));
+           actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
+           actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);
         Mnemonics.setLocalizedText(item, item.getText());
 
         return menu;
+    }
+
+    /** 
+     * Workaround.
+     * I18N Test Wizard searches for keys in syncview package Bundle.properties 
+     */
+    private String actionString(String key) {
+        ResourceBundle actionsLoc = NbBundle.getBundle(Annotator.class);
+        return actionsLoc.getString(key);
     }
     
     public void mouseEntered(MouseEvent e) {
@@ -370,7 +377,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             Action action = nodes[row].getPreferredAction();
             if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
             if (action.isEnabled()) {
-                action.actionPerformed(new ActionEvent(this, 0, ""));
+                action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
         }
     }
@@ -405,14 +412,14 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             if (modelColumnIndex == 0) {
                 SyncFileNode node = nodes[sorter.modelIndex(row)];
                 if (!isSelected) {
-                    value = "<html>" + node.getHtmlDisplayName();
+                    value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
                 if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
                     String nodeName = node.getDisplayName();
                     if (isSelected) {
-                        value = "<html><s>" + nodeName + "</s></html>";
+                        value = "<html><s>" + nodeName + "</s></html>"; // NOI18N
                     } else {
-                        value = "<html><s>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(nodeName, node.getFileInformation(), null) + "</s>";
+                        value = "<html><s>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(nodeName, node.getFileInformation(), null) + "</s>"; // NOI18N
                     }
                 }
             }

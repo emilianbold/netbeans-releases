@@ -80,7 +80,7 @@ public class OpenInEditorAction extends AbstractAction {
         } else if (cookieClass == ViewCookie.class) {
             ((ViewCookie) cookie).view();
         } else {
-            throw new IllegalArgumentException("Reopen #58766: " + cookieClass);
+            throw new IllegalArgumentException("Reopen #58766: " + cookieClass); // NOI18N
         }
         return true;
     }

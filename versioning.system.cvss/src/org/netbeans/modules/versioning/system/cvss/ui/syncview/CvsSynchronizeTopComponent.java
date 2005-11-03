@@ -41,8 +41,8 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     private static CvsSynchronizeTopComponent instance;
 
     public CvsSynchronizeTopComponent() {
-        setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title")); //NOI18N
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/versioning-view.png"));  //NOI18N        
+        setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title"));
+        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "ACSD_Synchronize_TopComponent"));
         syncPanel = new SynchronizePanel(this);
@@ -202,7 +202,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     public void setContext(Context ctx) {
         syncPanel.cancelRefresh();
         if (ctx == null) {
-            setName("Preparing...");
+            setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "BK1001"));
             setEnabled(false);
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         } else {
@@ -220,7 +220,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     }
 
     protected String preferredID() {
-        return "synchronize";    //NOI18N       
+        return "synchronize";    // NOI18N
     }
 
     public int getPersistenceType() {
