@@ -131,7 +131,12 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
    // Private methods ---------------------------------------------------------
     
     private FileObject getFileFromLookup( Lookup context ) {
-        
+   
+        FileObject fo = (FileObject) context.lookup(FileObject.class);     
+        if (fo != null) {
+            return fo;
+        }
+
         DataObject dobj = (DataObject)context.lookup( DataObject.class );
         
         return dobj == null ? null : dobj.getPrimaryFile();
