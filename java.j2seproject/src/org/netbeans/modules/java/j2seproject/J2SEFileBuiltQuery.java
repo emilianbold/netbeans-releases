@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.j2seproject;
@@ -35,10 +35,13 @@ public class J2SEFileBuiltQuery implements FileBuiltQueryImplementation, Propert
 
     J2SEFileBuiltQuery (AntProjectHelper helper, PropertyEvaluator evaluator,
                         SourceRoots sourceRoots, SourceRoots testRoots) {
+        assert helper != null && evaluator != null && sourceRoots != null && testRoots != null;
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testRoots = testRoots;
+        this.sourceRoots.addPropertyChangeListener (this);
+        this.testRoots.addPropertyChangeListener (this);
     }
 
     public synchronized FileBuiltQuery.Status getStatus(FileObject file) {
