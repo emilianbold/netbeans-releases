@@ -19,10 +19,7 @@ import org.netbeans.modules.palette.CategoryListener;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Settings;
 import org.netbeans.modules.palette.Utils;
-import org.openide.nodes.*;
-import org.openide.util.WeakListeners;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -32,10 +29,6 @@ import java.awt.*;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
-import java.util.EventListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 
 /**
  * A visual component for a single palette category. Contains expand/collapse button
@@ -60,8 +53,17 @@ class CategoryDescriptor implements CategoryListener {
         this.palettePanel = palettePanel;
         this.category = category;
         this.settings = palettePanel.getSettings();
-        category.addCategoryListener( this );
-        wholePanel = new JPanel ();
+        wholePanel = new JPanel() {
+            public void addNotify() {
+                super.addNotify();
+                CategoryDescriptor.this.category.addCategoryListener( CategoryDescriptor.this );
+            }
+            public void removeNotify() {
+                super.removeNotify();
+                CategoryDescriptor.this.category.removeCategoryListener( CategoryDescriptor.this );
+            }
+        };
+        
 
         wholePanel.setLayout (new GridBagLayout ());
         wholePanel.setBorder (new EmptyBorder (0, 0, 0, 0));

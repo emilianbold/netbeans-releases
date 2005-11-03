@@ -14,29 +14,17 @@
 package org.netbeans.modules.palette;
 
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.Action;
-import org.netbeans.modules.palette.Category;
-import org.netbeans.modules.palette.CategoryListener;
-import org.netbeans.modules.palette.Item;
 import org.netbeans.spi.palette.DragAndDropHandler;
-import org.netbeans.spi.palette.PaletteController;
-import org.netbeans.spi.palette.PaletteActions;
-import org.netbeans.modules.palette.ui.DnDSupport;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
-import org.openide.util.datatransfer.PasteType;
-
 
 /**
  * PaletteCategory implementation based on Nodes.

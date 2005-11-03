@@ -133,7 +133,8 @@ public class DefaultModel implements Model, NodeListener {
     */
     public void childrenAdded(NodeMemberEvent ev) {
         categories = null;
-        Category[] addedCategories = nodes2categories( ev.getDelta() );
+        getCategories();
+        Category[] addedCategories = findCategories( ev.getDelta() );
         fireCategoriesChanged( addedCategories, true );
     }
 
@@ -141,8 +142,8 @@ public class DefaultModel implements Model, NodeListener {
     * @param ev event describing the action
     */
     public void childrenRemoved(NodeMemberEvent ev) {
+        Category[] removedCategories = findCategories( ev.getDelta() );
         categories = null;
-        Category[] removedCategories = nodes2categories( ev.getDelta() );
         fireCategoriesChanged( removedCategories, false );
     }
 
@@ -191,6 +192,26 @@ public class DefaultModel implements Model, NodeListener {
         
         for( int i=0; i<res.length; i++ ) {
             res[i] = new DefaultCategory( nodes[i] );
+        }
+        
+        return res;
+    }
+    
+    private Category[] findCategories( Node[] nodes ) {
+        Category[] res = new Category[ nodes.length ];
+        
+        for( int i=0; i<res.length; i++ ) {
+            boolean found = false;
+            for( int j=0; !found && null != categories && j<categories.length; j++ ) {
+                Node catNode = (Node)categories[j].getLookup().lookup( Node.class );
+                if( nodes[i].equals( catNode ) ) {
+                    res[i] = categories[i];
+                    found = true;
+                }
+            }
+            if( !found ) {
+                res[i] = new DefaultCategory( nodes[i] );
+            }
         }
         
         return res;

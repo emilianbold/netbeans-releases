@@ -91,7 +91,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
         for( Iterator i=recognizers.iterator(); i.hasNext(); ) {
             DragGestureRecognizer dgr = (DragGestureRecognizer)i.next();
             if( dgr.getComponent() == descriptor.getButton()
-                || dgr.getComponent() == descriptor.getComponent() ) {
+                || dgr.getComponent() == descriptor.getList() ) {
                 toRemove.add( dgr );
                 dgr.removeDragGestureListener( this );
             }
@@ -102,7 +102,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
         for( Iterator i=dropTargets.iterator(); i.hasNext(); ) {
             DropTarget dt = (DropTarget)i.next();
             if( dt.getComponent() == descriptor.getButton()
-                || dt.getComponent() == descriptor.getComponent() ) {
+                || dt.getComponent() == descriptor.getList() ) {
                 toRemove.add( dt );
                 dt.removeDropTargetListener( this );
             }
