@@ -50,7 +50,7 @@ final class ProjectUtilities {
 
     private static final String NEW_PROJECT_ACTION = "Actions/Project/org-netbeans-modules-project-ui-NewProject.instance";  // NOI18N
 
-    private static final String INITIAL_SOURCE_ROOT = "EXISTING_SOURCES_CURRENT_DIRECTORY";  // NOI!*N
+    private static final String INITIAL_SOURCE_ROOT = "EXISTING_SOURCES_CURRENT_DIRECTORY";  // NOI18N
 
 
     public static void selectAndExpandProject( final Project p ) {
@@ -131,7 +131,7 @@ final class ProjectUtilities {
                 // it happens for all apisupport projects unless
                 // checked out into directory that contains nbbuild and openide folders
                 // apisupport project is valid only if placed in defined directory structure
-                ErrorManager.getDefault().annotate(e, "Ignoring suspicious project folder...");
+                ErrorManager.getDefault().annotate(e, "CVS.PU: ignoring suspicious project folder...");  // NOI18N
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
@@ -161,8 +161,8 @@ final class ProjectUtilities {
                     if (instance instanceof Action) {
                         Action a = (Action) instance;
                         // NewProject action reads the properties PRESELECT_CATEGORY and PRESELECT_TEMPLATE
-                        a.putValue ("PRESELECT_CATEGORY", "General");
-                        a.putValue ("PRESELECT_TEMPLATE", null);
+                        a.putValue ("PRESELECT_CATEGORY", "General");  // NOI18N
+                        a.putValue ("PRESELECT_TEMPLATE", null); // NOI18N
                         return a;
                     }
                 }
@@ -179,7 +179,7 @@ final class ProjectUtilities {
         if (a == null) {
             return false;
         }
-        ActionEvent ae = new ActionEvent(ProjectUtilities.class, ActionEvent.ACTION_PERFORMED, "command");
+        ActionEvent ae = new ActionEvent(ProjectUtilities.class, ActionEvent.ACTION_PERFORMED, "command");  // NOI18N
         try {
             a.actionPerformed(ae);
             return true;
