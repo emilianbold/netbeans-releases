@@ -28,6 +28,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.WeakListeners;
 
 public class JspParserAccess {
     
@@ -47,14 +48,13 @@ public class JspParserAccess {
          * @param docBase the document base of the web module. May be null if 
          *  we are parsing a tag file that it outside of a web module.
          */
-        private ClassPath cp;
         private WM (WebModule webModule) {
             this.webModule = webModule;
             pcs = new PropertyChangeSupport(this);
             //Listen on the changes for libraries
-            if (webModule != null){
-                cp = ClassPath.getClassPath(webModule.getDocumentBase (), ClassPath.EXECUTE);
-                cp.addPropertyChangeListener(this);
+            if(webModule != null) {
+                ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase (), ClassPath.EXECUTE);
+                cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
             }
         }
         

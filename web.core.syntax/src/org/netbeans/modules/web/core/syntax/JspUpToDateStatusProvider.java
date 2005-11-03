@@ -24,6 +24,7 @@ import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.openide.loaders.DataObject;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -52,7 +53,8 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
         DataObject documentDO = NbEditorUtilities.getDataObject(document);
         if(documentDO != null && documentDO.isValid()) {
             JSPColoringData jspcd = JspUtils.getJSPColoringData(document, documentDO.getPrimaryFile());
-            jspcd.addPropertyChangeListener(this);
+            //jspcd.addPropertyChangeListener(this);
+            jspcd.addPropertyChangeListener(WeakListeners.propertyChange(this, jspcd));
         }
     }
     
