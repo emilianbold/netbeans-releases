@@ -233,7 +233,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             String msg = e.getMessage();
             if (msg == null) {
                 // null is not too descriptive, pass it's source
-                RuntimeException rex = new RuntimeException("Received null MessageEvent from:");
+                RuntimeException rex = new RuntimeException("Received null MessageEvent from:");  // NOI18N
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 rex.printStackTrace(pw);
