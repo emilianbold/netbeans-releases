@@ -103,12 +103,12 @@ public class DeploymentManagerProperties {
      * @return Value of property domainName.
      */
     public java.lang.String getDomainName() {
-        String retVal = Constants.DEFAULT_DOMAIN_NAME;
+        String retVal = ""; //NOI18N
         if (instanceProperties==null)
             return retVal;
         retVal = instanceProperties.getProperty(DOMAIN_ATTR) ;
         if (null == retVal || (retVal.trim().length() == 0)) {
-            retVal = Constants.DEFAULT_DOMAIN_NAME;
+            retVal = ""; //NOI18N
         }
         return retVal;
     }
