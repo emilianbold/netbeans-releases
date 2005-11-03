@@ -148,14 +148,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
     
     protected String messageHtmlName() {
-        if (! obj.isValid()) return ""; // NOI18N
+        if (! obj.isValid()) return null;
 
         String name = obj.getNodeDelegate().getHtmlDisplayName();
         if (name != null) {
             if (!name.startsWith("<html>")) {
                 name = "<html>" + name;
             }
-            addFlagsToName(name);
+            name = addFlagsToName(name);
         }
         return name;
     }
