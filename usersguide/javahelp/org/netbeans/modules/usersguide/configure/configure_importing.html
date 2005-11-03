@@ -45,11 +45,11 @@ in your user directory. </p>
 and keyboard shortcuts.  In addition, a general properties file exists for other 
 properties not covered by the categories listed above.</p>-->
 
-<!--<p>Source Editor settings are in the 
-<tt>config/Editors/text/&lt;mime type&gt;</tt>.  Substitute 
-<tt>&lt;mime type&gt;</tt> with the type of editor settings you want. 
+<p>Source Editor settings are in the 
+<tt>config/Editors/text/<i>mime type</i></tt>.  Substitute 
+<tt><i>mime type</i></tt> with the type of editor settings you want. 
 For example, the Java editor settings are found in the <tt>x-java</tt>
-directory. The name of the file reflects the type of settings it contains.</p>-->
+directory. The name of the file reflects the type of settings it contains.</p>
 
 <p>If you created named editor profiles in the Options window of the IDE, the default settings for that profile are located within the Editors folder. 
 For example, if you created a profile called MyNetbeansProfile, the default settings for that profile are located in
@@ -57,25 +57,26 @@ For example, if you created a profile called MyNetbeansProfile, the default sett
 in <tt>config/Editors/text/x-java/MyNetbeansProfile</tt>, the HTML editor specific settings are located in
 <tt>config/Editors/text/html/MyNetbeansProfile</tt> and so on.</p>
 
-<p><b>To copy settings from a previous version of the IDE:</b></p>
+<p><b>To copy settings from a different version or different installation of the IDE:</b></p>
 
 <ol>
-<li>Within your system's file manager, navigate to the user directory of the old 
+<li>Within your system's file manager, navigate to the user directory of the other 
 IDE installation.
-<p>To find your user directory choose Help  &gt; About and click
+<p>On Microsoft Windows systems, the user directory is typically located at 
+<tt>C:\Documents and Settings\<i>username\.netbeans\<i>version-number</i>\</tt></p>
+<p>On UNIX and Linux systems, the user directory is typically located at 
+<tt>/home/<i>username</i>/.netbeans/<i>version-number</i>/</tt></p>
+<p>You can determine your user directory by choosing Help  &gt; About and click
 the Detail tab in the About dialog box.  User Dir is listed last in the dialog box.</p></li>
-<li>From the old IDE's user directory, navigate to <tt>config/Editors</tt>.</li>
-<li>Copy the folders within the <tt>config/Editors</tt> folder.</li>
+<li>Navigate to and expand <tt>config/Editors</tt> folder.</li>
+ <li>Copy the sub-folders of the <tt>config/Editors</tt> folder.</li>
 <li>Navigate to the user directory in your new installation and open the <tt>config/Editors</tt> folder.</li>
-<li>In the <tt>config/Editors</tt> folder, create a new folder and give it a name such as <tt>NetBeans41</tt>.
+<li>In the <tt>config/Editors</tt> folder, create a new folder and give it a name such as <tt>NetBeans-old</tt>.
 <p>The name of the folder becomes the name of a profile in the IDE that you can switch to in order to 
 adopt a group of settings.</li>
 <li>Paste the copied folders inside of the new folder.
 <p>The pasted files become part of the new profile.</li>
-<!--<li>Find the settings file you are interested in.
-<p>In particular, you probably would want to copy the settings in the <tt>Editor</tt> folder.</li>-->
-<!--<li>Copy the desired settings file to the corresponding location in the user directory of 
-the new version of the IDE.</li>-->
+
 <li>Restart the new version of the IDE.</li>
 <li>Choose Tools &gt; Options and click Fonts &amp; Colors.</li><!--TODO check ampersand-->
 <li>In the Profile drop-down list, select the name .</li>
