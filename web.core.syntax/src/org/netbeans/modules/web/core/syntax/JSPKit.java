@@ -15,7 +15,6 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.awt.event.ActionEvent;
 import java.beans.*;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -24,25 +23,18 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.java.JCExtension;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionQuery;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionSupport;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
 import org.openide.ErrorManager;
-import org.openide.cookies.*;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
@@ -67,7 +59,7 @@ import org.netbeans.api.editor.fold.FoldUtilities;
  * @author Miloslav Metelka, Petr Jiricka, Yury Kamen
  * @versiob 1.5
  */
-public class JSPKit extends NbEditorKit {
+public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
     
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
@@ -236,6 +228,13 @@ public class JSPKit extends NbEditorKit {
         
     }
     
+    // <RAVE> #62993
+    // Implement HelpCtx.Provider to provide help for CloneableEditor
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx(JSPKit.class);
+    }
+
+        
     /** Implementation of MatchBraceAction, whic move the cursor in the matched block.
      */
     public static class MatchBraceAction extends ExtKit.MatchBraceAction {
