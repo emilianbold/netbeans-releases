@@ -79,10 +79,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         File file = null;
         String currentLicence = getCurrentLicence();
         if (!currentLicence.equals("")) {
-            file = new File(currentLicence);
-            if (!file.isAbsolute()) {
-                file = new File(getProperties().getProjectDirectory(), currentLicence);
-            }
+            file = getProperties().evaluateFile(currentLicence);
         }
         return file;
     }

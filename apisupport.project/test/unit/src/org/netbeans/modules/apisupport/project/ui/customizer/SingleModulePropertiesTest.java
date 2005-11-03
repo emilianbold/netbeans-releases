@@ -405,6 +405,16 @@ public class SingleModulePropertiesTest extends TestBase {
                 props.getBundleInfo().getDisplayName());
     }
     
+    public void testResolveFile() throws Exception {
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        SingleModuleProperties props = loadProperties(p);
+        assertTrue("manifest exist", props.evaluateFile("manifest.mf").exists());
+        assertTrue("manifest exist", props.evaluateFile(props.getProjectDirectory() + "/manifest.mf").exists());
+        assertTrue("manifest exist", props.evaluateFile("${basedir}/manifest.mf").exists());
+        assertFalse("non-existing file", props.evaluateFile("non-existing").exists());
+        assertFalse("invalid reference", props.evaluateFile("${invalid-reference}/manifest.mf").exists());
+    }
+    
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
 //        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),
@@ -444,5 +454,5 @@ public class SingleModulePropertiesTest extends TestBase {
             final SingleModuleProperties props, final NbModuleProject p) {
         props.refresh(getModuleType(p), getSuiteProvider(p));
     }
-    
+
 }

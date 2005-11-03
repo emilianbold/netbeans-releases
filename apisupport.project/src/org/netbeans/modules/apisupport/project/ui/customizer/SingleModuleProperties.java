@@ -62,11 +62,11 @@ import org.openide.util.Utilities;
 
 /**
  * Provides convenient access to a lot of NetBeans Module's properties.
- * 
+ *
  * @author Martin Krauskopf
  */
 public final class SingleModuleProperties extends ModuleProperties {
-
+    
     private static final String[] IDE_TOKENS = new String[] {
         "org.openide.modules.os.Windows", // NOI18N
         "org.openide.modules.os.Unix",  // NOI18N
@@ -341,7 +341,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return projectXMLManager;
     }
-
+    
     /**
      * Returns list model of module's dependencies regarding the currently
      * selected platform.
@@ -527,7 +527,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             
             // find all available public packages in a source root
             File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
-            SingleModuleProperties.addNonEmptyPackages(availablePublicPackages, 
+            SingleModuleProperties.addNonEmptyPackages(availablePublicPackages,
                     FileUtil.toFileObject(srcDir), "java", false); // NOI18N
             
             // find all available public packages in classpath extensions
@@ -651,7 +651,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     File getManifestFile() {
         return getHelper().resolveFile(getEvaluator().getProperty("manifest.mf")); // NOI18N
     }
-
+    
     /**
      * Returns a set of all available categories in the module's universe
      * according to the currently selected platform ({@link
@@ -674,7 +674,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * all categories. <strong>Package-private only for unit tests.</strong>
      */
     boolean reloadModuleListInfo() {
-        assert !SwingUtilities.isEventDispatchThread() : 
+        assert !SwingUtilities.isEventDispatchThread() :
             "SingleModuleProperties.reloadModuleListInfo() cannot be called from EDT"; // NOI18N
         if (isActivePlatformValid()) {
             try {
@@ -699,7 +699,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return false;
     }
-
+    
     private void addNonEmptyPackagesFromJar(Set/*<String>*/ pkgs, File jarFile) {
         if (!jarFile.isFile()) {
             // Broken classpath entry, perhaps.
@@ -756,4 +756,14 @@ public final class SingleModuleProperties extends ModuleProperties {
             return ModuleList.getModuleList(FileUtil.toFile(getHelper().getProjectDirectory()));
         }
     }
+    
+    /**
+     * Just use a combination of evaluator and resolver. May return
+     * <code>null</code> if evaluating fails.
+     */
+    File evaluateFile(final String currentLicence) {
+        String evaluated = getEvaluator().evaluate(currentLicence);
+        return evaluated == null ? null : getHelper().resolveFile(evaluated);
+    }
+    
 }
