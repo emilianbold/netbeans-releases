@@ -1,94 +1,93 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-<!--
- * 
- *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- *
- *
--->
-  <title>Creating and Applying a Patch</title>
-  <link rel="StyleSheet"
- href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>Creating and Applying a Patch</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>Patch files enable software developers who are not sharing a common
-repository to distribute and integrate changes that have been made to
-the code. The IDE
-enables you to create and apply patches that update copies of source
-files so that you do not have to incorporate the changes manually. </p>
+    <head>
+        <!--
+        * 
+        *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
+        *     Use is subject to license terms.
+        *
+        *
+        -->
+        <title>Creating and Applying a Patch</title>
+        <link rel="StyleSheet"
+        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Creating and Applying a Patch</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Patch files enable software developers who are not sharing a common
+        repository to distribute and integrate changes that have been made to
+        the code. The IDE enables you to create and apply patches that update copies of source
+        files so that you do not have to incorporate the changes manually. </p>
 
-<h4>To create a patch file of the differences between a locally
-modified copy of a file and the repository version:</h4>
-<ol>
-  <li>Select the file or folder for which you want to create a patch in
-the Projects, Files, or Favorites window. </li>
-  <li>Choose CVS&nbsp;&gt; Export <tt>&lt;file_name&gt;</tt> Diff
-Patch. </li>
-  <li>Enter a name for the patch file and specify the location where
-you want to save the patch. </li>
-  <li>Click Export.
-    <p>A patch file is created in the specified location containing the
-differences between the source file versions. </p>
-  </li>
-</ol>
-<ul>
-  <li>Note that the Export Diff
-Patch command is only available on files for which either the local or
-remote copies have changes which have not alreaady been merged.<br>
-  </li>
-</ul>
-<!--<h4>To create a patch file of the differences between two repository revisions
-        of a source file:</h4>
+        <h4>To create a patch file of the differences between a locally
+        modified copy of a file and the repository version:</h4>
         <ol>
-            <li>Select the source files from whose differences  you wish to generate the
-            patch. </li>
-            <li>Right-click  either of the files and choose
-            CVS&nbsp;> Patch from
-            the contextual menu. </li>
-            <li> In the Patch dialog box, specify the style of  diff output and 
-            the revisions you want to compare.
-            <p>Choose from the following options:
-            <ul>
-                <li><b>Context Format.</b> The output shows each difference surrounded
-                by two lines of contextual text.</li>
-                <li><b>Unidiff Format.</b> The output shows line numbers of every difference
-                surrounded by a pair of at-signs (<tt>@@</tt>). Lines where text has
-                been added are marked with a plus sign (<tt>+</tt>) and lines where text
-                has been deleted are marked with a minus sign (<tt>-</tt>).</li>
-                <li><b>Short Patch.</b> The output shows every difference as one line only.</li>
-                <li><b>Top Two Diffs.</b> The diff is between the two latest revisions
-                of the file or folder.</li>
-                <li><b>Revision or Tag.</b> The revision number or tag of the first version
-                of the file or folder to use to create the diff output. For a file (not
-                a folder), click Select to select the desired revision or tag in the
-                chooser. </li>
-                <li><b>Date.</b> The timestamp of the first version of the file or folder
-                to use to create the diff.</li>
-                <li><b>The HEAD Revision.</b> The latest revision of the file or folder
-                committed to the repository. </li>
-                <li><b>Revision or Tag 2.</b> The revision number or tag of the second
-                version of the file or folder to use to create the diff output. For a
-                file (not a folder), click Select to select the desired revision or tag
-                in a chooser.</li>
-                <li><b>Date 2.</b> The timestamp of the second version of the file or folder
-                to use to create the diff.</li>
-            </ul>
-   
-            <li> Click OK.</li>
-            <li>In the VCS Output window, ensure that the correct differences are shown.</li>
-            <li>Right-click in the output and choose Save To File from the contextual menu.
-                <p>A patch file is created in the specified location containing the differences
-                between the source code file versions.
+            <li>Select the file or folder for which you want to create a patch in
+            the Projects, Files, or Search History window. </li>
+            <li>Choose CVS&nbsp;&gt; Export <tt>&lt;file_name&gt;</tt> Diff
+            Patch. </li>
+            <li>Enter a name for the patch file and specify the location where
+            you want to save the patch. </li>
+            <li>Click Export.
+                <p>A patch file is created in the specified location containing the
+                differences between the source file versions. </p>
             </li>
         </ol>
+        <ul>
+            <li>Note that the Export Diff
+                Patch command is only available on files for which either the local or
+                remote copies have changes which have not alreaady been merged.<br>
+            </li>
+        </ul>
+        <!--<h4>To create a patch file of the differences between two repository revisions
+        of a source file:</h4>
+        <ol>
+        <li>Select the source files from whose differences  you wish to generate the
+        patch. </li>
+        <li>Right-click  either of the files and choose
+        CVS&nbsp;> Patch from
+        the contextual menu. </li>
+        <li> In the Patch dialog box, specify the style of  diff output and 
+        the revisions you want to compare.
+        <p>Choose from the following options:
+        <ul>
+        <li><b>Context Format.</b> The output shows each difference surrounded
+        by two lines of contextual text.</li>
+        <li><b>Unidiff Format.</b> The output shows line numbers of every difference
+        surrounded by a pair of at-signs (<tt>@@</tt>). Lines where text has
+        been added are marked with a plus sign (<tt>+</tt>) and lines where text
+        has been deleted are marked with a minus sign (<tt>-</tt>).</li>
+        <li><b>Short Patch.</b> The output shows every difference as one line only.</li>
+        <li><b>Top Two Diffs.</b> The diff is between the two latest revisions
+        of the file or folder.</li>
+        <li><b>Revision or Tag.</b> The revision number or tag of the first version
+        of the file or folder to use to create the diff output. For a file (not
+        a folder), click Select to select the desired revision or tag in the
+        chooser. </li>
+        <li><b>Date.</b> The timestamp of the first version of the file or folder
+        to use to create the diff.</li>
+        <li><b>The HEAD Revision.</b> The latest revision of the file or folder
+        committed to the repository. </li>
+        <li><b>Revision or Tag 2.</b> The revision number or tag of the second
+        version of the file or folder to use to create the diff output. For a
+        file (not a folder), click Select to select the desired revision or tag
+        in a chooser.</li>
+        <li><b>Date 2.</b> The timestamp of the second version of the file or folder
+        to use to create the diff.</li>
+        </ul>
+   
+        <li> Click OK.</li>
+        <li>In the VCS Output window, ensure that the correct differences are shown.</li>
+        <li>Right-click in the output and choose Save To File from the contextual menu.
+        <p>A patch file is created in the specified location containing the differences
+        between the source code file versions.
+        </li>
+        </ol>
         <ul class="note">
-            <li>The CVS&nbsp;> Patch
-            command runs on file versions in the repository, not on files in your
-            local working directory.</li>
+        <li>The CVS&nbsp;> Patch
+        command runs on file versions in the repository, not on files in your
+        local working directory.</li>
         </ul>
         <a name="ApplyPatch"><h4>To apply a patch to a file or a folder: </h4></a>
         <ol>
@@ -96,39 +95,39 @@ remote copies have changes which have not alreaady been merged.<br>
         choose Tools&nbsp;> Apply&nbsp;Patch. </li>
         <li>Type the path or navigate to the patch file you want to apply. </li>
         <li>Click Patch.<p>The differences contained in the patch file are incorporated
-            into the file or folder. You should always verify that the patched file
-            or folder contains the changes from the patch file after using the Apply
-            Patch command.
+        into the file or folder. You should always verify that the patched file
+        or folder contains the changes from the patch file after using the Apply
+        Patch command.
         </li></ol>-->
-<!--<h4>To apply a patch:</h4>
-<ol>
-  <li>Select the file or folder that you want to apply a patch to in
-the Projects, Files, or Favorites window. </li>
-  <li>Choose CVS&nbsp;&gt; . </li>
-  <li> <br>
-  </li>
-  <li><br>
-  </li>
-</ol>-->
-<ul class="note">
-  <li>Because patches on folders use relative paths to the files within
-them, folder patches must be applied on the same folder node that the
-patch was created on to insure the patch is applied properly.</li>
-</ul>
-<dl>
-  <dt> <a name="seealso">See Also</a></dt>
-  <dd><a href="cvs-lite_merge.html">Merging File Revisions from a Branch<br>
-    </a></dd>
-  <dd><a href="cvs-lite_merge.html">Merging File Revisions</a></dd>
-  <dd><a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
-</dl>
-<hr> <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="50">
-  <tbody>
-    <tr>
-      <td>&nbsp;</td>
-    </tr>
-  </tbody>
-</table>
-</body>
+        <!--<h4>To apply a patch:</h4>
+        <ol>
+        <li>Select the file or folder that you want to apply a patch to in
+        the Projects, Files, or Favorites window. </li>
+        <li>Choose CVS&nbsp;&gt; . </li>
+        <li> <br>
+        </li>
+        <li><br>
+        </li>
+        </ol>-->
+        <ul class="note">
+            <li>Because patches on folders use relative paths to the files within
+            them, folder patches must be applied on the same folder node that the
+            patch was created on to insure the patch is applied properly.</li>
+        </ul>
+        <dl>
+            <dt> <a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_merge.html">Merging File Revisions from a Branch<br>
+            </a></dd>
+            <dd><a href="cvs-lite_merge.html">Merging File Revisions</a></dd>
+            <dd><a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+        </dl>
+        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tbody>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
 </html>

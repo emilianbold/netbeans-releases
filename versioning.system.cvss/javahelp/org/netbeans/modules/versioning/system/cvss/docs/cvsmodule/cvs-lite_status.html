@@ -87,54 +87,61 @@
                         </td>
                         <td>
                             <p><strong>Strikethrough Label.</strong> Indicates that the file 
-                            is excluded when calling CVS commands. Note that the strikethrough
-                            style only appears in the Versioning window.</p>
+                            is excluded when calling the CVS Commit command. All other 
+                            CVS commands, however, work as usual. Note that files 
+                            displayed in the strikethrough style only appear in the Versioning 
+                            window and Commit dialog. They will not appear in Diff panes, nor  
+                            will their parent folders (or packages) display badges 
+                            if they are modified. </p>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </p>
         <p>Current VCS file status is indicated by adding the following badges
-            to project, package and directory icons:
-            <table
-                summary="The left column lists the
-                task name. The right column lists the steps to perform."
-                border="1" cellpadding="5" cellspacing="0">
-                <tbody>
-                    <tr valign="top">
-                        <th scope="col" align="left">Badge </th>
-                        <th scope="col" align="center">Description</th>
-                    </tr>
-                    <tr valign="top">
-                        <td align="center">
-                            <p><img src="images/blue_badge.png" alt="Note"></p>
-                        </td>
-                        <td>
-                            <p><strong>Locally Modified badge.</strong> A blue badge on a
-                            folder or package node marks folders or packages that contain locally
-                            modified or new files. In the case of packages, this badge applies only
-                            to the package itself and not its subpackages. For folders, the badge
-                            indicates local modifications in that folder or any of its subfolders.</p>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <td align="center">
-                            <p><img src="images/red_badge.png" alt="Note"></p>
-                            <!--<p><img src="images/conflicts-badge.png" alt="Note" height="8"
-                            width="8"></p>--> 
-                        </td>
-                        <td>
-                            <p> <strong>Conflict badge. </strong>A blue badge on a folder
-                            or package node marks folders or packages that contain files for which
-                            the repository copy of the file contains changes which conflict with
-                            the local version. In case of packages, this badge applies only to the
-                            package itself and not its subpackages. For folders, the badge
-                            indicates local modifications in that folder or any of its subfolders.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </p>
+        to project, package and directory icons:
+        <table summary="The left column lists the
+            task name. The right column lists the steps to perform."
+            border="1" cellpadding="5" cellspacing="0">
+            <tbody>
+                <tr valign="top">
+                    <th scope="col" align="left">Badge </th>
+                    <th scope="col" align="center">Description</th>
+                </tr>
+                <tr valign="top">
+                    <td align="center">
+                        <p><img src="images/blue_badge.png" alt="Note"></p>
+                    </td>
+                    <td>
+                        <p><strong>Locally Modified badge.</strong> A blue badge on a
+                        folder or package node marks folders or packages that contain locally
+                        modified or new files. In the case of packages, this badge applies only
+                        to the package itself and not its subpackages. For folders, the badge
+                        indicates local modifications in that folder or any of its subfolders.</p>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <td align="center">
+                        <p><img src="images/red_badge.png" alt="Note"></p>
+                        <!--<p><img src="images/conflicts-badge.png" alt="Note" height="8"
+                        width="8"></p>--> 
+                    </td>
+                    <td>
+                        <p> <strong>Conflict badge. </strong>A blue badge on a folder
+                        or package node marks folders or packages that contain files for which
+                        the repository copy of the file contains changes which conflict with
+                        the local version. In case of packages, this badge applies only to the
+                        package itself and not its subpackages. For folders, the badge
+                        indicates local modifications in that folder or any of its subfolders.</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <ul class="note">
+            <li>Note that the parent folders (or packages) of files excluded from commits
+            and displayed in the strikethrough style will not display badges if they 
+            are modified. </li>
+        </ul>
         <!--<h3>Tracking Changes in the Versioning Window <a name="monitor"></a></h3>
         <p>The Versioning window presents a real-time view of the changes in
         selected directories. It opens at the bottom of the IDE whenever you
@@ -148,10 +155,10 @@
         displayed in the list. </p>
         <p>The following common CVS commands are available in the Versioning window's toolbar: </p>
         <ul>
-            <li><b>Refresh Status.</b></li>
-            <li><b>Diff All.</b></li>
-            <li><b>Update All.</b></li>
-            <li><strong>Commit All.</strong></li>
+        <li><b>Refresh Status.</b></li>
+        <li><b>Diff All.</b></li>
+        <li><b>Update All.</b></li>
+        <li><strong>Commit All.</strong></li>
         </ul>
         <p>To open the Versioning window, choose CVS &gt; Show
         All Changes. Alternately, you can right-click any project, directory,

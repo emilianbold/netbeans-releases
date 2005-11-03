@@ -285,13 +285,12 @@
     </tocitem>
   </tocitem>
 
-<!-- GUI Builder section -->
   <tocitem text="Building Java GUIs">
-    <tocitem text="About Building Java GUIs" target="gui.about"/>
+    <tocitem text="About Java GUIs" target="gui.about"/>
     <tocitem text="Working with the GUI Builder" target="gui.overview"/>
     <tocitem text="GUI Builder Tasks: Quick Reference" target="gui.quickref"/>
-    <tocitem text="Designing Java GUIs with the GUI Builder">      
-      <tocitem text="About Designing Java GUIs" target="gui.designing" />            
+    <tocitem text="Designing Java GUIs">      
+      <tocitem text="Designing Java GUIs with the GUI Builder" target="gui.designing" />            
       <tocitem text="Creating a New Form" target="gui.creatingforms" />
       <tocitem text="Working with Containers" target="gui.containers.designing" />
       <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
@@ -302,7 +301,7 @@
       <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
       <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
       <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
-      <tocitem text="Testing a Form" target="gui.testing" />    
+      <tocitem text="Previewing a Form" target="gui.testing" />    
       <tocitem text="Deploying GUI Applications" target="gui.deploying" />  
     </tocitem>    
     <tocitem text="Working with Layout Managers">    
@@ -315,7 +314,6 @@
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
   </tocitem>
 
-<!-- Ant section -->
   <tocitem text="Working with Ant">
     <tocitem text="About Working with Ant" target="ant_intro" />
     <tocitem text="Editing an Ant Script" target="ant_editing" />
