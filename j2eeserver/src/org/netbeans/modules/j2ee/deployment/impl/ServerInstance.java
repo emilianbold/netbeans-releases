@@ -65,7 +65,7 @@ public class ServerInstance implements Node.Cookie {
     private static final int DEBUGGING_CHECK_TIMEOUT = 10000; // in millis
     
     /** Maximum amount of time the server should finish starting/stopping in */
-    private static final long TIMEOUT = 180000; // in millis
+    private static final long TIMEOUT = 1200000; // in millis
     
     private final String url;
     private final Server server;
