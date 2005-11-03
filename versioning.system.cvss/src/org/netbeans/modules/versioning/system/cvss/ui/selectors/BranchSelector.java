@@ -213,8 +213,8 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
                         break;
                     } catch (IOException e) {
                         ErrorManager err = ErrorManager.getDefault();
-                        err.annotate(e, "Can not find CVSROOT for " + cmdFiles[i]);
-                        err.notify(e);
+                        err.annotate(e, "Can not find CVSROOT for " + cmdFiles[i]);  // NOI18N
+                        err.notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
             }
