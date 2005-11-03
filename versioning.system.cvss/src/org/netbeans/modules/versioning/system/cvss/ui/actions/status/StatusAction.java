@@ -33,7 +33,7 @@ public class StatusAction extends AbstractSystemAction {
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;  
     
     protected String getBaseName() {
-        return "CTL_MenuItem_Status";
+        return "CTL_MenuItem_Status";  // NOI18N
     }
 
     protected int getFileEnabledStatus() {
