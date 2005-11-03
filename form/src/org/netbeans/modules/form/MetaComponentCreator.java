@@ -825,8 +825,10 @@ public class MetaComponentCreator {
             // components in such scroll panes.
             metaScroll.setAuxValue("autoScrollPane", Boolean.TRUE); // NOI18N
             metaScroll.add(newMetaComp);
-            metaScroll.getLayoutSupport().addComponents(
-                new RADVisualComponent[] { newMetaComp }, null, -1);
+            Container scroll = (Container) metaScroll.getBeanInstance();
+            Component inScroll = (Component) newMetaComp.getBeanInstance();
+            metaScroll.getLayoutSupport().addComponentsToContainer(
+                    scroll, scroll, new Component[] { inScroll }, 0);
             newMetaComp = metaScroll;
         }
 

@@ -520,12 +520,12 @@ public class FormModel
     }
 
     static void setInModelRecursively(RADComponent metacomp, boolean inModel) {
-        metacomp.setInModel(inModel);
         if (metacomp instanceof ComponentContainer) {
             RADComponent[] comps = ((ComponentContainer)metacomp).getSubBeans();
             for (int i=0; i < comps.length; i++)
                 setInModelRecursively(comps[i], inModel);
         }
+        metacomp.setInModel(inModel);
     }
 
     // ----------
@@ -871,6 +871,7 @@ public class FormModel
 
         return ev;
     }
+
 
     /** Fires an event informing about changing a synthetic property of
      * a component. An undoable edit is created and registered automatically. */

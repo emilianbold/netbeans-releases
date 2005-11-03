@@ -167,6 +167,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             LayoutManager lmInstance = initializeFromInstance ?
                     getPrimaryContainerDelegate().getLayout() : null;
             layoutDelegate.initialize(this, lmInstance, initializeFromCode);
+            fillLayout(null);
             getPropertySets(); // force properties and listeners creation
             needInit = false;
         }
