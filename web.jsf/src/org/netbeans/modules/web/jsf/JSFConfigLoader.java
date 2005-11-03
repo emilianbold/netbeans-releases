@@ -50,23 +50,8 @@ public class JSFConfigLoader extends UniFileLoader {
         getExtensions().addMimeType(REQUIRED_MIME_1_1);
     }
     
-    protected SystemAction[] defaultActions() {
-       return new SystemAction[] {
-	    SystemAction.get(OpenAction.class),
-	    SystemAction.get (FileSystemAction.class),
-	    null,
-	    SystemAction.get(CutAction.class),
-	    SystemAction.get(CopyAction.class),
-	    SystemAction.get(PasteAction.class),
-	    null,
-	    SystemAction.get(DeleteAction.class),
-	    SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get (SaveAsTemplateAction.class),
-	    null,
-	    SystemAction.get(ToolsAction.class),
-	    SystemAction.get(PropertiesAction.class),
-	};
+    protected String actionsContext() {
+        return "Loaders/text/x-jsf+xml/Actions/"; // NOI18N
     }
     
     protected MultiDataObject createMultiObject(FileObject primaryFile)
