@@ -116,7 +116,7 @@ class CommitTableModel extends AbstractTableModel {
             return nodes[rowIndex].getName();
         } else if (col.equals(CommitSettings.COLUMN_NAME_STICKY)) {
             String sticky = Utils.getSticky(nodes[rowIndex].getFile());
-            return sticky == null ? "" : sticky.substring(1);
+            return sticky == null ? "" : sticky.substring(1); // NOI18N
         } else if (col.equals(CommitSettings.COLUMN_NAME_STATUS)) {
             return nodes[rowIndex].getInformation().getStatusText();
         } else if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
@@ -124,7 +124,7 @@ class CommitTableModel extends AbstractTableModel {
         } else if (col.equals(CommitSettings.COLUMN_NAME_PATH)) {
             return Utils.getRelativePath(nodes[rowIndex].getFile());
         }
-        throw new IllegalArgumentException("Column index out of range: " + columnIndex);
+        throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -133,12 +133,12 @@ class CommitTableModel extends AbstractTableModel {
             commitOptions[rowIndex] = (CommitOptions) aValue;
             fireTableCellUpdated(rowIndex, columnIndex);
         } else {
-            throw new IllegalArgumentException("Column index out of range: " + columnIndex);
+            throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
     }
 
     private void createCommitOptions() {
-        boolean excludeNew = System.getProperty("cvs.excludeNewFiles") != null;
+        boolean excludeNew = System.getProperty("cvs.excludeNewFiles") != null; // NOI18N
         commitOptions = new CommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             CvsFileNode node = nodes[i];

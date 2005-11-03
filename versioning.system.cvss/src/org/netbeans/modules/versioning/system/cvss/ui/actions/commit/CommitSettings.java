@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
+import javax.swing.*;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
@@ -33,11 +34,11 @@ import java.beans.PropertyChangeEvent;
  */
 public class CommitSettings extends javax.swing.JPanel implements PropertyChangeListener, TableModelListener {
     
-    static final String COLUMN_NAME_NAME    = "name";
-    static final String COLUMN_NAME_STICKY  = "sticky";
-    static final String COLUMN_NAME_STATUS  = "status";
-    static final String COLUMN_NAME_ACTION  = "action";
-    static final String COLUMN_NAME_PATH    = "path";
+    static final String COLUMN_NAME_NAME    = "name"; // NOI18N
+    static final String COLUMN_NAME_STICKY  = "sticky"; // NOI18N
+    static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
+    static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
+    static final String COLUMN_NAME_PATH    = "path"; // NOI18N
     
     static final Object EVENT_SETTINGS_CHANGED = new Object();
 
@@ -116,8 +117,8 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
     
     private void init() {
         initComponents();
-        errorLabel.setMinimumSize(errorLabel.getPreferredSize());
-        errorLabel.setText("");
+        errorLabel.setMinimumSize(new JLabel("Layout placeholder").getPreferredSize());  // NOI18N
+        errorLabel.setText(""); // NOI18N
         jScrollPane1.setMinimumSize(jScrollPane1.getPreferredSize());
         commitTable = new CommitTable(jLabel3);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -219,7 +220,6 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         add(jLabel3, gridBagConstraints);
 
-        errorLabel.setText("Y");
         errorLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -229,8 +229,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         gridBagConstraints.weightx = 1.0;
         add(errorLabel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

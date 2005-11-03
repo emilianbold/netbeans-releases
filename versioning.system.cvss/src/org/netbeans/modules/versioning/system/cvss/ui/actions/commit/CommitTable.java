@@ -200,11 +200,11 @@ class CommitTable implements AncestorListener, TableModelListener {
                 CommitTableModel model = (CommitTableModel) sorter.getTableModel();
                 CommitSettings.CommitFile commitFile = model.getCommitFile(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(
+                    value = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(  // NOI18N
                             commitFile.getNode().getFile().getName(), commitFile.getNode().getInformation(), null);
                 }
                 if (commitFile.getOptions() == CommitOptions.EXCLUDE) {
-                    value = "<html><s>" + value + "</s></html>";
+                    value = "<html><s>" + value + "</s></html>"; // NOI18N
                 }
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (col == 3) {
