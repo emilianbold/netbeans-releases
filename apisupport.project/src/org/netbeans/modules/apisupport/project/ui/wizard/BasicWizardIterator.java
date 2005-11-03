@@ -302,6 +302,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
     // copy-pasted-adjusted from org.netbeans.editor.ActionFactory.FormatAction
     private static void formatFile(final FileObject fo) {
         BaseDocument doc = null;
+        boolean saved = false;
         try {
             doc = BasicWizardIterator.getDocument(fo);
             if (doc == null) {
@@ -330,12 +331,20 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
                     pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
                 }
             }
+            saved = true;
         } catch (Exception ex) {
             // no disaster
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot reformat the file: " + fo.getPath()); // NOI18N
         } finally {
             if (doc != null) {
                 doc.atomicUnlock();
+                if (saved) {
+                    try {
+                        ((EditorCookie) DataObject.find(fo).getCookie(EditorCookie.class)).saveDocument();
+                    } catch (IOException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
             }
         }
     }
