@@ -17,14 +17,12 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import javax.swing.Action;
 import org.netbeans.core.LoaderPoolNode;
-import org.netbeans.core.NbPlaces;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ReorderAction;
 import org.openide.actions.ToolsAction;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.PropertySet;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -42,24 +40,6 @@ public final class UINodes {
 
     /** Constructor */
     private UINodes() {
-    }
-
-    /** Getter for environment node.
-    * @return environment node
-    */
-    public static Node createEnvironmentNode () {
-        Node environmentNode = NbPlaces.getDefault().environment ().cloneNode ();
-        environmentNode.setShortDescription(NbBundle.getMessage(UINodes.class, "CTL_Environment_Hint"));
-        return environmentNode;
-    }
-
-    /** Getter for session settings node.
-    * @return session settings node
-    */
-    public static Node createSessionNode () {
-        Node sessionNode = NbPlaces.getDefault().session ().cloneNode ();
-        sessionNode.setShortDescription(NbBundle.getMessage(UINodes.class, "CTL_Session_Settings_Hint"));
-        return sessionNode;
     }
 
     /** Creates object types node.
