@@ -83,6 +83,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -127,6 +128,7 @@ PropertyChangeListener {
             public void valueChanged (ListSelectionEvent e) {
                 if (!listen) return;
                 refreshUI ();
+                startBlinking ();
             }
         });
 	tfFont.setEditable (false);
@@ -217,27 +219,22 @@ PropertyChangeListener {
                 Integer fontSize = new Integer (f.getSize ());
                 Boolean bold = Boolean.valueOf (f.isBold ());
                 Boolean italic = Boolean.valueOf (f.isItalic ());
-                AttributeSet defaultCategory = getDefault (category);
-                if (defaultCategory != null) {
-                    if (fontName.equals (
-                        getValue (defaultCategory, StyleConstants.FontFamily)
-                    ))
-                        fontName = null;
-                    if (fontSize.equals (
-                        getValue (defaultCategory, StyleConstants.FontSize)
-                    ))
-                        fontSize = null;
-                    if (bold.equals 
-                        (getValue (defaultCategory, StyleConstants.Bold)) ||
-                        bold.equals (Boolean.FALSE)
-                    )
-                        bold = null;
-                    if (italic.equals 
-                        (getValue (defaultCategory, StyleConstants.Italic)) ||
-                        italic.equals (Boolean.FALSE)
-                    )
-                        italic = null;
-                }
+                if (fontName.equals (
+                    getDefault (currentLanguage, category, StyleConstants.FontFamily)
+                ))
+                    fontName = null;
+                if (fontSize.equals (
+                    getDefault (currentLanguage, category, StyleConstants.FontSize)
+                ))
+                    fontSize = null;
+                if (bold.equals (getDefault (currentLanguage, category, StyleConstants.Bold)) ||
+                    bold.equals (Boolean.FALSE)
+                )
+                    bold = null;
+                if (italic.equals (getDefault (currentLanguage, category, StyleConstants.Italic)) ||
+                    italic.equals (Boolean.FALSE)
+                )
+                    italic = null;
                 SimpleAttributeSet c = new SimpleAttributeSet (category);
                 if (fontName != null)
                     c.addAttribute (
@@ -470,6 +467,60 @@ PropertyChangeListener {
         updatePreview ();
     }
     
+    private RequestProcessor.Task   task;
+    private void startBlinking () {
+        if (task != null) {
+            task.cancel ();
+            unhighlightCurrentCategory ();
+        }
+        blink (5);
+    }
+    
+    private void blink (final int i) {
+        if ((i % 2) == 0)
+            unhighlightCurrentCategory ();
+        else
+            highlightCurrentCategory ();
+        if (i == 0) return;
+        task = RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                blink (i - 1);
+            }
+        }, 250);
+    }
+    
+    private SimpleAttributeSet oldCategory;
+    private Color oldHighlight;
+    private void highlightCurrentCategory () {
+        if (oldCategory != null) unhighlightCurrentCategory ();
+        SimpleAttributeSet as = (SimpleAttributeSet) getCurrentCategory ();
+        if (as == null) return;
+        Color highlight = Color.red;
+        oldCategory = as;
+        oldHighlight = (Color) as.getAttribute (StyleConstants.Underline);
+        as.addAttribute (
+            StyleConstants.Underline,
+            highlight
+        );
+        updatePreview ();
+    }
+    
+    private void unhighlightCurrentCategory () {
+        if (oldCategory == null) return;
+        if (oldHighlight == null)
+            oldCategory.removeAttribute (
+                StyleConstants.Underline
+            );
+        else
+            oldCategory.addAttribute (
+                StyleConstants.Underline,
+                oldHighlight
+            );
+        oldCategory = null;
+        oldHighlight = null;
+        updatePreview ();
+    }
+    
     private void updatePreview () {
         preview.setParameters (
             currentLanguage,
@@ -507,10 +558,10 @@ PropertyChangeListener {
         
         // set defaults
         foregroundColorChooser.setDefaultColor (
-            (Color) getValue (category, StyleConstants.Foreground)
+            (Color) getDefault (currentLanguage, category, StyleConstants.Foreground)
         );
         backgroundColorChooser.setDefaultColor (
-            (Color) getValue (category, StyleConstants.Background)
+            (Color) getDefault (currentLanguage, category, StyleConstants.Background)
         );
         
         String font = fontToString (category);
@@ -578,6 +629,9 @@ PropertyChangeListener {
     }
 
     private Map defaults = new HashMap ();
+    /**
+     * Returns original colors for given profile.
+     */
     private Vector getDefaults (String profile, String language) {
         Map m = (Map) defaults.get (profile);
         if (m == null) {
@@ -621,46 +675,45 @@ PropertyChangeListener {
         return null;
     }
     
-    private Object getValue (AttributeSet category, Object key) {
-	if (category == null) return null;
-        Object result = category.getAttribute (key);
-        if (result != null) return result;
-        
-        AttributeSet d = getDefault (category);
-        if (d != null) return getValue (d, key);
-        
-        if ("default".equals (
-            category.getAttribute (StyleConstants.NameAttribute)
-        )) return null;
-        AttributeSet defaultCategory = getCategory 
-            (currentProfile, currentLanguage, "default"); // NOI18N
-        return getValue (defaultCategory, key);
+    private Object getValue (String language, AttributeSet category, Object key) {
+        if (category.isDefined (key))
+            return category.getAttribute (key);
+        return getDefault (language, category, key);
     }
     
-    private AttributeSet getDefault (AttributeSet category) {
+    private Object getDefault (String language, AttributeSet category, Object key) {
 	String name = (String) category.getAttribute (EditorStyleConstants.Default);
-	if (name == null) return null;
+	if (name == null) name = "default";
 
 	// 1) search current language
-	if (!name.equals (category.getAttribute (StyleConstants.NameAttribute))) {
-	    AttributeSet result = getCategory 
-                (currentProfile, currentLanguage, name);
-            if (result != null) return result;
+	if (!name.equals (category.getAttribute (StyleConstants.NameAttribute))
+        ) {
+            AttributeSet defaultAS = getCategory 
+                (currentProfile, language, name);
+            if (defaultAS != null)
+                return getValue (language, defaultAS, key);
 	}
 	
 	// 2) search default language
-        return getCategory (currentProfile, ColorModel.ALL_LANGUAGES, name);
+        if (!language.equals (ColorModel.ALL_LANGUAGES)) {
+            AttributeSet defaultAS = getCategory 
+                (currentProfile, ColorModel.ALL_LANGUAGES, name);
+            if (defaultAS != null)
+                return getValue (ColorModel.ALL_LANGUAGES, defaultAS, key);
+        }
+        
+        return null;
     }
     
     private Font getFont (AttributeSet category) {
-        String name = (String) getValue (category, StyleConstants.FontFamily);
+        String name = (String) getValue (currentLanguage, category, StyleConstants.FontFamily);
         if (name == null) name = "Monospaced";                        // NOI18N
-        Integer size = (Integer) getValue (category, StyleConstants.FontSize);
+        Integer size = (Integer) getValue (currentLanguage, category, StyleConstants.FontSize);
         if (size == null)
             size = getDefaultFontSize ();
-        Boolean bold = (Boolean) getValue (category, StyleConstants.Bold);
+        Boolean bold = (Boolean) getValue (currentLanguage, category, StyleConstants.Bold);
         if (bold == null) bold = Boolean.FALSE;
-        Boolean italic = (Boolean) getValue (category, StyleConstants.Italic);
+        Boolean italic = (Boolean) getValue (currentLanguage, category, StyleConstants.Italic);
         if (italic == null) italic = Boolean.FALSE;
         int style = bold.booleanValue () ? Font.BOLD : Font.PLAIN;
         if (italic.booleanValue ()) style += Font.ITALIC;
