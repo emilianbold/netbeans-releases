@@ -23,6 +23,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import java.io.*;
+import org.openide.util.*;
 
 /**
  * Stream source for diffing CVS managed files.
@@ -83,14 +84,14 @@ public class DiffStreamSource extends StreamSource {
         init(null);
         if (revision == null || remoteFile == null) return null;
         if (binary) {
-            return new StringReader("[Binary File " + getTitle() + "]");
+            return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
         } else {
             return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);
         }
     }
 
     public Writer createWriter(Difference[] conflicts) throws IOException {
-        throw new IOException("Operation not supported");
+        throw new IOException("Operation not supported"); // NOI18N
     }
 
     /**
@@ -109,7 +110,8 @@ public class DiffStreamSource extends StreamSource {
             }
             failure = null;
         } catch (Exception e) {
-            failure = new IOException("Cannot initialize stream source");
+            // TODO detect interrupted IO, i.e. user cancel
+            failure = new IOException("Cannot initialize stream source"); // NOI18N
             failure.initCause(e);
             throw failure;
         }
@@ -120,9 +122,9 @@ public class DiffStreamSource extends StreamSource {
         if (fo != null) {
             mimeType = fo.getMIMEType();
         } else if (binary) {
-            mimeType = "application/octet-stream";
+            mimeType = "application/octet-stream"; // NOI18N
         } else {
-            mimeType = "text/plain";
+            mimeType = "text/plain"; // NOI18N
         }
     }
 }

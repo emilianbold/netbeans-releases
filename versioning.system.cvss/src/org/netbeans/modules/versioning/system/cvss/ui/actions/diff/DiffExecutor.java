@@ -150,7 +150,7 @@ public class DiffExecutor {
         }
 
         protected String preferredID(){
-            return "DiffExecutorTopComponent";    //NOI18N       
+            return "DiffExecutorTopComponent";    // NOI18N       
         }
         
         public HelpCtx getHelpCtx() {

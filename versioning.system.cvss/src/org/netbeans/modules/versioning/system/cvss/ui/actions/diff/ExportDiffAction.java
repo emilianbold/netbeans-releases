@@ -126,7 +126,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             chooser.removeChoosableFileFilter(fileFilter);
 
         }
-        chooser.setCurrentDirectory(new File(CvsModuleConfig.getDefault().getDefaultValue("ExportDiff.saveFolder", System.getProperty("user.home"))));
+        chooser.setCurrentDirectory(new File(CvsModuleConfig.getDefault().getDefaultValue("ExportDiff.saveFolder", System.getProperty("user.home")))); // NOI18N
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
@@ -149,7 +149,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                 File parent = destination.getParentFile();
                 destination = new File(parent, name + ".patch"); // NOI18N
             }
-            CvsModuleConfig.getDefault().setDefaultValue("ExportDiff.saveFolder", destination.getParent());
+            CvsModuleConfig.getDefault().setDefaultValue("ExportDiff.saveFolder", destination.getParent()); // NOI18N
 
             final File out = destination;
             RequestProcessor.getDefault().post(new Runnable() {

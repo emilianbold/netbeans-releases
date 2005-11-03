@@ -40,7 +40,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
     }
 
     protected String getBaseName() {
-        return "CTL_MenuItem_ResolveConflicts";
+        return "CTL_MenuItem_ResolveConflicts"; // NOI18N
     }
 
     protected boolean enable(Node[] nodes) {

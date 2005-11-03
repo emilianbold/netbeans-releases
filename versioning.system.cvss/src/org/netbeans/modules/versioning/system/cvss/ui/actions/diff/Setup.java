@@ -103,7 +103,7 @@ public final class Setup {
 
         firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle);
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
-        title = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(baseFile, info);
+        title = "<html>" + CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(baseFile, info); // NOI18N
     }
 
     /**

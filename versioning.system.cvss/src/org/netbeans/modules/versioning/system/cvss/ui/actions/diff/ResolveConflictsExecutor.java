@@ -68,7 +68,7 @@ public class ResolveConflictsExecutor {
         assert SwingUtilities.isEventDispatchThread();
         MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
-            throw new IllegalStateException("No Merge engine found.");
+            throw new IllegalStateException("No Merge engine found."); // NOI18N
         }
         
         try {
@@ -89,8 +89,8 @@ public class ResolveConflictsExecutor {
     
     private void handleMergeFor(final File file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
-        String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType();
-        String ext = "."+fo.getExt();
+        String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
+        String ext = "."+fo.getExt(); // NOI18N
         File f1 = File.createTempFile(TMP_PREFIX, ext);
         File f2 = File.createTempFile(TMP_PREFIX, ext);
         File f3 = File.createTempFile(TMP_PREFIX, ext);
@@ -230,7 +230,7 @@ public class ResolveConflictsExecutor {
                     isChangeRight = !isChangeRight;
                     continue;
                 } else if (isChangeRight && line.indexOf(CHANGE_RIGHT) != -1) {
-                    String lineText = line.substring(0, line.lastIndexOf(CHANGE_RIGHT)) + "\n";
+                    String lineText = line.substring(0, line.lastIndexOf(CHANGE_RIGHT)) + "\n"; // NOI18N
                     if (generateDiffs) {
                         if (rightFileRevision == null) {
                             rightFileRevision = line.substring(line.lastIndexOf(CHANGE_RIGHT) + CHANGE_RIGHT.length());
@@ -271,7 +271,7 @@ public class ResolveConflictsExecutor {
                         continue;
                     }
                 } else if (line.endsWith(CHANGE_DELIMETER)) {
-                    String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + "\n";
+                    String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + "\n"; // NOI18N
                     if (isChangeLeft) {
                         text1.append(lineText);
                         if (leftPart) w.write(lineText);
@@ -293,8 +293,8 @@ public class ResolveConflictsExecutor {
                     w.write(line);
                     w.newLine();
                 }
-                if (isChangeLeft) text1.append(line + "\n");
-                if (isChangeRight) text2.append(line + "\n");
+                if (isChangeLeft) text1.append(line + "\n"); // NOI18N
+                if (isChangeRight) text2.append(line + "\n"); // NOI18N
                 if (generateDiffs) {
                     if (isChangeLeft) i++;
                     else if (isChangeRight) j++;
@@ -324,8 +324,8 @@ public class ResolveConflictsExecutor {
      */
     static void repairEntries(File file) throws IOException {
         String name = file.getName();
-        File entries = new File(file.getParentFile(), "CVS"+File.separator+"Entries");
-        File backup = new File(entries.getAbsolutePath()+".Backup");
+        File entries = new File(file.getParentFile(), "CVS"+File.separator+"Entries"); // NOI18N
+        File backup = new File(entries.getAbsolutePath()+".Backup"); // NOI18N
         int attemps = 100;
         while (backup.exists() && attemps-- > 0) {
             // Someone else is occupying Entries, wait a while...
@@ -344,12 +344,12 @@ public class ResolveConflictsExecutor {
                 reader = new BufferedReader(new FileReader(entries));
                 writer = new BufferedWriter(new FileWriter(backup));
                 String line;
-                String pattern = "/"+name;
+                String pattern = "/"+name; // NOI18N
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith(pattern)) {
                         line = removeConflict(line);
                     }
-                    writer.write(line+"\n");
+                    writer.write(line+"\n"); // NOI18N
                 }
             } finally {
                 if (reader != null) reader.close();
@@ -516,11 +516,11 @@ public class ResolveConflictsExecutor {
         
         private void writeConflict(Difference conflict) throws IOException {
             //System.out.println("MergeConflictFileWriter.writeConflict('"+conflict.getFirstText()+"', '"+conflict.getSecondText()+"')");
-            super.write(CHANGE_LEFT + leftName + "\n");
+            super.write(CHANGE_LEFT + leftName + "\n"); // NOI18N
             super.write(conflict.getFirstText());
-            super.write(CHANGE_DELIMETER + "\n");
+            super.write(CHANGE_DELIMETER + "\n"); // NOI18N
             super.write(conflict.getSecondText());
-            super.write(CHANGE_RIGHT + rightName + "\n");
+            super.write(CHANGE_RIGHT + rightName + "\n"); // NOI18N
         }
         
         private static int numChars(char c, String str) {
