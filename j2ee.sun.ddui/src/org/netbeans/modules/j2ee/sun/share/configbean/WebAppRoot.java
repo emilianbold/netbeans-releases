@@ -36,6 +36,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
+
 /** Property structure of WebAppRoot from DTD (sections that are handled
  *    by child DConfigBeans have been removed.):
  *
@@ -76,8 +77,6 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.DConfigBean {
     
 	public static final String SERVLET_LIST_CHANGED = "ServletListChanged"; //NOI18N
-	public static final String SERVICE_REF_LIST_CHANGED = "ServiceRefListChanged"; //NOI18N
-	public static final String RESOURCE_REF_LIST_CHANGED = "ResourceRefListChanged"; //NOI18N
 	
 	private static final String JSPCONFIG_CLASSDEBUGINFO="classdebuginfo"; //NOI18N
 	private static final String JSPCONFIG_MAPPEDFILE="mappedfile"; //NOI18N
@@ -203,14 +202,6 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		if("/web-app/servlet".equals(xpath)) {	// NOI18N
 			getPCS().firePropertyChange(SERVLET_LIST_CHANGED, false, true);
 		}
-
-		if("/web-app/service-ref".equals(xpath)) {	// NOI18N
-			getPCS().firePropertyChange(SERVICE_REF_LIST_CHANGED, false, true);
-		}
-
-		if("/web-app/resource-ref".equals(xpath)) {	// NOI18N
-			getPCS().firePropertyChange(SERVICE_REF_LIST_CHANGED, false, true);
-		}
 	}
 	
 	/** !PW FIXME Workaround for broken XpathEvent.BEAN_REMOVED not being sent.
@@ -222,14 +213,6 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		
 		if("/web-app/servlet".equals(xpath)) {	// NOI18N
 			getPCS().firePropertyChange(SERVLET_LIST_CHANGED, false, true);
-		}
-
-		if("/web-app/service-ref".equals(xpath)) {	// NOI18N
-			getPCS().firePropertyChange(SERVICE_REF_LIST_CHANGED, false, true);
-		}
-
-		if("/web-app/resource-ref".equals(xpath)) {	// NOI18N
-			getPCS().firePropertyChange(SERVICE_REF_LIST_CHANGED, false, true);
 		}
 	}	
 	

@@ -87,8 +87,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
     private static final String CMR_FIELD_NAME_XPATH = CMR_FIELD_XPATH + "/cmr-field-name"; // NOI18N
     private static final String CMP_MAPPING_FILE = "sun-cmp-mappings.xml"; // NOI18N
 
-    public static final String EJB_LIST_CHANGED = "EjbListChanged"; //NOI18N
-
     // TODO - these are copied from the appserver's DTDRegistry for now
     public static final String SUN_CMP_MAPPING_810_DTD_PUBLIC_ID =
         "-//Sun Microsystems, Inc.//DTD Application Server 8.1 OR Mapping//EN"; // NOI18N
@@ -179,17 +177,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         public String getHelpId() {
             return "AS_CFG_EjbJarRoot";                                 //NOI18N
         }
-
-
-	protected void beanAdded(String xpath) {
-		super.beanAdded(xpath);
-		
-		if("/ejb-jar/enterprise-beans/session".equals(xpath) ||         // NOI18N
-                        "/ejb-jar/enterprise-beans/entity".equals(xpath) ||          // NOI18N
-                                "/ejb-jar/enterprise-beans/message-driven".equals(xpath)) {// NOI18N
-			getPCS().firePropertyChange(EJB_LIST_CHANGED, false, true);
-		}
-	} 
 
 
 	/* ------------------------------------------------------------------------
@@ -1024,31 +1011,10 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}
 
 
-    // !PW FIXME The code below needs review.  At best, it should not be necessary
-    // and at worst, I don't think it belongs here if it needs to exist at all.
-    
-        //We need to handle this event as we are not getting the call 
-        //removeDConfigBean() for removed beans. This is to fix the issue
-        //* /49655
 	public void fireXpathEvent(XpathEvent xpathEvent) {
             //ADD , REMOVE or CHANGE events
             DDBean bean = xpathEvent.getBean();
             String xpath = bean.getXpath();
-
-            if(xpathEvent.isRemoveEvent()){
-                if("/ejb-jar/enterprise-beans/session".equals(xpath) ||         // NOI18N
-                        "/ejb-jar/enterprise-beans/entity".equals(xpath) ||          // NOI18N
-                        "/ejb-jar/enterprise-beans/message-driven".equals(xpath)) {// NOI18N
-                        try {
-                            DConfigBean childBean =  getDConfigBean(bean);
-                            if(childBean != null){
-                                    //removeDConfigBean(childBean);
-                                    getPCS().firePropertyChange(EJB_LIST_CHANGED, false, true);
-                            }
-                        }catch(Exception exception){
-                        }
-                }
-            }
 
             // add or remove cmp field gets this event
             if (CMP_FIELD_XPATH.equals(xpath)) {

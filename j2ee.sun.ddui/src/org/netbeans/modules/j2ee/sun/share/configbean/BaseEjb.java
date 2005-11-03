@@ -39,8 +39,8 @@ public abstract class BaseEjb extends Base {
 	/** property event names
 	 */
 	public static final String EJB_NAME = "ejbName"; // NOI18N	
-	public static final String RESOURCE_REF_LIST_CHANGED = "ResourceRefListChanged"; //NOI18N
-	/** Holds value of property ejbNameDD */
+
+    /** Holds value of property ejbNameDD */
 	private DDBean ejbNameDD;
 
 	/** Holds value of property jndiName. */
@@ -451,14 +451,6 @@ public abstract class BaseEjb extends Base {
 		getPCS().firePropertyChange("beanCache", oldBeanCache, beanCache);
 	}
         
-	protected void beanAdded(String xpath) {
-		super.beanAdded(xpath);
-		
-		if(xpath != null && xpath.endsWith("resource-ref")) { // NOI18N
-			getPCS().firePropertyChange(RESOURCE_REF_LIST_CHANGED, false, true);
-		}
-	} 
-    
     /** Api to retrieve the interface definitions for this bean.  Aids usability
      *  during configuration, as the editors can display the existing methds
      *  rather than have the user enter them manually.

@@ -38,11 +38,13 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
  * @author Peter Williams
  */
 public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChangeListener { 
-	
+
+    /** These two properties are defined here because they are specifically for 
+     *  this customizer to indicate the specific event only to it's subcomponents,
+     *  not to anyone else.
+     */
 	public static final String CACHE_HELPER_LIST_CHANGED = "CacheHelperListChanged"; //NOI18N
 	public static final String SERVLET_LIST_CHANGED = "ServletListChanged"; //NOI18N
-	public static final String SERVICE_REF_LIST_CHANGED = "ServiceRefListChanged"; //NOI18N
-	public static final String RESOURCE_REF_LIST_CHANGED = "ResourceRefListChanged"; //NOI18N
 
 	
 	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
@@ -338,12 +340,6 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
 		if(WebAppRoot.SERVLET_LIST_CHANGED.equals(propertyChangeEvent.getPropertyName())) {
 			firePropertyChange(WebAppRootCustomizer.SERVLET_LIST_CHANGED, false, true);
-		}
-		if(WebAppRoot.SERVICE_REF_LIST_CHANGED.equals(propertyChangeEvent.getPropertyName())) {
-			firePropertyChange(WebAppRootCustomizer.SERVICE_REF_LIST_CHANGED, false, true);
-		}
-		if(WebAppRoot.RESOURCE_REF_LIST_CHANGED.equals(propertyChangeEvent.getPropertyName())) {
-			firePropertyChange(WebAppRootCustomizer.RESOURCE_REF_LIST_CHANGED, false, true);
 		}
 	}
     

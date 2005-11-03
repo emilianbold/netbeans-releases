@@ -181,17 +181,14 @@ public class MDEjb extends BaseEjb {
         mdbResourceAdapter = null;
     }
     
-    protected void setDefaultProperties() {
-        super.setDefaultProperties();
-        
-        // Message driven beans always have a JNDI name.
-        try {
-            setJndiName(getDefaultJndiName()); // NOI18N // J2EE recommended jndiName
-            getConfig().getMasterDCBRoot().setDirty();
-        } catch(PropertyVetoException ex) {
-            // suppress.  should never happen.
-        }
-    }
+//    protected void setDefaultProperties() {
+//        super.setDefaultProperties();
+//
+//        // Message driven beans always have a default JNDI name, which could be
+//        // set here.  However, this is instead implemented in BaseEjb.setDefaultProperties()
+//        // with help from getDefaultJndiName() and requiresJndiName() which are overridden
+//        // in this class to provide the correct defaults (jms/[ejbname] and true).
+//    }
     
     // Not really necessary to override this, but do it anyway so the proper name
     // is always available.
