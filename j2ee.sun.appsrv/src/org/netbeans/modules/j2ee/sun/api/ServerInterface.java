@@ -54,13 +54,8 @@ public interface ServerInterface {
     Object invoke(ObjectName name, String operationName, Object[] params, String[] signature) throws InstanceNotFoundException,
         MBeanException, ReflectionException, RemoteException;
     
-    Set queryNames(ObjectName name, javax.management.QueryExp query) throws RemoteException;
-    
     void setAttribute(ObjectName name, javax.management.Attribute attribute) throws InstanceNotFoundException,
         AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException, RemoteException;
-    
-    AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException,
-        ReflectionException, RemoteException;
     
     DeploymentManager getDeploymentManager();
     
