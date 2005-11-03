@@ -33,10 +33,8 @@ import org.openide.util.NbBundle;
 public class DiffAction extends AbstractSystemAction {
     
     private static final int enabledForStatus =
-            FileInformation.STATUS_VERSIONED_CONFLICT |  
-            FileInformation.STATUS_VERSIONED_MERGE | 
-            FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY | 
-            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
+            FileInformation.STATUS_LOCAL_CHANGE |
+            FileInformation.STATUS_REMOTE_CHANGE;
 
     public DiffAction() {
         setIcon(null);
