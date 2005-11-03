@@ -64,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
+                    <attr name="Separator0.instance/org-netbeans-modules-xml-text-syntax-XMLViewActions.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>
