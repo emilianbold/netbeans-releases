@@ -317,7 +317,7 @@ public class Annotator {
                         if (info.isDirectory()) continue;
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png");  // NOI18N
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true);  // NOI18N
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -331,7 +331,7 @@ public class Annotator {
                         FileInformation info = (FileInformation) modifiedFiles.get(mf);
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png"); // NOI18N
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true); // NOI18N
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -342,7 +342,7 @@ public class Annotator {
         }
 
         if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png"); // NOI18N
+            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png", true); // NOI18N
             return Utilities.mergeImages(icon, badge, 16, 9);
         } else {
             return icon;

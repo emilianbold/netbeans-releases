@@ -165,7 +165,7 @@ final class AliasesNode extends AbstractNode {
         }
 
         private Image badge(Image image) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/ui/selectors/link.png");  // NOI18N
+            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/ui/selectors/link.png", true);  // NOI18N
             return Utilities.mergeImages(image, badge, 0, 8);
         }
     }

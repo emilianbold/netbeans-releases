@@ -199,7 +199,7 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
      * @param editor the editor that has been created and should be annotated
      */
     protected void initializeCloneableEditor (CloneableEditor editor) {
-        editor.setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/diffSettingsIcon.gif"));
+        editor.setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/diffSettingsIcon.gif", true));
         //ourNode.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16));
         //nodeL = new DataNodeListener(editor);
         //ourNode.addNodeListener(WeakListener.node(nodeL, ourNode));

@@ -104,8 +104,8 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         // TODO Get icons for these buttons
         firstConflictButton.setVisible(false);
         lastConflictButton.setVisible(false);
-        prevConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
-        nextConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif")));
+        prevConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
+        nextConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
         //prevConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
         //nextConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/next.gif")));
         prevConflictButton.setMnemonic (org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.prevButton.mnemonic").charAt (0));

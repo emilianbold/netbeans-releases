@@ -42,7 +42,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
 
     public CvsSynchronizeTopComponent() {
         setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title"));
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/versioning-view.png"));  // NOI18N
+        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/versioning-view.png", true));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "ACSD_Synchronize_TopComponent"));
         syncPanel = new SynchronizePanel(this);

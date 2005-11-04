@@ -105,7 +105,7 @@ public class GraphicalMergeVisualizerBeanInfo extends SimpleBeanInfo {
     public java.awt.Image getIcon(int iconKind) {
         switch (iconKind) {
             case ICON_COLOR_16x16:
-                return Utilities.loadImage("org/netbeans/modules/merge/builtin/visualizer/mergeModeIcon.gif"); // NOI18N
+                return Utilities.loadImage("org/netbeans/modules/merge/builtin/visualizer/mergeModeIcon.gif", true); // NOI18N
         }
         return null;
     }

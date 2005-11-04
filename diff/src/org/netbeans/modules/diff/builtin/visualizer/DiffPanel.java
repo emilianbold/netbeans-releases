@@ -63,8 +63,8 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
     public DiffPanel() {
 //        this.diff = diff;
         initComponents ();
-        prevButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
-        nextButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif")));
+        prevButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
+        nextButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
         prevButton.setMnemonic (org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.prevButton.mnemonic").charAt (0));
         nextButton.setMnemonic (org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.nextButton.mnemonic").charAt (0));
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));
