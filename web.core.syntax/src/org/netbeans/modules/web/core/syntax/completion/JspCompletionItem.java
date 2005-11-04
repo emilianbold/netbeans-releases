@@ -298,8 +298,54 @@ public class JspCompletionItem {
         
         protected static ResultItemPaintComponent.JspTagPaintComponent component = null;
         
+        private TagInfo ti = null;
+        
         public Tag( String text ) {
             super(text);
+        }
+        
+        public Tag( String text, TagInfo ti) {
+            this(text);
+            this.ti = ti;
+            if (ti != null)
+                setHelp(ti.getInfoString());
+        }
+        
+        public boolean hasHelp(){
+            return true;
+        }
+        
+        public TagInfo getTagInfo() {
+            return ti;
+        }
+        
+        public String getHelp(){
+            URL url = super.getHelpURL();
+            if (url != null){
+                String surl = url.toString();
+                int first = surl.indexOf('#') + 1;
+                String help = constructHelp(url);
+                if (first > 0){
+                    int last = surl.lastIndexOf('#') + 1;
+                    String from = surl.substring( first , last - 1 );
+                    String to = surl.substring(last);
+                    first = help.indexOf(from);
+                    if (first > 0){
+                        first = first + from.length() + 2;
+                        if (first < help.length())
+                            help = help.substring(first);
+                    }
+                    last = help.indexOf(to);
+                    if (last > 0)
+                        help = help.substring(0, last);
+                    return help;
+                }
+                
+                help = help.substring(help.indexOf("<h2>")); //NOI18N
+                help = help.substring(0, help.lastIndexOf("<h4>"));//NOI18N
+                return help;
+            }
+            return constructHelp(ti);
         }
         
         public Component getPaintComponent(boolean isSelected) {

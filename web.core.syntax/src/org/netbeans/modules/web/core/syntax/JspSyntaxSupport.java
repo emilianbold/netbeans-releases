@@ -1671,7 +1671,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         if (ti.getBodyContent ().equalsIgnoreCase (TagInfo.BODY_CONTENT_EMPTY))
                             continue;
 
-                        result.add( new JspCompletionItem.Tag( "/"+image ) );  // NOI18N
+                        result.add( new JspCompletionItem.Tag( "/"+image, ti ) );  // NOI18N
                         
                         if(firstOnly) break; //return only the first found not-finished start token
                     }
