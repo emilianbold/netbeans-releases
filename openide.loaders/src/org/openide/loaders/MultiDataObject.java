@@ -343,6 +343,7 @@ public class MultiDataObject extends DataObject {
     public final Entry findSecondaryEntry (FileObject fo) {
         Entry e;
         synchronized ( synchObjectSecondary() ) {
+            removeAllInvalid ();
             e = (Entry)getSecondary().get (fo);
         }
         return e;
@@ -447,6 +448,7 @@ public class MultiDataObject extends DataObject {
         ArrayList toRemove = new ArrayList();
         Iterator it;
         synchronized ( synchObjectSecondary() ) {
+            removeAllInvalid ();
             it = new ArrayList(getSecondary().entrySet ()).iterator();
         }
         
@@ -476,6 +478,7 @@ public class MultiDataObject extends DataObject {
         
         Iterator it;
         synchronized ( synchObjectSecondary() ) {
+            removeAllInvalid ();
             it = new ArrayList(getSecondary().entrySet ()).iterator();
         }
         
@@ -543,6 +546,7 @@ public class MultiDataObject extends DataObject {
             ArrayList toRemove = new ArrayList();
             Iterator it;
             synchronized ( synchObjectSecondary() ) {
+                removeAllInvalid ();
                 it = new ArrayList(getSecondary().entrySet ()).iterator();
             }
             

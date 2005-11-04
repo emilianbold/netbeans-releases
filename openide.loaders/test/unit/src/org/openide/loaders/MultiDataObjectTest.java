@@ -13,6 +13,8 @@
 
 package org.openide.loaders;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import junit.extensions.*;
 import junit.textui.TestRunner;
 
@@ -20,161 +22,303 @@ import org.openide.filesystems.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.IOException;
+import org.openide.loaders.DataLoader.RecognizedFiles;
 import org.openide.nodes.Node;
+import java.lang.ref.WeakReference;
+import java.io.*;
+import java.util.*;
+import java.beans.PropertyVetoException;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import org.openide.*;
+import org.openide.util.Enumerations;
+import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
+import org.openide.nodes.CookieSet;
 
 /**
- * @author  Vitezslav Stejskal
+ * @author Jaroslav Tulach
  */
-public class MultiDataObjectTest extends NbTestCase {
-
+public class MultiDataObjectTest extends LoggingTestCaseHid {
+    FileSystem fs;
+    DataObject one;
+    DataFolder from;
+    DataFolder to;
+    ErrorManager err;
+    
+    
     /** Creates new DataObjectTest */
     public MultiDataObjectTest (String name) {
         super (name);
     }
-
-    public static Test suite() {
-        return new SetUpTearDownOnlyOnce ();
+    
+    public void setUp() throws Exception {
+        clearWorkDir();
+        
+        super.setUp();
+        
+        registerIntoLookup(new Pool());
+        
+        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
+        
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        fs = lfs;
+        FileUtil.createData(fs.getRoot(), "from/x.prima");
+        FileUtil.createData(fs.getRoot(), "from/x.seconda");
+        FileUtil.createFolder(fs.getRoot(), "to/");
+        
+        one = DataObject.find(fs.findResource("from/x.prima"));
+        assertEquals(SimpleObject.class, one.getClass());
+        
+        from = one.getFolder();
+        to = DataFolder.findFolder(fs.findResource("to/"));
+        
+        assertEquals("Nothing there", 0, to.getPrimaryFile().getChildren().length);
+    }
+    
+    public void testTheSetOfSecondaryEntriesIsSaidToGetInconsistent() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            err.log(i + " getting children of to");
+            DataObject[] to1 = to.getChildren();
+            err.log(i + " getting children of from");
+            DataObject[] from1 = from.getChildren();
+            err.log(i + " getting files of object1");
+            Object[] arr1 = one.files().toArray();
+            err.log(i + " moving the object");
+            one.move(to);
+            err.log(i + " 2nd children of to");
+            DataObject[] to2 = to.getChildren();
+            err.log(i + " 2nd children of from");
+            DataObject[] from2 = from.getChildren();
+            err.log(i + " 2nd  files of object1");
+            Object[] arr2 = one.files().toArray();
+            err.log(i + " checking results");
+            
+            assertEquals("Round " + i + " To is empty: " + Arrays.asList(to1), 0, to1.length);
+            assertEquals("Round " + i + " From has one:" + Arrays.asList(from1), 1, from1.length);
+            assertEquals("Round " + i + " One has two files" + Arrays.asList(arr1), 2, arr1.length);
+            
+            assertEquals("Round " + i + " From is empty after move: " + Arrays.asList(from2), 0, from2.length);
+            assertEquals("Round " + i + " To has one:" + Arrays.asList(to2), 1, to2.length);
+            assertEquals("Round " + i + " One still has two files" + Arrays.asList(arr1), 2, arr1.length);
+            
+            err.log(i + " moving back");
+            one.move(from);
+            err.log(i + " end of cycle");
+        }
     }
 
-    /** This is a test of calling files (), secondaryEntries (), etc. from 
-     * constructor of MultiDataObject. It always worked, but because of one strange
-     * bug in DataObjectPool.waitNotify could stop for 500ms. Thus we are not 
-     * just testing whether it works, but also whether it is fast. Wild but true.
-     */
-    public void testCallSecondaryEntriesInConstructor () throws Exception {
-        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
-            "folder/file.simple",
-        });
+    public void testConsistencyWithABitOfAsynchronicity() throws Exception {
+        err.log(" getting children of to");
+        DataObject[] to1 = to.getChildren();
+        err.log(" getting children of from");
+        DataObject[] from1 = from.getChildren();
+        
+        
+        for (int i = 0; i < 10; i++) {
+            err.log(i + " getting files of object1");
+            Object[] arr1 = one.files().toArray();
+            err.log(i + " moving the object");
+            one.move(to);
+            Object[] arr2 = one.files().toArray();
+            err.log(i + " checking results");
+            
+            assertEquals("Round " + i + " One has two files" + Arrays.asList(arr1), 2, arr1.length);
+            
+            assertEquals("Round " + i + " One still has two files" + Arrays.asList(arr1), 2, arr1.length);
+            
+            err.log(i + " moving back");
+            one.move(from);
+            err.log(i + " end of cycle");
+        }
+    }
 
-        class D extends MultiDataObject {
-            public D (FileObject pf, MultiFileLoader loader) throws IOException {
-                super(pf, loader);
+    public void testConsistencyWithABitOfAsynchronicityAndNoObservationsThatWouldMangeTheState() throws Exception {
+        err.log(" getting children of to");
+        DataObject[] to1 = to.getChildren();
+        err.log(" getting children of from");
+        DataObject[] from1 = from.getChildren();
+        
+        
+        for (int i = 0; i < 10; i++) {
+            err.log(i + " moving the object");
+            one.move(to);
+            err.log(i + " moving back");
+            one.move(from);
+            err.log(i + " end of cycle");
+        }
+    }
 
-                long time = System.currentTimeMillis ();
-                
-                java.util.Iterator it = secondaryEntries ().iterator ();
-                while (it.hasNext ()) {
-                    Object o = it.next ();
-                }
-                
-                long delta = System.currentTimeMillis () - time;
-                if (delta > 200) {
-                    fail ("It seems that calling secondaryEntries () from data objects constructor is really time consuming. It has taken " + delta + " ms");
-                }
+    public void testConsistencyWithContinuousQueryingForDeletedFiles() throws Exception {
+        err.log(" getting children of to");
+        DataObject[] to1 = to.getChildren();
+        err.log(" getting children of from");
+        DataObject[] from1 = from.getChildren();
+        
+        class Queri extends Thread 
+        implements FileChangeListener, DataLoader.RecognizedFiles, PropertyChangeListener {
+            public boolean stop;
+            private List deleted = Collections.synchronizedList(new ArrayList());
+            public Exception problem;
+            
+            public Queri() {
+                super("Query background thread");
+                setPriority(MAX_PRIORITY);
+            }
+
+            public void fileFolderCreated(FileEvent fe) {
+            }
+
+            public void fileDataCreated(FileEvent fe) {
+            }
+
+            public void fileChanged(FileEvent fe) {
+            }
+
+            public void fileDeleted(FileEvent fe) {
+                deleted.add(fe.getFile());
+            }
+
+            public void fileRenamed(FileRenameEvent fe) {
+            }
+
+            public void fileAttributeChanged(FileAttributeEvent fe) {
             }
             
-            protected Node createNodeDelegate() {
-                return Node.EMPTY;
+            public void run () {
+                while(!stop) {
+                    FileObject[] arr = (FileObject[]) deleted.toArray(new FileObject[0]);
+                    DataLoader loader = SimpleLoader.getLoader(SimpleLoader.class);
+                    err.log("Next round");
+                    for (int i = 0; i < arr.length; i++) {
+                        try {
+                            err.log("Checking " + arr[i]);
+                            DataObject x = loader.findDataObject(arr[i], this);
+                            err.log("  has dobj: " + x);
+                        } catch (IOException ex) {
+                            if (problem == null) {
+                                problem = ex;
+                            }
+                        }
+                    }
+                }
+            }
+
+            public void markRecognized(FileObject fo) {
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("afterMove".equals(evt.getPropertyName())) {
+                    Thread.yield();
+                }
             }
         }
-    
-        class L extends MultiFileLoader {
-            public L () {
-                super(D.class.getName());
-            }
-            protected String displayName() {
-                return "L";
-            }
-            
-            protected FileObject findPrimaryFile (FileObject obj) {
-                return obj.hasExt ("simple") ? obj : null;
-            }
-            
-            protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
-                return new D(pf, this);
-            }
-            
-            
-            protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject x, FileObject obj) {
-                throw new IllegalStateException ();
-            }
-            
-            protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject x, FileObject obj) {
-                return new org.openide.loaders.FileEntry (x, obj);
-            }
-        }
         
+        Queri que = new Queri();
         
+        to.getPrimaryFile().addFileChangeListener(que);
+        from.getPrimaryFile().addFileChangeListener(que);
         
-        FileObject fo = lfs.findResource("folder/file.simple");
-        assertNotNull(fo);
-        DataLoader l = new L ();
-        AddLoaderManuallyHid.addRemoveLoader(l, true);
+        que.start();
         try {
-            DataObject o = DataObject.find(fo);
-        } finally {
-            AddLoaderManuallyHid.addRemoveLoader(l, false);
-        }
-        TestUtilHid.destroyLocalFileSystem(getName());
-    } // end of testCallSecondaryEntriesInConstructor
-    
-    /** test for bugfix #14222, #15391, files copied by MDO.copy operation
-     * should be listed as MDO entries imediately after the copy is finished
-     */
-    public void testEntriesConsistencyAfterCopy () throws Exception {
-        String fsstruct [] = new String [] {
-            "source/file.primary",
-            "source/file.secondary",
-            "target/",
-        };
-        
-        TestUtilHid.destroyLocalFileSystem (getName());
-        FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
-        
-        FileObject fsrc = lfs.findResource ("source/file.primary");
-        FileObject fsrc_s = lfs.findResource ("source/file.secondary");
-        DataObject dsrc = DataObject.find (fsrc);
-
-        assertTrue ("Can't create source DataObject.", dsrc != null);
-        assertEquals("Correct data loader", DataLoader.getLoader(MultiFileLoaderHid.class), dsrc.getLoader());
-        checkEntries ((MultiDataObject)dsrc, fsrc, new FileObject [] { fsrc_s });
-
-        FileObject folder = lfs.findResource ("target");
-        DataFolder trg_folder = DataFolder.findFolder (folder);
-        
-        assertTrue ("Can't create target DataFolder.", dsrc != null);
-        
-        DataObject dtrg = dsrc.copy (trg_folder);
-        FileObject ftrg = lfs.findResource ("target/file.primary");
-        FileObject ftrg_s = lfs.findResource ("target/file.secondary");
-
-        checkEntries ((MultiDataObject)dtrg, ftrg, new FileObject [] { ftrg_s });
-    }
-    
-    private void checkEntries (MultiDataObject mdo, FileObject primary, FileObject secondary []) {
-        assertEquals ("Primary entry doesn't match.", mdo.getPrimaryEntry ().getFile (), primary);
-
-        for (int i = 0; i < secondary.length; i++) {
-            if (null == mdo.findSecondaryEntry (secondary [i])) {
-                fail ("There is no entry for file " + secondary [i]);
+            for (int i = 0; i < 10; i++) {
+                err.log(i + " moving the object");
+                one.move(to);
+                err.log(i + " moving back");
+                one.move(from);
+                err.log(i + " end of cycle");
             }
+        } finally {
+            que.stop = true;
+        }
+        
+        que.join();
+        if (que.problem != null) {
+            throw que.problem;
+        }
+        
+        assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
+    }
+    
+    private static class Pool extends DataLoaderPool {
+        protected Enumeration loaders() {
+            return Enumerations.singleton(SimpleLoader.getLoader(SimpleLoader.class));
         }
     }
     
-    private static class SetUpTearDownOnlyOnce extends NbTestSetup {
-        private final MultiFileLoaderHid loader = new MultiFileLoaderHid ();
-
-        public SetUpTearDownOnlyOnce () {
-            super (new NbTestSuite (MultiDataObjectTest.class));
+    public static final class SimpleLoader extends MultiFileLoader {
+        public SimpleLoader() {
+            super(SimpleObject.class);
+        }
+        protected String displayName() {
+            return "SimpleLoader";
+        }
+        protected FileObject findPrimaryFile(FileObject fo) {
+            if (!fo.isFolder()) {
+                // emulate the behaviour of form data object
+                
+                /* emulate!? this one is written too well ;-)
+                FileObject primary = FileUtil.findBrother(fo, "prima");
+                FileObject secondary = FileUtil.findBrother(fo, "seconda");
+                
+                if (primary == null || secondary == null) {
+                    return null;
+                }
+                
+                if (primary != fo && secondary != fo) {
+                    return null;
+                }
+                 */
+                
+                // here is the common code for the worse behaviour
+                if (fo.hasExt("prima")) {
+                    return FileUtil.findBrother(fo, "seconda") != null ? fo : null;
+                }
+                
+                if (fo.hasExt("seconda")) {
+                    return FileUtil.findBrother(fo, "prima");
+                }
+            }
+            return null;
+        }
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            return new SimpleObject(this, primaryFile);
+        }
+        protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            return new FileEntry(obj, primaryFile);
+        }
+        protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            return new FileEntry(obj, secondaryFile);
         }
 
-        /**
-         * Sets up the fixture. Override to set up additional fixture
-         * state. Executed just once for all tests in outer class. It's the
-         * behavior of TestSetup decorator.
-         */
-        protected void setUp() throws Exception {
-            // add loader to loader pool before all tests are executed
-            AddLoaderManuallyHid.addRemoveLoader (loader, true);
-        }
-        /**
-         * Tears down the fixture. Override to tear down the additional
-         * fixture state. Executed just once for all tests in outer class. It's the
-         * behavior of TestSetup decorator.
-         */
-        protected void tearDown() throws Exception {
-            // remove loader from loader pool after all tests are executed
-            AddLoaderManuallyHid.addRemoveLoader (loader, false);
+        private void afterMove(FileObject f, FileObject retValue) {
+            firePropertyChange("afterMove", null, null);
         }
     }
+    
+    private static final class FE extends FileEntry {
+        public FE(MultiDataObject mo, FileObject fo) {
+            super(mo, fo);
+        }
+
+        public FileObject move(FileObject f, String suffix) throws IOException {
+            FileObject retValue;
+            retValue = super.move(f, suffix);
+            
+            SimpleLoader l = (SimpleLoader)getDataObject().getLoader();
+            l.afterMove(f, retValue);
+            
+            return retValue;
+        }
+        
+        
+    }
+    
+    public static final class SimpleObject extends MultiDataObject {
+        public SimpleObject(SimpleLoader l, FileObject fo) throws DataObjectExistsException {
+            super(fo, l);
+        }
+    }
+
 }
