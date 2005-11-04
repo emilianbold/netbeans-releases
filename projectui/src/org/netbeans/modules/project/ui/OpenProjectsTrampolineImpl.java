@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,10 +29,10 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     /** Property change listeners registered through API */
     private PropertyChangeSupport pchSupport;
     
+    private boolean listenersRegistered;
     
     public OpenProjectsTrampolineImpl() {
         pchSupport = new PropertyChangeSupport( this );
-        OpenProjectList.getDefault().addPropertyChangeListener( this );
     }
     
     public Project[] getOpenProjectsAPI() {
@@ -48,6 +48,20 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     }
 
     public void addPropertyChangeListenerAPI( PropertyChangeListener listener ) {
+        boolean shouldRegisterListener;
+        
+        synchronized (this) {
+            if (shouldRegisterListener = !listenersRegistered) {
+                listenersRegistered = true;
+            }
+        }
+        
+        if (shouldRegisterListener) {
+            //make sure we are listening on OpenProjectList so the events are be propagated.
+            //see issue #65928:
+            OpenProjectList.getDefault().addPropertyChangeListener( this );
+        }
+        
         pchSupport.addPropertyChangeListener( listener );        
     }
     
