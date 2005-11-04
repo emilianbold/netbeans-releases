@@ -16,11 +16,12 @@
 <body>
 <h2>Generating Database Tables at Deployment</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>When developing CMP entity beans, you often do not want to work with the actual tables themselves, but
-  only want to work with the general structure of the database. In this case, you can create your CMP entity beans, the 
-  bean fields, and the relationships in the IDE. You then configure the application 
-  to configure the mappings and create the database tables on the database server 
-  when you deploy the application.</p>
+<p>When developing CMP entity beans, you do not need to connect to a real production 
+  database with data and only need a test database against which to test your 
+  entity beans. In this case, you can create your CMP entity beans, the bean fields, 
+  and the relationships in the IDE. You then configure the application to configure 
+  the mappings and create the database tables on a test database server when you 
+  deploy the application.</p>
 <ul class="note">
   <li>Unless you <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/editing/generate_cmp_beans.html">generate 
     entity beans from a database connection</a>, the IDE assumes you want to generate 
