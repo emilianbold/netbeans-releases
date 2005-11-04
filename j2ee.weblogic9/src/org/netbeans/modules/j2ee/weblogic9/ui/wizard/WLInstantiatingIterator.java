@@ -92,7 +92,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         Set result = new HashSet();
         
         // build the URL
-        String url = "deployer:WebLogic:http://" + this.host + ":" + this.port; // NOI18N
+        String url = WLDeploymentFactory.URI_PREFIX + this.host + ":" + this.port + ":" + serverRoot; // NOI18N
         
         // set the username and password
         String username = this.username;

@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -106,9 +107,10 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         
         String displayName =  (String)wizard.getProperty(org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard.PROP_DISPLAY_NAME);
         
-        String url = "jboss-deployer:"+host+":"+port; //NOI18N
-      
-        url += "#"+server; //NOI18N
+        String url = JBDeploymentFactory.URI_PREFIX + host + ":" + port;    // NOI18N
+        if (server != null && !server.equals(""))                           // NOI18N
+            url += "#" + server;                                            // NOI18N
+        url += "&"+ installLocation;                                        // NOI18N
       
         try {
             InstanceProperties ip = InstanceProperties.createInstanceProperties(url, userName, password, displayName);

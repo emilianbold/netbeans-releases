@@ -96,7 +96,12 @@ public class JBDeploymentFactory implements DeploymentFactory {
         if (df == null)
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
 
-        return new JBDeploymentManager(df.getDeploymentManager(uri, uname, passwd), uri, uname, passwd);
+        String jbURI = uri;
+        try {
+            jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+        }
+        catch (Exception e) {}; // noop
+        return new JBDeploymentManager(df.getDeploymentManager(jbURI, uname, passwd), uri, uname, passwd);
     }
      
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
@@ -108,7 +113,12 @@ public class JBDeploymentFactory implements DeploymentFactory {
         if (df == null)
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
 
-        return new JBDeploymentManager(getFactory().getDisconnectedDeploymentManager(uri), uri, null, null);
+        String jbURI = uri;
+        try {
+            jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+        }
+        catch (Exception e) {}; // noop
+        return new JBDeploymentManager(df.getDisconnectedDeploymentManager(jbURI), uri, null, null);
     }
     
     public String getProductVersion() {

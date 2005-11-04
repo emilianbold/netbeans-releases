@@ -34,6 +34,7 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.jboss4.config.EarDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.EjbDeploymentConfiguration;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 
 /**
  *
@@ -42,12 +43,8 @@ import org.netbeans.modules.j2ee.jboss4.config.EjbDeploymentConfiguration;
 public class JBDeploymentManager implements DeploymentManager {
     
     private DeploymentManager dm;
-    private String uri;
     private String realUri;
-    private String domain="";
-    
-    private String host;
-    private int port;
+
     private int debuggingPort = 8787;
     
     // ide specific data
@@ -64,26 +61,21 @@ public class JBDeploymentManager implements DeploymentManager {
     public JBDeploymentManager(DeploymentManager dm, String uri, String username, String password) {
         realUri = uri;
         this.dm = dm;
-        if (uri.indexOf("#")!=-1){//NOI18N
-            this.uri = uri.substring(0, uri.indexOf("#") );//NOI18N
-            domain = uri.substring(uri.indexOf("#") +1);//NOI18N
-        } else{
-            this.uri = uri;
-        }
-        
-        this.host = this.uri.substring(this.uri.indexOf(':') + 1, this.uri.lastIndexOf(':'));
-        this.port = new Integer(this.uri.substring(this.uri.lastIndexOf(':')+1)).intValue();
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // Connection data methods
     ////////////////////////////////////////////////////////////////////////////
     public String getHost() {
+        String host = InstanceProperties.getInstanceProperties(realUri).
+                                    getProperty(JBPluginProperties.PROPERTY_HOST);
         return host;
     }
     
     public int getPort() {
-        return port;
+        String port = InstanceProperties.getInstanceProperties(realUri).
+                                    getProperty(JBPluginProperties.PROPERTY_PORT);
+        return new Integer(port).intValue();
     }
     
     public int getDebuggingPort() {
@@ -91,10 +83,7 @@ public class JBDeploymentManager implements DeploymentManager {
     }
     
     public String getUrl() {
-        if (domain.equals(""))
-            return this.uri;
-        else
-            return this.uri+"#"+this.domain;
+        return realUri;
     }
     
     ////////////////////////////////////////////////////////////////////////////
