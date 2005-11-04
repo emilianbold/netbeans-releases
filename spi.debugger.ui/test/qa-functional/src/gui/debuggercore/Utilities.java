@@ -80,7 +80,7 @@ public class Utilities {
     public static Action.Shortcut debugFileShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
     public static Action.Shortcut runToCursorShortcut = new Action.Shortcut(KeyEvent.VK_F4);
     public static Action.Shortcut stepIntoShortcut = new Action.Shortcut(KeyEvent.VK_F7);
-    public static Action.Shortcut stepOutShortcut = new Action.Shortcut(KeyEvent.VK_F7, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK);
+    public static Action.Shortcut stepOutShortcut = new Action.Shortcut(KeyEvent.VK_F7, KeyEvent.CTRL_MASK);
     public static Action.Shortcut stepOverShortcut = new Action.Shortcut(KeyEvent.VK_F8);
     public static Action.Shortcut continueShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
     public static Action.Shortcut killSessionShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
