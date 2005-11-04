@@ -19,8 +19,11 @@
                 <tag-item>oracle</tag-item>
                 <tag-item>pointbase</tag-item>
                 <tag-item>db2</tag-item>
-                <tag-item>merant1</tag-item>
-                <tag-item>merant2</tag-item>                                
+                <tag-item>datadirect_sql</tag-item>
+                <tag-item>datadirect_oracle</tag-item> 
+                <tag-item>datadirect_db2</tag-item> 
+                <tag-item>datadirect_informix</tag-item> 
+                <tag-item>datadirect_sybase</tag-item> 
                 <tag-item>jdbc-odbc-bridge</tag-item>
                 <tag-item>sql-server</tag-item>
                 <tag-item>sybase2</tag-item>
@@ -99,23 +102,23 @@
                     <conditional-value>com.ibm.db2.jdbc.DB2DataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant1</option-name>
+                    <option-name>datadirect_sql</option-name>
                     <conditional-value>com.ddtek.jdbcx.sqlserver.SQLServerDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant2</option-name>
+                    <option-name>datadirect_oracle</option-name>
                     <conditional-value>com.ddtek.jdbcx.oracle.OracleDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant3</option-name>
+                    <option-name>datadirect_db2</option-name>
                     <conditional-value>com.ddtek.jdbcx.db2.DB2DataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant4</option-name>
+                    <option-name>datadirect_informix</option-name>
                     <conditional-value>com.ddtek.jdbcx.informix.InformixDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant5</option-name>
+                    <option-name>datadirect_sybase</option-name>
                     <conditional-value>com.ddtek.jdbcx.sybase.SybaseDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
@@ -176,7 +179,6 @@
                      <option-name>sun_sybase</option-name>
                     <conditional-value>com.sun.sql.jdbcx.sybase.SybaseDataSource</conditional-value>
                 </option-value-pair>
-                
                 <option-value-pair>
                     <option-name>oracle</option-name>
                     <conditional-value>oracle.jdbc.xa.client.OracleXADataSource</conditional-value>
@@ -186,23 +188,23 @@
                     <conditional-value>com.ibm.db2.jdbc.DB2XADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant1</option-name>
+                    <option-name>datadirect_sql</option-name>
                     <conditional-value>com.ddtek.jdbcx.sqlserver.SQLServerDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant2</option-name>
+                    <option-name>datadirect_oracle</option-name>
                     <conditional-value>com.ddtek.jdbcx.oracle.OracleDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant3</option-name>
-                    <conditional-value>N/A</conditional-value>
+                    <option-name>datadirect_db2</option-name>
+                    <conditional-value>com.ddtek.jdbcx.db2.DB2DataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant4</option-name>
+                    <option-name>datadirect_informix</option-name>
                     <conditional-value>com.ddtek.jdbcx.informix.InformixDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>merant5</option-name>
+                    <option-name>datadirect_sybase</option-name>
                     <conditional-value>com.ddtek.jdbcx.sybase.SybaseDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
@@ -290,8 +292,28 @@
                     <option-name>mysql</option-name>
                     <conditional-value>jdbc:mysql://#HOST$:#PORT$/#DB$?relaxAutoCommit="true"</conditional-value>
                 </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_sql</option-name>
+                    <conditional-value>jdbc:datadirect:sqlserver://#HOST$:#PORT$[;databaseName=#DB$]</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_oracle</option-name>
+                    <conditional-value>jdbc:datadirect:oracle://#HOST$:#PORT$;SID=#SID$</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_db2</option-name>
+                    <conditional-value>jdbc:datadirect:db2://#HOST$:#PORT$[;databaseName=#DB$]</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_informix</option-name>
+                    <conditional-value>jdbc:datadirect:informix://#HOST$:#PORT$;informixServer=#SERVER_NAME$;databaseName=#DB$</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_sybase</option-name>
+                    <conditional-value>jdbc:datadirect:sybase://#HOST$:#PORT$[;databaseName=#DB$]</conditional-value>
+                </option-value-pair>
             </field-value>
-        </field>
+        </field>                
         <field field-type="string">
             <name>User</name>
             <field-value>
@@ -509,6 +531,26 @@
                 <option-value-pair>
                     <option-name>pointbase</option-name>
                     <conditional-value>jdbc:pointbase:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_sql</option-name>
+                    <conditional-value>jdbc:datadirect:sqlserver:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_oracle</option-name>
+                    <conditional-value>jdbc:datadirect:oracle:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_db2</option-name>
+                    <conditional-value>jdbc:datadirect:db2:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_informix</option-name>
+                    <conditional-value>jdbc:datadirect:informix:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_sybase</option-name>
+                    <conditional-value>jdbc:datadirect:sybase:</conditional-value>
                 </option-value-pair>
             </field-value>
         </field>
