@@ -34,8 +34,6 @@ import org.openide.util.SharedClassObject;
  */
 public class HttpServerURLMapper extends URLMapper {
     
-    private static final HttpServerSettings settings = (HttpServerSettings) SharedClassObject.findObject(HttpServerSettings.class, true);
-    
     /** Creates a new instance of HttpServerURLMapper */
     public HttpServerURLMapper() {
     }
@@ -48,7 +46,7 @@ public class HttpServerURLMapper extends URLMapper {
         String path = url.getPath();
 
         // remove the wrapper servlet URI
-        String wrapper = settings.getWrapperBaseURL ();
+        String wrapper = httpserverSettings().getWrapperBaseURL ();
         if (path == null || !path.startsWith(wrapper))
             return null;
         path = path.substring(wrapper.length());
@@ -118,7 +116,7 @@ public class HttpServerURLMapper extends URLMapper {
             }
         }
         String path = encodeURL(u);
-        HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
+        HttpServerSettings settings = httpserverSettings();
         settings.setRunning(true);
         try {
             URL newURL = new URL("http",   // NOI18N
@@ -161,5 +159,11 @@ public class HttpServerURLMapper extends URLMapper {
         }
     }
 
+    /** 
+     * Obtains settings of this module
+     */
+    static HttpServerSettings httpserverSettings () {
+        return (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
+    }
     
 }
