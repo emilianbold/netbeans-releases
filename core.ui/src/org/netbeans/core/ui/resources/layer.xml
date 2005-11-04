@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>        
 
         <folder name="Tools">
-           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         </folder>
         
         <folder name="Window">
@@ -93,24 +93,24 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="File">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="Separator2.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator2.instance/org-openide-actions-SaveAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAction.instance"/>
             <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAllAction.instance"/>
             <attr name="org-openide-actions-SaveAllAction.instance/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator3.instance/org-openide-actions-PageSetupAction.instance" boolvalue="true" />
             <file name="org-openide-actions-PageSetupAction.instance"/>
             <attr name="org-openide-actions-PageSetupAction.instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
             <file name="org-openide-actions-PrintAction.instance"/>
             <attr name="org-openide-actions-PrintAction.instance/Separator4.instance" boolvalue="true" />
             <file name="Separator4.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator4.instance/org-netbeans-core-actions-SystemExit.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
         </folder>
@@ -122,8 +122,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-RedoAction.instance"/>
             <attr name="org-openide-actions-RedoAction.instance/Separator1.instance" boolvalue="true" />
             <file name="Separator1.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator1.instance/org-openide-actions-CutAction.instance" boolvalue="true" />
             <file name="org-openide-actions-CutAction.instance"/>
             <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true" />
@@ -134,8 +134,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-DeleteAction.instance"/>
             <attr name="org-openide-actions-DeleteAction.instance/Separator2.instance" boolvalue="true" />
             <file name="Separator2.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator2.instance/org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance" boolvalue="true"/>
             <!-- note, actions defined in editor moduel are here between -->
             <attr name="SeparatorAfterFindPrevious.instance/org-openide-actions-FindAction.instance" boolvalue="true"/>
@@ -144,8 +144,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ReplaceAction.instance"/>
             <attr name="org-openide-actions-ReplaceAction.instance/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator3.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true" />
             <file name="org-netbeans-core-actions-JumpNextAction.shadow" >
                 <attr name="originalFile" stringvalue="/Actions/System/org-netbeans-core-actions-JumpNextAction.instance" />
@@ -167,7 +167,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="SeparatorBeforeGoToLine.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+            </file>
             <file name="org-openide-actions-GotoAction.shadow" >
                 <attr name="originalFile" stringvalue="/Actions/Edit/org-openide-actions-GotoAction.instance" />
             </file>
@@ -180,13 +180,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ToolsAction.instance"/>
             <attr name="org-openide-actions-ToolsAction.instance/Separator1.instance" boolvalue="true" />
             <file name="Separator1.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator1.instance/Separator2.instance" boolvalue="true" />
             <!-- OK to have both separators here: cf. #7391 -->
             <file name="Separator2.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <attr name="Separator2.instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
             <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
@@ -205,8 +205,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="Separator1.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
             <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
             <attr name="Separator1.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
@@ -216,12 +216,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Toolbars">
         <!-- 
-            Specifying the file Standard.xml in this place in your layer will
-            override the default toolbar configuration.
-            The file should contain a description of a toolbar configuration; for syntax
-            reference see for example the file Standard.xml.
-            Adding actions into subfolders of this folder in the XML layer
-            of your module will customize the main window toolbars.
+        Specifying the file Standard.xml in this place in your layer will
+        override the default toolbar configuration.
+        The file should contain a description of a toolbar configuration; for syntax
+        reference see for example the file Standard.xml.
+        Adding actions into subfolders of this folder in the XML layer
+        of your module will customize the main window toolbars.
         -->
         <folder name="Edit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -266,23 +266,25 @@ Microsystems, Inc. All Rights Reserved.
 
         </folder>    
 
+        <!-- XXX these two should be elsewhere, probably (core/favorites?): -->
+        
         <!-- folder for all privileged templates -->
         <folder name="Privileged">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false" />
-	</folder>
+        </folder>
         
         <!-- folder for all recent templates -->
         <folder name="Recent">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false" />
-	</folder>
+        </folder>
         
-     </folder>
+    </folder>
               
-     <folder name="Services">
+    <folder name="Services">
         <folder name="Browsers">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -304,7 +306,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="UI">
-    <!-- settings categories UI presentation -->
+        <!-- settings categories UI presentation -->
         <folder name="Services">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/session.gif" />
@@ -370,11 +372,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Windows2">
         <!--
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
-	-->
+        -->
         <folder name="Modes">
         
             <!-- Note, editor mode defined directly in core/windows, to allow
-             winsys run correctly in platform use, without core/ui -->
+            winsys run correctly in platform use, without core/ui -->
             
             <file name="explorer.wsmode" url="windowmanager/explorer.wsmode" />
             <folder name="explorer"/>
@@ -408,252 +410,252 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     
-  <folder name="Loaders">
-    <folder name="folder">
-        <folder name="any">
-            <folder name="Actions">
-              <file name="NewTemplateAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.NewTemplateAction" />
-              </file>
-              <attr boolvalue="true" name="NewTemplateAction.instance/FileSystemAction.instance" />
-              <file name="FileSystemAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-              </file>
-              <attr boolvalue="true" name="FileSystemAction.instance/FindAction.instance" />
-              <file name="FindAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction" />
-              </file>
-              <attr boolvalue="true" name="FindAction.instance/Separator1.instance" />
-              <file name="Separator1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
-              <file name="CutAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
-              </file>
-              <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
-              <file name="CopyAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
-              </file>
-              <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
-              <file name="PasteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
-              </file>
-              <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
-              <file name="Separator2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
-              <file name="DeleteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
-              </file>
-              <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
-              <file name="RenameAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
-              </file>
-              <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
-              <file name="Separator3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
-              <file name="ToolsAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
-              </file>
-              <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
-              <file name="PropertiesAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
-              </file>
+    <folder name="Loaders">
+        <folder name="folder">
+            <folder name="any">
+                <folder name="Actions">
+                    <file name="NewTemplateAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.NewTemplateAction" />
+                    </file>
+                    <attr boolvalue="true" name="NewTemplateAction.instance/FileSystemAction.instance" />
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                    </file>
+                    <attr boolvalue="true" name="FileSystemAction.instance/FindAction.instance" />
+                    <file name="FindAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FindAction" />
+                    </file>
+                    <attr boolvalue="true" name="FindAction.instance/Separator1.instance" />
+                    <file name="Separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
+                    <file name="CutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                    </file>
+                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                    <file name="CopyAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                    </file>
+                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                    <file name="PasteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                    </file>
+                    <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
+                    <file name="DeleteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                    </file>
+                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                    <file name="RenameAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                    </file>
+                    <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
+                    <file name="Separator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
+                    <file name="ToolsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                    </file>
+                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
+                    <file name="PropertiesAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                    </file>
 
+                </folder>
             </folder>
         </folder>
-    </folder>
 
   
-      <folder name="content">
-        <folder name="unknown">
-            <folder name="Actions">
-              <file name="OpenAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
-              </file>
-              <attr boolvalue="true" name="OpenAction.instance/Separator0.instance" />
-              <file name="Separator0.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
-              <file name="FileSystemAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-              </file>
-              <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
-              <file name="Separator1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
-              <file name="CutAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
-              </file>
-              <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
-              <file name="CopyAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
-              </file>
-              <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
-              <file name="PasteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
-              </file>
-              <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
-              <file name="Separator2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
-              <file name="DeleteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
-              </file>
-              <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
-              <file name="RenameAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
-              </file>
-              <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
-              <file name="Separator3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
-              <file name="ToolsAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
-              </file>
-              <attr boolvalue="true" name="ToolsAction.instance/SaveAsTemplateAction.instance" />
-              <file name="SaveAsTemplateAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
-              </file>
-              <attr boolvalue="true" name="SaveAsTemplateAction.instance/PropertiesAction.instance" />
-              <file name="PropertiesAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
-              </file>
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Actions">
+                    <file name="OpenAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                    </file>
+                    <attr boolvalue="true" name="OpenAction.instance/Separator0.instance" />
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                    </file>
+                    <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
+                    <file name="Separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
+                    <file name="CutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                    </file>
+                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                    <file name="CopyAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                    </file>
+                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                    <file name="PasteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                    </file>
+                    <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
+                    <file name="DeleteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                    </file>
+                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                    <file name="RenameAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                    </file>
+                    <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
+                    <file name="Separator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
+                    <file name="ToolsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                    </file>
+                    <attr boolvalue="true" name="ToolsAction.instance/SaveAsTemplateAction.instance" />
+                    <file name="SaveAsTemplateAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                    </file>
+                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/PropertiesAction.instance" />
+                    <file name="PropertiesAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                    </file>
+                </folder>
             </folder>
         </folder>
-      </folder>
     
-      <folder name="application">
-        <folder name="x-nbsettings">
-            <folder name="Actions">
-              <file name="OpenAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
-              </file>
-              <attr boolvalue="true" name="OpenAction.instance/Separator0.instance" />
-              <file name="Separator0.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
-              <file name="FileSystemAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-              </file>
-              <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
-              <file name="Separator1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
-              <file name="CutAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
-              </file>
-              <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
-              <file name="CopyAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
-              </file>
-              <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
-              <file name="PasteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
-              </file>
-              <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
-              <file name="Separator2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
-              <file name="DeleteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
-              </file>
-              <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
-              <file name="RenameAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
-              </file>
-              <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
-              <file name="Separator3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
-              <file name="ToolsAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
-              </file>
-              <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
-              <file name="PropertiesAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
-              </file>
+        <folder name="application">
+            <folder name="x-nbsettings">
+                <folder name="Actions">
+                    <file name="OpenAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                    </file>
+                    <attr boolvalue="true" name="OpenAction.instance/Separator0.instance" />
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                    </file>
+                    <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
+                    <file name="Separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
+                    <file name="CutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                    </file>
+                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                    <file name="CopyAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                    </file>
+                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                    <file name="PasteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                    </file>
+                    <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
+                    <file name="DeleteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                    </file>
+                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                    <file name="RenameAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                    </file>
+                    <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
+                    <file name="Separator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
+                    <file name="ToolsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                    </file>
+                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
+                    <file name="PropertiesAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                    </file>
 
+                </folder>
             </folder>
         </folder>
+
+    
+        <folder name="text">
+            <folder name="xml">
+                <folder name="Actions">
+                    <file name="OpenAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                    </file>
+                    <attr boolvalue="true" name="OpenAction.instance/Separator0.instance" />
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                    </file>
+                    <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
+                    <file name="Separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
+                    <file name="CutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                    </file>
+                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                    <file name="CopyAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                    </file>
+                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                    <file name="PasteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                    </file>
+                    <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
+                    <file name="DeleteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                    </file>
+                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                    <file name="RenameAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                    </file>
+                    <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
+                    <file name="Separator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
+                    <file name="ToolsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                    </file>
+                    <attr boolvalue="true" name="ToolsAction.instance/SaveAsTemplateAction.instance" />
+                    <file name="SaveAsTemplateAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                    </file>
+                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/PropertiesAction.instance" />
+                    <file name="PropertiesAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    
     </folder>
-
-    
-      <folder name="text">
-        <folder name="xml">
-            <folder name="Actions">
-              <file name="OpenAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
-              </file>
-              <attr boolvalue="true" name="OpenAction.instance/Separator0.instance" />
-              <file name="Separator0.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
-              <file name="FileSystemAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-              </file>
-              <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
-              <file name="Separator1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
-              <file name="CutAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
-              </file>
-              <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
-              <file name="CopyAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
-              </file>
-              <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
-              <file name="PasteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
-              </file>
-              <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
-              <file name="Separator2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
-              <file name="DeleteAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
-              </file>
-              <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
-              <file name="RenameAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
-              </file>
-              <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
-              <file name="Separator3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-              </file>
-              <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
-              <file name="ToolsAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
-              </file>
-              <attr boolvalue="true" name="ToolsAction.instance/SaveAsTemplateAction.instance" />
-              <file name="SaveAsTemplateAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
-              </file>
-              <attr boolvalue="true" name="SaveAsTemplateAction.instance/PropertiesAction.instance" />
-              <file name="PropertiesAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
-              </file>
-            </folder>
-        </folder>
-      </folder>
-    
-  </folder>
   
 </filesystem>
 
