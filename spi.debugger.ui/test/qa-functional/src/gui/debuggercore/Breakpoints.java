@@ -83,7 +83,7 @@ public class Breakpoints extends JellyTestCase {
     
     /** setUp method  */
     public void setUp() {
-        System.out.println("########  " + getName() + "  #######");
+        System.out.print("########  " + getName() + "  ####### ");
     }
     
     /** tearDown method */
@@ -220,6 +220,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Method breakpoint hit in examples.advanced.MemoryView.updateStatus at line 86 by thread main.");
     }
     
@@ -379,6 +380,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
         dialog.ok();
+        Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if (!"Variable MemoryView.timer access".equals(jTableOperator.getValueAt(0, 0).toString()) )
             assertTrue("Variable breakpoint was not created.", false);
@@ -400,6 +402,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 1).selectItem("Variable Modification");
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Field breakpoint hit at line 40 in class examples.advanced.MemoryView by thread main.");
     }
     
