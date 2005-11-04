@@ -13,6 +13,7 @@
 
 package org.openide.loaders;
 
+import java.lang.ref.WeakReference;
 import javax.swing.event.ChangeEvent;
 import junit.framework.AssertionFailedError;
 import org.openide.filesystems.*;
@@ -73,6 +74,13 @@ implements OperationListener {
         err.log("entering tearDown");
         
         pool.removeOperationListener(this);
+        
+        err.log("Making sure everything is cleaned");
+        WeakReference ref = new WeakReference(fs);
+        fs = null;
+        events = null;
+        assertGC("GC the filesystem", ref);
+        err.log("Ok, tearDown finished");
         
 //        AddLoaderManuallyHid.addRemoveLoader (ALoader.getLoader (ALoader.class), false);
 //        AddLoaderManuallyHid.addRemoveLoader (BLoader.getLoader (BLoader.class), false);
