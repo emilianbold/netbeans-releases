@@ -58,9 +58,27 @@ class OnlineStatusIndicator {
         helper = new Helper();
         label = new JLabel();
         label.addMouseListener(helper);
-        CollabManager.getDefault().addPropertyChangeListener(helper);
-        attachListeners();
-        updateStatus();
+        initListening(1);
+    }
+    
+    private void initListening(final int level) {
+        CollabManager man = CollabManager.getDefault();
+        if (man == null) {
+            // manager not yet registered. This is a transient condition during 
+            // module enablement because of manager registration mechanism.
+            // Retry 5s later
+            assert level<10;
+            
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    initListening(level+1);
+                }
+            }, level*5000);
+        } else {
+            man.addPropertyChangeListener(helper);
+            attachListeners();
+            updateStatus();
+        }
     }
 
 

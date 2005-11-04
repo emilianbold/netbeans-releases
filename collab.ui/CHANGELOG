@@ -11,3 +11,5 @@
 1.0.6:	Removed artifical dependency on filesystems and datasystems
 
 1.0.7:	Really implement the robust menu positioning (#64531)
+
+1.0.8:	Don't request restart any more, better fix for (#66452, #67952)
