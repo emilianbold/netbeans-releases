@@ -499,7 +499,7 @@ public class TreeTableView extends BeanTreeView {
             // on
             popupListener = new PopupAdapter() {
                         protected void showPopup(MouseEvent e) {
-                            int selRow = tree.getRowForLocation(e.getX(), e.getY());
+                            int selRow = tree.getClosestRowForLocation(e.getX(), e.getY());
 
                             if (!tree.isRowSelected(selRow)) {
                                 tree.setSelectionRow(selRow);
