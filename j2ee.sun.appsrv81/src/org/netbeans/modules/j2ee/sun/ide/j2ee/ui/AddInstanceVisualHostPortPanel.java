@@ -12,17 +12,21 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
+import com.sun.java.swing.SwingUtilities2;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 public final class AddInstanceVisualHostPortPanel extends JPanel {
 
@@ -85,17 +89,34 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         }
     }
 
+    RequestProcessor.Task changeEvent = null;
+    
     private void fireChangeEvent() {
-        Iterator it;
-        synchronized (listenrs) {
-            it = new HashSet(listenrs).iterator();
+        // don't go so fast here, since this can get called a lot from the
+        // document listener
+        if (changeEvent == null) {
+            changeEvent = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            Iterator it;
+                            synchronized (listenrs) {
+                                it = new HashSet(listenrs).iterator();
+                            }
+                            ChangeEvent ev = new ChangeEvent(this);
+                            while (it.hasNext()) {
+                                ((ChangeListener)it.next()).stateChanged(ev);
+                            }
+                            deploymentUrlDisplay.setText(SunURIManager.SUNSERVERSURI+getHost()+":"+ // NOI18N
+                                    getPort());
+                        }
+                    });
+                    
+                }
+            }, 100);
+        } else {
+            changeEvent.schedule(100);
         }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged (ev);
-        }
-        deploymentUrlDisplay.setText(SunURIManager.SUNSERVERSURI+getHost()+":"+ // NOI18N
-                getPort());
     }
     
     

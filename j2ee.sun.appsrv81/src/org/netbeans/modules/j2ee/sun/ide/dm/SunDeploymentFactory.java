@@ -25,6 +25,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
+import org.openide.filesystems.FileObject;
 /** This deploymenmt factory can creates an alternate deployment manager for
  * S1AS.
  * @author vkraemer,ludo
@@ -136,7 +137,7 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
         
         if(uri.startsWith("[")){//NOI18N
             String loc = uri.substring(1,uri.indexOf("]"));
-            return new File(loc);
+            return  new File(loc);
         } else   if (uri.startsWith(SunURIManager.SUNSERVERSURI)){
             return PluginProperties.getDefault().getPlatformRoot();
         }

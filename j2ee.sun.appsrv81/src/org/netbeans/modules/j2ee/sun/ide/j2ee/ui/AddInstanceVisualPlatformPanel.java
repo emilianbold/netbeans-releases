@@ -11,11 +11,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -73,14 +76,31 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         }
     }
     
+    RequestProcessor.Task changeEvent = null;
+    
     private void fireChangeEvent() {
-        Iterator it;
-        synchronized (listenrs) {
-            it = new HashSet(listenrs).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        // don't go so fast here, since this can get called a lot from the
+        // document listener
+        if (changeEvent == null) {
+            changeEvent = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            Iterator it;
+                            synchronized (listenrs) {
+                                it = new HashSet(listenrs).iterator();
+                            }
+                            ChangeEvent ev = new ChangeEvent(this);
+                            while (it.hasNext()) {
+                                ((ChangeListener)it.next()).stateChanged(ev);
+                            }
+                        }
+                    });
+                    
+                }
+            }, 100);
+        } else {
+            changeEvent.schedule(100);
         }
     }
     
