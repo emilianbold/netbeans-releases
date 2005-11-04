@@ -104,15 +104,32 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     }
 
     public SunONEDeploymentConfiguration getDeploymentConfiguration() throws ConfigurationException {
-        // Request deployment configuration for SJSAS from j2eeserver module
+        // Look up configuration bound to this object.
         FileObject fo = getPrimaryFile();
-        String serverId = getProvider().getServerID();
-        ConfigurationSupport.requestCreateConfiguration(fo, serverId);
-        return SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(fo));
+        File fileKey = FileUtil.toFile(fo);
+        SunONEDeploymentConfiguration config = SunONEDeploymentConfiguration.getConfiguration(fileKey);
+
+        if(config == null) {
+            // Request deployment configuration for SJSAS from j2eeserver module
+            String serverId = getProvider().getServerID();
+            ConfigurationSupport.requestCreateConfiguration(fo, serverId);
+            config = SunONEDeploymentConfiguration.getConfiguration(fileKey);
+            if(config == null) {
+                // If config is still null here, there is some kind of initialization
+                // problem (or bug).
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
+                        "Unable to initialize DeploymentConfiguration for " + fileKey.getPath() + " on server " + serverId));
+            }
+        }
+
+        return config;
     }
     
-    public String getServer() {
-        return null;
+    /** This is really just "has sun-cmp-mappings.xml", but since this area is still
+     *  written generally, this method is too.
+     */
+    public boolean hasSecondaries()  {
+        return getSecondaries().size() > 0;
     }
     
     protected void addSecondary(SecondaryConfigDataObject secondary) {
@@ -268,9 +285,13 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         try {
             J2eeModuleProvider provider = getProvider();
             getPrimaryFile().refresh(); //check for external changes
+            
+            // Retrieve config before entering synchronized block.
+            SunONEDeploymentConfiguration config = getDeploymentConfiguration();
+            
             synchronized (this) {
                 if (storage == null) {
-                    storage = new ConfigurationStorage(provider, getDeploymentConfiguration());
+                    storage = new ConfigurationStorage(provider, config);
                     storage.setSaver(this);
                 }
                 result = storage;
