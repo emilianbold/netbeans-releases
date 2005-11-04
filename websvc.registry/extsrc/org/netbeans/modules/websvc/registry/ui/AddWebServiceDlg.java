@@ -444,8 +444,8 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         messageTextScrollPane.setPreferredSize(new Dimension(600, 100));
         
         messagePanel.add(messageTextScrollPane, BorderLayout.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(messageTextlabel, NbBundle.getMessage(AddWebServiceDlg.class, "RESULTS"));
         
-        messageTextlabel.setText(NbBundle.getMessage(AddWebServiceDlg.class, "RESULTS"));
         messagePanel.add(messageTextlabel, BorderLayout.NORTH);
         
         centerPanel.setLayout(new BorderLayout(5,5));
