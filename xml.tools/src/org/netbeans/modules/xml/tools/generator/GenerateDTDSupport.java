@@ -32,6 +32,7 @@ import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.core.XMLDataObject;
 import org.netbeans.modules.xml.core.lib.GuiUtil;
 import org.netbeans.tax.TreeUtilities;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -89,7 +90,10 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
     public void generate() {
 
         try {
-
+            // saving file before DTD generation
+            SaveCookie save = (SaveCookie)template.getCookie(SaveCookie.class);
+            if (save!=null) save.save();
+            
             FileObject primFile = template.getPrimaryFile();
             String name = primFile.getName();
             FileObject folder = primFile.getParent();
