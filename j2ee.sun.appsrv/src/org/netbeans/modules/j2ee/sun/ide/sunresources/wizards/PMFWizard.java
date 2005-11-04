@@ -61,7 +61,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     private static final int IN_PM = 1;
     private static final int IN_DS = 2;
     private static final int IN_CP = 3;
-    private static int stage = IN_PM;
+    private int stage = IN_PM;
 
     private ResourceConfigHelper helper;
     private ResourceConfigHelper dshelper;
