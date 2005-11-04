@@ -7,31 +7,32 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.io.*;
-import java.util.*;
-
-import javax.xml.parsers.*;
-
-import org.xml.sax.*;
-import org.w3c.dom.*;
-
-import org.openide.*;
-import org.openide.xml.*;
-import org.openide.filesystems.*;
+import java.io.IOException;
+import java.util.Iterator;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.openide.loaders.RuntimeCatalog;
+import org.openide.ErrorManager;
+import org.openide.util.Lookup;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.Parser;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
- *
  * Class that hide implementations details of deprecated utility
  * methods provided at XMLDataObject.
  *
  * @author  Petr Kuzel
- * @version 1.0
  */
 class XMLDataObjectImpl extends Object {
 
@@ -109,213 +110,17 @@ class XMLDataObjectImpl extends Object {
         emgr.notify(emgr.INFORMATIONAL, err);
     }
 
-    private static EntityCatalog runtimeCatalogInstance = null;
-    
-    static synchronized EntityCatalog createEntityCatalog() {
-        if (runtimeCatalogInstance == null) {
-            runtimeCatalogInstance = new RuntimeCatalog();
-        }
-        return runtimeCatalogInstance;
-    }
-    
-
     // warning back compatability code!!!    
     static synchronized void registerCatalogEntry(String publicId, String uri) {
-        
-        ((RuntimeCatalog)createEntityCatalog()).registerCatalogEntry(publicId, uri);
-
-/*        
-        // EntityCatalog grammar names
-        final String _URI = "uri";
-        final String _PUBLIC = "public";
-        final String _PUBLIC_ID = "publicId";
-        
-        // put it at XMLayer
-        try {
-            
-            final String NAME = "org-openide-loaders-XMLDataObject-catalog";
-            final String EXT = "xml";
-
-            FileObject services = Repository.getDefault().
-                getDefaultFileSystem().findResource("Services/Hidden");
-
-            if (services == null) {
-                //XMLayer not initialized yet
-                throw new Error("#897 DefaultFileSystem not initialized yet.");
-            }
-                        
-            FileObject peer = services.getFileObject(NAME, EXT);
-            if (peer == null) {
-                
-                peer = services.createData(NAME, EXT);
-                Document doc = XMLUtil.createDocument(
-                    "catalog", null,
-                    EntityCatalog.PUBLIC_ID,
-                    "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd"
-                );
-                FileLock lock = null;
-                try { 
-                    lock = peer.lock();
-                    OutputStream out = peer.getOutputStream(lock);
-                    XMLUtil.write(doc, out, "UTF-8");
-                } finally {
-                    if (lock != null) lock.releaseLock();
-                }
-            }
-            
-            InputSource in = new InputSource(peer.getInputStream());
-            in.setSystemId(peer.getURL().toExternalForm());
-
-            EntityResolver resolver = new EntityResolver() {
-                public InputSource resolveEntity(String pid, String sid) {
-                    if ( EntityCatalog.PUBLIC_ID.equals(pid) ) {
-                        return new InputSource("nbres:/org/openide/xml/EntityCatalog.dtd");
-                    }
-                    return null;
-                }
-            };
-            
-            Document doc = 
-                XMLUtil.parse(in, true, false, new XMLDataObject.ErrorPrinter(), resolver);
-            
-            boolean match = false;
-            Element root = doc.getDocumentElement();
-            NodeList list = root.getElementsByTagName(_PUBLIC);
-            for (int i = 0; i<list.getLength(); i++) {
-                Element next = (Element) list.item(i);                
-                String key = next.getAttributeNode(_PUBLIC_ID).getValue();
-                
-                if (publicId.equals(key)) {
-                    if (uri != null) {
-                        next.getAttributeNode(_URI).setValue(uri);
-                    } else {
-                        root.removeChild(next);
-                    }             
-                    match = true;
-                }
-            }
-            
-            if (match == false) {
-                // no current registration matched
-
-                Element newRegistration = doc.createElement(_PUBLIC);
-                Attr pubAttr = doc.createAttribute(_PUBLIC_ID);
-                pubAttr.setValue(publicId);
-                Attr uriAttr = doc.createAttribute(_URI);
-                uriAttr.setValue(uri);            
-
-                newRegistration.setAttributeNode(pubAttr);
-                newRegistration.setAttributeNode(uriAttr);
-
-                root.appendChild(newRegistration);
-            }
-
-            FileLock lock = null;
-            try { 
-                lock = peer.lock();
-                OutputStream out = peer.getOutputStream(lock);
-                XMLUtil.write(doc, out, "UTF-8");
-            } finally {
-                if (lock != null) lock.releaseLock();
-            }
-                        
-        } catch (IOException ex) {
-            notifyException(ex);
-        } catch (SAXException ex) {  
-            notifyException(ex);
-        } catch (DOMException ex) {
-            notifyException(ex);
-        }    
- */
-    }
-    
-    /** 
-     * Implements non-persistent catalog functionality as EntityResolver.
-     * <p>Registations using this resolver are:
-     * <li>transient
-     * <li>of the hihgest priority
-     * <li>last registration prevails     
-     * @version com.sun.xml.parser.Resolver based
-     */
-    static final class RuntimeCatalog extends EntityCatalog {    
-        // table mapping public IDs to (local) URIs
-        private Hashtable id2uri;
-
-        // tables mapping public IDs to resources and classloaders
-        private Hashtable id2resource;
-        private Hashtable id2loader;
-        
-        /** SAX entity resolver */
-        public InputSource resolveEntity (String name, String uri) throws IOException, SAXException {    	    
-            
-            InputSource retval;        
-            String mappedURI = name2uri(name);
-            InputStream	stream  = mapResource(name);
-
-            // prefer explicit URI mappings, then bundled resources...
-            if (mappedURI != null) {
-                retval = new InputSource(mappedURI);
-                retval.setPublicId(name);
-                return retval;
-                
-            } else if (stream != null) {
-                uri = "java:resource:" + (String) id2resource.get(name); // NOI18N
-                retval = new InputSource(stream);
-                retval.setPublicId(name);
-                return retval;
-
-            } else {
-                return null;
+        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(EntityCatalog.class)).allInstances().iterator();
+        while (it.hasNext()) {
+            Object o = it.next();
+            if (o instanceof RuntimeCatalog) {
+                ((RuntimeCatalog) o).registerCatalogEntry(publicId, uri);
+                return;
             }
         }
-
-        public void registerCatalogEntry (String publicId, String uri) {
-            if (id2uri == null)
-                id2uri = new Hashtable(17);
-            id2uri.put(publicId, uri);
-        }
-
-        /** Map publicid to a resource accessible by a classloader. */
-        public void registerCatalogEntry (String publicId, String resourceName, ClassLoader loader) {
-            if (id2resource == null)
-                id2resource = new Hashtable(17);
-            id2resource.put(publicId, resourceName);
-
-            if (loader != null) {
-                if (id2loader == null)
-                    id2loader = new Hashtable(17);
-                id2loader.put(publicId, loader);
-            }
-        }
-        
-        // maps the public ID to an alternate URI, if one is registered
-        private String name2uri (String publicId) {
-            
-            if (publicId == null || id2uri == null)
-                return null;
-            return (String) id2uri.get(publicId);
-        }
-        
-        
-        // return the resource as a stream
-        private InputStream mapResource (String publicId)
-        {
-            if (publicId == null || id2resource == null)
-                return null;
-
-            String resourceName = (String) id2resource.get(publicId);
-            ClassLoader	loader = null;
-
-            if (resourceName == null)
-                return null;
-    
-            if (id2loader != null)
-                loader = (ClassLoader) id2loader.get(publicId);
-    
-            if (loader == null)
-                return ClassLoader.getSystemResourceAsStream(resourceName);
-            return loader.getResourceAsStream(resourceName);
-        }               
+        assert false;
     }
     
 }

@@ -11,33 +11,21 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 
 <filesystem>
 
     <folder name="Services">
         <folder name="NoOps">
             <file name="NoIndentEngine.instance">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.beaninfo.editors.Bundle"/>
-              <!-- The special icon for no indentation doesn't exist yet; using the default one -->
-              <!-- <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/editors/resources/noIndentationEngine.gif"/> -->
-              <attr name="instanceOf" stringvalue="org.openide.ServiceType,org.openide.text.IndentEngine,org.openide.text.IndentEngine$Default" />
-              <attr name="instanceClass" stringvalue="org.openide.text.IndentEngine$Default" />
-              <attr name="instanceCreate" methodvalue="org.openide.text.IndentEngine.getDefault" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.beaninfo.editors.Bundle"/>
+                <!-- The special icon for no indentation doesn't exist yet; using the default one -->
+                <!-- <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/editors/resources/noIndentationEngine.gif"/> -->
+                <attr name="instanceOf" stringvalue="org.openide.ServiceType,org.openide.text.IndentEngine,org.openide.text.IndentEngine$Default" />
+                <attr name="instanceClass" stringvalue="org.openide.text.IndentEngine$Default" />
+                <attr name="instanceCreate" methodvalue="org.openide.text.IndentEngine.getDefault" />
             </file>
         </folder>
-    
-        <!-- 
-        Register services with Lookup here in xml-layer of 
-        your module.
-        Singletons can also be easily added using META-INF/services/pgk.Class files.
-        -->
-        
-        <file name="org-netbeans-core-PsSettingsImpl.instance">
-              <attr name="instanceOf" stringvalue="org.netbeans.modules.openide.explorer.PsSettings" />
-              <attr name="instanceClass" stringvalue="org.netbeans.core.PsSettingsImpl" />
-              <attr name="instanceCreate" methodvalue="org.netbeans.core.PsSettingsImpl.create" />
-        </file>
     
         <folder name="MIMEResolver">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -47,17 +35,6 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Hidden">
             <attr name="hidden" boolvalue="true" />
-            <file name="org-openide-filesystems-urlmapper.instance">
-                <attr name="instanceClass" stringvalue="org.openide.filesystems.URLMapper$DefaultURLMapper"/>
-                <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
-                <attr name="instanceCreate" methodvalue="org.openide.filesystems.URLMapper.getDefault"/>                
-            </file>
-            <!-- in-memory EntityCatalog instance (used for deprecated method implementations) -->
-            <file name="org-openide-loaders-XMLDataObject-compat.instance" >
-                <attr name="instanceClass" stringvalue="org.openide.xml.EntityCatalog" />
-                <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
-            </file>
-
         </folder>
     </folder> 
 
@@ -65,70 +42,70 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="xml">
 
-    	<!--
-    	  This 'entities' folder represents an entity catalog realized by mapping 
-    	  public IDs to filesystem constructs (files and folders).
-    	-->
+        <!--
+        This 'entities' folder represents an entity catalog realized by mapping 
+        public IDs to filesystem constructs (files and folders).
+        -->
 
-    	<folder name="entities">
+        <folder name="entities">
             <folder name="NetBeans_IDE">
-            	<!-- public ID defined by XMLDataObject -->
-            	<file name="DTD_xmlinfo" url="nbres:/org/openide/resources/xmlinfo.dtd">
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD xmlinfo//EN"/>
-            	</file>
+                <!-- public ID defined by XMLDataObject -->
+                <file name="DTD_xmlinfo" url="nbres:/org/openide/resources/xmlinfo.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD xmlinfo//EN"/>
+                </file>
             </folder>
 
             <folder name="NetBeans">
-            	<file name="Entity_Mapping_Registration_1_0" url="nbres:/org/openide/xml/EntityCatalog.dtd" >
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//Entity Mapping Registration 1.0//EN"/>
-            	</file>
-            	<file name="DTD_Filesystem_1_0" url="nbres:/org/openide/filesystems/filesystem.dtd">
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.0//EN"/>
-            	</file>
-            	<file name="DTD_Filesystem_1_1" url="nbres:/org/openide/filesystems/filesystem1_1.dtd">
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.1//EN"/>
-            	</file>
-            	<file name="DTD_DefaultAttributes_1_0" url="nbres:/org/openide/filesystems/attributes.dtd">
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD DefaultAttributes 1.0//EN"/>
-            	</file>
+                <file name="Entity_Mapping_Registration_1_0" url="nbres:/org/openide/xml/EntityCatalog.dtd" >
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//Entity Mapping Registration 1.0//EN"/>
+                </file>
+                <file name="DTD_Filesystem_1_0" url="nbres:/org/openide/filesystems/filesystem.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.0//EN"/>
+                </file>
+                <file name="DTD_Filesystem_1_1" url="nbres:/org/openide/filesystems/filesystem1_1.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Filesystem 1.1//EN"/>
+                </file>
+                <file name="DTD_DefaultAttributes_1_0" url="nbres:/org/openide/filesystems/attributes.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD DefaultAttributes 1.0//EN"/>
+                </file>
 
-            	<!-- Modules -->
-            	<file name="DTD_Module_Status_1_0" url="nbres:/org/netbeans/core/startup/module-status-1_0.dtd">
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Status 1.0//EN"/>
-            	</file>
+                <!-- Modules -->
+                <file name="DTD_Module_Status_1_0" url="nbres:/org/netbeans/core/startup/module-status-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Status 1.0//EN"/>
+                </file>
                 <file name="DTD_Module_Automatic_Dependencies_1_0" url="nbres:/org/netbeans/core/startup/module-auto-deps-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Automatic Dependencies 1.0//EN"/>
                 </file>
 
-            	<!-- Declarative MIME resolver -->
-            	<file name="DTD_MIME_Resolver_1_0" url="nbres:/org/netbeans/core/filesystems/resolver.dtd">
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver 1.0//EN"/>
-            	</file>
+                <!-- Declarative MIME resolver -->
+                <file name="DTD_MIME_Resolver_1_0" url="nbres:/org/netbeans/core/filesystems/resolver.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver 1.0//EN"/>
+                </file>
 
-            	<file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbres:/org/netbeans/core/filesystems/xml-rules.dtd">
-                	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"/>
-            	</file>            
+                <file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbres:/org/netbeans/core/filesystems/xml-rules.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"/>
+                </file>            
 
             </folder>
 
-    	</folder>
+        </folder>
 
 
-    	<!-- XMLDataObject.Info processors -->
-    	<folder name="lookups">
+        <!-- XMLDataObject.Info processors -->
+        <folder name="lookups">
             <folder name="NetBeans">
-            	<file name="Entity_Mapping_Registration_1_0.instance">
+                <file name="Entity_Mapping_Registration_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
                     <attr name="instanceCreate" newvalue="org.netbeans.core.xml.EntityCatalogImpl$RegistrationProcessor" />
-            	</file>
+                </file>
 
-            	<!-- Environment.Provider for declarative MIME resolver XML documents. -->
-            	<file name="DTD_MIME_Resolver_1_0.instance">
+                <!-- Environment.Provider for declarative MIME resolver XML documents. -->
+                <file name="DTD_MIME_Resolver_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" newvalue="org.netbeans.core.filesystems.MIMEResolverImpl"/>
-            	</file>
+                </file>
             </folder>
-    	</folder>
+        </folder>
     </folder>
 
 </filesystem>

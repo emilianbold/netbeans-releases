@@ -850,17 +850,6 @@ public class XMLDataObject extends MultiDataObject {
         }
     }
 
-    
-    // ~~~~~~~~~~~~~~~~~~~ PRIVATE AREA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // dangerous, enter on your own risk
-    
-    // WARNING - wormhole called via reflection from core layer,
-    // do not delete, rename, etc.
-    /** Used for creating RuntimeCatalog instance */
-    private static EntityCatalog createEntityCatalog() {
-        return XMLDataObjectImpl.createEntityCatalog();
-    }
-    
     /*
      * Guess from stack trace who calls deprecated method and print it.
      */

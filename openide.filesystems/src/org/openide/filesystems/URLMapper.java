@@ -7,11 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import org.netbeans.modules.openide.filesystems.DefaultURLMapperProxy;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -32,7 +34,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 
 /** Mapper from FileObject -> URL.
  * Should be registered in default lookup. For details see {@link Lookup#getDefault()}.
@@ -71,6 +72,7 @@ public abstract class URLMapper {
     private static final ThreadLocal threadCache = new ThreadLocal();
 
     static {
+        DefaultURLMapperProxy.setDefault(new DefaultURLMapper());
         result = Lookup.getDefault().lookup(new Lookup.Template(URLMapper.class));
         result.addLookupListener(
             new LookupListener() {
@@ -98,7 +100,6 @@ public abstract class URLMapper {
      * @return a suitable URL, or null
      */
     public static URL findURL(FileObject fo, int type) {
-        URL retVal;
 
         /** secondly registered URLMappers are asked to resolve URL */
         Iterator instances = getInstances().iterator();
@@ -106,34 +107,24 @@ public abstract class URLMapper {
         while (instances.hasNext()) {
             URLMapper mapper = (URLMapper) instances.next();
 
-            if (mapper == getDefault()) {
-                continue;
-            }
-
-            retVal = mapper.getURL(fo, type);
+            URL retVal = mapper.getURL(fo, type);
 
             if (retVal != null) {
                 return retVal;
             }
         }
 
-        /** first basic implementation */
-        retVal = getDefault().getURL(fo, type);
-
-        if (retVal != null) {
-            return retVal;
-        }
-
-        /** if not resolved yet then internal URL with nbfs protocol is returned */
+        // if not resolved yet then internal URL with nbfs protocol is returned
+        // XXX this would be better handled by making DefaultURLMapper just return nbfs for INTERNAL when necessary!
         if (type == INTERNAL) {
             try {
-                retVal = FileURL.encodeFileObject(fo);
+                return FileURL.encodeFileObject(fo);
             } catch (FileStateInvalidException iex) {
-                return null;
+                // ignore
             }
         }
 
-        return retVal;
+        return null;
     }
 
     /** Get a good URL for this file object which works according to type:
@@ -160,36 +151,21 @@ public abstract class URLMapper {
      * @deprecated Use {@link #findFileObject} instead.
      */
     public static FileObject[] findFileObjects(URL url) {
-        /** first basic implementation */
         Set retSet = new LinkedHashSet();
-        FileObject[] retVal = null;
 
         Iterator instances = getInstances().iterator();
 
         while (instances.hasNext()) {
             URLMapper mapper = (URLMapper) instances.next();
 
-            if (mapper == getDefault()) {
-                continue;
-            }
-
-            retVal = mapper.getFileObjects(url);
+            FileObject[] retVal = mapper.getFileObjects(url);
 
             if (retVal != null) {
                 retSet.addAll(Arrays.asList(retVal));
             }
         }
 
-        retVal = getDefault().getFileObjects(url);
-
-        if (retVal != null) {
-            retSet.addAll(Arrays.asList(retVal));
-        }
-
-        retVal = new FileObject[retSet.size()];
-        retSet.toArray(retVal);
-
-        return retVal;
+        return (FileObject[]) retSet.toArray(new FileObject[retSet.size()]);
     }
 
     /** Find an appropiate instance of FileObject that addresses this url
@@ -211,16 +187,7 @@ public abstract class URLMapper {
         while (instances.hasNext() && ((results == null) || (results.length == 0))) {
             URLMapper mapper = (URLMapper) instances.next();
 
-            if (mapper == getDefault()) {
-                continue;
-            }
-
             results = mapper.getFileObjects(url);
-        }
-
-        /** first basic implementation */
-        if ((results == null) || (results.length == 0)) {
-            results = getDefault().getFileObjects(url);
         }
 
         return ((results != null) && (results.length > 0)) ? results[0] : null;
@@ -237,19 +204,6 @@ public abstract class URLMapper {
      * @return an array of FileObjects with size no greater than one, or null
      * @since  2.22*/
     public abstract FileObject[] getFileObjects(URL url);
-
-    /** this method is expeceted to be invoked to create instance of URLMapper,
-     * because of method invocation (attr name="instanceCreate"
-     * methodvalue="org.openide.filesystems.URLMapper.getDefault")*/
-    private static URLMapper getDefault() {
-        synchronized (URLMapper.class) {
-            if (defMapper == null) {
-                defMapper = new DefaultURLMapper();
-            }
-
-            return defMapper;
-        }
-    }
 
     /** Returns all available instances of URLMapper.
      * @return list of URLMapper instances
@@ -272,7 +226,23 @@ public abstract class URLMapper {
 
         try {
             res = new ArrayList(result.allInstances());
-
+            {
+                // XXX hack to put default last, since we cannot easily adjust META-INF/services/o.o.f.URLM order to our tastes
+                // (would need to ask *all other* impls to be earlier somewhere)
+                URLMapper def = null;
+                Iterator it = res.iterator();
+                while (it.hasNext()) {
+                    URLMapper m = (URLMapper) it.next();
+                    if (m instanceof DefaultURLMapperProxy) {
+                        def = m;
+                        it.remove();
+                        break;
+                    }
+                }
+                if (def != null) {
+                    res.add(def);
+                }
+            }
             return res;
         } finally {
             synchronized (URLMapper.class) {
@@ -378,10 +348,6 @@ public abstract class URLMapper {
 
         // implements  URLMapper.getURL(FileObject fo, int type)
         public URL getURL(FileObject fo, int type) {
-            return getURLBasicImpl(fo, type);
-        }
-
-        private static URL getURLBasicImpl(FileObject fo, int type) {
             if (fo == null) {
                 return null;
             }
