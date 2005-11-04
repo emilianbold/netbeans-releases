@@ -547,7 +547,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         for( ; elem != null; elem = elem.getPrevious() ) {
             if( elem.getType() == SyntaxElement.TYPE_ENDTAG && elem.getText().endsWith(">") ) { // NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Named)elem).getName().toUpperCase() );
-                if(tag == null || !tag.isEmpty()) stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
+                if(tag != null && !tag.isEmpty()) stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
             } else if( (elem.getType() == SyntaxElement.TYPE_TAG) && (!elem.getText().startsWith("<"))) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
 
