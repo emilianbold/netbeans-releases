@@ -255,7 +255,8 @@ public class ClientRuntime {
                 assert patchedCvsRoot.getHostName() == cvsRoot.getHostName() || patchedCvsRoot.getHostName().equals(cvsRoot.getHostName());
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "CVS.ClientRuntime: using patched CVSROOT " + t9yRoot);  // NOI18N
             } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().annotate(ex, "While parsing: " + t9yRoot);  // NOI18N
+                ErrorManager.getDefault().notify(ex);
             }
         }
 
