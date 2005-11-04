@@ -259,9 +259,6 @@ public class CommitAction extends AbstractSystemAction {
         group.addExecutors(createCommit(commitBucket, settings.getCommitMessage()));
     }
 
-    private static void addExecutors(Collection target, ExecutorSupport[] src) {
-    }
-
     private static ExecutorSupport[] createCommit(List bucket, String message) {
         if (bucket.size() == 0) return null;
         CommitCommand cmd = new CommitCommand();
