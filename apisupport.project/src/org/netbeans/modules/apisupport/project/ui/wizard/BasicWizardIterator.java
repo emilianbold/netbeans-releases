@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -277,12 +278,16 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
     public final void removeChangeListener(ChangeListener l) {}
     
     protected Set getCreatedFiles(final CreatedModifiedFiles cmf, final Project project) throws IOException {
+        Collection toBeShown = new HashSet();
         String[] paths = cmf.getCreatedPaths();
         Set set = new HashSet();
         for (int i = 0; i < paths.length; i++) {
             FileObject fo = project.getProjectDirectory().getFileObject(paths[i]);
             formatFile(fo);
-            set.add(fo);
+            DataObject dObj = DataObject.find(fo);
+            if (dObj != null && toBeShown.size() < 10 && toBeShown.add(dObj)) {
+                set.add(fo);
+            }
         }
         return set;
     }
