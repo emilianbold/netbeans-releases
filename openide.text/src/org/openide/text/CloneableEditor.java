@@ -10,34 +10,18 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.text;
 
-import org.openide.ErrorManager;
-import org.openide.awt.UndoRedo;
-import org.openide.cookies.EditorCookie;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.Task;
-import org.openide.util.actions.SystemAction;
-import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.windows.Workspace;
+package org.openide.text;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
-
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
@@ -49,7 +33,19 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-
+import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
+import org.openide.cookies.EditorCookie;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+import org.openide.windows.Workspace;
 
 /** Cloneable top component to hold the editor kit.
  */
