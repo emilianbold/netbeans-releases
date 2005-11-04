@@ -210,6 +210,9 @@ public class CreateTableDialog {
             btnpane.add(addbtn);
             addbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
+                    if (table.getCellEditor() != null) {
+                        table.getCellEditor().cancelCellEditing();
+                    }
                     DataModel model = (DataModel)table.getModel();
                     ColumnItem item = new ColumnItem();
                     item.setProperty(ColumnItem.TYPE, ttab.elementAt(0));
@@ -225,6 +228,9 @@ public class CreateTableDialog {
             btnpane.add(delbtn);
             delbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
+                    if (table.getCellEditor() != null) {
+                        table.getCellEditor().cancelCellEditing();
+                    }
                     int idx = table.getSelectedRow();
                     if (idx != -1)
                         ((DataModel)table.getModel()).removeRow(idx);
