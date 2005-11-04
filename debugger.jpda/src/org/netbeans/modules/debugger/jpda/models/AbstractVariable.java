@@ -302,11 +302,16 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
                 ) + "\"";
             Method toStringMethod = ((ClassType) v.type ()).
                 concreteMethodByName ("toString", "()Ljava/lang/String;");
-            return ((StringReference) debugger.invokeMethod (
+            StringReference sr = (StringReference) debugger.invokeMethod (
                 (ObjectReference) v,
                 toStringMethod,
                 new Value [0]
-            )).value ();
+            );
+            if (sr == null) {
+                return null;
+            } else {
+                return sr.value ();
+            }
         } catch (VMDisconnectedException ex) {
             return "";
         }
