@@ -56,11 +56,15 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.TopComponent;
 
 /** 
- * Editor support for SQL data objects.
+ * Editor support for SQL data objects. There can be two "kinds" of SQL editors: one for normal
+ * DataObjects and one for "console" DataObjects. In the latter case the editor doesn't allow its 
+ * contents to be saved explicitly, its name doesn't contain a "*" when it is modified, the respective
+ * DataObject is deleted when the editor is closed, and the contents is saved when the editor is 
+ * deactivated or upon exiting NetBeans.
  *
  * @author Jesse Beaumont, Andrei Badea
  */
-public final class SQLEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, SQLExecuteCookie {
+public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, SQLExecuteCookie {
     
     private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(SQLEditorSupport.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
@@ -87,7 +91,6 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
     private final SaveCookie saveCookie = new SaveCookie() {
         public void save() throws IOException {
             saveDocument();
-            getDataObject().setModified(false);
         }
     };
     
@@ -100,12 +103,14 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
         if (!super.notifyModified()) 
             return false;
         
-        FileObject fo = getDataObject().getPrimaryFile();
-        // Add the save cookie to the data object
-        SQLDataObject obj = (SQLDataObject)getDataObject();
-        if (obj.getCookie(SaveCookie.class) == null) {
-            obj.addSaveCookie(saveCookie);
-            obj.setModified(true);
+        if (!isConsole()) {
+            FileObject fo = getDataObject().getPrimaryFile();
+            // Add the save cookie to the data object
+            SQLDataObject obj = (SQLDataObject)getDataObject();
+            if (obj.getCookie(SaveCookie.class) == null) {
+                obj.addSaveCookie(saveCookie);
+                obj.setModified(true);
+            }
         }
 
         return true;
@@ -124,10 +129,38 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
     }
     
     protected String messageToolTip() {
-        if (isTemporaryFile()) {
+        if (isConsole()) {
             return getDataObject().getPrimaryFile().getName();
         } else {
             return super.messageToolTip();
+        }
+    }
+    
+    protected String messageName() {
+        if (!getDataObject().isValid()) return ""; // NOI18N
+        
+        if (isConsole()) {
+            // just the name, no modified or r/o flags
+            return getDataObject().getName();
+        } else {
+            return super.messageName();
+        }
+    }
+    
+    protected String messageHtmlName() {
+        if (!getDataObject().isValid()) return ""; // NOI18N
+        
+        if (isConsole()) {
+            // just the name, no modified or r/o flags
+            String name = getDataObject().getName();
+            if (name != null) {
+                if (!name.startsWith("<html>")) { // NOI18N
+                    name = "<html>" + name; // NOI18N
+                }
+            }
+            return name;
+        } else {
+            return super.messageHtmlName();
         }
     }
     
@@ -148,7 +181,7 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
                 closeExecutionResult();
             }
         });
-        if (isTemporaryFile() && getDataObject().isValid()) {
+        if (isConsole() && getDataObject().isValid()) {
             try {
                 getDataObject().delete();
             } catch (IOException e) {
@@ -157,9 +190,17 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
         }
     }
     
-    private boolean isTemporaryFile() {
+    protected boolean canClose() {
+        if (isConsole()) {
+            return true;
+        } else {
+            return super.canClose();
+        }
+    }
+    
+    private boolean isConsole() {
         try {
-            // the "temporary" files are stored in the SFS
+            // the "console" files are stored in the SFS
             return "nbfs".equals(getDataObject().getPrimaryFile().getURL().getProtocol()); // NOI18N
         } catch (FileStateInvalidException e) {
             return false;
@@ -169,7 +210,6 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
     /**
      * Executes the statements in this SQLDataObject against the specified
      * database connection.
-     * 
      * 
      * @param dbconn the database connection; must not be null.
      * @throws NullPointerException if the specified database connection is null.
@@ -288,13 +328,57 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
             // ignore it, should never occur
         }
     }
+
+    /**
+     * Clonable editor which saves its document when its is deactivated
+     * or serialized if it was opened as a console.
+     */
+    protected CloneableEditor createCloneableEditor() {
+        return new SQLCloneableEditor(this);
+    }
+    
+    static class SQLCloneableEditor extends CloneableEditor {
+        
+        public SQLCloneableEditor() {
+            super(null);
+        }
+        
+        public SQLCloneableEditor(SQLEditorSupport support) {
+            super(support);
+        }
+
+        protected void componentDeactivated() {
+            if (((SQLEditorSupport)cloneableEditorSupport()).isConsole()) {
+                try {
+                    cloneableEditorSupport().saveDocument();
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            super.componentDeactivated();
+        }
+
+        public void writeExternal(java.io.ObjectOutput out) throws IOException {
+            if (((SQLEditorSupport)cloneableEditorSupport()).isConsole()) {
+                try {
+                    cloneableEditorSupport().saveDocument();
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            super.writeExternal(out);
+        }
+    }
     
     /** 
-     * Environment for this support. 
+     * Environment for this support. Ensures that getDataObject().setModified(true)
+     * is not called if this support's editor was opened as a console.
      */
-    private static class Environment extends DataEditorSupport.Env {
+    static final class Environment extends DataEditorSupport.Env {
         
         public static final long serialVersionUID = 7968926994844480435L;
+        
+        private boolean modified = false;
         
         public Environment(SQLDataObject obj) {
             super(obj);
@@ -308,8 +392,36 @@ public final class SQLEditorSupport extends DataEditorSupport implements OpenCoo
             MultiDataObject obj = (MultiDataObject)getDataObject();
             return obj.getPrimaryEntry().takeLock();
         }
+        
+        public void markModified() throws IOException {
+            if (findSQLEditorSupport().isConsole()) {
+                modified = true;
+            } else {
+                super.markModified();
+            }
+        }
+        
+        public void unmarkModified() {
+            if (findSQLEditorSupport().isConsole()) {
+                modified = false;
+            } else {
+                super.unmarkModified();
+            }
+        }
+        
+        public boolean isModified() {
+            if (findSQLEditorSupport().isConsole()) {            
+                return modified;
+            } else {
+                return super.isModified();
+            }
+        }
 
         public CloneableOpenSupport findCloneableOpenSupport() {
+            return findSQLEditorSupport();
+        }
+        
+        private SQLEditorSupport findSQLEditorSupport() {
             return (SQLEditorSupport)getDataObject().getCookie(SQLEditorSupport.class);
         }
     }
