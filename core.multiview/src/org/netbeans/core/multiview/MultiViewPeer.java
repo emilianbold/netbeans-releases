@@ -548,7 +548,7 @@ public final class MultiViewPeer  {
     
     boolean isToolbarVisible() {
         
-        Mode md = WindowManager.getDefault().findMode(peer);
+        Mode md = /* #68122 */ model != null ? WindowManager.getDefault().findMode(peer) : null;
         if (md != null && !"editor".equals(md.getName())) {
             // now this condition is not really sufficient, but anyway..
             // how to check if the mode is a document area mode or not?
