@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,21 +19,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
@@ -45,17 +42,15 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Document;
@@ -65,7 +60,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.swing.event.DocumentListener,
+public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener,
     /*FileChangeListener,*/ PropertyChangeListener {
     
     private FileObject fo;
@@ -73,7 +68,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
     private Document projDoc = null; // [PENDING] SoftReference
     private Throwable exception = null;
     private boolean parsed = false;
-    private java.lang.ref.WeakReference styledDocRef = null;
+    private Reference/*<StyledDocument>*/ styledDocRef = null;
     private Object parseLock; // see init()
 
     private Set listeners; // see init(); Set<ChangeListener>
@@ -213,11 +208,25 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
     /**
      * Utility method to get a properly configured XML input source for a script.
      */
-    public static InputSource createInputSource(FileObject fo, EditorCookie editor, final StyledDocument document) throws IOException, BadLocationException {
+    public static InputSource createInputSource(final FileObject fo, final EditorCookie editor, final StyledDocument document) throws IOException {
+        if (fo != null) {
+            DataObject d = DataObject.find(fo);
+            if (!d.isModified()) {
+                // #58194: no need to parse the live document.
+                try {
+                    return new InputSource(fo.getURL().toExternalForm());
+                } catch (FileStateInvalidException e) {
+                    assert false : e;
+                }
+            }
+        }
+        try {
+            // #67482: have to run EditorCookie.getOpenedPanes in EQ.
+            return (InputSource) Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
         final StringWriter w = new StringWriter(document.getLength());
         final EditorKit kit = findKit(editor.getOpenedPanes());
         final IOException[] ioe = new IOException[1];
-        final BadLocationException[] ble = new BadLocationException[1];
         document.render(new Runnable() {
             public void run() {
                 try {
@@ -225,14 +234,12 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
                 } catch (IOException e) {
                     ioe[0] = e;
                 } catch (BadLocationException e) {
-                    ble[0] = e;
+                    ioe[0] = (IOException) new IOException(e.toString()).initCause(e);
                 }
             }
         });
         if (ioe[0] != null) {
             throw ioe[0];
-        } else if (ble[0] != null) {
-            throw ble[0];
         }
         InputSource in = new InputSource(new StringReader(w.toString()));
         if (fo != null) { // #10348
@@ -248,6 +255,11 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
             // here to make the behavior match perfectly, but it ought not be necessary.
         }
         return in;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
     }
     
     private void parseDocument () {
@@ -389,15 +401,15 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
         }
     }
     
-    public void removeUpdate (javax.swing.event.DocumentEvent ev) {
+    public void removeUpdate (DocumentEvent ev) {
         invalidate();
     }
     
-    public void changedUpdate (javax.swing.event.DocumentEvent ev) {
+    public void changedUpdate (DocumentEvent ev) {
         // Not to worry, just text attributes or something...
     }
     
-    public void insertUpdate (javax.swing.event.DocumentEvent ev) {
+    public void insertUpdate (DocumentEvent ev) {
         invalidate();
     }
     
