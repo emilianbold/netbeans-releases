@@ -82,6 +82,12 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
                 fail("allIinstances contains wrong objects");
             }
         }
+        
+        try {
+            Lookups.fixed(new Object[] {null});
+        } catch (NullPointerException ex) {
+            fail("#68079");
+        }        
     }
     
     /**
