@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -223,23 +224,12 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             //No need to check anything
             return false;
         }
-        JavaPlatform activePlatform = null;
-        String platformId = this.evaluator.getProperty("platform.active");  //NOI18N
-        if (platformId != null) {
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (null, new Specification("j2se",null));    //NOI18N
-            for (int i=0; i<platforms.length; i++) {
-                if (platformId.equals (platforms[i].getProperties().get("platform.ant.name"))) {
-                    activePlatform = platforms[i];
-                    break;
-                }
-            }                
-            if (activePlatform == null) {
-                return true;
-            }
-        }
-        else {
-            activePlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        }
+        
+        final String platformId = this.evaluator.getProperty("platform.active");  //NOI18N
+        final JavaPlatform activePlatform = J2SEProjectUtil.getActivePlatform (platformId);
+        if (activePlatform == null) {
+            return true;
+        }        
         SpecificationVersion platformVersion = activePlatform.getSpecification().getVersion();
         return (javaSource != null && new SpecificationVersion (javaSource).compareTo(platformVersion)>0)
                || (javaTarget != null && new SpecificationVersion (javaTarget).compareTo(platformVersion)>0);

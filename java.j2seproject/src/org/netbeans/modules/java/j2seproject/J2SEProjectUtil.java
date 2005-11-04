@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
@@ -198,5 +201,31 @@ public class J2SEProjectUtil {
             url = new URL(url.toExternalForm() + offset); // NOI18N
         }
         return url;
+    }
+    
+    
+    /**
+     * Returns the active platform used by the project or null if the active
+     * project platform is broken.
+     * @param activePlatformId the name of platform used by Ant script or null
+     * for default platform.
+     * @return active {@link JavaPlatform} or null if the project's platform
+     * is broken
+     */
+    public static JavaPlatform getActivePlatform (final String activePlatformId) {
+        final JavaPlatformManager pm = JavaPlatformManager.getDefault();
+        if (activePlatformId == null) {
+            return pm.getDefaultPlatform();
+        }
+        else {
+            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
+            for (int i=0; i<installedPlatforms.length; i++) {
+                String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                if (antName != null && antName.equals(activePlatformId)) {
+                    return installedPlatforms[i];
+                }
+            }
+            return null;
+        }
     }
 }

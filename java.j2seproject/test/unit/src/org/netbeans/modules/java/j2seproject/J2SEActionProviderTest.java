@@ -15,6 +15,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Properties;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -70,7 +71,8 @@ public class J2SEActionProviderTest extends NbTestCase {
         super.setUp();
         TestUtil.setLookup(new Object[] {
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
-            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
+            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
+            new SimplePlatformProvider (),
         });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
@@ -626,6 +628,75 @@ public class J2SEActionProviderTest extends NbTestCase {
         public FileObject getFolder() {
             return this.fobj;
         }        
+    }
+    
+    private static class SimplePlatformProvider implements org.netbeans.modules.java.platform.JavaPlatformProvider {
+        
+        public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        }
+
+        public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        }
+
+        public org.netbeans.api.java.platform.JavaPlatform[] getInstalledPlatforms() {
+            return new org.netbeans.api.java.platform.JavaPlatform[] {
+                getDefaultPlatform ()
+            };
+        }
+
+        public org.netbeans.api.java.platform.JavaPlatform getDefaultPlatform() {
+            return new TestDefaultPlatform ();
+        }
+        
+    }
+    
+    private static class TestDefaultPlatform extends org.netbeans.api.java.platform.JavaPlatform {
+        
+        public TestDefaultPlatform () {
+            
+        }
+
+        public FileObject findTool(String toolName) {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return "Default Platform";
+        }
+
+        public org.netbeans.api.java.classpath.ClassPath getBootstrapLibraries() {
+            return null;
+        }
+
+        public java.util.Collection getInstallFolders() {
+            return null;
+        }
+
+        public org.netbeans.api.java.classpath.ClassPath getStandardLibraries() {
+            return null;
+        }
+
+        public String getVendor() {
+            return null;
+        }
+
+        public org.netbeans.api.java.platform.Specification getSpecification() {
+            return new org.netbeans.api.java.platform.Specification ("j2se", new SpecificationVersion ("1.5"));
+        }
+
+        public org.netbeans.api.java.classpath.ClassPath getSourceFolders() {
+            return null;
+        }
+
+        public java.util.List getJavadocFolders() {
+            return null;
+        }
+
+        public java.util.Map getProperties() {
+            return Collections.singletonMap("platform.ant.name","default_platform");
+        }
+        
+        
     }
 
 }

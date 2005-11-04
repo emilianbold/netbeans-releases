@@ -32,6 +32,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
@@ -84,6 +85,23 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
+    };
+    
+    
+    private static final String[] platformSensitiveActions = {
+        COMMAND_BUILD, 
+        COMMAND_REBUILD, 
+        COMMAND_COMPILE_SINGLE, 
+        COMMAND_RUN, 
+        COMMAND_RUN_SINGLE, 
+        COMMAND_DEBUG, 
+        COMMAND_DEBUG_SINGLE,
+        JavaProjectConstants.COMMAND_JAVADOC,         
+        COMMAND_TEST, 
+        COMMAND_TEST_SINGLE, 
+        COMMAND_DEBUG_TEST_SINGLE, 
+        JavaProjectConstants.COMMAND_DEBUG_FIX,
+        COMMAND_DEBUG_STEP_INTO,
     };
     
     // Project
@@ -204,6 +222,13 @@ class J2SEActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
+        if (Arrays.asList(platformSensitiveActions).contains(command)) {
+            final String activePlatformId = this.project.evaluator().getProperty("platform.active");  //NOI18N
+            if (J2SEProjectUtil.getActivePlatform (activePlatformId) == null) {
+                showPlatformWarning ();
+                return null;
+            }
+        }
         String[] targetNames = new String[0];
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
@@ -644,6 +669,27 @@ class J2SEActionProvider implements ActionProvider {
         dlg.dispose();            
 
         return canceled;
+    }
+    
+    private void showPlatformWarning () {
+        final JButton closeOption = new JButton (NbBundle.getMessage(J2SEActionProvider.class, "CTL_BrokenPlatform_Close"));
+        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEActionProvider.class, "AD_BrokenPlatform_Close"));
+        final ProjectInformation pi = (ProjectInformation) this.project.getLookup().lookup (ProjectInformation.class);
+        final String projectDisplayName = pi == null ? 
+            NbBundle.getMessage (J2SEActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
+            : pi.getDisplayName();
+        final DialogDescriptor dd = new DialogDescriptor(
+            NbBundle.getMessage(J2SEActionProvider.class, "TEXT_BrokenPlatform", projectDisplayName),
+            NbBundle.getMessage(J2SEActionProvider.class, "MSG_BrokenPlatform_Title"),
+            true,
+            new Object[] {closeOption},
+            closeOption,
+            DialogDescriptor.DEFAULT_ALIGN,
+            null,
+            null);
+        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+        final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.setVisible(true);
     }
 
     private URL generateAppletHTML(FileObject file) {

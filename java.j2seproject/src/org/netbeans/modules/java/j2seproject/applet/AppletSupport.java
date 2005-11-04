@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ import java.net.*;
 import java.util.*;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.UnresolvedClass;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.javacore.api.JavaModel;
 
 import org.openide.*;
@@ -191,22 +192,7 @@ public class AppletSupport {
     public static URL getHTMLPageURL (FileObject htmlFile, String activePlatform) {
         assert htmlFile != null : "htmlFile cannot be null";    //NOI18N
         // JDK issue #6193279: Appletviewer does not accept encoded URLs
-        JavaPlatformManager pm = JavaPlatformManager.getDefault();
-        JavaPlatform platform = null;
-        if (activePlatform == null) {
-            platform = pm.getDefaultPlatform();
-        }
-        else {
-            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
-            for (int i=0; i<installedPlatforms.length; i++) {
-                String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
-                if (antName != null && antName.equals(activePlatform)) {
-                    platform = installedPlatforms[i];
-                    break;
-                }
-            }
-        }
-
+        JavaPlatform platform = J2SEProjectUtil.getActivePlatform(activePlatform);        
         boolean workAround6193279 = platform != null    //In case of nonexisting platform don't use the workaround
                 && platform.getSpecification().getVersion().compareTo(JDK_15)>=0; //JDK1.5 and higher
         URL url = null;

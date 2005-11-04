@@ -33,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -219,21 +220,12 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         
         public JavaPlatform getPlatform () {
             if (platformCache == null) {
-                String platformSystemName = getPlatformId();
-                if (platformSystemName == null) {
-                    platformCache = JavaPlatformManager.getDefault().getDefaultPlatform();
-                }
-                else {
-                    JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-                    for (int i=0; i<platforms.length; i++) {
-                        if (platformSystemName.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
-                            if (platforms[i].getInstallFolders().size()>0) {
-                                platformCache = platforms[i];
-                            }
-                            break;
-                        }
-                    }
-                }
+                final String platformSystemName = getPlatformId();
+                platformCache = J2SEProjectUtil.getActivePlatform (platformSystemName);
+                if (platformCache != null && platformCache.getInstallFolders().size() == 0) {
+                    //Deleted platform
+                    platformCache = null;
+                }                                
                 //Issue: #57840: Broken platform 'default_platform'
                 if (ErrorManager.getDefault().isLoggable(ErrorManager.INFORMATIONAL) && platformCache == null) {
                     StringBuffer message = new StringBuffer ("RequestedPlatform: "+platformSystemName+" not found.\nInstalled Platforms:\n");    //NOI18N
