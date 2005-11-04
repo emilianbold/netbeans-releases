@@ -66,9 +66,9 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
      */
     private final DataObject template;
     private ElementInfo current;
-    private final Stack elementStack = new Stack();
+    private Stack elementStack;
 
-    private final Map elementInfos;
+    private Map elementInfos;
     private String warning;
     private String rootQName;
 
@@ -81,7 +81,6 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
         rootQName = null;
         warning = null;
         current = null;
-        elementInfos = new LinkedHashMap(101);
     }
 
     /**
@@ -172,7 +171,9 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
      */
     String xml2dtd(String name, String encoding) {
         StringBuffer sb = new StringBuffer();
-
+        elementStack = new Stack();
+        elementInfos = new LinkedHashMap(101);
+        
         // fill table of dtd declarations
         if (false == scanTemplate()) {
             return null;
