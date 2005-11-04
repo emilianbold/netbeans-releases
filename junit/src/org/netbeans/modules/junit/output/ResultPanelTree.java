@@ -14,18 +14,23 @@
 package org.netbeans.modules.junit.output;
 
 import java.awt.EventQueue;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import javax.accessibility.AccessibleContext;
+import javax.swing.AbstractButton;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -33,7 +38,9 @@ import org.openide.util.NbBundle;
  */
 final class ResultPanelTree extends JPanel
                             implements ExplorerManager.Provider,
-                                       PropertyChangeListener {
+                                       PropertyChangeListener,
+                                       ChangeListener,
+                                       ItemListener {
 
     /** manages the tree of nodes representing found objects */
     private final ExplorerManager explorerManager;
@@ -41,6 +48,8 @@ final class ResultPanelTree extends JPanel
     private final ReportNode rootNode;
     /** */
     private final ResultTreeView treeView;
+    /** */
+    private AbstractButton btnFilter;
     /** should the results be filtered (only failures and errors displayed)? */
     private boolean filtered = false;
     /** */
@@ -55,8 +64,10 @@ final class ResultPanelTree extends JPanel
      * using RegexpUtils.getInstance().
      */
     private final RegexpUtils regexpUtils = RegexpUtils.getInstance();
+    /** */
+    private final ResultDisplayHandler displayHandler;
 
-    ResultPanelTree() {
+    ResultPanelTree(ResultDisplayHandler displayHandler) {
         super(new java.awt.BorderLayout());
         
         add(treeView = new ResultTreeView(), java.awt.BorderLayout.CENTER);
@@ -65,7 +76,27 @@ final class ResultPanelTree extends JPanel
         explorerManager.setRootContext(rootNode = createRootNode());
         explorerManager.addPropertyChangeListener(this);
 
+        initFilter();
         initAccessibility();
+        
+        this.displayHandler = displayHandler;
+        
+        displayHandler.addChangeListener(this);
+        updateDisplay();
+    }
+    
+    /**
+     */
+    private void initFilter() {
+        btnFilter = new JToggleButton(new ImageIcon(
+                Utilities.loadImage(
+                    "org/netbeans/modules/junit/output/res/filter.png", //NOI18N
+                    true)));
+        btnFilter.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
+        
+        updateFilter();
+        btnFilter.addItemListener(this);
     }
     
     /**
@@ -93,15 +124,61 @@ final class ResultPanelTree extends JPanel
     
     /**
      */
-    void displayMsg(String msg) {
-        rootNode.displayMsg(msg);
+    AbstractButton getFilterButton() {
+        return btnFilter;
     }
     
     /**
      */
-    void displayReport(final Report report) {
+    private void updateFilter() {
+        final boolean filtered = btnFilter.isSelected();
+        String key = filtered
+                     ? "MultiviewPanel.btnFilter.showFailures.tooltip"  //NOI18N
+                     : "MultiviewPanel.btnFilter.showAll.tooltip";      //NOI18N
+        setFiltered(filtered);
+        btnFilter.setToolTipText(NbBundle.getMessage(getClass(), key));
+    }
+    
+    /**
+     */
+    public void itemStateChanged(ItemEvent e) {
+        /* called when the Filter button is toggled. */
+        updateFilter();
+    }
+    
+    /**
+     */
+    private void displayMsg(String msg) {
+        rootNode.displayMsg(msg);
+        
+        btnFilter.setEnabled(false);
+    }
+    
+    /**
+     */
+    private void displayReport(final Report report) {
         rootNode.setReport(this.report = report);
         treeView.expandNodes(rootNode);
+        
+        btnFilter.setEnabled(
+              report != null
+              && report.getSuccessDisplayedLevel() != Report.ALL_PASSED_ABSENT);
+    }
+    
+    /**
+     */
+    private void display(ResultDisplayHandler.DisplayContents display) {
+        assert EventQueue.isDispatchThread();
+        
+        Report report = display.getReport();
+        String msg = display.getMessage();
+        if (report != null) {
+            displayReport(report);
+        } else if (msg != null) {
+            displayMsg(msg);
+        } else {
+            assert false;
+        }
     }
 
     /**
@@ -217,5 +294,26 @@ final class ResultPanelTree extends JPanel
         return explorerManager;
     }
     
+    /**
+     */
+    private void updateDisplay() {
+        ResultDisplayHandler.DisplayContents display
+                                                = displayHandler.getDisplay();
+        if (display != null) {
+            display(display);
+        }
+    }
+    
+    /**
+     */
+    public void stateChanged(ChangeEvent e) {
+        updateDisplay();
+    }
+    
+    /**
+     */
+    public boolean requestFocusInWindow() {
+        return treeView.requestFocusInWindow();
+    }
 
 }

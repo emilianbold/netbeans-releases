@@ -16,6 +16,12 @@ package org.netbeans.modules.junit.output;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.accessibility.AccessibleContext;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -72,7 +78,12 @@ public class ResultWindow extends TopComponent {
     }
     
     /** */
-    private ResultView view;
+    private TopComponent view;
+    /** */
+    private ResultDisplayHandler viewHandler;
+    /** */
+    private java.util.Map methodsMap;
+    
     
     
     /** */
@@ -135,51 +146,204 @@ public class ResultWindow extends TopComponent {
         //add(tabbedPanel = new JTabbedPane(), BorderLayout.CENTER);
         
         setName(ID);
-        setDisplayName(NbBundle.getMessage(ResultView.class,
+        setDisplayName(NbBundle.getMessage(ResultWindow.class,
                                            "TITLE_TEST_RESULTS"));      //NOI18N
         setIcon(Utilities.loadImage(
                 "org/netbeans/modules/junit/output/res/testResults.png",//NOI18N
 	        true));
+        
+        AccessibleContext accessibleContext = getAccessibleContext();
+        accessibleContext.setAccessibleName(
+                NbBundle.getMessage(getClass(), "ACSN_TestResults"));   //NOI18N
+        accessibleContext.setAccessibleDescription(
+                NbBundle.getMessage(getClass(), "ACSD_TestResults"));   //NOI18N
+    }
+    
+    /**
+     */
+    protected void componentOpened() {
+        assert EventQueue.isDispatchThread();
+        
+        forwardMessage("componentOpened");                              //NOI18N
+        super.componentOpened();
+    }
+    
+    /**
+     */
+    protected void componentClosed() {
+        assert EventQueue.isDispatchThread();
+        
+        closeAllViews();
+        forwardMessage("componentClosed");                              //NOI18N
+        super.componentClosed();
+    }
+    
+    /**
+     */
+    protected void componentActivated() {
+        assert EventQueue.isDispatchThread();
+        
+        forwardMessage("componentActivated");                           //NOI18N
+        super.componentActivated();
+    }
+    
+    /**
+     */
+    protected void componentDeactivated() {
+        assert EventQueue.isDispatchThread();
+        
+        forwardMessage("componentDeactivated");                         //NOI18N
+        super.componentDeactivated();
+    }
+    
+    /**
+     */
+    protected void componentShowing() {
+        assert EventQueue.isDispatchThread();
+        
+        forwardMessage("componentShowing");                             //NOI18N
+        super.componentShowing();
+    }
+    
+    /**
+     */
+    protected void componentHidden() {
+        assert EventQueue.isDispatchThread();
+        
+        forwardMessage("componentHidden");                              //NOI18N
+        super.componentHidden();
+    }
+    
+    /**
+     */
+    private void forwardMessage(String messageName) {
+        if (methodsMap != null) {
+            Method method = (Method) methodsMap.get(messageName);
+            if (method != null) {
+                try {
+                    method.invoke(view, null);
+                } catch (InvocationTargetException invocationExc) {
+                    ErrorManager.getDefault().notify(invocationExc);
+                } catch (Exception ex) {
+                    methodsMap.remove(messageName);
+                    ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                }
+            }
+        }
     }
     
     /**
      */
     void displayTestRunning(boolean promote) {
-        assert EventQueue.isDispatchThread();
-       
-        if (view == null) {
-            add(view = new ResultView());
-        }
-        view.displayMsg(NbBundle.getMessage(getClass(), "LBL_Running"));//NOI18N
-
-        if (promote) {
-            promote();
-        }
+        display(new ReportDisplay(null), promote);
     }
     
     /**
-     * @param  report  test report to display; may be <code>null<code>
      */
     void displayReport(final int index, final Report report, boolean promote) {
-        assert EventQueue.isDispatchThread();
-        
-        if (view == null) {
-            add(view = new ResultView());
-        }
-        view.displayReport(report);
-//        tabbedPanel.add(new javax.swing.JLabel("Tab " + (tabbedPanel.getTabCount() + 1)));
-        
-        if (promote) {
-            promote();
-        }
+        display(new ReportDisplay(report), promote);
     }
     
     /**
      */
-    private void promote() {
-        open();
-        requestVisible();
-        requestActive();
+    private void display(ReportDisplay reportDisplay, boolean promote) {
+        assert EventQueue.isDispatchThread();
+        
+        if (viewHandler == null) {
+            
+            viewHandler = new ResultDisplayHandler();
+            view = viewHandler.createReportDisplay();
+            
+            try {
+                prepareMethods();
+            } catch (SecurityException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            }
+
+            if (isOpened()) {
+                forwardMessage("componentOpened");                      //NOI18N
+                if (isShowing()) {
+                    forwardMessage("componentShowing");                 //NOI18N
+                    if (WindowManager.getDefault().getRegistry().getActivated()
+                            == this) {
+                        forwardMessage("componentActivated");           //NOI18N
+                    }
+                }
+            }
+            add(view);
+        }
+
+        reportDisplay.run();
+        
+        if (promote) {
+            open();
+            requestVisible();
+            requestActive();
+        }
+    }
+    
+    /**
+     *
+     */
+    final class ReportDisplay implements Runnable {
+        
+        private final Report report;
+        
+        ReportDisplay(Report report) {
+            this.report = report;
+        }
+        
+        public void run() {
+            assert EventQueue.isDispatchThread();
+            
+            if (report == null) {
+                viewHandler.displayMsg(
+                        NbBundle.getMessage(getClass(), "LBL_Running"));//NOI18N
+            } else {
+                viewHandler.displayReport(report);
+            }
+        }
+        
+    }
+    
+    /**
+     */
+    private void prepareMethods() throws SecurityException {
+        assert methodsMap == null;
+        assert view != null;
+        
+        methodsMap = new java.util.HashMap(8);
+        
+        final String[] methodNames = new String[] {
+            "componentOpened",                                          //NOI18N
+            "componentClosed",                                          //NOI18N
+            "componentActivated",                                       //NOI18N
+            "componentDeactivated",                                     //NOI18N
+            "componentShowing",                                         //NOI18N
+            "componentHidden"                                           //NOI18N
+        };
+        Collection methods = new ArrayList(methodNames.length);
+        
+        final Class viewClass = view.getClass();
+        final Class[] noParams = new Class[0];
+        
+        for (int i = 0; i < methodNames.length; i++) {
+            try {
+                String methodName = methodNames[i];
+                Method m = viewClass.getDeclaredMethod(methodName, noParams);
+                methodsMap.put(methodName, m);
+                methods.add(m);
+            } catch (NoSuchMethodException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            }
+        }
+        
+        if (!methods.isEmpty()) {
+            Method[] methodsArray = new Method[methods.size()];
+            methods.toArray(methodsArray);
+            
+            Method.setAccessible(methodsArray, true);
+        }
     }
     
     /**
@@ -199,12 +363,6 @@ public class ResultWindow extends TopComponent {
      */
     private void closeView(final int index) {
         //PENDING
-    }
-    
-    /**
-     */
-    protected void componentClosed() {
-        closeAllViews();
     }
     
     /**

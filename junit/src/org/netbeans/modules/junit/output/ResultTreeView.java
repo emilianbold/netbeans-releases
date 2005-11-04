@@ -14,20 +14,27 @@
 package org.netbeans.modules.junit.output;
 
 import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import javax.accessibility.AccessibleContext;
+import javax.swing.JScrollBar;
 import javax.swing.JTree;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author Marian Petras
  */
-final class ResultTreeView extends BeanTreeView {
+final class ResultTreeView extends BeanTreeView implements Runnable {
     
     /** */
     private final TreeCellRenderer defaultTreeCellRenderer;
@@ -40,6 +47,18 @@ final class ResultTreeView extends BeanTreeView {
         defaultTreeCellRenderer = tree.getCellRenderer();
         noIconTreeCellRenderer = createNoIconTreeCellRenderer();
         tree.setCellRenderer(new DelegatingTreeCellRenderer());
+        
+        initAccessibility();
+    }
+    
+    /**
+     */
+    private void initAccessibility() {
+        AccessibleContext accessibleContext = tree.getAccessibleContext();
+        accessibleContext.setAccessibleName(
+              NbBundle.getMessage(getClass(), "ACSN_ResultPanelTree")); //NOI18N
+        accessibleContext.setAccessibleDescription(
+              NbBundle.getMessage(getClass(), "ACSD_ResultPanelTree")); //NOI18N
     }
     
     /**
@@ -84,24 +103,44 @@ final class ResultTreeView extends BeanTreeView {
         if (report == null) {
             return;
         }
-        
-        if (report.failures + report.errors <= 5) {
-            expandAll();
-        } else {
-            expandNode(rootNode);
 
-            final Node[] childNodes = rootNode.getChildren().getNodes(true);
-            for (int i = 0; i < childNodes.length; i++) {
-                if (childNodes[i].getClass() != TestcaseNode.class) {
-                    /* It is a TestMethodNode - do not expand it. */
-                    continue;
-                }
-                TestcaseNode testClassNode = (TestcaseNode) childNodes[i];
-                if (testClassNode.group.containsFailed()) {
-                    expandNode(testClassNode);
+        final boolean wasScrollsOnExpand = tree.getScrollsOnExpand();
+        
+        tree.setScrollsOnExpand(false);
+        try {
+            if (report.failures + report.errors <= 5) {
+                expandAll();
+            } else {
+                expandNode(rootNode);
+
+                final Node[] childNodes = rootNode.getChildren().getNodes(true);
+                for (int i = 0; i < childNodes.length; i++) {
+                    if (childNodes[i].getClass() != TestcaseNode.class) {
+                        /* It is a TestMethodNode - do not expand it. */
+                        continue;
+                    }
+                    TestcaseNode testClassNode = (TestcaseNode) childNodes[i];
+                    if (testClassNode.group.containsFailed()) {
+                        expandNode(testClassNode);
+                    }
                 }
             }
+        } finally {
+            if (wasScrollsOnExpand) {
+                
+                /*
+                 * We must post the scrolling-enabling routine to the end of the
+                 * event queue, after all the requests for expansion of nodes:
+                 */
+                EventQueue.invokeLater(this);
+            }
         }
+    }
+    
+    /**
+     */
+    public void run() {
+        tree.setScrollsOnExpand(true);
     }
     
 }
