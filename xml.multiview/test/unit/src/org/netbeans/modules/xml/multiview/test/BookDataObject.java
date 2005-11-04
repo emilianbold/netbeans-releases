@@ -47,7 +47,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
      *
      * @throws IOException
      */
-    protected void parseDocument() throws IOException {
+    private void parseDocument() throws IOException {
         if (book==null) {
             book = getBook();
         } else {
