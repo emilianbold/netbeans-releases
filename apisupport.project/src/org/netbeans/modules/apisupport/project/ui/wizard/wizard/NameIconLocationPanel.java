@@ -187,6 +187,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         classNamePrefix = new javax.swing.JTextField();
         displayNameTxt = new javax.swing.JLabel();
         displayName = new javax.swing.JTextField();
+        categoryTxt = new javax.swing.JLabel();
+        category = new javax.swing.JComboBox();
         iconTxt = new javax.swing.JLabel();
         icon = new javax.swing.JTextField();
         iconButton = new javax.swing.JButton();
@@ -195,11 +197,11 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         packageNameTxt = new javax.swing.JLabel();
         packageName = UIUtil.createPackageComboBox(data.getSourceRootGroup());
         createdFilesTxt = new javax.swing.JLabel();
-        createdFiles = new javax.swing.JTextArea();
         modifiedFilesTxt = new javax.swing.JLabel();
+        createdFilesSP = new javax.swing.JScrollPane();
+        createdFiles = new javax.swing.JTextArea();
+        modifiedFilesSP = new javax.swing.JScrollPane();
         modifiedFiles = new javax.swing.JTextArea();
-        categoryTxt = new javax.swing.JLabel();
-        category = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -239,6 +241,23 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(displayName, gridBagConstraints);
+
+        categoryTxt.setLabelFor(category);
+        org.openide.awt.Mnemonics.setLocalizedText(categoryTxt, org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "LBL_Category"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 12);
+        add(categoryTxt, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
+        add(category, gridBagConstraints);
 
         iconTxt.setLabelFor(icon);
         org.openide.awt.Mnemonics.setLocalizedText(iconTxt, org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "LBL_Icon"));
@@ -297,7 +316,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 36, 12);
         add(packageNameTxt, gridBagConstraints);
 
         packageName.setEditable(true);
@@ -307,6 +326,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 36, 0);
         add(packageName, gridBagConstraints);
 
         createdFilesTxt.setLabelFor(createdFiles);
@@ -317,23 +337,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
         add(createdFilesTxt, gridBagConstraints);
-
-        createdFiles.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
-        createdFiles.setColumns(20);
-        createdFiles.setEditable(false);
-        createdFiles.setRows(5);
-        createdFiles.setBorder(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
-        add(createdFiles, gridBagConstraints);
 
         modifiedFilesTxt.setLabelFor(modifiedFiles);
         org.openide.awt.Mnemonics.setLocalizedText(modifiedFilesTxt, org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "LBL_ModifiedFiles"));
@@ -343,8 +348,24 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(modifiedFilesTxt, gridBagConstraints);
+
+        createdFiles.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        createdFiles.setColumns(20);
+        createdFiles.setEditable(false);
+        createdFiles.setRows(5);
+        createdFiles.setBorder(null);
+        createdFilesSP.setViewportView(createdFiles);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        add(createdFilesSP, gridBagConstraints);
 
         modifiedFiles.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         modifiedFiles.setColumns(20);
@@ -352,6 +373,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         modifiedFiles.setRows(5);
         modifiedFiles.setToolTipText("modifiedFilesValue");
         modifiedFiles.setBorder(null);
+        modifiedFilesSP.setViewportView(modifiedFiles);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -359,27 +382,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.5;
-        add(modifiedFiles, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(modifiedFilesSP, gridBagConstraints);
 
-        categoryTxt.setLabelFor(category);
-        org.openide.awt.Mnemonics.setLocalizedText(categoryTxt, org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "LBL_Category"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 12);
-        add(categoryTxt, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
-        add(category, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void iconButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iconButtonActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser(icon.getText());
@@ -397,6 +403,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JTextField classNamePrefix;
     private javax.swing.JLabel classNamePrefixTxt;
     private javax.swing.JTextArea createdFiles;
+    private javax.swing.JScrollPane createdFilesSP;
     private javax.swing.JLabel createdFilesTxt;
     private javax.swing.JTextField displayName;
     private javax.swing.JLabel displayNameTxt;
@@ -404,6 +411,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JButton iconButton;
     private javax.swing.JLabel iconTxt;
     private javax.swing.JTextArea modifiedFiles;
+    private javax.swing.JScrollPane modifiedFilesSP;
     private javax.swing.JLabel modifiedFilesTxt;
     private javax.swing.JComboBox packageName;
     private javax.swing.JLabel packageNameTxt;
