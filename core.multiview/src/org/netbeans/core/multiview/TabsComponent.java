@@ -53,9 +53,11 @@ class TabsComponent extends JPanel {
     private JToolBar bar;
     
     private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+
+    private boolean toolbarVisible = true;
     
     /** Creates a new instance of TabsComponent */
-    public TabsComponent() {
+    public TabsComponent(boolean toolVis) {
         super();
         bar = AQUA ? new TB() : new JToolBar();
         Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
@@ -68,6 +70,7 @@ class TabsComponent extends JPanel {
         setLayout(new BorderLayout());
         add(bar, BorderLayout.NORTH);
         startToggling();
+        setToolbarBarVisible(toolVis);
     }
     
     
@@ -235,6 +238,14 @@ class TabsComponent extends JPanel {
             bar.revalidate();
             bar.repaint();
         }
+    }
+    
+    void setToolbarBarVisible(boolean visible) {
+        if (toolbarVisible == visible) {
+            return;
+        }
+        toolbarVisible = visible;
+        bar.setVisible(visible);
     }
     
     

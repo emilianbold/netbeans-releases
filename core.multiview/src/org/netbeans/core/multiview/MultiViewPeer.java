@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.*;
 import javax.swing.*;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
@@ -36,8 +40,11 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 
@@ -63,11 +70,13 @@ public final class MultiViewPeer  {
     private ActionRequestObserverFactory factory;
     private MultiViewActionMap delegatingMap;
     private boolean activated = false;
+    private Object editorSettingsListener;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
         peer = pr;
         factory = fact;
+        editorSettingsListener = createEditorListener();
     }
     
  
@@ -107,7 +116,7 @@ public final class MultiViewPeer  {
     void initComponents() {
         initActionMap();
         peer.setLayout(new BorderLayout());
-        tabs = new TabsComponent();
+        tabs = new TabsComponent(isToolbarVisible());
         peer.add(tabs);
         ActionMap map = peer.getActionMap();
         Action act = new AccessTogglesAction();
@@ -165,11 +174,17 @@ public final class MultiViewPeer  {
         JComponent jc = el.getToolbarRepresentation();
         jc.setOpaque(false);
         tabs.setInnerToolBar(jc);
-        
+        tabs.setToolbarBarVisible(isToolbarVisible());
+        if (editorSettingsListener != null) {
+            addEditorListener(editorSettingsListener);
+        }
     }
     
     void peerComponentHidden() {
         model.getActiveElement().componentHidden();
+        if (editorSettingsListener != null) {
+            removeEditorListener(editorSettingsListener);
+        }
     }
     
     void peerComponentDeactivated() {
@@ -188,6 +203,7 @@ public final class MultiViewPeer  {
     
     void peerComponentOpened() {
         showCurrentElement(true);
+        tabs.setToolbarBarVisible(isToolbarVisible());
     }
     
     boolean requestFocusInWindow() {
@@ -474,6 +490,105 @@ public final class MultiViewPeer  {
         }
         return lookup;
     }
+    
+    
+//-------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//--------------- editor reflection stuff to retrieve the toolbar visibility setting
+//----------------------------------------------------------------------------------    
+    void addEditorListener(Object listener) {
+        try {
+            final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            Class settingsClass = Class.forName(
+                    "org.netbeans.editor.Settings", false, loader); //NOI18N
+            Class listenerClass = Class.forName(
+                    "org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
+            Method addSettingsListener = settingsClass.getMethod(
+                    "addSettingsChangeListener",new Class[ ] { listenerClass });//NOI18N
+                    addSettingsListener.invoke(settingsClass, new Object[] { listener });
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+    
+    void removeEditorListener(Object listener) {
+        try {
+            final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            Class settingsClass = Class.forName(
+                    "org.netbeans.editor.Settings", false, loader); //NOI18N
+            Class listenerClass = Class.forName(
+                    "org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
+            Method addSettingsListener = settingsClass.getMethod(
+                    "removeSettingsChangeListener",new Class[ ] { listenerClass });//NOI18N
+                    addSettingsListener.invoke(settingsClass, new Object[] { listener });
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+    
+    Object createEditorListener() {
+        try {
+            final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            Class listenerClass = Class.forName(
+                    "org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
+            
+            InvocationHandler ih =  new InvocationHandler() {
+                public Object invoke(Object proxy, Method method, Object[] args) {
+                    tabs.setToolbarBarVisible(isToolbarVisible());
+                    return null;
+                }
+            };
+            return Proxy.newProxyInstance(loader,
+                    new Class[] { listenerClass }, ih);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        return null;
+    }
+    
+    boolean isToolbarVisible() {
+        
+        Mode md = WindowManager.getDefault().findMode(peer);
+        if (md != null && !"editor".equals(md.getName())) {
+            // now this condition is not really sufficient, but anyway..
+            // how to check if the mode is a document area mode or not?
+            return true;
+        }
+        SharedClassObject option = null;
+        ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        if (loader == null) {
+            loader = MultiViewPeer.class.getClassLoader().getSystemClassLoader();
+        }
+        try {
+            Class editorBaseOption = Class.forName("org.netbeans.modules.editor.options.BaseOptions", true,
+                    loader);
+            option = SharedClassObject.findObject(editorBaseOption);
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        if (option != null) {
+            try {
+                Method is = option.getClass().getMethod("isToolbarVisible", new Class[0]);
+                Object ret;
+                ret = is.invoke(option, new Object[0]);
+                if (ret instanceof Boolean) {
+                    return ((Boolean)ret).booleanValue();
+                }
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+            } catch (SecurityException ex) {
+                ex.printStackTrace();
+            } catch (InvocationTargetException ex) {
+                ex.printStackTrace();
+            } catch (NoSuchMethodException ex) {
+                ex.printStackTrace();
+            } catch (IllegalAccessException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return true;
+    }
+
     
     public String toString() {
         return "[model=" + model + "]"; // NOI18N
