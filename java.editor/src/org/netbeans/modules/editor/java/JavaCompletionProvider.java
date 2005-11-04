@@ -120,7 +120,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         protected void filter(CompletionResultSet resultSet) {
             if (filterPrefix != null) {
-                resultSet.setTitle(queryResult.getTitle());
+                resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
                 resultSet.addAllItems(getFilteredData(queryResult.getData(), filterPrefix));
                 resultSet.finish();
@@ -145,6 +145,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                         || (camelCase && (itm instanceof NbJMIResultItem.ClassResultItem) && JMIUtils.matchesCamelCase(itm.getItemText(), prefix)))
                     ret.add(itm);
             }
+            return ret;
+        }
+        
+        private String getFilteredTitle(String title, String prefix) {
+            int lastIdx = title.lastIndexOf('.');
+            String ret = lastIdx == -1 ? prefix : title.substring(0, lastIdx + 1) + prefix;
+            if (title.endsWith("*")) // NOI18N
+                ret += "*"; // NOI18N
             return ret;
         }
     }
