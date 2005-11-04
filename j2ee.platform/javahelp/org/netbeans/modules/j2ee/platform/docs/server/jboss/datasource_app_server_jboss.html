@@ -11,35 +11,69 @@
 <body>
 <h2>Setting Up a Connection Pool on the JBoss Application Server</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>Before you can start developing and deploying applications to an application server, you must register your application server with the IDE. </p>
-<p><b>To register an instance of a JBoss application server:</b></p>
+
+A JDBC connection pool is a group of reusable connections that a web server or 
+application server maintains for a particular database.  Applications requesting 
+a connection to a database obtain that connection from the pool. When an application
+closes a connection, the connection is returned to the pool. Connection pool properties 
+may vary with different database vendors. Some common properties are the URL 
+ for the database name, user name, and password.
+
+<p><b>To set up a data source on the JBoss application server:</b>
 <ol>
-<li>Choose Tools &gt; Server Manager, and in the Server Manager, click Add Server.
-<ul class="note">
-<li>Alternatively, right-click the Servers node in the Runtime window and choose Add Server from the contextual menu.</li>
-</ul>
-The Add Server Instance wizard starts.</li>
-<li>In the Choose Server pane, do the following:
-<ol type="a">
-<li>From the Server drop-down list, select your application server.</li>
-<li>In the Name field, type a name for the server instance. <br>
-This name is used to identify the server in the IDE.</li>
-<li>Click Next.</li>
+<li>Register the JBoss Application Server 4.0.3.
+<li>Create a web application and select JBoss Application Server 4.0.3 as the
+target server.
+<li>Open the Favorites window (Ctrl-3).
+<li>Right-click in the window, choose Add to Favorites, and browse to the
+JBoss installation directory's <tt>docs/examples/jca</tt> folder.
+<li>Select the 	<tt>-ds.xml</tt> file of your choice. For example, if PointBase is
+ your database, select <tt>pointbase-ds.xml</tt> and if Derby is your database,
+ select <tt>derby-ds.xml</tt>.
+ <p>A new node appears in the Favorites window.
+ <li>In the Favorites window, double-click the new node so that the file opens in
+ the Source Editor.
+ <li>Define the data source. For example, for PointBase, the data source could
+  be similar to the following:
+
+<pre>&lt;datasources&gt;
+   &lt;local-tx-datasource&gt;
+      &lt;jndi-name&gt;<b>jdbc/poolDB</b>&lt;/jndi-name&gt;
+      &lt;use-java-context&gt;false&lt;/use-java-context&gt;
+      &lt;connection-url&gt;<b>jdbc:pointbase://localhost:9092/sample</b>&lt;/connection-url&gt;
+      &lt;driver-class&gt;<b>com.pointbase.jdbc.jdbcUniversalDriver</b>&lt;/driver-class&gt;
+      &lt;user-name&gt;<b>pbpublic</b>&lt;/user-name&gt;
+      &lt;password&gt;<b>pbpublic</b>&lt;/password&gt;
+      &lt;metadata&gt;&lt;type-mapping&gt;<b>PointBase</b>&lt;/type-mapping&gt;&lt;/metadata&gt;
+  &lt;/local-tx-datasource&gt;
+&lt;/datasources&gt;</pre>
+
+  <li>In the <tt>WEB-INF/jboss-web.xml</tt> file, add a resource reference. For example, for the
+   data source above, the resource reference could be as follows:
+
+<pre>&lt;resource-ref&gt;
+  &lt;res-ref-name&gt;<b>jdbc/poolDB</b>&lt;/res-ref-name&gt;
+  &lt;jndi-name&gt;<b>jdbc/poolDB</b>&lt;/jndi-name&gt;
+&lt;/resource-ref&gt;</pre>
+
+
+  <li>Set the JBoss port number in its <tt>server.xml</tt> file. If you are using the <tt>default</tt> domain,
+   the <tt>server.xml</tt> file is found here:
+   <pre>\server\default\deploy\jbossweb-tomcat50.sar\server.xml</pre>
+
+   <li>Make the database driver available to JBoss by copying it from the database installation 
+   directory to the JBoss domain's <tt>lib</tt> directory. For example, for PointBase, copy <tt>pbclient</tt>
+   to <tt>server/default/lib</tt> in the JBoss installation directory.
+
+   
+ 
 </ol>
-</li>
-<li>In the Server Location pane, use the Browse button to navigate to and select the installation directory of your application server.
-<ul class="note">
-<li>The Next button is only enabled when you have selected the correct installation directory.</li>
-</ul>
-</li>
-<li>Click Next.</li>
-<li>In the Instance Properties pane, from the Domain drop-down list, select the JBoss application server domain you want to use for this server instance.<br>
-The IDE automatically updates the Domain path field.</li>
-<li>Use the Port field to define the port for the server instance.</li>
-<li>Click Finish.</li>
-<li>If you started the Add Server Instance wizard from the Server Manager, click Close in the Server Manager dialog box.<br>
-The IDE displays a server node for your application server in the Runtime window under the Servers node.</li>
-</ol>
+
+Your connection pool is now set up. After taking the steps above, start the database driver, start the JBoss application server,
+ and run the web application. The web application builds to the JBoss application server's deployment folder,
+ the browser opens, and the application is deployed to the JBoss port number and host. If the web application has code
+  that accesses the data source defined above, data is accessed and displayed as specified in the application.
+
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Registering 
