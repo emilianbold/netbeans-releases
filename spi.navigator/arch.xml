@@ -245,7 +245,7 @@ Microsystems, Inc. All Rights Reserved.
              <li>
              Another option you have is to alter lookup of your <code>Node</code> subclass 
              instead of directly altering lookup of your <code>TopComponent</code>.
-             See <a href="@org-openide-nodes@/org/openide/nodes/Nodes.html#getLookup()">Node.getLookup()</a> method.
+             See <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()">Node.getLookup()</a> method.
              Then Navigator will show your desired content whenever your <code>Node</code>
              subclass will be active in the system.<br></br>             
              However, keep in mind that this option is less preferred, because it
