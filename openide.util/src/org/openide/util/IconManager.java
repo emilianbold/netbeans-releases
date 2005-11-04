@@ -42,7 +42,7 @@ final class IconManager extends Object {
      * @see "#20072"
      */
     private static final Set extraInitialSlashes = new HashSet(); // Set<String>
-    private static ClassLoader currentLoader = null;
+    private static volatile Object currentLoader;
     private static Lookup.Result loaderQuery = null;
     private static boolean noLoaderWarned = false;
     private static final Component component = new Component() {
@@ -50,38 +50,50 @@ final class IconManager extends Object {
 
     private static final MediaTracker tracker = new MediaTracker(component);
     private static int mediaTrackerID;
+    
+    private static ErrorManager ERR = ErrorManager.getDefault ().getInstance (IconManager.class.getName());
 
     /**
      * Get the class loader from lookup.
      * Since this is done very frequently, it is wasteful to query lookup each time.
      * Instead, remember the last result and just listen for changes.
      */
-    private static ClassLoader getLoader() {
-        if (currentLoader == null) {
-            if (loaderQuery == null) {
-                loaderQuery = Lookup.getDefault().lookup(new Lookup.Template(ClassLoader.class));
-                loaderQuery.addLookupListener(
-                    new LookupListener() {
-                        public void resultChanged(LookupEvent ev) {
-                            currentLoader = null;
-                        }
+    static ClassLoader getLoader() {
+        Object is = currentLoader;
+        if (is instanceof ClassLoader) {
+            return (ClassLoader)is;
+        }
+            
+        currentLoader = Thread.currentThread();
+            
+        if (loaderQuery == null) {
+            loaderQuery = Lookup.getDefault().lookup(new Lookup.Template(ClassLoader.class));
+            loaderQuery.addLookupListener(
+                new LookupListener() {
+                    public void resultChanged(LookupEvent ev) {
+                        ERR.log("Loader cleared"); // NOI18N
+                        currentLoader = null;
                     }
-                );
-            }
-
-            Iterator it = loaderQuery.allInstances().iterator();
-
-            if (it.hasNext()) {
-                currentLoader = (ClassLoader) it.next();
-            } else if (!noLoaderWarned) {
-                noLoaderWarned = true;
-                ErrorManager.getDefault().log(
-                    ErrorManager.WARNING, "No ClassLoader instance found in " + Lookup.getDefault()
-                );
-            }
+                }
+            );
         }
 
-        return currentLoader;
+        Iterator it = loaderQuery.allInstances().iterator();
+        if (it.hasNext()) {
+            ClassLoader toReturn = (ClassLoader) it.next();
+            if (currentLoader == Thread.currentThread()) {
+                currentLoader = toReturn;
+            }
+            ERR.log("Loader computed: " + currentLoader); // NOI18N
+            return toReturn;
+        } else { if (!noLoaderWarned) {
+                noLoaderWarned = true;
+                ERR.log(
+                    ErrorManager.WARNING, "No ClassLoader instance found in " + Lookup.getDefault() // NOI18N
+                );
+            }
+            return null;
+        }
     }
 
     static Image getIcon(String resource, boolean localized) {
@@ -241,7 +253,7 @@ final class IconManager extends Object {
 
             if (img != null) {
                 if (warn && extraInitialSlashes.add(name)) {
-                    ErrorManager.getDefault().log(
+                    ERR.log(
                         ErrorManager.WARNING, "Initial slashes in Utilities.loadImage deprecated (cf. #20072): " +
                         name
                     ); // NOI18N
