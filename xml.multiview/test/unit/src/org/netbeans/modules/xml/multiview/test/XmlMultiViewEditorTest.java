@@ -74,7 +74,6 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to change book model",ex);
         }
-        Helper.waitForDispatchThread();
         // test if data object was modified
         SaveCookie cookie = Helper.getSaveCookie(bookDO);
         assertNotNull("Data Object Not Modified", cookie);
@@ -97,21 +96,18 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         try {
             JTextField titleTF = Helper.getChapterTitleTF(bookDO, bookDO.getBook().getChapter()[1]);
             titleTF.requestFocus();
-            Helper.waitForDispatchThread();
             titleTF.getDocument().remove(0, titleTF.getDocument().getLength());
             titleTF.getDocument().insertString(0, "The garden full of beans", null);
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to set the title for Chapter: ", ex);
         }
-        Helper.waitForDispatchThread();
         // open XML View
         ((EditCookie) bookDO.getCookie(EditCookie.class)).edit();
         // handle consequent calls of SwingUtilities.invokeLater();
         Helper.waitForDispatchThread();
 
         // test if data object was modified
-        SaveCookie cookie = Helper.getSaveCookie(bookDO);      
-        Helper.waitForDispatchThread();
+        SaveCookie cookie = Helper.getSaveCookie(bookDO);
         assertNotNull("Data Object Not Modified", cookie);
         cookie.save();
 
@@ -148,9 +144,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
             throw new AssertionFailedErrorException("Lock problem : ", ex);
         }
-
-        Helper.waitForDispatchThread();
-
+        
         XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) bookDO.getCookie(EditorCookie.class);
         Document doc = editor.getDocument();
         try {
