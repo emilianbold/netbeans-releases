@@ -24,6 +24,7 @@ import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.junit.NbTestCase;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -52,6 +53,7 @@ implements LookupListener, ChangeListener {
     private Lookup.Result mimeResolvers;
     private int change;
     private int poolChange;
+    private static ErrorManager err;
     
     public FileEntityResolverTest(String testName) {
         super(testName);
@@ -59,6 +61,8 @@ implements LookupListener, ChangeListener {
 
     protected void setUp() throws Exception {
         clearWorkDir();
+        
+        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
         
         DataLoaderPool.getDefault().addChangeListener(this);
         
@@ -100,12 +104,15 @@ implements LookupListener, ChangeListener {
         
         assertEquals("No changes in lookup yet", 0, change);
         
+        err.log("starting to create the resolver");
         FileObject res = FileUtil.createData(
             Repository.getDefault().getDefaultFileSystem().getRoot(), 
             "Services/MIMEResolver/Lenkaresolver.xml"
         );
+        err.log("file created: " + res);
         org.openide.filesystems.FileLock l = res.lock();
         OutputStream os = res.getOutputStream(l);
+        err.log("stream opened");
         PrintStream ps = new PrintStream(os);
         
         ps.println("<?xml version='1.0' encoding='UTF-8'?>");
@@ -117,19 +124,31 @@ implements LookupListener, ChangeListener {
         ps.println("    </file>");
         ps.println("</MIME-resolver>");
 
+        err.log("Content written");
         os.close();
+        err.log("Stream closed");
         l.releaseLock();
+        err.log("releaseLock");
         
+        err.log("Let's query the resolvers");
         Collection isthere = mimeResolvers.allInstances();
+        err.log("What is the result: " + isthere);
         assertEquals("resolver found", 1, change);
         
+        err.log("Waiting till finished");
         LoaderPoolNode.waitFinished();
+        err.log("Waiting done, querying the data object");
+        
+        err.log("Clear the mime type cache in org.openide.filesystems.MIMESupport: " + fo.getFileSystem().getRoot().getMIMEType());
         
         DataObject now = DataObject.find(fo);
-        assertEquals("Loader updated to lenka", loader, now.getLoader());
+        
+        err.log("Object is here: " + now);
+        assertEquals("Loader updated to lenka", loader, now.getLoader());fail("Ok");
     }
 
     public void resultChanged(LookupEvent ev) {
+        err.notify(err.INFORMATIONAL, new Exception("change in lookup"));
         change++;
     }
 
@@ -149,6 +168,14 @@ implements LookupListener, ChangeListener {
         protected void initialize() {
             getExtensions().addMimeType("hodna/lenka");
             super.initialize();
+        }
+
+        protected FileObject findPrimaryFile(FileObject fo) {
+            err.log("findPrimaryFile: " + fo + " with mime: " + fo.getMIMEType());
+            FileObject retValue;
+            retValue = super.findPrimaryFile(fo);
+            err.log("findPrimaryFile result: " + retValue);
+            return retValue;
         }
         
     }
