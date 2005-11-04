@@ -347,28 +347,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return support.getUndoRedo();
     }
 
-    public SystemAction[] getSystemActions() {
-        SystemAction[] sa = super.getSystemActions();
-
-        try {
-            ClassLoader l = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-
-            if (l == null) {
-                l = getClass().getClassLoader();
-            }
-
-            Class c = Class.forName("org.openide.actions.FileSystemAction", true, l); // NOI18N
-            SystemAction ra = (SystemAction) SystemAction.findObject(c, true);
-
-            // initialize the SYSTEM_ACTIONS
-            sa = SystemAction.linkActions(sa, new SystemAction[] { ra });
-        } catch (Exception ex) {
-            // ok, we no action like this I guess
-        }
-
-        return sa;
-    }
-
     /** Transfer the focus to the editor pane.
      */
     public void requestFocus() {
