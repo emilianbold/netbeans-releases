@@ -153,7 +153,6 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
     
     private void addEntry (int entryType, String key, String value) throws IOException {
-        getPublicIdMap(); // to ensure that publicIds were created
         FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
@@ -196,7 +195,6 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
     
     private void removeEntry (int entryType, String key) throws IOException {
-        getPublicIdMap(); // to ensure that publicIds were created
         FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
@@ -246,7 +244,6 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
     
     private void updateEntry (int entryType, String key, String value) throws IOException {
-        getPublicIdMap(); // to ensure that publicIds were created
         FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
@@ -328,8 +325,11 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
             return new java.util.HashMap();
         }
     }
-
+    /** Registers new entry (key:value) in catalog
+     * if (value==null) removes the entry from catalog
+     */
     public void registerCatalogEntry(String key, String value) {
+        getPublicIdMap(); // to ensure that publicIds were created
         try {
             if (key.startsWith(PUBLIC_PREFIX)) {
                 if (value!=null) {
