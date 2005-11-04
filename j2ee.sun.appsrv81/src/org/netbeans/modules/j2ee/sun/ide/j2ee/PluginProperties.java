@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.Installer;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
 import org.openide.util.NbBundle;
 
 import org.openide.modules.InstalledFileLocator;
@@ -586,6 +587,7 @@ public class PluginProperties  {
                     ///  Util.showInformation(e.getLocalizedMessage(), NbBundle.getMessage(RegisterServerAction.class, "LBL_RegServerFailed"));
                 }
             }
+            RegisterPointbase.getDefault().register(platformRoot);
         }
             
             
