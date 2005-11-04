@@ -37,6 +37,7 @@ import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
+import org.openide.util.Utilities;
 
 public class CreateTableDialog {
     boolean result = false;
@@ -140,6 +141,7 @@ public class CreateTableDialog {
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             ownercombo = new JComboBox(users);
             ownercombo.setSelectedIndex(0);
+            ownercombo.setRenderer(new ListCellRendererImpl());
             ownercombo.setToolTipText(bundle.getString("ACS_CreateTableOwnerComboBoxA11yDesc"));
             ownercombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableOwnerComboBoxA11yName"));
             label.setLabelFor(ownercombo);
@@ -431,6 +433,18 @@ public class CreateTableDialog {
                     table.setValueAt(x.getText(), table.getEditingRow(), table.getEditingColumn());
                 }
             });
+        }
+    }
+    
+    private static final class ListCellRendererImpl extends DefaultListCellRenderer {
+        
+        public Dimension getPreferredSize() {
+            Dimension size = super.getPreferredSize();
+            // hack to fix issue 65759
+            if (Utilities.isWindows()) {
+                size.width += 4;
+            }
+            return size;
         }
     }
 }
