@@ -22,8 +22,10 @@
         <p>When you launch a new version of the IDE for the first time, you are 
         prompted with the option of importing settings from a previous version of 
         the IDE. This prompt occurs only if you have a user directory on your 
-        system from a previous version of the IDE and the user directory is in 
+        system from the previous version of the IDE and the user directory is in 
         the default location.</p>
+        <p>For NetBeans IDE 5.0, it is only possible to import settings from 
+NetBeans IDE 4.1.</p>
         <p>The settings that are imported include the following items:</p>
         <ul>
             <li>Keyboard shortcuts</li>
@@ -33,60 +35,43 @@
             <li>Database drivers</li>
             <li>Servers</li>            
         </ul>
+<h3>Importing Settings After the First Start of the IDE</h3>
+        
+<p>The opportunity to have settings imported only occurs the first time you 
+launch the new version of the IDE. If you do not import the 
+settings at the first launch but later decide that 
+you would like to import the settings, you might be able to do so by recreating the 
+conditions of the first launch. Then, 
+when you start the IDE again, the sequence of events from the first launch repeats itself, 
+including the displaying of the software license, creation of the user directory, and 
+the opportunity to import settings from the previous version of the IDE.</p>
+<p><b>To import settings from the previous version of the IDE:</b></p>
+<ol><li>Make sure that you still have the user directory from the previous version of the 
+IDE on your system in its default location.
+ <p>On Microsoft Windows systems, the default location is  
+<tt>C:\Documents and Settings\<i>username</i>\.netbeans\41\</tt>.</p>
+<p>On UNIX and Linux systems, the default location is   
+<tt>/home/<i>username</i>/.netbeans/41/</tt>.</p></li>
+<li>If the new version of the IDE is running, exit the IDE.</li>
+<li>Locate the user directory of the new IDE installation.
+ <p>On Microsoft Windows systems, the default location is  
+<tt>C:\Documents and Settings\<i>username</i>\.netbeans\50</tt>.</p>
+<p>On UNIX and Linux systems, the default location is   
+<tt>/home/<i>username</i>/.netbeans/50</tt>.</p></li>
+<li>Rename or delete the new installation's user directory.
+<li>Restart the new installation of the IDE.</li>
+<li>In the License Agreement, click Accept.</li>
+<li>In the Confirm Import Settings dialog box, click Yes.</li></ol>
 
-        <h3>Importing Editor Settings After the First Launch</h3>
-        <p>If you do not import the settings at the first launch, you can manually import 
-        selected settings later. In particular, you might want to import Source Editor 
-        settings if you have carefully customized your previous installation.</p>
-        <p>Source Editor settings that you have customized are stored in XML files 
-in your user directory. </p>
 
-<!--<p>The settings stored in XML files include code templates, macros, fonts and colors,
-and keyboard shortcuts.  In addition, a general properties file exists for other 
-properties not covered by the categories listed above.</p>-->
+<ul class="warning">
+    <li>Do not use this technique to import settings if you have done a significant 
+amount of work in the new version of the IDE, since you could lose other important 
+settings.</li>
 
-<p>Source Editor settings are in the 
-<tt>config/Editors/text/<i>mime type</i></tt>.  Substitute 
-<tt><i>mime type</i></tt> with the type of editor settings you want. 
-For example, the Java editor settings are found in the <tt>x-java</tt>
-directory. The name of the file reflects the type of settings it contains.</p>
+</ul>    
+        
 
-<p>If you created named editor profiles in the Options window of the IDE, the default settings for that profile are located within the Editors folder. 
-For example, if you created a profile called MyNetbeansProfile, the default settings for that profile are located in
-<tt>config/Editors/MyNetbeansProfile</tt>, the Java editor specific settings for that profile are located
-in <tt>config/Editors/text/x-java/MyNetbeansProfile</tt>, the HTML editor specific settings are located in
-<tt>config/Editors/text/html/MyNetbeansProfile</tt> and so on.</p>
-
-<p><b>To copy settings from a different version or different installation of the IDE:</b></p>
-
-<ol>
-<li>Within your system's file manager, navigate to the user directory of the other 
-IDE installation.
-<p>On Microsoft Windows systems, the user directory is typically located at 
-<tt>C:\Documents and Settings\<i>username\.netbeans\<i>version-number</i>\</tt></p>
-<p>On UNIX and Linux systems, the user directory is typically located at 
-<tt>/home/<i>username</i>/.netbeans/<i>version-number</i>/</tt></p>
-<p>You can determine your user directory by choosing Help  &gt; About and click
-the Detail tab in the About dialog box.  User Dir is listed last in the dialog box.</p></li>
-<li>Navigate to and expand <tt>config/Editors</tt> folder.</li>
- <li>Copy the sub-folders of the <tt>config/Editors</tt> folder.</li>
-<li>Navigate to the user directory in your new installation and open the <tt>config/Editors</tt> folder.</li>
-<li>In the <tt>config/Editors</tt> folder, create a new folder and give it a name such as <tt>NetBeans-old</tt>.
-<p>The name of the folder becomes the name of a profile in the IDE that you can switch to in order to 
-adopt a group of settings.</li>
-<li>Paste the copied folders inside of the new folder.
-<p>The pasted files become part of the new profile.</li>
-
-<li>Restart the new version of the IDE.</li>
-<li>Choose Tools &gt; Options and click Fonts &amp; Colors.</li><!--TODO check ampersand-->
-<li>In the Profile drop-down list, select the name .</li>
-</ol>
-<!--<p><b>Notes:</b></p>
-<ul class="note">
-    <li>When copying properties between XML files, pay attention to the XML syntax for the properties, especially when copying properties from previous versions of the IDE.<li>
-<li>There might not be an XML file for certain settings if you are using the default settings.
-If you delete an XML settings file, the default settings are restored.</li>
-</ul>-->
 
         <dl>
             <dt>
@@ -94,6 +79,7 @@ If you delete an XML settings file, the default settings are restored.</li>
             <dd>      <a href="configure_overview.html">Working with IDE Configurations </a></dd>
             <dd>      <a href="configure_quickref.html">Configuration Tasks: Quick Reference</a></dd>
             <dd>      <a href="../java/java_sources.html">Configuring General Java Settings</a></dd>
+            <dd><a href="../editing/xmlsettings.html">Sharing Source Editor Settings</a></dd>
         </dl>
         <hr>
         <small><a href="../credits.html">Legal Notices</a></small>
