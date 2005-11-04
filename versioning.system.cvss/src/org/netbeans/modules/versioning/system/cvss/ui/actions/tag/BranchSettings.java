@@ -15,10 +15,8 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
 import org.netbeans.lib.cvsclient.CVSRoot;
-import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.openide.DialogDescriptor;
 
 import javax.swing.event.DocumentListener;
@@ -96,7 +94,7 @@ class BranchSettings extends javax.swing.JPanel {
     }
 
     private String computeBaseTagName() {
-        return tfName.getText() + NbBundle.getMessage(BranchSettings.class, "BK0003");
+        return NbBundle.getMessage(BranchSettings.class, "BK0003", tfName.getText()); // NOI18N
     }
     
     private void refreshComponents() {
