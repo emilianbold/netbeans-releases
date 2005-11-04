@@ -2715,6 +2715,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
                 formDesigner.toggleSelectionMode();
+                formDesigner.requestActive();
             }
         }
 
