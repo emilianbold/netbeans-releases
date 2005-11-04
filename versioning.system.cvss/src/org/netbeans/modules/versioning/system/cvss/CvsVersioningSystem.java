@@ -372,9 +372,14 @@ public class CvsVersioningSystem {
 
     public KeywordSubstitutionOptions getDefaultKeywordSubstitution(File file) {
         // TODO: Let user configure defaults
-        return isText(file) ? KeywordSubstitutionOptions.DEFAULT : KeywordSubstitutionOptions.BINARY;    
+        return isText(file) || isBinary(file) == false ?
+                KeywordSubstitutionOptions.DEFAULT : 
+                KeywordSubstitutionOptions.BINARY;
     }
-    
+
+    /**
+     * @return true if the file is almost certainly textual.
+     */
     public boolean isText(File file) {
         if (FILENAME_CVSIGNORE.equals(file.getName())) {
             return true;            
@@ -402,7 +407,37 @@ public class CvsVersioningSystem {
         // TODO: HACKS begin, still needed?
         return textExtensions.contains(fo.getExt());
     }
-    
+
+    /**
+     * Uses first 1024 bytes test. A control byte means binary.
+     * @return true if the file is almost certainly binary.
+     */
+    public boolean isBinary(File file) {
+        InputStream in = null;
+        try {
+            in = new FileInputStream(file);
+            in = new BufferedInputStream(in);
+            for (int i = 0; i<1024; i++) {
+                int ch = in.read();
+                if (ch == -1) break;
+                if (ch < 32 && ch != '\t' && ch != '\n' && ch != '\r') {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.notify(ErrorManager.INFORMATIONAL, e);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException alreadyClosed) {
+                }
+            }
+        }
+        return false;
+    }
+
     public void setParameter(Object key, Object value) {
         Object old; 
         synchronized(params) {
