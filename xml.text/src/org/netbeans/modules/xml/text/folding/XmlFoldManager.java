@@ -271,7 +271,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                             
                             //create folds of appropriate type
                             if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
-                            || de.getType().equals(XMLDocumentModelProvider.XML_TAG)) {
+                            || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
                                 foldName = "<"+de.getName()+">";
                                 type = XmlFoldTypes.TAG;
                             } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
