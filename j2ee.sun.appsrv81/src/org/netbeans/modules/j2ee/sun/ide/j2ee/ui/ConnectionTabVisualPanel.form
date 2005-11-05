@@ -21,6 +21,7 @@
   <SubComponents>
     <Component class="javax.swing.JTextField" name="socketField">
       <Properties>
+        <Property name="columns" type="int" value="30"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>
@@ -44,6 +45,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="userNameField">
+      <Properties>
+        <Property name="columns" type="int" value="30"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="LBL_Username" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -62,6 +66,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JPasswordField" name="passwordField">
+      <Properties>
+        <Property name="columns" type="int" value="30"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="LBL_Pw" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -81,6 +88,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="domainField">
       <Properties>
+        <Property name="columns" type="int" value="30"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>
@@ -102,6 +110,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="domainLocField">
       <Properties>
+        <Property name="columns" type="int" value="30"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>

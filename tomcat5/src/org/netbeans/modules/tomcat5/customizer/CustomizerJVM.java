@@ -107,6 +107,7 @@ public class CustomizerJVM extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         jPanel1.add(jLabel1, gridBagConstraints);
 
+        jTextField1.setColumns(30);
         jTextField1.setDocument(custData.getJavaOptsModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

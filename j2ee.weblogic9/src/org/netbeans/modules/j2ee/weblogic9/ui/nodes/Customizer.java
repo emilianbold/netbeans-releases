@@ -128,6 +128,9 @@ public class Customizer extends JTabbedPane {
             label.setLabelFor(resources);
             resources.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Customizer.class,ad));
             JScrollPane spane = new JScrollPane (this.resources);            
+            // set the preferred size so that the size won't be set according to
+            // the longest row in the list by default
+            spane.setPreferredSize(new java.awt.Dimension(200, 100));
             c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;

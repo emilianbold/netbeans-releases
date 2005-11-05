@@ -68,6 +68,7 @@ public class CustomizerGeneral extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        homeTextField.setColumns(30);
         homeTextField.setDocument(custData.getCatalinaHomeModel());
         homeTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -79,6 +80,7 @@ public class CustomizerGeneral extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         add(homeTextField, gridBagConstraints);
 
+        baseTextField.setColumns(30);
         baseTextField.setDocument(custData.getCatalinaBaseModel());
         baseTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -107,6 +109,7 @@ public class CustomizerGeneral extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(baseLabel, gridBagConstraints);
 
+        usernameTextField.setColumns(15);
         usernameTextField.setDocument(custData.getUsernameModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -148,6 +151,7 @@ public class CustomizerGeneral extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(monitorCheckBox, gridBagConstraints);
 
+        passwordField.setColumns(15);
         passwordField.setDocument(custData.getPasswordModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Window;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -58,7 +59,7 @@ import org.openide.util.NbBundle;
  */
 public class ServersCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
     
-    private static final Dimension PREFERRED_SIZE = new Dimension(720,400);
+    private static final Dimension MINIMUM_SIZE = new Dimension(720, 400);
     
     private ServerCategoriesChildren children;
     private ExplorerManager manager;
@@ -67,6 +68,10 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
     /** Creates new form PlatformsCustomizer */
     public ServersCustomizer(ServerInstance initialInstance) {
         initComponents();
+        serverName.setColumns(30);
+        serverType.setColumns(30);
+        // set the preferred width, height is not very important here
+        servers.setPreferredSize(new Dimension(200,200));
         this.initialInstance = initialInstance;
     }
     
@@ -89,11 +94,6 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
                 throw new PropertyVetoException("Invalid length",evt);   //NOI18N
             }
         }
-    }
-    
-    
-    public Dimension getPreferredSize() {
-        return PREFERRED_SIZE;
     }
     
     public synchronized ExplorerManager getExplorerManager() {
@@ -330,7 +330,28 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
                     addComponent(clientArea, component);
                 }
             }
-            clientArea.revalidate();
+            // handle the correct window size
+            int height = getHeight();
+            int width = getWidth();
+            // reset the preferred size so that it can be computed during revalidation
+            setPreferredSize(null);
+            revalidate();
+            // now we have the new computed preferred size
+            Dimension prefSize = getPreferredSize();
+            int prefWidth = (int)(prefSize.getWidth() > MINIMUM_SIZE.getWidth() ? prefSize.getWidth() : MINIMUM_SIZE.getWidth());
+            int prefHeight = (int)(prefSize.getHeight() > MINIMUM_SIZE.getHeight() ? prefSize.getHeight() : MINIMUM_SIZE.getHeight());
+            // do we need to resize the manager window?
+            if (prefHeight > height || prefWidth > width) {
+                setPreferredSize(new Dimension(prefWidth > width ? prefWidth : width,
+                                               prefHeight > height ? prefHeight : height));
+                // repack the parent window
+                for (Container parent = getParent(); parent != null; parent = parent.getParent()) {
+                    if (parent instanceof Window) {
+                       ((Window)parent).pack();
+                       break;
+                    }
+                }
+            }
             CardLayout cl = (CardLayout)cards.getLayout();
             cl.first(cards);
         }

@@ -103,6 +103,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
 
         getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("Step_ChooseUserDefinedLocalServer"));
         getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("AddUserDefinedLocalServerPanel_Desc"));
+        socketField.setColumns(30);
         socketField.setEditable(false);
         socketField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -121,6 +122,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         socketField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminPort"));
         socketField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_AdminPort"));
 
+        userNameField.setColumns(30);
         userNameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 userNameFieldKeyReleased(evt);
@@ -138,6 +140,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         userNameField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username"));
         userNameField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Username"));
 
+        passwordField.setColumns(30);
         passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 passwordFieldKeyReleased(evt);
@@ -155,6 +158,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         passwordField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw"));
         passwordField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Pw"));
 
+        domainField.setColumns(30);
         domainField.setEditable(false);
         domainField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -173,6 +177,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         domainField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain"));
         domainField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Domain"));
 
+        domainLocField.setColumns(30);
         domainLocField.setEditable(false);
         domainLocField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -287,7 +292,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         add(enableHttpMonitor, gridBagConstraints);
         enableHttpMonitor.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_EnableHttpMonitor"));
 
-    }// </editor-fold>//GEN-END:initComponents
+    }
+    // </editor-fold>//GEN-END:initComponents
 
     private void enableHttpMonitorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableHttpMonitorActionPerformed
         targetData.setHttpMonitorOn(""+enableHttpMonitor.isSelected());

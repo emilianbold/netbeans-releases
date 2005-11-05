@@ -84,6 +84,7 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 17, 0, 0);
         add(jLabel1, gridBagConstraints);
 
+        jTextField1.setColumns(20);
         jTextField1.setDocument(custData.getScriptPathModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -151,6 +152,7 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jRadioButton2, gridBagConstraints);
 
+        jTextField4.setColumns(15);
         jTextField4.setDocument(custData.getSharedMemNameModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
