@@ -27,9 +27,7 @@ manually in a file tailored to your database server, provided in the JBoss insta
 
 <p><b>To set up a data source on the JBoss application server:</b>
 <ol>
-<li>Register the JBoss Application Server 4.0.3.
-<li>Create a web application and select JBoss Application Server 4.0.3 as the
-target server.
+
 <li>Open the Favorites window (Ctrl-3).
 <li>Right-click in the window, choose Add to Favorites, and browse to the
 JBoss installation directory's <tt>docs/examples/jca</tt> folder.
@@ -54,6 +52,11 @@ JBoss installation directory's <tt>docs/examples/jca</tt> folder.
   &lt;/local-tx-datasource&gt;
 &lt;/datasources&gt;</pre>
 
+  <li>Copy the file to your JBoss deployment directory. For example, if <tt>default</tt> is your domain,
+   copy the file to <tt>server/default/deploy</tt>.
+</ol>
+<p><b>To reference a JDBC resource from a web application:</b>
+<ol>
   <li>In the <tt>WEB-INF/jboss-web.xml</tt> file, add a resource reference. For example, for the
    data source above, the resource reference could be as follows:
 
@@ -62,13 +65,28 @@ JBoss installation directory's <tt>docs/examples/jca</tt> folder.
   &lt;jndi-name&gt;<b>jdbc/poolDB</b>&lt;/jndi-name&gt;
 &lt;/resource-ref&gt;</pre>
 
+   <li>In the <tt>WEB-INF/web.xml</tt> file, add a resource reference. For example, for the data source above,
+   the resource reference could be as follows:
+   
+<pre>&lt;resource-ref&gt;
+  &lt;res-ref-name&gt;<b>jdbc/poolDB</b>&lt;/res-ref-name&gt;
+  &lt;res-type&gt;<b>javax.sql.DataSource</b>&lt;/res-type&gt;
+  &lt;res-auth&gt;<b>Container</b>&lt;/res-auth&gt;
+  &lt;res-sharing-scope&gt;<b>Shareable</b>&lt;/res-sharing-scope&gt;
+&lt;/resource-ref&gt;</pre>
+   </ol>
+<p><b>To prepare to use a data source on the JBoss application server:</b>
+<ol>
+	<li><a href="registering_app_server_jboss.html">Register</a> the JBoss Application Server 4.0.3.
+	
 
    <li>Set the JBoss port number in its <tt>server.xml</tt> file. By default, the port number is 8080.
     If you are using the <tt>default</tt> domain,
    the <tt>server.xml</tt> file is found here:
    <pre>\server\default\deploy\jbossweb-tomcat50.sar\server.xml</pre>
-
-<li>Finally, <a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html">use the JDBC resource</a> in your web application.</li></ol>
+   <li>Create a web application and select JBoss Application Server 4.0.3 as the
+<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_changeserver.html">target server</a>.
+<li>Access the data source in, for example, a <a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html">JSP page.</li></ol>
 </ol>
 
 
