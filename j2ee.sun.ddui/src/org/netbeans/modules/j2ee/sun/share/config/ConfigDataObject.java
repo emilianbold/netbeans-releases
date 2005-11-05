@@ -322,11 +322,9 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
             J2eeModuleProvider provider = getProvider();
             getPrimaryFile().refresh(); //check for external changes
             
-            // Retrieve config before entering synchronized block.
-            SunONEDeploymentConfiguration config = getDeploymentConfiguration();
-            
             synchronized (this) {
                 if (storage == null) {
+                    SunONEDeploymentConfiguration config = getDeploymentConfiguration();
                     storage = new ConfigurationStorage(provider, config);
                     storage.setSaver(this);
                 }
