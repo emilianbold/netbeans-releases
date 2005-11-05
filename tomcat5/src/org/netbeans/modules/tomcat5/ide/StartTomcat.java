@@ -557,6 +557,10 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     if (isRunning) {
                         return true;
                     }
+                    if (isStopped()) {
+                        // Tomcat failed to start, process is finished
+                        return false;
+                    }
                     if (mode == MODE_PROFILE) {
                         int state = ProfilerSupport.getState();
                         if (state == ProfilerSupport.STATE_BLOCKING || 
