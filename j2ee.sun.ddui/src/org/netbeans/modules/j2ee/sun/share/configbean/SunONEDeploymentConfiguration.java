@@ -216,15 +216,16 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             ErrorManager.getDefault().notify(ex);
         }
 
-        if(!ensureConfigurationLoaded()) {
-            // !PW FIXME Need to properly communicate this to the user.  Might be bad news
-            // depending on why this happened and what they do next.
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("DConfigBean storage failed initialization for " + configFiles[0].getName()));
-            // Deliberate NOT throwing an exception here... not sure what the right
-            // course of action is, or if this state can even happen.
-        }
-        
         if(keepUpdated) {
+            // This forces the creation of the DConfigBean tree.
+            if(!ensureConfigurationLoaded()) {
+                // !PW FIXME Need to properly communicate this to the user.  Might be bad news
+                // depending on why this happened and what they do next.
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("DConfigBean storage failed initialization for " + configFiles[0].getName()));
+                // Deliberate NOT throwing an exception here... not sure what the right
+                // course of action is, or if this state can even happen.
+            }
+        
             // This listener listens to the lifecycle and changes affecting the 
             // standard deployment descriptors (web.xml, ejb-jar.xml, application.xml,
             // and webservices.xml for now).  In particular it is used to detect
@@ -1145,9 +1146,12 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         DDBeanRoot root = dObj.getDDBeanRoot();
         if(null != root) {
             try {
-                DConfigBeanRoot dcbRoot = getDConfigBeanRoot(getStorage().normalizeDDBeanRoot(root));
-                if(dcbRoot instanceof WebAppRoot) {
-                    war = (WebAppRoot) dcbRoot;
+                ConfigurationStorage storage = getStorage();
+                if(storage != null) {
+                    DConfigBeanRoot dcbRoot = getDConfigBeanRoot(storage.normalizeDDBeanRoot(root));
+                    if(dcbRoot instanceof WebAppRoot) {
+                        war = (WebAppRoot) dcbRoot;
+                    }
                 }
             } catch (ConfigurationException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
@@ -1169,9 +1173,12 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         DDBeanRoot root = dObj.getDDBeanRoot();
         if(null != root) {
             try {
-                DConfigBeanRoot dcbRoot = getDConfigBeanRoot(getStorage().normalizeDDBeanRoot(root));
-                if(dcbRoot instanceof EjbJarRoot) {
-                    ejbJar = (EjbJarRoot) dcbRoot;
+                ConfigurationStorage storage = getStorage();
+                if(storage != null) {
+                    DConfigBeanRoot dcbRoot = getDConfigBeanRoot(storage.normalizeDDBeanRoot(root));
+                    if(dcbRoot instanceof EjbJarRoot) {
+                        ejbJar = (EjbJarRoot) dcbRoot;
+                    }
                 }
             } catch (ConfigurationException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
