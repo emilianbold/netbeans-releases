@@ -293,6 +293,9 @@
 	<mapID target="server_remove" url="server/server_remove.html" />
         <mapID target="server_aboutdbconnect" url="server/server_aboutdbconnect.html" />
 	<mapID target="registering_app_server_jboss" url="server/jboss/registering_app_server_jboss.html" />
+		<mapID target="about_jboss" url="server/jboss/about_jboss.html" />
+		<mapID target="jboss_process" url="server/jboss/jboss_process.html" />
+		<mapID target="jboss_quickref" url="server/jboss/jboss_quickref.html" />
 		<mapID target="datasource_app_server_jboss" url="server/jboss/datasource_app_server_jboss.html" />
 		<mapID target="management_console_app_server_jboss" url="server/jboss/management_console_app_server_jboss.html" />
 		<mapID target="webservice_app_server_jboss" url="server/jboss/webservice_app_server_jboss.html" />
