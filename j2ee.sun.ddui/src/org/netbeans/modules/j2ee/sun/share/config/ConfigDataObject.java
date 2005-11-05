@@ -30,8 +30,18 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
-import org.openide.cookies.*;
-import org.openide.loaders.*;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.XMLDataObject;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.HelpCtx;
@@ -43,7 +53,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.spi.xml.cookies.*;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
@@ -77,6 +89,27 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     public ConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         pf.addFileChangeListener((FileChangeListener) WeakListeners.create(FileChangeListener.class, this, pf));
+        initCookies();
+    }
+    
+    private void initCookies() {
+        // Need to provide null factory for these four cookies to override what
+        // XMLDataObject installed.  Otherwise a duplicate XMLEditorSupport object
+        // will be created and cause bizarre problems.  Real cookie cleanup can wait
+        // until we migrate to multiview framework.
+        CookieSet.Factory factory = new CookieSet.Factory() {
+            public Node.Cookie createCookie(Class klass) {
+                return null;
+            }
+        };
+                
+        // !PW This comment inherited from XMLDataObject.  I'm not exactly sure what it means.
+        // EditorCookie.class must be synchronized with XMLEditor.Env->findCloneableOpenSupport
+        CookieSet cookies = getCookieSet();
+        cookies.add(EditorCookie.class, factory);
+        cookies.add(OpenCookie.class, factory);
+        cookies.add(CloseCookie.class, factory);
+        cookies.add(PrintCookie.class, factory);
     }
     
     public HelpCtx getHelpCtx() {
@@ -223,7 +256,10 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         Node.Cookie retValue = null;
         if (OpenCookie.class.isAssignableFrom(c)) {
             return _getOpenCookie();
-        } else if (EditCookie.class.isAssignableFrom(c)) {
+        } else if (EditCookie.class.isAssignableFrom(c) 
+                || EditorCookie.class.isAssignableFrom(c)
+                || CloseCookie.class.isAssignableFrom(c)
+                || PrintCookie.class.isAssignableFrom(c)) {
             return _getEditCookie();
         } else if (ConfigurationStorage.class.isAssignableFrom(c)) {
             retValue = getStorage();
@@ -361,7 +397,7 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     
     public void removeAllEditorChanges() {
         removeEditorChanges();
-        for (Iterator i=getSecondaries().iterator(); i.hasNext();) {
+        for (Iterator i = getSecondaries().iterator(); i.hasNext(); ) {
             SecondaryConfigDataObject second = (SecondaryConfigDataObject) i.next();
             second.removeEditorChanges();
         }
@@ -372,7 +408,7 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         if (isModified()) {
             return true;
         }
-        for (Iterator i=getSecondaries().iterator(); i.hasNext();) {
+        for (Iterator i = getSecondaries().iterator(); i.hasNext(); ) {
             SecondaryConfigDataObject second = (SecondaryConfigDataObject) i.next();
             if (second.isModified()) {
                 return true;
