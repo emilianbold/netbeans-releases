@@ -120,7 +120,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-libs-formlayout.jar"));
         expectedRoots.add(urlForJar("libs/external/forms-1.0.5.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-jdesktop-layout.jar"));
-        expectedRoots.add(urlForJar("libs/external/swing-layout-0.7.1.jar"));
+        expectedRoots.add(urlForJar("libs/external/swing-layout-0.9.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-options-api.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
         assertEquals("right COMPILE classpath for ant/src", expectedRoots.toString(), urlsOfCp(cp).toString());
@@ -213,7 +213,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-libs-formlayout.jar"));
         expectedRoots.add(urlForJar("libs/external/forms-1.0.5.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-jdesktop-layout.jar"));
-        expectedRoots.add(urlForJar("libs/external/swing-layout-0.7.1.jar"));
+        expectedRoots.add(urlForJar("libs/external/swing-layout-0.9.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-options-api.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
         assertEquals("right COMPILE classpath for ant/src-bridge", expectedRoots.toString(), urlsOfCp(cp).toString());
