@@ -13,9 +13,12 @@
 
 package org.netbeans.modules.favorites.templates;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,32 +43,48 @@ import org.openide.nodes.Node;
  */
 public class TemplatesAction extends CallableSystemAction {
 
+    /** Weak reference to the dialog showing singleton Template Manager. */
+    private Reference dialogWRef = new WeakReference (null);
+    
     public TemplatesAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }    
     
     public void performAction () {
-        final TemplatesPanel tp = new TemplatesPanel ();
-        JButton closeButton = new JButton ();
-        Mnemonics.setLocalizedText (closeButton, NbBundle.getMessage (TemplatesAction.class, "BTN_TemplatesPanel_CloseButton")); // NOI18N
-        JButton openInEditor = new JButton ();
-        openInEditor.setEnabled (false);
-        OpenInEditorListener l = new OpenInEditorListener (tp, openInEditor);
-        openInEditor.addActionListener (l);
-        tp.getExplorerManager ().addPropertyChangeListener (l);
-        Mnemonics.setLocalizedText (openInEditor, NbBundle.getMessage (TemplatesAction.class, "BTN_TemplatesPanel_OpenInEditorButton")); // NOI18N
-        DialogDescriptor dd = new DialogDescriptor (tp,
-                                NbBundle.getMessage (TemplatesAction.class, "LBL_TemplatesPanel_Title"),  // NOI18N
-                                false, // modal
-                                new Object [] { openInEditor, closeButton },
-                                closeButton,
-                                DialogDescriptor.DEFAULT_ALIGN,
-                                null,
-                                null);
-        dd.setClosingOptions (null);
-        // set helpctx to null again, DialogDescriptor replaces null with HelpCtx.DEFAULT_HELP
-        dd.setHelpCtx (null);
-        DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
+        
+        Dialog dialog = (Dialog) dialogWRef.get ();
+
+        if (dialog == null || ! dialog.isShowing ()) {
+
+            final TemplatesPanel tp = new TemplatesPanel ();
+            JButton closeButton = new JButton ();
+            Mnemonics.setLocalizedText (closeButton, NbBundle.getMessage (TemplatesAction.class, "BTN_TemplatesPanel_CloseButton")); // NOI18N
+            JButton openInEditor = new JButton ();
+            openInEditor.setEnabled (false);
+            OpenInEditorListener l = new OpenInEditorListener (tp, openInEditor);
+            openInEditor.addActionListener (l);
+            tp.getExplorerManager ().addPropertyChangeListener (l);
+            Mnemonics.setLocalizedText (openInEditor, NbBundle.getMessage (TemplatesAction.class, "BTN_TemplatesPanel_OpenInEditorButton")); // NOI18N
+            DialogDescriptor dd = new DialogDescriptor (tp,
+                                    NbBundle.getMessage (TemplatesAction.class, "LBL_TemplatesPanel_Title"),  // NOI18N
+                                    false, // modal
+                                    new Object [] { openInEditor, closeButton },
+                                    closeButton,
+                                    DialogDescriptor.DEFAULT_ALIGN,
+                                    null,
+                                    null);
+            dd.setClosingOptions (null);
+            // set helpctx to null again, DialogDescriptor replaces null with HelpCtx.DEFAULT_HELP
+            dd.setHelpCtx (null);
+            
+            dialog = DialogDisplayer.getDefault ().createDialog (dd);
+            dialog.setVisible (true);
+            dialogWRef = new WeakReference (dialog);
+            
+        } else {
+            dialog.toFront ();
+        }
+        
     }
     
     protected boolean asynchronous() {
