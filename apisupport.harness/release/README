@@ -622,7 +622,7 @@ unit tests with (beyond what they are already compiled with). E.g. to make sure
 org.openide.filesystems.FileUtil.toFileObject works reliably:
 
     test.unit.run.cp.extra=\
-        ${netbeans.dest.dir}/platform5/modules/org-netbeans-modules-masterfs.jar
+        ${netbeans.dest.dir}/platform6/modules/org-netbeans-modules-masterfs.jar
 
 test.unit.lib.cp - path to some basic libraries which can be used in unit tests:
 junit.jar, nbjunit.jar, and insanelib.jar. Not needed for netbeans.org modules.
