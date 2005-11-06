@@ -15,10 +15,13 @@ package org.netbeans.modules.editor.settings.storage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.KeyStroke;
+import javax.swing.text.AttributeSet;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;

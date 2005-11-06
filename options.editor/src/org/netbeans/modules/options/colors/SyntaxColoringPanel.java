@@ -98,7 +98,9 @@ PropertyChangeListener {
     private JTextField          tfFont = new JTextField ("");
     private JButton             bFont = new JButton ("...");
     private ColorComboBox	foregroundColorChooser = new ColorComboBox ();
+    private JButton             bForeground = new JButton ("...");
     private ColorComboBox	backgroundColorChooser = new ColorComboBox ();
+    private JButton             bBackground = new JButton ("...");
     private JComboBox		cbEffects = new JComboBox ();
     private ColorComboBox	effectsColorChooser = new ColorComboBox ();
     private JPanel              previewPanel = new JPanel ();
@@ -134,6 +136,10 @@ PropertyChangeListener {
 	tfFont.setEditable (false);
         bFont.addActionListener (this);
         bFont.setMargin (new Insets (0, 0, 0, 0));
+        bForeground.addActionListener (this);
+        bForeground.setMargin (new Insets (0, 0, 0, 0));
+        bBackground.addActionListener (this);
+        bBackground.setMargin (new Insets (0, 0, 0, 0));
         foregroundColorChooser.addPropertyChangeListener (this);
 
         backgroundColorChooser.addPropertyChangeListener (this);
@@ -182,9 +188,11 @@ PropertyChangeListener {
         builder.add (tfFont,	                        cc.xy  (5, 5));
         builder.add (bFont,                             cc.xy  (7, 5));
         builder.addLabel (loc ("CTL_Foreground_label"), lc.xy  (3, 7),
-                          foregroundColorChooser,	cc.xyw (5, 7, 3));
+                          foregroundColorChooser,	cc.xy  (5, 7));
+        builder.add (bForeground,                       cc.xy  (7, 7));
         builder.addLabel (loc ("CTL_Background_label"), lc.xy  (3, 9),
-                          backgroundColorChooser,	cc.xyw (5, 9, 3));
+                          backgroundColorChooser,	cc.xy  (5, 9));
+        builder.add (bBackground,                       cc.xy  (7, 9));
         builder.addLabel (loc ("CTL_Effects_label"),	lc.xy  (3, 11),
                           cbEffects,			cc.xyw (5, 11, 3));
         builder.addLabel (loc ("CTL_Effects_color"),	lc.xy  (3, 13),
@@ -493,8 +501,9 @@ PropertyChangeListener {
     private Color oldHighlight;
     private void highlightCurrentCategory () {
         if (oldCategory != null) unhighlightCurrentCategory ();
-        SimpleAttributeSet as = (SimpleAttributeSet) getCurrentCategory ();
-        if (as == null) return;
+        AttributeSet currentAS = getCurrentCategory ();
+        if (currentAS == null) return;
+        SimpleAttributeSet as = new SimpleAttributeSet (currentAS);
         Color highlight = Color.red;
         oldCategory = as;
         oldHighlight = (Color) as.getAttribute (StyleConstants.Underline);
@@ -502,6 +511,7 @@ PropertyChangeListener {
             StyleConstants.Underline,
             highlight
         );
+        replaceCurrrentCategory (as);
         updatePreview ();
     }
     
