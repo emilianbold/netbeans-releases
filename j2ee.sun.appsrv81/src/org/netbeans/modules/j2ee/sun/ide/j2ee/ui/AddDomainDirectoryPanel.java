@@ -104,6 +104,13 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
                         parent.getAbsolutePath()));
                 return false;
             }
+            if (domainDir.exists()) {
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
+                        "Msg_InValidDomainDir",                                 //NOI18N
+                        parent.getAbsolutePath()));
+                return false;                
+            }
             wiz.putProperty(AddDomainWizardIterator.DOMAIN,domainDir.getName());
             wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,
                     domainDir.getParentFile().getAbsolutePath());

@@ -75,7 +75,7 @@ public class Customizer extends JTabbedPane {
                 putClientProperty("HelpID", helpID); // NOI18N
             }
         });
-        addTab(NbBundle.getMessage(Customizer.class,"TXT_Connection"), new ConnectionTabVisualPanel(null,dmp));
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Connection"), new ConnectionTabVisualPanel(dmp));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Classes"), createPathTab(CLASSPATH)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Sources"), createPathTab(SOURCES)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Javadoc"), createPathTab(JAVADOC)); // NOI18N

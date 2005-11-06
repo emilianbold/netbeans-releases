@@ -35,7 +35,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ShowAdminToolActio
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformFactory;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Customizer;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.TargetServerData;
+//import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.TargetServerData;
 
 import java.util.Collection;
 
@@ -79,7 +79,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
     public java.awt.Component getCustomizer() {
         PlatformFactory fact = new PlatformFactory();
         J2eePlatformImpl platform = fact.getJ2eePlatformImpl(manager);
-        TargetServerData foo = new TargetServerData();
+//        TargetServerData foo = new TargetServerData();
         DeploymentManagerProperties dmp = new DeploymentManagerProperties(manager);
         return new Customizer(platform, dmp);
     }

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
- * AddUserDefLocalServerVisualPanel.java
+ * ConnectionTabVisualPanel.java
  *
  * Created on January 7, 2004
  */
@@ -42,12 +42,12 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      * If you need to fire state changes or something similar, you can
      * use this handle to do so.
      */
-    private final AddUserDefLocalServerPanel panel;
+    //private final AddUserDefLocalServerPanel panel;
     private final DeploymentManagerProperties targetData;
     
     /** Create the wizard panel and set up some basic properties. */
-    public ConnectionTabVisualPanel(AddUserDefLocalServerPanel panel, DeploymentManagerProperties data) {
-        this.panel = panel;
+    public ConnectionTabVisualPanel(/*AddUserDefLocalServerPanel panel,*/ DeploymentManagerProperties data) {
+        //this.panel = panel;
         this.targetData = data;
         initComponents();
         InstanceProperties ips = data.getInstanceProperties();
@@ -298,8 +298,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     private void enableHttpMonitorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableHttpMonitorActionPerformed
         targetData.setHttpMonitorOn(""+enableHttpMonitor.isSelected());
         msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_httpMonitorStatusChangedAtRestart"));
-        if (null != panel)
-            panel.fireChangeEvent();
+//        if (null != panel)
+//            panel.fireChangeEvent();
     }//GEN-LAST:event_enableHttpMonitorActionPerformed
 
     private void domainLocFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_domainLocFieldKeyReleased
@@ -319,15 +319,15 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         char[] passWd = passwordField.getPassword();
         String adminPassword = new String(passWd);
         targetData.setPassword(adminPassword);
-        if (null != panel)
-            panel.fireChangeEvent();
+//        if (null != panel)
+//            panel.fireChangeEvent();
     }//GEN-LAST:event_passwordFieldKeyReleased
 
     private void userNameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userNameFieldKeyReleased
         String userName = userNameField.getText();
         targetData.setUserName(userName);
-        if (null != panel)
-            panel.fireChangeEvent();
+//        if (null != panel)
+//            panel.fireChangeEvent();
     }//GEN-LAST:event_userNameFieldKeyReleased
 
     private void socketFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_socketFieldKeyReleased
@@ -342,7 +342,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
 //            return false;
 //        }
         if((userNameField.getText() == null) || (userNameField.getText().trim().equals(""))) {//NOI18N
-            msgLabel.setText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Msg_ValidUser"));
+            msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_ValidUser"));
             return false;
         }
         
@@ -377,7 +377,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     private String getInstallLocation(){
         String insLocation = null;
         JFileChooser chooser = getJFileChooser();
-        int returnValue = chooser.showDialog(this, NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "LBL_Choose_Button")); //NOI18N
+        int returnValue = chooser.showDialog(this, NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Choose_Button")); //NOI18N
         
         if(returnValue == JFileChooser.APPROVE_OPTION){
             insLocation = chooser.getSelectedFile().getAbsolutePath();
@@ -388,18 +388,18 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     private JFileChooser getJFileChooser(){
         JFileChooser chooser = new JFileChooser();
         
-        chooser.setDialogTitle(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
+        chooser.setDialogTitle(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
         chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
         
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setApproveButtonMnemonic(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Choose_Button_Mnemonic").charAt(0)); //NOI18N
+        chooser.setApproveButtonMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Choose_Button_Mnemonic").charAt(0)); //NOI18N
         chooser.setMultiSelectionEnabled(false);
         chooser.addChoosableFileFilter(new dirFilter());
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
+        chooser.setApproveButtonToolTipText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
         
-        chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
-        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
+        chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
         
         return chooser;
     }
@@ -439,7 +439,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         }
         
         public String getDescription() {
-            return NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "LBL_DirType");
+            return NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_DirType");
         }
         
     }
