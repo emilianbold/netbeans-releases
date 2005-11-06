@@ -211,7 +211,7 @@ public class CreateTableDialog {
             addbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     if (table.getCellEditor() != null) {
-                        table.getCellEditor().cancelCellEditing();
+                        table.getCellEditor().stopCellEditing();
                     }
                     DataModel model = (DataModel)table.getModel();
                     ColumnItem item = new ColumnItem();
@@ -229,7 +229,7 @@ public class CreateTableDialog {
             delbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     if (table.getCellEditor() != null) {
-                        table.getCellEditor().cancelCellEditing();
+                        table.getCellEditor().stopCellEditing();
                     }
                     int idx = table.getSelectedRow();
                     if (idx != -1)
