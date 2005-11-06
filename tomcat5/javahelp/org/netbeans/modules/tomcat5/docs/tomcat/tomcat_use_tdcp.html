@@ -27,7 +27,7 @@ way is to access your JDBC resource directly from a JSP file using the JSTL 1.1 
  testing purposes and in small web applications only.</p>
 <p><b>To set up a JSP file to use the JSTL 1.1 tag library to access a data source:</b></p>
 <ol>
-	<li> Set up a <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server connection pool</a>, a <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss">JBoss Application Server connection pool</a>, or a <a href="tomcat_setup_tdcp.html">Tomcat connection pool</a>.</li>
+	<li> Set up a <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server connection pool</a>, a <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server connection pool</a>, or a <a href="tomcat_setup_tdcp.html">Tomcat connection pool</a>.</li>
 	<li>Right-click the web application project's Libraries node, click Add Library, and choose JSTL 1.1.
 <li>Expand the project node and the Web Pages node 
 and double-click the default index.jsp node. (Instead of using the
@@ -43,7 +43,7 @@ Now modify the JSP file to do the following:</p>
    &lt;%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %&gt;</pre></li>
   <li>Query the database. 
   Make sure to specify the same JNDI name as specified in the JDBC resource that you defined when
-  setting up the connection pool on the <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server</a>, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss">JBoss Application Server</a>, or <a href="tomcat_setup_tdcp.html">Tomcat Web Server</a>. 
+  setting up the connection pool on the <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server</a>, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server</a>, or <a href="tomcat_setup_tdcp.html">Tomcat Web Server</a>. 
 To do so, paste or type code similar to the following below the taglib directives in a JSP file:
 
 <pre>   &lt;sql:query var="queryresults" dataSource="jdbc/poolDB"&gt;
