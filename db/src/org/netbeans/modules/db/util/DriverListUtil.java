@@ -149,6 +149,14 @@ public class DriverListUtil {
         drivers.add("org.hsql.jdbcDriver");
         urls.add("jdbc:HypersonicSQL:<DB>");
         
+        names.add("jTDS");
+        drivers.add("net.sourceforge.jtds.jdbc.Driver");
+        urls.add("jdbc:jtds:sqlserver://<server>[:<PORT>][/<DATABASE>]");
+        
+        names.add("jTDS");
+        drivers.add("net.sourceforge.jtds.jdbc.Driver");
+        urls.add("jdbc:jtds:sybase://<server>[:<PORT>][/<DATABASE>]");
+        
         names.add("Mckoi SQL Database"); //(server)
         drivers.add("com.mckoi.JDBCDriver");
         urls.add("jdbc:mckoi://<HOST>[:<PORT>]");
