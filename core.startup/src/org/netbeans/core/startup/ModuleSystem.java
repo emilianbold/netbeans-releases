@@ -48,6 +48,7 @@ public final class ModuleSystem {
      * so it is forbidden to call readList, scanForNewAndRestore, or installNew.
      */
     public ModuleSystem(FileSystem systemFileSystem) throws IOException {
+        if (Boolean.getBoolean("org.netbeans.core.startup.ModuleSystem.CULPRIT")) Thread.dumpStack(); // NOI18N
         ev = Boolean.getBoolean("netbeans.modules.quiet") ? (Events)new QuietEvents() : new NbEvents();
         installer = new NbInstaller(ev);
         mgr = new ModuleManager(installer, ev);
