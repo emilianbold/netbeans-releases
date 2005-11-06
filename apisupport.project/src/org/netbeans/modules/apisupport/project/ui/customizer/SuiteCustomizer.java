@@ -33,10 +33,9 @@ public final class SuiteCustomizer extends BasicCustomizer {
     // Programmatic names of categories
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
-    private static final String APPLICATION = "Application"; // NOI18N
-    public static final String BASIC_BRANDING = "BasicBranding"; // NOI18N
-    public static final String BASIC_BRANDING_CHECKBOX = "checkbox"; // NOI18N
-    private static final String SPLASH_BRANDING = "SplashBranding"; // NOI18N
+    public static final String APPLICATION = "Application"; // NOI18N
+    public static final String APPLICATION_CREATE_STANDALONE_APPLICATION = "standaloneApp"; // NOI18N
+    private static final String SPLASH_SCREEN = "SplashScreen"; // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -69,11 +68,7 @@ public final class SuiteCustomizer extends BasicCustomizer {
     private void init() {
         ProjectCustomizer.Category sources = createCategory(SOURCES, "LBL_ConfigSources"); // NOI18N
         ProjectCustomizer.Category libraries = createCategory(LIBRARIES, "LBL_ConfigLibraries"); // NOI18N
-        
-        ProjectCustomizer.Category basicBranding = createCategory(BASIC_BRANDING, "LBL_BasicBranding"); // NOI18N
-        ProjectCustomizer.Category splashBranding = createCategory(SPLASH_BRANDING, "LBL_SplashBranding"); // NOI18N
-
-        
+        ProjectCustomizer.Category splashBranding = createCategory(SPLASH_SCREEN, "LBL_SplashBranding"); // NOI18N
         ProjectCustomizer.Category application = ProjectCustomizer.Category.create(
                 APPLICATION,
                 NbBundle.getMessage(SuiteProperties.class, "LBL_Application"),
@@ -85,10 +80,9 @@ public final class SuiteCustomizer extends BasicCustomizer {
             sources, libraries, application
         });
 
-        createPanel(application, new SuiteCustomizerBasicBranding(suiteProps));        
         createPanel(sources, new SuiteCustomizerSources(suiteProps));
         createPanel(libraries, new SuiteCustomizerLibraries(suiteProps));
-        createPanel(basicBranding, new SuiteCustomizerBasicBranding(suiteProps));
+        createPanel(application, new SuiteCustomizerBasicBranding(suiteProps));        
         createPanel(splashBranding, new SuiteCustomizerSplashBranding(suiteProps));
         
         listenToPanels();

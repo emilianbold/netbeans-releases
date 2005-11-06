@@ -29,7 +29,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
- * Represents <em>Basic branding parameters</em> panel in Suite customizer.
+ * Represents <em>Application</em> panel in Suite customizer.
  *
  * @author Radek Matous
  */
@@ -347,9 +347,8 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
     }
 
     public void showSubCategory(String name) {
-        if (name.equals(SuiteCustomizer.BASIC_BRANDING_CHECKBOX)) {
-            //buildWithBranding.requestFocus();
-            addOn.requestFocus();
+        if (name.equals(SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION)) {
+            standaloneApp.requestFocus();
         } else {
             throw new IllegalArgumentException(name);
         }

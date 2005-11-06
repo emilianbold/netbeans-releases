@@ -25,7 +25,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -164,19 +163,22 @@ public final class SuiteActions implements ActionProvider {
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
             targetNames = new String[] {"debug"}; // NOI18N
         } else if (command.equals("build-zip")) { // NOI18N
+            if (promptForAppName(PROMPT_FOR_APP_NAME_MODE_ZIP)) { // #65006
+                return null;
+            }
             targetNames = new String[] {"build-zip"}; // NOI18N
         } else if (command.equals("build-jnlp")) { // NOI18N
-            if (promptForAppName()) {
+            if (promptForAppName(PROMPT_FOR_APP_NAME_MODE_JNLP)) {
                 return null;
             }
             targetNames = new String[] {"build-jnlp"}; // NOI18N
         } else if (command.equals("run-jnlp")) { // NOI18N
-            if (promptForAppName()) {
+            if (promptForAppName(PROMPT_FOR_APP_NAME_MODE_JNLP)) {
                 return null;
             }
             targetNames = new String[] {"run-jnlp"}; // NOI18N
         } else if (command.equals("debug-jnlp")) { // NOI18N
-            if (promptForAppName()) {
+            if (promptForAppName(PROMPT_FOR_APP_NAME_MODE_JNLP)) {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
@@ -192,16 +194,28 @@ public final class SuiteActions implements ActionProvider {
     private static FileObject findBuildXml(SuiteProject project) {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
-    
+
+    private static final int PROMPT_FOR_APP_NAME_MODE_JNLP = 0;
+    private static final int PROMPT_FOR_APP_NAME_MODE_ZIP = 1;
     /** @return true if the dialog is shown */
-    private boolean promptForAppName() {
+    private boolean promptForAppName(int mode) {
         String name = project.getEvaluator().getProperty("app.name"); // NOI18N
         if (name != null) {
             return false;
         }
         
         // #61372: warn the user, rather than disabling the action.
-        String msg = NbBundle.getMessage(ModuleActions.class, "ERR_app_name");
+        String msg;
+        switch (mode) {
+            case PROMPT_FOR_APP_NAME_MODE_JNLP:
+                msg = NbBundle.getMessage(ModuleActions.class, "ERR_app_name_jnlp");
+                break;
+            case PROMPT_FOR_APP_NAME_MODE_ZIP:
+                msg = NbBundle.getMessage(ModuleActions.class, "ERR_app_name_zip");
+                break;
+            default:
+                throw new AssertionError(mode);
+        }
         DialogDescriptor d = new DialogDescriptor(msg, NbBundle.getMessage(ModuleActions.class, "TITLE_app_name"));
         d.setModal(true);
         JButton configure = new JButton();
@@ -214,7 +228,7 @@ public final class SuiteActions implements ActionProvider {
         d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
         if (DialogDisplayer.getDefault().notify(d).equals(configure)) {
             SuiteCustomizer cpi = ((SuiteCustomizer) project.getLookup().lookup(SuiteCustomizer.class));
-            cpi.showCustomizer(SuiteCustomizer.BASIC_BRANDING, SuiteCustomizer.BASIC_BRANDING_CHECKBOX);
+            cpi.showCustomizer(SuiteCustomizer.APPLICATION, SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION);
         }
         return true;
     }

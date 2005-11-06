@@ -27,6 +27,7 @@ import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGeneratorTest;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
@@ -44,6 +45,12 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach
  */
 public class GenerateJNLPApplicationTest extends TestBase {
+    
+    static {
+        // #65461: do not try to load ModuleInfo instances from ant module
+        System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
+        LayerTestBase.Lkp.setLookup(new Object[0]);
+    }
     
     private ErrorManager err;
     private SuiteProject suite;
@@ -66,25 +73,16 @@ public class GenerateJNLPApplicationTest extends TestBase {
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
     }
     
-    public void testBuildTheJNLPAppWhenAppNamePropIsNotSet() {
-        ActionProvider p = (ActionProvider)suite.getLookup().lookup(ActionProvider.class);
+    public void testBuildTheJNLPAppWhenAppNamePropIsNotSet() throws Exception {
+        SuiteActions p = (SuiteActions) suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("Provider is here");
         
         List l = Arrays.asList(p.getSupportedActions());
         assertTrue("We support build-jnlp: " + l, l.contains("build-jnlp"));
         
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
-        p.invokeAction("build-jnlp", suite.getLookup());
-        
-        FileObject[] arr = suite.getProjectDirectory().getChildren();
-        List subobj = new ArrayList (Arrays.asList(arr));
-        subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
-        subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
-        subobj.remove(suite.getProjectDirectory().getFileObject("build.xml"));
-        
-        if (!subobj.isEmpty()) {
-            fail("There should be no created directories in the suite dir: " + subobj);
-        }   
+        ExecutorTask task = p.invokeActionImpl("build-jnlp", suite.getLookup());
+        assertNull("did not even run task", task);
     }
     
     public void testBuildTheJNLPAppWhenAppNamePropIsSet() throws Exception {

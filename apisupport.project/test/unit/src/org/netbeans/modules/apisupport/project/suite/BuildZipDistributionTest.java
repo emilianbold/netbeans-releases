@@ -10,38 +10,44 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.apisupport.project.suite;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectGeneratorTest;
+import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerTestBase.Lkp;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Checks building of ZIP support.
  * @author Jaroslav Tulach
  */
 public class BuildZipDistributionTest extends TestBase {
+    
+    static {
+        // #65461: do not try to load ModuleInfo instances from ant module
+        System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
+        LayerTestBase.Lkp.setLookup(new Object[0]);
+    }
     
     private SuiteProject suite;
     
@@ -63,33 +69,20 @@ public class BuildZipDistributionTest extends TestBase {
         proj.open();
     }
     
-    public void testBuildThezipAppWhenAppNamePropIsNotSet() throws Exception {
-        SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
+    public void testBuildTheZipAppWhenAppNamePropIsNotSet() throws Exception {
+        SuiteActions p = (SuiteActions) suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("Provider is here", p);
         
         List l = Arrays.asList(p.getSupportedActions());
         assertTrue("We support build-zip: " + l, l.contains("build-zip"));
         
+        DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
         ExecutorTask task = p.invokeActionImpl("build-zip", suite.getLookup());
-        
-        assertNotNull("Task was started", task);
-        assertEquals("There is a failure as app.name is not set", 1, task.result());
-        
-        org.openide.filesystems.FileObject[] arr = suite.getProjectDirectory().getChildren();
-        List subobj = new ArrayList (Arrays.asList(arr));
-        subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
-        subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
-        subobj.remove(suite.getProjectDirectory().getFileObject("build.xml"));
-        subobj.remove(suite.getProjectDirectory().getFileObject("build"));
-        
-        if (!subobj.isEmpty()) {
-            fail("There should be no created directories in the suite dir: " + subobj);
-        }   
+        assertNull("did not even run task", task);
     }
     
-    public void testBuildThezipAppWhenAppNamePropIsSet() throws Exception {
-        FileObject x = suite.getProjectDirectory().getFileObject("nbproject/project.properties");
-        EditableProperties ep = org.netbeans.modules.apisupport.project.Util.loadProperties(x);
+    public void testBuildTheZipAppWhenAppNamePropIsSet() throws Exception {
+        EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("app.name", "fakeapp");
         
         StringBuffer exclude = new StringBuffer();
@@ -110,7 +103,8 @@ public class BuildZipDistributionTest extends TestBase {
             "org.netbeans.core.multiview," +
             "org.openide.util.enumerations" +
             "");
-        org.netbeans.modules.apisupport.project.Util.storeProperties(x, ep);
+        suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(suite);
         
         SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("Provider is here", p);
@@ -124,7 +118,7 @@ public class BuildZipDistributionTest extends TestBase {
         assertNotNull("Task was started", task);
         assertEquals("Finished ok", 0, task.result());
         
-        org.openide.filesystems.FileObject[] arr = suite.getProjectDirectory().getChildren();
+        FileObject[] arr = suite.getProjectDirectory().getChildren();
         List subobj = new ArrayList (Arrays.asList(arr));
         subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
         subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
@@ -141,7 +135,7 @@ public class BuildZipDistributionTest extends TestBase {
         FileObject zip = dist.getFileObject("fakeapp.zip");
         assertNotNull("ZIP file created: " + zip, zip);
         
-        File zipF = org.openide.filesystems.FileUtil.toFile(zip);
+        File zipF = FileUtil.toFile(zip);
         JarFile zipJ = new JarFile(zipF);
         Enumeration en = zipJ.entries();
         int cntzip = 0;
