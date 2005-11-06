@@ -240,6 +240,9 @@ public class CreateTableDialog {
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     final ActionEvent evt = event;
+                    if (table.getCellEditor() != null) {
+                        table.getCellEditor().stopCellEditing();
+                    }
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run () {
                           if (evt.getSource() == DialogDescriptor.OK_OPTION) {
@@ -436,7 +439,6 @@ public class CreateTableDialog {
                 }
                 
                 public void focusLost(FocusEvent e) {
-                    table.setValueAt(x.getText(), table.getEditingRow(), table.getEditingColumn());
                 }
             });
         }
