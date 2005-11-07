@@ -140,6 +140,7 @@ public class GetCleanAction extends AbstractSystemAction {
         try {
             File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision, group);
             if (cleanFile != null) {
+                backup(file);
                 FileUtils.copyFile(cleanFile, file);
                 if (entry != null && entry.isUserFileToBeRemoved()) {
                     entry.setRevision(entry.getRevision().substring(1));
@@ -157,6 +158,19 @@ public class GetCleanAction extends AbstractSystemAction {
             } else {
                 ErrorManager.getDefault().notify(e);
             }
+        }
+    }
+
+    private static void backup(File file) {
+        Entry entry = null;
+        try {
+            entry = CvsVersioningSystem.getInstance().getAdminHandler().getEntry(file);
+            if (entry != null) {
+                File backup = new File(file.getParentFile(), ".#" + file.getName() + "." + entry.getRevision());
+                FileUtils.copyFile(file, backup);
+            }
+        } catch (IOException e) {
+            // ignore
         }
     }
 }
