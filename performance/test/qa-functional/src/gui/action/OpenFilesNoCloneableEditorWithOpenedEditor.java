@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,9 @@ import org.netbeans.jellytools.actions.OpenAction;
  * @author  mmirilovic@netbeans.org
  */
 public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoCloneableEditor {
+    
+    /** Name of file to pre-open */
+    public static String fileName_preopen;
     
     /**
      * Creates a new instance of OpenFilesNoCloneableEditor
@@ -48,7 +51,8 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
         WAIT_AFTER_OPEN = 1500;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
-        fileName = "Bundle.properties";
+        fileName = "Bundle20kB.properties";
+        fileName_preopen = "Bundle.properties";
         menuItem = OPEN;
         doMeasurement();
     }
@@ -58,6 +62,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "splash.gif";
+        fileName_preopen = "Main.java";
         menuItem = OPEN;
         doMeasurement();
     }
@@ -67,7 +72,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|" + fileName_preopen));
     }
     
 }

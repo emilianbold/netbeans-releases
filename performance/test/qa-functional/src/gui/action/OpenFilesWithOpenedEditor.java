@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,9 @@ import org.netbeans.jellytools.actions.OpenAction;
  * @author  mmirilovic@netbeans.org
  */
 public class OpenFilesWithOpenedEditor extends OpenFiles {
+    
+    /** Name of file to pre-open */
+    public static String fileName_preopen;
     
     /**
      * Creates a new instance of OpenFilesWithOpenedEditor
@@ -49,6 +52,7 @@ public class OpenFilesWithOpenedEditor extends OpenFiles {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Main20kB.java";
+        fileName_preopen = "Main.java";
         menuItem = OPEN;
         doMeasurement();
     }
@@ -59,6 +63,7 @@ public class OpenFilesWithOpenedEditor extends OpenFiles {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "textfile20kB.txt";
+        fileName_preopen = "textfile.txt";
         menuItem = OPEN;
         doMeasurement();
     }
@@ -69,6 +74,7 @@ public class OpenFilesWithOpenedEditor extends OpenFiles {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "xmlfile20kB.xml";
+        fileName_preopen = "xmlfile.xml";
         menuItem = EDIT;
         doMeasurement();
     }
@@ -78,7 +84,12 @@ public class OpenFilesWithOpenedEditor extends OpenFiles {
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + fileName_preopen));
+    }
+    
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new OpenFilesWithOpenedEditor("testOpening20kBTxtFile"));
     }
     
 }

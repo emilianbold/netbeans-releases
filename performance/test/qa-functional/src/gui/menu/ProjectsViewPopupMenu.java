@@ -82,7 +82,7 @@ public class ProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
     }
     
     public void testPropertiesFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Bundle.properties"));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Bundle20kB.properties"));
     }
     
     public void testXmlFilePopupMenuProjects(){
