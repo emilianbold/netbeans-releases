@@ -267,6 +267,13 @@
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />	
 		<tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
+		<tocitem text="Server-Specific Information for Web Services" >
+			<tocitem text="About Server-Specific Information for Web Services" target="about_server_specific" />
+ 			<tocitem text="Deploying a Web Service on the JBoss Application Server" target="webservice_app_server_jboss" />
+			<tocitem text="Consuming a Web Service on the JBoss Application Server" target="webserviceclient_app_server_jboss" />
+			<tocitem text="Using JWSDP 1.6 on the Tomcat Web Server" target="tomcat_jwsdp" />
+			<tocitem text="Writing Ant Targets for Web Services on the Tomcat Web Server" target="tomcat_non_jwsdp" />
+		</tocitem>
  	 </tocitem>
 	 <tocitem text="Implementing Web Services" >
 		<tocitem text="About Implementing Web Services" target="about_implement_ws" />
@@ -323,13 +330,6 @@
 			<tocitem text="Logging" target="example_logging" />
 			<tocitem text="Auditing" target="example_auditing" />	
 		</tocitem>
-	</tocitem>
-	<tocitem text="Server-Specific Information" >
-		<tocitem text="About Server-Specific Information for Web Services" target="about_server_specific" />
- 		<tocitem text="Deploying a Web Service on the JBoss Application Server" target="webservice_app_server_jboss" />
-		<tocitem text="Consuming a Web Service on the JBoss Application Server" target="webserviceclient_app_server_jboss" />
-		<tocitem text="Using JWSDP 1.6 on the Tomcat Web Server" target="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc_jwsdp.html" />
-		<tocitem text="Writing Ant Targets for Web Services on the Tomcat Web Server" target="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc.html" />
 	</tocitem>
  </tocitem> 
 </tocitem>
