@@ -41,7 +41,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.SimpleAttributeSet;
@@ -52,7 +55,11 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.SyntaxSupport;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
 import org.netbeans.modules.options.OptionsPanel;
@@ -286,6 +293,7 @@ public class ColorModel {
 
     class Preview extends JPanel {
         
+        static final String         PROP_CURRENT_ELEMENT = "currentAElement";
         private JEditorPane         editorPane;
         private FontColorSettings   fontColorSettings;
         
@@ -370,7 +378,29 @@ public class ColorModel {
             editorPane.setContentType (internalMimeType);
             document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
-            editorPane.setEnabled (false);
+            editorPane.addCaretListener (new CaretListener () {
+                public void caretUpdate (CaretEvent e) {
+                    int position = e.getDot ();
+                    SyntaxSupport ss = Utilities.getSyntaxSupport (Utilities.getEditorUI (editorPane).getComponent ());
+                    if (!(ss instanceof ExtSyntaxSupport)) return;
+                    try {
+                        TokenItem tokenItem = ((ExtSyntaxSupport) ss).
+                            getTokenChain (position, position + 1);
+                        if (tokenItem == null) return;
+                        String elementName = tokenItem.getTokenContextPath ().
+                                getNamePrefix ();
+                        if (tokenItem.getTokenID ().getCategory () != null)
+                            elementName += tokenItem.getTokenID ().
+                                getCategory ().getName ();
+                        else
+                            elementName += tokenItem.getTokenID ().getName ();
+                        firePropertyChange (PROP_CURRENT_ELEMENT, null, elementName);
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace ();
+                    }
+                }
+            });
+            // editorPane.setEnabled (false);
             InputStream is = loadPreviewExample (language);
             if (is == null) {
                 assert true :
@@ -393,7 +423,7 @@ public class ColorModel {
         
         private InputStream loadPreviewExample (String language) {
             String exampleName = language == ALL_LANGUAGES ?
-                "JavaExample" :
+                "AllLanguagesExample" :
                 language + "Example";
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject exampleFile = fs.findResource 

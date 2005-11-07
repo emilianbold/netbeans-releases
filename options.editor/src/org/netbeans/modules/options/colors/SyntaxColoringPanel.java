@@ -281,6 +281,22 @@ PropertyChangeListener {
     
     public void propertyChange (PropertyChangeEvent evt) {
         if (!listen) return;
+        if (evt.getPropertyName () == Preview.PROP_CURRENT_ELEMENT) {
+            String currentCategory = (String) evt.getNewValue ();
+            Vector categories = getCategories (currentProfile, currentLanguage);
+            if (currentLanguage.equals (ColorModel.ALL_LANGUAGES))
+                currentCategory = (String) convertALC.get (currentCategory);
+            int i, k = categories.size ();
+            for (i = 0; i < k; i++) {
+                AttributeSet as = (AttributeSet) categories.get (i);
+                if (!currentCategory.equals (
+                    as.getAttribute (StyleConstants.NameAttribute)
+                )) continue;
+                lCategories.setSelectedIndex (i);
+                lCategories.ensureIndexIsVisible (i);
+                return;
+            }
+        }
         if (evt.getPropertyName () != ColorComboBox.PROP_COLOR) return;
         updateData ();
     }
@@ -290,11 +306,16 @@ PropertyChangeListener {
         currentProfile = colorModel.getCurrentProfile ();
         currentLanguage = (String) colorModel.getLanguages ().
             iterator ().next ();
+        if (preview != null) 
+            preview.removePropertyChangeListener 
+                (Preview.PROP_CURRENT_ELEMENT, this);
         Component component = colorModel.getSyntaxColoringPreviewComponent 
             (currentLanguage);
         preview = (Preview) component;
         previewPanel.removeAll ();
         previewPanel.add ("Center", component);
+        preview.addPropertyChangeListener 
+            (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
         List languages = new ArrayList 
             (colorModel.getLanguages ());
@@ -753,6 +774,22 @@ PropertyChangeListener {
             String result = sb.toString ();
             return result.replace ('+', ' ');
         }
+    }
+    
+    private static Map convertALC = new HashMap ();
+    
+    static {
+        convertALC.put ("java-block-comment", "comment");
+        convertALC.put ("java-keywords", "keyword");
+        convertALC.put ("java-line-comment", "comment");
+        convertALC.put ("java-dentifier", "identifier");
+        convertALC.put ("java-numeric-literals", "number");
+        convertALC.put ("java-operators", "operator");
+        convertALC.put ("java-char-literal", "char");
+        convertALC.put ("java-string-literal", "string");
+        convertALC.put ("java-whitespace", "whitespace");
+        convertALC.put ("java-identifier", "identifier");
+        convertALC.put ("java-error", "error");
     }
     
     private static Integer defaultFontSize;

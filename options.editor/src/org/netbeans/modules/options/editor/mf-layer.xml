@@ -47,9 +47,9 @@ Microsystems, Inc. All Rights Reserved.
         </file>    
         <attr name="Keymaps.instance/Advanced.instance" boolvalue="true" />
         <folder name="PreviewExamples">
+            <file name="AllLanguagesExample" url="../colors/AllLanguagesExample"/>
             <file name="CSSExample" url="../colors/CSSExample"/>
             <file name="DTDExample" url="../colors/DTDExample"/>
-            <file name="DefaultsExample" url="../colors/DefaultsExample"/>
             <file name="HTMLExample" url="../colors/HTMLExample"/>
             <file name="HighlightingExample" url="../colors/HighlightingExample"/>
             <file name="JSPExample" url="../colors/JSPExample"/>
