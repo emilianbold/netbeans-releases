@@ -7,19 +7,22 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Date;
+import java.util.Enumeration;
 import org.openide.util.Enumerations;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.util.*;
-
 
 // XXX most usages of FileSystem.getDisplayName for localized exception messages
 // should be using FileUtil.getFileDisplayName instead
@@ -45,7 +48,7 @@ final class AbstractFileObject extends AbstractFolder {
     private Boolean folder;
 
     /** the time of last modification */
-    private java.util.Date lastModified = lastModified();
+    private Date lastModified = lastModified();
 
     /** Constructor. Takes reference to file system this file belongs to.
     *
@@ -123,7 +126,7 @@ final class AbstractFileObject extends AbstractFolder {
     * Get last modification time.
     * @return the date
     */
-    public java.util.Date lastModified() {
+    public Date lastModified() {
         if ((lastModified == null) || !getAbstractFileSystem().isLastModifiedCacheEnabled()) {
             lastModified = getAbstractFileSystem().info.lastModified(getPath());
         }
@@ -163,7 +166,7 @@ final class AbstractFileObject extends AbstractFolder {
     * @exception FileNotFoundException if the file does not exists, is a folder
     * rather than a regular file  or is invalid
     */
-    public InputStream getInputStream() throws java.io.FileNotFoundException {
+    public InputStream getInputStream() throws FileNotFoundException {
         return StreamPool.createInputStream(this);
     }
 
@@ -174,13 +177,13 @@ final class AbstractFileObject extends AbstractFolder {
     * @exception IOException if an error occures (the file is invalid, etc.)
     */
     public OutputStream getOutputStream(FileLock lock)
-    throws java.io.IOException {
+    throws IOException {
         return getOutputStream(lock, true);
     }
 
     /** fireFileChange defines if should be fired fileChanged event after close of stream*/
     synchronized OutputStream getOutputStream(FileLock lock, boolean fireFileChanged)
-    throws java.io.IOException {
+    throws IOException {
         FileSystem fs = getAbstractFileSystem();
 
         if (fs.isReadOnly()) {
@@ -245,7 +248,7 @@ final class AbstractFileObject extends AbstractFolder {
     /** Tests the lock if it is valid, if not throws exception.
     * @param l lock to test
     */
-    private void testLock(FileLock l) throws java.io.IOException {
+    private void testLock(FileLock l) throws IOException {
         if (lock == null) {
             FSException.io("EXC_InvalidLock", l, getPath(), getAbstractFileSystem().getDisplayName(), lock); // NOI18N
         }
@@ -482,7 +485,7 @@ final class AbstractFileObject extends AbstractFolder {
                     }
                 }
 
-                newFullName = parent.getPath() + PATH_SEP + name;
+                newFullName = parent.isRoot() ? name : parent.getPath() + PATH_SEP + name;
                 oldFullName = getPath();
 
                 if (isReadOnly()) {
@@ -774,7 +777,7 @@ final class AbstractFileObject extends AbstractFolder {
 
                 synchronized (this) {
                     // check the time of a file last modification
-                    java.util.Date l = null;
+                    Date l = null;
 
                     if (lastModified == null) {
                         lastModified = l = getAbstractFileSystem().info.lastModified(getPath());
@@ -970,8 +973,8 @@ final class AbstractFileObject extends AbstractFolder {
         * Get last modification time.
         * @return the date
         */
-        public java.util.Date lastModified() {
-            return new java.util.Date();
+        public Date lastModified() {
+            return new Date();
         }
 
         /** Test whether this object is a data object.
@@ -1022,8 +1025,8 @@ final class AbstractFileObject extends AbstractFolder {
         * @return an input stream to read the contents of this file
         * @exception FileNotFoundException if the file does not exists or is invalid
         */
-        public InputStream getInputStream() throws java.io.FileNotFoundException {
-            throw new java.io.FileNotFoundException();
+        public InputStream getInputStream() throws FileNotFoundException {
+            throw new FileNotFoundException();
         }
 
         /** Get output stream.
@@ -1033,8 +1036,8 @@ final class AbstractFileObject extends AbstractFolder {
         * @exception IOException if an error occures (the file is invalid, etc.)
         */
         public synchronized OutputStream getOutputStream(FileLock lock)
-        throws java.io.IOException {
-            throw new java.io.IOException();
+        throws IOException {
+            throw new IOException();
         }
 
         /** Lock this file.
@@ -1042,7 +1045,7 @@ final class AbstractFileObject extends AbstractFolder {
         * @throws FileAlreadyLockedException if the file is already locked
         */
         public synchronized FileLock lock() throws IOException {
-            throw new java.io.IOException();
+            throw new IOException();
         }
 
         /** Indicate whether this file is important from a user perspective.
@@ -1072,7 +1075,7 @@ final class AbstractFileObject extends AbstractFolder {
         */
         public void setAttribute(String attrName, Object value)
         throws IOException {
-            throw new java.io.IOException();
+            throw new IOException();
         }
 
         /** Get all file attribute names for this file.
@@ -1091,7 +1094,7 @@ final class AbstractFileObject extends AbstractFolder {
         */
         public synchronized FileObject createFolder(String name)
         throws IOException {
-            throw new java.io.IOException();
+            throw new IOException();
         }
 
         /** Create new data file in this folder with the specified name. Fires
@@ -1105,7 +1108,7 @@ final class AbstractFileObject extends AbstractFolder {
         */
         public synchronized FileObject createData(String name, String ext)
         throws IOException {
-            throw new java.io.IOException();
+            throw new IOException();
         }
 
         /** Renames this file (or folder).
@@ -1121,7 +1124,7 @@ final class AbstractFileObject extends AbstractFolder {
         */
         public void rename(FileLock lock, String name, String ext)
         throws IOException {
-            throw new java.io.IOException();
+            throw new IOException();
         }
 
         /** Delete this file. If the file is a folder and it is not empty then
@@ -1131,7 +1134,7 @@ final class AbstractFileObject extends AbstractFolder {
         * @exception IOException if the file could not be deleted
         */
         public void delete(FileLock lock) throws IOException {
-            throw new java.io.IOException();
+            throw new IOException();
         }
 
         //
@@ -1198,7 +1201,7 @@ final class AbstractFileObject extends AbstractFolder {
     /** Replace that stores name of fs and file.
      * @deprecated In favor of AbstractFolder.Replace.
     */
-    static final class Replace extends Object implements java.io.Serializable {
+    static final class Replace extends Object implements Serializable {
         /** generated Serialized Version UID */
         static final long serialVersionUID = -8543432135435542113L;
         private String fsName;

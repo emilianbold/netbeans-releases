@@ -26,6 +26,7 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
@@ -464,6 +465,23 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("right indentation cleanup for deletion of last child",
                 "    <file name=\"b\"/>\n",
                 l.write());
+    }
+    
+    public void testRename() throws Exception {
+        Layer l = new Layer("    <folder name=\"folder1\">\n        <file name=\"file1.txt\">\n            <attr name=\"a\" stringvalue=\"v\"/>\n        </file>\n    </folder>\n");
+        FileSystem fs = l.read();
+        FileObject f = fs.findResource("folder1");
+        assertNotNull(f);
+        FileLock lock = f.lock();
+        f.rename(lock, "folder2", null);
+        lock.releaseLock();
+        f = fs.findResource("folder2/file1.txt");
+        assertNotNull(f);
+        lock = f.lock();
+        f.rename(lock, "file2.txt", null);
+        lock.releaseLock();
+        assertEquals("#63989: correct rename handling", "    <folder name=\"folder2\">\n        <file name=\"file2.txt\">\n            <attr name=\"a\" stringvalue=\"v\"/>\n        </file>\n    </folder>\n", l.write());
+        // XXX should any associated ordering attrs also be renamed? might be pleasant...
     }
     
     public void testSomeFormattingPreserved() throws Exception {

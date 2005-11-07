@@ -95,7 +95,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         AbstractFileSystem.Change,
         AbstractFileSystem.Info,
         AbstractFileSystem.List,
-        AbstractFileSystem.Transfer,
+        //AbstractFileSystem.Transfer,
         FileChangeListener,
         PropertyChangeListener {
     
@@ -111,7 +111,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         this.change = this;
         this.info = this;
         this.list = this;
-        this.transfer = this;
+        //this.transfer = this;
         this.cookie = cookie;
         try {
             doc = cookie.openDocumentRoot();
@@ -447,18 +447,28 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     }
     
     public void rename(String oldName, String newName) throws IOException {
-        /*
-        Element el = findElement(oldName);
-        if (el == null) throw new FileNotFoundException(oldName);
-        int idx = newName.lastIndexOf('/');
-        if (idx != -1) newName = newName.substring(idx + 1);
-        el.setAttribute("name", newName); // NOI18N
-         */
-        throw new UnsupportedOperationException("XXX"); // NOI18N
+        TreeElement el = findElement(oldName);
+        if (el == null) {
+            throw new FileNotFoundException(oldName);
+        }
+        int idx = newName.lastIndexOf('/') + 1;
+        if (idx != oldName.lastIndexOf('/') + 1 || !oldName.substring(0, idx).equals(newName.substring(0, idx))) {
+            throw new IOException("Cannot rename to a different dir: " + oldName + " -> " + newName); // NOI18N
+        }
+        String newBaseName = newName.substring(idx);
+        assert newBaseName.indexOf('/') == -1;
+        assert newBaseName.length() > 0;
+        try {
+            el.getAttribute("name").setValue(newBaseName); // NOI18N
+        } catch (ReadOnlyException e) {
+            throw (IOException) new IOException(e.toString()).initCause(e);
+        } catch (InvalidArgumentException e) {
+            assert false : e;
+        }
     }
     
+    /*
     public boolean copy(String name, Transfer target, String targetName) throws IOException {
-        /*
         if (! (target instanceof WritableXMLFileSystem)) return false;
         WritableXMLFileSystem otherfs = (WritableXMLFileSystem) target;
         Element el = findElement(name);
@@ -488,12 +498,9 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             appendWithIndent(parent, el2);
         }
         return true;
-         */
-        throw new UnsupportedOperationException("XXX"); // NOI18N
     }
     
     public boolean move(String name, Transfer target, String targetName) throws IOException {
-        /*
         if (! (target instanceof WritableXMLFileSystem)) return false;
         WritableXMLFileSystem otherfs = (WritableXMLFileSystem) target;
         Element el = findElement(name);
@@ -528,9 +535,8 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             appendWithIndent(parent, el2);
         }
         return true;
-         */
-        throw new UnsupportedOperationException("XXX"); // NOI18N
     }
+     */
     
     public Enumeration attributes(String name) {
         TreeElement el = findElement(name);
