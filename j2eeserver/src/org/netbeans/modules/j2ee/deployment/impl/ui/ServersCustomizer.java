@@ -448,7 +448,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         }
 
         public List getServers() {
-            return Collections.unmodifiableList(this.servers);
+            Collections.sort(servers);
+            return Collections.unmodifiableList(servers);
         }
 
         public void add(Node node) {
@@ -501,7 +502,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         }
     }
     
-    private static class ServerNode extends FilterNode {
+    private static class ServerNode extends FilterNode implements Comparable {
         
         private final ServerInstance serverInstance;
         
@@ -519,6 +520,12 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
             return serverInstance;
         }
         
+        public int compareTo(Object other) {
+            if (!(other instanceof ServerNode)) {
+                throw new IllegalArgumentException();
+            }
+            return serverInstance.compareTo(((ServerNode)other).serverInstance);
+        }
     }
     
     private static class ServerCategoryNode extends AbstractNode {

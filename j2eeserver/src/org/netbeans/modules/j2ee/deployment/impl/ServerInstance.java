@@ -40,7 +40,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 
-public class ServerInstance implements Node.Cookie {
+public class ServerInstance implements Node.Cookie, Comparable {
     
     /** Server state is being checked or state changes is in progress */
     public static final int STATE_WAITING   = 1;
@@ -1505,6 +1505,13 @@ public class ServerInstance implements Node.Cookie {
         }
         
         return t;
+    }
+
+    public int compareTo(Object other) {
+        if (!(other instanceof ServerInstance)) {
+            throw new IllegalArgumentException();
+        }
+        return getDisplayName().compareTo(((ServerInstance)other).getDisplayName());
     }
     
 }

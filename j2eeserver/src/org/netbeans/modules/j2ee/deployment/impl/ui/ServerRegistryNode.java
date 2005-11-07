@@ -133,16 +133,16 @@ implements ServerRegistry.PluginListener, InstanceListener {
         }
         
         public void updateKeys() {
-            Collection instances = new ArrayList();
-            
+            List instances = new ArrayList();
             Iterator serverIter = ServerRegistry.getInstance().getServers().iterator();
             while (serverIter.hasNext()) {
                 Server server = (Server)serverIter.next();
                 ServerInstance[] serverInstances = server.getInstances();
-                for (int i = 0; i < serverInstances.length; i++)
+                for (int i = 0; i < serverInstances.length; i++) {
                     instances.add(serverInstances[i]);
+                }
             }
-            
+            Collections.sort(instances);
             setKeys(instances);
         }
     }
