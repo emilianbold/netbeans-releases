@@ -50,7 +50,7 @@ final class FileObj extends BaseFileObj {
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
         FileOutputStream retVal = null;
         try {
-            retVal = new FileOutputStream(getFileName().getFile()) {
+            retVal = new FileOutputStream(f) {
                                 public void close() throws IOException {
                                     if (!closable.isClosed()) {
                                         super.close();
@@ -64,12 +64,18 @@ final class FileObj extends BaseFileObj {
             if (closable != null) {
                 closable.close();
             }
-            if (!f.canWrite()) {
-                // Duh, it's read-only.
-                String msg = NbBundle.getMessage(FileObj.class, "FileObj.readOnlyFile", f.getAbsolutePath());
-                ErrorManager.getDefault().annotate(e, ErrorManager.USER, null, msg, null, null);
-            }
-            throw e;
+            FileNotFoundException fex = e;                        
+            if (!f.exists()) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else if (!f.canWrite()) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else if (f.getParentFile() == null) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else if (!f.getParentFile().exists()) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } 
+            FSException.annotateException(fex);            
+            throw fex;
         }
         return retVal;
     }
@@ -83,7 +89,7 @@ final class FileObj extends BaseFileObj {
         try {
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
             closeableReference = closable;
-            inputStream = new FileInputStream(getFileName().getFile()) {
+            inputStream = new FileInputStream(f) {
                 public void close() throws IOException {
                     super.close();
                     closable.close();
@@ -94,9 +100,20 @@ final class FileObj extends BaseFileObj {
                 closeableReference.close();    
             }
             
-            final FileNotFoundException fileNotFoundException = (FileNotFoundException) new FileNotFoundException(e.toString()).initCause(e);
-            FSException.annotateException(fileNotFoundException);
-            throw fileNotFoundException;
+            FileNotFoundException fex = null;                        
+            if (!f.exists()) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else if (!f.canRead()) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else if (f.getParentFile() == null) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else if (!f.getParentFile().exists()) {
+                fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else {
+                fex = (FileNotFoundException) new FileNotFoundException(e.toString()).initCause(e);
+            }                        
+            FSException.annotateException(fex);
+            throw fex;
         }
         assert inputStream != null;
         return inputStream;
@@ -203,6 +220,7 @@ final class FileObj extends BaseFileObj {
             } else if (!me.getParentFile().exists()) {
                 fex = (FileNotFoundException)new FileNotFoundException(ex.getLocalizedMessage()).initCause(ex);
             }                                                             
+            FSException.annotateException(fex);            
             throw fex;
         }
     }
