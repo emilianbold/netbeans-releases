@@ -1806,7 +1806,7 @@ class LayoutFeeder implements LayoutConstants {
                 // overlap (not required in vertical dimension)
                 analyzeSequential(sub, inclusions);
             }
-            else if (LayoutUtils.contentOverlap(addingSpace, sub, dimension^1)) {
+            else if (orthogonalOverlap(sub)) {
                 boolean dimOverlap = LayoutRegion.overlap(addingSpace, subSpace, dimension, 0);
                 if (dimOverlap && !solveOverlap) {
                     IncludeDesc origPos = originalPositions1[dimension];
@@ -1894,11 +1894,7 @@ class LayoutFeeder implements LayoutConstants {
             }
 
             // second analyze the interval as a single element for "next to" placement
-            boolean ortOverlap;
-            if (solveOverlap || !LayoutUtils.isOverlapPreventedInOtherDimension(addingInterval, sub, dimension))
-                ortOverlap = LayoutUtils.contentOverlap(addingSpace, sub, dimension^1);
-            else
-                ortOverlap = false;
+            boolean ortOverlap = orthogonalOverlap(sub);
             int margin = (dimension == VERTICAL && !ortOverlap ? 4 : 0);
             boolean dimOverlap = LayoutRegion.overlap(addingSpace, subSpace, dimension, margin);
             // in vertical dimension always pretend orthogonal overlap if there
@@ -2004,6 +2000,43 @@ class LayoutFeeder implements LayoutConstants {
                     && LayoutRegion.pointInside(space, TRAILING, groupSpace, dimension));
         }
         return false; */
+    }
+
+    private boolean orthogonalOverlap(LayoutInterval interval) {
+        boolean ortOverlap;
+        if (solveOverlap || !LayoutUtils.isOverlapPreventedInOtherDimension(addingInterval, interval, dimension)) {
+            // we are interested in the orthogonal overlap (i.e. overlap in the other dimension)
+            ortOverlap = LayoutUtils.contentOverlap(addingSpace, interval, dimension^1);
+            if (ortOverlap
+                && dragger.isResizing(dimension) && !dragger.isResizing(dimension^1)
+                && originalPositions1[dimension] != null)
+            {   // there is overlap, but in case of resizing in one dimension
+                // only we should not consider overlap that was not cared of
+                // already before the resizing started (i.e. the resizing
+                // interval was not in sequence with the interval in question)
+                IncludeDesc original = originalPositions1[dimension];
+                LayoutInterval parent = original.parent;
+                if (parent.isParentOf(interval)) {
+                    if (parent.isParallel()
+                        && (original.neighbor == null
+                            || (original.neighbor != interval && !original.neighbor.isParentOf(interval))))
+                        ortOverlap = false;
+                }
+                else if (parent == interval) {
+                    if (parent.isParallel() && original.neighbor == null)
+                        ortOverlap = false;
+                }
+                else if (!interval.isParentOf(parent)) {
+                    parent = LayoutInterval.getCommonParent(parent, interval);
+                    if (parent != null && parent.isParallel())
+                        ortOverlap = false;
+                }
+            }
+        }
+        // otherwise the overlap is prevented in the other dimension so we should
+        // not consider it (though the actual visual appearance might look so)
+        else ortOverlap = false;
+        return ortOverlap;
     }
 
     private IncludeDesc addInclusion(LayoutInterval parent,
