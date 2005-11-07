@@ -383,7 +383,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     public void removeGlobalTopComponentID(String id) {
 //        System.out.println("removing id=" + id);
         synchronized(LOCK_IDS) {
-            globalIDSet.remove(id);
+            globalIDSet.remove(id.toUpperCase());
             WeakReference result = (WeakReference)id2TopComponentMap.remove(id);
             if (result != null) {
                 TopComponent tc = (TopComponent)result.get();
@@ -743,7 +743,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     private String createTopComponentNonPersistentID (TopComponent tc, String preferredID) {
-        String compName = preferredID != null ? preferredID.toUpperCase() : null;
+        String compName = preferredID != null ? preferredID : null;
         // be prepared for null names, empty names and convert to filesystem friendly name
         if ((compName == null) || (compName.length() == 0)) {
             compName = DEFAULT_TC_NAME;
@@ -756,7 +756,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         synchronized(LOCK_IDS) {
             while (isUsed) {
                 isUsed = false;
-                if (globalIDSet.contains(srcName)) {
+                if (globalIDSet.contains(srcName.toUpperCase())) {
                     isUsed = true;
                     srcName = compName + "_" + i;
                     i++;
@@ -765,14 +765,14 @@ public final class PersistenceManager implements PropertyChangeListener {
 
             topComponentNonPersistent2IDMap.put(tc, srcName);
             id2TopComponentNonPersistentMap.put(srcName, new WeakReference(tc));
-            globalIDSet.add(srcName);
+            globalIDSet.add(srcName.toUpperCase());
         }
         
         return srcName;
     }
     
     private String createTopComponentPersistentID (TopComponent tc, String preferredID) {
-        String compName = preferredID != null ? preferredID.toUpperCase() : null;
+        String compName = preferredID != null ? preferredID : null;
         // be prepared for null names, empty names and convert to filesystem friendly name
         if ((compName == null) || (compName.length() == 0)) {
             compName = DEFAULT_TC_NAME;
@@ -790,7 +790,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     getComponentsLocalFolder(), srcName, "settings" // NOI18N
                 );
 
-                if (!srcName.equals(uniqueName) || globalIDSet.contains(uniqueName)) {
+                if (!srcName.equals(uniqueName) || globalIDSet.contains(uniqueName.toUpperCase())) {
                     isUsed = true;
                     // #44293 - proper escaping to keep name synced with InstanceDataObject naming
                     srcName = escape(origName + "_" + i);
@@ -801,7 +801,7 @@ public final class PersistenceManager implements PropertyChangeListener {
 
             topComponent2IDMap.put(tc, srcName);
             id2TopComponentMap.put(srcName, new WeakReference(tc));
-            globalIDSet.add(srcName);
+            globalIDSet.add(srcName.toUpperCase());
         }
         
         return srcName;
@@ -973,7 +973,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             if (!files[i].isFolder() && "settings".equals(files[i].getExt())) { // NOI18N
                 String tc_id = files[i].getName();
                 synchronized(LOCK_IDS) {
-                    globalIDSet.add(tc_id);
+                    globalIDSet.add(tc_id.toUpperCase());
                 }
             }
         }
