@@ -74,6 +74,7 @@
       <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
       <tocitem text="Configuring Java Settings" target="java.java_sources" />
       <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
+      <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
     </tocitem>
 
     <tocitem text="Configuring the IDE's Workspace">
