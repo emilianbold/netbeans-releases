@@ -16,8 +16,8 @@ package org.netbeans.modules.ant.freeform.spi.support;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
+import org.netbeans.modules.ant.freeform.TestBase;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -26,13 +26,14 @@ import org.openide.util.Utilities;
 /**
  * @author David Konecny
  */
-public class UtilTest extends NbTestCase {
+public class UtilTest extends TestBase {
     
     public UtilTest(String name) {
         super(name);
     }
     
     protected void setUp() throws Exception {
+        super.setUp();
         clearWorkDir();
     }
     
@@ -63,4 +64,10 @@ public class UtilTest extends NbTestCase {
         assertEquals("${project.dir}", Util.relativizeLocation(srcApp, projApp, srcApp));
     }
 
+    public void testGetDefaultAntScript() throws Exception {
+        assertNull("no default ant script", Util.getDefaultAntScript(extsrcroot));
+        assertEquals("found build.xml", simple.getProjectDirectory().getFileObject("build.xml"), Util.getDefaultAntScript(simple));
+        assertEquals("found build.xml", extbuildscript.getProjectDirectory().getFileObject("scripts/build.xml"), Util.getDefaultAntScript(extbuildscript));
+    }
+    
 }

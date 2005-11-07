@@ -85,6 +85,7 @@ public final class FreeformProject implements Project {
             new LookupMergerImpl(), // LookupMerger
             new FreeformProjectOperations(this),
 	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
+            new ProjectAccessor(this), //Access to AntProjectHelper and PropertyEvaluator
         });
         return new FreeformLookup(baseLookup, this, helper, eval, aux);
     }

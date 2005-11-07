@@ -17,17 +17,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.ant.freeform.FreeformProject;
+import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
+import org.netbeans.modules.ant.freeform.FreeformProjectType;
+import org.netbeans.modules.ant.freeform.ProjectAccessor;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -219,6 +227,26 @@ public class Util {
             }
         }
         parent.insertBefore(el, insertBefore);
+    }
+    
+    /**Get the "default" (user-specified) ant script for the given freeform project.
+     * Please note that this method may return <code>null</code> if there is no such script.
+     *
+     * WARNING: This method is there only for a limited set of usecases like the profiler plugin.
+     * It should not be used by the freeform project natures.
+     *
+     * @param prj the freeform project
+     * @return the "default" ant script or <code>null</code> if there is no such a script
+     * @throws IllegalArgumentException if the passed project is not a freeform project.
+     */
+    public static FileObject getDefaultAntScript(Project prj) throws IllegalArgumentException {
+        ProjectAccessor accessor = (ProjectAccessor) prj.getLookup().lookup(ProjectAccessor.class);
+        
+        if (accessor == null) {
+            throw new IllegalArgumentException("Only FreeformProjects are supported.");
+        }
+        
+        return FreeformProjectGenerator.getAntScript(accessor.getHelper(), accessor.getEvaluator());
     }
     
 }

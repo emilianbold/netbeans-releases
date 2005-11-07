@@ -76,6 +76,20 @@ is the proper place.
 
     <changes>
 
+        <change id="getDefaultAntScript">
+            <summary>Method getDefaultAntScript added</summary>
+            <version major="1" minor="9"/>
+            <date day="7" month="11" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" />
+            <description>
+                <p>
+                    Method org.netbeans.modules.ant.freeform.spi.support.Util.getDefaultAntScript added.
+                </p>
+            </description>
+            <issue number="67207" />
+        </change>
+        
         <change id="friend-packages">
             <summary>Declare SPI packages for friends only</summary>
             <version major="1" minor="8"/>
