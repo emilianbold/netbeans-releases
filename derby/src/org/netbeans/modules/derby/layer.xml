@@ -4,6 +4,7 @@
     <folder name="Databases">
         <folder name="JDBCDrivers">
             <file name="DerbyDriver.xml" url="DerbyDriver.xml"/>
+            <file name="DerbyEmbeddedDriver.xml" url="DerbyEmbeddedDriver.xml"/>
         </folder>
         <folder name="Runtimes">
             <file name="DerbyRuntime.instance">
