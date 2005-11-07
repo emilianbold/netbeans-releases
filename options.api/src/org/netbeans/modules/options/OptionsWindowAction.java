@@ -182,7 +182,9 @@ public class OptionsWindowAction extends AbstractAction {
                    } 
                 });
             } else
-            if (e.getSource () == DialogDescriptor.CANCEL_OPTION) {
+            if (e.getSource () == DialogDescriptor.CANCEL_OPTION ||
+                e.getSource () == DialogDescriptor.CLOSED_OPTION
+            ) {
                 log.log ("Options Dialog - Cancel pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
