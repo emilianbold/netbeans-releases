@@ -587,23 +587,23 @@ under Print Settings in the Options window)
 <!--Change Method Parameters: -->
 <mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/csh/change-method-parameters_db.html" /> 
 <!--Extract Method: -->
-<mapID target="org.netbeans.modules.refactoring.ui.ExtractMethodRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractMethodRefactoringUI" url="refactor/csh/extract-method_db.html" /> 
 <!--Extract Interface dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.ExtractInterfaceRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractInterfaceRefactoringUI" url="refactor/csh/extract-interface_db.html" /> 
 <!--Extract Super Class dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.ExtractSuperClassRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractSuperClassRefactoringUI" url="refactor/csh/extract-superclass_db.html" /> 
 <!--Safely Delete dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.SafeDeleteUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.SafeDeleteUI" url="refactor/csh/safe-delete_db.html" /> 
 <!--Pull Up dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.PullUpRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.PullUpRefactoringUI" url="refactor/csh/pull-up_db.html" /> 
 <!--Push Down dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.PushDownRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.PushDownRefactoringUI" url="refactor/csh/push-down_db.html" /> 
 <!--Convert Anonymous Class to Inner dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.AnonymousToInnerRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.AnonymousToInnerRefactoringUI" url="refactor/csh/convert-anonymous_db.html" /> 
 <!--Use Supertype Where Possible dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.UseSuperTypeRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.UseSuperTypeRefactoringUI" url="refactor/csh/use-supertype_db.html" /> 
 <!--Move Inner to Outer Level dialog box -->
-<mapID target="org.netbeans.modules.refactoring.ui.InnerToOuterRefactoringUI" url="tbd.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.InnerToOuterRefactoringUI" url="refactor/csh/move-inner_db.html" /> 
 
 
 <!--Usages window-->
