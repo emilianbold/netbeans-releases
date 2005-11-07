@@ -1,57 +1,55 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-<!--
- * 
- *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- *
- *
--->
-  <title>Updating Files in a Local Working Directory</title>
-  <link rel="StyleSheet"
- href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>Updating Files in a Local Working Directory</h2>
-<p>Updating files prior to committing changes made to local copies of
-files is important to avoid merge conflicts and ensure that any changes
-made in the remote repository are incorporated locally.
-</p>
-To update a local version of a file:<br>
-<ol>
-  <li>Right-click the file and choose CVS &gt; Update. </li>
-  <p>The IDE incorporates any changes existing in the repository
-version of the file. </p>
-</ol>
-<h3>Updating Projects with Dependencies<br>
-</h3>
-<p>If you are working on a project for which there are other required
-projects, you can update both the main project and all dependent
-projects using the IDE's Update with Dependencies command.<br>
-</p>
-<p>To update an entire project and all dependent projects:<br>
-</p>
-<ol>
-  <li>Right-click the project and choose CVS &gt; Update with
-Dependencies. </li>
-  <p>The IDE incorporates any changes existing in the repository
-version of all of the projects with the local copies. </p>
-</ol>
-<p></p>
-<dl>
-  <dt> <a name="seealso">See Also</a></dt>
-  <dd> <a href="./cvs-lite_overview.html">Working with CVS </a></dd>
-  <dd> <a href="./cvs-lite_using.html">Using CVS with the IDE</a></dd>
-  <dd> <a href="./cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>
-</dl>
-<hr> <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="50">
-  <tbody>
-    <tr>
-      <td>&nbsp;</td>
-    </tr>
-  </tbody>
-</table>
-</body>
+    <head>
+        <!--
+        * 
+        *     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
+        *     Use is subject to license terms.
+        *
+        *
+        -->
+        <title>Updating Files in a Local Working Directory</title>
+        <link rel="StyleSheet"
+        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Updating Files in a Local Working Directory</h2>
+        <p>Updating files enables you to incorporate any changes that other developers 
+        have committed to the repository prior to committing your local changes.</p>
+        <p><b>To update a local version of a file:</b>
+        <ol>
+            <li>Right-click the file node in the Versioning, Projects, Files, or Favorites window.</li>
+            <li>Choose CVS &gt; Update. </li>
+            <p>The IDE incorporates any changes existing in the repository
+            version of the file. </p>
+        </ol>
+        <h3>Updating Projects with Dependencies<br>
+        </h3>
+        <p>If you are working on a project for which there are other required
+            projects, you can update both the main project and all dependent
+            projects using the IDE's Update with Dependencies command.<br>
+        </p>
+        <p><b>To update an entire project and all dependent projects:<br>
+        </p>
+        <ol>
+            <li>Right-click the project node in the Projects window.</li>
+            <li>Choose CVS &gt; Update with Dependencies. </li>
+            <p>The IDE incorporates any changes existing in the repository
+            version of all of the projects with the local copies. </p>
+        </ol>
+        <dl>
+            <dt> <a name="seealso">See Also</a></dt>
+            <dd> <a href="./cvs-lite_commit.html">Committing Local Changes to a Remote Repository </a></dd>
+            <dd> <a href="./cvs-lite_diff.html">Comparing File Revisions in CVS</a></dd>
+            <dd> <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_dependencies.html">Creating Dependencies Between Projects</a></dd>
+        </dl>
+        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tbody>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
 </html>

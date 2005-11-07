@@ -24,19 +24,23 @@
         and Favorites windows. The Versioning window, however, represents the primary place within
         which to manage version-controlled files by displaying a real-time list of all of the
         new, modified, removed, and out-of-date files in the currently selected project or directory. </li>
+        <p>To open the Versioning window, choose CVS &gt; Show
+        All Changes. Alternately, you can right-click any project,
+        directory, or file that is in a CVS working directory and choose CVS
+        &gt; Show Changes. </p>
         <p>The IDE's CVS support provides file status information in the following
         ways: </p>
         <ul>
             <li><b>Status Labels. </b>Textual indication of file status 
             in the Versioning, Projects, Files, and Favorites windows.</li>
-            <li><b>Status color. </b>Graphical indication of file status in the 
+            <li><b>Status Color. </b>Graphical indication of file status in the 
             Versioning, Projects, Files, and Favorites windows. </li>
-            <li><b>Status badges. </b> Graphical indication of the status of files
+            <li><b>Status Badges. </b> Graphical indication of the status of files
             contained within your project, folder, and package nodes. Displayed in the 
             Projects, Files, and Favorites windows.</li>
             <li><b>Revision Annotations.</b> Displays commit message, author,
             date, and revision number information in the left margin of files open
-            in the editor window. </li>
+            in the editor window. To display annotations, choose CVS > Show Annotations.</li>
         </ul>
 
         <p>The IDE displays version-controlled files using the following
@@ -52,7 +56,7 @@
                         <td align="center">
                             <p><img src="images/green_status.png" alt="Note"></p>
                         </td>
-                        <td><strong>Green Label.</strong> Indicates that the file is 
+                        <td><strong>Green.</strong> Indicates that the file is 
                         a new local file that does not yet exist in the repository. </td>
                     </tr>
                     <tr valign="top">
@@ -60,7 +64,7 @@
                             <p><img src="images/blue_status.png" alt="Note"></p>
                         </td>
                         <td>
-                            <p><strong>Blue Label.</strong> Indicates that the file has 
+                            <p><strong>Blue.</strong> Indicates that the file has 
                             been modified locally. </p>
                         </td>
                     </tr>
@@ -69,7 +73,7 @@
                         <td align="center">
                             <p><img src="images/red_status.png" alt="Note"></p>
                         </td>
-                        <td> <strong>Red Label.</strong> Indicates that the file 
+                        <td> <strong>Red.</strong> Indicates that the file 
                         contains conflicts. You must use the Resolve conflicts command for such files.</td>
                     </tr>
                     
@@ -77,7 +81,7 @@
                         <td align="center">
                             <p><img src="images/grey_status.png" alt="Note"></p>
                         </td>
-                        <td><strong>Grey Label.</strong> Indicates that the file is ignored by CVS 
+                        <td><strong>Grey.</strong> Indicates that the file is ignored by CVS 
                         and will not be included when calling versioning commands.</td>
                     </tr>                    
                     
@@ -86,7 +90,7 @@
                             <p><img src="images/strikethrough_status.png" alt="Note"></p>
                         </td>
                         <td>
-                            <p><strong>Strikethrough Label.</strong> Indicates that the file 
+                            <p><strong>Strikethrough.</strong> Indicates that the file 
                             is excluded when calling the CVS Commit command. All other 
                             CVS commands, however, work as usual. Note that files 
                             displayed in the strikethrough style only appear in the Versioning 
@@ -113,7 +117,7 @@
                         <p><img src="images/blue_badge.png" alt="Note"></p>
                     </td>
                     <td>
-                        <p><strong>Locally Modified badge.</strong> A blue badge on a
+                        <p><strong>Locally Modified Badge.</strong> A blue badge on a
                         folder or package node marks folders or packages that contain locally
                         modified or new files. In the case of packages, this badge applies only
                         to the package itself and not its subpackages. For folders, the badge
@@ -127,7 +131,7 @@
                         width="8"></p>--> 
                     </td>
                     <td>
-                        <p> <strong>Conflict badge. </strong>A blue badge on a folder
+                        <p> <strong>Conflict Badge. </strong>A blue badge on a folder
                         or package node marks folders or packages that contain files for which
                         the repository copy of the file contains changes which conflict with
                         the local version. In case of packages, this badge applies only to the
