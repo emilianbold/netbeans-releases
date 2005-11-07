@@ -7,29 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.windows.persistence;
-
-import org.netbeans.core.windows.Debug;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.InstanceDataObject;
-import org.openide.modules.ModuleInfo;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.io.SafeException;
-import org.openide.windows.TopComponent;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -40,14 +22,43 @@ import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.NotSerializableException;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import org.netbeans.core.windows.Debug;
+import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.io.SafeException;
+import org.openide.windows.TopComponent;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-
 
 /** Manages persistent data of window system, currently stored in XML format.
  * Default setting of layers is that reading is done through default file system
@@ -383,7 +394,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     public void removeGlobalTopComponentID(String id) {
 //        System.out.println("removing id=" + id);
         synchronized(LOCK_IDS) {
-            globalIDSet.remove(id.toUpperCase());
+            globalIDSet.remove(id.toUpperCase(Locale.ENGLISH));
             WeakReference result = (WeakReference)id2TopComponentMap.remove(id);
             if (result != null) {
                 TopComponent tc = (TopComponent)result.get();
@@ -473,7 +484,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + ioe.getMessage());
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-        } catch (org.openide.loaders.DataObjectNotFoundException dnfe) {
+        } catch (DataObjectNotFoundException dnfe) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
                 "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
@@ -709,7 +720,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      */
     private static String escape(String name) {
         try {
-            java.lang.reflect.Method escape = 
+            Method escape = 
                 InstanceDataObject.class.getDeclaredMethod(
                     "escapeAndCut", new Class[] {String.class}); //NOI18N
             escape.setAccessible(true);
@@ -729,7 +740,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      */
     private static String unescape(String name) {
         try {
-            java.lang.reflect.Method unescape =
+            Method unescape =
             InstanceDataObject.class.getDeclaredMethod(
             "unescape", new Class[] {String.class}); //NOI18N
             unescape.setAccessible(true);
@@ -756,7 +767,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         synchronized(LOCK_IDS) {
             while (isUsed) {
                 isUsed = false;
-                if (globalIDSet.contains(srcName.toUpperCase())) {
+                if (globalIDSet.contains(srcName.toUpperCase(Locale.ENGLISH))) {
                     isUsed = true;
                     srcName = compName + "_" + i;
                     i++;
@@ -765,7 +776,7 @@ public final class PersistenceManager implements PropertyChangeListener {
 
             topComponentNonPersistent2IDMap.put(tc, srcName);
             id2TopComponentNonPersistentMap.put(srcName, new WeakReference(tc));
-            globalIDSet.add(srcName.toUpperCase());
+            globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
         }
         
         return srcName;
@@ -790,7 +801,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     getComponentsLocalFolder(), srcName, "settings" // NOI18N
                 );
 
-                if (!srcName.equals(uniqueName) || globalIDSet.contains(uniqueName.toUpperCase())) {
+                if (!srcName.equals(uniqueName) || globalIDSet.contains(uniqueName.toUpperCase(Locale.ENGLISH))) {
                     isUsed = true;
                     // #44293 - proper escaping to keep name synced with InstanceDataObject naming
                     srcName = escape(origName + "_" + i);
@@ -801,7 +812,7 @@ public final class PersistenceManager implements PropertyChangeListener {
 
             topComponent2IDMap.put(tc, srcName);
             id2TopComponentMap.put(srcName, new WeakReference(tc));
-            globalIDSet.add(srcName.toUpperCase());
+            globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
         }
         
         return srcName;
@@ -973,7 +984,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             if (!files[i].isFolder() && "settings".equals(files[i].getExt())) { // NOI18N
                 String tc_id = files[i].getName();
                 synchronized(LOCK_IDS) {
-                    globalIDSet.add(tc_id.toUpperCase());
+                    globalIDSet.add(tc_id.toUpperCase(Locale.ENGLISH));
                 }
             }
         }
@@ -1226,5 +1237,4 @@ public final class PersistenceManager implements PropertyChangeListener {
         return null;
     }
 
-    
 }
