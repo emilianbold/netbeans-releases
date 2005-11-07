@@ -200,25 +200,29 @@ public class OptionsWindowAction extends AbstractAction {
                 if (optionsPanel.isChanged ()) {
                     Confirmation descriptor = new Confirmation (
                         loc ("CTL_Some_values_changed"), 
-                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.YES_NO_CANCEL_OPTION,
                         NotifyDescriptor.QUESTION_MESSAGE
                     );
-                    if (DialogDisplayer.getDefault ().notify (descriptor) ==
-                        NotifyDescriptor.OK_OPTION
-                    ) {
+                    Object result = DialogDisplayer.getDefault ().
+                        notify (descriptor);
+                    if (result == NotifyDescriptor.YES_OPTION) {
                         d.dispose ();
                         RequestProcessor.getDefault ().post (new Runnable () {
                            public void run () {
                                 optionsPanel.save ();
                            } 
                         });
-                    } else {
+                    } else
+                    if (result == NotifyDescriptor.NO_OPTION) {
                         d.dispose ();
                         RequestProcessor.getDefault ().post (new Runnable () {
                            public void run () {
                                 optionsPanel.cancel ();
                            } 
                         });
+                    } else {
+                        dialog = d;
+                        return;
                     }
                 } else {
                     d.dispose ();
