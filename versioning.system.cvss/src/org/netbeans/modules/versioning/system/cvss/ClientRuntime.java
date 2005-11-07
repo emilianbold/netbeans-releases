@@ -243,7 +243,7 @@ public class ClientRuntime {
         // for testing porposes allow to use dynamically generated port numbers
         String t9yRoot = System.getProperty("netbeans.t9y.cvs.connection.CVSROOT"); // NOI18N
         CVSRoot patchedCvsRoot = cvsRoot;
-        if (t9yRoot != null) {
+        if (t9yRoot != null && t9yRoot.length() > 0) {
             int idx = t9yRoot.indexOf(','); 
             if (idx != -1) {
                 System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", t9yRoot.substring(idx + 1)); // NOI18N
