@@ -56,7 +56,7 @@ public class ButtonPopupSwitcherTestHid extends TestCase {
         frame.setVisible(true);
         items[0] = new SwitcherTableItem(new DummyActivable("Something.txt"), "Something.txt", new DummyIcon(Color.BLUE));
         items[1] = new SwitcherTableItem(new DummyActivable("Sometime.txt"), "Sometime.txt", new DummyIcon());
-        SwitcherTableItem selectedItem = new SwitcherTableItem(new DummyActivable("Somewhere.txt"), "Somewhere.txt", new DummyIcon(Color.YELLOW), true);
+        SwitcherTableItem selectedItem = new SwitcherTableItem(new DummyActivable("Somewhere.txt"), "Somewhere.txt", "Somewhere.txt", new DummyIcon(Color.YELLOW), true);
         items[2] = selectedItem;
         items[3] = new SwitcherTableItem(new DummyActivable("AbCd.txt"), "AbCd.txt", new DummyIcon(Color.BLUE));
         items[4] = new SwitcherTableItem(new DummyActivable("Sometime.txt"),
