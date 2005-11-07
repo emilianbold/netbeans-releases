@@ -38,6 +38,7 @@ import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * A singleton CVS manager class, center of CVS module. Use {@link #getInstance()} to get access
@@ -285,7 +286,11 @@ public class CvsVersioningSystem {
                     userIgnorePatternsReset = true;
                     userIgnorePatterns.clear();
                 } else {
-                    userIgnorePatterns.add(sh2regex(s));
+                    try {
+                        userIgnorePatterns.add(sh2regex(s));
+                    } catch (IOException e) {
+                        // unsupported pattern
+                    }
                 }
             }
         } catch (IOException e) {
@@ -296,16 +301,21 @@ public class CvsVersioningSystem {
     }
 
     /**
-     * Converts shell file patern to regex pattern.
+     * Converts shell file pattern to regex pattern.
      * 
      * @param s unix shell pattern
      * @return regex patterm
+     * @throws IOException if this shell pattern is not supported
      */ 
-    private static Pattern sh2regex(String s) {
+    private static Pattern sh2regex(String s) throws IOException {
         // TODO: implement full SH->REGEX convertor
         s = s.replaceAll("\\.", "\\\\."); // NOI18N
         s = s.replaceAll("\\*", ".*"); // NOI18N
-        return Pattern.compile(s);
+        try {
+            return Pattern.compile(s);
+        } catch (PatternSyntaxException e) {
+            throw new IOException(e.getMessage());
+        }
     }
 
     /**
@@ -326,18 +336,24 @@ public class CvsVersioningSystem {
     }
 
     private void addCvsIgnorePatterns(Set patterns, File file) {
+        Set shPatterns;
         try {
-            Set shPatterns = readCvsIgnoreEntries(file);
-            for (Iterator i = shPatterns.iterator(); i.hasNext();) {
-                String shPattern = (String) i.next();
-                if ("!".equals(shPattern)) { // NOI18N
-                    patterns.clear();
-                } else {
+            shPatterns = readCvsIgnoreEntries(file);
+        } catch (IOException e) {
+            // ignore invalid entries
+            return;
+        }
+        for (Iterator i = shPatterns.iterator(); i.hasNext();) {
+            String shPattern = (String) i.next();
+            if ("!".equals(shPattern)) { // NOI18N
+                patterns.clear();
+            } else {
+                try {
                     patterns.add(sh2regex(shPattern));
+                } catch (IOException e) {
+                    // unsupported pattern
                 }
             }
-        } catch (IOException e) {
-            // ignore
         }
     }
     
