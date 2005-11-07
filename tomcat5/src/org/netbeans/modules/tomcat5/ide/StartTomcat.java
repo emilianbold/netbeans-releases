@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.tomcat5.*;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
+import org.netbeans.modules.tomcat5.util.LogManager;
 import org.netbeans.modules.tomcat5.util.Utils;
 
 import org.openide.ErrorManager;
@@ -392,8 +393,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         new File (homeDir, "bin") // NOI18N
                     );
                     tm.setTomcatProcess(p);
-                    tm.logManager().closeServerLog();
-                    tm.logManager().openServerLog();
+                    openLogs();
                 } catch (java.io.IOException ioe) {
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);
@@ -442,8 +442,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         new File(homeDir, "bin") // NOI18N
                     );
                     tm.setTomcatProcess(p);
-                    tm.logManager().closeServerLog();
-                    tm.logManager().openServerLog();
+                    openLogs();
                 } catch (java.io.IOException ioe) {
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);
@@ -487,8 +486,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     );
                     if (command == CommandType.START) {
                         tm.setTomcatProcess(p);
-                        tm.logManager().closeServerLog();
-                        tm.logManager().openServerLog();
+                        openLogs();
                     } else {
                         // #58554 workaround
                         RequestProcessor.getDefault().post(new StreamConsumer(p.getInputStream()), 0, Thread.MIN_PRIORITY);
@@ -511,7 +509,17 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailed" : "MSG_StopFailed", 
                                          StateType.FAILED);
             }
-        }    
+        }
+        
+        /** Open JULI log and server output */
+        private void openLogs() {
+            LogManager logManager = tm.logManager();
+            if (logManager.hasJuliLog()) {
+                logManager.openJuliLog();
+            }
+            logManager.closeServerLog();
+            logManager.openServerLog();
+        }
         
         /**
          * Fires command progress event of action type <code>ActionType.EXECUTE</code>.

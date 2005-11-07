@@ -54,6 +54,8 @@ public class LogViewer extends Thread {
      * List of listeners which are notified when the log viewer is stoped.
      */
     private List/*<LogViewerStopListener>*/ stopListeners = Collections.synchronizedList(new LinkedList());
+
+    private String displayName;
     
     /**
      * Create a new LogViewer thread.
@@ -82,7 +84,7 @@ public class LogViewer extends Thread {
         super("LogViewer - Thread"); // NOI18N
         if (catalinaDir == null) throw new NullPointerException();
         if (catalinaWorkDir == null) throw new NullPointerException();
-        if (!"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
+        if (className != null && !"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
             throw new UnsupportedLoggerException(className);
         }        
         if (directory != null) {
@@ -109,6 +111,10 @@ public class LogViewer extends Thread {
         this.webAppContext = webAppContext;
         logSupport = new ContextLogSupport(catalinaWorkDir, webAppContext);
         setDaemon(true);
+    }
+    
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
     
     /**
@@ -187,11 +193,12 @@ public class LogViewer extends Thread {
     }
     
     public void run() {
-        // cut off trailing dot
-        String displayName = this.prefix;
-        int trailingDot = displayName.lastIndexOf('.');
-        if (trailingDot > -1) displayName = displayName.substring(0, trailingDot);
-        
+        if (displayName == null) {
+            // cut off trailing dot
+            displayName = this.prefix;
+            int trailingDot = displayName.lastIndexOf('.');
+            if (trailingDot > -1) displayName = displayName.substring(0, trailingDot);
+        }
         inOut = IOProvider.getDefault().getIO(displayName, false);
         try {
             inOut.getOut().reset();

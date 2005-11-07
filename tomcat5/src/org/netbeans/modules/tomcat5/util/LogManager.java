@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.tomcat5.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -35,13 +36,17 @@ import org.openide.windows.InputOutput;
 public class LogManager {
     private ServerLog serverLog;    
     private LogViewer sharedContextLogViewer;
+    private LogViewer juliLogViewer;
     private Map/*<TomcatModule, TomcatModuleConfig>*/ tomcatModuleConfigs = Collections.synchronizedMap(new WeakHashMap());
     private Map/*<String, LogViewer>*/ contextLogViewers = Collections.synchronizedMap(new HashMap());
     private TomcatManager manager;
     
     private Object serverLogLock = new Object();
     private Object sharedContextLogLock = new Object();
+    private Object juliLogLock = new Object();
     private Object contextLogLock = new Object();
+    
+    private Boolean juliJarExist;
     
     /** Creates a new instance of LogManager */
     public LogManager(TomcatManager tm) {
@@ -190,6 +195,52 @@ public class LogManager {
     }
     
     // ------- end of shared context log ---------------------------------------
+    
+    // ------- juli log --------------------------------------------------------
+    
+    public synchronized boolean hasJuliLog() {
+        if (juliJarExist == null) {
+            if (new File(manager.getTomcatProperties().getCatalinaHome(), "bin/tomcat-juli.jar").exists()) { // NOI18N
+                juliJarExist = Boolean.TRUE;
+            } else {
+                juliJarExist = Boolean.FALSE;
+            }
+        }
+        return juliJarExist.booleanValue();
+    }
+    
+    public void openJuliLog() {        
+        // ensure only one thread will be opened
+        synchronized(juliLogLock) {
+            if (juliLogViewer == null || !juliLogViewer.isOpen()) {
+                if (juliLogViewer != null) {
+                    juliLogViewer.removeAllLogViewerStopListener();
+                }
+                try {
+                    TomcatProperties tp = manager.getTomcatProperties();
+                    juliLogViewer = new LogViewer(tp.getCatalinaDir(), manager.getCatalinaWork(),
+                                                  null, null, null, "localhost.", null, true, false); // NOI18N
+                    juliLogViewer.setDisplayName(NbBundle.getMessage(LogManager.class, "TXT_JuliLogDisplayName", tp.getDisplayName()));
+                } catch (UnsupportedLoggerException e) { // should never occur
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    return;
+                } catch (NullPointerException npe) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+                }
+		juliLogViewer.addLogViewerStopListener(new LogViewer.LogViewerStopListener() {
+                   public void callOnStop() {
+                       synchronized(juliLogLock) {
+                           juliLogViewer = null;
+                       }
+                   }
+                });
+                juliLogViewer.start();
+            }
+            juliLogViewer.takeFocus();
+        }
+    }
+            
+    // ------- end of juli log -------------------------------------------------
     
     // ------- context log -----------------------------------------------------
     
