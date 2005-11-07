@@ -37,6 +37,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class LibrariesStorage extends FileChangeAdapter implements WriteableLibraryProvider {
 
+    private static final String NB_HOME_PROPERTY = "netbeans.home";  //NOI18N
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
     private static final String TIME_STAMPS_FILE = "libraries-timestamps.properties"; //NOI18B
     private static final String XML_EXT = "xml";    //NOI18N
@@ -443,6 +444,10 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     private void saveTimeStamps () throws IOException {        
         if (this.storage != null) {
             Properties timeStamps = getTimeStamps();
+            if (timeStamps.get(NB_HOME_PROPERTY) == null) {
+                String currNbLoc = getNBRoots();
+                timeStamps.put(NB_HOME_PROPERTY,currNbLoc);
+            }
             FileObject parent = storage.getParent();
             FileObject timeStampFile = parent.getFileObject(TIME_STAMPS_FILE);
             if (timeStampFile == null) {
@@ -475,6 +480,11 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                         } finally {
                             in.close();
                         }
+                        String nbLoc = (String) this.timeStamps.get (NB_HOME_PROPERTY);
+                        String currNbLoc = getNBRoots ();                                                
+                        if (nbLoc == null || !nbLoc.equals (currNbLoc)) {
+                            this.timeStamps.clear();
+                        }
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
@@ -482,6 +492,33 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
             }
         }
         return this.timeStamps;
+    }
+    
+    private static String getNBRoots () {
+        Set result = new TreeSet ();
+        String currentNbLoc = System.getProperty ("netbeans.home");   //NOI18N
+        if (currentNbLoc != null) {
+            File f = FileUtil.normalizeFile(new File (currentNbLoc));
+            if (f.isDirectory()) {
+                result.add (f.getAbsolutePath());
+            }
+        }
+        currentNbLoc = System.getProperty ("netbeans.dirs");        //NOI18N
+        if (currentNbLoc != null) {
+            StringTokenizer tok = new StringTokenizer(currentNbLoc, File.pathSeparator);
+            while (tok.hasMoreTokens()) {
+                 File f = FileUtil.normalizeFile(new File(tok.nextToken()));
+                 result.add(f.getAbsolutePath());
+            }
+        }
+        StringBuffer sb = new StringBuffer ();
+        for (Iterator it = result.iterator(); it.hasNext();) {
+            sb.append(it.next());
+            if (it.hasNext()) {
+                sb.append(":");  //NOI18N
+            }
+        }
+        return sb.toString();
     }
 
 } // end LibrariesStorage
