@@ -70,13 +70,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient private CompileData compileData;
     transient private boolean firstStart;
     transient private Listener listener;
-    
+    transient private BaseJspEditorSupport editorSupport;
     transient final private static boolean debug = false;
         
     public JspDataObject (FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super (pf, l);
         CookieSet cookies = getCookieSet();
-        cookies.add (createJspEditorSupport());
         initialize();
     }
     
@@ -84,6 +83,16 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     // [PENDING] Handle this more nicely.
     public org.openide.nodes.CookieSet getCookieSet0 () {
         return super.getCookieSet ();
+    }
+    
+    public Node.Cookie getCookie(Class type) {
+        if (type.isAssignableFrom(BaseJspEditorSupport.class)) {
+            if (editorSupport == null) {
+                editorSupport = createJspEditorSupport ();
+            }
+            return editorSupport;
+        }
+        return super.getCookie(type);
     }
     
     protected org.openide.nodes.Node createNodeDelegate () {
