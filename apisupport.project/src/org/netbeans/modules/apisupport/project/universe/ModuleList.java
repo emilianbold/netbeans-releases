@@ -139,6 +139,16 @@ public final class ModuleList {
     }
     
     /**
+     * Check to see if there are <em>any</em> known module list entries.
+     * @return false if {@link #getKnownEntries} cannot return a nonempty set at the moment, true if it might
+     */
+    public static boolean existKnownEntries() {
+        synchronized (knownEntries) {
+            return !knownEntries.isEmpty();
+        }
+    }
+    
+    /**
      * Find the known module entries which build to a given built file path (e.g. module JAR).
      * Applies to any entries which have been scanned.
      * @param file some file built as part of the module

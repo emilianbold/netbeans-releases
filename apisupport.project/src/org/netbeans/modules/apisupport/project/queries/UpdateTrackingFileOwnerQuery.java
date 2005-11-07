@@ -38,6 +38,9 @@ public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImpleme
     public UpdateTrackingFileOwnerQuery() {}
 
     public Project getOwner(URI file) {
+        if (!ModuleList.existKnownEntries()) {
+            return null; // #65700
+        }
         if (file.getScheme().equals("file")) { // NOI18N
             return getOwner(new File(file));
         } else {
@@ -46,6 +49,9 @@ public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImpleme
     }
 
     public Project getOwner(FileObject file) {
+        if (!ModuleList.existKnownEntries()) {
+            return null; // #65700
+        }
         File f = FileUtil.toFile(file);
         if (f != null) {
             return getOwner(f);
