@@ -498,6 +498,91 @@ public class MutexTest extends NbTestCase {
     
     /**
      * The scenario:
+     * Cast:
+     *  Thread A: M.reader [X] trying to lock(L)
+     *  Thread B: L owner [X] trying to enter M.read
+     *  Thread C: M.reader trying to M.writeReenter on leave
+     * 
+     * Actions:
+     *  - first let A and B reach point [X]
+     *  - unfuse A so it block on lock(L)
+     *  - start C, it will reach exitReadAccess and block on reenter as writer
+     *  - unfuse B so it should perform its legitimate read access
+     *
+     * What should happen then (if Mutex works OK):
+     * - B unlocks L and die
+     * - A locks/unlocks L, leave readAccess and die
+     * - C performs its write and die
+     */
+    public void testStarvation68106() throws Exception {
+        final Mutex.Privileged PR = new Mutex.Privileged();
+        final Mutex M = new Mutex(PR);
+        final Object L = new Object();
+        final boolean[] done = new boolean[3];
+        
+        final Ticker tickX1 = new Ticker();     
+        final Ticker tickX2 = new Ticker();     
+        final Ticker tickX3 = new Ticker();     
+        
+        Thread A = new Thread() { public void run() {
+            PR.enterReadAccess();
+            
+            tickX1.tick();
+            tickX2.waitOn();
+            
+            synchronized(L) {
+                done[0] = true;
+            }
+        }};
+               
+        Thread B = new Thread() { public void run() {
+            synchronized(L) {
+                
+                tickX2.tick();
+                tickX3.tick();
+                tickX1.waitOn();
+                
+                PR.enterReadAccess();
+                done[1] = true;
+                PR.exitReadAccess();
+            }
+        }};
+
+        Thread C = new Thread() { public void run() {
+            PR.enterReadAccess();
+            M.postWriteRequest(new Runnable() {public void run() {
+                   done[2] = true;
+            }});
+            PR.exitReadAccess();
+        }};
+        
+        A.start();
+        tickX1.waitOn();
+        // A reached point X
+        
+        B.start();
+        tickX3.waitOn();
+        // B reached point X, unlocked A so in would block on lock(L)
+        
+        C.start();
+        // C is blocking in leave/privilegedEnter
+        
+        tickX1.tick();
+        // push B, everything should finish after this
+        
+        // wait for them for a while
+        A.join(2000);
+        B.join(2000);
+        C.join(2000);
+        
+        assertTrue("Thread A finished", done[0]);
+        assertTrue("Thread B finished", done[1]);
+        assertTrue("Thread C finished", done[2]);
+    }
+
+    
+    /**
+     * The scenario:
      * - Have 3 threads, A, B and C
      * - writeLock mutex1 in A
      * - writeLock mutex2 in B
