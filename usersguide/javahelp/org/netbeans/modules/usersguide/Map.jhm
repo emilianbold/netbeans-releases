@@ -247,6 +247,7 @@ under Print Settings in the Options window)
 <mapID target="debug.step" url="debug/debug_step.html" />
 <mapID target="debug.remote" url="debug/debug_remote.html" /> 
 <mapID target="debug.expression" url="debug/debug_expression.html" /> 
+<mapID target="debug.window" url="debug/CSH/debug_window.html" /> 
 
 <!-- Javadoc IDs :-->
 
@@ -368,6 +369,10 @@ under Print Settings in the Options window)
 
 <!-- Navigator window :-->
 <mapID target="navigator.java" url="editing/csh/nav_window.html" />
+
+<!--TODO window -->
+<mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="editing/todo_window_csh.html" />
+
 
 <!-- New Wizard templates page :-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />

@@ -72,7 +72,6 @@
     <tocitem text="Configuring General IDE Settings" >
       <tocitem text="Using the Options Window" target="configure.options" />
       <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
-      <tocitem text="Configuring System Settings" target="configure.system.settings" />
       <tocitem text="Configuring Java Settings" target="java.java_sources" />
       <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
     </tocitem>
@@ -138,7 +137,7 @@
     </tocitem>
     <tocitem text="Using Code Templates and Macros" >
       <tocitem text="About" target="editing.macros" />
-      <tocitem text="Using Code Templates" target="editing.abbreviations"/>
+      <tocitem text="Inserting Code From a Template" target="editing.abbreviations"/>
       <tocitem text="Code Template Abbreviations: Quick Reference" target="shortcuts.abbreviations-list"/>
       <tocitem text="Recording a Macro" target="editing.macros.recording"/>
       <tocitem text="Editing a Macro" target="editing.macros.editing"/>
@@ -257,6 +256,7 @@
     <tocitem text="About Debugging Free-Form Projects" target="proj_free_debug_about" />
     <tocitem text="Working with Debugging" target="debug.process"/>
     <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
+    <tocitem text="Debugger Windows" target="debug.window"/>
     <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
     <tocitem text="Attaching Source Code to a JAR File" target="debug.source"></tocitem>
     <tocitem text="Creating a Debug Target for a Free-Form Java Project" target="proj_free_debug" />
