@@ -121,6 +121,7 @@ public final class RecentViewListAction extends AbstractAction
             items[i] = new SwitcherTableItem(
                     new ActivableTC(tc),
                     name,
+                    name,
                     imageIcon,
                     false,
                     description != null ? description : name);
