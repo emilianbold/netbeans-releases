@@ -68,15 +68,26 @@ public final class OpenAction extends AbstractAction {
     
     public void actionPerformed (ActionEvent ev) {
         // find source
-        ClassDefinition declaringClass = elem instanceof ClassDefinition ?
-                (ClassDefinition)elem : ((Feature)elem).getDeclaringClass();
-        if (JUtils.getSourceForBinary(declaringClass) == null) {
+        boolean isSourceAvailable = false;
+        repo.beginTrans(false);
+        try {
+            if (!elem.isValid()) {
+                return;
+            }
+            ClassDefinition declaringClass = elem instanceof ClassDefinition ?
+                    (ClassDefinition)elem : ((Feature)elem).getDeclaringClass();
+            isSourceAvailable = JUtils.getSourceForBinary(declaringClass) != null;
+        } finally {
+            repo.endTrans();
+        }
+        
+        if (isSourceAvailable) {
+            openElement(elem);
+        } else {
             // no source attached
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(OpenAction.class, "MSG_NoSource", elem)  //NOI18N
             ); 
-        } else {
-            openElement(elem);
         }
     }
 
