@@ -84,12 +84,12 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             if (tokenID.getCategory() != null
                     && tokenID.getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
                     && tokenID.getNumericID() == JspDirectiveTokenContext.ATTR_VALUE_ID){
-                while (token.getTokenID().getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
+                while (token != null && token.getTokenID().getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
                        && token.getTokenID().getNumericID() != JspDirectiveTokenContext.ATTRIBUTE_ID){
                     token = token.getPrevious();
                 }
                 
-                if (token.getTokenID().getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
+                if (token != null && token.getTokenID().getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
                     && token.getTokenID().getNumericID() == JspDirectiveTokenContext.ATTRIBUTE_ID
                     && "file".equals(token.getImage().trim())) //NOI18N
                     return true;
@@ -98,12 +98,12 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             
             // is it a forward or dynamic include?
             if (tokenID.getNumericID() == JspTagTokenContext.ATTR_VALUE_ID){
-                while (token.getTokenID().getNumericID() != JspTagTokenContext.ATTRIBUTE_ID
+                while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.ATTRIBUTE_ID
                        && token.getTokenID().getNumericID() != JspTagTokenContext.TAG_ID
                        && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID && token.getImage().charAt(0) == '<'))
                     token = token.getPrevious();
                 
-                if (token.getTokenID().getNumericID() == JspDirectiveTokenContext.ATTRIBUTE_ID
+                if (token != null && token.getTokenID().getNumericID() == JspDirectiveTokenContext.ATTRIBUTE_ID
                     && "page".equals(token.getImage().trim())){
                     return true;
                 }
