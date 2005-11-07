@@ -32,7 +32,7 @@ public class AddModulePanelTest extends TestBase {
         super(name);
     }
     
-    public void testtest() throws Exception {
+    public void testDependenciesFiltering() throws Exception {
         NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         final SingleModuleProperties props = SingleModulePropertiesTest.loadProperties(p);
         SwingUtilities.invokeAndWait(new Runnable() {
@@ -64,8 +64,15 @@ public class AddModulePanelTest extends TestBase {
                 amp.filterValue.setText("org.op");
             }
         });
-        // give a filter some time
-        Thread.sleep(3000);
+        int sleepingTime = 0;
+        // wait until filter is applied
+        while (amp.moduleList.getModel() == CustomizerComponentFactory.LIST_WAIT_MODEL) {
+            Thread.sleep(200);
+            sleepingTime += 200;
+            if (sleepingTime > 60000) {
+                fail("Filter wasn't applied in 60s.");
+            }
+        }
         ListModel model = amp.moduleList.getModel();
         int filtered = model.getSize();
         final int EXPECTED_MAX = 50; // XXX really should be computed
