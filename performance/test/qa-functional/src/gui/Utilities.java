@@ -138,4 +138,14 @@ public class Utilities {
 
     }
     
+    /*
+     * open a java file in the editor
+     */
+    public static EditorOperator openSmallJavaFile(){
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java");
+        new OpenAction().performAPI(openFile);
+        return new EditorWindowOperator().getEditor("Main20kB.java");
+
+    }
+    
 }

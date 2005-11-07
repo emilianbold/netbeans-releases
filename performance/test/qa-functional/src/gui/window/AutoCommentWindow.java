@@ -47,7 +47,7 @@ public class AutoCommentWindow extends org.netbeans.performance.test.utilities.P
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_WindowTitle");
     
         // open a java file in the editor
-        editor = gui.Utilities.openJavaFile();
+        editor = gui.Utilities.openSmallJavaFile();
     }
     
     public void prepare() {
@@ -69,5 +69,9 @@ public class AutoCommentWindow extends org.netbeans.performance.test.utilities.P
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();
     }
-
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new AutoCommentWindow("measureTime"));
+    }
+    
 }
