@@ -104,10 +104,16 @@ public class NavigatorContent extends JPanel   {
             public void run() {
                 //get document model for the file
                 try {
-                    DocumentModel model = DocumentModel.getDocumentModel(bdoc);
+                    final DocumentModel model = DocumentModel.getDocumentModel(bdoc);
                     if(model != null) {
-                        JPanel panel = new NavigatorContentPanel(model);
-                        showUI(panel);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                JPanel panel = new NavigatorContentPanel(model);
+                                removeAll();
+                                add(panel, BorderLayout.CENTER);
+                                revalidate();
+                            }
+                        });
                     } else System.out.println("model is null!!!!");
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
@@ -121,17 +127,6 @@ public class NavigatorContent extends JPanel   {
         msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_TooLarge"));
         add(emptyPanel, BorderLayout.CENTER);
         repaint();
-    }
-    
-    private void showUI(final JPanel ui) {
-        //generate the component on background
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                removeAll();
-                add(ui, BorderLayout.CENTER);
-                revalidate();
-            }
-        });
     }
     
     private void showWaitPanel() {
@@ -180,7 +175,7 @@ public class NavigatorContent extends JPanel   {
             JScrollPane treeView = new JScrollPane(tree);
             treeView.setBorder(BorderFactory.createEmptyBorder());
             treeView.setViewportBorder(BorderFactory.createEmptyBorder());
-        
+            
             add(treeView, BorderLayout.CENTER);
             
             //create the TapPanel

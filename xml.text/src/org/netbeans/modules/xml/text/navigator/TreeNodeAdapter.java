@@ -507,11 +507,13 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         textContent = buf.toString();
         //fire a change event for this node
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    tm.nodeChanged(TreeNodeAdapter.this);
-                }
-            });
+            if(!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        tm.nodeChanged(TreeNodeAdapter.this);
+                    }
+                });
+            } else tm.nodeChanged(TreeNodeAdapter.this);
         }catch(Exception ie) {
             ie.printStackTrace(); //XXX handle somehow better
         }
