@@ -27,6 +27,7 @@ import java.util.Stack;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.StringTokenizer;
 import org.openide.xml.XMLUtil;
 
 import org.xml.sax.Attributes;
@@ -100,7 +101,7 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
 
         for (Iterator nameIter = serviceNames.iterator(); nameIter.hasNext(); ) {
             String searchName = (String) nameIter.next();
-            searchName = org.openide.util.Utilities.replaceString(searchName, " ", ""); //NOI18N
+            searchName = removeSpacesFromServiceName(searchName);
 
             for (Iterator iter = registeredServices.iterator(); iter.hasNext(); ) {
                 WebServiceData wsData = (WebServiceData) iter.next();
@@ -118,6 +119,22 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
         return result;
     }
 
+    public static String removeSpacesFromServiceName(String serviceName) {
+        if ((serviceName!=null) && (serviceName.indexOf(" ") > -1)) {  //NOI18N
+            String result = ""; //NOI18N
+            StringTokenizer serviceNameTokenizer = new StringTokenizer(serviceName, " ", false); //NOI18N
+            while (serviceNameTokenizer.hasMoreTokens()) {
+                StringBuffer token = new StringBuffer(serviceNameTokenizer.nextToken());
+                if (token != null) {
+                    token.setCharAt(0, Character.toUpperCase(token.charAt(0)));
+                    result = result.concat(token.toString());
+                }
+            }
+            return result;
+        }
+        return serviceName;
+    }
+    
     public boolean isServiceRegistered(String serviceName) {
         return WebServiceListModel.getInstance().webServiceExists(serviceName);
     }
