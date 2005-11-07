@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.editor.completion;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,10 +83,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
 
     /** Text component being currently edited. Changed in AWT only. */
-    private JTextComponent activeComponent = null;
+    private WeakReference/*<JTextComponent>*/ activeComponent = null;
     
     /** Document currently installed in the active component. Changed in AWT only. */
-    private Document activeDocument = null;
+    private WeakReference/*<Document>*/ activeDocument = null;
     
     /** Map containing keystrokes that should be overriden by completion processing. Changed in AWT only. */
     private InputMap inputMap;
@@ -169,6 +170,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         Settings.addSettingsChangeListener(this);
     }
     
+    private JTextComponent getActiveComponent() {
+        return activeComponent != null ? (JTextComponent)activeComponent.get() : null;
+    }
+
+    private Document getActiveDocument() {
+        return activeDocument != null ? (Document)activeDocument.get() : null;
+    }
+    
     public int getSortType() {
         return CompletionResultSet.PRIORITY_SORT_TYPE; // [TODO] additional types
     }
@@ -186,12 +195,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (activeProviders != null) {
             try {
                 modEndOffset = e.getOffset() + e.getLength();
-                if (activeComponent.getCaretPosition() != modEndOffset)
+                if (getActiveComponent().getCaretPosition() != modEndOffset)
                     return;
 
                 String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
                 for (int i = 0; i < activeProviders.length; i++) {
-                    int type = activeProviders[i].getAutoQueryTypes(activeComponent, typedText);
+                    int type = activeProviders[i].getAutoQueryTypes(getActiveComponent(), typedText);
                     boolean completionResultNull;
                     synchronized (this) {
                         completionResultNull = (completionResult == null);
@@ -298,7 +307,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
         boolean cancel = false;
         JTextComponent component = Registry.getMostActiveComponent();
-        if (component != activeComponent) {
+        if (component != getActiveComponent()) {
             activeProviders = getCompletionProvidersForComponent(component);
             if (debug) {
                 StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n");
@@ -313,11 +322,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 }
                 System.err.println(sb.toString());
             }
-            if (activeComponent != null) {
-                activeComponent.removeCaretListener(this);
-                activeComponent.removeKeyListener(this);
-                activeComponent.removeFocusListener(this);
-                activeComponent.removeMouseListener(this);
+            if (getActiveComponent() != null) {
+                getActiveComponent().removeCaretListener(this);
+                getActiveComponent().removeKeyListener(this);
+                getActiveComponent().removeFocusListener(this);
+                getActiveComponent().removeMouseListener(this);
             }
             if (activeProviders != null) {
                 component.addCaretListener(this);
@@ -325,21 +334,21 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 component.addFocusListener(this);
                 component.addMouseListener(this);
             }
-            activeComponent = component;
-            CompletionSettings.INSTANCE.notifyEditorComponentChange(activeComponent);
-            layout.setEditorComponent(activeComponent);
+            activeComponent = new WeakReference(component);
+            CompletionSettings.INSTANCE.notifyEditorComponentChange(getActiveComponent());
+            layout.setEditorComponent(getActiveComponent());
             installKeybindings();
             cancel = true;
         }
         Document document = Registry.getMostActiveDocument();
-        if (document != activeDocument) {
-            if (activeDocument != null)
-                DocumentUtilities.removeDocumentListener(activeDocument, this,
+        if (document != getActiveDocument()) {
+            if (getActiveDocument() != null)
+                DocumentUtilities.removeDocumentListener(getActiveDocument(), this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
             if (activeProviders != null)
                 DocumentUtilities.addDocumentListener(document, this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
-            activeDocument = document;
+            activeDocument = new WeakReference(document);
             cancel = true;
         }
         if (cancel)
@@ -418,7 +427,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 // Call default action if ENTER was pressed
                 if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
                     e.consume();
-                    item.defaultAction(activeComponent);
+                    item.defaultAction(getActiveComponent());
                     return;
                 }
                 
@@ -453,7 +462,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         // Initialize the completion tasks
         for (int i = 0; i < activeProviders.length; i++) {
             CompletionTask compTask = activeProviders[i].createTask(
-                    CompletionProvider.COMPLETION_QUERY_TYPE, activeComponent);
+                    CompletionProvider.COMPLETION_QUERY_TYPE, getActiveComponent());
             if (compTask != null) {
                 CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
                         this, newCompletionResult, compTask, CompletionProvider.COMPLETION_QUERY_TYPE);
@@ -557,15 +566,15 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         final int displayAnchorOffset = anchorOffset;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
-                int caretOffset = activeComponent.getCaretPosition();
+                int caretOffset = getActiveComponent().getCaretPosition();
                 // completionResults = null;
                 if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
                         && CompletionSettings.INSTANCE.completionInstantSubstitution()) {
                     try {
-                        int[] block = Utilities.getIdentifierBlock(activeComponent, caretOffset);
+                        int[] block = Utilities.getIdentifierBlock(getActiveComponent(), caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N
                             CompletionItem item = (CompletionItem) sortedResultItems.get(0);
-                            if (item.instantSubstitution(activeComponent)) {
+                            if (item.instantSubstitution(getActiveComponent())) {
                                 return;
                             }
                         }
@@ -686,7 +695,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         } else { // No item selected => Query all providers
             for (int i = 0; i < activeProviders.length; i++) {
                 CompletionTask docTask = activeProviders[i].createTask(
-                        CompletionProvider.DOCUMENTATION_QUERY_TYPE, activeComponent);
+                        CompletionProvider.DOCUMENTATION_QUERY_TYPE, getActiveComponent());
                 if (docTask != null) {
                     CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
                             this, newDocumentationResult, docTask, CompletionProvider.DOCUMENTATION_QUERY_TYPE);
@@ -810,7 +819,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         } else {
             for (int i = 0; i < activeProviders.length; i++) {
                 CompletionTask toolTipTask = activeProviders[i].createTask(
-                        CompletionProvider.TOOLTIP_QUERY_TYPE, activeComponent);
+                        CompletionProvider.TOOLTIP_QUERY_TYPE, getActiveComponent());
                 if (toolTipTask != null) {
                     CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
                             this, newToolTipResult, toolTipTask, CompletionProvider.TOOLTIP_QUERY_TYPE);
@@ -877,11 +886,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         // This method is implemented due to the issue
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
-        if (editorActionName != null && activeComponent != null) {
-            TextUI ui = activeComponent.getUI();
-            Keymap km = activeComponent.getKeymap();
+        if (editorActionName != null && getActiveComponent() != null) {
+            TextUI ui = getActiveComponent().getUI();
+            Keymap km = getActiveComponent().getKeymap();
             if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(activeComponent);
+                EditorKit kit = ui.getEditorKit(getActiveComponent());
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
