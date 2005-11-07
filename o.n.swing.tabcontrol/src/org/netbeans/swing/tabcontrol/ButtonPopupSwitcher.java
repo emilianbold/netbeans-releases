@@ -15,13 +15,11 @@ package org.netbeans.swing.tabcontrol;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.EventObject;
 import javax.swing.JComponent;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;

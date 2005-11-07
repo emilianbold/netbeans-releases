@@ -27,6 +27,9 @@ public class SwitcherTableItem implements Comparable {
     /** Item's name. Base name used by the <code>SwitcherTable</code> */
     private String name;
     
+    /** Item's html-based name. */
+    private String htmlName;
+    
     /** Item's description. Text which can be used for arbitrary purpose. */
     private String description;
     
@@ -49,20 +52,21 @@ public class SwitcherTableItem implements Comparable {
     
     /** Creates a new instance of SwitcherTableItem */
     public SwitcherTableItem(Activable activable, String name, Icon icon) {
-        this(activable, name, icon, false);
+        this(activable, name, name, icon, false);
     }
     
     /** Creates a new instance of SwitcherTableItem */
-    public SwitcherTableItem(Activable activable, String name, Icon icon,
-            boolean active) {
-        this(activable, name, icon, active, null);
+    public SwitcherTableItem(Activable activable, String name, String htmlName,
+            Icon icon, boolean active) {
+        this(activable, name, htmlName, icon, active, null);
     }
     
     /** Creates a new instance of SwitcherTableItem */
-    public SwitcherTableItem(Activable activable, String name, Icon icon,
-            boolean active, String description) {
+    public SwitcherTableItem(Activable activable, String name, String htmlName,
+            Icon icon, boolean active, String description) {
         this.activable = activable;
         this.name = name;
+        this.htmlName = htmlName;
         this.icon = icon;
         this.active = active;
         this.description = description;
@@ -81,6 +85,11 @@ public class SwitcherTableItem implements Comparable {
     /** Returns item's name */
     public String getName() {
         return name;
+    }
+    
+    /** Returns item's html name. */
+    public String getHtmlName() {
+        return htmlName;
     }
     
     /**
@@ -117,8 +126,9 @@ public class SwitcherTableItem implements Comparable {
      * same as passed one.
      */
     public boolean equals(Object o) {
-        if (o == this)
+        if (o == this) {
             return true;
+        }
         if (o instanceof SwitcherTableItem) {
             SwitcherTableItem item = (SwitcherTableItem) o;
             boolean result = item.getName().equals(name) &&

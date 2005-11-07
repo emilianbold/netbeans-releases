@@ -20,8 +20,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
 import javax.swing.BorderFactory;
@@ -32,7 +30,6 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.openide.util.Utilities;
-
 
 /**
  * This class is used as a content for PopupSwitcher classes (see below). It
@@ -55,18 +52,10 @@ public class SwitcherTable extends JTable {
     private Color selForeground;
     private Color selBackground;
     
-    private int y;
-    
-    private int triggerKey;
-    private int reverseKey;
-    private int releaseKey;
-    
     /** Cached preferred size value */
     private Dimension prefSize;
     
     /** Current NetBeans LookAndFreel id */
-    private static String lf = UIManager.getLookAndFeel().getID();
-    
     /**
      * Flag indicating that the fixed row height has not yet been calculated -
      * this is for fontsize support
@@ -127,8 +116,6 @@ public class SwitcherTable extends JTable {
         boolean selected = row == getSelectedRow() &&
                 column == getSelectedColumn() && item != null;
         
-        String name = (item == null ? null : item.getName());
-        
         DefaultTableCellRenderer ren = (DefaultTableCellRenderer)
         renderer.getTableCellRendererComponent(this, item,
                 selected, selected, row, column);
@@ -144,7 +131,7 @@ public class SwitcherTable extends JTable {
         if (icon == null ) {
             icon = nullIcon;
         }
-        ren.setText(item.getName());
+        ren.setText(selected || item.isActive() ? item.getName() : item.getHtmlName());
         ren.setIcon(icon);
         ren.setBorder(rendererBorder);
         ren.setIconTextGap(26 - icon.getIconWidth());
@@ -199,20 +186,6 @@ public class SwitcherTable extends JTable {
         }
         return selBackground;
     }
-    
-    /**
-     * Finds if windows LF with XP theme is active.
-     * XXX copied from TabDisplayer - should be moved to Utilities or something
-     * similar
-     *
-     * @return true if windows LF and XP theme is active, false otherwise
-     */
-    private static boolean isXPLF() {
-        Boolean isXP = (Boolean) Toolkit.getDefaultToolkit().
-                getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
-        return isXP == null ? false : isXP.booleanValue();
-    }
-    
     
     /**
      * Calculate the height of rows based on the current font.  This is done

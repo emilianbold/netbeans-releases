@@ -15,9 +15,7 @@ package org.netbeans.swing.tabcontrol;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -25,7 +23,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
-
+import org.openide.windows.TopComponent;
 
 /**
  * An action which, when invoked, displays a popup with an alphabetized table
@@ -34,7 +32,9 @@ import org.netbeans.swing.popupswitcher.SwitcherTableItem;
  * @author  Tim Boudreau
  */
 public class TabListPopupAction extends AbstractAction {
+    
     private TabDisplayer displayer;
+    
     public TabListPopupAction(TabDisplayer displayer) {
         this.displayer = displayer;
     }
@@ -69,9 +69,22 @@ public class TabListPopupAction extends AbstractAction {
         TabData selectedTab = selIdx >= 0 ? displayer.getModel().getTab(selIdx) : null;
         for (Iterator it = tabs.iterator(); it.hasNext(); ) {
             TabData tab = (TabData) it.next();
+            String name;
+            String htmlName;
+            if (tab.getComponent() instanceof TopComponent) {
+                TopComponent tabTC = (TopComponent) tab.getComponent();
+                name = tabTC.getDisplayName();
+                htmlName = tabTC.getHtmlDisplayName();
+                if (htmlName == null) {
+                    htmlName = name;
+                }
+            } else {
+                name = htmlName = tab.getText();
+            }
             items[i++] = new SwitcherTableItem(
                     new ActivableTab(tab),
-                    tab.getText(),
+                    name,
+                    htmlName,
                     tab.getIcon(),
                     tab == selectedTab);
         }
