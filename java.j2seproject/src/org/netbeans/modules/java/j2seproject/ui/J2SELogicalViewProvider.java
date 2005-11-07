@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +57,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
+import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -662,6 +664,16 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             super.addNotify();
             getSources().addChangeListener(this);
             project.getProjectDirectory().addFileChangeListener(wsdlListener);
+            WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+            FileObject wsdlFolder = null;
+            try {
+                wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            if (wsdlFolder != null) {
+                wsdlFolder.addFileChangeListener(wsdlListener);
+            }
             setKeys(getKeys());
         }
         
@@ -669,6 +681,16 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             setKeys(Collections.EMPTY_SET);
             getSources().removeChangeListener(this);
             project.getProjectDirectory().removeFileChangeListener(wsdlListener);
+            WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+            FileObject wsdlFolder = null;
+            try {
+                wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            if (wsdlFolder != null) {
+                wsdlFolder.removeFileChangeListener(wsdlListener);
+            }
             super.removeNotify();
         }
         
@@ -814,6 +836,23 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         private final class WsdlCreationListener extends FileChangeAdapter {
             public void fileFolderCreated (FileEvent fe) {
+                WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+                FileObject wsdlFolder = null;
+                try {
+                    wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                if (wsdlFolder != null) {
+                    wsdlFolder.addFileChangeListener(wsdlListener);
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        refreshKey(KEY_SERVICE_REFS);
+                    }
+                });
+            }
+            public void fileDataCreated (FileEvent fe) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         refreshKey(KEY_SERVICE_REFS);
