@@ -38,6 +38,8 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     private static final String TAB = "    "; // NOI18N
     private static final String TABx2 = TAB +TAB;
     private static final String TABx3 = TAB + TABx2;
+    
+    private static final String NOI18N_COMMENT = " // NOI18N"; // NOI18N
 
     private static final String ICONNAME_C16 = "iconNameC16"; // NOI18N
     private static final String ICONNAME_C32 = "iconNameC32"; // NOI18N
@@ -455,7 +457,9 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                     //this code is used for static init                    
                     sb.append( TAB + "private static BeanDescriptor beanDescriptor = ");    // NOI18N
                     sb.append( bif.getCreationString() );
-                    sb.append( ";\n\n" ); // NOI18N
+                    sb.append(';');
+                    appendNoi18nText(sb);
+                    sb.append( "\n\n" ); // NOI18N
 
                     sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n");  // NOI18N
                     sb.append( TABx2+ "return beanDescriptor;\n" + TAB + "}\n\n" ); // NOI18N
@@ -467,7 +471,9 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                     sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n");  // NOI18N
                     sb.append( TABx2+ "BeanDescriptor beanDescriptor = ");  // NOI18N
                     sb.append( bif.getCreationString() );
-                    sb.append( ";\n" ); // NOI18N
+                    sb.append(';');
+                    appendNoi18nText(sb);
+                    sb.append( '\n' ); // NOI18N
                 }
                 
                 Collection cs = bif.getCustomizationStrings();
@@ -548,7 +554,10 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
             if ( bif.isIncluded() ) {
                 sb.append( TABx3 + "properties[PROPERTY_" ).append( bif.getName() ).append("] = "); // NOI18N
-                sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
+                sb.append(bif.getCreationString());
+                sb.append(';');
+                appendNoi18nText(sb);
+                sb.append('\n');
 
                 Collection cs = bif.getCustomizationStrings();
                 Iterator csit = cs.iterator();
@@ -560,7 +569,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         }
 
         if ( propertyCount > 0 )
-                sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" ); // NOI18N
+            sb.append( TABx2 + "}\n" +  TABx2 + "catch(IntrospectionException e) {\n" + TABx3 + "e.printStackTrace();\n" + TABx2 + "}" ); // NOI18N
 
         if( !lazyProperties ){
             bis.setPropertiesSection( sb.toString(), propertyCount > 0 ? "}\n" : "  \n" ); // NOI18N
@@ -634,7 +643,10 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
             if ( bif.isIncluded() ) {
                 sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(lCurMethodCount++ + "] = "); // NOI18N
-                sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
+                sb.append(bif.getCreationString());
+                sb.append(';');
+                appendNoi18nText(sb);
+                sb.append('\n');
 
                 Collection cs = bif.getCustomizationStrings();
                 Iterator csit = cs.iterator();
@@ -706,7 +718,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                 sb.append( TAB + "static {\n" + TABx2 + "try {\n" ); // NOI18N
             }
             else {
-                sb.append( TAB + "\n" + TABx3 + "try {\n" ); // NOI18N
+                sb.append( TAB + "\n" + TABx2 + "try {\n" ); // NOI18N
             }
         }
 
@@ -716,7 +728,10 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             if ( bif.isIncluded() ) {
                 // the index prefix MUST be consistent w/ BiFeature.EventSet analyser.
                 sb.append( TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("] = "); // NOI18N
-                sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
+                sb.append( bif.getCreationString() );
+                sb.append(';');
+                appendNoi18nText(sb);
+                sb.append('\n');
 
                 Collection cs = bif.getCustomizationStrings();
                 Iterator csit = cs.iterator();
@@ -728,7 +743,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         }
 
         if ( eventCount > 0 )
-            sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" ); // NOI18N
+            sb.append( TABx2 + "}\n" +  TABx2 + "catch(IntrospectionException e) {\n" + TABx3 + "e.printStackTrace();\n" + TABx2 + "}" ); // NOI18N
 
         if( !lazyEventSets ){
             bis.setEventSetsSection( sb.toString(), eventCount > 0 ? "}\n" : "  \n"); // NOI18N
@@ -858,6 +873,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         final int IN_TEXT = 0;
         final int IN_WHITE = 1;
         int mode = IN_WHITE;
+        final int noi18n_length = NOI18N_COMMENT.length();
         boolean eo_javaid = false;
         boolean guarded = false;    //guarded beetwen ""
         boolean escape = false;    //guarded beetwen ""
@@ -873,6 +889,11 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                 if ( !Character.isWhitespace( ch ) ) {
                     if ( ch == ';' ) {
                         sb.append( ch );
+                        // check if there is "NOI18N" comment appended
+                        if (i + noi18n_length < code.length() && NOI18N_COMMENT.equals(code.substring(i + 1, i + 1 + noi18n_length))) {
+                            sb.append(NOI18N_COMMENT);
+                            i += noi18n_length;
+                        }
                         result.add( sb.toString() );
                         sb.setLength( 0 );
                         mode = IN_WHITE;
@@ -1098,5 +1119,9 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             }
 
         }
+    }
+    
+    private void appendNoi18nText(StringBuffer sb) {
+        sb.append(NOI18N_COMMENT);
     }
 }
