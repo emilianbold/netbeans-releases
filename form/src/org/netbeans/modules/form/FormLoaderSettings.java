@@ -421,20 +421,6 @@ public class FormLoaderSettings extends SystemOption {
                            value ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    /** Getter for the showMnemonicsDialog option */
-    public boolean getShowMnemonicsDialog() {
-        return showMnemonicsDialog;
-    }
-
-    /** Setter for the showMnemonicsDialog option */
-    public void setShowMnemonicsDialog(boolean value) {
-        Boolean oldValue = showMnemonicsDialog ? Boolean.TRUE : Boolean.FALSE;
-        showMnemonicsDialog = value;
-        firePropertyChange(PROP_SHOW_MNEMONICS_DIALOG,
-                           oldValue, 
-                           value ? Boolean.TRUE : Boolean.FALSE);
-    }
-
     /** Getter for the displayWritableOnly option */
     public boolean getDisplayWritableOnly() {
         return displayWritableOnly;

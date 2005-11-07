@@ -25,7 +25,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -47,12 +46,6 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     private JRadioButton rbGenerateLocals = new JRadioButton ();
     private JRadioButton rbGenerateFields = new JRadioButton ();
     private JComboBox cbListenerStyle = new JComboBox ();
-    private JTextField tfVariableName = new JTextField ();
-    private JSpinner sGridX = new JSpinner ();
-    private JSpinner sGridY = new JSpinner ();
-
-    private JCheckBox cbShowMnemonicsDialog = new JCheckBox ();
-    private JCheckBox cbGenerateMnemonics = new JCheckBox ();
 
     private boolean changed = false;
     private boolean listen = false;
@@ -75,48 +68,35 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbListenerStyle.addItem(loc("Anonymous")); // NOI18N
         cbListenerStyle.addItem(loc("InnerClass")); // NOI18N
         cbListenerStyle.addItem(loc("MainClass")); // NOI18N
-        loc(cbShowMnemonicsDialog, "Show_Mnemonics_Dialog"); // NOI18N
-        cbShowMnemonicsDialog.setBackground (Color.white);
-        loc(cbGenerateMnemonics, "Generate_Mnemonics"); // NOI18N
-        cbGenerateMnemonics.setBackground (Color.white);
 
-        // Code Generation panel
-        JPanel codeGeneration = new JPanel();
         JLabel generateComponetsLabel = new JLabel(loc("Generate_Components")); // NOI18N
         JLabel variableModifierLabel = new JLabel(loc("Variable_Modifier")); // NOI18N
         JLabel listenerStyleLabel = new JLabel(loc("Listener_Style")); // NOI18N
-        JLabel variableNameLabel = new JLabel(loc("Variable_Name")); // NOI18N
-        JLabel gridXLabel = new JLabel(loc("Grid_X")); // NOI18N
-        JLabel gridYLabel = new JLabel(loc("Grid_Y")); // NOI18N
+
+        generateComponetsLabel.setToolTipText(loc("Generate_Components_Hint")); // NOI18N
+        variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
+        listenerStyleLabel.setToolTipText(loc("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
+        cbFold.setToolTipText(loc("HINT_FOLD_GENERATED_CODE")); // NOI18N
 
         variableModifierLabel.setLabelFor(cbModifier);
         listenerStyleLabel.setLabelFor(cbListenerStyle);
-        variableNameLabel.setLabelFor(tfVariableName);
-        gridXLabel.setLabelFor(sGridX);
-        gridYLabel.setLabelFor(sGridY);
 
-        GroupLayout layout = new GroupLayout(codeGeneration);
-        codeGeneration.setLayout(layout);
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(generateComponetsLabel)
                     .add(variableModifierLabel)
-                    .add(listenerStyleLabel)
-                    .add(variableNameLabel)
-                    .add(gridXLabel)
-                    .add(gridYLabel))
+                    .add(listenerStyleLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING, false)
                     .add(rbGenerateLocals)
                     .add(rbGenerateFields)
                     .add(cbFold)
                     .add(cbModifier, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(tfVariableName, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(sGridX, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-                    .add(sGridY, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))
+                    .add(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -128,8 +108,6 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(rbGenerateFields)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(cbFold)
-                .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(variableModifierLabel)
                     .add(cbModifier))
@@ -138,70 +116,17 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .add(listenerStyleLabel)
                     .add(cbListenerStyle))
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(variableNameLabel)
-                    .add(tfVariableName))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(gridXLabel)
-                    .add(sGridX))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(gridYLabel)
-                    .add(sGridY))
+                .add(cbFold)
                 .addContainerGap()
         );
-        codeGeneration.setBorder(new TitledBorder(loc("Code_Generation"))); // NOI18N
-        codeGeneration.setBackground (Color.white);
-
-       // Mnemonics panel
-        JPanel mnemonics = new JPanel();
-        layout = new GroupLayout(mnemonics);
-        mnemonics.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(cbShowMnemonicsDialog)
-                    .add(cbGenerateMnemonics))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createSequentialGroup()
-                .addContainerGap()
-                .add(cbShowMnemonicsDialog)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(cbGenerateMnemonics)
-                .addContainerGap()
-        );
-        mnemonics.setBorder(new TitledBorder(loc("Mnemonics_Options"))); // NOI18N
-        mnemonics.setBackground (Color.white);
-        
-        // This panel
-        layout = new GroupLayout(this);
-        setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-                .add(codeGeneration)
-                .add(mnemonics)
-        );
-        layout.setVerticalGroup(
-            layout.createSequentialGroup()
-                .add(codeGeneration)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(mnemonics)
-        );
+        setBorder(new TitledBorder(loc("Code_Generation"))); // NOI18N
+        setBackground (Color.white);
 
         cbFold.addActionListener (this);
-        cbGenerateMnemonics.addActionListener (this);
         cbListenerStyle.addActionListener (this);
         cbModifier.addActionListener (this);
-        cbShowMnemonicsDialog.addActionListener (this);
         rbGenerateFields.addActionListener (this);
         rbGenerateLocals.addActionListener (this);
-        sGridX.addChangeListener (this);
-        sGridY.addChangeListener (this);
-        tfVariableName.addActionListener (this);
     }
     
     private static String loc (String key) {
@@ -237,11 +162,6 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         else
             cbModifier.setSelectedIndex (1);
         cbListenerStyle.setSelectedIndex (options.getListenerGenerationStyle ());
-        cbShowMnemonicsDialog.setSelected (options.getShowMnemonicsDialog ());
-        cbGenerateMnemonics.setSelected (options.getGenerateMnemonicsCode ());
-        tfVariableName.setText (options.getEventVariableName ());
-        sGridX.setValue (new Integer (options.getGridX ()));
-        sGridY.setValue (new Integer (options.getGridY ()));
         listen = true;
         changed = false;
     }
@@ -249,13 +169,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     void applyChanges () {
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
-        options.setEventVariableName (tfVariableName.getText ());
         options.setFoldGeneratedCode (cbFold.isSelected ());
-        options.setGenerateMnemonicsCode (cbGenerateMnemonics.isSelected ());
-        options.setGridX (((Integer) sGridX.getValue ()).intValue ());
-        options.setGridY (((Integer) sGridY.getValue ()).intValue ());
         options.setListenerGenerationStyle (cbListenerStyle.getSelectedIndex ());
-        options.setShowMnemonicsDialog (cbShowMnemonicsDialog.isSelected ());
         options.setVariablesLocal (rbGenerateLocals.isSelected ());
         switch (cbModifier.getSelectedIndex ()) {
             case 0: options.setVariablesModifier (Modifier.PUBLIC);
