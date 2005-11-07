@@ -82,7 +82,7 @@ public class TabListPopupAction extends AbstractAction {
                 name = htmlName = tab.getText();
             }
             items[i++] = new SwitcherTableItem(
-                    new ActivableTab(tab),
+                    new ActivatableTab(tab),
                     name,
                     htmlName,
                     tab.getIcon(),
@@ -91,10 +91,10 @@ public class TabListPopupAction extends AbstractAction {
         return items;
     }
     
-    private class ActivableTab implements SwitcherTableItem.Activable {
+    private class ActivatableTab implements SwitcherTableItem.Activatable {
         private TabData tab;
         
-        private ActivableTab(TabData tab) {
+        private ActivatableTab(TabData tab) {
             this.tab = tab;
         }
         

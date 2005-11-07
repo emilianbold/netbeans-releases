@@ -43,28 +43,28 @@ public class SwitcherTableItem implements Comparable {
      * Object to be activated. This is up to concrete <code>PopupSwitcher</code>
      * implementation.
      */
-    private Activable activable;
+    private Activatable activatable;
     
     /** Creates a new instance of SwitcherTableItem */
-    public SwitcherTableItem(Activable activable, String name) {
-        this(activable, name, null);
+    public SwitcherTableItem(Activatable activatable, String name) {
+        this(activatable, name, null);
     }
     
     /** Creates a new instance of SwitcherTableItem */
-    public SwitcherTableItem(Activable activable, String name, Icon icon) {
-        this(activable, name, name, icon, false);
+    public SwitcherTableItem(Activatable activatable, String name, Icon icon) {
+        this(activatable, name, name, icon, false);
     }
     
     /** Creates a new instance of SwitcherTableItem */
-    public SwitcherTableItem(Activable activable, String name, String htmlName,
+    public SwitcherTableItem(Activatable activatable, String name, String htmlName,
             Icon icon, boolean active) {
-        this(activable, name, htmlName, icon, active, null);
+        this(activatable, name, htmlName, icon, active, null);
     }
     
     /** Creates a new instance of SwitcherTableItem */
-    public SwitcherTableItem(Activable activable, String name, String htmlName,
+    public SwitcherTableItem(Activatable activatable, String name, String htmlName,
             Icon icon, boolean active, String description) {
-        this.activable = activable;
+        this.activatable = activatable;
         this.name = name;
         this.htmlName = htmlName;
         this.icon = icon;
@@ -73,13 +73,13 @@ public class SwitcherTableItem implements Comparable {
     }
     
     /**
-     * Calls <code>activate()</code> method of <code>Activable</code> interface
+     * Calls <code>activate()</code> method of <code>Activatable</code> interface
      * which has to be passed in a constructor.
-     *
-     * @see SwitcherTableItem.Activable#activate
+     * 
+     * @see SwitcherTableItem.Activatable#activate
      */
     public void activate() {
-        activable.activate();
+        activatable.activate();
     }
     
     /** Returns item's name */
@@ -106,9 +106,11 @@ public class SwitcherTableItem implements Comparable {
         return icon;
     }
     
-    /** Returns item's activable object */
-    public Activable getActivable() {
-        return activable;
+    /**
+     * Returns item's activatable object
+     */
+    public Activatable getActivatable() {
+        return activatable;
     }
     
     /** Returns whether this item is active or not. */
@@ -122,7 +124,7 @@ public class SwitcherTableItem implements Comparable {
     }
     
     /**
-     * Returns true if the <code>name</code> and <code>activable</code> are the
+     * Returns true if the <code>name</code> and <code>activatable</code> are the
      * same as passed one.
      */
     public boolean equals(Object o) {
@@ -132,7 +134,7 @@ public class SwitcherTableItem implements Comparable {
         if (o instanceof SwitcherTableItem) {
             SwitcherTableItem item = (SwitcherTableItem) o;
             boolean result = item.getName().equals(name) &&
-                    item.getActivable().equals(activable);
+                    item.getActivatable().equals(activatable);
             return result;
         } else {
             return false;
@@ -145,7 +147,7 @@ public class SwitcherTableItem implements Comparable {
      * @return int hashcode
      */
     public int hashCode() {
-        return (name == null ? 1 : name.hashCode()) * activable.hashCode();
+        return (name == null ? 1 : name.hashCode()) * activatable.hashCode();
     }
     
     /**
@@ -169,7 +171,7 @@ public class SwitcherTableItem implements Comparable {
      * This interface has to be implemented and passed to the
      * <code>SwitcherTableItem</code> constructor.
      */
-    public static interface Activable {
+    public static interface Activatable {
         /**
          * Here should be code witch <em>activate</em> this item. The method
          * <code>SwitcherTableItem.activate()</code> conveniently call this

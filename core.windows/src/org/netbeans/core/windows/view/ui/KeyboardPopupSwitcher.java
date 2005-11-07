@@ -144,9 +144,9 @@ public final class KeyboardPopupSwitcher {
     
     /**
      * Creates and shows the popup with given <code>items</code>. When user
-     * selects an item <code>SwitcherTableItem.Activable.activate()</code> is
+     * selects an item <code>SwitcherTableItem.Activatable.activate()</code> is
      * called. So what exactly happens depends on the concrete
-     * <code>SwitcherTableItem.Activable</code> implementation.
+     * <code>SwitcherTableItem.Activatable</code> implementation.
      * Selection is made when user releases a <code>releaseKey</code> passed on
      * as a parameter. If user releases the <code>releaseKey</code> before a
      * specified time (<code>TIME_TO_SHOW</code>) expires the popup won't show

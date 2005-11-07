@@ -57,21 +57,21 @@ public class KeyboardPopupSwitcherTestHid extends TestCase
         frame = createFrame();
         frame.setVisible(true);
         
-        items[0] = new SwitcherTableItem(new DummyActivable("Something.txt"), "Something.txt", new DummyIcon(Color.BLUE));
-        items[1] = new SwitcherTableItem(new DummyActivable("Sometime.txt"), "Sometime.txt", new DummyIcon());
-        items[2] = new SwitcherTableItem(new DummyActivable("Somewhere.txt"), "Somewhere.txt", new DummyIcon(Color.YELLOW));
-        items[3] = new SwitcherTableItem(new DummyActivable("Something.txt"), "Something.txt", new DummyIcon(Color.BLUE));
-        items[4] = new SwitcherTableItem(new DummyActivable("Sometime.txt"),
+        items[0] = new SwitcherTableItem(new DummyActivatable("Something.txt"), "Something.txt", new DummyIcon(Color.BLUE));
+        items[1] = new SwitcherTableItem(new DummyActivatable("Sometime.txt"), "Sometime.txt", new DummyIcon());
+        items[2] = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), "Somewhere.txt", new DummyIcon(Color.YELLOW));
+        items[3] = new SwitcherTableItem(new DummyActivatable("Something.txt"), "Something.txt", new DummyIcon(Color.BLUE));
+        items[4] = new SwitcherTableItem(new DummyActivatable("Sometime.txt"),
                 "Very Very Very Long" +
                 " name with a lot of words in its name bla bla bla bla bla bla" +
                 " which sould be shortened and should ends with three dots [...]." +
                 " Hmmmmm", new DummyIcon());
-        items[5] = new SwitcherTableItem(new DummyActivable("Somewhere.txt"), "Somewhere.txt", new DummyIcon(Color.YELLOW));
-        Arrays.fill(items, 6, 70, new SwitcherTableItem(new DummyActivable("s1.txt"), "s1.txt", new DummyIcon()));
-        items[70] = new SwitcherTableItem(new DummyActivable("Somewhere.txt"), "null icon", null);
-        Arrays.fill(items, 71, 90, new SwitcherTableItem(new DummyActivable("s1.txt"), "s1.txt", new DummyIcon()));
-        items[90] = new SwitcherTableItem(new DummyActivable("Somewhere.txt"), null, new DummyIcon(Color.BLACK));
-        Arrays.fill(items, 91, 100, new SwitcherTableItem(new DummyActivable("s1.txt"), "s1.txt", new DummyIcon(Color.GREEN)));
+        items[5] = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), "Somewhere.txt", new DummyIcon(Color.YELLOW));
+        Arrays.fill(items, 6, 70, new SwitcherTableItem(new DummyActivatable("s1.txt"), "s1.txt", new DummyIcon()));
+        items[70] = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), "null icon", null);
+        Arrays.fill(items, 71, 90, new SwitcherTableItem(new DummyActivatable("s1.txt"), "s1.txt", new DummyIcon()));
+        items[90] = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), null, new DummyIcon(Color.BLACK));
+        Arrays.fill(items, 91, 100, new SwitcherTableItem(new DummyActivatable("s1.txt"), "s1.txt", new DummyIcon(Color.GREEN)));
         
         // wait until a developer close the frame
         sleepForever();
@@ -132,11 +132,11 @@ public class KeyboardPopupSwitcherTestHid extends TestCase
     }
     
     /**
-     * Activable tester class.
+     * Activatable tester class.
      */
-    private static class DummyActivable implements SwitcherTableItem.Activable {
+    private static class DummyActivatable implements SwitcherTableItem.Activatable {
         String dummyName;
-        private DummyActivable(String name) {
+        private DummyActivatable(String name) {
             this.dummyName = name;
         }
         public void activate() {

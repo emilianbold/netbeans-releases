@@ -68,9 +68,9 @@ final class ButtonPopupSwitcher
     
     /**
      * Creates and shows the popup with given <code>items</code>. When user
-     * choose an item <code>SwitcherTableItem.Activable.activate()</code> is
+     * choose an item <code>SwitcherTableItem.Activatable.activate()</code> is
      * called. So what exactly happens depends on the concrete
-     * <code>SwitcherTableItem.Activable</code> implementation. A popup appears
+     * <code>SwitcherTableItem.Activatable</code> implementation. A popup appears
      * on <code>x</code>, <code>y</code> coordinates.
      */
     public static void selectItem(JComponent owner, SwitcherTableItem[] items,

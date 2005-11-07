@@ -119,7 +119,7 @@ public final class RecentViewListAction extends AbstractAction
             String description = tc.getToolTipText();
             ImageIcon imageIcon = (image != null ? new ImageIcon(image) : null);
             items[i] = new SwitcherTableItem(
-                    new ActivableTC(tc),
+                    new ActivatableTC(tc),
                     name,
                     name,
                     imageIcon,
@@ -129,9 +129,9 @@ public final class RecentViewListAction extends AbstractAction
         return items;
     }
     
-    private class ActivableTC implements SwitcherTableItem.Activable {
+    private class ActivatableTC implements SwitcherTableItem.Activatable {
         private TopComponent tc;
-        private ActivableTC(TopComponent tc) {
+        private ActivatableTC(TopComponent tc) {
             this.tc = tc;
         }
         public void activate() {
