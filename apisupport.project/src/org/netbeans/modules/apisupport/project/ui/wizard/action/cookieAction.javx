@@ -12,7 +12,7 @@ public final class @@CLASS_NAME@@ extends CookieAction {
     }
 
     public String getName() {
-        return "@@DISPLAY_NAME@@";
+        return NbBundle.getMessage(@@CLASS_NAME@@.class, "@@DISPLAY_NAME_KEY@@");
     }
 
     protected Class[] cookieClasses() {

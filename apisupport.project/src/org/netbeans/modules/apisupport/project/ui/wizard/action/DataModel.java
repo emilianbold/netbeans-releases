@@ -36,6 +36,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private static final String[] HARDCODED_IMPORTS = new String[] {
         "org.openide.nodes.Node", // NOI18N
         "org.openide.util.HelpCtx", // NOI18N
+        "org.openide.util.NbBundle", // NOI18N
         "org.openide.util.actions.CookieAction" // NOI18N
     };
     
@@ -122,10 +123,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // XXX use nbresloc URL protocol rather than DataModel.class.getResource(...):
         URL template = DataModel.class.getResource(alwaysEnabled
                 ? "callableSystemAction.javx" : "cookieAction.javx"); // NOI18N
+        String actionNameKey = "CTL_" + className; // NOI18N
         Map replaceTokens = new HashMap();
         replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
         replaceTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
-        replaceTokens.put("@@DISPLAY_NAME@@", displayName); // NOI18N
+        replaceTokens.put("@@DISPLAY_NAME_KEY@@", actionNameKey); // NOI18N
         replaceTokens.put("@@MODE@@", getSelectionMode()); // NOI18N
         Set imports = new TreeSet(Arrays.asList(HARDCODED_IMPORTS));
         Set addedFQNCs = new TreeSet();
@@ -152,6 +154,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
         replaceTokens.put("@@IMPORTS@@", importsBuffer.toString()); // NOI18N
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
+        
+        // Bundle.properties for localized action name
+        cmf.add(cmf.bundleKey(getDefaultPackagePath("Bundle.properties"), actionNameKey, displayName)); // NOI18N
         
         // Copy action icon
         if (origIconPath != null) {

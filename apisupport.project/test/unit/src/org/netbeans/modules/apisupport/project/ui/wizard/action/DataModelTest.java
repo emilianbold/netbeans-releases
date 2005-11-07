@@ -73,7 +73,7 @@ public class DataModelTest extends LayerTestBase {
         
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         assertEquals(
-                Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java"}),
+                Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java", "src/org/example/module1/Bundle.properties"}),
                 Arrays.asList(cmf.getCreatedPaths()));
         assertEquals(
                 Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/layer.xml"}),
@@ -172,7 +172,7 @@ public class DataModelTest extends LayerTestBase {
         
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         assertEquals(
-                Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java"}),
+                Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java", "src/org/example/module1/Bundle.properties"}),
                 Arrays.asList(cmf.getCreatedPaths()));
         assertEquals(
                 Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/layer.xml"}),

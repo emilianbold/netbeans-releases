@@ -1,6 +1,7 @@
 package @@PACKAGE_NAME@@;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 public final class @@CLASS_NAME@@ extends CallableSystemAction {
@@ -10,7 +11,7 @@ public final class @@CLASS_NAME@@ extends CallableSystemAction {
     }
 
     public String getName() {
-        return "@@DISPLAY_NAME@@";
+        return NbBundle.getMessage(@@CLASS_NAME@@.class, "@@DISPLAY_NAME_KEY@@");
     }
     @@ICON_RESOURCE_METHOD@@
     @@INITIALIZE_METHOD@@
