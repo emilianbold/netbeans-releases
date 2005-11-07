@@ -86,7 +86,7 @@ public class TomcatProperties {
     private static final String  DEF_VALUE_SHARED_MEM    = "tomcat_shared_memory_id"; // NOI18N
     private static final boolean DEF_VALUE_OPEN_LOG      = true;
     private static final String  DEF_VALUE_HOST          = "localhost"; // NOI18N
-    public  static final int     DEF_VALUE_RUNNING_CHECK_TIMEOUT = 1000;
+    public  static final int     DEF_VALUE_RUNNING_CHECK_TIMEOUT = 2000;
     private static final String  DEF_VALUE_DISPLAY_NAME  = 
             NbBundle.getMessage(TomcatProperties.class, "LBL_DefaultDisplayName");
     
