@@ -588,12 +588,14 @@ PropertyChangeListener {
         backgroundColorChooser.setEnabled (true);
         
         // set defaults
-        foregroundColorChooser.setDefaultColor (
-            (Color) getDefault (currentLanguage, category, StyleConstants.Foreground)
-        );
-        backgroundColorChooser.setDefaultColor (
-            (Color) getDefault (currentLanguage, category, StyleConstants.Background)
-        );
+        Color inheritedForeground = (Color) getDefault 
+            (currentLanguage, category, StyleConstants.Foreground);
+        if (inheritedForeground == null) inheritedForeground = Color.black;
+        foregroundColorChooser.setInheritedColor (inheritedForeground);
+        Color inheritedBackground = (Color) getDefault 
+            (currentLanguage, category, StyleConstants.Background);
+        if (inheritedBackground == null) inheritedBackground = Color.white;
+        backgroundColorChooser.setInheritedColor (inheritedBackground);
         
         String font = fontToString (category);
         tfFont.setText (font);
