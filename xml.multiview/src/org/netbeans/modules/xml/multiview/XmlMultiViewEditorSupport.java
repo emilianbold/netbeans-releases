@@ -312,6 +312,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         public XmlEnv(XmlMultiViewDataObject obj) {
             super(obj);
             xmlMultiViewDataObject = obj;
+            changeFile();
         }
 
         /** Get the file to edit.
