@@ -87,10 +87,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     public Node.Cookie getCookie(Class type) {
         if (type.isAssignableFrom(BaseJspEditorSupport.class)) {
-            if (editorSupport == null) {
-                editorSupport = createJspEditorSupport ();
-            }
-            return editorSupport;
+            return getJspEditorSupport();
         }
         return super.getCookie(type);
     }
@@ -99,9 +96,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return new JspNode (this);
     }
 
-    /** Creates a EditorSupport for this page. May return null. */
-    protected BaseJspEditorSupport createJspEditorSupport() {
-        return new BaseJspEditorSupport(this);
+    private synchronized BaseJspEditorSupport getJspEditorSupport() {
+        if (editorSupport == null) {
+            editorSupport = new BaseJspEditorSupport(this);
+        }
+        return editorSupport;
     }
 
     protected EditorCookie createServletEditor() {
