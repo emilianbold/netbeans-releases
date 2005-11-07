@@ -190,7 +190,7 @@ public final class FolderObj extends BaseFileObj {
 
         return retVal;
     }
-
+    
     public final void delete(final FileLock lock) throws IOException {
         final LinkedList all = new LinkedList();
 
