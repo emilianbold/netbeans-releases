@@ -228,7 +228,10 @@ public final class FileUtil extends Object {
     }
 
     /**
-     * Creates a folder on given filesystem.  The name of the new folder can be
+     * Creates a folder on given filesystem, including any
+    * necessary but nonexistent parent folders. Note that if this
+    * operation fails it may have succeeded in creating some of the necessary
+    * parent folders. The name of the new folder can be
      * specified as a multi-component pathname whose components are separated
      * by File.separatorChar or &quot;/&quot; (forward slash).
      *
@@ -281,7 +284,10 @@ public final class FileUtil extends Object {
         return folder;
     }
 
-    /** Creates a data file on given filesystem. The name of
+    /** Creates a data file on given filesystem, including any
+    * necessary but nonexistent parent folders. Note that if this
+    * operation fails it may have succeeded in creating some of the necessary
+    * parent folders. The name of
     * data file can be composed as resource name (e. g. org/netbeans/myfolder/mydata )
     * and the method scans which of folders has already been created
     * and which not.
