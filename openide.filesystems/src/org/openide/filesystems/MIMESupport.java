@@ -12,6 +12,7 @@
  */
 package org.openide.filesystems;
 
+import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -44,6 +45,9 @@ final class MIMESupport extends Object {
     private static WeakReference lastFo = EMPTY;
     private static WeakReference lastCfo = EMPTY;
     private static Object lock = new Object();
+    
+    /** for logging and test interaction */
+    private static ErrorManager ERR = ErrorManager.getDefault().getInstance(MIMESupport.class.getName());
 
     private MIMESupport() {
     }
@@ -86,11 +90,16 @@ final class MIMESupport extends Object {
             }
         }
     }
+    /** Testing purposes.
+     */
+    static MIMEResolver[] getResolvers() {
+        return CachedFileObject.getResolvers();
+    }
 
     private static class CachedFileObject extends FileObject implements FileChangeListener {
         static Lookup.Result result;
-        static MIMEResolver[] resolvers; // call getResolvers instead 
-        static int recCount = 0;
+        private static Object resolvers; // call getResolvers instead 
+        
         String mimeType;
         java.util.Date lastModified;
         CachedInputStream fixIt;
@@ -106,27 +115,19 @@ final class MIMESupport extends Object {
         }
 
         private static MIMEResolver[] getResolvers() {
-            boolean needsDecrement = false;
+            synchronized (CachedFileObject.class) {
+                if (resolvers instanceof MIMEResolver[]) {
+                    return (MIMEResolver[])resolvers;
+                }
 
-            try {
-                synchronized (CachedFileObject.class) {
-                    if (resolvers != null) {
-                        return resolvers;
-                    }
-
-                    // reason: result.allInstances may also invoke this method recursively
-                    if (recCount > 0) {
-                        return new MIMEResolver[] {  };
-                    }
-
-                    recCount++;
-                    needsDecrement = true;
+                if (result == null) {
                     result = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
                     result.addLookupListener(
                         new LookupListener() {
                             public void resultChanged(LookupEvent evt) {
                                 synchronized (CachedFileObject.class) {
                                     result.removeLookupListener(this);
+                                    ERR.log("Clearing cache"); // NOI18N
                                     resolvers = null;
                                 }
                             }
@@ -134,21 +135,25 @@ final class MIMESupport extends Object {
                     );
                 }
 
-                Collection instances = result.allInstances();
+                // ok, let's compute the value
+                resolvers = Thread.currentThread();
+            }
 
-                synchronized (CachedFileObject.class) {
-                    if (resolvers != null) {
-                        return resolvers;
-                    }
+            MIMEResolver[] toRet = (MIMEResolver[])result.allInstances().toArray(new MIMEResolver[0]);
 
-                    resolvers = (MIMEResolver[]) instances.toArray(new MIMEResolver[instances.size()]);
+            ERR.log("Resolvers computed"); // NOI18N
 
-                    return resolvers;
+            synchronized (CachedFileObject.class) {
+                if (resolvers == Thread.currentThread()) {
+                    // ok, we computed the value and nobody cleared it till now
+                    resolvers = toRet;
+                    ERR.log("Resolvers assigned"); // NOI18N
+                } else {
+                    ERR.log("Somebody else computes resolvers: " + resolvers); // NOI18N
                 }
-            } finally {
-                if (needsDecrement) {
-                    recCount--;
-                }
+
+
+                return toRet;
             }
         }
 
