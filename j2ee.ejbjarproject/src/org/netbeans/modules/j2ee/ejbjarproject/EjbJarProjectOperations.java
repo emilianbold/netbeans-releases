@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -32,12 +31,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -150,15 +146,31 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         notifyDeleting();
     }
     
-    public void notifyMoved(Project original, File originalPath, String nueName) {
+    public void notifyMoved(Project original, File originalPath, final String newName) {
         if (original == null) {
             project.getAntProjectHelper().notifyDeleted();
             return ;
         }
         
-        project.setName(nueName);
+	final String oldProjectName = project.getName();
+
+        project.setName(newName);
         project.getReferenceHelper().fixReferences(originalPath);        
         fixOtherReferences(originalPath);
+	
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+		AntProjectHelper helper = project.getAntProjectHelper();
+		EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+		String jarName = (String) projectProps.get(EjbJarProjectProperties.JAR_NAME);
+		String oldName = jarName.substring(0, jarName.length() - 4);
+		if (jarName.endsWith(".jar") && oldName.equals(oldProjectName)) //NOI18N
+		    projectProps.put(EjbJarProjectProperties.JAR_NAME, newName + ".jar"); //NOI18N
+
+		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+            }
+        });
     }
     
     private void fixOtherReferences(final File originalPath) {

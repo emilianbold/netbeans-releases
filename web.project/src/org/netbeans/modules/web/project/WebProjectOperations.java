@@ -15,7 +15,6 @@ package org.netbeans.modules.web.project;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -27,15 +26,13 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -144,14 +141,40 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         notifyDeleting();
     }
     
-    public void notifyMoved(Project original, File originalPath, String nueName) {
+    public void notifyMoved(Project original, File originalPath, final String newName) {
         if (original == null) {
             project.getAntProjectHelper().notifyDeleted();
             return ;
         }
-        
-        project.setName(nueName);
+	
+	final String oldProjectName = project.getName();
+	
+        project.setName(newName);
         project.getReferenceHelper().fixReferences(originalPath);
+
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+		AntProjectHelper helper = project.getAntProjectHelper();
+		EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+		EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+
+		String warName = (String) projectProps.get(WebProjectProperties.WAR_NAME);
+		String warEarName = (String) projectProps.get(WebProjectProperties.WAR_EAR_NAME);
+		String oldName = warName.substring(0, warName.length() - 4);
+		if (warName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
+		    projectProps.put(WebProjectProperties.WAR_NAME, newName + ".war"); //NOI18N
+		if (warEarName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
+		    projectProps.put(WebProjectProperties.WAR_EAR_NAME, newName + ".war"); //NOI18N
+
+		ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
+		String serverId = privateProps.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+		String oldCP = wm.getContextPath(serverId);
+		if (oldCP != null && oldName.equals(oldCP.substring(1)))
+		    wm.setContextPath(serverId, "/" + newName); //NOI18N
+
+		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+            }
+        });
     }
     
     private static boolean isParent(File folder, File fo) {
