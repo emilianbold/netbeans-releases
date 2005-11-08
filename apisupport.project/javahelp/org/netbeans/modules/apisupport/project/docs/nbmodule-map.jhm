@@ -19,9 +19,7 @@
 	<!-- Start of "Creating" section -->
 	<mapID target="about_create" url="create_plugin/about_create.html"/>	
 	<mapID target="about_project_wizards" url="create_plugin/projectlevel_create/about_project_wizards.html"/>	
-	<mapID target="create_module_suite" url="create_plugin/projectlevel_create/create_module_suite.html"/>
 	<mapID target="create_module" url="create_plugin/projectlevel_create/create_module.html"/>
-	<mapID target="create_library_wrapper" url="create_plugin/projectlevel_create/create_library_wrapper.html"/>
 		<!-- Start of "File-level Creating" section -->
 		<mapID target="about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>
 		<mapID target="about_j2se_library_descriptors" url="create_plugin/filelevel_create/about_j2se_library_descriptors.html"/>	
