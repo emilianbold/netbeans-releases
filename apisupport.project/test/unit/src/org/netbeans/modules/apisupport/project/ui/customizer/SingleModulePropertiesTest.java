@@ -274,12 +274,12 @@ public class SingleModulePropertiesTest extends TestBase {
         FileUtil.createData(srcDir, "pkg2/deeper/Clazz1.java");
         FileUtil.createData(srcDir, "pkg2/deeper/and/deeper/Clazz1.java");
         Set packages = new HashSet();
-        SingleModuleProperties.addNonEmptyPackages(packages, srcDir, "java", false);
-        assertEquals("two packages", 4, packages.size());
-        assertTrue("pkg1", packages.remove("pkg1"));
-        assertTrue("pkg2", packages.remove("pkg2"));
-        assertTrue("pkg2.deeper", packages.remove("pkg2.deeper"));
-        assertTrue("pkg2.deeper.and.deeper", packages.remove("pkg2.deeper.and.deeper"));
+        SingleModuleProperties.addNonEmptyPackages(packages, srcDir, "java");
+        assertEquals("four packages", 4, packages.size());
+        assertTrue("pkg1", packages.remove(srcDir.getFileObject("pkg1")));
+        assertTrue("pkg2", packages.remove(srcDir.getFileObject("pkg2")));
+        assertTrue("pkg2.deeper", packages.remove(srcDir.getFileObject("pkg2/deeper")));
+        assertTrue("pkg2.deeper.and.deeper", packages.remove(srcDir.getFileObject("pkg2/deeper/and/deeper")));
     }
     
     public void testPublicPackagesAreUpToDate_63561() throws Exception {

@@ -35,6 +35,7 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
@@ -521,14 +522,20 @@ public final class SingleModuleProperties extends ModuleProperties {
     /**
      * Returns set of all available public packages for the project.
      */
-    private Set/*<String>*/ getAvailablePublicPackages() {
+    Set/*<FileObject>*/ getAvailablePublicPackages() {
         if (availablePublicPackages == null) {
             availablePublicPackages = new TreeSet();
             
             // find all available public packages in a source root
             File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
-            SingleModuleProperties.addNonEmptyPackages(availablePublicPackages,
-                    FileUtil.toFileObject(srcDir), "java", false); // NOI18N
+            Set/*<FileObject>*/ pkgs = new HashSet();
+            SingleModuleProperties.addNonEmptyPackages(
+                    pkgs, FileUtil.toFileObject(srcDir), "java"); // NOI18N
+            for (Iterator it = pkgs.iterator(); it.hasNext();) {
+                FileObject pkg = (FileObject) it.next();
+                String pkgS = PropertyUtils.relativizeFile(srcDir, FileUtil.toFile(pkg));
+                availablePublicPackages.add(pkgS.replace('/', '.'));
+            }
             
             // find all available public packages in classpath extensions
             String[] libsPaths = getProjectXMLManager().getBinaryOrigins();
@@ -707,7 +714,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         return false;
     }
     
-    private void addNonEmptyPackagesFromJar(Set/*<String>*/ pkgs, File jarFile) {
+    private void addNonEmptyPackagesFromJar(Set/*<String>*/ packages, File jarFile) {
         if (!jarFile.isFile()) {
             // Broken classpath entry, perhaps.
             return;
@@ -715,7 +722,13 @@ public final class SingleModuleProperties extends ModuleProperties {
         try {
             JarFileSystem jfs = new JarFileSystem();
             jfs.setJarFile(jarFile);
-            SingleModuleProperties.addNonEmptyPackages(pkgs, jfs.getRoot(), "class", true); // NOI18N
+            Set/*<FileObject>*/ pkgs = new HashSet();
+            SingleModuleProperties.addNonEmptyPackages(pkgs, jfs.getRoot(), "class"); // NOI18N
+            for (Iterator it = pkgs.iterator(); it.hasNext();) {
+                FileObject pkg = (FileObject) it.next();
+                String pkgS = pkg.getPath();
+                packages.add(pkgS.replace('/', '.'));
+            }
         } catch (PropertyVetoException pve) {
             ErrorManager.getDefault().notify(pve);
         } catch (IOException ioe) {
@@ -731,22 +744,22 @@ public final class SingleModuleProperties extends ModuleProperties {
      * package (x.y.z) <code>isJarRoot</code> specifies if a given root is root
      * of a jar file.
      */
-    static void addNonEmptyPackages(Set/*<String>*/ pkgs, FileObject root, String ext, boolean isJarRoot) {
-        if (root == null) {
+    static void addNonEmptyPackages(final Set/*<FileObject>*/ validPkgs, final FileObject dir, final String ext) {
+        if (dir == null) {
             return;
         }
-        for (Enumeration en1 = root.getFolders(true); en1.hasMoreElements(); ) {
+        for (Enumeration en1 = dir.getFolders(false); en1.hasMoreElements(); ) {
             FileObject subDir = (FileObject) en1.nextElement();
-            for (Enumeration en2 = subDir.getData(false); en2.hasMoreElements(); ) {
-                FileObject kid = (FileObject) en2.nextElement();
-                if (kid.hasExt(ext) && Utilities.isJavaIdentifier(kid.getName())) {
-                    String pkg = isJarRoot ? subDir.getPath() :
-                        PropertyUtils.relativizeFile(
-                            FileUtil.toFile(root),
-                            FileUtil.toFile(subDir));
-                    pkgs.add(pkg.replace('/', '.'));
-                    break;
-                }
+            if (VisibilityQuery.getDefault().isVisible(subDir)) {
+                addNonEmptyPackages(validPkgs, subDir, ext);
+            }
+        }
+        for (Enumeration en2 = dir.getData(false); en2.hasMoreElements(); ) {
+            FileObject kid = (FileObject) en2.nextElement();
+            if (kid.hasExt(ext) && Utilities.isJavaIdentifier(kid.getName())) {
+                // at least one class inside directory -> valid package
+                validPkgs.add(dir);
+                break;
             }
         }
     }
