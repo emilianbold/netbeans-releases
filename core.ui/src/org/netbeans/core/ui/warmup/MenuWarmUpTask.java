@@ -166,7 +166,7 @@ public final class MenuWarmUpTask implements Runnable {
             }
             FileSystem[] retVal = new FileSystem [allRoots.size()];
             allRoots.toArray(retVal);
-            assert retVal.length > 0 : "Could not get any filesystem"; // NOI18N
+//            assert retVal.length > 0 : "Could not get any filesystem"; // NOI18N
             
             return fileSystems = retVal;
         }
