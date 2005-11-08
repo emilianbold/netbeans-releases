@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,6 +26,7 @@ import java.security.PermissionCollection;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -44,18 +45,20 @@ public class JspParserImpl implements JspParserAPI {
     
     private static Constructor webAppParserImplConstructor;
     
+    private static final JspParserAPI.JspOpenInfo DEFAULT_OPENINFO = new JspParserAPI.JspOpenInfo(false, "ISO-8859-1");
+    
     /** Constructs a new Parser API implementation.
      */
     public JspParserImpl() {
         initializeLogger();
-        // PENDING - we are preventing the garbage collection of 
+        // PENDING - we are preventing the garbage collection of
         // Project-s and FileObject-s (wmRoots)
         parseSupports = new HashMap();
     }
     
     private static void initReflection() {
         if (webAppParserImplConstructor == null) {
-// ext/jasper-runtime-5.0.19.jar ext/jasper-compiler-5.0.19.jar ext/commons-logging-api.jar ext/commons-el.jar            
+// ext/jasper-runtime-5.0.19.jar ext/jasper-compiler-5.0.19.jar ext/commons-logging-api.jar ext/commons-el.jar
             File files[] = new File[6];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
             files[1] = InstalledFileLocator.getDefault().locate("modules/ext/jasper-runtime-5.5.9.jar", null, false);
@@ -63,7 +66,7 @@ public class JspParserImpl implements JspParserAPI {
             files[3] = InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false);
             files[4] = InstalledFileLocator.getDefault().locate("modules/ext/commons-el.jar", null, false);
             files[5] = InstalledFileLocator.getDefault().locate("modules/ext/jsp-parser-ext.jar", null, false);
-
+            
             try {
                 URL urls[] = new URL[files.length];
                 for (int i = 0; i < files.length; i++) {
@@ -71,16 +74,13 @@ public class JspParserImpl implements JspParserAPI {
                 }
                 ExtClassLoader urlCL = new ExtClassLoader(urls, JspParserImpl.class.getClassLoader());
                 Class cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport");
-               
+                
                 webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {WebModule.class});
-            }
-            catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
@@ -101,20 +101,27 @@ public class JspParserImpl implements JspParserAPI {
     }
     
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor) {
-        if (wm == null)
-            return new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
-        FileObject wmRoot = wm.getDocumentBase();
-        if (wmRoot == null) {
-            // PENDING - we could do a better job here in making up a fallback
-            return new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
+        //try to fastly create openinfo
+        
+        //detects encoding even if there is not webmodule (null) or deployment descriptor doesn't exist
+        FastOpenInfoParser fastOIP = FastOpenInfoParser.get(wm);
+        if(fastOIP != null) {
+            JspParserAPI.JspOpenInfo jspOI = fastOIP.getJspOpenInfo(jspFile, useEditor);
+            if(jspOI != null) return jspOI;
         }
-        WebAppParseProxy pp = getParseProxy(wm);
-        if (pp != null)
-            return pp.getJspOpenInfo(jspFile, useEditor);
-        else
-            return new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
+        
+        //no encoding found in the file or the deployment descriptor contains encoding declarations
+        if (wm != null) {
+            FileObject wmRoot = wm.getDocumentBase();
+            if (wmRoot != null) {
+                WebAppParseProxy pp = getParseProxy(wm);
+                if (pp != null) return pp.getJspOpenInfo(jspFile, useEditor);
+            }
+        }
+        
+        return DEFAULT_OPENINFO;
     }
-
+    
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
         if (wm ==null)
             return getNoWebModuleResult(jspFile, null);
@@ -130,9 +137,9 @@ public class JspParserImpl implements JspParserAPI {
     
     /**
      * Returns the mapping of the 'global' tag library URI to the location (resource
-     * path) of the TLD associated with that tag library. 
+     * path) of the TLD associated with that tag library.
      * @param wmRoot the web module for which to return the map
-     * @return Map which maps global tag library URI to the location 
+     * @return Map which maps global tag library URI to the location
      * (resource path) of its tld. The location is
      * returned as a String array:
      *    [0] The location
@@ -162,16 +169,13 @@ public class JspParserImpl implements JspParserAPI {
         try {
             initReflection();
             return (WebAppParseProxy)webAppParserImplConstructor.newInstance(new Object[] {wm});
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             e.printStackTrace();
-        }
-        catch (InstantiationException e) {
+        } catch (InstantiationException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             e.printStackTrace();
-        }
-        catch (InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             e.printStackTrace();
         }
@@ -185,8 +189,8 @@ public class JspParserImpl implements JspParserAPI {
     }
     
     private JspParserAPI.ParseResult getNoWebModuleResult(FileObject jspFile, WebModule wm) {
-        JspParserAPI.ErrorDescriptor error = new JspParserAPI.ErrorDescriptor(null, jspFile, -1, -1, 
-            NbBundle.getMessage(JspParserImpl.class, "MSG_webModuleNotFound", jspFile.getNameExt()), ""); // NOI18N
+        JspParserAPI.ErrorDescriptor error = new JspParserAPI.ErrorDescriptor(null, jspFile, -1, -1,
+                NbBundle.getMessage(JspParserImpl.class, "MSG_webModuleNotFound", jspFile.getNameExt()), ""); // NOI18N
         return new JspParserAPI.ParseResult(new JspParserAPI.ErrorDescriptor[] {error});
     }
     
@@ -197,8 +201,8 @@ public class JspParserImpl implements JspParserAPI {
         return new TagLibDataImpl(info);
     }
      */
-
-
+    
+    
     /** For use from instancedataobject in filesystem layer
      */
     /*public static JspParserImpl getParserImpl(FileObject fo, String str1) {
@@ -246,7 +250,7 @@ public class JspParserImpl implements JspParserAPI {
         }
         
         public boolean equals(Object o) {
-
+            
             if (o instanceof WAParseSupportKey) {
                 WAParseSupportKey k = (WAParseSupportKey)o;
                 //Two keys are the same only if the document roots are same.
@@ -257,7 +261,7 @@ public class JspParserImpl implements JspParserAPI {
         
         public int hashCode() {
             //return wm.hashCode() + wmRoot.hashCode();
-            // Two keys are the same only if the document roots are same. 
+            // Two keys are the same only if the document roots are same.
             return 0;
         }
     }
