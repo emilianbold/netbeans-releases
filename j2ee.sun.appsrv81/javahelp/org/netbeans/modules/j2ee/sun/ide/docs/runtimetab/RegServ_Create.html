@@ -1,10 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-
-<html>
-
-    <head>
-
-        <!--
+    <!--
                 Sun Public License Notice
 
 The contents of this file are subject to the Sun Public License
@@ -16,6 +11,10 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
     -->
+
+<html>
+
+    <head>
 
         <title>Add Server Instance Wizard: Enter Creation Properties for a New Application Server Domain</title>
         <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
@@ -30,12 +29,15 @@ Microsystems, Inc. All Rights Reserved.
 
         <p>Each port value can be set independently. You are free to change them to suit your operational environment.</p>
 
-        <ul class="note">
-            <li>All specified port numbers must be unique, and the ports specified cannot be in use by other applications.</li>
-            <li>Other processes or services may already be using one of the ports  
-            defined here.  If you cannot start the server instance, remove the instance and 
+        <h3>Troubleshooting</h3>
+        <ul>
+            <li>Ensure that the ports specified are not in use by other applications. 
+            All specified port numbers must be unique. 
+            If you know that any of the ports defined in this page are in use, change the port number to an available port.</li>
+            <li>If you cannot start the server instance, remove the instance and 
             create a new one, making sure that none of the ports are currently in use by any applicataions.</li>
         </ul>
+        
         <p>When you click Finish, the new domain is created on your disc and the server instance is registered with the IDE.</p>
         <p>When the new domain is created, a confirmation message is displayed in the 
         Instance Creation Results tab in the Output window.</p> 

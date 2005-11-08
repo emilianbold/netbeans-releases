@@ -16,31 +16,28 @@ Microsystems, Inc. All Rights Reserved.
 
     <head>
 
-        <title>Add Server Instance Wizard: Enter Domain Admin Port Info</title>
+        <title>Add Server Instance Wizard: Enter Domain Admin Login Info</title>
 
-  
         <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
-
     </head>
-
     <body>
-
-        <h2>Add Server Instance Wizard: Enter Domain Admin Port Info</h2>
+        <h2>Add Server Instance Wizard: Enter Domain Admin Login Info</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>You see this page of the Add Server Instance wizard when you are registering a remote domain instance of the Sun Java System Application Server. 
-        Use this page of the wizard to specify the host and communication port for the remote domain.</p>
-        
-        <p>Enter the following information for the remote domain:</p>
-        <ul>
-            <li><b>Host.</b> Enter the host name or IP address for the remote Sun Java System Application Server.</li>
-            <li><b>Port.</b> Enter the port number used to communicate with the remote server.
-            The default port is 4848.</li>
-        </ul>
-        <p>Click Next if you want to supply the username and password for the remote domain.
-        Click Finish if you do not want to supply the username and password at this time.
-        If you do not supply the username and password, you are prompted to supply the username and password when you start the server instance.</p> 
-        <hr>
+        <p>You see this page of the Add Server Instance wizard when you specify domain details to register an instance of the Sun Java System Application Server. 
+        Use this page of the wizard to specify the username and password for the domain administrator.</p>
 
+        <p>When you register a server, you do not need to supply the domain admin username and password.
+        If you do not supply the username and password, you are prompted to supply the username and password when needed.</p>
+        
+        <ul class="note"><li>If you enter a user name and password, the values are stored in your user directory.
+        This represents a security risk.</li></ul>
+        
+        <p>In this page of the wizard you can supply the following information:</p>
+        <ul>
+            <li><b>Admin Username.</b> Enter the user name for the domain administrator.</li>
+            <li><b>Admin Password.</b> Enter the password for the domain administrator.</li>
+        </ul>
+        
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd>    <a href="../general/register_appserver.html">Registering a Sun Java System Application Server Instance</a></dd>
@@ -56,4 +53,3 @@ Microsystems, Inc. All Rights Reserved.
     </body>
 
 </html>
-
