@@ -85,8 +85,8 @@ public class LayoutDesigner implements LayoutConstants {
                 while (it.hasNext()) {
                     LayoutComponent cont = (LayoutComponent) it.next();
                     visualMapper.rebuildLayout(cont.getId());
-                    updatePositions(updatedContainers);
                 }
+                updatePositions(updatedContainers);
             }
         }
 
