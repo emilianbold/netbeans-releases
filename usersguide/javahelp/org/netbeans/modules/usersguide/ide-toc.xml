@@ -88,7 +88,8 @@
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
     </tocitem>
 
-    <tocitem text="Managing Modules" >
+<tocitem text="Managing Modules" >
+      <tocitem text="About Managing Modules" target="managing_a_module" />
       <tocitem text="Updating the IDE" target="ide.autoupdate" />
       <tocitem text="Installing Modules Offline" target="update.offline" />
       <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />

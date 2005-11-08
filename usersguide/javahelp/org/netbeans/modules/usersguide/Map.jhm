@@ -334,6 +334,7 @@ under Print Settings in the Options window)
 <mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
 
 <mapID target="ide.autoupdate" url="configure/modules/autoupdate.html" />
+<mapID target="managing_a_module" url="configure/modules/managing_a_module.html" />
 <mapID target="update.offline" url="configure/modules/updateoffline.html" />
 <mapID target="update.globally" url="configure/modules/updateglobally.html" />
 <mapID target="configure.enable.module" url="configure/modules/enablemodule.html" />
