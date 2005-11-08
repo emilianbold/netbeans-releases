@@ -1054,6 +1054,11 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
+            
+            if (!tree.getScrollsOnExpand()) {
+                return;
+            }
+            
             RequestProcessor.Task t = scheduled;
 
             if (t != null) {
