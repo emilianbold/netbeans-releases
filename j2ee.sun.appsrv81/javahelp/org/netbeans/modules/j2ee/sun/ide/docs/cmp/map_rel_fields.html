@@ -31,10 +31,16 @@
   <ol>
     <li>Make sure you have <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/ejb_relationship.html">configured 
       the CMRs in the general deployment descriptors</a>.</li>
-    <li>In the Projects window, expand the Configuration Files node and double-click 
-      the <tt>sun-ejb-jar.xml</tt> file to open it in the Sun Configuration editor. 
-      In the Sun Configuration editor, expand the Sun Configuration node and select 
-      the bean you want to map.</li>
+    <li>In the Projects window, expand the Configuration Files node for your EJB 
+      module and double-click <tt>sun-cmp-mappings.xml</tt> or <tt>sun-ejb-jar.xml</tt>. 
+      <ul class="note">
+        <li>If either <tt>sun-cmp-mappings</tt> or <tt>sun-ejb-jar.xml</tt> are 
+          open in the text mode, you cannot open the visual editor. You first 
+          have to close the text mode tabs in the Source Editor.</li>
+      </ul>
+    </li>
+    <li>In Sun Configuration editor, expand the Sun Configuration node and select 
+      the entity bean you want to map.</li>
     <li>Select <tt>&lt;map relationship field&gt;</tt> in the Mapped Column column 
       for the CMR field. The Map Relationship Field wizard opens.</li>
     <li>Follow the <a href="nbdocs:/com/sun/jdo/modules/persistence/docs/mapping/ejb/RelationshipMappingWizard.html">steps 

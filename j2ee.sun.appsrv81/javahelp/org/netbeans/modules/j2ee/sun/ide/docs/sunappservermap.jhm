@@ -29,13 +29,6 @@
     <mapID target="map_bean_to_db" url="cmp/map_bean_to_db.html" />
     <mapID target="map_rel_fields" url="cmp/map_rel_fields.html" />
     <mapID target="prim_sec_tables" url="cmp/prim_sec_tables.html" />
-    <mapID target="csh_FieldMapping" url="cmp/csh/FieldMapping.html" />
-    <mapID target="csh_JointoForeignKey" url="cmp/csh/JointoForeignKey.html" />
-    <mapID target="csh_LocaltoForeign" url="cmp/csh/LocaltoForeign.html" />
-    <mapID target="csh_LocaltoJoinKey" url="cmp/csh/LocaltoJoinKey.html" />
-    <mapID target="csh_MapRelationship" url="cmp/csh/MapRelationship.html" />
-    <mapID target="csh_MappingAdvancedSettings" url="cmp/csh/MappingAdvancedSettings.html" />
-    <mapID target="csh_SecondaryTable" url="cmp/csh/SecondaryTable.html" />
     
     <!-- sun-web.xml DD editor CSH: -->
     <mapID target="AS_CFG_ConfigurationEditor"			url="configeditors/ConfigurationEditor.html"  />

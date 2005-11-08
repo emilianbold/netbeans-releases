@@ -17,7 +17,7 @@
 <h2>Configuring CMP Mappings</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>If you are deploying to the Sun Java System Application Server, the CMP mappings 
-  for your EJB modules are stored in the module's <tt>src/conf/sun-cmp-mappings.xml</tt> 
+  for your EJB module are stored in the module's <tt>src/conf/sun-cmp-mappings.xml</tt> 
   file. You may need to change the CMP mappings of your entity beans in the following 
   situations:</p>
 <ul>
@@ -35,11 +35,16 @@
   <li>If you do not have a database schema, you can capture the schema by selecting 
     Databases &gt; Schema in the New File wizard and saving the schema in the 
     <tt>src/conf</tt> directory of your project.</li>
-  <li>In the Projects window, expand the Configuration Files node and double-click 
-    the <tt>sun-ejb-jar.xml</tt> file to open it in the Sun Configuration editor. 
-    In the Sun Configuration editor, expand the Sun Configuration node and select 
-    the bean you want to map.</li>
-  <li>In the CMP Mapping tab of the bean, click Advanced Settings and choose the 
+  <li>In the Projects window, expand the Configuration Files node for your EJB 
+    module and double-click <tt>sun-cmp-mappings.xml</tt> or <tt>sun-ejb-jar.xml</tt>. 
+    <ul class="note">
+      <li>If either <tt>sun-cmp-mappings</tt> or <tt>sun-ejb-jar.xml</tt> are 
+        open in the text mode, you cannot open the visual editor. You first have 
+        to close the text mode tabs in the Source Editor.</li>
+    </ul>
+  </li>
+  <li>Expand the Sun Configuration node and select the bean you want to map.</li>
+  <li>In the Cmp Mapping tab of the bean, click Advanced Settings and choose the 
     database schema from the combo box in the dialog box and click OK.</li>
   <li>Select the primary table for the bean from the Primary Table drop-down list 
     in the CMP Mapping tab.</li>
@@ -49,7 +54,7 @@
     name do not match, the IDE may not recognize they should be mapped to each 
     other.</li>
   <li>To manually map a bean field, select the appropriate entry in the Mapped 
-    Column column. You can choose any of the following:
+    Column column. You can choose any of the following: 
     <ul>
       <li><b>A single column name.</b> Maps the field to a single column in the 
         primary table.</li>
