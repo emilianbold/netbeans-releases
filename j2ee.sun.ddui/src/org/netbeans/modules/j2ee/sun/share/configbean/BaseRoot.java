@@ -210,6 +210,8 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 	/** -----------------------------------------------------------------------
 	 *  Persistence support helper objects
 	 */
+    protected abstract ConfigParser getParser();
+    
 /* !PW not currently used.  I didn't like the additional runtime issues that
  *     using introspection added to the code.
  *

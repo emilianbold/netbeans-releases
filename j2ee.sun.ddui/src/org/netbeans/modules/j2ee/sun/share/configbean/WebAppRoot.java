@@ -75,7 +75,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
  * @version %I%, %G%
  */
 public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.DConfigBean {
-    
+
+    /** This property change event is to notify interested systems, particularly
+     *  the associated customizer, that list of servlets in web.xml has changed.
+     */
 	public static final String SERVLET_LIST_CHANGED = "ServletListChanged"; //NOI18N
 	
 	private static final String JSPCONFIG_CLASSDEBUGINFO="classdebuginfo"; //NOI18N
@@ -215,7 +218,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 			getPCS().firePropertyChange(SERVLET_LIST_CHANGED, false, true);
 		}
 	}	
-	
+
 	/** Retrieves a list of the servlet child DConfigBeans contained in this
 	 *  web application.
 	 */
@@ -379,11 +382,15 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		}
 	}
 	
-	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
+    protected ConfigParser getParser() {
+        return new WebAppRootParser();
+    }
+
+    boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		String uriText = getUriText();
 		
 		SunWebApp beanGraph = (SunWebApp) config.getBeans(uriText, constructFileName(),
-			new WebAppRootParser(), new WebAppRootFinder());
+			getParser(), new WebAppRootFinder());
 		
 		clearProperties();
 		

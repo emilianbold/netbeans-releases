@@ -366,7 +366,7 @@ public class SessionConfigSubBean {
 		String uriText = webAppRoot.getUriText();
 		
 		SessionConfig beanGraph = (SessionConfig) config.getBeans(
-			uriText, SunWebFileName, null, new SessionConfigFinder());
+			uriText, SunWebFileName, webAppRoot.getParser(), new SessionConfigFinder());
 		
 		clearProperties();
 		

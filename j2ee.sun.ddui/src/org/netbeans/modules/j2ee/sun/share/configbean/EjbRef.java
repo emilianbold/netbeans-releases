@@ -213,7 +213,7 @@ public class EjbRef extends Base {
 
 		org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef beanGraph = 
 			(org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef) config.getBeans(uriText, 
-			constructFileName(), null, new EjbRefFinder(getEjbRefName()));
+			constructFileName(), getParser(), new EjbRefFinder(getEjbRefName()));
 		
 		clearProperties();
 		

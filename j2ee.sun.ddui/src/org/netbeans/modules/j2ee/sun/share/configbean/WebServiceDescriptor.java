@@ -272,10 +272,10 @@ public class WebServiceDescriptor extends Base {
 		String uriText = getUriText();
 
         RootInterface root = (RootInterface) config.getBeans(uriText,
-            constructFileName(), null, new RootFinder());
+            constructFileName(), getParser(), new RootFinder());
 
 		WebserviceDescription descGraph = (WebserviceDescription) config.getBeans(uriText,
-            constructFileName(), null, new WebServiceDescriptorFinder(getWebServiceDescriptionName()));
+            constructFileName(), getParser(), new WebServiceDescriptorFinder(getWebServiceDescriptionName()));
 
         clearProperties();
 
@@ -412,9 +412,6 @@ public class WebServiceDescriptor extends Base {
 	protected void clearProperties() {
 		wsdlPublishLocation = null;
 		webServiceEndpointMap = new HashMap();
-	}
-
-	protected void setDefaultProperties() {
 	}
 
     protected String constructFileName() {

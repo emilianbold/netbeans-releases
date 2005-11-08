@@ -41,6 +41,10 @@ public class ToolSideError extends BaseRoot {
 		return snippets;
 	}
 
+    protected ConfigParser getParser() {
+        return null;
+    }
+    
 	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		return false;
 	}

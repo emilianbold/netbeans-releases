@@ -242,7 +242,7 @@ public class ResourceEnvRef extends Base {
 
 		org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef beanGraph = 
 			(org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef) config.getBeans(uriText, 
-			constructFileName(), null, new ResourceEnvRefFinder(getResourceEnvRefName()));
+			constructFileName(), getParser(), new ResourceEnvRefFinder(getResourceEnvRefName()));
 
 		clearProperties();
 		

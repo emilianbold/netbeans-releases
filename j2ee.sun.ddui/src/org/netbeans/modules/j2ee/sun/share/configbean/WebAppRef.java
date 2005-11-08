@@ -199,7 +199,7 @@ public class WebAppRef extends BaseModuleRef {
 		String uriText = getUriText();
 		
 		Web beanGraph = (Web) config.getBeans(
-			uriText, constructFileName(), null, new WebAppRefFinder());
+			uriText, constructFileName(), getParser(), new WebAppRefFinder());
 		
 		clearProperties();
 		

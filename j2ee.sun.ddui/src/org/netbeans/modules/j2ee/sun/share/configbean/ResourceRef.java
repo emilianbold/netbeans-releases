@@ -329,7 +329,7 @@ public class ResourceRef extends Base {
 
 		org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef beanGraph = 
 			(org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef) config.getBeans(uriText, 
-			constructFileName(), null, new ResourceRefFinder(getResRefName()));
+			constructFileName(), getParser(), new ResourceRefFinder(getResRefName()));
 		
 		clearProperties();
 		

@@ -246,7 +246,7 @@ public class SecurityRoleMapping extends Base {
 
 		org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping beanGraph = 
 			(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) config.getBeans(
-			uriText, constructFileName(), null, new SecurityRoleMappingFinder(getRoleName()));
+			uriText, constructFileName(), getParser(), new SecurityRoleMappingFinder(getRoleName()));
 		
 		clearProperties();
 		

@@ -214,7 +214,7 @@ public class ServiceRef extends Base {
 
 		org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef beanGraph = 
 			(org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef) config.getBeans(uriText, 
-			constructFileName(), null, new ServiceRefFinder(getServiceRefName()));
+			constructFileName(), getParser(), new ServiceRefFinder(getServiceRefName()));
 		
 		clearProperties();
 		

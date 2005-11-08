@@ -650,7 +650,7 @@ public class WebAppCache {
 		String uriText = webAppRoot.getUriText();
 		
 		Cache beanGraph = (Cache) config.getBeans(
-			uriText, SunWebFileName, null, new CacheFinder());
+			uriText, SunWebFileName, webAppRoot.getParser(), new CacheFinder());
 		
 		clearProperties();
 		

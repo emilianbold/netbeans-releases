@@ -140,11 +140,15 @@ public class WebServices extends BaseRoot {
 		}
 	}
     
+    protected ConfigParser getParser() {
+        return getConfig().getMasterDCBRoot().getParser();
+    }
+    
 	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		String uriText = getUriText();
 
 		RootInterface beanGraph = (RootInterface) config.getBeans(uriText, 
-			constructFileName(), null, new RootFinder());
+			constructFileName(), getParser(), new RootFinder());
 		
 		clearProperties();
 		

@@ -324,7 +324,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 try {
                     result = provider.getEjbDDRoot(new org.xml.sax.InputSource(stream));
                 } catch (Exception ex) {
-                    jsr88Logger.severe("invalid stream for SunWebApp"); // FIXME
+                    jsr88Logger.severe("invalid stream for SunEjbJar"); // FIXME
                 }
             }
             
@@ -341,7 +341,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             return result;
         }
     }
-
 
 	public class EjbJarRootFinder implements ConfigFinder {
 		public Object find(Object obj) {
@@ -380,11 +379,15 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		}
 	}
 
+    protected ConfigParser getParser() {
+        return new SunEjbJarParser();
+    }
+     
 	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		String uriText = getUriText();
 
 		SunEjbJar beanGraph = (SunEjbJar) config.getBeans(uriText, 
-			constructFileName(), new SunEjbJarParser(), new EjbJarRootFinder());
+			constructFileName(), getParser(), new EjbJarRootFinder());
 		boolean cmpMappingLoaded = false;
 		
 		clearProperties();

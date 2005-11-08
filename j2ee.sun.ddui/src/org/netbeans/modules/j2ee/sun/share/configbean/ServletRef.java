@@ -210,7 +210,7 @@ public class ServletRef extends Base {
 		String uriText = getUriText();
 
 		Servlet beanGraph = (Servlet) config.getBeans(uriText, constructFileName(), 
-			null, new ServletRefFinder(getServletName()));
+			getParser(), new ServletRefFinder(getServletName()));
 		
 		clearProperties();
 		

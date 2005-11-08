@@ -205,7 +205,7 @@ public abstract class BaseEjb extends Base {
 	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		String uriText = getUriText();
 
-		Ejb ejb = (Ejb) config.getBeans(uriText, constructFileName(), null, 
+		Ejb ejb = (Ejb) config.getBeans(uriText, constructFileName(), getParser(), 
 			new EjbFinder(getEjbName()));
 
         clearProperties();

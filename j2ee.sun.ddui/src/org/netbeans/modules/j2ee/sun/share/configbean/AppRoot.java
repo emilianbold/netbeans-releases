@@ -228,10 +228,14 @@ public class AppRoot extends BaseRoot {
 		}
 	}
 	
+    protected ConfigParser getParser() {
+        return new AppRootParser();
+    }
+    
 	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		String uriText = getUriText();
 		SunApplication beanGraph = (SunApplication) config.getBeans(uriText, constructFileName(),
-			(ConfigParser) new AppRootParser(), new AppRootFinder());
+			getParser(), new AppRootFinder());
 		
 		clearProperties();
 		

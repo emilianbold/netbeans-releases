@@ -61,8 +61,8 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 	
 	/** Property event names 
 	 */
-	public static final String DISPLAY_NAME = "displayName";	// NOI18N
-	public static final String DIRTY_PROPERTY = "dirty";		// NOI18N
+	public static final String DISPLAY_NAME = "displayName";    // NOI18N
+	public static final String DIRTY_PROPERTY = "dirty";        // NOI18N
 	
 	/** Singleton object used as generic old value in property events to force
 	 *  them to be sent.  (if the new value is "" or null, then using "" or null
@@ -146,7 +146,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		this.dDBean = dDBean;
 		this.parent = parent;
 		this.baseXpath = dDBean.getXpath();
-                
+
 		// Build validation field list for this bean
 		// !PW We need a better way to do this.  See comment by validationFieldList
 		//     member definition.
@@ -499,7 +499,6 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 
 					if(beanToRemove != null) {
 						// !PW FIXME 1st half - workaround for IZ 41214 (see method comment)
-						Base parent = beanToRemove.getParent();
 						String beanXpath = beanToRemove.getDDBean().getXpath();
 
 						// cleanup bean before throwing away
@@ -507,7 +506,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 						beanToRemove = null;
 
 						// !PW FIXME 2nd half - workaround for IZ 41214 (see method comment)
-						parent.beanRemoved(beanXpath);
+						beanRemoved(beanXpath);
 					} else {
 						Object [] args = new Object [2];
 						args[0] = dConfigBean.getDDBean();
@@ -519,7 +518,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 					// The parent of the DConfigBean parameter is not this instance - spec violation.
 					throw new BeanNotFoundException(
 						bundle.getString("ERR_DConfigBeanWrongParentOnRemove"));
-                                }
+				}
 			} else {
 				// DDBean is null.  This could be that this DConfigBean has
 				// previously been removed.
@@ -584,6 +583,25 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		return parent;
 	}
 
+    /** Retrieve the parser provided by the root DCB in this tree.  Failing that,
+     *  return the parser provided by the master root DCB of the entire configuration.
+     */
+    protected ConfigParser getParser() {
+        Base parent = getParent();
+        if(parent != null) {
+            return parent.getParser();
+        }
+        
+        SunONEDeploymentConfiguration config = getConfig();
+        if(config != null) {
+            BaseRoot dcbRoot = config.getMasterDCBRoot();
+            if(dcbRoot != null) {
+                return dcbRoot.getParser();
+            }
+        }
+        
+        return null;
+    }
 
 	/** A DConfigBean may represent data that would go into multiple descriptor 
 	 * files.  A DConfigBean may also expose properties of a super bean. These
@@ -1230,4 +1248,3 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 		}
 	}
 }
-
