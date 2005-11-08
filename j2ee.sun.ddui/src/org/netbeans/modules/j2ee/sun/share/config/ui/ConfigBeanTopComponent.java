@@ -88,6 +88,14 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
         initialize();
     }
     
+    public void setName(String name) {
+        if(name != null && name.startsWith("sun-ejb-jar")) {
+            name = "sun-ejb-jar.xml / sun-cmp-mappings.xml";
+        }
+        
+        super.setName(name);
+    }
+
     public boolean isFor(FileObject document) {
         return (this.configDO.getPrimaryFile().equals(document));
     }
