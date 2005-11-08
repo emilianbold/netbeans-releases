@@ -15,6 +15,7 @@ package gui.action;
 
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jemmy.EventTool;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -32,7 +33,7 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     
     private String category, project, project_name, project_type;
     
-    int index;
+    private int index;
     
     /**
      * Creates a new instance of CreateProject
@@ -96,15 +97,16 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
+        String directory = System.getProperty("xtest.tmpdir")+"/"+"createdProjects";
+        log("================= Destination directory={"+directory+"}");
         wizard_location.txtProjectLocation().clearText();
-        wizard_location.txtProjectName().clearText();
-        
-        String directory = System.getProperty("xtest.tmpdir.createproject");
-        System.err.println("================= Destination directory={"+directory+"}");
+        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().typeText(directory);
         
         project_name = project_type + "_" + (index++);
-        System.err.println("================= Project name="+project_name+"}");
+        log("================= Project name="+project_name+"}");
+        wizard_location.txtProjectName().clearText();
+        new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }
     
