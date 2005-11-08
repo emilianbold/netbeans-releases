@@ -91,6 +91,12 @@ ChangeListener, ActionListener {
         loc (cbAddStar, "Add_Leading_Star");
         loc (cbNewLine, "Add_New_Line");
         loc (cbSpace, "Add_Space");
+//        tfStatementIndent.getAccessibleContext ().setAccessibleName (loc ("AN_Statement_Indent"));
+//        tfStatementIndent.getAccessibleContext ().setAccessibleDescription (loc ("AD_Statement_Indent"));
+//        tfIndent.getAccessibleContext ().setAccessibleName (loc ("AN_Indent"));
+//        tfIndent.getAccessibleContext ().setAccessibleDescription (loc ("AD_Indent"));
+        epPreview.getAccessibleContext ().setAccessibleName (loc ("AN_Preview"));
+        epPreview.getAccessibleContext ().setAccessibleDescription (loc ("AD_Preview"));
 
         //listeners
         epPreview.setBorder (new EtchedBorder ());
@@ -128,16 +134,21 @@ ChangeListener, ActionListener {
     }
     
     private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
+        if (!(c instanceof JLabel)) {
+            c.getAccessibleContext ().setAccessibleName (loc ("AN_" + key));
+            c.getAccessibleContext ().setAccessibleDescription (loc ("AD_" + key));
+        }
+        if (c instanceof AbstractButton) {
             Mnemonics.setLocalizedText (
                 (AbstractButton) c, 
-                loc (key)
+                loc ("CTL_" + key)
             );
-        else
+        } else {
             Mnemonics.setLocalizedText (
                 (JLabel) c, 
-                loc (key)
+                loc ("CTL_" + key)
             );
+        }
     }
 
     private void updatePreview () {

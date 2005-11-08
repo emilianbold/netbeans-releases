@@ -122,6 +122,24 @@ PropertyChangeListener {
         this.fontAndColorsPanel = fontAndColorsPanel;
         
         // 1) init components
+        cbLanguages.getAccessibleContext ().setAccessibleName (loc ("AN_Languages"));
+        cbLanguages.getAccessibleContext ().setAccessibleDescription (loc ("AD_Languages"));
+        lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
+        lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
+        bFont.getAccessibleContext ().setAccessibleName (loc ("AN_Font"));
+        bFont.getAccessibleContext ().setAccessibleDescription (loc ("AD_Font"));
+        foregroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground_Chooser"));
+        foregroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
+        bForeground.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground"));
+        bForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground"));
+        backgroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
+        backgroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
+        bBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background"));
+        bBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background"));
+        cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color_Chooser"));
+        cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color_Chooser"));
+        effectsColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color"));
+        effectsColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color"));
         cbLanguages.addActionListener (this);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
@@ -148,6 +166,8 @@ PropertyChangeListener {
         cbEffects.addItem (loc ("CTL_Effects_Underlined"));
         cbEffects.addItem (loc ("CTL_Effects_Wave_Underlined"));
         cbEffects.addItem (loc ("CTL_Effects_Strike_Through"));
+        cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Effects"));
+        cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
         cbEffects.addActionListener (this);
         effectsColorChooser = new ColorComboBox ();
         effectsColorChooser.addPropertyChangeListener (this);

@@ -107,16 +107,21 @@ ActionListener {
     }
     
     private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
+        if (!(c instanceof JLabel)) {
+            c.getAccessibleContext ().setAccessibleName (loc ("AN_" + key));
+            c.getAccessibleContext ().setAccessibleDescription (loc ("AD_" + key));
+        }
+        if (c instanceof AbstractButton) {
             Mnemonics.setLocalizedText (
                 (AbstractButton) c, 
-                loc (key)
+                loc ("CTL_" + key)
             );
-        else
+        } else {
             Mnemonics.setLocalizedText (
                 (JLabel) c, 
-                loc (key)
+                loc ("CTL_" + key)
             );
+        }
     }
     
     private Model model;

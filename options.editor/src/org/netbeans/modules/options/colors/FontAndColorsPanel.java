@@ -69,10 +69,10 @@ import org.openide.util.Utilities;
 public class FontAndColorsPanel extends JPanel implements 
 ActionListener {
     
-    private JComboBox		    cbProfiles;
-    private JButton		    bDelete;
-    private JButton		    bClone;
-    private JTabbedPane		    tabbedPane;
+    private JComboBox		    cbProfiles = new JComboBox ();
+    private JButton		    bDelete = new JButton ();
+    private JButton		    bClone = new JButton ();
+    private JTabbedPane		    tabbedPane = new JTabbedPane ();
     private SyntaxColoringPanel	    syntaxColoringPanel;
     private HighlightingPanel       highlightingPanel;
     private AnnotationsPanel	    annotationsPanel;
@@ -86,10 +86,17 @@ ActionListener {
     public FontAndColorsPanel () {
         
         // init components
+        cbProfiles.getAccessibleContext ().setAccessibleName (loc ("AN_Profiles"));
+        cbProfiles.getAccessibleContext ().setAccessibleDescription (loc ("AD_Profiles"));
+        bDelete.getAccessibleContext ().setAccessibleName (loc ("AN_Delete"));
+        bDelete.getAccessibleContext ().setAccessibleDescription (loc ("AD_Delete"));
+        bClone.getAccessibleContext ().setAccessibleName (loc ("AN_Clone"));
+        bClone.getAccessibleContext ().setAccessibleDescription (loc ("AD_Clone"));
+        tabbedPane.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
+        tabbedPane.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
         syntaxColoringPanel = new SyntaxColoringPanel (this);
         highlightingPanel = new HighlightingPanel (this);
         annotationsPanel = new AnnotationsPanel (this);
-        cbProfiles = new JComboBox ();
         cbProfiles.addItemListener (new ItemListener () {
             public void itemStateChanged (ItemEvent evt) {
                 if (!listen) return;
@@ -97,13 +104,12 @@ ActionListener {
             }
         });
         JPanel pButtons = new JPanel (new GridLayout (1, 2, 3, 3));
-        loc (bClone = new JButton (), "CTL_Create_New");
+        loc (bClone, "CTL_Create_New");
         bClone.addActionListener (this);
         pButtons.add (bClone);
-        loc (bDelete = new JButton (), "CTL_Delete");
+        loc (bDelete, "CTL_Delete");
         bDelete.addActionListener (this);
         pButtons.add (bDelete);
-        tabbedPane = new JTabbedPane ();
 
         // init layout
         FormLayout layout = new FormLayout (
