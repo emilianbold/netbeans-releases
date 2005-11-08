@@ -17,6 +17,7 @@ package org.openide.text;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
@@ -188,7 +189,16 @@ public class DataEditorSupportTest extends NbTestCase {
         assertNotNull ("One again", panes);
         assertEquals ("One is there again", 1, panes.length);
     }
-
+    
+    public void testEnvOutputStreamTakesLock() throws Exception {
+        DataEditorSupport.Env env = (DataEditorSupport.Env)support().desEnv();
+        assertNull(env.fileLock);
+        OutputStream stream = env.outputStream();
+        assertNotNull(stream);
+        stream.close();
+        assertNotNull(env.fileLock);
+        env.fileLock.releaseLock();
+    }
     
     /** File object that let us know what is happening and delegates to certain
      * instance variables of the test.

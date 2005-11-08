@@ -343,8 +343,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
         /** Lock acquired after the first modification and used in save.
         * Transient => is not serialized.
+        * Not private for tests.
         */
-        private transient FileLock fileLock;
+        transient FileLock fileLock;
         /** did we warned about the size of the file?
          */
         private transient boolean warned;
