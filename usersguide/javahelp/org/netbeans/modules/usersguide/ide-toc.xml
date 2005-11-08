@@ -297,6 +297,8 @@
       <tocitem text="Working with Containers" target="gui.containers.designing" />
       <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
       <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
+      <tocitem text="Aligning Components" target="gui.components.aligning" />
+      <tocitem text="Sizing Components" target="gui.components.sizing" />     
       <tocitem text="Editing Component Properties" target="gui.components.editing" />
       <tocitem text="Setting Events With the Connection Wizard" target="gui.connectionwizard" />
       <tocitem text="Managing Component Events" target="gui.events.managing" />

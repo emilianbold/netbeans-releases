@@ -68,6 +68,8 @@
 <mapID target="gui.components.adding" url="gui/gui_addcomponent.html" />
 <mapID target="gui.components.selecting" url="gui/gui_selectcomponents.html" />
 <mapID target="gui.components.editing" url="gui/gui_editcomponentprops.html" />
+<mapID target="gui.components.aligning" url="gui/gui_component_align.html" />
+<mapID target="gui.components.sizing" url="gui/gui_component_size.html" />
 
 <mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
 <mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
@@ -533,7 +535,7 @@ under Print Settings in the Options window)
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
 
 <!--the following 2 ids are no longer used + there is no id for the common palette - should we use one for it?-->
-<!--<mapID target="gui.components.palette" url="pending.html" />-->
+<!--<mapID target="gui.components.palette" url="gui_palette_window.html" />-->
 <!--<mapID target="gui.options.component-palette" url="pending.html" />-->
 
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
