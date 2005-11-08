@@ -294,7 +294,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             childTextElementChanged();
         } else if(ade.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
             //handle error element
-            markNodeAsError(this);
+            markNodeAsErrorInAWT(this);
         } else if(ade.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
             //do nothing for comments
         } else {
@@ -327,24 +327,29 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         
     }
     
-    private void markNodeAsError(final TreeNodeAdapter tna) {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    tna.containsError = true;
-                    //mark all its ancestors as "childrenContainsError"
-                    TreeNodeAdapter parent = tna;
-                    tm.nodeChanged(tna);
-                    while((parent = (TreeNodeAdapter)parent.getParent()) != null) {
-                        if(parent.getParent() != null) parent.childrenErrorCount++; //do not fire for root element
-                        tm.nodeChanged(parent);
+    private void markNodeAsErrorInAWT(final TreeNodeAdapter tna) {
+        if(!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        markNodeAsError(tna);
                     }
-                }
-            });
-        }catch(Exception ie) {
-            ie.printStackTrace(); //XXX handle somehow better
+                });
+            }catch(Exception ie) {
+                ie.printStackTrace(); //XXX handle somehow better
+            }
+        } else markNodeAsError(tna);
+    }
+    
+    private void markNodeAsError(final TreeNodeAdapter tna) {
+        tna.containsError = true;
+        //mark all its ancestors as "childrenContainsError"
+        TreeNodeAdapter parent = tna;
+        tm.nodeChanged(tna);
+        while((parent = (TreeNodeAdapter)parent.getParent()) != null) {
+            if(parent.getParent() != null) parent.childrenErrorCount++; //do not fire for root element
+            tm.nodeChanged(parent);
         }
-        
     }
     
     private int getVisibleChildIndex(DocumentElement de) {
@@ -380,7 +385,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             //update text text content of the node
             childTextElementChanged();
         } else if(rde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
-            unmarkNodeAsError(this);
+            unmarkNodeAsErrorInAWT(this);
         } else if(rde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
             //do nothing for comments
         } else {
@@ -407,7 +412,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         if(debug) System.out.println("<<<EVENT finished (node removed)");
     }
     
-    private void unmarkNodeAsError(final TreeNodeAdapter tna) {
+    private void unmarkNodeAsErrorInAWT(final TreeNodeAdapter tna) {
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
@@ -474,7 +479,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
                 //update text text content of the node
                 childTextElementChanged();
             } else if(chde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
-                markNodeAsError(this);
+                markNodeAsErrorInAWT(this);
             } else if(chde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
                 //do nothing for comments
             } else {
