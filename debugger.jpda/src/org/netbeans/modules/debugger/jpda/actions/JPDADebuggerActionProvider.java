@@ -31,6 +31,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 
 /**
@@ -47,7 +48,7 @@ implements PropertyChangeListener {
     /** The ReqeustProcessor used by action performers. */
     private static RequestProcessor actionsRequestProcessor;
     
-    private static Set providersToDisableOnLazyActions = new HashSet();
+    private static Set providersToDisableOnLazyActions = new WeakSet();
     
     private volatile boolean disabled;
     

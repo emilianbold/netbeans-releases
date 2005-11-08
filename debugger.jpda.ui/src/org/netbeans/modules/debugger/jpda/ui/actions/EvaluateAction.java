@@ -39,7 +39,7 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
                                                               Runnable {
     
     private EnableListener listener;
-    private JPDADebugger lastDebugger;
+    private transient Reference lastDebuggerRef = new WeakReference(null);
 
     public EvaluateAction () {
         listener = new EnableListener (this);
@@ -57,14 +57,15 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return false;
         JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+        JPDADebugger lastDebugger = (JPDADebugger) lastDebuggerRef.get();
         if (lastDebugger != null && debugger != lastDebugger) {
             lastDebugger.removePropertyChangeListener(
                     JPDADebugger.PROP_CURRENT_THREAD,
                     this);
-            lastDebugger = null;
+            lastDebuggerRef = new WeakReference(null);
         }
         if (debugger != null) {
-            lastDebugger = debugger;
+            lastDebuggerRef = new WeakReference(debugger);
             debugger.addPropertyChangeListener(
                     JPDADebugger.PROP_CURRENT_THREAD,
                     this);
@@ -94,6 +95,7 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 synchronized (this) {
+                    JPDADebugger lastDebugger = (JPDADebugger) lastDebuggerRef.get();
                     if (lastDebugger != null) {
                         setEnabled(lastDebugger.getCurrentThread() != null);
                     }
