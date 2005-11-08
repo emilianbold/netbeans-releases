@@ -50,7 +50,7 @@ public class DDDataLoader extends UniFileLoader {
     }
     
     protected String actionsContext() {
-        return "Loaders/text/x-dd+servlet/Actions/"; // NOI18N
+        return "Loaders/text/x-dd/Actions/"; // NOI18N
     }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile)

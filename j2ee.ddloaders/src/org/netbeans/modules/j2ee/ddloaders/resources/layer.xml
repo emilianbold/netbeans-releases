@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
     <folder name="Loaders">
         <folder name="text">
-            <folder name="x-dd+servlet">
+            <folder name="x-dd">
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance"/>
                     <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-EditAction.instance" boolvalue="true"/>

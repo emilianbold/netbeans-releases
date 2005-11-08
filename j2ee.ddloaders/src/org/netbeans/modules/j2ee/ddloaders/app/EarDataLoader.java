@@ -45,36 +45,9 @@ public class EarDataLoader extends UniFileLoader {
         return NbBundle.getMessage (EarDataLoader.class, "LBL_loaderName");
     }
     
-    protected SystemAction[] defaultActions () {
-        return new SystemAction[] {
-            SystemAction.get (EditAction.class),
-            SystemAction.get (FileSystemAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            null,
-            SystemAction.get (org.netbeans.modules.xml.tools.actions.CheckAction.class),
-            SystemAction.get (org.netbeans.modules.xml.tools.actions.ValidateAction.class),
-            null,
-            SystemAction.get (ToolsAction.class),
-            SystemAction.get (PropertiesAction.class),
-        };
+    protected String actionsContext() {
+        return "Loaders/text/x-dd/Actions/"; // NOI18N
     }
-
-/// 
-/*    protected FileObject findPrimaryFile(FileObject fo) {
-        if (fo.getPath().endsWith("src/conf/application.xml")){
-            return fo;
-        }
-        String mimeType = fo.getMIMEType();
-        if (mimeType==null) return null;
-        else return (mimeType.startsWith(REQUIRED_MIME_PREFIX)?fo:null);
-    }
-  */
-///
 
     protected void initialize () {
          super.initialize ();
