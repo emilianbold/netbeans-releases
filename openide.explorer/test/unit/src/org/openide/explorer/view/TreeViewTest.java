@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import junit.framework.*;
+import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -30,7 +30,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Marian Petras
  */
-public final class TreeViewTest extends TestCase {
+public final class TreeViewTest extends NbTestCase {
     
     private TestTreeView treeView;
     private JFrame testWindow;
