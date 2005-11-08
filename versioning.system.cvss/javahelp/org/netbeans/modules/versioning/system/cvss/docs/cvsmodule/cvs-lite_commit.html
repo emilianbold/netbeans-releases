@@ -24,17 +24,26 @@
         </ul>
         <h4>To commit changes in local files to a remote repository:</h4>
         <ol>
-            <li>Select the files or directories you wish to commit in the
-            Versioning window, Projects window, Files window, or Favorites window. </li>
+            <li>In the Versioning window, confirm that you want to commit the listed files. </li>
             <li>Ensure that your local copies of the files are up-to-date by
-            right-clicking and choosing CVS &gt; Update before committing your
+            clicking the Update All button prior to committing your
             changes. </li>
-            <li>Right-click the files or directories you wish to commit and
-            choose CVS &gt; Commit. If the files you want to commit do not already
+            <li>Once the Update command has finished, commit the files by 
+            clicking the Commit All button. If the files you want to commit do not already
             exist in the repository, the Commit command will add them.</li>
-            <p>The CVS Commit dialog appears prompting you to enter a message
-            describing your changes.</p>
+            <li>Enter a message describing your changes in the CVS Commit dialog 
+            that appears.
+            <li>Click Commit.</li>
+            <p>The IDE executes the Commit command.</p>
         </ol>
+        
+        <ul class="note">
+            <li>You can also commit files or directories from the Projects window, 
+            Files window, or Favorites window by right-clicking the files or directories 
+            you wish to commit and choose CVS &gt; Commit.</li>
+        </ul>
+        
+        
         <h3>Excluding Files from a Commit</h3>
         <p>The IDE enables you to specify which files in your local working
         directory are recognized when using CVS commands. Using the Exclude from Commit 
