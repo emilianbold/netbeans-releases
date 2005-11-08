@@ -291,8 +291,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         return dataCache;
     }
 
+    /** Is that necesary for this class to be public ?
+     *  It can be changed to interface
+     */
     public class DataCache {
 
+        // What about using the StringBuffer instead ?
         private transient String buffer = null;
         private long fileTime = 0;
 
@@ -310,7 +314,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 }
             }
         }
-
+        /** Does this method need to be public ?
+         */
         public void loadData(FileObject file, FileLock dataLock) throws IOException {
             try {
                 BufferedInputStream inputStream = new BufferedInputStream(file.getInputStream());
@@ -320,12 +325,13 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 }
                 Reader reader = new InputStreamReader(inputStream, encodingHelper.getEncoding());
                 long time;
-                StringBuffer sb = new StringBuffer(5000);
+                StringBuffer sb = new StringBuffer(2048);
                 try {
+                    char[] buf = new char[1024];
                     time = file.lastModified().getTime();
                     int i;
-                    while ((i = reader.read()) != -1) {
-                        sb.append((char) i);
+                    while ((i = reader.read(buf,0,1024)) != -1) {
+                        sb.append(buf,0,i);
                     }
                 } finally {
                     reader.close();
@@ -337,7 +343,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 dataLock.releaseLock();
             }
         }
-
+        /** Is the second argument necessary ?
+         */ 
         public void setData(FileLock lock, String s, boolean modify) throws IOException {
             testLock(lock);
             boolean modified = isModified() || modify;
@@ -353,6 +360,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
 
         private boolean setData(String s) {
+            // ??? when this can happen
             if (s.equals(buffer)) {
                 return false;
             }
@@ -402,6 +410,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
 
         private FileLock getLock() {
+            // How this week reference can be useful ?
             FileLock l = lockReference == null ? null : (FileLock) lockReference.get();
             if (l != null && !l.isValid()) {
                 l = null;
