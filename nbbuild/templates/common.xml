@@ -419,7 +419,7 @@ Microsystems, Inc. All Rights Reserved.
         </nbjpdareload>
     </target>
 
-    <target name="profile-test-single" depends="init,test-init,test-build">
+    <target name="profile-test-single-nb" depends="init,test-init,test-build">
         <fail unless="profile.class">Must set profile.class</fail>
         <mkdir dir="${build.test.unit.results.dir}"/>
         <nbprofiledirect
