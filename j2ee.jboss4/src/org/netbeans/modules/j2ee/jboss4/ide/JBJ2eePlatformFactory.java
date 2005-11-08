@@ -196,11 +196,23 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         public boolean isToolSupported(String toolName) {
+            if ("wscompile".equals(toolName)) {
+                return true;
+            }
             return false;
         }
 
         public File[] getToolClasspathEntries(String toolName) {
-            return new File[0];
+            if ("wscompile".equals(toolName)) {
+                File root = InstalledFileLocator.getDefault().locate("modules/ext/jaxrpc16", null, false);
+                return new File[] {
+                    new File(root, "saaj-api.jar"),
+                    new File(root, "saaj-impl.jar"),
+                    new File(root, "jaxrpc-api.jar"),
+                    new File(root, "jaxrpc-impl.jar"),
+                };
+            }
+            return null;
         }
 
 
