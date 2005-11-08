@@ -92,7 +92,7 @@ public class FileLock extends Object {
     * for some reason failed to.
     */
     public void finalize() {
-        assert (isValid()) : assertMessageForInvalidLocks();
+        assert (!isValid()) : assertMessageForInvalidLocks();
         releaseLock();
     }
 
