@@ -459,7 +459,7 @@ public final class CreatedModifiedFilesFactory {
                     if (localizedDisplayName != null) {
                         String bundlePath = ManifestManager.getInstance(getProject().getManifest(), false).getLocalizingBundle();
                         String suffix = ".properties"; // NOI18N
-                        if (bundlePath.endsWith(suffix)) {
+                        if (bundlePath != null && bundlePath.endsWith(suffix)) {
                             String name = bundlePath.substring(0, bundlePath.length() - suffix.length()).replace('/', '.');
                             targetFO.setAttribute("SystemFileSystem.localizingBundle", name); // NOI18N
                         } else {

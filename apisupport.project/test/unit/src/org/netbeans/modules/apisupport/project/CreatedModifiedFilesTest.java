@@ -42,6 +42,8 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
@@ -404,10 +406,43 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertLayerContent(supposedContent, 
                 new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
     }
-    
-//    TODO: mkleint
-//    public void testCreateLayerSubtree() throws Exception {
-//    }
+
+    /** @see "#64273" */
+    public void testCreateLayerEntryWithoutLocalizingBundle() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        project.getProjectDirectory().getFileObject("src/org/example/module/resources/Bundle.properties").delete();
+        FileObject mf = project.getProjectDirectory().getFileObject("manifest.mf");
+        EditableManifest m;
+        InputStream is = mf.getInputStream();
+        try {
+            m = new EditableManifest(is);
+        } finally {
+            is.close();
+        }
+        m.removeAttribute("OpenIDE-Module-Localizing-Bundle", null);
+        FileLock lock = mf.lock();
+        try {
+            OutputStream os = mf.getOutputStream(lock);
+            try {
+                m.write(os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        Operation op = cmf.createLayerEntry("f", null, null, "F!", null);
+        cmf.add(op);
+        cmf.run();
+        String[] supposedContent = new String[] {
+            "<filesystem>",
+            "<file name=\"f\"/>",
+            "</filesystem>"
+        };
+        assertLayerContent(supposedContent, 
+                new File(getWorkDir(), "module/src/org/example/module/resources/layer.xml"));
+    }
     
     public static void assertRelativePath(String expectedPath, String[] paths) {
         TestCase.assertEquals("one path", 1, paths.length);
