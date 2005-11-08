@@ -173,7 +173,7 @@ public class ExportDiffAction extends AbstractSystemAction {
 
             // prepare setups and common parent - root
 
-            File root = null;
+            File root;
             Collection setups;
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
@@ -188,7 +188,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             } else {
                 Context context = getContext(nodes);
                 File [] files = DiffExecutor.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
-                root = getCommonParent(files);
+                root = getCommonParent(context.getRootFiles());
                 setups = new ArrayList(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
@@ -261,7 +261,8 @@ public class ExportDiffAction extends AbstractSystemAction {
     }
 
     private static File getCommonParent(File [] files) {
-        File root = files[0].getParentFile();
+        File root = files[0];
+        if (root.isFile()) root = root.getParentFile();
         for (int i = 1; i < files.length; i++) {
             root = Utils.getCommonParent(root, files[i]);
             if (root == null) return null;
