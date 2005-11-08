@@ -1077,8 +1077,19 @@ class LayoutOperations implements LayoutConstants {
                 interval = parent.getSubInterval(0);
                 if (interval.isSequential()) {
                     parent = interval;
-                    interval = parent.getSubInterval(alignment == LEADING ?
-                                                     0 : parent.getSubIntervalCount()-1);
+                    int subIdx = alignment == LEADING ? 0 : parent.getSubIntervalCount()-1;
+                    interval = parent.getSubInterval(subIdx);
+                    if (interval.isEmptySpace()) {
+                        subIdx += alignment == LEADING ? 1 : -1;
+                        LayoutInterval neighbor = subIdx >= 0 && subIdx < parent.getSubIntervalCount() ?
+                                                  parent.getSubInterval(subIdx) : null;
+                        int[] outerSpace = parent.getParent().getCurrentSpace().positions[dimension];
+                        int otherPos = neighbor != null ? neighbor.getCurrentSpace().positions[dimension][alignment] :
+                                                          outerSpace[alignment^1];
+                        int mergedSize = (outerSpace[alignment] - otherPos) * (alignment == LEADING ? -1 : 1);
+                        eatGap(interval, gap, mergedSize);
+                        return neighbor != null ? neighbor : interval;
+                    }
                 }
                 else {
                     LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
