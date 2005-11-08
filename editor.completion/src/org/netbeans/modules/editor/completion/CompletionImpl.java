@@ -148,6 +148,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         Registry.addChangeListener(this);
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                pleaseWaitTimer.restart();
                 queryResultSets(completionResult.getResultSets());
                 completionResult.queryInvoked();
             }
@@ -431,10 +432,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     item.defaultAction(getActiveComponent());
                     return;
                 }
-                
-            } else if (e.getID() == KeyEvent.KEY_PRESSED) {
-                hideCompletion();
-                return;
             }
             layout.completionProcessKeyEvent(e);
             if (e.isConsumed()) {
@@ -450,7 +447,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
     
     void completionQuery(boolean delayQuery) {
-        pleaseWaitTimer.restart();
         refreshedQuery = false;
         
         Result newCompletionResult = new Result(activeProviders.length);
@@ -475,6 +471,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (delayQuery) {
             restartCompletionAutoPopupTimer();
         } else {
+            pleaseWaitTimer.restart();
             queryResultSets(completionResultSets);
             newCompletionResult.queryInvoked();
         }
