@@ -393,8 +393,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 String newVersion = (String) evt.getNewValue();
                 vl.versionChanged(oldVersion, newVersion);
             }
-        } else if (evt.getPropertyName ().equals (WebProjectProperties.J2EE_SERVER_TYPE)) {
-            fireServerChange ((String) evt.getOldValue (), (String) evt.getNewValue ());
         } else if (evt.getPropertyName ().equals (WebProjectProperties.J2EE_SERVER_INSTANCE)) {
             Deployment d = Deployment.getDefault ();
             String oldServerID = evt.getOldValue () == null ? null : d.getServerID ((String) evt.getOldValue ());

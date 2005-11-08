@@ -27,6 +27,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
@@ -209,6 +210,11 @@ public final class ProjectEar extends J2eeAppProvider
                 String newVersion = (String) evt.getNewValue();
                 vl.versionChanged(oldVersion, newVersion);
             }
+        } else if (EarProjectProperties.J2EE_SERVER_INSTANCE.equals(evt.getPropertyName())) {
+            Deployment d = Deployment.getDefault();
+            String oldServerID = evt.getOldValue() == null ? null : d.getServerID((String)evt.getOldValue ());
+            String newServerID = evt.getNewValue() == null ? null : d.getServerID((String)evt.getNewValue ());
+            fireServerChange (oldServerID, newServerID);
         } else if (EarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
             String oldValue = (String)evt.getOldValue();
             String newValue = (String)evt.getNewValue();
