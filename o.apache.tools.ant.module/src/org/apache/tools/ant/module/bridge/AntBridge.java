@@ -86,7 +86,8 @@ public final class AntBridge {
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
             if (AntSettings.PROP_ANT_HOME.equals(prop) ||
-                    AntSettings.PROP_EXTRA_CLASSPATH.equals(prop)) {
+                    AntSettings.PROP_EXTRA_CLASSPATH.equals(prop) ||
+                    AntSettings.PROP_AUTOMATIC_EXTRA_CLASSPATH.equals(prop)) {
                 err.log("AntBridge got settings change in " + prop);
                 fireChange();
             } else if (ModuleInfo.PROP_ENABLED.equals(prop)) {
