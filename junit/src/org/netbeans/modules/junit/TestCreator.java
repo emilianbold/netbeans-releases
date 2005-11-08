@@ -1571,6 +1571,8 @@ public final class TestCreator {
         /* Check if the class itself (w/o nested classes) is testable: */
         final int modifiers = jc.getModifiers();
 
+        if (Modifier.isPrivate(modifiers))
+            result = TesteableResult.combine(result, TesteableResult.PRIVATE_CLASS);
         if (skipTestClasses && TestUtil.isClassImplementingTestInterface(jc)) 
             result = TesteableResult.combine(result, TesteableResult.TEST_CLASS);
         if (skipPkgPrivateClasses && !Modifier.isPublic(modifiers) && !Modifier.isPrivate(modifiers))
@@ -1845,6 +1847,7 @@ public final class TestCreator {
         public static final TesteableResult ABSTRACT_CLASS = new TesteableResult(8);
         public static final TesteableResult NONSTATIC_INNER_CLASS = new TesteableResult(16);
         public static final TesteableResult EXCEPTION_CLASS = new TesteableResult(32);
+        public static final TesteableResult PRIVATE_CLASS = new TesteableResult(64);
 
 
         // bundle keys for reason descriptions
@@ -1854,7 +1857,8 @@ public final class TestCreator {
             "TesteableResult_TestClass",
             "TesteableResult_AbstractClass",
             "TesteableResult_NonstaticInnerClass",
-            "TesteableResult_ExceptionClass"};
+            "TesteableResult_ExceptionClass",
+            "TesteableResult_Private"};
         
         private TesteableResult(long reason) {
             this.reason = reason;
