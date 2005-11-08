@@ -1143,7 +1143,7 @@ class LayoutAligner implements LayoutConstants {
                 LayoutInterval first = interval.getSubInterval(0);
                 if (first.isEmptySpace()) {
                     layoutModel.removeInterval(first);
-                    region = first.getSubInterval(0).getCurrentSpace();
+                    region = interval.getSubInterval(0).getCurrentSpace();
                     pre = Math.max(0, region.positions[dimension][LEADING] - parRegion.positions[dimension][LEADING]);
                 }
             }
@@ -1151,7 +1151,7 @@ class LayoutAligner implements LayoutConstants {
                 LayoutInterval last = interval.getSubInterval(interval.getSubIntervalCount()-1);
                 if (last.isEmptySpace()) {
                     layoutModel.removeInterval(last);
-                    region = last.getSubInterval(interval.getSubIntervalCount()-1).getCurrentSpace();
+                    region = interval.getSubInterval(interval.getSubIntervalCount()-1).getCurrentSpace();
                     post = Math.max(0, parRegion.positions[dimension][TRAILING] - region.positions[dimension][TRAILING]);
                 }
             }
