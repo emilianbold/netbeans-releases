@@ -9,13 +9,13 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Registering an External Tomcat Web Server</title>
+<title>Add Server Instance wizard: Tomcat Server Instance Properties</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Registering an External Tomcat Web Server</h2>
+<h2>Add Server Instance wizard: Tomcat Server Instance Properties</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
@@ -26,21 +26,19 @@ installations must first be registered. Unsupported versions of the Tomcat Web S
 cannot be registered with the IDE. Instead, you can <a href="tomcat_setup_unsupported.html">create Ant targets</a> that
 you can run from the IDE to deploy an application, JSP page, or servlet to an unsupported version of the Tomcat Web Server.</p>
 
-<p><b>To register an external Tomcat Web Server:</b></p>
-<ol>
-  <li>Make sure the server is not running. If the server is running and there 
-  is a port number conflict with other installed servers, the IDE will not
-  be able to resolve the conflict.</li>
-  <li>Choose Tools > Server Manager.</li>
-  <li>Click Add Server to display the Add Server wizard.</li>
-  <li>Select the Tomcat Web Server from the combo box.</li>
-  <li>Enter a name for the server instance. This name is used to identify the server in the IDE.
-  <li>Click Next.</li>
-  <li>In the Catalina Home text box, type or browse to the Tomcat installation 
+<p>You can open the Tomcat Server Instance Properties panel by choosing Tools &gt; Server Manager,
+ clicking Add Server, choosing Tomcat 5.0 or Tomcat 5.5, and choosing Next.
+
+
+ <p>Using the Tomcat Server Instance Properties, you can set the following
+  properties while registering the Tomcat Web Server:
+
+<ul>
+	<li><b>Catalina Home.</b> Specifies the Tomcat installation 
     directory on your local system. Note that the system verifies that you have 
-    specified a valid Tomcat home directory.</li>
-  <li>(Optional) If you expect to use Tomcat in a multi-user configuration, select 
-  the Use Private Configuration Folder checkbox. In the Cataline Base text box, type 
+    specified a valid Tomcat home directory.
+    <li><b>Catalina Base.</b> If you expect to use Tomcat in a multi-user configuration, select 
+    the Use Private Configuration checkbox. In the Catalina Base text box, type 
     or browse to the base directory. Typically, a base directory is placed under 
     a user's directory. If you associate a base directory with the server, the 
     base directory must have the following subdirectories. If the base directory is
@@ -53,23 +51,10 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
     <li><b><tt>webapps.</tt></b> Directory for automatically loaded web applications</li>
     <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
   </ul>
-  <li>Type a user name and password. The user must be a Tomcat user who has a 
+  <li><b>User name/Password.</b> The user must be a Tomcat user who has a 
    <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.</li>
-  <li>Click OK. The IDE displays the server's port number in the server node's 
-    tooltip. If another server instance is using this port, you must change one of 
-    the servers' port numbers. To change a port number, right-click the server's 
-    node, choose Start/Stop Server from the contextual menu, and stop the server. 
-    Next, right-click the server node and choose Properties from the contextual 
-    menu. Change the server port number and restart the server.</li>
-</ol>
-<p>If you want to change any setting that you entered in the New Server dialog box,
-right-click the server's node in the Runtime window and choose Properties
-from the contextual menu.</p>
-<b>To remove an instance of the Tomcat Web Server:</b>
-<ol><li>Choose Tools > Server Manager.</li>
-	<li>In the Server Manager, select the Tomcat Web Server from the list of servers in the left pane.</li>
-	<li>Click Remove.</li>
-	<li>Click Close.</li></ol>
+ 
+</ul>
 
 <table>
 
@@ -83,7 +68,8 @@ from the contextual menu.</p>
 
     <td width="23"></td>
 
-<td><a href="tomcat_plugintro.html">About the Tomcat Web Server</a><br>
+    <td><a href="tomcat_addinstall.html">Registering an External Tomcat Web Server</a><br>
+<a href="tomcat_plugintro.html">About the Tomcat Web Server</a><br>
 <a href="tomcat_top_node.html">Viewing the Tomcat Web Server in the IDE</a><br>
 <a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a><br>
 <a href="tomcat_edit_config.html">Customizing the Tomcat Configuration File</a><br>
