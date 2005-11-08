@@ -117,7 +117,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
     Map getXMLAbbrevMap() {
         Map xmlAbbrevMap = new TreeMap();
 
-        xmlAbbrevMap.put ("?xm", "<?xml version=\"1.0\" encoding=\"UTF-8\">"); // NOI18N
+        xmlAbbrevMap.put ("?xm", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
         xmlAbbrevMap.put ("!do", "<!DOCTYPE "); // NOI18N
         xmlAbbrevMap.put ("!cd", "<![CDATA[|]]>"); // NOI18N
         xmlAbbrevMap.put ("!at", "<!ATTLIST |>"); // NOI18N
