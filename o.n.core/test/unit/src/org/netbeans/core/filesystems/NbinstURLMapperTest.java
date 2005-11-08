@@ -7,28 +7,36 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.filesystems;
 
-
 import java.beans.PropertyVetoException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandlerFactory;
 import java.util.StringTokenizer;
 import org.netbeans.core.startup.layers.NbinstURLMapper;
 import org.netbeans.core.startup.layers.NbinstURLStreamHandlerFactory;
-import org.openide.filesystems.*;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.modules.InstalledFileLocator;
-import org.netbeans.junit.NbTestCase;
-
 
 public class NbinstURLMapperTest extends NbTestCase {
 
@@ -149,9 +157,12 @@ public class NbinstURLMapperTest extends NbTestCase {
 
     public static class Lkp extends ProxyLookup {
         public Lkp () {
-            this.setLookups (new Lookup[] {
-                Lookups.fixed(new Object[] {new TestInstalledFileLocator(), new NbinstURLStreamHandlerFactory(),
-                new NbinstURLMapper()})
+            super(new Lookup[] {
+                Lookups.fixed(new Object[] {
+                    new TestInstalledFileLocator(),
+                    new NbinstURLStreamHandlerFactory(),
+                    new NbinstURLMapper()}),
+                Lookups.metaInfServices(Lkp.class.getClassLoader()),
             });
         }
     }
