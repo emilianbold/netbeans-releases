@@ -21,6 +21,7 @@ import java.io.InputStream;
 import org.netbeans.modules.j2ee.dd.impl.application.ApplicationProxy;
 import org.netbeans.modules.schema2beans.Common;
 import org.openide.filesystems.*;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 import java.util.Map;
 import org.w3c.dom.Document;
@@ -277,16 +278,7 @@ public final class DDProvider {
     private DDParse parseDD (InputSource is) 
     throws SAXException, java.io.IOException {
         DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
-        org.apache.xerces.parsers.DOMParser parser = new org.apache.xerces.parsers.DOMParser();
-        parser.setErrorHandler(errorHandler);
-        parser.setEntityResolver(DDProvider.DDResolver.getInstance());
-        // XXX do we need validation here, if no one is using this then
-        // the dependency on xerces can be removed and JAXP can be used
-        parser.setFeature("http://xml.org/sax/features/validation", true); //NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true); //NOI18N
-        parser.parse(is);
-        Document d = parser.getDocument();
+        Document d = XMLUtil.parse(is, true, true, errorHandler, DDProvider.DDResolver.getInstance());
         SAXParseException error = errorHandler.getError();
         return new DDParse(d, error);
     }

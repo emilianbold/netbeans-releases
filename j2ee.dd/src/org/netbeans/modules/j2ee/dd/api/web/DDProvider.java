@@ -20,6 +20,7 @@ import java.lang.ref.WeakReference;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.openide.filesystems.*;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 import java.util.Map;
 import org.openide.util.NbBundle;
@@ -267,12 +268,9 @@ public final class DDProvider {
             throws org.xml.sax.SAXException, java.io.IOException {
         DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
         try {
-            XMLReader reader = new org.apache.xerces.parsers.SAXParser();
+            XMLReader reader = XMLUtil.createXMLReader(true, true);
             reader.setErrorHandler(errorHandler);
             reader.setEntityResolver(DDProvider.DDResolver.getInstance());
-            reader.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
-            reader.setFeature("http://xml.org/sax/features/validation",  true); // NOI18N
-            reader.setFeature("http://xml.org/sax/features/namespaces",  true); // NOI18N
             reader.parse(new InputSource(fo.getInputStream()));
             SAXParseException error = errorHandler.getError();
             if (error!=null) return error;
