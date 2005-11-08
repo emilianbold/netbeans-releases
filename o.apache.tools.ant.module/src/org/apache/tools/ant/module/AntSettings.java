@@ -201,23 +201,10 @@ public class AntSettings extends SystemOption implements ChangeListener {
         putProperty(PROP_EXTRA_CLASSPATH, p, true);
     }
     
-    public NbClassPath getAutomaticExtraClasspath() {
-        NbClassPath p = (NbClassPath)getProperty(PROP_AUTOMATIC_EXTRA_CLASSPATH);
-        if (p != null) {
-            return p;
-        } else {
-            return defaultAutomaticExtraClasspath();
-        }
-    }
-    
-    public void setAutomaticExtraClasspath(NbClassPath p) {
-        putProperty(PROP_AUTOMATIC_EXTRA_CLASSPATH, p, true);
-    }
-    
     private NbClassPath defAECP = null;
     private Lookup.Result aecpResult = null;
     
-    private NbClassPath defaultAutomaticExtraClasspath() {
+    public NbClassPath getAutomaticExtraClasspath() {
         synchronized (/* #66463 */getLock()) {
         if (aecpResult == null) {
             aecpResult = Lookup.getDefault().lookup(new Lookup.Template(AutomaticExtraClasspathProvider.class));
