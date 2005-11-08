@@ -71,10 +71,11 @@
 
     <tocitem text="Configuring General IDE Settings" >
       <tocitem text="Using the Options Window" target="configure.options" />
+      <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
+      <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
       <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
       <tocitem text="Configuring Java Settings" target="java.java_sources" />
       <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
-      <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
     </tocitem>
 
     <tocitem text="Configuring the IDE's Workspace">
@@ -85,7 +86,6 @@
       <tocitem text="Customizing the Contextual Menu for an Object" target="configure.menucontextual" />
       <tocitem text="Customizing Toolbars in the IDE" target="configure.tbcustomize" />
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
-      <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
     </tocitem>
 
 <tocitem text="Managing Modules" >
