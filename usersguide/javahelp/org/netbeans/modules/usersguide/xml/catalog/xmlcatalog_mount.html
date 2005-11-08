@@ -7,26 +7,16 @@
 <html>
 <head>
 <meta name="lastupdated" content="24apr2001">
-<title>Registering an XML Catalog</title>
+<title>Registering a Local DTD or XML Schema Resource</title>
 <link rel="stylesheet" href="../../ide.css" type="text/css">
 </head>
 <body>
-<h2>Registering an XML Catalog</h2>
+<h2>Registering a Local DTD or XML Schema Resource</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Runtime window contains all of your currently registered <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-    <param name="content" value="glossary_xmlcatalog.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="400,220">
-    <param name="text" value="XML catalogs">
-    <param name="textFontSize" value="small">
-    <param name="textFontFamily" value="SansSerif">
-    <param name="textFontStyle" value="italic">
-    <param name="textFontWeight" value="bold">
-    <param name="textColor" value="blue">
-  </object> under the DTD and XML Schema Catalogs node (<img src="../images/catalog-root.gif" alt="XML entity catalogs node">). 
+<p>The Runtime window contains all of your currently registered DTD or XML schema 
+  resources under the User Catalog node (<img src="../images/catalog-root.gif" alt="XML entity catalogs node">). 
 </p>
-<h4>To register an XML catalog:</h4>
+<h4>To register a local DTD or XML schema:</h4>
 <ol>
   <li>Expand the DTD and XML Schema Catalogs node, right-click and the User Catalog 
     node, and choose Add Local DTD or XML Schema.</li>
@@ -39,12 +29,12 @@
     </ul>
   </li>
   <li>Browse to the location of the local DTD or XML schema in the URI field. 
-    <p>The appropriate XML catalog entry node (<img src="../images/catalog-entry.gif" alt="catalog entry node">) 
-      appears under the DTD and XML Schema Catalogs node. You can double-click 
-      the node to open the DTD or XML schema in the Source Editor.
+    <p>The appropriate User Catalog entry node (<img src="../images/catalog-entry.gif" alt="catalog entry node">) 
+      appears under the User Catalog node. This entry represents the public ID 
+      or system ID mapping to the local DTD or XML schema resource.
   </li>
 </ol>
-<h4>To remove an XML catalog:</h4>
+<h4>To remove a DTD or XML schema entry from the User Catalog:</h4>
 <ol>
   <li> Expand DTD and XML Schema Catalogs &gt; User Catalog in the Runtime window.</li>
   <li>Right-click the XML catalog node you want to remove and choose Delete.</li>
