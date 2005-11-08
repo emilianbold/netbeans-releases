@@ -74,7 +74,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private static final String DOC_SHOW = "doc-show"; //NOI18N
     private static final String TOOLTIP_SHOW = "tool-tip-show"; //NOI18N
     
-    private static final int PLEASE_WAIT_TIMEOUT = 100;
+    private static final int PLEASE_WAIT_TIMEOUT = 250;
     
     public static CompletionImpl get() {
         if (singleton == null)
