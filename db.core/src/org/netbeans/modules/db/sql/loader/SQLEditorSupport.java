@@ -378,7 +378,9 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
         
         public static final long serialVersionUID = 7968926994844480435L;
         
-        private boolean modified = false;
+        private transient boolean modified = false;
+        
+        private transient FileLock fileLock;
         
         public Environment(SQLDataObject obj) {
             super(obj);
@@ -390,7 +392,8 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
 
         protected FileLock takeLock() throws IOException {
             MultiDataObject obj = (MultiDataObject)getDataObject();
-            return obj.getPrimaryEntry().takeLock();
+            fileLock = obj.getPrimaryEntry().takeLock();
+            return fileLock;
         }
         
         public void markModified() throws IOException {
@@ -404,6 +407,9 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
         public void unmarkModified() {
             if (findSQLEditorSupport().isConsole()) {
                 modified = false;
+                if (fileLock != null && fileLock.isValid()) {
+                    fileLock.releaseLock();
+                }
             } else {
                 super.unmarkModified();
             }
