@@ -7,34 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
 import java.io.ObjectOutputStream;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
-
-import java.util.*;
-import org.netbeans.junit.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 public class FolderLookupTest extends NbTestCase {
-    private GLkp lookup;
     
     public FolderLookupTest(java.lang.String testName) {
         super(testName);
     }
     
     static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.FolderLookupTest$GLkp"); // NOI18N
+        System.setProperty ("org.openide.util.Lookup", GLkp.class.getName());
     }
     
-    protected void setUp () {
-        lookup = (GLkp)Lookup.getDefault ();
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
     
     /** Test of the lookup method. Creates a file under Services directory 
@@ -113,26 +120,21 @@ public class FolderLookupTest extends NbTestCase {
         Class toCreate = javax.swing.JButton.class;
 
         Lookup.Result res = lookup.lookup(new Lookup.Template(toFind));
+        assertEquals("no Component's in " + res.allInstances(), 0, res.allInstances().size());
 
         DataObject obj = InstanceDataObject.create (folder, "Test", toCreate);
-        int count = res.allInstances().size();
         assertNotNull(obj.getPrimaryFile() + " not found",
             folder.getPrimaryFile().getFileSystem().findResource(obj.getPrimaryFile().getPath()));
-        if (count != 1) {
-            fail ("Lookup has not updated root content in time: expected count: 1, obtained: " + count);
-        }
+        assertEquals("just one Component in " + res.allInstances(), 1, res.allInstances().size());
 
         DataFolder subfolder = DataFolder.create(folder, "BB");
         assertNotNull(subfolder.getPrimaryFile() + " not found",
             folder.getPrimaryFile().getFileSystem().findResource(subfolder.getPrimaryFile().getPath()));
         
         obj = InstanceDataObject.create (subfolder, "Test", toCreate);
-        count = res.allInstances().size();
         assertNotNull(obj.getPrimaryFile() + " not found",
             folder.getPrimaryFile().getFileSystem().findResource(obj.getPrimaryFile().getPath()));
-        if (count != 2) {
-            fail ("Lookup has not updated subfolders content in time: expected count: 2, obtained: " + count);
-        }
+        assertEquals("now two Component's in " + res.allInstances(), 2, res.allInstances().size());
     }
 
     /** Tests delegation stuff.
@@ -459,8 +461,12 @@ public class FolderLookupTest extends NbTestCase {
        
    }
    
-   public static final class GLkp extends ALkp {
-       public GLkp () {
+   public static final class GLkp extends ProxyLookup {
+       public GLkp() {
+           super(new Lookup[] {
+               new ALkp(),
+               Lookups.metaInfServices(GLkp.class.getClassLoader()),
+           });
        }
    }
    
