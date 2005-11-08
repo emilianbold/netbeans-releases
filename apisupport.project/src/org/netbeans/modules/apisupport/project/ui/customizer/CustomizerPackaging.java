@@ -31,6 +31,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     CustomizerPackaging(final SingleModuleProperties props) {
         super(props, CustomizerPackaging.class);
         initComponents();
+        initAccesibility();
         refresh();
         if (!getProperties().isNetBeansOrg()) {
             licenseValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
@@ -274,5 +275,19 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     private javax.swing.JCheckBox needsRestart;
     private javax.swing.JSeparator sep1;
     // End of variables declaration//GEN-END:variables
-    
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CustomizerPackaging.class, key);
+    }
+
+    private void initAccesibility() {
+        browseLicense.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_BrowseLicense"));
+        isGlobal.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_IsGlobal"));
+        needsRestart.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_NeedsRestart"));
+        authorValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AuthorValue"));
+        homePageValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_HomePageValue"));
+        jarFileValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JarFileValue"));
+        licenseValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_LicenseValue"));
+    }
+   
 }

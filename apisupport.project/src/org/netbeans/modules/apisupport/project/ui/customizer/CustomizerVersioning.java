@@ -19,7 +19,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -31,7 +30,6 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -51,6 +49,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     CustomizerVersioning(SingleModuleProperties props) {
         super(props, CustomizerVersioning.class);
         initComponents();
+        initAccesibility();
         initPublicPackageTable();
         refresh();
         attachListeners();
@@ -594,5 +593,20 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     private javax.swing.JPanel typePanel;
     private javax.swing.JLabel typeTxt;
     // End of variables declaration//GEN-END:variables
+    
+    private void initAccesibility() {
+        addFriendButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AddFriendButton"));
+        removeFriendButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_RemoveFriendButton"));
+        cnbValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CnbValue"));
+        majorRelVerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_MajorRelVerValue"));
+        specificationVerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_SpecificationVerValuea"));
+        appendImpl.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AppendImpl"));
+        implVerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ImplVerValue"));
+        regularMod.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_RegularMod"));
+        autoloadMod.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AutoloadMod"));
+        eagerMod.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_EagerMod"));
+        publicPkgsTable.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PublicPkgsTable"));
+        tokensValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_TokensValue"));
+    }
     
 }

@@ -46,6 +46,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     public CustomizerLibraries(final SingleModuleProperties props) {
         super(props, CustomizerLibraries.class);
         initComponents();
+        initAccesibility();
         refresh();
         dependencyList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         platformValue.addItemListener(new ItemListener() {
@@ -432,4 +433,14 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     private javax.swing.JPanel tokenButtonPanel;
     // End of variables declaration//GEN-END:variables
     
+    private void initAccesibility() {
+        addTokenButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_SrcLevelValue"));
+        dependencyList.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_DependencyList"));
+        editDepButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_EditDepButton"));
+        removeDepButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_RemoveDepButton"));
+        removeTokenButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_RemoveTokenButton"));
+        addDepButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AddDepButton"));
+        reqTokenList.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ReqTokenList"));
+    }
+
 }

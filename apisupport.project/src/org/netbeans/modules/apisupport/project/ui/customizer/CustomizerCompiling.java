@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.openide.util.NbBundle;
+
 /**
  * Represents <em>Compiling</em> panel in Netbeans Module customizer.
  *
@@ -24,6 +26,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
     CustomizerCompiling(final SingleModuleProperties props) {
         super(props, CustomizerCompiling.class);
         initComponents();
+        initAccesibility();
         refresh();
     }
     
@@ -69,5 +72,14 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
     private javax.swing.JCheckBox deprecation;
     private javax.swing.JPanel innerPane;
     // End of variables declaration//GEN-END:variables
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CustomizerCompiling.class, key);
+    }
+    
+    private void initAccesibility() {
+        debug.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_Debug"));
+        deprecation.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_Deprecation"));
+    }
     
 }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Sources</em> panel in Netbeans Module customizer.
@@ -26,6 +27,7 @@ final class CustomizerSources extends NbPropertyPanel.Single {
     CustomizerSources(final SingleModuleProperties props) {
         super(props, CustomizerSources.class);
         initComponents();
+        initAccesibility();
         refresh();
     }
     
@@ -140,5 +142,15 @@ final class CustomizerSources extends NbPropertyPanel.Single {
     private javax.swing.JLabel srcLevel;
     private javax.swing.JComboBox srcLevelValue;
     // End of variables declaration//GEN-END:variables
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CustomizerSources.class, key);
+    }
+    
+    private void initAccesibility() {
+        srcLevelValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_SrcLevelValue"));
+        moduleSuiteValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_ModuleSuiteValue"));
+        prjFolderValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_PrjFolderValue"));
+    }
     
 }

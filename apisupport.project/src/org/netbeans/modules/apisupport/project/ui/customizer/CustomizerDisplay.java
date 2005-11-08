@@ -20,6 +20,7 @@ import java.util.SortedSet;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Display</em> panel in Netbeans Module customizer.
@@ -34,6 +35,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     CustomizerDisplay(final SingleModuleProperties props) {
         super(props, CustomizerDisplay.class);
         initComponents();
+        initAccesibility();
         refresh();
     }
     
@@ -232,4 +234,15 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     private javax.swing.JLabel shortDesc;
     private javax.swing.JTextField shortDescValue;
     // End of variables declaration//GEN-END:variables
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CustomizerDisplay.class, key);
+    }
+    
+    private void initAccesibility() {
+        longDescValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_LongDescValue"));
+        nameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_NameValue"));
+        shortDescValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ShortDescValue"));
+    }
+    
 }
