@@ -54,6 +54,9 @@ public final class LocalizedBundleInfo {
     private final File[] paths;
     
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
+    /** Whether this instance was modified since it was loaded or saved. */
+    private boolean modified;
     
     /**
      * Returns instances initialized by data in the given {@link FileObject}.
@@ -140,6 +143,7 @@ public final class LocalizedBundleInfo {
             FileObject bundleFO = FileUtil.toFileObject(paths[i]);
             props[i] = bundleFO != null ? Util.loadProperties(bundleFO) : new EditableProperties(true);
         }
+        modified = false;
         firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, getDisplayName());
     }
     
@@ -158,6 +162,7 @@ public final class LocalizedBundleInfo {
             }
             Util.storeProperties(bundleFO, props[i]);
         }
+        modified = false;
     }
     
     /**
@@ -175,6 +180,14 @@ public final class LocalizedBundleInfo {
             }
         }
         return null;
+    }
+    
+    /**
+     * Tells whether this instance was modified since it was loaded or saved.
+     * I.e. if it needs to be saved or not.
+     */
+    public boolean isModified() {
+        return modified;
     }
     
     public String getDisplayName() {
@@ -219,6 +232,7 @@ public final class LocalizedBundleInfo {
         if (Utilities.compareObjects(value, getProperty(name))) {
             return;
         }
+        modified = true;
         if (value != null) {
             value = value.trim();
         }
