@@ -207,10 +207,13 @@ public class BinaryFS extends FileSystem {
             if (!(o instanceof BFSBase)) return false;
             if (o == this) return true;
             BFSBase f = (BFSBase)o;
-            if (f.getFileSystem() != getFileSystem()) {
-                return false;
-            }
-            return f.getPath().equals(getPath()) && specificEquals(f);
+            return f.getPath().equals(getPath()) && specificEquals(f) && attributeEquals(f);
+        }
+        
+        private final boolean attributeEquals(BFSBase base) {
+            initialize();
+            base.initialize();
+            return attrs.equals(base.attrs);
         }
         
         public final int hashCode() {
@@ -369,6 +372,18 @@ public class BinaryFS extends FileSystem {
         AttrImpl(int type, String textValue) {
             index = type;
             value = textValue;
+        }
+        
+        public boolean equals(Object o) {
+            if (o instanceof AttrImpl) {
+                AttrImpl impl = (AttrImpl)o;
+                return index == impl.index && value.equals(impl.value);
+            }
+            return false;
+        }
+        
+        public int hashCode() {
+            return 2343 + index + value.hashCode();
         }
 
         public Object getValue( FileObject fo, String attrName) {

@@ -72,10 +72,16 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
     }
     
     private void doChangeOfAnAttributeInLayerIsFired(ModuleLayeredFileSystem fs) throws Exception {
-        File f1 = changeOfAnAttributeInLayerIsFiredgenerateLayer("java.awt.List");
-        File f2 = changeOfAnAttributeInLayerIsFiredgenerateLayer("java.awt.Button");
-        
-        fs.setURLs (Collections.singletonList(f1.toURL()));
+        File f1 = changeOfAnAttributeInLayerIsFiredgenerateLayer("Folder", "java.awt.List");
+        File f2 = changeOfAnAttributeInLayerIsFiredgenerateLayer("Folder", "java.awt.Button");
+        File f3 = changeOfAnAttributeInLayerIsFiredgenerateLayer("NoChange", "nochange");
+
+        {
+            ArrayList list = new ArrayList();
+            list.add(f1.toURL());
+            list.add(f3.toURL());
+            fs.setURLs (list);
+        }
         
         FileObject file = sfs.findResource("Folder/empty.xml");
         assertNotNull("File found in layer", file);
@@ -91,7 +97,12 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
         assertAttr("The first value is list", file, "value", "java.awt.List");
         assertAttr("Imutable value is nochange", nochange, "value", "nochange");
         
-        fs.setURLs (Collections.singletonList(f2.toURL()));
+        {
+            ArrayList list = new ArrayList();
+            list.add(f2.toURL());
+            list.add(f3.toURL());
+            fs.setURLs (list);
+        }
         String v2 = (String) file.getAttribute("value");
         assertEquals("The second value is button", "java.awt.Button", v2);
         
@@ -102,9 +113,7 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
         }
         
         assertAttr("Imutable value is still nochange", nochange, "value", "nochange");
-        // DOES NOT WORK RIGHT NOW 
-        // WOULD FIX 67163
-        // assertEquals("No change in this attribute: "  + no.events, 0, no.events.size());
+        assertEquals("No change in this attribute: "  + no.events, 0, no.events.size());
     }    
     
     private static void assertAttr(String msg, FileObject fo, String attr, String value) throws IOException {
@@ -113,19 +122,14 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
     }
 
     int cnt;
-    private File changeOfAnAttributeInLayerIsFiredgenerateLayer(String string) throws IOException {
+    private File changeOfAnAttributeInLayerIsFiredgenerateLayer(String folderName, String string) throws IOException {
         File f = new File(getWorkDir(), "layer" + (cnt++) + ".xml");
         FileWriter w = new FileWriter(f);
         w.write(
             "<filesystem>" +
-            "<folder name=\"Folder\">" +
+            "<folder name='" + folderName + "'>" +
             "  <file name='empty.xml' >" +
             "    <attr name='value' stringvalue='" + string + "' />" +
-            "  </file>" +
-            "</folder>" +
-            "<folder name=\"NoChange\">" +
-            "  <file name='empty.xml' >" +
-            "    <attr name='value' stringvalue='nochange' />" +
             "  </file>" +
             "</folder>" +
             "</filesystem>"

@@ -13,8 +13,12 @@
 
 package org.openide.filesystems;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
     private String[] resources = new String[] {"a/b/c"};
@@ -224,6 +228,8 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertFalse(fo2.lastModified().equals(fo.lastModified()));        
         
     }
+
+    
     
     private File writeFile(String name, String content) throws IOException {
         File f = new File (getWorkDir (), name);
@@ -232,4 +238,96 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         w.close();
         return f;
     }
+    
+    
+    public void testChangeOfAnAttributeInLayerIsFiredIfThereIsRealChange() throws Exception {
+        XMLFileSystem fs = new XMLFileSystem();
+        
+        File f1 = changeOfAnAttributeInLayerIsFiredgenerateLayer("Folder", "java.awt.List");
+        File f2 = changeOfAnAttributeInLayerIsFiredgenerateLayer("Folder", "java.awt.Button");
+        File f3 = changeOfAnAttributeInLayerIsFiredgenerateLayer("NoChange", "nochange");
+
+        fs.setXmlUrls (new URL[] { f1.toURL(), f3.toURL() } );
+        
+        FileObject file = fs.findResource("Folder/empty.xml");
+        assertNotNull("File found in layer", file);
+        
+        FSListener l = new FSListener();
+        file.addFileChangeListener(l);
+        
+        FileObject nochange = fs.findResource("NoChange/empty.xml");
+        assertNotNull("File found in layer", nochange);
+        FSListener no = new FSListener();
+        nochange.addFileChangeListener(no);
+        
+        assertAttr("The first value is list", file, "value", "java.awt.List");
+        assertAttr("Imutable value is nochange", nochange, "value", "nochange");
+        
+        fs.setXmlUrls (new URL[] { f2.toURL(), f3.toURL() } );
+        String v2 = (String) file.getAttribute("value");
+        assertEquals("The second value is button", "java.awt.Button", v2);
+        
+        assertEquals("One change: " + l.events, 1, l.events.size());
+        
+        if (!(l.events.get(0) instanceof FileAttributeEvent)) {
+            fail("Wrong event: " + l.events);
+        }
+        
+        assertAttr("Imutable value is still nochange", nochange, "value", "nochange");
+        assertEquals("No change in this attribute: "  + no.events, 0, no.events.size());
+    }    
+    
+    private static void assertAttr(String msg, FileObject fo, String attr, String value) throws IOException {
+        Object v = fo.getAttribute(attr);
+        assertEquals(msg + "[" + fo + "]", value, v);
+    }
+
+    int cnt;
+    private File changeOfAnAttributeInLayerIsFiredgenerateLayer(String folderName, String string) throws IOException {
+        File f = new File(getWorkDir(), "layer" + (cnt++) + ".xml");
+        FileWriter w = new FileWriter(f);
+        w.write(
+            "<filesystem>" +
+            "<folder name='" + folderName + "'>" +
+            "  <file name='empty.xml' >" +
+            "    <attr name='value' stringvalue='" + string + "' />" +
+            "  </file>" +
+            "</folder>" +
+            "</filesystem>"
+        );
+        w.close();
+        return f;
+    }
+    
+    private static class FSListener extends FileChangeAdapter {
+        public List events = new ArrayList();
+        public List change = new ArrayList();
+        
+        
+        public void fileRenamed(FileRenameEvent fe) {
+            events.add(fe);
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            events.add(fe);
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            events.add(fe);
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            events.add(fe);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            events.add(fe);
+        }
+
+        public void fileChanged(FileEvent fe) {
+            change.add(fe);
+        }
+        
+    }
+    
 }

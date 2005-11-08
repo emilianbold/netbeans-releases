@@ -944,6 +944,23 @@ final class XMLMapAttr implements Map {
 
             return index;
         }
+
+        public boolean equals(Object obj) {
+            if (obj instanceof Attr) {
+                Attr other = (Attr)obj;
+                
+                if (other.keyIndex != keyIndex) {
+                    return false;
+                }
+                
+                return other.value.equals(value);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            return 743 + keyIndex << 8 + value.hashCode();
+        }
     }
 
     /**
