@@ -18,6 +18,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.dtd.*;
+import org.w3c.dom.html.HTMLBRElement;
 
 
 /**
@@ -346,10 +347,13 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             return new SyntaxElement( this, item.getOffset(), getTokenEnd( item ), SyntaxElement.TYPE_ERROR );
 
         if( id == HTMLTokenContext.BLOCK_COMMENT ) {
-            while( /*id == HTMLTokenContext.BLOCK_COMMENT &&*/ !item.getImage().startsWith( "<!--" ) ) { // NOI18N
+            TokenItem prev = null;
+            while( (id == HTMLTokenContext.BLOCK_COMMENT && !item.getImage().startsWith( "<!--" ))) { // NOI18N
+                prev = item;
                 item = item.getPrevious();
                 id = item.getTokenID();
             }
+            if(item.getTokenID() != HTMLTokenContext.BLOCK_COMMENT) item = prev; // the case of JSP tokens inside HTML
             return getNextElement( item.getOffset() ); // from start of Commment
         }
 
