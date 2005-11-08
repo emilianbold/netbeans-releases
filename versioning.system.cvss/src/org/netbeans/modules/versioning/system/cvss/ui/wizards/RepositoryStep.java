@@ -15,6 +15,8 @@ package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.progress.ProgressHandle;
@@ -164,15 +166,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         String extCommand = HistorySettings.getDefault().getExtCommand();
         repositoryPanel.extCommandTextField.setText(extCommand);
 
-        // proxy config button
-        // it must not be accesible if Java environment defines socksProxyHost
-        // property because it influences ALL new Socket() that crashes
-        // our ClientSocketFactory. It may not be able to connect
-        // SOCKS (general rule failure) or HTTP (ruleset failure)
-        // proxy via Java platform defined SOCKS proxy.
-
-        String hostName = System.getProperty("socksProxyHost");  // NOI18N
-        repositoryPanel.proxyConfigurationButton.setEnabled(hostName == null);
         repositoryPanel.proxyConfigurationButton.addActionListener(this);
         repositoryPanel.editButton.addActionListener(this);
 
@@ -563,6 +556,26 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     }
     
     private void onProxyConfiguration() {
+        // proxy config button
+        // displays notification if Java environment defines socksProxyHost
+        // property because it influences ALL new Socket() that crashes
+        // our ClientSocketFactory. It may not be able to connect
+        // SOCKS (general rule failure) or HTTP (ruleset failure)
+        // proxy via Java platform defined SOCKS proxy.
+
+        String hostName = System.getProperty("socksProxyHost"); // NOI18N
+        if (hostName != null) {
+            NotifyDescriptor nd = new NotifyDescriptor(
+                    NbBundle.getMessage(RepositoryStep.class, "MSG_SystemProxy_Prompt", hostName), // NOI18N
+                    NbBundle.getMessage(RepositoryStep.class, "MSG_SystemProxy_Title"), // NOI18N
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new Object [] { NotifyDescriptor.OK_OPTION },
+                    NotifyDescriptor.OK_OPTION
+            );
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
         ProxySelector selector = new ProxySelector();
         selector.setProxyDescriptor(proxyDescriptor);
         ProxyDescriptor pd = selector.selectProxy();
