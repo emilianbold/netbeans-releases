@@ -49,27 +49,8 @@ public class DDDataLoader extends UniFileLoader {
         return NbBundle.getMessage (DDDataLoader.class, "LBL_loaderName");
     }
     
-    protected SystemAction[] defaultActions () {
-        return new SystemAction[] {
-            SystemAction.get (OpenAction.class),
-            SystemAction.get (EditAction.class),
-            null,
-            SystemAction.get (org.netbeans.modules.xml.tools.actions.CheckAction.class),
-            SystemAction.get (org.netbeans.modules.xml.tools.actions.ValidateAction.class),
-            null,
-            SystemAction.get (FileSystemAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            null,
-            SystemAction.get (SaveAsTemplateAction.class),
-            null,
-            SystemAction.get (ToolsAction.class),
-            SystemAction.get (PropertiesAction.class),
-        };
+    protected String actionsContext() {
+        return "Loaders/text/x-dd+servlet/Actions/"; // NOI18N
     }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile)
