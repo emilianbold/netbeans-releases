@@ -344,6 +344,15 @@ public class WebProjectProperties {
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
             
+            // extend project with selected frameworks
+            // It should be called outside mutex, which is used above. See issue#68118
+            if (newFrameworks != null) {
+                for(int i = 0; i < newFrameworks.size(); i++)
+                    ((WebFrameworkProvider) newFrameworks.get(i)).extend(project.getAPIWebModule());
+
+                newFrameworks.clear();
+            }
+            
             //prevent deadlock reported in the issue #54643
             //cp and serverId values are read in setNewContextPathValue() method which is called from storeProperties() before this code
             //it is easier to preset them instead of reading them here again
@@ -483,15 +492,8 @@ public class WebProjectProperties {
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
         
-        //add framework extensions
-        if (newFrameworks != null) {
-            for(int i = 0; i < newFrameworks.size(); i++)
-                ((WebFrameworkProvider) newFrameworks.get(i)).extend(project.getAPIWebModule());
-
-            newFrameworks.clear();
-        }
     }
-    
+
     private void storeAdditionalProperties(EditableProperties projectProperties) {
         for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
             Object key = i.next();
