@@ -354,6 +354,15 @@ public class LayoutDesigner implements LayoutConstants {
     public void startMoving(String[] compIds, Rectangle[] bounds, Point hotspot) {
         if (logTestCode()) {
             testCode.add("// > START MOVING"); //NOI18N
+        }
+
+        LayoutComponent[] comps = new LayoutComponent[compIds.length];
+        for (int i=0; i < compIds.length; i++) {
+            comps[i] = layoutModel.getLayoutComponent(compIds[i]);
+        }
+        prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
+
+        if (logTestCode()) {
             testCode.add("{"); //NOI18N
             LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
             LayoutTestUtils.writeRectangleArray(testCode, "bounds", bounds); //NOI18N
@@ -363,13 +372,8 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("}"); //NOI18N
         }
         
-        LayoutComponent[] comps = new LayoutComponent[compIds.length];
-        for (int i=0; i < compIds.length; i++) {
-            comps[i] = layoutModel.getLayoutComponent(compIds[i]);
-        }
-
-        prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
         dragger.setTargetContainer(comps[0].getParent());
+
         if (logTestCode()) {
             testCode.add("// < START MOVING"); //NOI18N
 	}
@@ -384,15 +388,6 @@ public class LayoutDesigner implements LayoutConstants {
     {
         if (logTestCode()) {
             testCode.add("// > START RESIZING"); //NOI18N
-            testCode.add("{"); //NOI18N
-            LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
-            LayoutTestUtils.writeRectangleArray(testCode, "bounds", bounds); //NOI18N
-            testCode.add("Point hotspot = new Point(" + new Double(hotspot.getX()).intValue() + "," +  //NOI18N
-		    new Double(hotspot.getY()).intValue() + ");"); //NOI18N
-            LayoutTestUtils.writeIntArray(testCode, "resizeEdges", resizeEdges); //NOI18N
-            testCode.add("boolean inLayout = " + inLayout + ";");
-            testCode.add("ld.startResizing(compIds, bounds, hotspot, resizeEdges, inLayout);"); //NOI18N
-            testCode.add("}"); //NOI18N
         }
 
         LayoutComponent[] comps = new LayoutComponent[compIds.length];
@@ -407,7 +402,21 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         prepareDragger(comps, bounds, hotspot, edges);
+
+        if (logTestCode()) {
+            testCode.add("{"); //NOI18N
+            LayoutTestUtils.writeStringArray(testCode, "compIds", compIds); //NOI18N
+            LayoutTestUtils.writeRectangleArray(testCode, "bounds", bounds); //NOI18N
+            testCode.add("Point hotspot = new Point(" + new Double(hotspot.getX()).intValue() + "," +  //NOI18N
+		    new Double(hotspot.getY()).intValue() + ");"); //NOI18N
+            LayoutTestUtils.writeIntArray(testCode, "resizeEdges", resizeEdges); //NOI18N
+            testCode.add("boolean inLayout = " + inLayout + ";");
+            testCode.add("ld.startResizing(compIds, bounds, hotspot, resizeEdges, inLayout);"); //NOI18N
+            testCode.add("}"); //NOI18N
+        }
+
         dragger.setTargetContainer(inLayout ? comps[0].getParent() : null);
+
         if (logTestCode()) {
             testCode.add("// < START RESIZING"); //NOI18N
 	}
