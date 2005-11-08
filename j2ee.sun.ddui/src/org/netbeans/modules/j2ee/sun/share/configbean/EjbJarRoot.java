@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,8 +27,11 @@ import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.XpathEvent;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
- 
+
+import org.xml.sax.SAXException;
+
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
@@ -40,6 +44,9 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
+
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
+
 import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMappings;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContext;
 import com.sun.jdo.api.persistence.mapping.ejb.EJBInfoHelper;
@@ -47,6 +54,7 @@ import com.sun.jdo.api.persistence.mapping.ejb.ConversionHelper;
 import com.sun.jdo.modules.persistence.mapping.ejb.EJBDevelopmentInfoHelper;
 import com.sun.jdo.modules.persistence.mapping.ejb.util.MappingConverter;
 import com.sun.jdo.modules.persistence.mapping.ejb.util.SunOneUtilsCMP;
+
 // TODO - consider moving all the model imports and handling to another class
 import com.sun.jdo.api.persistence.model.Model;
 import com.sun.jdo.api.persistence.model.ModelException;
@@ -61,8 +69,9 @@ import com.sun.jdo.api.persistence.model.jdo.impl.RelationshipElementImpl;
 import com.sun.jdo.api.persistence.model.mapping.MappingFieldElement;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingFieldElementImpl;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingRelationshipElementImpl;
-import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 // end TODO
+
+
 /**
  *
  * @author  vkraemer
@@ -316,24 +325,18 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
     // methods used to read a DConfigBean from a deployment plan
     public class SunEjbJarParser implements ConfigParser {
-        public Object parse(java.io.InputStream stream) {
+        public Object parse(java.io.InputStream stream)  throws IOException, SAXException, DDException {
             DDProvider provider = DDProvider.getDefault();
             SunEjbJar result = null;
-            
-            if(null != stream) {
-                try {
-                    result = provider.getEjbDDRoot(new org.xml.sax.InputSource(stream));
-                } catch (Exception ex) {
-                    jsr88Logger.severe("invalid stream for SunEjbJar"); // FIXME
-                }
-            }
-            
-            // If we have a null stream or there is a problem reading the graph,
-            // return a blank graph.
-            if(result == null) {
+
+            if(stream != null) {
+                // Exceptions (due to bad graph or other problem) are handled by caller.
+                result = provider.getEjbDDRoot(new org.xml.sax.InputSource(stream));
+            } else {
+                // If we have a null stream, return a blank graph.
                 result = (SunEjbJar) provider.newGraph(SunEjbJar.class);
             }
-            
+
             // First set our version to match that of this deployment descriptor.
             getConfig().internalSetAppServerVersion(ASDDVersion.getASDDVersionFromEjbVersion(result.getVersion()));
             // Now map graph to that of 8.1.
@@ -351,24 +354,26 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
 	// methods used to read a DConfigBean from a deployment plan
 	public class SunCmpMappingsParser implements ConfigParser {
-		public Object parse(java.io.InputStream stream) {
-			SunCmpMappings retVal;
-			// TODO - this seems like creation of an empty one - 
-			// might not need this, maybe instead just surround the try
-			// below with null!=stream.. or is this where we create a skeleton
-			// if necessary?  maybe can be done in utils
-			if (null == stream)
-				return SunCmpMappings.createGraph();
-			try {
-				retVal = SunCmpMappings.createGraph(stream);
-			}
-			catch (Throwable t) {
-				jsr88Logger.severe("invalid stream for SunCmpMappings");
-				// TODO - this seems like creation of an empty one - 
-				// might not need this
-				retVal = SunCmpMappings.createGraph();
-			}
-			return retVal;
+		public Object parse(java.io.InputStream stream) throws IOException, SAXException, DDException {
+            SunCmpMappings result = null;
+            
+            if(stream != null) {
+                // Exceptions (due to bad graph or other problem) are handled by caller.
+                try {
+                    result = SunCmpMappings.createGraph(stream);
+                } catch(Exception ex) {
+                    throw new IllegalStateException("Examine wrapped exception...", ex);
+                }
+            } else {
+                // If we have a null stream, return a blank graph.
+                result = SunCmpMappings.createGraph();
+            }
+
+            // !PW FIXME What should we do if the DOCTYPE found here does not match
+            // that found for sun-ejb-jar.xml?  What if sun-ejb-jar.xml wasn't found
+            // and so this is the only file to get version info from (and how would we
+            // know that?)
+            return result;
 		}
 	}
 

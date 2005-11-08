@@ -12,6 +12,8 @@
  */
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,9 +25,12 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
+import org.xml.sax.SAXException;
+
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
@@ -34,6 +39,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.JspConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.web.LocaleCharsetInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
+
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
 
@@ -343,21 +349,15 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}
    
     private class WebAppRootParser implements ConfigParser {
-        public Object parse(java.io.InputStream stream) {
+        public Object parse(java.io.InputStream stream) throws IOException, SAXException, DDException {
             DDProvider provider = DDProvider.getDefault();
             SunWebApp result = null;
             
-            if(null != stream) {
-                try {
-                    result = provider.getWebDDRoot(new org.xml.sax.InputSource(stream));
-                } catch (Exception ex) {
-                    jsr88Logger.severe("invalid stream for SunWebApp"); // FIXME
-                }
-            }
-            
-            // If we have a null stream or there is a problem reading the graph,
-            // return a blank graph.
-            if(result == null) {
+            if(stream != null) {
+                // Exceptions (due to bad graph or other problem) are handled by caller.
+                result = provider.getWebDDRoot(new org.xml.sax.InputSource(stream));
+            } else {
+                // If we have a null stream, return a blank graph.
                 result = (SunWebApp) provider.newGraph(SunWebApp.class);
             }
 

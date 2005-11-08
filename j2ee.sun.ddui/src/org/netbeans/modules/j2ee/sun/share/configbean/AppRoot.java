@@ -12,24 +12,25 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.DDBean;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-import javax.enterprise.deploy.model.J2eeApplicationObject;
-import javax.enterprise.deploy.model.DeployableObject;
+
+import org.xml.sax.SAXException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
-import org.netbeans.modules.j2ee.sun.dd.api.app.Web;
+
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
 
 /** This bean represents the content of the sun-application deployment 
@@ -191,24 +192,18 @@ public class AppRoot extends BaseRoot {
 	}
 	
     public class AppRootParser implements ConfigParser {
-        public Object parse(java.io.InputStream stream) {
+        public Object parse(java.io.InputStream stream) throws IOException, SAXException, DDException {
             DDProvider provider = DDProvider.getDefault();
             SunApplication result = null;
             
-            if(null != stream) {
-                try {
-                    result = provider.getAppDDRoot(new org.xml.sax.InputSource(stream));
-                } catch (Exception ex) {
-                    jsr88Logger.severe("invalid stream for SunApplication"); // FIXME
-                }
-            }
-            
-            // If we have a null stream or there is a problem reading the graph,
-            // return a blank graph.
-            if(result == null) {
+            if(stream != null) {
+                // Exceptions (due to bad graph or other problem) are handled by caller.
+                result = provider.getAppDDRoot(new org.xml.sax.InputSource(stream));
+            } else {
+                // If we have a null stream, return a blank graph.
                 result = (SunApplication) provider.newGraph(SunApplication.class);
             }
-            
+
             // First set our version to match that of this deployment descriptor.
             getConfig().internalSetAppServerVersion(ASDDVersion.getASDDVersionFromAppVersion(result.getVersion()));
             

@@ -113,6 +113,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     private DeployableObject dObj;
     private Map contentMap = new HashMap();
     private Map beanMap = new HashMap();
+    private Map priorBeanMap = new HashMap();
     
     /*
      * value to hold the module name used by the IDE to define the deployable object
@@ -1080,30 +1081,36 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     Object getBeans(String uri, String fileName, ConfigParser parser,
 		ConfigFinder finder) {
         String key = Utils.getFQNKey(uri, fileName);
-        Object retVal;
         Object root = beanMap.get(key);
-        if (null == root) {
+        
+        if(root == null) {
             // parse the content
             byte[] content = (byte[]) contentMap.get(key);
-            if (null == content)
+            if(content == null) {
                 return null;
-            //Object root;
-            //java.io.
-            if (null == parser) {
+            }
+            
+            if(parser == null) {
                 jsr88Logger.severe("Missing parser");
                 return null;
             }
+            
             try {
                 root = parser.parse(new ByteArrayInputStream(content));
+            } catch(Exception ex) {
+                root = priorBeanMap.remove(key);
+                if(root == null) {
+                    // No prior map, just return null (otherwise, put into main map
+                    // same as for newly parsed root.
+                    return null;
+                }
             }
-            catch (Exception ex) {
-                jsr88Logger.severe("content unparsable");
-                return null;
-            }
+            
             beanMap.put(key, root);
         }
-        retVal = finder.find(root);
-        return retVal;
+        
+        Object result = finder.find(root);
+        return result;
     }
     
     /* ------------------------- Utility Functions ------------------------
@@ -1435,7 +1442,12 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         
         // Remove this entry from the beanMap, forcing it to be reparsed.
         // Flush bean cache.  This forces reparsing of the new tree we load here.
-        beanMap.remove(key);
+        Object oldMap = beanMap.remove(key);
+        
+        // Save any prior bean map to fall back to in case parsing new content fails.
+        if(oldMap != null) {
+            priorBeanMap.put(key, oldMap);
+        }
     }
     
     public void extractFileFromPlanForModule(File f, DeployableObject mod, ConfigurationStorage storage) throws ConfigurationException {

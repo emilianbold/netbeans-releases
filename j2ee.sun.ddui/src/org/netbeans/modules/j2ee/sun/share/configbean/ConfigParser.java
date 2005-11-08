@@ -12,11 +12,17 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.io.IOException;
+import org.xml.sax.SAXException;
+import org.netbeans.modules.j2ee.sun.dd.api.DDException;
+
+
 /**
  *
  * @author  vkraemer
  */
 public interface ConfigParser {
 
-    public Object parse(java.io.InputStream in);
+    public Object parse(java.io.InputStream in) throws IOException, SAXException, DDException;
+    
 }
