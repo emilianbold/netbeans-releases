@@ -470,11 +470,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             retVal[0] = new FakeTarget();
             return retVal;
         }
+        AdminAuthenticator.setPreferredSunDeploymentManagerInterface(this);
         if (isLocal()){// if the server is local, make sure we are talking to the correct one
             //we do that by testing the server location known by the IDE with the server location known by the
             // server
             try{
-                AdminAuthenticator.setPreferredSunDeploymentManagerInterface(this);
                 Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
                 if (configDir==null){
                     
