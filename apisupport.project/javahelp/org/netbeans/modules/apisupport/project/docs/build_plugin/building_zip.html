@@ -16,24 +16,33 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>The IDE uses an Ant build script to build your modules. The IDE generates the build script based on the options you enter 
-in the project's Project Properties dialog box. You can set the module's dependencies, versioning,
- and packaging information in the Project 
-  Properties dialog box. You can further customize program execution by editing 
-  the Ant script and Ant properties for the project. </p>
+<p>The IDE uses an Ant build script to build a ZIP distribution of your application. The
+IDE uses this target:</p>
 
-<p>You can customize the build process by doing any 
-  of the following:</p>
-<ul>
-	<li>Enter basic options, like module dependencies</a>,
-        packaging settings and versioning information in the Project 
-	Properties dialog box.</li>
-	<li>Customize
-    the IDE-generated Ant targets or create new targets in <tt>build.xml</tt>. 
-  </li>
-  <li>Edit properties in <tt>project.properties</tt> to change the name and location 
-    of build output folders and files.</li>
-</ul>
+<pre>&lt;target name="build-zip" depends="build,build-launchers"&gt;
+    &lt;mkdir dir="dist"/&gt;
+    &lt;zip destfile="dist/${app.name}.zip"&gt;
+        &lt;zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="${app.name}/bin"/&gt;
+        &lt;zipfileset dir="${build.launcher.dir}/etc/" prefix="${app.name}/etc"/&gt;
+        &lt;zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${app.name}"&gt;
+            &lt;include name="**/lib/nbexec*"/&gt;
+        &lt;/zipfileset&gt;
+
+        &lt;zipfileset dir="${netbeans.dest.dir}" prefix="${app.name}"&gt;
+            &lt;and&gt;
+                &lt;not&gt;
+                    &lt;filename name="**/lib/nbexec*"/&gt;
+                &lt;/not&gt;
+                &lt;selector refid="zip.platform.included.files"/&gt;
+            &lt;/and&gt;
+        &lt;/zipfileset&gt;
+
+        &lt;zipfileset dir="${cluster}" prefix="${app.name}/${app.name}"&gt;
+            &lt;exclude name="config/Modules/*.xml_hidden"/&gt;
+        &lt;/zipfileset&gt;
+
+    &lt;/zip&gt;
+&lt;/target&gt;</pre>
 
 <p><b>To build a ZIP distribution:</b>
 

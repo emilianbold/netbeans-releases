@@ -46,6 +46,27 @@ in the project's Project Properties dialog box. You can set the module's depende
     of build output folders and files.</li>
 </ul>
 
+<p>The IDE uses this Ant target to create the NBM file:
+
+<pre>&lt;target name="nbm" depends="init,netbeans" description="Build NBM archive."&gt;
+    &lt;mkdir dir="build"/&gt;
+    &lt;makenbm file="build/${nbm}"
+             productdir="${cluster}"
+             module="${module.jar}"
+             homepage="${nbm.homepage}"
+             distribution="${nbm.distribution}"
+             needsrestart="${nbm.needs.restart}"
+             global="${nbm.is.global}"
+             releasedate="${nbm.release.date}"
+             moduleauthor="${nbm.module.author}"&gt;
+        &lt;license file="${license.file}"/&gt;
+        &lt;signature keystore="${keystore}" 
+                  storepass="${storepass}" 
+                      alias="${nbm_alias}"/&gt;
+    &lt;/makenbm&gt;
+&lt;/target&gt;</pre>
+
+
 <p><b>To build an NBM file:</b>
 
 <ol><li>In the Projects window, right-click the node of the module project you want to build.
