@@ -401,6 +401,8 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_props_packaging.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_props_documenting.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props_run.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost" url="project/csh/proj_j2sestand_props_wsclient.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHostDisabled" url="project/csh/proj_j2sestand_props_wsclient_disabled.html" />
 
 <!-- Freeform J2SE and Web Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
