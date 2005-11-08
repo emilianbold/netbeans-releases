@@ -415,6 +415,30 @@ public class SingleModulePropertiesTest extends TestBase {
         assertFalse("invalid reference", props.evaluateFile("${invalid-reference}/manifest.mf").exists());
     }
     
+    public void testThatFilesAreNotTouched_67249() throws Exception {
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        FileUtil.createData(p.getSourceDirectory(), "org/example/module1/One.java");
+        FileUtil.createData(p.getSourceDirectory(), "org/example/module1/resources/Two.java");
+        SingleModuleProperties props = loadProperties(p);
+        
+        // times before change
+        FileObject bundle = FileUtil.toFileObject(props.getBundleInfo().getPaths()[0]);
+        FileObject mf = p.getManifestFile();
+        long mfTime = mf.lastModified().getTime();
+        long bundleTime = bundle.lastModified().getTime();
+        
+        // be sure we are not too fast
+        Thread.sleep(2000);
+        
+        // select a package
+        props.getPublicPackagesModel().setValueAt(Boolean.TRUE, 0, 0);
+        props.storeProperties();
+        
+        // compare with times after change
+        assertEquals("time for manifest has not changed", mfTime, mf.lastModified().getTime());
+        assertEquals("time for bundle has not changed", bundleTime, bundle.lastModified().getTime());
+    }
+    
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
 //        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),
@@ -454,5 +478,5 @@ public class SingleModulePropertiesTest extends TestBase {
             final SingleModuleProperties props, final NbModuleProject p) {
         props.refresh(getModuleType(p), getSuiteProvider(p));
     }
-
+    
 }

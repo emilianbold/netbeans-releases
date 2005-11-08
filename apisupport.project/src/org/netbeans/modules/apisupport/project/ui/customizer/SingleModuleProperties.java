@@ -546,7 +546,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         storeManifestChanges();
         
         // store localized info
-        if (bundleInfo != null) {
+        if (bundleInfo != null && bundleInfo.isModified()) {
             bundleInfo.store();
         } // XXX else ignore for now but we could save into some default location
         
@@ -602,25 +602,29 @@ public final class SingleModuleProperties extends ModuleProperties {
             manifestFO = FileUtil.createData(
                     getHelper().getProjectDirectory(), "manifest.mf"); // NOI18N
         }
-        String module = "".equals(getMajorReleaseVersion()) ?
-            getCodeNameBase() :
-            getCodeNameBase() + '/' + getMajorReleaseVersion();
+        boolean changed = false;
         if (majorReleaseVersionChanged) {
+            String module = "".equals(getMajorReleaseVersion()) ?
+                getCodeNameBase() :
+                getCodeNameBase() + '/' + getMajorReleaseVersion();
             setManifestAttribute(em, ManifestManager.OPENIDE_MODULE, module);
+            changed = true;
         }
         if (specificationVersionChanged) {
             setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION,
                     getSpecificationVersion());
+            changed = true;
         }
         if (implementationVersionChange) {
             setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_IMPLEMENTATION_VERSION,
                     getImplementationVersion());
+            changed = true;
         }
         if (providedTokensChanged) {
             setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_PROVIDES,
                     getProvidedTokens());
+            changed = true;
         }
-        
         if (getRequiredTokenListModel().isChanged()) {
             String[] reqTokens = getRequiredTokenListModel().getTokens();
             StringBuffer result = new StringBuffer(reqTokens.length > 1 ? "\n  " : ""); // NOI18N
@@ -631,8 +635,11 @@ public final class SingleModuleProperties extends ModuleProperties {
                 result.append(reqTokens[i]);
             }
             setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_REQUIRES, result.toString());
+            changed = true;
         }
-        Util.storeManifest(manifestFO, em);
+        if (changed) {
+            Util.storeManifest(manifestFO, em);
+        }
     }
     
     // XXX should be something similar provided be EditableManifest?
