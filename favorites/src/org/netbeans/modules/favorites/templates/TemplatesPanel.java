@@ -481,16 +481,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
         
         public Action getPreferredAction () {
-            return getActions () [0];
+            return null;
         }
         
-        public Node getDataFolderNode () {
-            return getOriginal ();
-        }
-        
-        public String getName () {
-            return getOriginal ().getDisplayName ();
-        }
     }
     
     private static class DataFolderFilterChildren extends FilterNode.Children {
