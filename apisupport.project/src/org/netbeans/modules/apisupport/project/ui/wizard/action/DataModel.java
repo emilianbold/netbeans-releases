@@ -145,6 +145,15 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
             }
             replaceTokens.put("@@COOKIE_CLASSES_BLOCK@@", cookieSB.toString()); // NOI18N
+            String impl;
+            if (cookieClasses.length == 1) {
+                String cName = parseClassName(cookieClasses[0]);
+                impl = cName + " c = (" + cName + ") activatedNodes[0].getCookie(" + cName + ".class);\n" // NOI18N
+                        + INDENT_2X + "// TODO use c"; // NOI18N
+            } else {
+                impl = "// TODO implement action body"; // NOI18N
+            }
+            replaceTokens.put("@@PERFORM_ACTION_CODE@@", impl); // NOI18N
         }
         // imports
         imports.addAll(addedFQNCs);

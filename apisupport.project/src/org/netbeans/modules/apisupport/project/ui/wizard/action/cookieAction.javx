@@ -4,7 +4,7 @@ package @@PACKAGE_NAME@@;
 public final class @@CLASS_NAME@@ extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
-        // TODO implement action body
+        @@PERFORM_ACTION_CODE@@
     }
 
     protected int mode() {
