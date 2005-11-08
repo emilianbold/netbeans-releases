@@ -54,12 +54,15 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     final J2eeModuleProvider module;
     boolean loaded = false;
     private Task autoSaveTask;
-    private boolean saveInProgress;
+    private int saveInProgress;
+    private int cleanInProgress;
     private boolean saveFailedDialogDisplayed;
     
     public ConfigurationStorage(J2eeModuleProvider module, SunONEDeploymentConfiguration config) throws ConfigurationException, InvalidModuleException, IOException, SAXException {
         this.module = module;
         this.config = config;
+        this.saveInProgress = 0;
+        this.cleanInProgress = 0;
         
         load(); // calls init(), below.
         createVersionListeners();
@@ -67,10 +70,15 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     
     private void init() throws ConfigurationException, InvalidModuleException, IOException {
         // do the clean up first
-        for (Iterator i = moduleMap.values().iterator(); i.hasNext();) {
-            ((ModuleDDSupport)i.next()).cleanup();
+        try {
+            cleanInProgress++;
+            for (Iterator i = moduleMap.values().iterator(); i.hasNext();) {
+                ((ModuleDDSupport)i.next()).cleanup();
+            }
+            moduleMap.clear();
+        } finally {
+            cleanInProgress--;
         }
-        moduleMap.clear();
         
         // create all MDS/ADS classes here.  MDS's should be GC'ed if the DC changes.
         ModuleDDSupport mds = new ModuleDDSupport(module, config);
@@ -234,8 +242,10 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     }
     
     public void setChanged() {
-        needsSave = true;
-        autoSave();
+        if(cleanInProgress == 0) {
+            needsSave = true;
+            autoSave();
+        }
     }
     
     public void updateDDRoot(FileObject dd) {
@@ -347,7 +357,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     
     public void save() throws IOException {
         try {
-            saveInProgress = true;
+            saveInProgress++;
             
             if(config != null) {
                 config.writeDeploymentPlanFiles(this);
@@ -368,12 +378,12 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                 saveFailedDialogDisplayed = false;
             }
         } finally {
-            saveInProgress = false;
+            saveInProgress--;
         }
     }
     
     public void load() throws IOException, InvalidModuleException, ConfigurationException {
-        if(saveInProgress) { // internal change - do not reload
+        if(saveInProgress > 0) { // internal change - do not reload
             return;
         }
 
