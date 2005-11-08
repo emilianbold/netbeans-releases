@@ -93,7 +93,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//                RegisterPointbase.getDefault().register(rootLocation);
+                RegisterPointbase.getDefault().register(rootLocation);
                 RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
             }
         });
