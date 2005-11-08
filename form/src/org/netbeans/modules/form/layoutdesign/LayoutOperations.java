@@ -308,7 +308,7 @@ class LayoutOperations implements LayoutConstants {
                    && interval.getMaximumSize() < Short.MAX_VALUE) ?
                   size : interval.getMinimumSize();
         int max = interval.getMaximumSize() == interval.getPreferredSize() ?
-                  size : interval.getMaximumSize();
+                  ((size == NOT_EXPLICITLY_DEFINED) ? USE_PREFERRED_SIZE : size) : interval.getMaximumSize();
         layoutModel.setIntervalSize(interval, min, size, max);
     }
 
