@@ -138,19 +138,21 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         this.formEditor = formEditor;
         
-        explorerManager = new ExplorerManager();
+        if (formEditor != null) { // Issue 67879
+            explorerManager = new ExplorerManager();
 
-        // add FormDataObject to lookup so it can be obtained from multiview TopComponent
-        ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
-        FormDataObject formDataObject = formEditor.getFormDataObject();
-        lookup = new FormProxyLookup(new Lookup[] {
-            ExplorerUtils.createLookup(explorerManager, map),
-            Lookups.fixed(new Object[] { formDataObject,  PaletteUtils.getPalette() }),
-            formDataObject.getNodeDelegate().getLookup()
-        });        
-        associateLookup(lookup);
+            // add FormDataObject to lookup so it can be obtained from multiview TopComponent
+            ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
+            FormDataObject formDataObject = formEditor.getFormDataObject();
+            lookup = new FormProxyLookup(new Lookup[] {
+                ExplorerUtils.createLookup(explorerManager, map),
+                Lookups.fixed(new Object[] { formDataObject,  PaletteUtils.getPalette() }),
+                formDataObject.getNodeDelegate().getLookup()
+            });        
+            associateLookup(lookup);
 
-        formToolBar = new FormToolBar(this);
+            formToolBar = new FormToolBar(this);
+        }
     }
     
     void initialize() {
@@ -1445,6 +1447,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentOpened() {
         super.componentOpened();
+        if ((formEditor == null) && (multiViewObserver != null)) { // Issue 67879
+            multiViewObserver.getTopComponent().close();
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    FormEditorSupport.checkFormGroupVisibility();
+                }
+            });
+        }
     }
 
     public CloseOperationState canCloseElement() {

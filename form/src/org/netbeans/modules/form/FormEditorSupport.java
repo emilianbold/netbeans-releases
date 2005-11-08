@@ -22,6 +22,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.java.JavaEditor.SimpleSection;
 
 import org.openide.*;
+import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileSystem;
@@ -542,30 +543,25 @@ public class FormEditorSupport extends JavaEditor
      * to event queue thread if necessary. */
     void updateMVTCDisplayName() {
         if (java.awt.EventQueue.isDispatchThread()) {
-            if (multiviewTC == null)
-                return;
-
-            String title = getMVTCDisplayName(formDataObject);
-            Enumeration en = multiviewTC.getReference().getComponents();
-            while (en.hasMoreElements()) {
-                TopComponent tc = (TopComponent) en.nextElement();
-                tc.setDisplayName(title);
-            }
-        }
-        else {
+            updateMVTCDisplayNameInAWT();
+        } else {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    if ((multiviewTC == null) || (!formDataObject.isValid())) // Issue 67544
-                        return;
-
-                    String title = getMVTCDisplayName(formDataObject);
-                    Enumeration en = multiviewTC.getReference().getComponents();
-                    while (en.hasMoreElements()) {
-                        TopComponent tc = (TopComponent) en.nextElement();
-                        tc.setDisplayName(title);
-                    }
+                    updateMVTCDisplayNameInAWT();
                 }
             });
+        }
+    }
+    
+    private void updateMVTCDisplayNameInAWT() {
+        if ((multiviewTC == null) || (!formDataObject.isValid())) // Issue 67544
+            return;
+
+        String title = getMVTCDisplayName(formDataObject);
+        Enumeration en = multiviewTC.getReference().getComponents();
+        while (en.hasMoreElements()) {
+            TopComponent tc = (TopComponent) en.nextElement();
+            tc.setDisplayName(title);
         }
     }
 
@@ -718,13 +714,8 @@ public class FormEditorSupport extends JavaEditor
         }
 
         public MultiViewElement createElement() {
-            FormDesigner designer = null;
             FormEditorSupport formEditor = getFormEditor();
-            if (formEditor != null) {
-                designer = new FormDesigner(formEditor.getFormEditor(true));
-            }
-
-            return designer == null ? MultiViewFactory.BLANK_ELEMENT : designer;
+            return new FormDesigner((formEditor == null) ? null : formEditor.getFormEditor(true));
         }
 
         public String getDisplayName() {
@@ -912,8 +903,8 @@ public class FormEditorSupport extends JavaEditor
 
         public void componentShowing() {
             super.componentShowing();
-            FormDataObject formDO = (FormDataObject)
-                                        ((DataEditorSupport)cloneableEditorSupport()).getDataObject();
+            DataObject dob = ((DataEditorSupport)cloneableEditorSupport()).getDataObject();
+            FormDataObject formDO = (FormDataObject)dob;
             FormModel model = null;
             if (formDO != null) {
                 FormEditorSupport fe = formDO.getFormEditor();
@@ -934,6 +925,12 @@ public class FormEditorSupport extends JavaEditor
 
         public void componentOpened() {
             super.componentOpened();
+            DataObject dob = ((DataEditorSupport)cloneableEditorSupport()).getDataObject();
+            if ((multiViewObserver != null) && !(dob instanceof FormDataObject)) {
+                multiViewObserver.getTopComponent().close(); // Issue 67879
+                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                ec.open();
+            }
         }
 
         public void updateName() {
