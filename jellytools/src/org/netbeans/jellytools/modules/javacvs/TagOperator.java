@@ -16,6 +16,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.modules.javacvs.actions.TagAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
@@ -29,7 +30,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  *      to.setTagName("mytag");
  *      to.checkAvoidTaggingLocallyModifiedFiles(true);
  *      to.checkMoveExistingTag(true);
- *      to.ok();
+ *      to.tag();
  * </pre>
  *
  * @see org.netbeans.jellytools.modules.javacvs.actions.TagAction
@@ -65,6 +66,8 @@ public class TagOperator extends NbDialogOperator {
     private JCheckBoxOperator _cbAvoidTaggingLocallyModifiedFilesC;
     private JCheckBoxOperator _cbMoveExistingTagF;
     private JTextFieldOperator _txtTagName;
+    private JButtonOperator _btTag;
+    private JButtonOperator _btBrowse;
 
 
     //******************************
@@ -106,7 +109,29 @@ public class TagOperator extends NbDialogOperator {
         return _txtTagName;
     }
 
-
+    
+    /** Returns operator of "Tag" button.
+     * @return  JButtonOperator instance of "Tag" button
+     */
+    public JButtonOperator btTag() {
+        if (_btTag == null) {
+            String tagCaption = Bundle.getString("org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle", "CTL_TagDialog_Action_Tag");
+            _btTag = new JButtonOperator(this, tagCaption);
+        }
+        return _btTag;
+    }
+    
+    
+    /** Returns operator of "Browse" button.
+     * @return  JButtonOperator instance of "Browse" button
+     */
+    public JButtonOperator btBrowse() {
+        if (_btBrowse == null) {
+            String browseCaption = Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle", "CTL_BrowseTag");
+            _btBrowse = new JButtonOperator(this, browseCaption);
+        }
+        return _btBrowse;
+    }
     //****************************************
     // Low-level functionality definition part
     //****************************************
@@ -144,6 +169,15 @@ public class TagOperator extends NbDialogOperator {
         txtTagName().typeText(text);
     }
 
+    /** Pushes "Tag" button. */
+    public void tag() {
+        btTag().push();
+    }
+    
+    /** Pushes "Browse..." button. */
+    public void browse() {
+        btBrowse().pushNoBlock();
+    }
     //*****************************************
     // High-level functionality definition part
     //*****************************************
@@ -154,6 +188,8 @@ public class TagOperator extends NbDialogOperator {
         cbAvoidTaggingLocallyModifiedFiles();
         cbMoveExistingTag();
         txtTagName();
+        btTag();
+        btBrowse();
     }
 }
 
