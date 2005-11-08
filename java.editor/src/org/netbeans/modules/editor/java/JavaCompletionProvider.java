@@ -58,7 +58,7 @@ public class JavaCompletionProvider implements CompletionProvider {
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE)
-            return new AsyncCompletionTask(new Query(), component);
+            return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
         else if (queryType == DOCUMENTATION_QUERY_TYPE)
             return new AsyncCompletionTask(new DocQuery(null), component);
         else if (queryType == TOOLTIP_QUERY_TYPE)
@@ -72,11 +72,29 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private NbJavaJMICompletionQuery.JavaResult queryResult;
         
+        private int creationCaretOffset;
         private int queryCaretOffset;
         
         private int queryAnchorOffset;
         
         private String filterPrefix;
+        
+        Query(int caretOffset) {
+            this.creationCaretOffset = caretOffset;
+        }
+        
+        protected void preQueryUpdate(JTextComponent component) {
+            int caretOffset = component.getCaretPosition();
+            Document doc = component.getDocument();
+            if (caretOffset >= creationCaretOffset) {
+                try {
+                    if (isJavaIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset)))
+                        return;
+                } catch (BadLocationException e) {
+                }
+            }
+            Completion.get().hideCompletion();
+        }        
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             NbJavaJMICompletionQuery query = new NbJavaJMICompletionQuery(true);

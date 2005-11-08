@@ -79,6 +79,57 @@ is the proper place.
 
         <change>
             <api name="completion"/>
+            <summary>Addition of CompletionResultSet.setWaitText()</summary>
+            <version major="1" minor="5"/>
+            <date day="8" month="11" year="2005"/>
+            <author login="mmetelka"/>
+            <compatibility addition="yes"/>
+            <description>
+            <p>
+                <code>void CompletionResultSet.setWaitText(String waitText)</code> was added
+                to allow customization of the text in the label displayed
+                if the completion query results are not computed in certain timeout.
+            </p>
+            </description>
+            <issue number="68235"/>
+        </change>
+
+        <change>
+            <api name="completion"/>
+            <summary>Adddition of CompletionItem.getInsertPrefix()</summary>
+            <version major="1" minor="4"/>
+            <date day="8" month="11" year="2005"/>
+            <author login="mmetelka"/>
+            <compatibility addition="no"/>
+            <description>
+            <p>
+                <code>CharSequence CompletionItem.getInsertPrefix()</code> was added.
+            </p>
+            </description>
+            <issue number="68235"/>
+        </change>
+
+        <change>
+            <api name="completion"/>
+            <summary>Semantic change of CompletionTask.refresh()</summary>
+            <version major="1" minor="3"/>
+            <date day="8" month="11" year="2005"/>
+            <author login="mmetelka"/>
+            <compatibility addition="no"/>
+            <description>
+            <p>
+                CompletionTask.refresh(CompletionResultSet resultSet) now allows
+                <code>null</code> parameter.
+                <br/>
+                <code>void AsyncCompletionQuery.preQueryUpdate(JTextComponent component)</code>
+                was added to reflect that in AsyncCompletionTask.
+            </p>
+            </description>
+            <issue number="68235"/>
+        </change>
+
+        <change>
+            <api name="completion"/>
             <summary>Editor Code Completion API created</summary>
             <version major="1" minor="1"/>
             <date day="27" month="7" year="2005"/>
@@ -91,6 +142,7 @@ is the proper place.
             </description>
             <issue number="59388"/>
         </change>
+
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->

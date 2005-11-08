@@ -52,8 +52,14 @@ public interface CompletionTask {
      * <br>
      * This method can be called multiple times on a single task instance.
      * <br>
+     * Typically it is called AFTER the <code>query()</code> was invoked
+     * but it may also be invoked BEFORE the <code>query()</code> in case
+     * the user types even before the <code>query()</code>
+     * was called by the infrastructure. In such
+     * case the <code>resultSet</code> parameter will be <code>null</code>.
+     * <br>
      * It is guaranteed that this method will not be invoked in case
-     * the document of the component would change since the last invocation
+     * the document instance set in the component would change since the last invocation
      * of either the <code>query()</code> or <code>refresh()</code>.
      *
      * <p>
@@ -63,6 +69,12 @@ public interface CompletionTask {
      * 
      * @param resultSet non-null result set to which the results
      *  of the refreshing must be added.
+     *  <br/>
+     *  Null result set may be passed in case the <code>query()</code>
+     *  was not invoked yet and user has typed a character. In this case
+     *  the provider may hide the completion
+     *  by using <code>Completion.get().hideAll()</code>
+     *  if the typed character is inappropriate e.g. ";" for java completion.
      */
     public void refresh(CompletionResultSet resultSet);
     

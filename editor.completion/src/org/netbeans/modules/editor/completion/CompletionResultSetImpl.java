@@ -235,4 +235,8 @@ public final class CompletionResultSetImpl {
         }
     }
 
+    public void setWaitText(String waitText) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
 }

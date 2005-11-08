@@ -148,7 +148,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         Registry.addChangeListener(this);
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                showCompletion();
+                queryResultSets(completionResult.getResultSets());
+                completionResult.queryInvoked();
             }
         });
         completionAutoPopupTimer.setRepeats(false);
@@ -207,7 +208,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     }
                     if (completionResultNull && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
                             CompletionSettings.INSTANCE.completionAutoPopup()) {
-                        restartCompletionAutoPopupTimer();
+                        showCompletion(false, true);
                     }
 
                     boolean tooltipResultNull;
@@ -448,7 +449,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 	}
     }
     
-    void completionQuery() {
+    void completionQuery(boolean delayQuery) {
         pleaseWaitTimer.restart();
         refreshedQuery = false;
         
@@ -471,8 +472,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
         
         // Query the tasks
-        queryResultSets(completionResultSets);
-        newCompletionResult.queryInvoked();
+        if (delayQuery) {
+            restartCompletionAutoPopupTimer();
+        } else {
+            queryResultSets(completionResultSets);
+            newCompletionResult.queryInvoked();
+        }
     }
 
     /**
@@ -510,10 +515,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
      * May be called from any thread but it will be rescheduled into AWT.
      */
     public void showCompletion() {
-        showCompletion(false);
+        showCompletion(false, false);
     }
     
-    private void showCompletion(boolean explicitQuery) {
+    private void showCompletion(boolean explicitQuery, boolean delayQuery) {
         if (!SwingUtilities.isEventDispatchThread()) {
             // Re-call this method in AWT if necessary
             SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION));
@@ -523,7 +528,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         this.explicitQuery = explicitQuery;
         if (activeProviders != null) {
             completionCancel(); // cancel possibly pending query
-            completionQuery();
+            completionQuery(delayQuery);
         }
     }
 
@@ -1042,7 +1047,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
     private final class CompletionShowAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            showCompletion(true);
+            showCompletion(true, false);
         }
     }
 
@@ -1125,11 +1130,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
     }
     
-    private static void refreshResultSets(List resultSets) {
+    private static void refreshResultSets(List resultSets, boolean beforeQuery) {
         int size = resultSets.size();
         for (int i = 0; i < size; i++) {
             CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
-            result.getTask().refresh(result.getResultSet());
+            result.getTask().refresh(beforeQuery ? null : result.getResultSet());
         }
     }
     
@@ -1171,9 +1176,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         
         private final List/*<CompletionResultSetImpl>*/ resultSets;
         
-        private boolean invoked;
-        
+        private boolean invoked;                
         private boolean cancelled;
+        private boolean beforeQuery = true;
         
         Result(int resultSetsSize) {
             resultSets = new ArrayList(resultSetsSize);
@@ -1221,6 +1226,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 assert (!invoked);
                 invoked = true;
                 canc = cancelled;
+                beforeQuery = false;
             }
             if (canc) {
                 cancelResultSets(resultSets);
@@ -1237,10 +1243,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 if (cancelled) {
                     return null;
                 }
+                if (beforeQuery) {
+                    return this;
+                }
                 assert (invoked); // had to be invoked
                 invoked = false;
             }
             Result refreshResult = new Result(getResultSets().size());
+            refreshResult.beforeQuery = beforeQuery;
             createRefreshResultSets(resultSets, refreshResult);
             return refreshResult;
         }
@@ -1251,8 +1261,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
          * {@link #createRefreshResult()}.
          */
         void invokeRefresh() {
-            refreshResultSets(getResultSets());
-            queryInvoked();
+            refreshResultSets(getResultSets(), beforeQuery);
+            if (!beforeQuery)
+                queryInvoked();
         }
 
     }

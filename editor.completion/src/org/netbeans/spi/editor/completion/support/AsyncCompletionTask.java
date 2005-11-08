@@ -51,6 +51,9 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
     
     /** Whether this task is cancelled. */
     private boolean cancelled;
+
+    /** Whether query was already invoked on this task. */    
+    private boolean queryInvoked;
     
     /**
      * Construct asynchronous task for the given component.
@@ -89,6 +92,7 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
         } else {
             doc = null;
         }
+        queryInvoked = true;
 
         synchronized (this) {
             performQuery(resultSet);
@@ -103,11 +107,15 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
      * The results should be fired into the newly provided completion listener.
      */
     public void refresh(CompletionResultSet resultSet) {
-        assert (resultSet != null);
         assert (SwingUtilities.isEventDispatchThread());
         assert !cancelled : "refresh() called on canceled task"; // NOI18N
-        refreshResultSet = resultSet;
-        refreshImpl();
+        if (queryInvoked) {
+            assert (resultSet != null);
+            refreshResultSet = resultSet;
+            refreshImpl();
+        } else {
+            query.preQueryUpdate(component);
+        }
     }
 
     /**

@@ -120,6 +120,31 @@ public interface CompletionItem {
     /**
      * Returns a text used to sort items alphabetically.
      */
-    CharSequence getSortText();        
+    CharSequence getSortText();
+
+    /**
+     * Returns a text used for finding of a longest common prefix
+     * after the <i>TAB</i> gets pressed or when the completion is opened explicitly.
+     * <br>
+     * The completion infrastructure will evaluate the insert prefixes
+     * of all the items present in the visible result and finds the longest
+     * common prefix.
+     *
+     * <p>
+     * Generally the returned text does not need to contain all the information
+     * that gets inserted when the item is selected.
+     * <br>
+     * For example in java completion the field name should be returned for fields
+     * or a method name for methods (but not parameters)
+     * or a non-FQN name for classes.
+     *
+     * @return non-null character sequence containing the insert prefix.
+     *  <br>
+     *  Returning an empty string will effectively disable the TAB completion
+     *  as the longest common prefix will be empty.
+     *
+     * @since 1.4
+     */
+    CharSequence getInsertPrefix();
 
 }

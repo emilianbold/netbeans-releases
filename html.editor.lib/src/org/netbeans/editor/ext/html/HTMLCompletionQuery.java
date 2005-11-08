@@ -457,6 +457,10 @@ else System.err.println( "Inside token " + item.getTokenID() );
             return HTMLResultItem.this.getItemText();
         }
         
+        public CharSequence getInsertPrefix() {
+            return getItemText();
+        }
+        
         public Component getPaintComponent(boolean isSelected) {
             //TODO: the paint component should be caches somehow
             HTMLCompletionResultItemPaintComponent component = new HTMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());

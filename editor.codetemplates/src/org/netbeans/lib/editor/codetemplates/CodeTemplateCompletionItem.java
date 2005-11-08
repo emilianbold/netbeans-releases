@@ -176,6 +176,15 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         return "";
     }
 
+    public CharSequence getInsertPrefix() {
+        String insertPrefix = codeTemplate.getParametrizedText();
+        int dollarIndex = insertPrefix.indexOf("${");
+        if (dollarIndex >= 0) {
+            insertPrefix = insertPrefix.substring(0, dollarIndex);
+        }
+        return insertPrefix;
+    }
+
     private static final class DocQuery extends AsyncCompletionQuery {
         
         private CodeTemplate codeTemplate;

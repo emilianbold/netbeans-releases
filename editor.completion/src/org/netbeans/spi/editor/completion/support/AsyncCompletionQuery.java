@@ -34,6 +34,22 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 public abstract class AsyncCompletionQuery {
     
     private AsyncCompletionTask task;
+
+    /**
+     * Called in response to <code>CompletionTask.refresh(null)</code>.
+     * <br/>
+     * The method gets invoked once the the user types a character
+     * but the <code>CompletionTask.query()</code> was not yet invoked.
+     * <br/>
+     * The method may want to inspect the typed character before the caret
+     * position and decide whether the completion should be hidden
+     * if the typed character is inappropriate e.g. ";" for java completion.
+     *
+     * @since 1.3
+     */
+    protected void preQueryUpdate(JTextComponent component) {        
+        // Always done in AWT thread - by default do nothing
+    }
     
     /**
      * Perform the query and add results to the given result set.

@@ -202,6 +202,25 @@ public final class CompletionResultSet {
     public int getSortType() {
         return impl.getSortType();
     }
+    
+    /**
+     * Set the explicit value displayed in a label when the completion results
+     * do not get computed during a certain timeout (e.g. 250ms).
+     * <br>
+     * If not set explicitly the completion infrastructure will use
+     * the default text.
+     *
+     * @param waitText description of what the query copmutation
+     *  is currently (doing or waiting for).
+     *  <br>
+     *  After previous explicit setting <code>null</code> can be passed
+     *  to restore using of the default text.
+     *  
+     * @since 1.5
+     */
+    public void setWaitText(String waitText) {
+        impl.setWaitText(waitText);
+    }
 
     
     private static final class SpiAccessor extends CompletionSpiPackageAccessor {

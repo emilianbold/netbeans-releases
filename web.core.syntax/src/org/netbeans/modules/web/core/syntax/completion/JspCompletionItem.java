@@ -76,6 +76,10 @@ public class JspCompletionItem {
             return DEFAULT_SORT_PRIORITY;
         }
         
+        public CharSequence getInsertPrefix() {
+            return getItemText();
+        }
+        
         public Component getPaintComponent(boolean isSelected) {
             if (component == null) {
                 component = new ResultItemPaintComponent.StringPaintComponent();
