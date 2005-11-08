@@ -24,6 +24,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -36,6 +37,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -78,7 +80,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         setComponentsVisibility();
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             detachModuleTypeGroup();
-            locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
+            locationValue.setText(getSuiteLocation());
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
@@ -308,6 +310,34 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private boolean isNetBeansOrgFolder() {
         return ModuleList.findNetBeansOrg(getFolder()) != null;
+    }
+    
+    /**
+     * Returns a directory which is not a suite or suite-componet project directory.
+     */
+    private static String getSuiteLocation() {
+        String location = ModuleUISettings.getDefault().getLastUsedModuleLocation();
+        FileObject locationFO = FileUtil.toFileObject(new File(location));
+        while (locationFO != null) {
+            Project maybeSuite;
+            try {
+                maybeSuite = ProjectManager.getDefault().findProject(locationFO);
+            } catch (IOException e) {
+                Util.err.notify(e);
+                break;
+            }
+            if (maybeSuite == null) {
+                location = FileUtil.toFile(locationFO).getAbsolutePath();
+                break;
+            }
+            SuiteProvider sp = (SuiteProvider) maybeSuite.getLookup().lookup(SuiteProvider.class);
+            if (sp == null || sp.getSuiteDirectory() == null) {
+                location = FileUtil.toFile(locationFO).getAbsolutePath();
+                break;
+            }
+            locationFO = locationFO.getParent();
+        }
+        return location;
     }
     
     private static String getMessage(String key) {
