@@ -38,7 +38,7 @@ public class Util {
         List/*<PathResourceImplementation>*/ list = new ArrayList();
         while (tokenizer.hasMoreTokens()) {
             String item = tokenizer.nextToken();
-            File f = FileUtil.normalizeFile(new File(item));
+            File f = FileUtil.normalizeFile(new File(item));            
             URL url = getRootURL (f);
             if (url!=null) {
                 list.add(ClassPathSupport.createResource(url));
@@ -141,7 +141,11 @@ public class Util {
                             MessageFormat.format (NbBundle.getMessage(Util.class,"MSG_BrokenExtension"),
                             new Object[] {f,extFolder}));
                         continue;
-                    }                    
+                    }
+                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC && "._.DS_Store".equals(f.getName())) {  //NOI18N
+                        //Ignore Apple temporary ._.DS_Store files in the lib/ext folder
+                        continue;
+                    }
                     FileObject fo = FileUtil.toFileObject(f);
                     assert fo != null : "Must have defined a FileObject for existent file " + f;
                     if (!FileUtil.isArchiveFile(fo)) {

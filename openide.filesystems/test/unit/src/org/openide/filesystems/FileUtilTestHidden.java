@@ -15,6 +15,7 @@ package org.openide.filesystems;
 
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import org.openide.util.Utilities;
@@ -105,6 +106,23 @@ public class FileUtilTestHidden extends TestBaseHid {
         File testFile = FileUtil.toFile(testFo);
         assertNotNull(testFile);
         assertTrue(testFile.exists());
+    }
+    
+    
+    public void testIsArchiveFile () throws Exception {
+        final String base = getWorkDir().toURI().toURL().toExternalForm();
+        URL url = new URL (base + "test.jar");    //NOI18N
+        assertTrue ("test.jar has to be an archive",FileUtil.isArchiveFile (url));  //NOI18N
+        url = new URL (base + ".hidden.jar");   //NOI18N
+        assertTrue (FileUtil.isArchiveFile (url));  //NOI18N
+        url = new URL (base + "folder");    //NOI18N
+        assertFalse ("folder cannot to be an archive", FileUtil.isArchiveFile (url));   //NOI18N
+        url = new URL (base + "folder/");    //NOI18N
+        assertFalse ("folder cannot to be an archive", FileUtil.isArchiveFile (url));   //NOI18N
+        url = new URL (base + ".hidden");   //NOI18N
+        assertFalse (".hidden cannot to be an archive", FileUtil.isArchiveFile (url));  //NOI18N
+        url = new URL (base + ".hidden/");   //NOI18N
+        assertFalse (".hidden cannot to be an archive", FileUtil.isArchiveFile (url));  //NOI18N
     }
 
 

@@ -1308,7 +1308,7 @@ public final class FileUtil extends Object {
             String path = fo.getPath();
             int index = path.lastIndexOf('.');
 
-            return (index != -1) && (index > path.lastIndexOf('/'));
+            return (index != -1) && (index > path.lastIndexOf('/') + 1);
         }
 
         if (fo.isFolder()) {
@@ -1347,7 +1347,7 @@ public final class FileUtil extends Object {
             if (b == null) {
                 String path = fo.getPath();
                 int index = path.lastIndexOf('.');
-                b = ((index != -1) && (index > path.lastIndexOf('/'))) ? Boolean.TRUE : Boolean.FALSE;
+                b = ((index != -1) && (index > path.lastIndexOf('/') + 1)) ? Boolean.TRUE : Boolean.FALSE;
             }
 
             archiveFileCache.put(fo, b);
@@ -1383,7 +1383,7 @@ public final class FileUtil extends Object {
             String urlPath = url.getPath();
             int index = urlPath.lastIndexOf('.');
 
-            return (index != -1) && (index > urlPath.lastIndexOf('/'));
+            return (index != -1) && (index > urlPath.lastIndexOf('/') + 1);
         }
     }
 
