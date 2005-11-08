@@ -85,9 +85,7 @@ public class LayoutDesigner implements LayoutConstants {
                 while (it.hasNext()) {
                     LayoutComponent cont = (LayoutComponent) it.next();
                     visualMapper.rebuildLayout(cont.getId());
-                    // [would be nice to relayout everything separately afrer rebuilt,
-                    //  now rebuild does bot for each container - but likely not
-                    //  a problem as there should be no visual difference]
+                    updatePositions(updatedContainers);
                 }
             }
         }
