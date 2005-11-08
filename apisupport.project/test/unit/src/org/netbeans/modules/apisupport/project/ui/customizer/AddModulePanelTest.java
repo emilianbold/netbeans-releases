@@ -45,12 +45,7 @@ public class AddModulePanelTest extends TestBase {
             }
         });
         while (amp == null || !amp.filterValue.isEnabled()) {
-            try {
-                Thread.sleep(400);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-                fail();
-            }
+            Thread.sleep(400);
         }
         int all = amp.moduleList.getModel().getSize();
         SwingUtilities.invokeAndWait(new Runnable() {
@@ -64,14 +59,9 @@ public class AddModulePanelTest extends TestBase {
                 amp.filterValue.setText("org.op");
             }
         });
-        int sleepingTime = 0;
         // wait until filter is applied
         while (amp.moduleList.getModel() == CustomizerComponentFactory.LIST_WAIT_MODEL) {
             Thread.sleep(200);
-            sleepingTime += 200;
-            if (sleepingTime > 60000) {
-                fail("Filter wasn't applied in 60s.");
-            }
         }
         ListModel model = amp.moduleList.getModel();
         int filtered = model.getSize();
