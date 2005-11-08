@@ -362,7 +362,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 try {
                     result = SunCmpMappings.createGraph(stream);
                 } catch(Exception ex) {
-                    throw new IllegalStateException("Examine wrapped exception...", ex);
+                    throw new IllegalStateException("Examine wrapped exception...");
                 }
             } else {
                 // If we have a null stream, return a blank graph.
