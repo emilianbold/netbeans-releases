@@ -17,25 +17,16 @@
 
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
-import java.net.Authenticator;
 import java.util.ResourceBundle;
-import java.util.Properties;
-import java.util.List;
-import java.util.Enumeration;
-import java.io.File;
-import java.io.FileInputStream;
-import org.netbeans.modules.j2ee.sun.api.SunURIManager;
-
-import org.openide.*;
-import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-
-import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
-//nb5  org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+
+
 
 /** Global password protected sites Authenticator for IDE
  *
@@ -43,6 +34,11 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
  */
 
 public class AdminAuthenticator extends java.net.Authenticator {
+    private static SunDeploymentManagerInterface preferredSunDeploymentManagerInterface=null;
+    
+    public static void setPreferredSunDeploymentManagerInterface(SunDeploymentManagerInterface dm) {
+        preferredSunDeploymentManagerInterface=dm ;
+    }
 
     protected java.net.PasswordAuthentication getPasswordAuthentication() {
         String user="admin";
@@ -53,19 +49,19 @@ public class AdminAuthenticator extends java.net.Authenticator {
         String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
         String title = getRequestingPrompt();
         InstanceProperties ip = null;
-        String keyURI=SunURIManager.SUNSERVERSURI+site.getHostName()+":"+getRequestingPort();
-        ip= InstanceProperties.getInstanceProperties(keyURI);
-        if (ip==null){
-            String list[] = InstanceProperties.getInstanceList();
-            for (int i=0;i<list.length;i++){
-                if(list[i].endsWith(keyURI)){
-                    ip= InstanceProperties.getInstanceProperties(list[i]);
-               }
-            }
+        String keyURI;
+        if (preferredSunDeploymentManagerInterface!=null){
+            ip =SunURIManager.getInstanceProperties(
+                    preferredSunDeploymentManagerInterface.getPlatformRoot(),
+                    preferredSunDeploymentManagerInterface.getHost(),
+                    preferredSunDeploymentManagerInterface.getPort());
+        } else {
+            keyURI=SunURIManager.SUNSERVERSURI+site.getHostName()+":"+getRequestingPort();
+            ip= InstanceProperties.getInstanceProperties(keyURI);
+
         }
-        
         if (ip!=null){
-            title = bundle.getString( "LBL_AdminAuthenticatorTitle");
+            title =ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         }
         
         
@@ -83,6 +79,10 @@ public class AdminAuthenticator extends java.net.Authenticator {
                 String oldpass = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
                 ip.setProperty(InstanceProperties.USERNAME_ATTR, passwordPanel.getUsername());
                 ip.setProperty(InstanceProperties.PASSWORD_ATTR, passwordPanel.getTPassword());
+                if (preferredSunDeploymentManagerInterface!=null){
+                    preferredSunDeploymentManagerInterface.setUserName(passwordPanel.getUsername());
+                    preferredSunDeploymentManagerInterface.setPassword(passwordPanel.getTPassword());
+                }
                 ip.refreshServerInstance();
                 
                 if ("".equals(oldpass)){
@@ -96,6 +96,8 @@ public class AdminAuthenticator extends java.net.Authenticator {
             return null;
         }
     }
+    
+    
     
     /** Inner class for JPanel with Username & Password fields */
     

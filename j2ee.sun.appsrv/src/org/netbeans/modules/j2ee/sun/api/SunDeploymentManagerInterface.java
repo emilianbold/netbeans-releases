@@ -32,6 +32,12 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     /* return the user password used for this deploymment manager*/
     String getPassword();
     
+    /* set the user name used for this deploymment manager*/
+    void setUserName(String name);
+    
+    /* set the user password used for this deploymment manager*/
+    void  setPassword(String pw);
+    
     /* return the hostname name used for this deploymment manager*/
     String getHost();
     

@@ -38,6 +38,7 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
@@ -186,10 +187,14 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
 
     }
     public String getUserName() {
+        InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber);
+        this.userName = props.getProperty(InstanceProperties.USERNAME_ATTR);
         return userName;
     }
     
     public String getPassword() {
+        InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber);        
+        this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
         return password;
     }
     
@@ -465,22 +470,45 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             retVal[0] = new FakeTarget();
             return retVal;
         }
-        else {
-            ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-                retVal = innerDM.getTargets();
-            }
-            catch (IllegalStateException ise) {
-                return new Target[0];
-                //	throw ise;
-            }
-            finally{
-                Thread.currentThread().setContextClassLoader(origClassLoader);
+        if (isLocal()){// if the server is local, make sure we are talking to the correct one
+            //we do that by testing the server location known by the IDE with the server location known by the
+            // server
+            try{
+                AdminAuthenticator.setPreferredSunDeploymentManagerInterface(this);
+                Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
+                if (configDir==null){
+                    
+                    return null;
+                }
+                String dir = configDir.toString();
+                File domainLocationAsReturnedByTheServer = new File(dir).getParentFile().getParentFile();
                 
+                String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
+                DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
+                String domainDir =  dmProps.getLocation();
+                domainDir = new File(domainDir).getCanonicalPath();
+
+                if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
+                    
+                    return null;
+                }
+            } catch (Throwable  ee) {
+                ee.printStackTrace();
             }
-            return retVal;
         }
+        ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
+            retVal = innerDM.getTargets();
+        } catch (IllegalStateException ise) {
+            return new Target[0];
+            //	throw ise;
+        } finally{
+            Thread.currentThread().setContextClassLoader(origClassLoader);
+            
+        }
+        return retVal;
+
         
     }
     
@@ -714,6 +742,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
       * This boosts IDE reactivity
       */
     public boolean isRunning(boolean forced) {
+
         if (isSuspended())
         return true;
         long current=System.currentTimeMillis();
@@ -934,6 +963,18 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private ClassLoader getExtendedClassLoader(){
 	
 	return ServerLocationManager.getNetBeansAndServerClassLoader(getPlatformRoot());	
+    }
+
+    public void setUserName(String name) {
+        mmm = null;
+        userName = name;
+    }
+
+    public void setPassword(String pw) {
+        mmm= null;
+        password = pw;
+        refreshDeploymentManager();
+        
     }
     
     // VBK hack target objects to support configuration prototyping in
