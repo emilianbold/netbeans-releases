@@ -35,14 +35,15 @@ public class CompletionJList extends JList {
     private final RenderComponent renderComponent;
     
     private Graphics cellPreferredSizeGraphics;
-    
+
+    private int fixedItemHeight;
     private int maxVisibleRowCount;
     
     public CompletionJList(int maxVisibleRowCount, MouseListener mouseListener) {
         this.maxVisibleRowCount = maxVisibleRowCount;
         addMouseListener(mouseListener);
         setLayoutOrientation(JList.VERTICAL);
-        setFixedCellHeight(CompletionLayout.COMPLETION_ITEM_HEIGHT);
+        setFixedCellHeight(fixedItemHeight = Math.max(CompletionLayout.COMPLETION_ITEM_HEIGHT, getFontMetrics(getFont()).getHeight()));
         setModel(new Model(Collections.EMPTY_LIST));
 
         renderComponent = new RenderComponent();
@@ -241,7 +242,7 @@ public class CompletionJList extends JList {
                 assert (cellPreferredSizeGraphics != null);
             }
             return new Dimension(item.getPreferredWidth(cellPreferredSizeGraphics, getFont()),
-                    CompletionLayout.COMPLETION_ITEM_HEIGHT);
+                    fixedItemHeight);
         }
 
     }
