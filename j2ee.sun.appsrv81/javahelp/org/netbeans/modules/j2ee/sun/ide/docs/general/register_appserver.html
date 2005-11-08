@@ -37,43 +37,46 @@ Microsystems, Inc. All Rights Reserved.
                 <li>Alternatively, right-click the Servers node in the Runtime window and choose 
                 Add Server. </li>
             </ul></li>
-            <li>Select the Sun Java System Application Server 8.1 from the drop-down list.</li>
+            <li>Select the Sun Java System Application Server from the drop-down list.</li>
             <li>Enter a name for the server instance. This name is used to identify the server in the IDE.</li>
             <li>Click Next.</li>
-            <li>Supply the installation location of the Sun Java System Application Server 8.1 and click Next. 
-            You only need to specify the location the first time you register an instance of the server. 
-            This step in the wizard is skipped when you register additional instances of the server.</li>
-            <li>Enter the location (host:port) or select one from the drop-down list.</li>
-            <li>Specify the Domains Folder and Instance Name, if necessary.</li>
-            <li>(optional) Enter the username and password.</li>
-            <li>Click Finish to return to the Server Manager dialog box.</li>
-            <li>Click Close.</li>
-        </ol>
-        <ul class="note">
-            <li>If you do not enter the username and password when you register the server, 
-            when the server starts a dialog box appears asking for the username and password.</li>
-        </ul>
+            <li>Supply the directory path of the Sun Java System Application Server. 
+            <!--You only need to specify the location the first time you register an instance of the server. 
+            This step in the wizard is skipped when you register additional instances of the server.--></li>
+            <li>Select the type of domain you are registering and click Next.</li>
+            <!--<li>Enter the location (host:port) or select one from the drop-down list.</li>-->
+            <li>Specify the location of the Domain Directory you want to register.
+                <ul class="note"><li>If you selected Register remote domain, you need to specify the host and port used to communicate with the remote domain.</li></ul>
+            </li>
+            <li>Click Finish to complete the Add Server Instance wizard. 
+            Alternatively, click Next if you want to enter the username and password for the domain.</li>
+            <ul class="note">
+                <li>If you do not enter the username and password when you register the server, 
+                you are prompted to supply the the username and password when the server starts.</li>
+            </ul>
+            <li>Click Close in the Server Manager dialog box.</li>
+        </ol>  
         <p>Once a server instance is registered with the IDE, its node is visible in the Runtime 
         window under the Servers node. 
         You can perform the following tasks by right-clicking 
         the server instance node and choosing from the pop-up menu:</p> 
         <ul>
             <li>Start and stop the server instance</li>
-            <li>Remove the instance of the Java System Application Server</li> 
-            <li>Open the Java System Application Server admin console</li> 
+            <li>Remove the instance of the Sun Java System Application Server</li> 
+            <li>Open the Sun Java System Application Server admin console in a browser</li> 
             <li>View the server log file</li> 
-            <li>View the Java System Application Server properties</li>
+            <li>View the Sun Java System Application Server properties</li>
         </ul>
         <p><b>To remove an instance of the Java System Application Server:</b></p>
         <ol>
             <li>Choose Tools &gt; Server Manager.</li>
-            <li>In the Server Manager, select the Java System Application Server from the list of servers in the left pane.</li>
+            <li>In the Server Manager dialog box, select the Sun Java System Application Server from the list of servers in the left pane.</li>
             <li>Click Remove.</li>
             <li>Click Close.</li>
         </ol>
         <ul class="note">
             <li>
-                Alternatively, right-click the server instance in the Runtime window and 
+                Alternatively, in the Runtime window right-click the server instance you want to remove and 
                 choose Remove from the pop-up menu.
             </li>
         </ul>

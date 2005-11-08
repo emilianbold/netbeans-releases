@@ -5,31 +5,49 @@
     <head>
 
         <!--
-                Sun Public License Notice
+        Sun Public License Notice
 
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
+        The contents of this file are subject to the Sun Public License
+        Version 1.0 (the "License"). You may not use this file except in
+        compliance with the License. A copy of the License is available at
+        http://www.sun.com/
 
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
-Microsystems, Inc. All Rights Reserved.
-    -->
+        The Original Code is NetBeans. The Initial Developer of the Original
+        Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+        Microsystems, Inc. All Rights Reserved.
+        -->
 
-        <title>Add Server Instance Wizard: Enter Registration Properties of an Application Server Instance</title>
+        <title>Add Server Instance Wizard: Enter Platform Directory Path</title>
 
         <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
     </head>
 
     <body>
 
-        <h2>Add Server Instance Wizard: Enter Registration Properties of an Application Server Instance</h2>
+        <h2>Add Server Instance Wizard: Enter Platform Directory Path</h2>
         <p><small><a href="#seealso">See Also</a></small></p> 
-        <p>You see this page of the Add Server Instance wizard when you are registering an instance of the 
-        Sun Java System Application Server with the IDE. Use this wizard to register the properties of a local, user-defined, or remote
-        application server instance.</p>
-        
+        <p>You see this page of the Add Server Instance wizard when you are registering an instance of the Sun Java System Application Server with the IDE.
+        Use this wizard to register a server instance by specifying the properties of a local or remote domain.</p>
+        <p>Use this page to specify the following information about the location of the Sun Java System Application Server and the type of domain you are registering.</p>
+        <ul>
+            <li><b>Platform directory path.</b> Supply the path to the local installation of the Sun Java Application Server.
+            Click Browse to navigate to the location.</li>
+            <li><b>Type of domain.</b> Select the type of domain to register.
+                <ul>
+                    <li><b>Register local default domain.</b> Select this type to register the default domain directory that was created when you installed the Sun Java System Application Server.
+                    If you select this type, the IDE searches for an accessible domain in the default domain location according to the platform directory path you specified. </li>
+                    <li><b>Register local domain.</b> Select this type to register a local domain other than the default domain.
+                    If you select this type, you need to specify the location of the local domain.</li>
+                    <li><b>Register remote domain.</b> Select this type to register a remote domain. 
+                    If you select this type, you need to supply the host and communication port for the remote domain.</li>
+                    <li><b>Create personal domain.</b> Select this type to create a new domain.
+                    If you select this type, you need to specify where to create the new domain.</li>
+                    Choosing this type enables you to set properties for the new domain.</li>
+                </ul>
+            </li>
+        </ul>
+        <p>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</p>
+        <!--
         <p>When registering an instance of the Sun Java System Application Server, you need to supply the following information:</p>
         <ul>
             <li><b>Location (host:port).</b> (required) This is the host name or IP and the admin port. 
@@ -66,14 +84,16 @@ Microsystems, Inc. All Rights Reserved.
                 or create a new server instance by specifying an accessible Domains Folder and an Instance Name for the new server instance. </li>
             </ul></li>
         </ul>
+        
+        -->
         <p>After supplying the information, click the
         Next button to <a href="RegServ_Create.html">enter the port properties</a> for the new domain.</p>
         
 
         <dl>
-                <dt><a name="seealso">See Also</a></dt>
-                <dd>    <a href="../general/register_appserver.html">Registering a Sun Java System Application Server Instance</a></dd>
-                <dd>    <a href="../general/working_withSJS.html">Working with the Sun Java System Application Server</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd>    <a href="../general/register_appserver.html">Registering a Sun Java System Application Server Instance</a></dd>
+            <dd>    <a href="../general/working_withSJS.html">Working with the Sun Java System Application Server</a></dd>
         </dl>
         <hr>
 
