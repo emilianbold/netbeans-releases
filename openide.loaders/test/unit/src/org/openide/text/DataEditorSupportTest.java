@@ -155,6 +155,18 @@ public class DataEditorSupportTest extends NbTestCase {
         doGetOpenedPanesWorksAfterDeserialization (1024 * 1024 * 10);
     }
     
+    public void test68015 () throws Exception {
+        DES edSupport = support();
+        edSupport.open();
+        
+        waitEQ();
+        
+        edSupport.desEnv().markModified();
+        
+        assertTrue(edSupport.messageName().indexOf('*') != -1);
+        assertTrue(edSupport.messageHtmlName().indexOf('*') != -1);
+    }
+    
     private void doGetOpenedPanesWorksAfterDeserialization (int size) throws Exception {
         support().open ();
         
@@ -417,8 +429,21 @@ public class DataEditorSupportTest extends NbTestCase {
             return new DES (this, new MyEnv (this)); 
         }
         
+        protected Node createNodeDelegate() {
+            return new MyNode(this, Children.LEAF); 
+        }
+    }
+
+    /* Node which always returns non-null getHtmlDisplayName */
+    public static final class MyNode extends DataNode {
         
+        public MyNode (DataObject obj, Children ch) {
+            super(obj, ch);
+        }
         
+        public String getHtmlDisplayName() {
+            return "<b>" + getDisplayName() + "</b>";
+        }
     }
     
 }
