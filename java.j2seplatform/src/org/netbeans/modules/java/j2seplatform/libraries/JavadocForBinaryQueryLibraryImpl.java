@@ -182,6 +182,24 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         }
         return "file".equals(url.getProtocol());    //NOI18N
     }
+    
+    
+    
+    /**
+     * Tests if the query accepts the root as valid JavadocRoot,
+     * the query accepts the JavaDoc root, if it can find the index-files
+     * or index-all.html in the root.
+     * @param rootURL the javadoc root
+     * @return true if the root is a valid Javadoc root
+     */
+    static boolean isValidLibraryJavadocRoot (final URL rootURL) {
+        assert rootURL != null && rootURL.toExternalForm().endsWith("/");
+        final FileObject root = URLMapper.findFileObject(rootURL);
+        if (root == null) {
+            return false;
+        }
+        return findIndexFolder (root,1) != null;        
+    }
 
     /**
      * Search for the actual root of the Javadoc containing the index-all.html or 

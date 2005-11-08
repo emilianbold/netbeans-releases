@@ -52,17 +52,7 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
         return this.content.get (index);
     }
 
-    public void addResource (URL resource) {
-        if (FileUtil.isArchiveFile(resource)) {
-            resource = FileUtil.getArchiveRoot(resource);
-        }
-        else if (!resource.toExternalForm().endsWith("/")){
-            try {
-                resource = new URL (resource.toExternalForm()+"/");
-            } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify(mue);
-            }
-        }
+    public void addResource (URL resource) {        
         this.content.add (resource);
         int index = this.content.size()-1;
         this.impl.setContent (this.volumeType, content);

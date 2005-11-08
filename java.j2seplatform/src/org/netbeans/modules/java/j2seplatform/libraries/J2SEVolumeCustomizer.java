@@ -29,7 +29,10 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -323,7 +326,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     addFiles (chooser.getSelectedFiles());
                 }
                 else {
-                    addFiles (new File[] {chooser.getSelectedFile()});
+                    final File selectedFile = chooser.getSelectedFile();                    
+                    addFiles (new File[] {selectedFile});
                 }
             } catch (MalformedURLException mue) {
                 ErrorManager.getDefault().notify(mue);
@@ -367,6 +371,23 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 }
             }
             URL url = f.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
+            else if (!url.toExternalForm().endsWith("/")){
+                try {
+                    url = new URL (url.toExternalForm()+"/");
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify(mue);
+                }
+            }
+            if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)
+                && !JavadocForBinaryQueryLibraryImpl.isValidLibraryJavadocRoot (url)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()),
+                    NotifyDescriptor.ERROR_MESSAGE));
+                continue;
+            }
             this.model.addResource(url);
         }        
         int lastIndex = this.model.getSize()-1;
@@ -391,7 +412,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         else {
             throw new IllegalArgumentException();
         }
-    }
+    }        
     
     
     private static class SimpleFileFilter extends FileFilter {
