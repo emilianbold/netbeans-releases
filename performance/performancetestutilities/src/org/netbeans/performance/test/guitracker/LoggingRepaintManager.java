@@ -127,6 +127,7 @@ public class LoggingRepaintManager extends RepaintManager {
                 hasDirtyMatches = true;
             }
         }
+//System.out.println(log);        
         super.addDirtyRegion(c, x, y, w, h);
     }
     
@@ -164,9 +165,11 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public void paintDirtyRegions() {
         super.paintDirtyRegions();
+//System.out.println("Done superpaint ("+tr+","+hasDirtyMatches+").");        
         if (tr != null && hasDirtyMatches) {
             lastPaint = System.currentTimeMillis();
             tr.add(tr.TRACK_PAINT, "Done painting");
+//System.out.println("Done painting.");
             hasDirtyMatches = false;
         }
     }

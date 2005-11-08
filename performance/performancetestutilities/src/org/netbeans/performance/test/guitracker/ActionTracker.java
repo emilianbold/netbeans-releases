@@ -390,19 +390,19 @@ public class ActionTracker {
                       add(id == ComponentEvent.COMPONENT_HIDDEN
                         ? ActionTracker.TRACK_FRAME_HIDE
                         : ActionTracker.TRACK_FRAME_SHOW,
-                        ce.paramString());
+                        ce.paramString() + " " + c.getClass().getName());
                  }
                  else if (c instanceof Dialog || c instanceof JDialog) {
                       add(id == ComponentEvent.COMPONENT_HIDDEN
                         ? ActionTracker.TRACK_DIALOG_HIDE
                         : ActionTracker.TRACK_DIALOG_SHOW,
-                        ce.paramString());
+                        ce.paramString() + " " + c.getClass().getName());
                  }
                  else if (c instanceof Window || c instanceof JWindow) {
                       add(id == ComponentEvent.COMPONENT_HIDDEN
                         ? ActionTracker.TRACK_COMPONENT_HIDE
                         : ActionTracker.TRACK_COMPONENT_SHOW,
-                        ce.paramString());
+                        ce.paramString() + " " + c.getClass().getName());
                  }
             }
         }
@@ -529,15 +529,24 @@ public class ActionTracker {
             evlistElement.setAttribute(ATTR_START, Long.toString(evlist.getStartMillis()));
             evlistElement.setAttribute(ATTR_NAME, evlist.getName());
             ListIterator liEvents = evlist.listIterator();
+            
+            //don't log repeated events
+            Tuple previous = new Tuple(0,"",0,0);
+            
             while (liEvents.hasNext()) {
                 // For each Event
                 Tuple t = (Tuple)liEvents.next();
-                Element eventElement = doc.createElement(TN_EVENT);
-                evlistElement.appendChild(eventElement);
-                eventElement.setAttribute(ATTR_TYPE, t.getCodeName());
-                eventElement.setAttribute(ATTR_NAME, t.getName());
-                eventElement.setAttribute(ATTR_TIME, Long.toString(t.getTimeMillis()));
-                eventElement.setAttribute(ATTR_TIME_DIFF_START, Long.toString(t.getTimeDifference()));
+                
+                // log only if it isn't the same
+                if(!t.equals(previous)){
+                    Element eventElement = doc.createElement(TN_EVENT);
+                    evlistElement.appendChild(eventElement);
+                    eventElement.setAttribute(ATTR_TYPE, t.getCodeName());
+                    eventElement.setAttribute(ATTR_NAME, t.getName());
+                    eventElement.setAttribute(ATTR_TIME, Long.toString(t.getTimeMillis()));
+                    eventElement.setAttribute(ATTR_TIME_DIFF_START, Long.toString(t.getTimeDifference()));
+                }
+                previous = t;
             }
         }
         
@@ -668,6 +677,12 @@ public class ActionTracker {
                 + " " + Long.toString(millies)
                 + " " + Long.toString(diffies);
         }
+        
+        public boolean equals(Object obj) {
+            Tuple t = (Tuple) obj;
+            return this.code==t.code && this.name.equalsIgnoreCase(t.name) && this.millies==t.millies && this.diffies==t.diffies;
+        }
+        
     }
     
     class OurAWTEventListener implements AWTEventListener {
