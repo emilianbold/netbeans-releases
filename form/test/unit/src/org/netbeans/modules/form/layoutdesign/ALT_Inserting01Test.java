@@ -35,6 +35,9 @@ public class ALT_Inserting01Test extends LayoutTestCase {
         }
     }
 
+    // Build layout of right aligned column of 3 labels and same sized column
+    // of 3 textfields (resized by mouse). Should be added inside the column,
+    // shrinking the textfield.
     public void doChanges0() {
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
@@ -1009,6 +1012,7 @@ public class ALT_Inserting01Test extends LayoutTestCase {
         // < UPDATE CURRENT STATE
     }
 
+    // Add 'jButton1' on the first row left aligned with 'jTextField1'.
     public void doChanges1() {
         lc = new LayoutComponent("jButton1", false);
         // > START ADDING
@@ -1149,6 +1153,8 @@ public class ALT_Inserting01Test extends LayoutTestCase {
         // < UPDATE CURRENT STATE
     }
 
+    // Add 'jButton2' on the second row between label and textfield, not aligned
+    // horizontally. Should be inserted between the columns.
     public void doChanges2() {
         lc = new LayoutComponent("jButton2", false);
         // > START ADDING
@@ -1299,6 +1305,7 @@ public class ALT_Inserting01Test extends LayoutTestCase {
         // < UPDATE CURRENT STATE
     }
 
+    // Add 'jButton3' below 'jButton2'.
     public void doChanges3() {
         lc = new LayoutComponent("jButton3", false);
         // > START ADDING
@@ -1482,6 +1489,7 @@ public class ALT_Inserting01Test extends LayoutTestCase {
         // < UPDATE CURRENT STATE
     }
 
+    // Add 'jLabel4' between first and second row, right aligned.
     public void doChanges4() {
         lc = new LayoutComponent("jLabel4", false);
         // > START ADDING
