@@ -69,8 +69,11 @@ public class JBossValidation extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new JBossValidation("addDefaultJBoss"));
+        suite.addTest(new JBossValidation("startJBoss"));
         suite.addTest(new JBossValidation("redeployWebModule"));
         suite.addTest(new JBossValidation("deployEJBModule"));
+        suite.addTest(new JBossValidation("stopJBoss"));
+        suite.addTest(new JBossValidation("startJBossDebug"));
         suite.addTest(new JBossValidation("setSwingBrowser"));
         suite.addTest(new JBossValidation("debugWebModule"));
         suite.addTest(new JBossValidation("stopJBoss"));
