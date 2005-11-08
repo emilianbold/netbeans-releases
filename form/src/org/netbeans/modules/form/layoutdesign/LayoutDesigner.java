@@ -2423,7 +2423,10 @@ public class LayoutDesigner implements LayoutConstants {
                 // [check for the same resizability of the ending gaps]
                 LayoutInterval li = seq.getSubInterval(alignment == LEADING ? 0 : n-1);
                 LayoutInterval gap;
-                if (canBeContainerResizingGap(li)) {
+                if (canBeContainerResizingGap(li)
+                    && (LayoutInterval.wantResize(seq)
+                        || LayoutInterval.getEffectiveAlignment(li) == (alignment^1)))
+                {   // making this gap resizing won't change the visual appearance of the sequence
                     gap = li;
                 }
                 else if (li.isParallel()) {
@@ -2437,7 +2440,7 @@ public class LayoutDesigner implements LayoutConstants {
 
                 LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(gap, alignment^1, false);
                 int p1 = neighbor.getCurrentSpace().positions[dimension][alignment];
-                int p2 = group.getCurrentSpace().positions[dimension][alignment^1];
+                int p2 = group.getCurrentSpace().positions[dimension][alignment];
                 int size = Math.abs(p2-p1);
 
                 if (theGap == null || size < gapSize) {
