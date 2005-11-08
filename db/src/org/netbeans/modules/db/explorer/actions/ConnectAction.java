@@ -49,6 +49,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
 import org.netbeans.modules.db.explorer.dlg.ConnectPanel;
 import org.netbeans.modules.db.explorer.dlg.ConnectProgressDialog;
+import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
@@ -104,7 +105,7 @@ public class ConnectAction extends DatabaseAction {
         new ConnectionDialogDisplayer().showDialog(nfo, false);
     }
     
-    public static final class ConnectionDialogDisplayer {
+    public static final class ConnectionDialogDisplayer extends ConnectionDialogMediator {
         
         ConnectionDialog dlg;
         boolean advancedPanel = false;
@@ -148,8 +149,8 @@ public class ConnectAction extends DatabaseAction {
             dbcon.addExceptionListener(excListener);
 
             if (user == null || pwd == null || !remember) {
-                final ConnectPanel basePanel = new ConnectPanel(dbcon);
-                final SchemaPanel schemaPanel = new SchemaPanel(dbcon);
+                final ConnectPanel basePanel = new ConnectPanel(this, dbcon);
+                final SchemaPanel schemaPanel = new SchemaPanel(this, dbcon);
 
                 PropertyChangeListener argumentListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
@@ -169,21 +170,31 @@ public class ConnectAction extends DatabaseAction {
                 basePanel.addPropertyChangeListener(argumentListener);
 
                 final PropertyChangeListener connectionListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
+                        public void propertyChange(PropertyChangeEvent event) {
+                        if (event.getPropertyName().equals("connecting")) { // NOI18N
+                            fireConnectionStarted();
+                        }
+                        if (event.getPropertyName().equals("failed")) { // NOI18N
+                            fireConnectionFailed();
+                        }
                         if (event.getPropertyName().equals("connected")) { //NOI18N
-                            if (setSchema(schemaPanel, dbcon, nfo.getSchema()))
-                                dbcon.setSchema(schemaPanel.getSchema());
-                            else {
-                                //switch to schema panel
-                                dlg.setSelectedComponent(schemaPanel);
-                                return;
-                            }
-
                             //connected by "Get Schemas" button in the schema panel => don't initialize the connection node,
                             //it will be done in actionListener
-                            if (advancedPanel && !okPressed)
+                            if (advancedPanel && !okPressed) {
+                                // #67241: should not retrieve the schema list after connecting
+                                // an existing connection, takes a long time on databases with a lot of schemas
+                                // thus only retrieve the schema list when connected by the "Get schemas" button
+                                if (retrieveSchemas(schemaPanel, dbcon, nfo.getSchema())) {
+                                    dbcon.setSchema(nfo.getSchema());
+                                }
+                                dlg.setSelectedComponent(schemaPanel);
+                                fireConnectionFinished();
                                 return;
-
+                            } else {
+                                fireConnectionFinished();
+                                dbcon.setSchema(nfo.getSchema());
+                            }
+                            
                             try {
                                 nfo.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
@@ -255,7 +266,7 @@ public class ConnectAction extends DatabaseAction {
                     }
                 };
 
-                dlg = new ConnectionDialog(basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
+                dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
                 dlg.setVisible(true);
             } else // without dialog with connection data (username, password), just with progress dlg based on the showDialog parameter
                 try {
@@ -311,7 +322,8 @@ public class ConnectAction extends DatabaseAction {
                 }
         }
 
-        protected boolean setSchema(SchemaPanel schemaPanel, DatabaseConnection dbcon, String schema) {
+        protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
+            fireConnectionStep(bundle().getString("ConnectionProgress_Schemas")); // NOI18N
             Vector schemas = new Vector();
             try {
                 ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
@@ -331,7 +343,7 @@ public class ConnectAction extends DatabaseAction {
 //                }
             }
 
-            return schemaPanel.setSchemas(schemas, schema);
+            return schemaPanel.setSchemas(schemas, defaultSchema);
         }
     }
 }

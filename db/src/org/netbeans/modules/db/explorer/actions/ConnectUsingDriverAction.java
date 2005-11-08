@@ -26,6 +26,7 @@ import java.util.Vector;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -51,6 +52,9 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
@@ -66,7 +70,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         new NewConnectionDialogDisplayer().showDialog(info.getName(), info.getURL());
     }
     
-    public static final class NewConnectionDialogDisplayer {
+    public static final class NewConnectionDialogDisplayer extends ConnectionDialogMediator {
         
         ConnectionDialog dlg;
         ConnectionNodeInfo cni;
@@ -90,8 +94,8 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             cinfo.setDriverName(driverName);
             cinfo.setDriver(driverClass);
 
-            final NewConnectionPanel basePanel = new NewConnectionPanel(drvs, cinfo);
-            final SchemaPanel schemaPanel = new SchemaPanel(cinfo);
+            final NewConnectionPanel basePanel = new NewConnectionPanel(this, drvs, cinfo);
+            final SchemaPanel schemaPanel = new SchemaPanel(this, cinfo);
 
             PropertyChangeListener argumentListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent event) {
@@ -113,14 +117,23 @@ public class ConnectUsingDriverAction extends DatabaseAction {
 
             final PropertyChangeListener connectionListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent event) {
+                    if (event.getPropertyName().equals("connecting")) { // NOI18N
+                        fireConnectionStarted();
+                    }
+                    if (event.getPropertyName().equals("failed")) { // NOI18N
+                        fireConnectionFailed();
+                    }
                     if (event.getPropertyName().equals("connected")) { //NOI18N
-                        if (setSchema(schemaPanel, cinfo))
+                        if (retrieveSchemas(schemaPanel, cinfo, cinfo.getUser()))
                             cinfo.setSchema(schemaPanel.getSchema());
                         else {
                             //switch to schema panel
+                            fireConnectionFinished();
                             dlg.setSelectedComponent(schemaPanel);
                             return;
                         }
+                        
+                        fireConnectionFinished();
 
                         //connected by "Get Schemas" button in the schema panel => don't create connection node
                         //and don't close the connect dialog
@@ -210,7 +223,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                 }
             };
 
-            dlg = new ConnectionDialog(basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
+            dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
             dlg.setVisible(true);
         }
 
@@ -219,13 +232,15 @@ public class ConnectUsingDriverAction extends DatabaseAction {
 //        cinfo.removeExceptionListener(excListener);
 //    }
 
-        private boolean setSchema(SchemaPanel schemaPanel, DatabaseConnection dbcon) {
+        protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
+            fireConnectionStep(bundle().getString("ConnectionProgress_Schemas")); // NOI18N
             Vector schemas = new Vector();
             try {
                 ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
                 if (rs != null)
-                    while (rs.next())
+                    while (rs.next()) {
                         schemas.add(rs.getString(1).trim());
+                    }
             } catch (SQLException exc) {
 //commented out for 3.6 release, need to solve for next Studio release
                 // hack for Pointbase Network Server
@@ -239,7 +254,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
 //                }
             }
 
-            return schemaPanel.setSchemas(schemas, dbcon.getUser());
+            return schemaPanel.setSchemas(schemas, defaultSchema);
         }
     }
 }

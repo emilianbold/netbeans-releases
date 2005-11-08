@@ -28,16 +28,38 @@ import org.openide.util.NbBundle;
 
 public class ConnectionDialog {
 
+    private transient ConnectionDialogMediator mediator;
     private transient JTabbedPane tabs;
     private transient Exception storedExp;
 
     ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
         
-    Dialog dialog = null;
+    final DialogDescriptor descriptor;
+    final Dialog dialog;
     
-    public ConnectionDialog(JPanel basePane, JPanel extendPane,  String dlgTitle, ActionListener actionListener, ChangeListener tabListener) {
-        if(basePane.equals(extendPane))
-            return;
+    public ConnectionDialog(ConnectionDialogMediator mediator, JPanel basePane, JPanel extendPane,  String dlgTitle, ActionListener actionListener, ChangeListener tabListener) {
+        if(basePane.equals(extendPane)) {
+            throw new IllegalArgumentException("The basePane and extendPane must not equal!"); // NOI18N
+        }
+        
+        this.mediator = mediator;
+        ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            public void connectionStarted() {
+                descriptor.setValid(false);
+            }
+            
+            public void connectionStep(String step) {
+            }
+
+            public void connectionFinished() {
+                descriptor.setValid(true);
+            }
+
+            public void connectionFailed() {
+                descriptor.setValid(true);
+            }
+        };
+        mediator.addConnectionProgressListener(progressListener);
 
         tabs = new JTabbedPane(JTabbedPane.TOP);
         
@@ -57,7 +79,7 @@ public class ConnectionDialog {
         tabs.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ConnectDialogA11yName"));
         tabs.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectDialogA11yDesc"));
 
-        DialogDescriptor descriptor = new DialogDescriptor(tabs, dlgTitle, true, actionListener); //NOI18N
+        descriptor = new DialogDescriptor(tabs, dlgTitle, true, actionListener); //NOI18N
         // inbuilt close of the dialog is only after CANCEL button click
         // after OK button is dialog closed by hand
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};

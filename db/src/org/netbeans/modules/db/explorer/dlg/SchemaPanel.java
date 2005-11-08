@@ -14,11 +14,8 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.BorderLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.ResultSet;
 import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -28,9 +25,11 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.openide.util.RequestProcessor;
 
 public class SchemaPanel extends javax.swing.JPanel {
 
+    private ConnectionDialogMediator mediator;
     private DatabaseConnection dbcon;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
@@ -38,35 +37,32 @@ public class SchemaPanel extends javax.swing.JPanel {
     /**
      * Creates a new form SchemaPanel
      * 
-     * @deprecated use SchemaPanel(DatabaseConnection dbcon)
-     */
-    public SchemaPanel(Vector items, String user) {
-    }
-    
-    /**
-     * Creates a new form SchemaPanel
-     * 
      * @param dbcon instance of DatabaseConnection object
      */
-    public SchemaPanel(DatabaseConnection dbcon) {
+    public SchemaPanel(ConnectionDialogMediator mediator, DatabaseConnection dbcon) {
+        this.mediator = mediator;
         this.dbcon = dbcon;
         initComponents();
         initAccessibility();
 
-        PropertyChangeListener connectionListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getPropertyName().equals("connecting")) { //NOI18N
-                    startProgress();
-                }
-                if (event.getPropertyName().equals("connected")) { //NOI18N
-                    stopProgress(true);
-                }
-                if (event.getPropertyName().equals("failed")) { //NOI18N
-                    stopProgress(false);
-                }
+        ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            public void connectionStarted() {
+                startProgress();
+            }
+            
+            public void connectionStep(String step) {
+                setProgressMessage(step);
+            }
+
+            public void connectionFinished() {
+                stopProgress(true);
+            }
+
+            public void connectionFailed() {
+                stopProgress(false);
             }
         };
-        this.dbcon.addPropertyChangeListener(connectionListener);
+        mediator.addConnectionProgressListener(progressListener);
     }
 
     private void initAccessibility() {
@@ -186,13 +182,13 @@ public class SchemaPanel extends javax.swing.JPanel {
             if (con == null || con.isClosed())
                 dbcon.connect();
             else {
-                Vector schemas = new Vector();
-                ResultSet rs = con.getMetaData().getSchemas();
-                if (rs != null)
-                    while (rs.next())
-                        schemas.add(rs.getString(1).trim());
-
-                setSchemas(schemas, dbcon.getSchema());
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        mediator.fireConnectionStarted();
+                        mediator.retrieveSchemas(SchemaPanel.this, dbcon, dbcon.getUser());
+                        mediator.fireConnectionFinished();
+                    }
+                });
             }
         } catch (SQLException exc) {
             //isClosed() method failed, try to connect
@@ -261,6 +257,16 @@ public class SchemaPanel extends javax.swing.JPanel {
                 progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
                 progressHandle.start();
                 progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting"));
+                schemaButton.setEnabled(false);
+            }
+        });
+    }
+    
+    private void setProgressMessage(final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressMessageLabel.setText(message);
+                schemaButton.setEnabled(false);
             }
         });
     }
@@ -277,11 +283,12 @@ public class SchemaPanel extends javax.swing.JPanel {
                 } else {
                     progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed"));
                 }
+                schemaButton.setEnabled(true);
             }
         });
     }
     
     public void resetProgress() {
-        progressMessageLabel.setText(""); // NOI18N
+        progressMessageLabel.setText(" "); // NOI18N
     }
 }

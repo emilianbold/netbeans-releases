@@ -36,6 +36,7 @@ import org.openide.util.NbBundle;
 
 public class NewConnectionPanel extends javax.swing.JPanel implements DocumentListener, ListDataListener {
 
+    private ConnectionDialogMediator mediator;
     private Vector templates;
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
@@ -43,11 +44,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
 
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
 
-    public NewConnectionPanel(Vector templates, String driver, String database, String loginname) {
-        this(templates, new DatabaseConnection(driver, database, loginname, null));
-    }
-
-    public NewConnectionPanel(Vector templates, DatabaseConnection connection) {
+    public NewConnectionPanel(ConnectionDialogMediator mediator, Vector templates, DatabaseConnection connection) {
+        this.mediator = mediator;
         Vector wrapperTemplates = new Vector();
         for (int i = 0; i < templates.size(); i++) {
             wrapperTemplates.add(new DriverWrapper((JDBCDriver)templates.elementAt(i)));
@@ -57,21 +55,25 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         initComponents();
         initAccessibility();
         
-        PropertyChangeListener connectionListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getPropertyName().equals("connecting")) { //NOI18N
-                    startProgress();
-                }
-                if (event.getPropertyName().equals("connected")) { //NOI18N
-                    stopProgress(true);
-                }
-                if (event.getPropertyName().equals("failed")) { //NOI18N
-                    stopProgress(false);
-                }
+        ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            public void connectionStarted() {
+                startProgress();
+            }
+            
+            public void connectionStep(String step) {
+                setProgressMessage(step);
+            }
+
+            public void connectionFinished() {
+                stopProgress(true);
+            }
+
+            public void connectionFailed() {
+                stopProgress(false);
             }
         };
-        this.connection.addPropertyChangeListener(connectionListener);
-
+        mediator.addConnectionProgressListener(progressListener);
+        
         driverTextField.setText(connection.getDriver());
 //        urlTextField.setText(connection.getDatabase());       
         urlComboBox.setSelectedItem(connection.getDatabase());
@@ -373,6 +375,14 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
                 progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
                 progressHandle.start();
                 progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Connecting"));
+            }
+        });
+    }
+    
+    private void setProgressMessage(final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressMessageLabel.setText(message);
             }
         });
     }

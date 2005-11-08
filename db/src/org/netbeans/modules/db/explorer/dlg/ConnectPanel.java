@@ -30,6 +30,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 public class ConnectPanel extends javax.swing.JPanel implements DocumentListener, ListDataListener {
 
+    private ConnectionDialogMediator mediator;
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
@@ -37,39 +38,32 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
     /**
      * Creates new form ConnectPanel
      * 
-     * @deprecated use ConnectPanel(DatabaseConnection connection)
-     */
-    public ConnectPanel(String loginname) {
-    }
-    
-    /**
-     * Creates new form ConnectPanel
-     * 
      * @param connection instance of DatabaseConnection object
      */
-    public ConnectPanel(DatabaseConnection connection) {
+    public ConnectPanel(ConnectionDialogMediator mediator, DatabaseConnection connection) {
+        this.mediator = mediator;
         this.connection = connection;
         initComponents();
         initAccessibility();
 
-        PropertyChangeListener connectionListener = new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent event) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (event.getPropertyName().equals("connecting")) { //NOI18N
-                            startProgress();
-                        }
-                        if (event.getPropertyName().equals("connected")) { //NOI18N
-                            stopProgress(true);
-                        }
-                        if (event.getPropertyName().equals("failed")) { //NOI18N
-                            stopProgress(false);
-                        }
-                    }
-                });
+        ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            public void connectionStarted() {
+                startProgress();
+            }
+            
+            public void connectionStep(String step) {
+                setProgressMessage(step);
+            }
+
+            public void connectionFinished() {
+                stopProgress(true);
+            }
+
+            public void connectionFailed() {
+                stopProgress(false);
             }
         };
-        this.connection.addPropertyChangeListener(connectionListener);
+        mediator.addConnectionProgressListener(progressListener);
 
         userTextField.setText(connection.getUser());
 
@@ -219,6 +213,14 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
                 progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
                 progressHandle.start();
                 progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting"));
+            }
+        });
+    }
+    
+    private void setProgressMessage(final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressMessageLabel.setText(message);
             }
         });
     }
