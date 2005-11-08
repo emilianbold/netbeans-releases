@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
-implements Comparator, ExplorerManager.Provider, ChangeListener {
+        implements Comparator, ExplorerManager.Provider, ChangeListener {
     private ExplorerManager manager;
     
     /**
@@ -58,6 +58,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
     public SuiteCustomizerLibraries(final SuiteProperties suiteProps) {
         super(suiteProps, SuiteCustomizerLibraries.class);
         initComponents();
+        initAccesibility();
         manager = new ExplorerManager();
         refresh();
         
@@ -234,7 +235,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
     private org.openide.explorer.view.TreeTableView view;
     private javax.swing.JLabel viewLabel;
     // End of variables declaration//GEN-END:variables
-
+    
     
     private Node createModuleNode(ModuleEntry[] entries) {
         HashSet disabledModuleCNB = new HashSet(Arrays.asList(getProperties().getDisabledModules()));
@@ -245,8 +246,8 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         Children.SortedArray clusters = new Children.SortedArray();
         clusters.setComparator(this);
         AbstractNode n = new AbstractNode(clusters);
-        n.setName(NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListClusters"));
-        n.setDisplayName(NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListClustersModules"));
+        n.setName(getMessage("LBL_ModuleListClusters"));
+        n.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
         
         for (int i = 0; i < entries.length; i++) {
             Children clusterChildren = (Children)clusterToChildren.get(entries[i].getClusterDirectory());
@@ -292,13 +293,14 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         Node n2 = (Node)o2;
         
         return n1.getDisplayName().compareTo(n2.getDisplayName());
-    }    
+    }
     
     public ExplorerManager getExplorerManager() {
         return manager;
     }
     
     private static final Set/*<String>*/ DISABLED_PLATFORM_MODULES = new HashSet();
+    
     static {
         // Probably not needed for most platform apps, and won't even work under JNLP.
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate"); // NOI18N
@@ -317,6 +319,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         DISABLED_PLATFORM_MODULES.add("org.openide.compat"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.openide.util.enumerations"); // NOI18N
     }
+    
     public void stateChanged(ChangeEvent ev) {
         if (getProperties().getBrandingModel().isBrandingEnabled()) {
             // User is turning on branded mode. Let's take a guess: they want to
@@ -345,15 +348,15 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
             }
             // #64443: prompt first.
             DialogDescriptor d = new DialogDescriptor(
-                    NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.text.exclude_ide_modules"),
-                    NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.title.exclude_ide_modules"));
+                    getMessage("SuiteCustomizerLibraries.text.exclude_ide_modules"),
+                    getMessage("SuiteCustomizerLibraries.title.exclude_ide_modules"));
             d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
             d.setModal(true);
-            JButton exclude = new JButton(NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.button.exclude"));
+            JButton exclude = new JButton(getMessage("SuiteCustomizerLibraries.button.exclude"));
             exclude.setDefaultCapable(true);
             d.setOptions(new Object[] {
                 exclude,
-                new JButton(NbBundle.getMessage(SuiteCustomizerLibraries.class, "SuiteCustomizerLibraries.button.skip")),
+                new JButton(getMessage("SuiteCustomizerLibraries.button.skip")),
             });
             if (!DialogDisplayer.getDefault().notify(d).equals(exclude)) {
                 return;
@@ -379,7 +382,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
             }
         }
     }
-
+    
     static final class Enabled extends AbstractNode {
         private boolean enabled;
         private Children standard;
@@ -427,16 +430,17 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         private static final EnabledProp TEMPLATE = new EnabledProp(null);
         
         private Enabled node;
+        private PropertyEditor editor;
         
         public EnabledProp(Enabled node) {
-            super("enabled", Boolean.TYPE, NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListEnabled"), NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ModuleListEnabledShortDescription"));
+            super("enabled", Boolean.TYPE, getMessage("LBL_ModuleListEnabled"), getMessage("LBL_ModuleListEnabledShortDescription"));
             this.node = node;
         }
         
         public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             node.setEnabled(((Boolean)val).booleanValue());
         }
-
+        
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             Children ch = node.getChildren();
             if (ch == Children.LEAF) {
@@ -470,8 +474,7 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
             }
             return true;
         }
-
-        private PropertyEditor editor;
+        
         public PropertyEditor getPropertyEditor() {
             if (editor == null) {
                 editor = super.getPropertyEditor();
@@ -480,5 +483,14 @@ implements Comparator, ExplorerManager.Provider, ChangeListener {
         }
         
     }
-
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CustomizerDisplay.class, key);
+    }
+    
+    private void initAccesibility() {
+        managePlafsButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ManagePlafsButton"));
+        platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
+    }
+    
 }

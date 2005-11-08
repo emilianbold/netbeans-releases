@@ -17,6 +17,7 @@ import java.util.Arrays;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Sources</em> panel in Suite customizer.
@@ -31,6 +32,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
     SuiteCustomizerSources(final SuiteProperties suiteProps) {
         super(suiteProps, SuiteCustomizerSources.class);
         initComponents();
+        initAccesibility();
         prjFolderValue.setText(suiteProps.getProjectDirectory());
         refresh();
         moduleList.setCellRenderer(CustomizerComponentFactory.getModuleCellRenderer());
@@ -186,5 +188,15 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
     private javax.swing.JTextField prjFolderValue;
     private javax.swing.JButton removeModuleButton;
     // End of variables declaration//GEN-END:variables
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CustomizerDisplay.class, key);
+    }
+    
+    private void initAccesibility() {
+        addModuleButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AddModuleButton"));
+        moduleList.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ModuleList"));
+        prjFolderValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PrjFolderValue"));
+    }
     
 }
