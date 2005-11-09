@@ -218,6 +218,8 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv90</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
+                <friend>org.netbeans.modules.j2ee.sun.avk</friend>
                 <package>org.netbeans.modules.j2ee.sun.share</package>
                 <package>org.netbeans.modules.j2ee.sun.share.configbean</package>
                 <package>org.netbeans.modules.j2ee.sun.share.plan</package>
