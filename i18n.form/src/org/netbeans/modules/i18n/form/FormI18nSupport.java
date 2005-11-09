@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,9 +18,6 @@ package org.netbeans.modules.i18n.form;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
@@ -28,7 +25,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import javax.swing.undo.UndoableEdit;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.RADConnectionPropertyEditor.RADConnectionDesignValue;
@@ -38,18 +34,16 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.InfoPanel;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
+import org.netbeans.modules.java.JavaDataObject;
+import org.netbeans.modules.java.JavaEditor;
 
-import org.openide.awt.UndoRedo;
-import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
 
 
 /** 
@@ -65,9 +59,13 @@ public class FormI18nSupport extends JavaI18nSupport {
     private static final String RAD_ACCESSIBILITY = "accessibility"; // NOI18N
     private static final String RAD_LAYOUT = "layout"; // NOI18N
 
-// PENDING
-// Until is used isGuardedPosition method, we can't listen on changes otherwise we got problems.
-// This will be clearly possible when will be made possibility to detect guarded blocks via org.openide.text.NbDocument.GUARDED flag.
+// PENDING - Has not been used because of implementation of method
+//           isGuardedPosition(int)  (now replaced with isInGuardedSection(...))
+//           The replacement for the isGuardedPosition method was made
+//           during bugfixing phase so the documentListener remained disabled
+//           to keep the amount of changes small (and thus minimize the risk
+//           of introducing new bugs.
+    
 //    /** Listener which listens on changes of form document. */
 //    DocumentListener documentListener;
     
@@ -85,8 +83,11 @@ public class FormI18nSupport extends JavaI18nSupport {
     /** Creates <code>I18nReplacer</code>. Creates superclass method. */
     protected I18nReplacer createReplacer() {        
         return new FormI18nReplacer(/*sourceDataObject, document,*/ (FormI18nFinder)getFinder());
-// PENDING
-// See first PENDING.
+        
+// PENDING - Has not been used because of implementation of method
+//           isGuardedPosition(int)  (now replaced with isInGuardedSection(...))
+//           See the first PENDING note.
+        
 //        documentListener = new DocumentListener() {
 //            public void changedUpdate(DocumentEvent e) {
 //            }
@@ -332,11 +333,6 @@ public class FormI18nSupport extends JavaI18nSupport {
         private ValidFormProperty lastFoundProp;
 
         
-        /** Helper variable used in <code>isGuardedPosition(int)</code> method only.
-         * @see #isGuardedPosition */
-        private boolean guardedPosition;
-
-
         /** Constructor. */
         public FormI18nFinder(DataObject sourceDataObject, StyledDocument document) {
             super(document);
@@ -458,7 +454,8 @@ public class FormI18nSupport extends JavaI18nSupport {
                     return hcString;
                 
                 if(hcString != null) {
-                    guarded = isGuardedPosition(hcString.getStartPosition().getOffset());
+                    guarded = isInGuardedSection(hcString.getStartPosition(),
+                                                 hcString.getEndPosition());
                 } else 
                     // No more hardcoded strings in source.
                     break;
@@ -723,95 +720,23 @@ public class FormI18nSupport extends JavaI18nSupport {
             return buf.toString();
         }
 
-        /** 
-         * Ugly tricky method for testing the position in document, if it is in guarded block or not.
-         * It works the way it tries to insert a piece of text in document
-         * at the specified offset via <code>org.openide.text.NbDocument.runAtomicAsUser</code> method.
-         * If the exception is thrown the it's considered as in guarded block.
-         * (Note: You have to be sure before the offset is valid in the document)
-         * If not its non-guarded and immediatelly afterwards the inserted piece of text is undone.
-         * @see org.openide.text.NbDocument#runAtomicAsUser
-         * */
-        private synchronized boolean isGuardedPosition(final int position) {
-            guardedPosition = false ;
-
-            final StyledDocument document = this.document;
-
-            class CheckUndoableEditListener implements UndoableEditListener {
-                private UndoableEdit edit;
-                
-                public void undoableEditHappened(UndoableEditEvent evt) {
-                    edit = evt.getEdit();
-                }
-                
-                public UndoableEdit getEdit() {
-                    return edit;
-                }
-            }
-            
-            final CheckUndoableEditListener undoListener = new CheckUndoableEditListener();
-            
-            try {
-                NbDocument.runAtomicAsUser(
-                document,
-                new Runnable() {
-                    public void run() {
-                        try {
-                            document.addUndoableEditListener(undoListener);
-                            
-                            document.insertString(position, " ", null); // NOI18N
-                        } catch (BadLocationException ble) {
-                            // Is in guarded
-                            // It is possible to set it this way cause this method is called directly in the same thread.
-                            // The new thread is not invoked in runAtomicAsUser method.
-                            guardedPosition = true;
-                        }
-                    }
-                });
-            } catch (BadLocationException ble) {
-                // Shouldn't happen it was catched already.
-            } finally {
-                // Remove listener here, not under document write lock, the undoable event's have to be
-                // fired after leaving the lock. 
-                document.removeUndoableEditListener(undoListener);
-                
-                // If was notguarded -> means " " test string was inserted -> undo it.
-                if(guardedPosition) 
-                    return guardedPosition;
-               
-                EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
-                if(ec == null)
-                    return guardedPosition;
-                
-                JEditorPane[] panes = ec.getOpenedPanes();
-                if(panes != null && panes.length > 0) {
-                    TopComponent tp = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, panes[0]);
-                    if(tp == null) {
-                        UndoableEdit edit = undoListener.getEdit();
-                        
-                        if(edit != null && edit.canUndo())
-                            edit.undo();
-                        
-                        return guardedPosition;
-                    }
-                    
-                    UndoRedo undoRedo = tp.getUndoRedo();
-                    if(undoRedo == null)
-                        return guardedPosition;
-
-                    // Undo remove.
-                    if(undoRedo.canUndo()) {
-                        undoRedo.undo();
-                    }
-                } else {
-                    // No component is opened. Undo it via swing undo.
-                    UndoableEdit edit = undoListener.getEdit();
-                    if(edit != null && edit.canUndo())
-                        edit.undo();
-                }
-            }
-
-            return guardedPosition;        
+        /**
+         * Checks whether the given section of text overlaps with any of the
+         * guarded sections in the editor.
+         *
+         * @param  startPos  beginning position if the section to check
+         * @param  endPos    ending position of the section to check
+         * @return  <code>true</code> if the section of text overlaps,
+         *          <code>false</code> otherwise
+         */
+        private synchronized boolean isInGuardedSection(final Position startPos,
+                                                        final Position endPos) {
+            JavaEditor javaEditor
+                    = ((JavaDataObject) sourceDataObject).getJavaEditor();
+            return javaEditor.testOverlap(
+                        javaEditor.createBounds(startPos.getOffset(),
+                                                endPos.getOffset(),
+                                                false));
         }
 
         DataObject getSourceDataObject() {
