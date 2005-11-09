@@ -15,16 +15,16 @@ package org.netbeans.modules.j2ee.sun.share.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
 
-import javax.enterprise.deploy.shared.ModuleType;
-
-import org.openide.actions.*;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.loaders.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
+
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 
@@ -75,25 +75,14 @@ public class ConfigDataLoader extends UniFileLoader {
     protected String defaultDisplayName() {
         return NbBundle.getMessage (ConfigDataLoader.class, "LBL_LoaderName");
     }
-    
-    /** Gets default system actions. Overrides superclass method. */
-    protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get (OpenAction.class),
-            SystemAction.get (EditAction.class),
-            SystemAction.get (FileSystemAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            null,
-            SystemAction.get (ToolsAction.class),
-            SystemAction.get (PropertiesAction.class),
-        };
-    }
 
+    /** Action available for sun specific deployment descriptor files.  See
+     *  layer file.
+     */
+    protected String actionsContext() {
+        return "Loaders/xml/sun-dd/Actions/"; // NOI18N
+    }
+    
     /** Creates multi data object for specified primary file.
      * Implements superclass abstract method. */
     protected MultiDataObject createMultiObject (FileObject fo)
