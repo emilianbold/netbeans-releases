@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import javax.swing.JFileChooser;
@@ -22,7 +23,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.queries.GlobalSourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -202,9 +206,7 @@ final class NbPlatformCustomizerSources extends JPanel {
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f)  {
-                return f.isDirectory() ||
-                        f.getName().toLowerCase(Locale.US).endsWith(".jar") || // NOI18N
-                        f.getName().toLowerCase(Locale.US).endsWith(".zip"); // NOI18N
+                return f.isDirectory() || isValidNbSourceRoot(f);
             }
             public String getDescription() {
                 return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, "CTL_SourcesTab");
@@ -212,12 +214,30 @@ final class NbPlatformCustomizerSources extends JPanel {
         });
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            URL newUrl = Util.urlForDirOrJar(FileUtil.normalizeFile(chooser.getSelectedFile()));
-            model.addSourceRoot(newUrl);
-            sourceList.setSelectedValue(newUrl, true);
+            File file = FileUtil.normalizeFile(chooser.getSelectedFile());
+            if (!file.exists() || (file.isFile() && !isValidNbSourceRoot(file))) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        getMessage("MSG_NotValidNBSrcZIP")));
+            } else {
+                URL newUrl = Util.urlForDirOrJar(file);
+                model.addSourceRoot(newUrl);
+                sourceList.setSelectedValue(newUrl, true);
+            }
         }
     }//GEN-LAST:event_addZipOrFolder
     
+    private static boolean isValidNbSourceRoot(final File nbSrcRoot) {
+        boolean isValid = false;
+        String lcName = nbSrcRoot.getName().toLowerCase(Locale.US);
+        if (lcName.endsWith(".jar") || lcName.endsWith(".zip")) { // NOI18N
+            try {
+                isValid = GlobalSourceForBinaryImpl.NetBeansSourcesParser.getInstance(nbSrcRoot) != null;
+            } catch (IOException ex) {
+                // isValid = false
+            }
+        }
+        return isValid;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFolderButton;

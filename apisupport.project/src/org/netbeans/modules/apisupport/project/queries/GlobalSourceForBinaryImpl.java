@@ -130,7 +130,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         }
     }
     
-    private static class NetBeansSourcesParser {
+    public static final class NetBeansSourcesParser {
         
         /** Zip file to instance map. */
         private static final Map/*<File, NetBeansSourcesParser>*/ instances = new HashMap();
@@ -145,7 +145,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
          * May return <code>null</code> if the given zip is not a valid
          * NetBeans sources zip.
          */
-        static NetBeansSourcesParser getInstance(File nbSrcZip) throws ZipException, IOException {
+        public static NetBeansSourcesParser getInstance(File nbSrcZip) throws ZipException, IOException {
             NetBeansSourcesParser nbsp = (NetBeansSourcesParser) instances.get(nbSrcZip);
             if (nbsp == null) {
                 ZipFile nbSrcZipFile = new ZipFile(nbSrcZip);
