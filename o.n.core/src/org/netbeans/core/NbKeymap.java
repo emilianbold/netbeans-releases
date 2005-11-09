@@ -122,7 +122,12 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
             if (a instanceof KeymapAction) {
                 activ = ((KeymapAction)a).keymap;
             } else { // unknown ctx
-                resetContext();
+                int code = key.getKeyCode();
+                if (code != KeyEvent.VK_CONTROL &&
+                        code != KeyEvent.VK_ALT &&
+                        code != KeyEvent.VK_ALT_GRAPH &&
+                        code != KeyEvent.VK_SHIFT &&
+                        code != KeyEvent.VK_META) resetContext();
                 return null;
             }
         }
