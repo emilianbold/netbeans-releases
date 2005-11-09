@@ -254,7 +254,8 @@ public class JspParserImpl implements JspParserAPI {
             if (o instanceof WAParseSupportKey) {
                 WAParseSupportKey k = (WAParseSupportKey)o;
                 //Two keys are the same only if the document roots are same.
-                return wmRoot.getPath().equals(k.wmRoot.getPath());
+                //&& the document roots fileobjects are valid (#67785)
+                return wmRoot.isValid() && k.wmRoot.isValid() && wmRoot.getPath().equals(k.wmRoot.getPath());
             }
             return false;
         }
