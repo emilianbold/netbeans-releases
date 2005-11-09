@@ -13,6 +13,7 @@
 
 package org.netbeans.core.lookup;
 
+import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 
@@ -50,26 +51,38 @@ public class InstanceDataObjectModuleTest5 extends InstanceDataObjectModuleTestH
     }
     
     public void testReloadSettingsSwitchesLookupByNewClass() throws Exception {
+        ERR.log("before twidle enabled");
         twiddle(m2, TWIDDLE_ENABLE);
+        ERR.log("Ok twidle enable");
         try {
             ClassLoader l1 = m2.getClassLoader();
             Class c1 = l1.loadClass("test2.SomeAction");
             assertEquals("Correct loader", l1, c1.getClassLoader());
             assertTrue("SomeAction<1> instance found after module installation",
                 existsSomeAction(c1));
+            
+            ERR.log("Action successfully checked, reload"); 
             twiddle(m2, TWIDDLE_RELOAD);
+            ERR.log("Twidle reload");
             ClassLoader l2 = m2.getClassLoader();
             assertTrue("ClassLoader really changed", l1 != l2);
             Class c2 = l2.loadClass("test2.SomeAction");
             assertTrue("Class really changed", c1 != c2);
-            // Make sure the changes take effect?
-            Thread.sleep(2000);
+            
+            ERR.log("After successful checks that there was a reload changes");
+            
+            LoaderPoolNode.waitFinished();
+            
+            ERR.log("Waiting for pool node to update itself");
+
             assertTrue("SomeAction<1> instance not found after module reload",
                 !existsSomeAction(c1));
             assertTrue("SomeAction<2> instance found after module reload",
                 existsSomeAction(c2));
         } finally {
+            ERR.log("Disabling");
             twiddle(m2, TWIDDLE_DISABLE);
+            ERR.log("Disabled");
         }
     }
     

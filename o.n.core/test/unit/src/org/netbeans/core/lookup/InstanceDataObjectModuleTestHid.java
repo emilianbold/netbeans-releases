@@ -15,12 +15,10 @@ package org.netbeans.core.lookup;
 
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.*;
-import junit.textui.TestRunner;
 
 import java.io.File;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.core.startup.ModuleHistory;
 import org.openide.util.Lookup;
 import javax.swing.Action;
@@ -29,11 +27,11 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.Mutex;
-import org.openide.cookies.InstanceCookie;
 import org.openide.util.MutexException;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
 import java.io.IOException;
+import org.openide.ErrorManager;
 
 /** Test InstanceDataObject's behavior in conjunction with module
  * installation and uninstallation.
@@ -43,6 +41,8 @@ import java.io.IOException;
  * @see issue #16327
  */
 public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
+    protected ErrorManager ERR;
+    
     
     protected InstanceDataObjectModuleTestHid(String name) {
         super(name);
@@ -65,6 +65,8 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     
     
     protected void setUp() throws Exception {
+        ERR = ErrManager.getDefault().getInstance("TEST-" + getName());
+        
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         org.netbeans.core.startup.MainLookup.register (new ErrManager ());
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
@@ -82,7 +84,8 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         } catch (MutexException me) {
             throw me.getException();
         }
-        //System.err.println("loaded module: " + idomJar);
+        
+        ERR.log("setup finished");
     }
     
     protected static File toFile (java.net.URL url) throws java.io.IOException {
