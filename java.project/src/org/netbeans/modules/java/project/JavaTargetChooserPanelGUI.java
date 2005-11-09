@@ -59,26 +59,31 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private Project project;
     private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
-    private boolean isPackage;
+    private int type;
     private SourceGroup groups[];
     private boolean ignoreRootCombo;
     
     /** Creates new form SimpleTargetChooserGUI */
-    public JavaTargetChooserPanelGUI( Project p, SourceGroup[] groups, Component bottomPanel, boolean isPackage ) {
-        this.isPackage = isPackage;
+    public JavaTargetChooserPanelGUI( Project p, SourceGroup[] groups, Component bottomPanel, int type ) {
+        this.type = type;
         this.project = p;
         this.groups = groups;
         
         initComponents();        
                 
-        if ( isPackage ) {
+        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
             packageComboBox.setVisible( false );
             packageLabel.setVisible( false );
             Mnemonics.setLocalizedText (fileLabel, NbBundle.getMessage (JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_CreatedFolder_Label")); // NOI18N
             Mnemonics.setLocalizedText (documentNameLabel, NbBundle.getMessage (JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_PackageName_Label")); // NOI18N
-        }        
+            documentNameTextField.getDocument().addDocumentListener( this );
+        }
+        else if ( type == NewJavaFileWizardIterator.TYPE_PKG_INFO ) {
+            documentNameTextField.setEditable (false);
+        }
         else {
             packageComboBox.getEditor().addActionListener( this );
+            documentNameTextField.getDocument().addDocumentListener( this );
         }
         
                 
@@ -87,7 +92,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         }
                 
         //initValues( project, null, null );
-        documentNameTextField.getDocument().addDocumentListener( this );
+        
 
         // Not very nice
         Component packageEditor = packageComboBox.getEditor().getEditorComponent();
@@ -128,7 +133,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         rootComboBox.setSelectedItem( preselectedGroup );                       
         ignoreRootCombo = false;
         Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
-        if ( isPackage ) {
+        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
             String docName = preselectedPackage == null || preselectedPackage.toString().length() == 0 ? 
                 DEFAULT_NEW_PACKAGE_NAME : 
                 preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME;
@@ -146,12 +151,16 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             }
             if (template != null) {
             	if ( documentNameTextField.getText().trim().length() == 0 ) { // To preserve the class name on back in the wiazard
-                    documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
-                    documentNameTextField.selectAll ();
+                    if (this.type == NewJavaFileWizardIterator.TYPE_PKG_INFO) {
+                        documentNameTextField.setText (template.getName ());
+                    }
+                    else {
+                        //Ordinary file
+                        documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
+                        documentNameTextField.selectAll ();
+                    }
                 }
             }
-        }
-        if ( !isPackage ) {
             updatePackages( false );
         }
         // Determine the extension
@@ -168,7 +177,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     public String getPackageFileName() {
         
-        if ( isPackage ) {
+        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
             return ""; // NOI18N
         }
         
@@ -180,7 +189,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
      * Name of selected package, or "" for default package.
      */
     String getPackageName() {
-        if ( isPackage ) {
+        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
             return ""; // NOI18N
         }
         return packageComboBox.getEditor().getItem().toString();
@@ -372,7 +381,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( rootComboBox == e.getSource() ) {            
-            if ( !ignoreRootCombo && !isPackage ) {
+            if ( !ignoreRootCombo && type != NewJavaFileWizardIterator.TYPE_PACKAGE ) {
                 updatePackages( true );
             }
             updateText();
@@ -459,7 +468,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         FileObject rootFolder = g.getRootFolder();
         String packageName = getPackageFileName();
         String documentName = documentNameTextField.getText().trim();
-        if ( isPackage ) {
+        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE ) {
             documentName = documentName.replace( '.', '/' ); // NOI18N
         }
         else if ( documentName.length() > 0 ) {

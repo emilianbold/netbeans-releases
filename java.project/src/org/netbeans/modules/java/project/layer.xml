@@ -24,7 +24,8 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="Enum.java/AnnotationType.java" boolvalue="true"/>
       <attr name="AnnotationType.java/Exception.java" boolvalue="true"/>
       <attr name="Exception.java/Main.java" boolvalue="true"/>
-      <attr name="Main.java/JApplet.java" boolvalue="true"/>
+      <attr name="Main.java/package-info.java" boolvalue="true"/>
+      <attr name="package-info.java/JApplet.java" boolvalue="true"/>
       <attr name="JApplet.java/Applet.java" boolvalue="true"/>
       <attr name="Applet.java/Package" boolvalue="true"/>
       
@@ -78,6 +79,15 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="templateCategory" stringvalue="java-classes"/>
          <attr name="javac.source" stringvalue="1.5" />
       </file>
+
+      <file name="package-info.java" url="nbres:/org/netbeans/modules/java/project/resources/package-info.template">
+         <attr name="template" boolvalue="true" />
+         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageInfoWizard"/>
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/package-info.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="javac.source" stringvalue="1.5" />
+      </file> 
     </folder>
     
   </folder>

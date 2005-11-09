@@ -40,7 +40,7 @@ import org.openide.util.Utilities;
  *
  * @author  Petr Hrebejk
  */
-public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
+public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {    
 
     static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
 
@@ -52,18 +52,18 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
     private Project project;
     private SourceGroup folders[];
-    private boolean isPackage;
+    private int type;
     private boolean isValidPackageRequired;
     
-    public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, boolean isPackage ) {
-        this(project, folders, bottomPanel, isPackage, false);
+    public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, int type ) {
+        this(project, folders, bottomPanel, type, false);
     }
     
-    public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, boolean isPackage, boolean isValidPackageRequired ) {
+    public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, int type, boolean isValidPackageRequired ) {
         this.project = project;
         this.folders = folders;
         this.bottomPanel = bottomPanel;
-        this.isPackage = isPackage;
+        this.type = type;
         if ( bottomPanel != null ) {
             bottomPanel.addChangeListener( this );
         }
@@ -72,7 +72,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new JavaTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isPackage );
+            gui = new JavaTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), type );
             gui.addChangeListener(this);
         }
         return gui;
@@ -96,8 +96,15 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
            setErrorMessage( null );
            return false;
         }        
-        if ( isPackage ) {
+        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE) {
             if ( !isValidPackageName( gui.getTargetName() ) ) {
+                setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
+                return false;
+            }
+        }
+        else if (type == NewJavaFileWizardIterator.TYPE_PKG_INFO) {
+            assert "package-info".equals( gui.getTargetName() );        //NOI18N
+            if ( !isValidPackageName( gui.getPackageName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
                 return false;
             }
@@ -119,7 +126,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         boolean returnValue=true;
         FileObject rootFolder = gui.getRootFolder();
         SpecificationVersion specVersion = null;
-        if (!isPackage) {
+        if (type != NewJavaFileWizardIterator.TYPE_PACKAGE) {
             String sl = SourceLevelQuery.getSourceLevel(rootFolder);
             specVersion = sl != null? new SpecificationVersion(sl): null;
         }
@@ -136,7 +143,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
                return false;
         }
         
-        if (!isPackage && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
+        if (type != NewJavaFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
             if(isValidPackageRequired){
                 setErrorMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
                 return false;
@@ -230,7 +237,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         assert gui != null;
         FileObject rootFolder = gui.getRootFolder();
         FileObject folder = null;
-        if ( !isPackage ) {
+        if ( type != NewJavaFileWizardIterator.TYPE_PACKAGE ) {
             String packageFileName = gui.getPackageFileName();
             folder = rootFolder.getFileObject( packageFileName );
             if ( folder == null ) {

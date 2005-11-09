@@ -44,18 +44,26 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
     
     private static final long serialVersionUID = 1L;
     
-    private boolean isPackage = false;
+    public static final int TYPE_FILE = 0;
+    public static final int TYPE_PACKAGE = 1;
+    public static final int TYPE_PKG_INFO = 2;
+    
+    private int type = TYPE_FILE;
     
     /** Create a new wizard iterator. */
     public NewJavaFileWizardIterator() {}
     
     
-    private NewJavaFileWizardIterator( boolean isPackage ) {
-        this.isPackage = isPackage;
+    private NewJavaFileWizardIterator( int type ) {
+        this.type = type;
     }    
     
     public static NewJavaFileWizardIterator packageWizard() {
-        return new NewJavaFileWizardIterator( true );
+        return new NewJavaFileWizardIterator( TYPE_PACKAGE );
+    }
+    
+    public static NewJavaFileWizardIterator packageInfoWizard () {
+        return new NewJavaFileWizardIterator( TYPE_PKG_INFO );
     }
             
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
@@ -73,14 +81,14 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         }
         else {
             
-            if ( isPackage ) {
-                return new WizardDescriptor.Panel[] {
-                    new JavaTargetChooserPanel( project, groups, null, true ),
-                };
-            }
-            else {
+            if ( this.type == TYPE_FILE ) {
                 return new WizardDescriptor.Panel[] {
                     JavaTemplates.createPackageChooser( project, groups ),
+                };
+            }
+            else {                                
+                return new WizardDescriptor.Panel[] {
+                    new JavaTargetChooserPanel( project, groups, null, this.type, this.type == TYPE_PKG_INFO),
                 };
             }
         }
@@ -115,7 +123,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         FileObject template = Templates.getTemplate( wiz );
         
         FileObject createdFile = null;
-        if ( isPackage ) {
+        if ( this.type == TYPE_PACKAGE ) {
             targetName = targetName.replace( '.', '/' ); // NOI18N
             createdFile = FileUtil.createFolder( dir, targetName );
         }
