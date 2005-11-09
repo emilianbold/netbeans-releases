@@ -111,6 +111,10 @@ public class JPDAConnect extends Task {
         if (startVerbose)
             System.out.println("\nS JPDAConnect.execute ()");
 
+        JPDAStart.verifyPaths(getProject(), classpath);
+        JPDAStart.verifyPaths(getProject(), bootclasspath);
+        JPDAStart.verifyPaths(getProject(), sourcepath);
+        
         if (name == null)
             throw new BuildException (
                 "name attribute must specify name of this debugging session", 

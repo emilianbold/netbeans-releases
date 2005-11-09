@@ -138,11 +138,28 @@ public class JPDAStart extends Task implements Runnable {
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
     }
+    
+    static void verifyPaths(Project project, Path path) {
+        if (path == null) return ;
+        String[] paths = path.list();
+        for (int i = 0; i < paths.length; i++) {
+            String pathName = project.replaceProperties(paths[i]);
+            File file = FileUtil.normalizeFile 
+                (project.resolveFile (pathName));
+            if (!file.exists()) {
+                project.log("Non-existing path \""+pathName+"\" provided.", Project.MSG_WARN);
+                //throw new BuildException("Non-existing path \""+paths[i]+"\" provided.");
+            }
+        }
+    }
 
     
     // main methods ............................................................
 
     public void execute () throws BuildException {
+        verifyPaths(getProject(), classpath);
+        verifyPaths(getProject(), bootclasspath);
+        verifyPaths(getProject(), sourcepath);
         try {
             if (startVerbose)
                 System.out.println("\nS JPDAStart ***************");
@@ -323,7 +340,8 @@ public class JPDAStart extends Task implements Runnable {
         List l = new ArrayList ();
         int i, k = paths.length;
         for (i = 0; i < k; i++) {
-            File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
+            String pathName = project.replaceProperties(paths[i]);
+            File f = FileUtil.normalizeFile (project.resolveFile (pathName));
             if (!isValid (f, project)) continue;
             URL url = fileToURL (f);
             if (f == null) continue;
@@ -345,8 +363,9 @@ public class JPDAStart extends Task implements Runnable {
         Set exist = new HashSet ();
         int i, k = paths.length;
         for (i = 0; i < k; i++) {
+            String pathName = project.replaceProperties(paths[i]);
             File file = FileUtil.normalizeFile 
-                (project.resolveFile (paths [i]));
+                (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
             URL url = fileToURL (file);
             if (url == null) continue;
