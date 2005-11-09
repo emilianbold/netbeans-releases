@@ -77,7 +77,7 @@ is the proper place.
 
     <changes>
 
-        <change>
+        <change id="CompletionResultSet.setWaitText">
             <api name="completion"/>
             <summary>Addition of CompletionResultSet.setWaitText()</summary>
             <version major="1" minor="5"/>
@@ -94,7 +94,7 @@ is the proper place.
             <issue number="68235"/>
         </change>
 
-        <change>
+        <change id="CompletionItem.getInsertPrefix">
             <api name="completion"/>
             <summary>Adddition of CompletionItem.getInsertPrefix()</summary>
             <version major="1" minor="4"/>
@@ -109,7 +109,7 @@ is the proper place.
             <issue number="68235"/>
         </change>
 
-        <change>
+        <change id="CompletionTask.refresh">
             <api name="completion"/>
             <summary>Semantic change of CompletionTask.refresh()</summary>
             <version major="1" minor="3"/>
