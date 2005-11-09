@@ -258,10 +258,16 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                         int blue = Integer.parseInt(text.substring(
                                                          index2 + 1, end).trim());
 
-                        setValue(new SuperColor(null,
-                                                0,
-                                                new Color(red, green, blue)));
-                        return;
+                        try {
+                            setValue(new SuperColor(null,
+                                                    0,
+                                                    new Color(red, green, blue)));
+                            return;
+                        } catch( IllegalArgumentException iaE ) {
+                            ErrorManager em = ErrorManager.getDefault();
+                            em.annotate(iaE, ErrorManager.USER, null, iaE.getLocalizedMessage(), null, null);
+                            throw iaE;
+                        }
                     }
                 }
             }
