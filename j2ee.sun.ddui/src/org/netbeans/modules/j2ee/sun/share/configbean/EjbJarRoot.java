@@ -362,7 +362,11 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 try {
                     result = SunCmpMappings.createGraph(stream);
                 } catch(Exception ex) {
-                    throw new IllegalStateException("Examine wrapped exception...");
+                    // This was an IllegalStateException, but the wrapped version of that isn't available
+                    // in JDK 1.4.  The reason we catch Exception here in the first place is because
+                    // we need to absorb and correctly rethrow the Schema2beansException that can be
+                    // caught here without referencing it's classtype.
+                    throw new RuntimeException("Examine wrapped exception...", ex); // NOI18N
                 }
             } else {
                 // If we have a null stream, return a blank graph.
