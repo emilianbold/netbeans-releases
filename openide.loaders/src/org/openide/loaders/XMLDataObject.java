@@ -497,7 +497,7 @@ public class XMLDataObject extends MultiDataObject {
         synchronized (emgrLock) {
             if (err == null) {
                 err = ErrorManager.getDefault ().getInstance(
-                    "org.openide.loaders.XMLDataObject[" + getPrimaryFile().getPath() + "]" // NOI18N
+                    "org.openide.loaders.XMLDataObject." + getPrimaryFile().getPath() // NOI18N
                 ); 
             }
         }
