@@ -144,7 +144,7 @@ implements LookupListener, ChangeListener {
         DataObject now = DataObject.find(fo);
         
         err.log("Object is here: " + now);
-        assertEquals("Loader updated to lenka", loader, now.getLoader());fail("Ok");
+        assertEquals("Loader updated to lenka", loader, now.getLoader());
     }
 
     public void resultChanged(LookupEvent ev) {

@@ -1078,7 +1078,12 @@ public class XMLDataObject extends MultiDataObject {
          * Info is then assigned according to it from registry.
          */
         private void waitFinished (String ignorePreviousId) {
-            if (sharedParserImpl == null) return;
+            if (sharedParserImpl == null) {
+                emgr().log("No sharedParserImpl, exiting"); // NOI18N
+                return;
+            }
+            
+            boolean willLog = emgr().isLoggable(ErrorManager.INFORMATIONAL);
 
             XMLReader parser = sharedParserImpl;
             FileObject myFileObject = getPrimaryFile();
@@ -1088,6 +1093,9 @@ public class XMLDataObject extends MultiDataObject {
             previousID = parsedId;
 
             if (parsedId != null) {
+                if (willLog) {
+                    emgr().log("Has already been parsed: " + parsedId); // NOI18N
+                }
                 // ok, has already been parsed
                 return;
             }
@@ -1103,8 +1111,12 @@ public class XMLDataObject extends MultiDataObject {
 
             synchronized (this) {
                 try {
-                    if (!myFileObject.isValid())
+                    if (!myFileObject.isValid()) {
+                        if (willLog) {
+                            emgr().log("Invalid file object: " + myFileObject); // NOI18N
+                        }
                         return;
+                    }
                     
                     parsedId = NULL;
                     try {
@@ -1129,13 +1141,17 @@ public class XMLDataObject extends MultiDataObject {
                             input.setByteStream(in);
                             parser.parse (input);
                         }
-
+                        if (willLog) {
+                            emgr().log("Parse finished"); // NOI18N
+                        }
                     } catch (StopSaxException stopped) {
                         newID = parsedId;
+                        emgr().log("Parsing successfully stopped: " + parsedId); // NOI18N
                     } catch (SAXException checkStop) {
                         // stop parsing anyway
                         if (STOP.getMessage ().equals (checkStop.getMessage ())) {
                             newID = parsedId;
+                            emgr().log("Parsing stopped with STOP message: " + parsedId); // NOI18N
                         } else {
                             String msg = "Thread:" + Thread.currentThread().getName(); //NOI18N
                             emgr().annotate(checkStop, "DocListener should not throw SAXException but STOP one.\n" + msg);  //NOI18N
@@ -1188,13 +1204,15 @@ public class XMLDataObject extends MultiDataObject {
             
             if (ignorePreviousId != null && newID.equals (ignorePreviousId)) {
                 // no updates in lookup
+                if (willLog) emgr().log("No update to ID: " + ignorePreviousId); // NOI18N
                 return;
             }
             
             // out of any synchronized blocks udpate the lookup
             // because it can call into unknown places via its 
             // Environment.findForOne
-
+            if (willLog) emgr().log("New id: " + newID); // NOI18N
+            
             if (newID != null) {
                 updateLookup (previousID, newID);
             }
