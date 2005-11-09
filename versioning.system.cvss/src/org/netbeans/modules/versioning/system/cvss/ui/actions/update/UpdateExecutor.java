@@ -14,17 +14,12 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 
 import org.netbeans.modules.versioning.system.cvss.*;
-import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.DefaultFileInfoContainer;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.event.*;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.*;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -39,7 +34,7 @@ import java.util.*;
  * 
  * @author Maros Sandor
  */
-public class UpdateExecutor extends ExecutorSupport implements VersioningListener {
+public class UpdateExecutor extends ExecutorSupport implements FileChangeListener {
     
     /**
      * Contains all files that should NOT be set as up-to-date after Update finishes. 
@@ -82,14 +77,38 @@ public class UpdateExecutor extends ExecutorSupport implements VersioningListene
 
     protected void setup() {
         super.setup();
-        cvs.getStatusCache().addVersioningListener(this);
+        Set filesystems = getRootFilesystems();
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fileSystem.addFileChangeListener(this);
+        }
     }
 
     protected void cleanup() {
-        cvs.getStatusCache().removeVersioningListener(this);
+        Set filesystems = getRootFilesystems();
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fileSystem.removeFileChangeListener(this);
+        }
         super.cleanup();
     }
 
+    private Set getRootFilesystems() {
+        Set filesystems = new HashSet();
+        File [] roots = ((UpdateCommand) cmd).getFiles();
+        for (int i = 0; i < roots.length; i++) {
+            File root = roots[i];
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(root));
+            if (fo == null) continue;
+            try {
+                filesystems.add(fo.getFileSystem());
+            } catch (FileStateInvalidException e) {
+                // ignore invalid filesystems
+            }
+        }
+        return filesystems;
+    }
+    
     public void fileInfoGenerated(FileInfoEvent e) {
         super.fileInfoGenerated(e);
     }
@@ -229,18 +248,35 @@ public class UpdateExecutor extends ExecutorSupport implements VersioningListene
      * will NOT reset it to up-to-date.
      * 
      * @param file file whose status changed
-     * @param newInfo
      */ 
-    private void onFileChanged(File file, FileInformation newInfo) {
-        // make sure that files that changed state to up-to-date get the chance to receive other status based on server response   
-        if (newInfo.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
-            refreshedFiles.add(file);
-        }
+    private void onFileChanged(File file) {
+        refreshedFiles.add(file);
     }
-    
-    public void versioningEvent(VersioningEvent event) {
-        if (FileStatusCache.EVENT_FILE_STATUS_CHANGED.equals(event.getId())) {
-            onFileChanged((File) event.getParams()[0], (FileInformation) event.getParams()[2]);
-        }
+
+    public void fileFolderCreated(FileEvent fe) {
+        onFileChanged(FileUtil.toFile(fe.getFile()));
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        onFileChanged(FileUtil.toFile(fe.getFile()));
+    }
+
+    public void fileChanged(FileEvent fe) {
+        onFileChanged(FileUtil.toFile(fe.getFile()));
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        onFileChanged(FileUtil.toFile(fe.getFile()));
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        onFileChanged(FileUtil.toFile(fe.getFile()));
+        String oldExtension = fe.getExt();
+        if (oldExtension.length() > 0) oldExtension = "." + oldExtension; // NOI18N
+        onFileChanged(new File(FileUtil.toFile(fe.getFile().getParent()), fe.getName() + oldExtension));
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        // not interested
     }
 }
