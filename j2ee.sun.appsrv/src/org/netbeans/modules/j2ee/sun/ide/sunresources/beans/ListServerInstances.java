@@ -32,7 +32,6 @@ import java.util.ArrayList;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -71,7 +70,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         }  
         try{
             SunDeploymentManagerInterface dm = (SunDeploymentManagerInterface)targetName.getDeploymentManager();
-            String servName = dm.getHost() + ":" + dm.getPort();  //NOI18N
+            String servName = targetName.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);  
             names.addElement(servName);
             servers.put(servName, dm);
         }catch(java.lang.ClassCastException cce){
@@ -89,7 +88,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         //Now displaying only default server instance
         //serverListCB = new JComboBox(names);
         serverListCB = new JTextField();
-        serverListCB.setText(names.get(0).toString());
+        serverListCB.setText(" " + names.get(0).toString()); //NOI18N
         
         serverListCB.setEditable(false);
         serverListCB.getAccessibleContext().setAccessibleName(bundle.getString("LBL_select_server"));  //NOI18N
@@ -99,7 +98,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         selectLabel.setDisplayedMnemonic(bundle.getString("LBL_select_server_Mnemonic").charAt(0));  //NOI18N
         selectLabel.setLabelFor(serverListCB);
         
-        msgArea = new JTextArea(2, 1);
+        msgArea = new JTextArea(4, 1);
         msgArea.setLineWrap(true);
         msgArea.setWrapStyleWord(true);
         msgArea.setEditable(false);
@@ -125,7 +124,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         gbc.fill = gbc1.fill = GridBagConstraints.HORIZONTAL;
         
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridwidth =  1;
+        gbc.gridwidth =  3;
         gbc.gridheight =  1;
         
         
@@ -162,7 +161,6 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         Object options[] = {applyButton, closeButton};
         
         DialogDescriptor dd = new DialogDescriptor(this, title, true, options, applyButton, DialogDescriptor.BOTTOM_ALIGN, HelpCtx.findHelp(this), null);
-        
         dd.setClosingOptions(new Object[] {closeButton});
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
@@ -178,7 +176,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
     
     //Handles case when Register is called from xml file. No checks for registered CP or JDBC
     public void doRegistration(SunResourceDataObject resourceObj, String resType) {
-        String serverNm = (String) serverListCB.getText();
+        String serverNm = ((String) serverListCB.getText()).trim();
         try{
             msgArea.setText(bundle.getString("Msg_RegDS")); //NOI18N
             setTopManagerStatus(bundle.getString( "Msg_RegDS"));//NOI18N
@@ -203,7 +201,6 @@ public class ListServerInstances extends JPanel implements WizardConstants{
             String errorMsg = MessageFormat.format(bundle.getString( "Msg_RegFailure"), new Object[]{ex.getLocalizedMessage()}); //NOI18N
             msgArea.setText(errorMsg);
             setTopManagerStatus(errorMsg);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
        
