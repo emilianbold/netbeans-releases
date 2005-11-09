@@ -425,14 +425,14 @@ public class FolderLookup extends FolderInstance {
                     try {
                         obj = DataObject.find(fo);
                     } catch (DataObjectNotFoundException donfe) {
-                        ic = new BrokenInstance("File: " + fo.getPath(), donfe); // NOI18N
+                        ic = new BrokenInstance("No DataObject for " + fo.getPath(), donfe); // NOI18N
                         return;
                     }
                 }
 
                 ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
                 if (ic == null) {
-                    ic = new BrokenInstance("File: " + fo.getPath(), null); // NOI18N
+                    ic = new BrokenInstance("No cookie for " + fo.getPath(), null); // NOI18N
                 }
             } finally {
                 DANGEROUS.set (prev);

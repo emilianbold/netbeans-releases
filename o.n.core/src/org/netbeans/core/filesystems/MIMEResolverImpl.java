@@ -50,7 +50,8 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     private static final long serialVersionUID = 18975L;
     
     // enable some tracing
-    private static final boolean DEBUG = false;
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MIMEResolverImpl.class.getName());
+    private static final boolean DEBUG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         
     private static final boolean CASE_INSENSITIVE =
         Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
@@ -95,7 +96,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         private short state = DescParser.INIT;
         
         Impl(FileObject obj) {
-            if (DEBUG) System.err.println("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
+            if (DEBUG) ERR.log("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
             data = obj;
         }
         
@@ -122,7 +123,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             for (int i = smell.length-1; i>=0; i--) {
                 String s = smell[i].resolve(fo);
                 if (s != null) {
-                    if (DEBUG) System.err.println("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
+                    if (DEBUG) ERR.log("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
                     return s;
                 }
             }
@@ -138,12 +139,13 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             smell = parser.template;                
             if (DEBUG) {
                 if (parser.state == DescParser.ERROR) {
-                    System.err.println("MIMEResolverImpl.Impl parsing error!");
+                    ERR.log("MIMEResolverImpl.Impl parsing error!");
                 } else {
                     StringBuffer buf = new StringBuffer();
+                    buf.append("Parse: ");
                     for (int i = 0; i<smell.length; i++)
                         buf.append("\n" + smell[i]);
-                    System.err.println("Parsed: " + buf.toString());
+                    ERR.log(buf.toString());
                 }
             }
             return parser.state;
