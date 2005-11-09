@@ -46,6 +46,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 /** An enterprise application project's j2eeserver implementation
  *
  * @see ProjectWeb
@@ -74,9 +75,13 @@ public final class ProjectEar extends J2eeAppProvider
     public FileObject getDeploymentDescriptor() {
         FileObject metaInfFo = getMetaInf();
         if (metaInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectEar.class,"MSG_WebInfCorrupted"),
-                                             NotifyDescriptor.ERROR_MESSAGE));
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(NbBundle.getMessage(ProjectEar.class,"MSG_WebInfCorrupted"),
+                                                     NotifyDescriptor.ERROR_MESSAGE));
+                }
+            });
             return null;
         }
         return getMetaInf ().getFileObject (FILE_DD);
