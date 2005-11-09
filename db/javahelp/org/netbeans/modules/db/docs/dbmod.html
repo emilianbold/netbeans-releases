@@ -27,8 +27,8 @@ Microsystems, Inc. All Rights Reserved.
 
         <h2>Executing SQL Statements</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>You can use the SQL Editor to write and execute SQL queries within the IDE.
-        The SQL statement is executed on the database that you select in the Connection drop-down list in the toolbar.
+        <p>You can use the SQL Editor to write and execute SQL statements within the IDE.
+        The SQL statement is executed on the database selected in the Connection drop-down list in the toolbar.
         If the database connection is closed, the IDE opens the connection to the database.</p>
 	<p>You can use the SQL Editor to create, edit and execute any SQL files in your project. 
 	To open an SQL file, right-click the SQL file (&nbsp; <img src="images/sqlfile_icon.png" alt="SQL File">&nbsp;) in the Projects or Files window and choose Open.
@@ -38,11 +38,13 @@ Microsystems, Inc. All Rights Reserved.
             <li>Expand the Databases node in the Runtime window.</li>
             <li>Right-click the node for the connected database and choose Execute Command from the pop-up menu to open the SQL Editor.</li>
             <li>Make sure your current database connection is selected in the Connection drop-down list. 
-	    You can also click the Select Connection in Explorer button (&nbsp; <img src="images/showinexplorer.gif" alt="Select Connection in Explorer">&nbsp;) in the toolbar to open the Runtime window where you can select a different connection. </li>
-            <li>Enter a (DDL or DML) statement in the upper pane of the SQL Editor window.</li>
+	    To see the status of the listed connections, click the Select Connection in Explorer button (&nbsp; <img src="images/showinexplorer.gif" alt="Select Connection in Explorer">&nbsp;) in the toolbar.
+            When you click Select Connection in Explorer, the selected connection is highlighted in the Runtime window. </li>
+            <li>Enter a (DDL or DML) statement in the SQL Editor window.</li>
             <li>Click Run SQL (&nbsp; <img src="images/runsql.png" alt="Run SQL">&nbsp;) to run the statement.</li> 
         </ol>
-        <p>When you execute an SQL statement, the results are displayed in a table view in the lower pane of the SQL Editor window.</p>
+        <p>When you execute an SQL statement, the output of the statement appears in the results pane in the lower half of the SQL Editor.
+            If your statement has no output, the number of affected rows is displayed in the results pane.</p>
         <p>You can access the Execute Command pop-up menu item from any subnode of a connected database (&nbsp;<img src="images/connection.gif" alt="Database Connection node">&nbsp;) in the Runtime window.</p>
         <ul class="note">
             <li>To view the data in a table, right-click a table and choose View Data from the pop-up menu.
@@ -52,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         <dl>
             <dt>
             <a name="seealso">See Also</a></dt>
+            <dd>      <a href="connectdb.html">Connecting to a Database</a></dd>
             <dd>      <a href="viewdata.html">Viewing Data</a></dd>
 	    <dd>      <a href="manipsql.html">Defining Database Explorer Debug Mode</a></dd>
             <dd>      <a href="createtables.html">Creating a Table</a></dd>
