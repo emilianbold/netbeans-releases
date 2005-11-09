@@ -284,7 +284,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                     
                     g.setColor(color);
                     
-                    if (startLine <= currentline && currentline <= endLine && m.getType() != Mark.TYPE_CARET) {
+                    if ((startLine <= currentline && currentline <= endLine) || m.getType() == Mark.TYPE_CARET) {
                         g.fillRect(1, (int) start, THICKNESS - 2, PIXELS_FOR_LINE);
                     } else {
                         g.drawRect(1, (int) start, THICKNESS - 3, PIXELS_FOR_LINE - 1);
