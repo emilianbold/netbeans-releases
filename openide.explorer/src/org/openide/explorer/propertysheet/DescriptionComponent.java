@@ -12,6 +12,8 @@
  */
 package org.openide.explorer.propertysheet;
 
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 import org.openide.util.Utilities;
 
 import java.awt.Dimension;
@@ -23,16 +25,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.accessibility.AccessibleRole;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -40,7 +45,7 @@ import javax.swing.UIManager;
  *
  * @author  Tim Boudreau
  */
-class DescriptionComponent extends JComponent implements ActionListener, MouseListener {
+class DescriptionComponent extends JComponent implements ActionListener, MouseListener, Accessible {
     private static int fontHeight = -1;
     private JTextArea jta;
     private JLabel lbl;
@@ -62,6 +67,8 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         jta.setBackground(getBackground());
         jta.setEditable(false);
         jta.setOpaque(false);
+        jta.getAccessibleContext().setAccessibleName( NbBundle.getMessage(DescriptionComponent.class, "ACS_Description") );
+        jta.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage(DescriptionComponent.class, "ACSD_Description") );
 
         //We use a JScrollPane to suppress the changes in layout that will be
         //caused by adding the raw JTextArea directly - JTextAreas can fire
@@ -222,5 +229,21 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         if (sh != null) {
             sh.mousePressed(e);
         }
+    }
+
+    public AccessibleContext getAccessibleContext() {
+
+        if( null == accessibleContext ) {
+            accessibleContext = new AccessibleJComponent() {
+                        public AccessibleRole getAccessibleRole() {
+                            return AccessibleRole.SWING_COMPONENT;
+                        }
+                    };
+        
+            accessibleContext.setAccessibleName( NbBundle.getMessage(DescriptionComponent.class, "ACS_Description") );
+            accessibleContext.setAccessibleDescription( NbBundle.getMessage(DescriptionComponent.class, "ACSD_Description") );
+        }
+        
+        return accessibleContext;
     }
 }

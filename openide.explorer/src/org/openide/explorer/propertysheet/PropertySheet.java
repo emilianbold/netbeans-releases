@@ -15,6 +15,7 @@ package org.openide.explorer.propertysheet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
@@ -372,6 +373,16 @@ public class PropertySheet extends JPanel {
 
         final Node n = (nodes.length == 1) ? nodes[0] : new ProxyNode(nodes);
         setCurrentNode(n);
+        
+        if( getTopLevelAncestor() instanceof Dialog ) {
+            //we're a standalone property sheet dialog window and we need to
+            //request input focus that got lost when switching Nodes
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    PropertySheet.this.requestFocus();
+                }
+            });
+        }
     }
 
     /**Set the nodes explored by this property sheet.

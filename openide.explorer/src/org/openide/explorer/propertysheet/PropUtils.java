@@ -17,6 +17,8 @@
  */
 package org.openide.explorer.propertysheet;
 
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.nodes.Node.*;
@@ -36,10 +38,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 
 import java.util.*;
+import javax.accessibility.AccessibleRole;
 
 import javax.swing.*;
+import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.border.Border;
 import javax.swing.plaf.SplitPaneUI;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.metal.*;
 
@@ -1749,6 +1754,31 @@ final class PropUtils {
         protected void installDefaults() {
             super.installDefaults();
             divider.setBorder(new SplitBorder());
+        }
+        
+        public BasicSplitPaneDivider createDefaultDivider() {
+            return new CleanSplitPaneDivider(this);
+        }
+    }
+    
+    private static class CleanSplitPaneDivider extends BasicSplitPaneDivider implements Accessible {
+        private AccessibleContext accessibleContext;
+        
+        public CleanSplitPaneDivider( BasicSplitPaneUI ui ) {
+            super( ui );
+        }
+        public AccessibleContext getAccessibleContext() {
+            if( null == accessibleContext ) {
+                accessibleContext = new AccessibleAWTComponent() {
+                            public AccessibleRole getAccessibleRole() {
+                                return AccessibleRole.SPLIT_PANE;
+                            }
+                        };
+
+                accessibleContext.setAccessibleName( NbBundle.getMessage(DescriptionComponent.class, "ACS_Splitter") );
+                accessibleContext.setAccessibleDescription( NbBundle.getMessage(DescriptionComponent.class, "ACSD_Splitter") );
+            }
+            return accessibleContext;
         }
     }
 

@@ -1483,6 +1483,8 @@ abstract class BaseTable extends JTable implements FocusListener {
                 changeSelection(next, getSelectedColumn(), false, false);
             }
 
+            if( getSelectionModel().getAnchorSelectionIndex() < 0 )
+                getSelectionModel().setAnchorSelectionIndex(next);
             getSelectionModel().setLeadSelectionIndex(next);
         }
     }

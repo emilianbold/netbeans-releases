@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.swing.tabcontrol;
+import javax.accessibility.Accessible;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.netbeans.swing.tabcontrol.plaf.DefaultTabbedContainerUI;
 
@@ -22,6 +23,9 @@ import java.awt.event.HierarchyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.accessibility.AccessibleRole;
+import javax.swing.JComponent.AccessibleJComponent;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -103,7 +107,7 @@ import java.util.List;
  * @see TabDisplayer
  * @author Tim Boudreau, Dafe Simonek
  */
-public class TabbedContainer extends JComponent {
+public class TabbedContainer extends JComponent implements Accessible {
     /**
      * UIManager key for the UI Delegate to be used by tabbed containers.
      */
@@ -824,6 +828,21 @@ public class TabbedContainer extends JComponent {
                     "policy: \"" + s + "\""); //NOI18N
             }
         }
+    }
+
+    public javax.accessibility.AccessibleContext getAccessibleContext() {
+        if( null == accessibleContext ) {
+            accessibleContext = new AccessibleJComponent() {
+                        public AccessibleRole getAccessibleRole() {
+                            return AccessibleRole.PAGE_TAB_LIST;
+                        }
+                    };
+        
+            accessibleContext.setAccessibleName( NbBundle.getMessage(TabbedContainer.class, "ACS_TabbedContainer") );
+            accessibleContext.setAccessibleDescription( NbBundle.getMessage(TabbedContainer.class, "ACSD_TabbedContainer") );
+        }
+        
+        return accessibleContext;
     }
     
     /**
