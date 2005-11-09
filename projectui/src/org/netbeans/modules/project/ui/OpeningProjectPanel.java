@@ -32,7 +32,7 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
     public OpeningProjectPanel(ProgressHandle handle) {
         progress = ProgressHandleFactory.createProgressComponent(handle);
         initComponents();
-        //On macosx, the background of JTextField is white even if non-editable:
+        //#67914: On macosx, the background of JTextField is white even if non-editable:
         nameOfTheProject.setBackground(javax.swing.UIManager.getColor("Panel.background")); // NOI18N
     }
     
