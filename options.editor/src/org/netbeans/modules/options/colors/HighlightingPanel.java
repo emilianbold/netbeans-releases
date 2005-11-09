@@ -90,14 +90,8 @@ PropertyChangeListener {
     
     
     private JList		lCategories = new JList ();
-//    private JTextField          tfFont = new JTextField ("");
-//    private JButton             bFont = new JButton ("...");
     private ColorComboBox	foregroundColorChooser = new ColorComboBox ();
     private ColorComboBox	backgroundColorChooser = new ColorComboBox ();
-//    private JComboBox		cbEffects = new JComboBox ();
-//    private ColorComboBox	effectsColorChooser = new ColorComboBox ();
-//    private JPanel              previewPanel;
-//    private Preview             preview;
  
     private ColorModel          colorModel = null;
     private boolean		listen = false;
@@ -113,6 +107,12 @@ PropertyChangeListener {
     public HighlightingPanel (FontAndColorsPanel fontAndColorsPanel) {
 
         // 1) init components
+        lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
+        lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
+        foregroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground_Chooser"));
+        foregroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
+        backgroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
+        backgroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
         lCategories.addListSelectionListener (new ListSelectionListener () {
@@ -122,20 +122,8 @@ PropertyChangeListener {
             }
         });
         lCategories.setCellRenderer (new CategoryRenderer ());
-//	tfFont.setEnabled (false);
-//        bFont.addActionListener (this);
-//        bFont.setMargin (new Insets (0, 0, 0, 0));
         foregroundColorChooser.addPropertyChangeListener (this);
         backgroundColorChooser.addPropertyChangeListener (this);
-//        cbEffects.addItem (loc ("CTL_Effects_None"));
-//        cbEffects.addItem (loc ("CTL_Effects_Underlined"));
-//        cbEffects.addItem (loc ("CTL_Effects_Wave_Underlined"));
-//        cbEffects.addItem (loc ("CTL_Effects_Strike_Through"));
-//        cbEffects.addActionListener (this);
-//        effectsColorChooser = new ColorComboBox ();
-//        effectsColorChooser.addPropertyChangeListener (this);
-//        previewPanel = new JPanel (new BorderLayout ());
-//        previewPanel.setBorder (new EtchedBorder ());
         JLabel lCategory = new JLabel ();
         loc (lCategory, "CTL_Category");
         lCategory.setLabelFor (lCategories);
@@ -155,56 +143,9 @@ PropertyChangeListener {
                           foregroundColorChooser,	cc.xyw  (5, 3, 3));
         builder.addLabel (loc ("CTL_Background_label"), lc.xy   (3, 5),
                           backgroundColorChooser,	cc.xyw  (5, 5, 3));
-//        builder.addLabel (loc ("CTL_Effects_label"),	lc.xy   (3, 7),
-//                          cbEffects,			cc.xyw  (5, 7, 3));
-//        builder.add (     effectsColorChooser,          cc.xyw  (5, 9, 3));
-	
-//        builder.addLabel (loc ("CTL_Preview"),	        lc.xyw (1, 11, 7),
-//                          previewPanel,                 cc.xyw (1, 13, 7));
     }
  
     public void actionPerformed (ActionEvent evt) {
-//        if (evt.getSource () == bFont) {
-//            PropertyEditor pe = PropertyEditorManager.findEditor (Font.class);
-//            Vector categories = getCategories (currentProfile);
-//	    SimpleAttributeSet category = (SimpleAttributeSet) categories.get 
-//		(lCategories.getSelectedIndex ());
-//            Font f = category.getFont ();
-//            if (f == null && category.getDefaultCategoryName () != null)
-//                f = getDefault (category).getFont ();
-//            pe.setValue (f);
-//            DialogDescriptor dd = new DialogDescriptor (
-//                pe.getCustomEditor (),
-//                "Font Chooser"
-//            );
-//            DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
-//            if (dd.getValue () == DialogDescriptor.OK_OPTION) {
-//                f = (Font) pe.getValue ();
-//                if (category.getDefaultCategoryName () != null &&
-//		    f.equals (getDefault (category).getFont ())
-//		)
-//                    f = null;
-//                categories.set (
-//		    lCategories.getSelectedIndex (),
-//		    new Category (
-//                        category.getName (),
-//			category.getDisplayName (),
-//			category.getIcon (), 
-//                        f,
-//                        category.getForeground (), 
-//		        category.getBackground (), 
-//                        category.getUnderlineColor (), 
-//		        category.getStrikeThroughColor (),
-//                        category.getWaveUnderlineColor (),
-//		        category.getDefaultCategoryName ()
-//                    )
-//                );
-//                toBeSaved.add (currentProfile);
-//                refreshUI ();
-//                preview.setParameters (currentProfile, "", getCategories (currentProfile));
-//            }
-//            return;
-//        }
         if (!listen) return;
         updateData ();
         changed = true;
@@ -298,17 +239,11 @@ PropertyChangeListener {
     private void updateData () {
         if (lCategories.getSelectedIndex () < 0) return;
         Vector categories = getCategories (currentProfile);
-	SimpleAttributeSet category = (SimpleAttributeSet) categories.get 
+	AttributeSet category = (AttributeSet) categories.get 
 	    (lCategories.getSelectedIndex ());
         Color underline = null, 
               wave = null, 
               strikethrough = null;
-//        if (cbEffects.getSelectedIndex () == 1)
-//            underline = effectsColorChooser.getColor ();
-//        if (cbEffects.getSelectedIndex () == 2)
-//            wave = effectsColorChooser.getColor ();
-//        if (cbEffects.getSelectedIndex () == 3)
-//            strikethrough = effectsColorChooser.getColor ();
         
         SimpleAttributeSet c = new SimpleAttributeSet (category);
         if (backgroundColorChooser.getColor () != null)
@@ -349,26 +284,16 @@ PropertyChangeListener {
         int i = lCategories.getSelectedIndex ();
         categories.set (i, c);
         
-//        preview.setParameters (
-//            ColorModel.HIGHLIGHTING_LANGUAGE,
-//            fontAndColorsPanel.getDefaults (),
-//            categories,
-//            fontAndColorsPanel.getSyntaxColorings ()
-//        );
         toBeSaved.add (currentProfile);
     }
     
     private void refreshUI () {
         int index = lCategories.getSelectedIndex ();
         if (index < 0) {
-//	    tfFont.setText ("");
-//            cbEffects.setEnabled (false);
             foregroundColorChooser.setEnabled (false);
             backgroundColorChooser.setEnabled (false);
-//            effectsColorChooser.setEnabled (false);
             return;
         }
-//        cbEffects.setEnabled (true);
         foregroundColorChooser.setEnabled (true);
         backgroundColorChooser.setEnabled (true);
         
@@ -377,51 +302,12 @@ PropertyChangeListener {
         
         // set values
         listen = false;
-//        Font f = category.getFont ();
-//	if (f != null) {
-//            StringBuffer sb = new StringBuffer ();
-//            sb.append (f.getName ()).
-//                append (' ').
-//                append (f.getSize ());
-//            if (f.isBold ())
-//                sb.append (' ').append (loc ("Bold"));
-//            if (f.isItalic ())
-//                sb.append (' ').append (loc ("Italic"));
-//	    tfFont.setText (sb.toString ());
-//        } else
-//	    tfFont.setText (loc ("Default"));
-	
         foregroundColorChooser.setColor (
             (Color) category.getAttribute (StyleConstants.Foreground)
         );
         backgroundColorChooser.setColor (
             (Color) category.getAttribute (StyleConstants.Background)
         );
-        
-//        if (category.getAttribute (StyleConstants.Underline) != null) {
-//            cbEffects.setSelectedIndex (1);
-//            effectsColorChooser.setEnabled (true);
-//            effectsColorChooser.setColor (
-//                (Color) category.getAttribute (StyleConstants.Underline)
-//            );
-//        } else
-//        if (category.getAttribute (EditorStyleConstants.WaveUnderlineColor) != null) {
-//            cbEffects.setSelectedIndex (2);
-//            effectsColorChooser.setEnabled (true);
-//            effectsColorChooser.setColor (
-//                (Color) category.getAttribute (EditorStyleConstants.WaveUnderlineColor)
-//            );
-//        } else
-//        if (category.getAttribute (StyleConstants.StrikeThrough) != null) {
-//            cbEffects.setSelectedIndex (3);
-//            effectsColorChooser.setEnabled (true);
-//            effectsColorChooser.setColor 
-//                ((Color) category.getAttribute (StyleConstants.StrikeThrough));
-//        } else {
-//            cbEffects.setSelectedIndex (0);
-//            effectsColorChooser.setEnabled (false);
-//	    effectsColorChooser.setSelectedItem (new Value (null, null));
-//        }
         listen = true;
     }
     
