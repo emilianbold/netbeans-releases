@@ -25,6 +25,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
@@ -384,25 +385,25 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     }
     
     private void updateNodes() {
-        //Create nodes for TopComponents
-        Children.Array nodeArray = new Children.Array();
-        
+        //Create nodes for TopComponents, sort them using their own comparator
         List tcList = getOpenedDocuments();
-        SortedSet/*<Node>*/ tcNodes = new TreeSet();
-        for (int i = 0; i < tcList.size(); i++) {
+        TopComponentNode[] tcNodes = new TopComponentNode[tcList.size()];
+        for (int i = 0; i < tcNodes.length; i++) {
             TopComponent tc = (TopComponent) tcList.get(i);
-            tcNodes.add(new TopComponentNode(tc));
+            tcNodes[i] = new TopComponentNode(tc);
         }
-        nodeArray.add((Node[]) tcNodes.toArray(new Node[tcNodes.size()]));
+        Arrays.sort(tcNodes);
         
+        Children.Array nodeArray = new Children.Array();
+        nodeArray.add(tcNodes);
         Node root = new AbstractNode(nodeArray);
         explorer.setRootContext(root);
         // set focus to documents list
         listView.requestFocus();
         // select first item if possible
-        if (!tcNodes.isEmpty()) {
+        if (tcNodes.length > 0) {
             try {
-                explorer.setSelectedNodes(new Node[] {(Node) tcNodes.iterator().next()});
+                explorer.setSelectedNodes(new Node[] {tcNodes[0]} );
             } catch (PropertyVetoException exc) {
                 // do nothing, what should I do?
             }
