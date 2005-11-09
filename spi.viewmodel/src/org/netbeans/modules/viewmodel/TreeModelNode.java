@@ -360,6 +360,10 @@ public class TreeModelNode extends AbstractNode {
     }
     
     void refreshColumn(String column) {
+        synchronized (properties) {
+            properties.remove(column);
+            properties.remove(column + "#html");
+        }
         firePropertyChange(column, null, null);
     }
     
