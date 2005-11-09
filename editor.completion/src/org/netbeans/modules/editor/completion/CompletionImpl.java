@@ -533,6 +533,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
         this.explicitQuery = explicitQuery;
         if (activeProviders != null) {
+            completionAutoPopupTimer.stop();
             completionCancel(); // cancel possibly pending query
             completionQuery(delayQuery);
         }
