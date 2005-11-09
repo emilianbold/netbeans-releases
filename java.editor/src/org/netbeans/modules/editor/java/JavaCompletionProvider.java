@@ -23,10 +23,10 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.*;
+
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
@@ -37,6 +37,7 @@ import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -97,6 +98,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         }        
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            if (JavaMetamodel.getManager().isScanInProgress())
+                resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
             NbJavaJMICompletionQuery query = new NbJavaJMICompletionQuery(true);
             NbJavaJMICompletionQuery.JavaResult res = (NbJavaJMICompletionQuery.
                     JavaResult)query.query(component, caretOffset,

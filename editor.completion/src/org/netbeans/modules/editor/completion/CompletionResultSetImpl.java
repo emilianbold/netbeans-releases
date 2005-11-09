@@ -55,6 +55,8 @@ public final class CompletionResultSetImpl {
 
     private String title;
     
+    private String waitText;
+    
     private int anchorOffset;
     
     private List items;
@@ -235,8 +237,12 @@ public final class CompletionResultSetImpl {
         }
     }
 
-    public void setWaitText(String waitText) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public synchronized String getWaitText() {
+        return waitText;
+    }
+
+    public synchronized void setWaitText(String waitText) {
+        this.waitText = waitText;
     }
 
 }

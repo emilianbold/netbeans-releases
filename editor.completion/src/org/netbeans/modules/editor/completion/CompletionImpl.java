@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.awt.event.*;
 import java.awt.*;
@@ -164,7 +165,15 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
         pleaseWaitTimer = new Timer(PLEASE_WAIT_TIMEOUT, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
+                String waitText = PLEASE_WAIT;
+                for (Iterator it = completionResult.getResultSets().iterator(); it.hasNext();) {
+                    CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
+                    if (resultSet.getWaitText() != null) {
+                        waitText = resultSet.getWaitText();
+                        break;
+                    }                        
+                }
+                layout.showCompletion(Collections.singletonList(waitText),
                         null, -1, CompletionImpl.this);
             }
         });
