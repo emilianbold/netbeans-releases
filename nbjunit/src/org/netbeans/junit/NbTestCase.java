@@ -122,6 +122,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 super.run(result);
             }
         }
+        trimLogFiles();
     }
     
     /**
@@ -140,6 +141,58 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
             this.time = last;
             tearDown();
+        }
+    }
+    
+    /** If a log file in workdir is bigger than limit, it trims the file to 
+     * the limit size. This restriction is needed because log files are stored
+     * in results and big files can exhaust storage. See issue 67854 for details.
+     */
+    private void trimLogFiles() {
+        final long MAX_SIZE = 1048576L; // 1MB
+        File workdir;
+        try {
+            workdir = getWorkDir();
+        } catch (Exception e) {
+            // ignore - nothing to trim
+            return;
+        }
+        try {
+            // touch all files to flush buffer
+            File[] allFiles = workdir.listFiles();
+            for(int i=0;i<allFiles.length;i++) {
+                new FileReader(allFiles[i]).close();
+            }
+            // find file bigger than limit
+            File[] list = workdir.listFiles(new FileFilter() {
+                public boolean accept(File file) {
+                    return file.length() > MAX_SIZE;
+                }
+            });
+            // copy up-to-limit part of file to TRIMMED_filename and delete original file
+            for(int i=0;i<list.length;i++) {
+                long fileLength = list[i].length();
+                BufferedReader reader = new BufferedReader(new FileReader(list[i]));
+                FileWriter writer = new FileWriter(new File(list[i].getParentFile(), "TRIMMED_"+list[i].getName()));
+                for(long l=0;l<MAX_SIZE;l++) {
+                    writer.write(reader.read());
+                }
+                writer.write("\n#####################################################################"); // NOI18N
+                writer.write("\nRemaining part was trimmed. Total length was "+fileLength+" bytes."); // NOI18N
+                writer.write("\n#####################################################################"); // NOI18N
+                reader.close();
+                writer.close();
+                if(!list[i].delete()) {
+                    // cannot delete original file. We only write notice to trim original file.
+                    FileWriter writerOrig = new FileWriter(list[i]);
+                    writerOrig.write("\n#####################################################################"); // NOI18N
+                    writerOrig.write("\nFile was too long. First "+MAX_SIZE+" bytes of total length "+fileLength+" bytes were copied to TRIMMED_"+list[i].getName()+"."); // NOI18N
+                    writerOrig.write("\n#####################################################################"); // NOI18N
+                    writerOrig.close();
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
     
