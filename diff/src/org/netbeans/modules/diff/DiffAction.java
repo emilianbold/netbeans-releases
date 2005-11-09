@@ -33,6 +33,7 @@ import org.openide.windows.TopComponent;
 //import org.netbeans.modules.vcscore.diff.AbstractDiff;
 
 import org.netbeans.api.diff.*;
+import org.netbeans.api.project.Project;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -63,6 +64,9 @@ public class DiffAction extends NodeAction {
     static FileObject getFileFromNode(Node node) {
         FileObject fo = (FileObject) node.getLookup().lookup(FileObject.class);
         if (fo == null) {
+            Project p = (Project) node.getLookup().lookup(Project.class);
+            if (p != null) return p.getProjectDirectory();
+
             DataObject dobj = (DataObject) node.getCookie(DataObject.class);
             if (dobj instanceof DataShadow) {
                 dobj = ((DataShadow) dobj).getOriginal();
