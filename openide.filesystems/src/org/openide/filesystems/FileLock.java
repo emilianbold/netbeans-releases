@@ -104,6 +104,7 @@ public class FileLock extends Object {
                     new Exception("Not released lock for file: " + toString() + " (traped in finalizer)").initCause(lockedBy));//NOI18N
         }
 
+        releaseLock();
         return bos.toString();
     }
 }
