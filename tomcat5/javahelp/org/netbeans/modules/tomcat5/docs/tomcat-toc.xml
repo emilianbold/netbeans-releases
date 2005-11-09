@@ -38,6 +38,7 @@
 	<tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
 	<tocitem text="Using JWSDP 1.6 on the Tomcat Web Server" target="tomcat_websvc_jwsdp" />
 	<tocitem text="Writing Ant Targets for Web Services on the Tomcat Web Server" target="tomcat_websvc" />
+	<tocitem text="Changing the Web Service Client Type" target="wsc_change_tomcat" />
 	<tocitem text="Writing Ant Targets to Deploy to Tomcat Web Server 4" target="tomcat_setup_unsupported" />
         </tocitem>
    </tocitem>

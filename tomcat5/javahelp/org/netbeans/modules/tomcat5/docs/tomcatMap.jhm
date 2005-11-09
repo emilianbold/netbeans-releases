@@ -34,6 +34,7 @@ help\
 	<mapID target="tomcat_use_tdcp" url="tomcat/tomcat_use_tdcp.html" />
 	<mapID target="tomcat_enable_1_5" url="tomcat/tomcat_enable_1_5.html" />
 	<mapID target="tomcat_websvc" url="tomcat/tomcat_websvc.html" />
+	<mapID target="wsc_change_tomcat" url="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_change_tomcat.html" />
 	<mapID target="tomcat_websvc_jwsdp" url="tomcat/tomcat_websvc_jwsdp.html" />
 	<!-- this is for the instance node -->
 	<mapID target="tomcat_internal_node" url="tomcat/tomcat_internal_node.html" />
