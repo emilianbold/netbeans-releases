@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.actions;
@@ -42,7 +42,7 @@ public class SaveAction extends CookieAction {
 
     protected void performAction(final Node[] activatedNodes) {
         SaveCookie sc = (SaveCookie) activatedNodes[0].getCookie(SaveCookie.class);
-        assert sc != null : "SaveCookie found for " + activatedNodes[0];
+        if (sc == null) return ;
 
         try {
             sc.save();
