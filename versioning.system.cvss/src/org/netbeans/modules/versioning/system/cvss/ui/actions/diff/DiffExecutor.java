@@ -85,7 +85,7 @@ public class DiffExecutor {
         openDiff(panel, group);
     }
     
-    private void openDiff(final Component c, final ExecutorGroup group) {
+    private void openDiff(final JComponent c, final ExecutorGroup group) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DiffTopComponent tc = new DiffTopComponent(c);
@@ -133,9 +133,10 @@ public class DiffExecutor {
         public DiffTopComponent() {
         }
         
-        public DiffTopComponent(Component c) {
+        public DiffTopComponent(JComponent c) {
             setLayout(new BorderLayout());
-            add(c, BorderLayout.CENTER);            
+            c.putClientProperty(TopComponent.class, this);
+            add(c, BorderLayout.CENTER);
             getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
