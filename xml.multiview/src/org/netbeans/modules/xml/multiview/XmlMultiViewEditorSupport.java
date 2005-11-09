@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
@@ -532,18 +534,21 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         protected void reloadModelFromData() {
             if (loading == 0) {
-                final boolean[] completed = new boolean[]{false};
-                Utils.runInAwtDispatchThread(new Runnable() {
+                Runnable run = new Runnable() {
                     public void run() {
                         Utils.replaceDocument(document, dObj.getDataCache().getStringData());
-                        completed[0] = true;
                     }
-                });
-                while (!completed[0]) {
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    run.run();
+                }
+                else {
                     try {
-                        Thread.sleep(100);
+                        SwingUtilities.invokeAndWait(run);
                     } catch (InterruptedException e) {
-                        //
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    } catch (InvocationTargetException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                 }
             }
