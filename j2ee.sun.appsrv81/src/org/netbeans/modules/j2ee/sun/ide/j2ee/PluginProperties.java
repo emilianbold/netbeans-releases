@@ -51,7 +51,7 @@ public class PluginProperties  {
     private  String[] userList = new String[0];
     
     private  String logLevel = null;
-    private  boolean incrementalDeployPossible = false;
+    private  boolean incrementalDeployPossible = true; //now on by default
     
     private  FileObject propertiesFile = null;
     
@@ -64,6 +64,7 @@ public class PluginProperties  {
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     
     public static String COBUNDLE_DEFAULT_INSTALL_PATH ="AS8.1";  //NOI18N
+    public static String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
     
     /** holds value of com.sun.aas.installRoot */
     private  File platformRoot = null;
@@ -133,7 +134,7 @@ public class PluginProperties  {
         String[] inputGroups = getArrayPropertyValue(inProps, GROUP_PREFIX);
         
         setCharsetDisplayPreferenceStatic(Integer.valueOf(inProps.getProperty(CHARSET_DISP_PREF_KEY, "1")));
-        String b= inProps.getProperty(INCREMENTAL,"false");//true by default
+        String b= inProps.getProperty(INCREMENTAL,"true");//true by default
         incrementalDeployPossible = b.equals("true");
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
 
@@ -468,10 +469,13 @@ public class PluginProperties  {
 
 	File f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH);
         if (f3!=null){
-	    //System.out.println(f3);
             return f3.getAbsolutePath();
         } 
-        
+        f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH2);
+        if (f3!=null){
+            return f3.getAbsolutePath();
+        } 
+                
         
         String retVal = "";
         
