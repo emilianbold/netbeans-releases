@@ -14,6 +14,7 @@
 package org.netbeans.core.lookup;
 
 import javax.swing.Action;
+import org.netbeans.core.LoaderPoolNode;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -63,17 +64,26 @@ implements FileChangeListener {
         DataObject obj1;
         try {
             obj1 = findIt("Services/Misc/inst-8.settings");
+            ERR.log("Found obj1: " + obj1);
             assertEquals("No saved state for inst-8.settings", null, FileUtil.toFile(obj1.getPrimaryFile()));
             InstanceCookie inst1 = (InstanceCookie)obj1.getCookie(InstanceCookie.class);
+            ERR.log("There is a cookie: " + inst1);
             assertNotNull("Had an instance", inst1);
             Action a1 = (Action)inst1.instanceCreate();
             assertEquals("Correct action class", "test2.SomeAction", a1.getClass().getName());
             assertTrue("Old version of action", a1.isEnabled());
+            
+            ERR.log("Action created" + a1);
+            
             // Make some change which should cause it to be written to disk:
             synchronized (this) {
+                ERR.log("In sync block");
                 a1.setEnabled(false);
+                ERR.log("setEnabled(false)");
                 // Cf. InstanceDataObject.SettingsInstance.SAVE_DELAY = 2000:
+                ERR.log("Waiting");
                 wait (60000);
+                ERR.log("Waiting done");
                 assertTrue ("Really was saved", instanceSaved);
             }
             /*
@@ -85,26 +95,36 @@ implements FileChangeListener {
             assertNotNull("Wrote to disk; expecting: " + new File(new File(new File(systemDir, "Services"), "Misc"), "inst-8.settings"),
                 saved);
              */
+            ERR.log("Twidle reload");
             twiddle(m2, TWIDDLE_RELOAD);
-            // Make sure there is time for changes to take effect:
-            Thread.sleep(2000);
+            ERR.log("TWIDDLE_RELOAD done");
+            LoaderPoolNode.waitFinished();
+            ERR.log("pool refeshed");
             DataObject obj2 = findIt("Services/Misc/inst-8.settings");
+            ERR.log("Data object for inst-8: " + obj2);
             assertSameDataObject ("same data object", obj1, obj2);
             InstanceCookie inst2 = (InstanceCookie)obj2.getCookie(InstanceCookie.class);
+            ERR.log("Cookie from the object: " + inst2);
             assertNotNull("Had an instance", inst2);
             assertTrue("InstanceCookie changed", inst1 != inst2);
             Action a2 = (Action)inst2.instanceCreate();
+            ERR.log("Action2 created: " + a2);
             assertTrue("Action changed", a1 != a2);
             assertTrue("Correct action", "SomeAction".equals(a2.getValue(Action.NAME)));
             assertTrue("New version of action", !a2.isEnabled());
         } finally {
+            ERR.log("Final disable");
             twiddle(m2, TWIDDLE_DISABLE);
+            ERR.log("Final disable done");
         }
         // Now make sure it has no cookie.
-        Thread.sleep(1000);
+        LoaderPoolNode.waitFinished();
+        ERR.log("loader pool node refreshed");
         DataObject obj3 = findIt("Services/Misc/inst-8.settings");
+        ERR.log("Third data object: " + obj3);
         assertSameDataObject ("same data object2", obj1, obj3);
         InstanceCookie inst3 = (InstanceCookie)obj3.getCookie(InstanceCookie.class);
+        ERR.log("Cookie is here: " + inst3);
         assertNull("Had instance", inst3);
     }
     
