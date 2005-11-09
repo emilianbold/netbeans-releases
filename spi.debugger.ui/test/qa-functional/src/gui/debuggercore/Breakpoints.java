@@ -179,7 +179,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
         assertTrue("Class Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 2).getText()));
-        assertTrue("Method Name was not set to correct value.", "MemoryView".equals(new JTextFieldOperator(dialog, 3).getText()));
+        assertTrue("Method Name was not set to correct value.", "<init>".equals(new JTextFieldOperator(dialog, 3).getText()));
         dialog.cancel();
     }
     
