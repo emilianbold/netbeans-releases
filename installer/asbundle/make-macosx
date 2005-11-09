@@ -1,3 +1,6 @@
 # $IS_HOME is location of Install Shield
 # $AS_INSTALLER_PATH is location of SJS AS installer
-ant -Dismp.home=$IS_HOME -Das.installer=$AS_INSTALLER_PATH/j2eesdk-1_4_02_2005Q2-fcs-bin-b11-mac-24_aug_2005.zip build-macosx
+ant \
+-Dismp.home=$IS_HOME \
+-Das.installer=$AS_INSTALLER_PATH/j2eesdk-1_4_02_2005Q2-fcs-bin-b11-mac-24_aug_2005.zip \
+build-macosx
