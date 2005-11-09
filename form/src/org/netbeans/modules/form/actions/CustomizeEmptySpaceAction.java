@@ -34,6 +34,7 @@ import org.netbeans.modules.form.layoutdesign.*;
  */
 public class CustomizeEmptySpaceAction extends CookieAction {
     private static String name;
+    private Dialog dialog;
 
     protected int mode() {
         return MODE_EXACTLY_ONE;
@@ -78,7 +79,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         RADComponent metacomp = (RADComponent)comps.get(0);
         FormModel formModel = metacomp.getFormModel();
         LayoutModel model = formModel.getLayoutModel();
-        EmptySpaceCustomizer customizer = new EmptySpaceCustomizer(model, metacomp.getId());
+        final EmptySpaceCustomizer customizer = new EmptySpaceCustomizer(model, metacomp.getId());
         DialogDescriptor dd = new DialogDescriptor(
             customizer,
             NbBundle.getMessage(CustomizeEmptySpaceAction.class, "TITLE_CustomizeEmptySpace"), // NOI18N
@@ -87,10 +88,20 @@ public class CustomizeEmptySpaceAction extends CookieAction {
             NotifyDescriptor.OK_OPTION,
             DialogDescriptor.DEFAULT_ALIGN,
             new HelpCtx(getClass().getName()),
-            null); 
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    if (evt.getSource() == NotifyDescriptor.OK_OPTION) {
+                        if (customizer.checkValues()) {
+                            dialog.dispose();
+                        }
+                    }
+                }
+            });
+        dd.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
+        dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizeEmptySpaceAction.class, "ACSD_EmptySpace")); // NOI18N
         dialog.show();
+        dialog = null;
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             Object layoutUndoMark = model.getChangeMark();
             javax.swing.undo.UndoableEdit ue = model.getUndoableEdit();
@@ -158,6 +169,40 @@ class EmptySpaceCustomizer extends JPanel {
         }
     }
     
+    boolean checkValues() {
+        return checkValue(leftSize) && checkValue(rightSize) && checkValue(topSize) && checkValue(bottomSize);
+    }
+
+    private boolean checkValue(JComboBox size) {
+        Object selSize = size.getSelectedItem();
+        if (size.isEnabled() && !selSize.equals(padding)) {
+            try {
+                int newPref = Integer.parseInt((String)selSize);
+                if (newPref < 0) {
+                    // Negative
+                    notify("MSG_NegativeSpaceSize"); // NOI18N
+                    return false;
+                }
+                if (newPref > Short.MAX_VALUE) {
+                    // Too large
+                    notify("MSG_TooLargeSpaceSize"); // NOI18N
+                    return false;
+                }
+            } catch (NumberFormatException nfex) {
+                // Not a nubmer
+                notify("MSG_CorruptedSpaceSize"); // NOI18N
+                return false;
+            }            
+        }
+        return true;
+    }
+
+    private void notify(String messageKey) {
+        NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+            NbBundle.getBundle(CustomizeEmptySpaceAction.class).getString(messageKey));
+        DialogDisplayer.getDefault().notify(descriptor);
+    }
+
     void applyValues() {
         LayoutComponent comp = model.getLayoutComponent(compId);
         applyValues(comp, LayoutConstants.HORIZONTAL, LayoutConstants.LEADING, leftSize, leftResizable);
