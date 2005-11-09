@@ -103,11 +103,9 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
      * @exception ClassNotFoundException if a class was not found
      */
     public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
-        if (annotationType != null)
-            return annotationType;
-
-            parse();
-            return annotationType;
+        annotationType = null;
+        parse();
+        return annotationType;
     }
     
     /** The representation type that may be created as instances.
