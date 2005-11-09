@@ -74,6 +74,10 @@ public class TabListPopupAction extends AbstractAction {
             if (tab.getComponent() instanceof TopComponent) {
                 TopComponent tabTC = (TopComponent) tab.getComponent();
                 name = tabTC.getDisplayName();
+                // #68291 fix - some hostile top components have null display name 
+                if (name == null) {
+                    name = tabTC.getName();
+                }
                 htmlName = tabTC.getHtmlDisplayName();
                 if (htmlName == null) {
                     htmlName = name;
