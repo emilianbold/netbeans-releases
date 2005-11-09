@@ -14,7 +14,9 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
+import java.io.File;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
 /**
@@ -32,7 +34,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class BasicInfoWizardPanel extends BasicWizardPanel {
+final class BasicInfoWizardPanel extends BasicWizardPanel implements WizardDescriptor.ValidatingPanel {
     
     /** Representing visual component for this step. */
     private BasicInfoVisualPanel visualPanel;
@@ -57,7 +59,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
         if (visualPanel == null) {
             visualPanel = new BasicInfoVisualPanel(getSettings(), wizardType);
             visualPanel.addPropertyChangeListener(this);
-            visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title")); // NOI18N
+            visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title"));
             visualPanel.updateAndCheck();
         }
         return visualPanel;
@@ -65,6 +67,21 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     
     public HelpCtx getHelp() {
         return new HelpCtx(BasicInfoWizardPanel.class.getName() + "_" + getWizardTypeString(wizardType)); // NOI18N
+    }
+    
+    public void validate() throws WizardValidationException {
+        // XXX this is little strange. Since this method is called first time the panel appears.
+        // So we have to do this null check (data are uninitialized)
+        String prjFolder = NewModuleProjectData.getData(getSettings()).getProjectFolder();
+        if (prjFolder != null) {
+            File prjFolderF = new File(prjFolder);
+            if (prjFolderF.mkdir()) {
+                prjFolderF.delete();
+            } else {
+                String message = getMessage("MSG_UnableToCreateProjectFolder");
+                throw new WizardValidationException(visualPanel.nameValue, message, message);
+            }
+        }
     }
     
 }

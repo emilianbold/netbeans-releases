@@ -651,8 +651,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.weighty = 1.0;
         add(pnlThouShaltBeholdLayout, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void manageSuitePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageSuitePlatformActionPerformed
         managePlatform(suitePlatformValue);
@@ -750,7 +749,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private javax.swing.JComboBox moduleSuiteValue;
     private javax.swing.ButtonGroup moduleTypeGroup;
     private javax.swing.JLabel nameLbl;
-    private javax.swing.JTextField nameValue;
+    javax.swing.JTextField nameValue;
     private javax.swing.JLabel platform;
     private javax.swing.JComboBox platformValue;
     private javax.swing.JPanel pnlThouShaltBeholdLayout;
@@ -761,4 +760,5 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private javax.swing.JComboBox suitePlatformValue;
     private javax.swing.JPanel typeChooserPanel;
     // End of variables declaration//GEN-END:variables
+
 }
