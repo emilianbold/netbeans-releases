@@ -269,6 +269,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         add(jLabelTarget, gridBagConstraints);
         jLabelTarget.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerGeneral_jLabelTarget"));
 
+        jComboBoxTarget.setMinimumSize(this.jComboBoxTarget.getPreferredSize());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -292,7 +293,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         jPanelCompile.setLayout(new java.awt.GridBagLayout());
 
-        jPanelCompile.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        jPanelCompile.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         librariesJLabel1.setLabelFor(jListCpC);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel1, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesC_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -389,7 +390,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         jPanelRun.setLayout(new java.awt.GridBagLayout());
 
-        jPanelRun.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        jPanelRun.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         librariesJLabel3.setLabelFor(jListCpR);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel3, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesR_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -475,7 +476,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         jPanelCompileTests.setLayout(new java.awt.GridBagLayout());
 
-        jPanelCompileTests.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        jPanelCompileTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         librariesJLabel2.setLabelFor(jListCpCT);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel2, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesCT_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -561,7 +562,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         jPanelRunTests.setLayout(new java.awt.GridBagLayout());
 
-        jPanelRunTests.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        jPanelRunTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         librariesJLabel4.setLabelFor(jListCpRT);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel4, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesRT_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -672,8 +673,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabelErrorMessage, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void createNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewPlatform
         Object selectedItem = this.jComboBoxTarget.getSelectedItem();
