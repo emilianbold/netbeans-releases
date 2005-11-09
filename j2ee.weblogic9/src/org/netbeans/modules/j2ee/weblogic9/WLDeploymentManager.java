@@ -106,7 +106,7 @@ public class WLDeploymentManager implements DeploymentManager {
     }
     
     public boolean isLocal () {
-        return new Boolean(getInstanceProperties().getProperty(WLDeploymentFactory.IS_LOCAL_ATTR)).booleanValue();
+        return new Boolean(getInstanceProperties().getProperty(WLPluginProperties.IS_LOCAL_ATTR)).booleanValue();
     }
     /**
      * Returns the InstanceProperties object for the current server instance
@@ -143,7 +143,14 @@ public class WLDeploymentManager implements DeploymentManager {
     
     private void modifiedLoader() {
         swapLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(WLDeploymentFactory.getWLClassLoader());
+        String serverRoot = getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+        // if serverRoot is null, then we are in a server instance registration process, thus this call
+        // is made from InstanceProperties creation -> WLPluginProperties singleton contains 
+        // install location of the instance being registered
+        if (serverRoot == null)
+            serverRoot = WLPluginProperties.getInstance().getInstallLocation();
+
+        Thread.currentThread().setContextClassLoader(WLDeploymentFactory.getWLClassLoader(serverRoot));
     }
     private void originalLoader() {
         Thread.currentThread().setContextClassLoader(swapLoader);

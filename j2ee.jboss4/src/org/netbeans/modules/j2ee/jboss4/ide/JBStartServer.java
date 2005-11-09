@@ -149,7 +149,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
         }
         
         ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
-        URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader();
+        String serverRoot = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+        URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader(serverRoot);
         
         Thread.currentThread().setContextClassLoader(loader);
         java.util.Hashtable env = new java.util.Hashtable();
@@ -291,7 +292,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
 
 
             Process serverProcess = null;
-            String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
+//            String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
+            String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
 
             String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH); 
 
@@ -406,7 +408,9 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 return;
             }
 
-                String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
+//                String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
+                String serverLocation = InstanceProperties.getInstanceProperties(dm.getUrl()).
+                                          getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
                 String serverStopFileName = serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
                 
                 File serverStopFile = new File(serverStopFileName);

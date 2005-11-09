@@ -123,7 +123,7 @@ public class WLStartServer extends StartServer {
     public ServerDebugInfo getDebugInfo(Target target) {
         return new ServerDebugInfo(dm.getHost(), new Integer(
                 dm.getInstanceProperties().getProperty(
-                WLDeploymentFactory.DEBUGGER_PORT_ATTR)).intValue());
+                WLPluginProperties.DEBUGGER_PORT_ATTR)).intValue());
     }
     
     /**
@@ -134,7 +134,7 @@ public class WLStartServer extends StartServer {
     public boolean supportsStartDeploymentManager() {
         // if the server is local we can start it
         if (dm.getInstanceProperties().getProperty(
-                WLDeploymentFactory.IS_LOCAL_ATTR).equals("true")) {   // NOI18N
+                WLPluginProperties.IS_LOCAL_ATTR).equals("true")) {   // NOI18N
             return true;
         } else {
             return false;
@@ -320,7 +320,7 @@ public class WLStartServer extends StartServer {
             // get the profile root directory and the instance name from the
             // deployment manager
             domainHome = dm.getInstanceProperties().getProperty(
-                    WLDeploymentFactory.DOMAIN_ROOT_ATTR);
+                    WLPluginProperties.DOMAIN_ROOT_ATTR);
         }
         
         /**
@@ -433,9 +433,9 @@ public class WLStartServer extends StartServer {
             // get the profile root directory, the debugger port and the 
             // instance name from the deployment manager
             domainHome = dm.getInstanceProperties().getProperty(
-                    WLDeploymentFactory.DOMAIN_ROOT_ATTR);
+                    WLPluginProperties.DOMAIN_ROOT_ATTR);
             debuggerPort = dm.getInstanceProperties().getProperty(
-                    WLDeploymentFactory.DEBUGGER_PORT_ATTR);
+                    WLPluginProperties.DEBUGGER_PORT_ATTR);
         }
         
         /**
@@ -546,7 +546,7 @@ public class WLStartServer extends StartServer {
             // get the profile home directory and the instance name from the
             // deployment manager
             domainHome = dm.getInstanceProperties().getProperty(
-                    WLDeploymentFactory.DOMAIN_ROOT_ATTR);
+                    WLPluginProperties.DOMAIN_ROOT_ATTR);
         }
         
         /**

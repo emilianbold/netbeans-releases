@@ -43,14 +43,6 @@ public class WLDeploymentFactory implements DeploymentFactory {
     
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
     
-    // additional properties that are stored in the InstancePropeties object
-    public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
-    public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
-    public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
-    public static final String HOST_ATTR = "host";                     // NOI18N
-    public static final String PORT_ATTR = "port";                     // NOI18N
-    public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
-    
     /**
      * The singleton instance of the factory
      */
@@ -96,9 +88,9 @@ public class WLDeploymentFactory implements DeploymentFactory {
     
     private static ExtendedClassLoader loader = null;
     
-    public static ClassLoader getWLClassLoader () {
+    public static ClassLoader getWLClassLoader (String serverRoot) {
         if (loader == null) {
-            resetWLClassLoader(WLPluginProperties.getInstance().getInstallLocation());
+            resetWLClassLoader(serverRoot);
         }
         return loader;
     }
@@ -120,7 +112,15 @@ public class WLDeploymentFactory implements DeploymentFactory {
         DeploymentManagerCreationException dmce = null;
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
-            ClassLoader loader = getWLClassLoader();
+            String serverRoot = InstanceProperties.getInstanceProperties(uri).
+                                    getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            // if serverRoot is null, then we are in a server instance registration process, thus this call
+            // is made from InstanceProperties creation -> WLPluginProperties singleton contains 
+            // install location of the instance being registered
+            if (serverRoot == null)
+                serverRoot = WLPluginProperties.getInstance().getInstallLocation();
+            
+            ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
             Method m = helperClazz.getDeclaredMethod("getDeploymentManager", new Class [] {String.class,String.class,String.class,String.class});
@@ -143,7 +143,15 @@ public class WLDeploymentFactory implements DeploymentFactory {
         DeploymentManagerCreationException dmce = null;
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
-            ClassLoader loader = getWLClassLoader();
+            String serverRoot = InstanceProperties.getInstanceProperties(uri).
+                                    getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            // if serverRoot is null, then we are in a server instance registration process, thus this call
+            // is made from InstanceProperties creation -> WLPluginProperties singleton contains 
+            // install location of the instance being registered
+            if (serverRoot == null)
+                serverRoot = WLPluginProperties.getInstance().getInstallLocation();
+            
+            ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
             Method m = helperClazz.getDeclaredMethod("getDisconnectedDeploymentManager", new Class [] {});

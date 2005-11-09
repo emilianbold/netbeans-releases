@@ -110,10 +110,10 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         // if all the data is normally validated - create the instance and 
         // attach the additional properties
         InstanceProperties ip = InstanceProperties.createInstanceProperties(url, username, password, displayName);
-        ip.setProperty(WLDeploymentFactory.SERVER_ROOT_ATTR, serverRoot);
-        ip.setProperty(WLDeploymentFactory.DOMAIN_ROOT_ATTR, domainRoot);
-        ip.setProperty(WLDeploymentFactory.IS_LOCAL_ATTR, isLocal);
-        ip.setProperty(WLDeploymentFactory.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
+        ip.setProperty(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
+        ip.setProperty(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
+        ip.setProperty(WLPluginProperties.IS_LOCAL_ATTR, isLocal);
+        ip.setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
 
         // add the created instance properties to the result set
         result.add(ip);

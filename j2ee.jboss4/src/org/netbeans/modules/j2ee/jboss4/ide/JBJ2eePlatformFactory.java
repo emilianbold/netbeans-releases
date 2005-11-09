@@ -67,16 +67,23 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             SPEC_VERSIONS.add(J2eeModule.J2EE_14);
         }
 
-        private String platformRoot = JBPluginProperties.getInstance().getInstallLocation();
+        private String platformRoot;
 
         private LibraryImplementation[] libraries = null;
 
-        private DeploymentManager dm;
+        private JBDeploymentManager dm;
 
-        public J2eePlatformImplImpl(DeploymentManager dm) {
+        public J2eePlatformImplImpl(JBDeploymentManager dm) {
             this.dm = dm;
         }
 
+        private String getPlatformRoot() {
+            if (platformRoot == null)
+                platformRoot = InstanceProperties.getInstanceProperties(dm.getUrl()).
+                                        getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+            return platformRoot;
+        }
+        
         public Set getSupportedSpecVersions() {
             return SPEC_VERSIONS;
         }
@@ -97,11 +104,11 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         public File[] getPlatformRoots() {
-            return new File[]{new File(platformRoot)};
+            return new File[]{new File(getPlatformRoot())};
         }
 
         private void initLibraries() {
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(((JBDeploymentManager)dm).getUrl());
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
             try {
                 LibraryImplementation libs[] = new LibraryImplementation[2];
 
@@ -111,7 +118,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                 library.setName(NbBundle.getMessage(JBJ2eePlatformFactory.class, "TITLE_JBOSS_LIBRARY")); //NOI18N
 
                 List list = new ArrayList();
-                list.add(fileToUrl(new File(platformRoot, "client/jboss-j2ee.jar")));  //NOI18N
+                list.add(fileToUrl(new File(getPlatformRoot(), "client/jboss-j2ee.jar")));  //NOI18N
                 library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, list);
 
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
@@ -124,12 +131,12 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
 
                 list = new ArrayList();
                 library = libraryProvider.createLibrary();
-                addFiles(new File (platformRoot, "lib"), list); //NOI18N
+                addFiles(new File (getPlatformRoot(), "lib"), list); //NOI18N
 
                 String domain = null;
                 domain = ip.getProperty("server"); //NOI18N
                 if (domain != null) {
-                    addFiles(new File (platformRoot, "server/" + domain + "/lib"), list); //NOI18N
+                    addFiles(new File (getPlatformRoot(), "server/" + domain + "/lib"), list); //NOI18N
                 }
                 library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, list);
                 if (j2eeDoc != null) {

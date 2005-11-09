@@ -40,8 +40,8 @@ import org.netbeans.modules.j2ee.weblogic9.*;
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
-        return new J2eePlatformImplImpl(dm);
+        assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
+        return new J2eePlatformImplImpl((WLDeploymentManager)dm);
     }
     
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
@@ -61,7 +61,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             SPEC_VERSIONS.add(J2eeModule.J2EE_14);
         }
         
-        private String platformRoot = WLPluginProperties.getInstance().getInstallLocation();
+//        private String platformRoot = WLPluginProperties.getInstance().getInstallLocation();
+        private String platformRoot;
         
         private LibraryImplementation[] libraries = null;
         
@@ -77,8 +78,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          */
         WLDeploymentManager dm;
         
-        public J2eePlatformImplImpl(DeploymentManager dm) {
-            this.dm = (WLDeploymentManager) dm;
+        public J2eePlatformImplImpl(WLDeploymentManager dm) {
+            this.dm = dm;
         }
         
         public boolean isToolSupported(String toolName) {
@@ -109,7 +110,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public java.io.File[] getPlatformRoots() {
-            return new File[]{new File(platformRoot)};
+            return new File[]{new File(getPlatformRoot())};
         }
         
         public LibraryImplementation[] getLibraries() {
@@ -132,7 +133,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // add the required jars to the library
             try {
                 List list = new ArrayList();
-                list.add(fileToUrl(new File(platformRoot, "server/lib/weblogic.jar"))); // NOI18N
+                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar"))); // NOI18N
                 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
@@ -184,6 +185,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 url = FileUtil.getArchiveRoot(url);
             }
             return url;
+        }
+
+        private String getPlatformRoot() {
+            if (platformRoot == null)
+                platformRoot = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            
+            return platformRoot;
         }
     }
     

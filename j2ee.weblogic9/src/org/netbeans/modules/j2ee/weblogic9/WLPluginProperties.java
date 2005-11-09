@@ -32,6 +32,13 @@ import org.openide.modules.SpecificationVersion;
  */
 public class WLPluginProperties {
     
+    // additional properties that are stored in the InstancePropeties object
+    public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
+    public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
+    public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
+    public static final String HOST_ATTR = "host";                     // NOI18N
+    public static final String PORT_ATTR = "port";                     // NOI18N
+    public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
     
     private static WLPluginProperties pluginProperties = null;
     private String installLocation;
@@ -195,14 +202,17 @@ public class WLPluginProperties {
     
     
     public void setInstallLocation(String installLocation){
+System.out.println("\t setInstallLocation(): " + installLocation);        
         if ( installLocation.endsWith("/") || installLocation.endsWith("\\") ){
             installLocation = installLocation.substring(0, installLocation.length() - 1 );
         }
         
         this.installLocation = installLocation;
-        WLDeploymentFactory.resetWLClassLoader(installLocation);
+//        WLDeploymentFactory.resetWLClassLoader(installLocation);
     }
+    
     public String getInstallLocation(){
+System.out.println("getInstallLocation(): " + installLocation);        
         return this.installLocation;
     }
     

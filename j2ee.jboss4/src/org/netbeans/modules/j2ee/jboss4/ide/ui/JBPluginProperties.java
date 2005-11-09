@@ -149,6 +149,7 @@ public class JBPluginProperties {
         
         this.installLocation = installLocation;
     }
+
     public String getInstallLocation(){
         return this.installLocation;
     }

@@ -12,6 +12,8 @@
  */
 package org.netbeans.modules.j2ee.jboss4;
 
+import java.util.HashMap;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.File;
 import java.net.URL;
@@ -42,43 +44,55 @@ public class JBDeploymentFactory implements DeploymentFactory {
         return instance;
     }
     
-    private DeploymentFactory jbossFactory = null;
+//    private DeploymentFactory jbossFactory = null;
+    /**
+     * Mapping of a server installation directory to a deployment factory
+     */
+    private HashMap/*<String, DeploymentFactory*/ jbossFactories = new HashMap();
     
-    public JBDeploymentFactory() {
-        // init();
-    }
-    
-    public URLClassLoader getJBClassLoader(){
-            String jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
-            try {
-                
-                URL urls[] = new URL[]{
-                        new File(jbossRoot + "/client/jbossall-client.jar").toURI().toURL(),      //NOI18N
-                        new File(jbossRoot + "/client/jboss-common-client.jar").toURI().toURL(),  //NOI18N
-                        new File(jbossRoot + "/client/jboss-deployment.jar").toURI().toURL(),     //NOI18N
-                        new File(jbossRoot + "/client/jnp-client.jar").toURI().toURL(),           //NOI18N
-                        new File(jbossRoot + "/lib/dom4j.jar").toURI().toURL()                    //NOI18N
-                };
-                URLClassLoader loader = new URLClassLoader(urls, getClass().getClassLoader());
-                return loader;
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-            }
-            return null;
-    }
-    
-    public DeploymentFactory getFactory() {
-        if ( jbossFactory == null ){
-            String jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
-            try {
-                URLClassLoader loader = getJBClassLoader();
-                jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-            }
+    public URLClassLoader getJBClassLoader(String serverRoot){
+        try {
+
+            URL urls[] = new URL[]{
+                    new File(serverRoot + "/client/jbossall-client.jar").toURI().toURL(),      //NOI18N
+                    new File(serverRoot + "/client/jboss-common-client.jar").toURI().toURL(),  //NOI18N
+                    new File(serverRoot + "/client/jboss-deployment.jar").toURI().toURL(),     //NOI18N
+                    new File(serverRoot + "/client/jnp-client.jar").toURI().toURL(),           //NOI18N
+                    new File(serverRoot + "/lib/dom4j.jar").toURI().toURL()                    //NOI18N
+            };
+            URLClassLoader loader = new URLClassLoader(urls, getClass().getClassLoader());
+            return loader;
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
         }
+        return null;
+    }
+    
+    public DeploymentFactory getFactory(String instanceURL) {
+        DeploymentFactory jbossFactory = null;
+        try {
+            String jbossRoot = InstanceProperties.getInstanceProperties(instanceURL).
+                                    getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+            // if jbossRoot is null, then we are in a server instance registration process, thus this call
+            // is made from InstanceProperties creation -> JBPluginProperties singleton contains 
+            // install location of the instance being registered
+            if (jbossRoot == null)
+                jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
+            
+            jbossFactory = (DeploymentFactory) jbossFactories.get(jbossRoot);
+            if ( jbossFactory == null ) {
+                URLClassLoader loader = getJBClassLoader(jbossRoot);
+                jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
+                
+                jbossFactories.put(jbossRoot, jbossFactory);
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
+
         return jbossFactory;
     }
+    
     public boolean handlesURI(String uri) {
         if (uri != null && uri.startsWith(URI_PREFIX)) {
             return true;
@@ -92,7 +106,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
         
-        DeploymentFactory df = getFactory();
+        DeploymentFactory df = getFactory(uri);
         if (df == null)
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
 
@@ -109,7 +123,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
         
-        DeploymentFactory df = getFactory();
+        DeploymentFactory df = getFactory(uri);
         if (df == null)
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
 
@@ -123,7 +137,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
     
     public String getProductVersion() {
        
-        return getFactory().getProductVersion();
+        return NbBundle.getMessage (JBDeploymentFactory.class, "LBL_JBossFactoryVersion");
     }
     
     public String getDisplayName() {

@@ -109,7 +109,7 @@ public class WLDeployer implements ProgressObject, Runnable {
     
     public void run(){
 
-        String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(WLDeploymentFactory.DOMAIN_ROOT_ATTR) + AUTO_DEPLOY_DIR;
+        String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR) + AUTO_DEPLOY_DIR;
         FileObject foIn = FileUtil.toFileObject(file);
         FileObject foDestDir = FileUtil.toFileObject(new File(deployDir));
         String fileName = file.getName();

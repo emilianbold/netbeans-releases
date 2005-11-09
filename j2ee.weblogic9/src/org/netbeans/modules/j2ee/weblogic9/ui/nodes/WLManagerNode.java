@@ -209,7 +209,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
                        NbBundle.getMessage(WLManagerNode.class, "HINT_serverRoot")   // NOI18N
                    ) {
                        public Object getValue() {
-                           return deploymentManager.getInstanceProperties().getProperty(WLDeploymentFactory.SERVER_ROOT_ATTR);
+                           return deploymentManager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
                        }
                    };
         properties.put(property);
@@ -222,7 +222,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
                        NbBundle.getMessage(WLManagerNode.class, "HINT_domainRoot")   // NOI18N
                    ) {
                        public Object getValue() {
-                           return deploymentManager.getInstanceProperties().getProperty(WLDeploymentFactory.DOMAIN_ROOT_ATTR);
+                           return deploymentManager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
                        }
                    };
         properties.put(property);
@@ -235,12 +235,12 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
                        NbBundle.getMessage(WLManagerNode.class, "HINT_debuggerPort")   // NOI18N
                    ) {
                        public Object getValue() {
-                           String debuggerPort = deploymentManager.getInstanceProperties().getProperty(WLDeploymentFactory.DEBUGGER_PORT_ATTR);
+                           String debuggerPort = deploymentManager.getInstanceProperties().getProperty(WLPluginProperties.DEBUGGER_PORT_ATTR);
                            return new Integer(debuggerPort);
                        }
 
                        public void setValue(Object value) {
-                           deploymentManager.getInstanceProperties().setProperty(WLDeploymentFactory.DEBUGGER_PORT_ATTR, value.toString());
+                           deploymentManager.getInstanceProperties().setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR, value.toString());
                        }
                    };
         properties.put(property);
