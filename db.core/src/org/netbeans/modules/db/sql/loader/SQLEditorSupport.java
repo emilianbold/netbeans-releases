@@ -13,14 +13,16 @@
 
 package org.netbeans.modules.db.sql.loader;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -50,10 +52,8 @@ import org.netbeans.modules.db.api.sql.SQLExecuteCookie;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
-import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.windows.TopComponent;
+import org.openide.util.Mutex;
 
 /** 
  * Editor support for SQL data objects. There can be two "kinds" of SQL editors: one for normal
@@ -83,6 +83,12 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
      * The task representing the execution of statements.
      */
     private Task task;
+    
+    private JPanel container = null;
+    
+    private JSplitPane splitter = null;
+    
+    private boolean executed = false;
     
     /** 
      * SaveCookie for this support instance. The cookie is adding/removing 
@@ -165,13 +171,9 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     }
     
     protected Component wrapEditorComponent(Component editor) {
-        resultComponent = new SQLResultPanel();
-        JSplitPane splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
-        splitter.setBorder(null);
-        splitter.setDividerLocation(250);
-        splitter.setDividerSize(7);
-        
-        return splitter;
+        container = new JPanel(new BorderLayout());
+        container.add(editor, BorderLayout.CENTER);
+        return container;
     }
     
     protected void notifyClosed() {
@@ -298,7 +300,28 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     }
     
     private SQLResultPanel getResultComponent() {
+        synchronized (rp) {
+            if (resultComponent == null) {
+                createResultComponent();
+            }
+        }
         return resultComponent;
+    }
+    
+    private void createResultComponent() {
+        Mutex.EVENT.writeAccess(new Mutex.Action() {
+            public Object run() {
+                Component editor = container.getComponent(0);
+                resultComponent = new SQLResultPanel();
+                splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
+                splitter.setBorder(null);
+                container.removeAll();
+                container.add(splitter);
+                splitter.setDividerLocation(250);
+                splitter.setDividerSize(7);
+                return null;
+            }
+        });
     }
     
     private void showExecuteError(String error) {
@@ -320,12 +343,12 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                 ErrorManager.getDefault().notify(e);
             }
             executionResult = null;
-        }
-        
-        try {
-            getResultComponent().setExecutionResult(null);
-        } catch (Exception e) {
-            // ignore it, should never occur
+            
+            try {
+                getResultComponent().setExecutionResult(null);
+            } catch (Exception e) {
+                // ignore it, should never occur
+            }
         }
     }
 
