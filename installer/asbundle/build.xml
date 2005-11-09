@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="copy-license-files">
     <copy file="resources/LICENSE.txt"
-          tofile="${nb.dir}/nb5.0/LICENSE.txt"
+          tofile="${nb.dir}/LICENSE.txt"
           failonerror="true" overwrite="true" />
   </target>
   
