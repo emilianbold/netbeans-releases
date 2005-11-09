@@ -34,7 +34,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.UserQuestionException;
 
 /** An implementation of NavigatorPanel for XML navigator.
- * 
+ *
  * @author Marek Fukala
  * @version 1.0
  */
@@ -88,17 +88,21 @@ public class XMLNavigatorPanel implements NavigatorPanel {
             //create document model
             final DataObject d = (DataObject) selectedFiles.iterator().next();
             EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
-            try {
-                //test if the document is opened in editor
-                BaseDocument bdoc = (BaseDocument)ec.openDocument();
-                //create UI
-                if(bdoc != null) navigator.navigate(bdoc);
-                
-            }catch(UserQuestionException uqe) {
-                //do not open a question dialog when the document is just loaded into the navigator
-                navigator.showDocumentTooLarge();
-            }catch(IOException e) {
-                ErrorManager.getDefault().notify(e);
+            if(ec == null) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
+            } else {
+                try {
+                    //test if the document is opened in editor
+                    BaseDocument bdoc = (BaseDocument)ec.openDocument();
+                    //create UI
+                    if(bdoc != null) navigator.navigate(bdoc);
+                    
+                }catch(UserQuestionException uqe) {
+                    //do not open a question dialog when the document is just loaded into the navigator
+                    navigator.showDocumentTooLarge();
+                }catch(IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
             }
         }
     }
