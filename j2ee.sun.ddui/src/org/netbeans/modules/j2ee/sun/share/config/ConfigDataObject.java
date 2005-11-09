@@ -17,19 +17,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
+
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.xml.sax.InputSource;
 
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileChangeListener;
@@ -48,9 +44,7 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
-import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.TopComponent;
@@ -63,13 +57,12 @@ import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 
-import org.netbeans.modules.xml.api.EncodingUtil;
-
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 
 import org.netbeans.modules.j2ee.sun.share.config.ui.*;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
+
 
 
 /** Data object representing a deployment plan file.
@@ -583,112 +576,29 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     }
 
     private static class XMLEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie {
-        
         public XMLEditorSupport(XMLDataObject obj) {
             super(obj, new XMLEditorEnv(obj));
             setMIMEType("text/xml"); // NOI18N
         }
-        
         class Save implements SaveCookie {
             public void save() throws IOException {
                 saveDocument();
-//                ((ConfigDataObject) getDataObject()).resetChanged();
-//                getDataObject().setModified(false);
-            }
-        }
-        
-        /* Save document using encoding declared in XML prolog if possible otherwise
-         * at UTF-8 (in such case it updates the prolog).
-         */
-        public void saveDocument() throws java.io.IOException {
-            final StyledDocument doc = getDocument();
-            String enc = EncodingUtil.detectEncoding(doc); // api in xml/core
-            
-            if (enc == null) {
-                enc = "UTF8"; // NOI18N
-            }
-
-            try {
-                //test encoding on dummy stream
-                new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
-                super.saveDocument();
+                ((ConfigDataObject)getDataObject()).resetChanged();
                 getDataObject().setModified(false);
-            } catch(java.io.UnsupportedEncodingException ex) {
-                if(queryUpdateProlog(doc, enc)) {
-                    super.saveDocument();
-                    getDataObject().setModified(false);
-                }
             }
         }
-        
-        private boolean queryUpdateProlog(final StyledDocument doc, final String enc) {
-            boolean needsSave = false;
-            
-            // ask user what next?
-            String message = NbBundle.getMessage(XMLEditorSupport.class, 
-                    "ERR_UnsupportedEncodingSaveAsUTF8", enc);
-            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
-            Object res = DialogDisplayer.getDefault().notify(descriptor);
-
-            if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                
-                // update prolog to new valid encoding
-                try {
-                    final int MAX_PROLOG = 1000;
-                    int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
-                    final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
-                    int prologLen = 0;  // actual prolog length
-
-                    //parse prolog and get prolog end
-                    if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
-
-                        // look for delimitting ?>
-                        for (int i = 3; i<maxPrologLen; i++) {
-                            if (prolog[i] == '?' && prolog[i+1] == '>') {
-                                prologLen = i + 1;
-                                break;
-                            }
-                        }
-                    }
-
-                    final int passPrologLen = prologLen;
-                    
-                    Runnable edit = new Runnable() {
-                         public void run() {
-                             try {
-                                doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
-                                doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
-                             } catch (BadLocationException e) {
-                                 if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
-                                     e.printStackTrace();
-                                 }
-                             }
-                         }
-                    };
-
-                    NbDocument.runAtomic(doc, edit);
-                    
-                    // Mark for saving on return
-                    needsSave = true;
-                } catch (BadLocationException lex) {
-                    org.openide.ErrorManager.getDefault().notify(lex);
-                }
-            }
-
-            return needsSave;
-        }
-        
         protected boolean notifyModified() {
             if (! super.notifyModified()) {
                 return false;
             }
             ((ConfigDataObject) getDataObject()).addSaveCookie(new Save());
+            getDataObject().setModified(true);
             return true;
         }
-        
         protected void notifyUnmodified() {
             super.notifyUnmodified();
             ((ConfigDataObject) getDataObject()).resetChanged();
+            getDataObject().setModified(false);
         }
         
         public void edit() {
