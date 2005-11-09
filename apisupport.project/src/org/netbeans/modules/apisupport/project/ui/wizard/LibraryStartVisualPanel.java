@@ -23,7 +23,9 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -47,8 +49,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         super(setting);
         initComponents();
         initAccessibility();
-        data = (NewModuleProjectData) getSettings().getProperty(
-                NewModuleProjectData.DATA_PROPERTY_NAME);
+        data = NewModuleProjectData.getData(setting);
         libraryDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkLibraryAndLicense();
@@ -83,7 +84,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     return;
                 }
                 try {
-                    JarFile jf = new JarFile(fil);
+                    new JarFile(fil); // just checking whether the jar is valid
                 } catch (IOException exc) {
                     setErrorMessage(getMessage("MSG_Invalid_Library_Path"));
                     return;
@@ -199,6 +200,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     try {
                         jf.close();
                     } catch (IOException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
             }

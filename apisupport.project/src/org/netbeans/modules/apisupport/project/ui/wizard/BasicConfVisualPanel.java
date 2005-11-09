@@ -68,8 +68,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         libraryModule = isLibraryModule;
         initComponents();
         initAccessibility();
-        data = (NewModuleProjectData) getSettings().getProperty(
-                NewModuleProjectData.DATA_PROPERTY_NAME);
+        data = NewModuleProjectData.getData(setting);
         cnbDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { checkCodeNameBase(); }
         };

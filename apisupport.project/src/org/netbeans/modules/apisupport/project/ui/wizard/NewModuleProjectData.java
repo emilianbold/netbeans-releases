@@ -13,14 +13,17 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
+import org.openide.WizardDescriptor;
+
 /**
- * Model for storing data gained from Wizard panels.
+ * Model for storing data gained from <em>NetBeans Plug-in Module</em> wizard
+ * panels.
  *
  * @author mkrauskopf
  */
 final class NewModuleProjectData {
     
-    static final String DATA_PROPERTY_NAME = "moduleProjectData"; // NOI18N
+    private static final String DATA_PROPERTY_NAME = "moduleProjectData"; // NOI18N
     
     private boolean netBeansOrg;
     private boolean standalone = true; // standalone is default
@@ -36,7 +39,21 @@ final class NewModuleProjectData {
     private String projectDisplayName;
     private int moduleCounter;
     private int suiteCounter;
-
+    
+    /**
+     * Tries to find an instance of {@link NewModuleProjectData} in the given
+     * setting and returns it. If none is found, the new one is created, stored
+     * in the setting and then returned.
+     */
+    static NewModuleProjectData getData(final WizardDescriptor setting) {
+        NewModuleProjectData data = (NewModuleProjectData) setting.getProperty(DATA_PROPERTY_NAME);
+        if (data == null) {
+            data = new NewModuleProjectData();
+            setting.putProperty(NewModuleProjectData.DATA_PROPERTY_NAME, data);
+        }
+        return data;
+    }
+    
     /** Creates a new instance of NewModuleProjectData */
     NewModuleProjectData() {/* empty constructor */}
     
@@ -139,7 +156,7 @@ final class NewModuleProjectData {
     void setProjectDisplayName(String projectDisplayName) {
         this.projectDisplayName = projectDisplayName;
     }
-
+    
     int getModuleCounter() {
         return moduleCounter;
     }
@@ -147,7 +164,7 @@ final class NewModuleProjectData {
     void setModuleCounter(int counter) {
         this.moduleCounter = counter;
     }
-
+    
     int getSuiteCounter() {
         return suiteCounter;
     }
@@ -155,4 +172,5 @@ final class NewModuleProjectData {
     void setSuiteCounter(int counter) {
         this.suiteCounter = counter;
     }
+    
 }

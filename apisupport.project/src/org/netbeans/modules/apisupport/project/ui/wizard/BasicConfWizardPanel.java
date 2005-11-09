@@ -43,9 +43,7 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
     
     public void readSettings(Object settings) {
         WizardDescriptor wizSettings = (WizardDescriptor)settings;
-        NewModuleProjectData data = (NewModuleProjectData)wizSettings.getProperty(
-                NewModuleProjectData.DATA_PROPERTY_NAME);
-                
+        NewModuleProjectData data = NewModuleProjectData.getData(wizSettings);
         if (data.getCodeNameBase() == null) {
             String dotName = BasicConfVisualPanel.EXAMPLE_BASE_NAME + data.getProjectName();
             data.setCodeNameBase(Util.normalizeCNB(dotName));

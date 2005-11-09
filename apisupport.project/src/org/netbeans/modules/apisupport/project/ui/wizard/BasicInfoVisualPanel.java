@@ -74,9 +74,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         wizardType = wizType;
         initComponents();
         initAccessibility();
-        
-        data = (NewModuleProjectData) getSettings().getProperty(
-                NewModuleProjectData.DATA_PROPERTY_NAME);
+        data = NewModuleProjectData.getData(setting);
         setComponentsVisibility();
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             detachModuleTypeGroup();
