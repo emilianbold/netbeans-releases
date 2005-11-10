@@ -35,11 +35,11 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
 
 <ul>
 	<li><b>Catalina Home.</b> Specifies the Tomcat installation 
-    directory on your local system. Note that the system verifies that you have 
-    specified a valid Tomcat home directory.
-    <li><b>Catalina Base.</b> If you expect to use Tomcat in a multi-user configuration, select 
-    the Use Private Configuration checkbox. In the Catalina Base text box, type 
-    or browse to the base directory. Typically, a base directory is placed under 
+    directory on your local system. Note that the IDE verifies that you have 
+    specified a valid Tomcat installation directory.
+    <li><b>Use Private Configuration Folder (Catalina Base).</b> Specifies that you expect to use Tomcat in a multi-user configuration.
+     When you select this checkbox, you can set the Catalina Base directory.
+    <li><b>Catalina Base.</b> Specifies the Tomcat base directory. Typically, the base directory is placed under 
     a user's directory. If you associate a base directory with the server, the 
     base directory must have the following subdirectories. If the base directory is
     empty, the IDE creates the subdirectories by copying them from Tomcat's
@@ -51,7 +51,7 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
     <li><b><tt>webapps.</tt></b> Directory for automatically loaded web applications</li>
     <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
   </ul>
-  <li><b>User name/Password.</b> The user must be a Tomcat user who has a 
+  <li><b>Username/Password.</b> The user must be a Tomcat user who has a 
    <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.</li>
  
 </ul>
