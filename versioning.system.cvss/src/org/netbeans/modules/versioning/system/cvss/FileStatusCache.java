@@ -23,6 +23,7 @@ import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.filesystems.FileUtil;
+import org.openide.ErrorManager;
 
 import java.io.*;
 import java.util.*;
@@ -517,7 +518,7 @@ public class FileStatusCache {
                     try {
                         sah.setEntry(file, entry);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        ErrorManager.getDefault().notify(e);
                     }
                 }
                 return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, entry, false);

@@ -21,6 +21,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -89,7 +90,7 @@ class DiffTreeTable extends TreeTableView {
         try {
             em.setSelectedNodes(new Node [] { node });
         } catch (PropertyVetoException e) {
-            e.printStackTrace();
+            ErrorManager.getDefault().notify(e);
         }
     }
 
@@ -100,7 +101,7 @@ class DiffTreeTable extends TreeTableView {
         try {
             em.setSelectedNodes(new Node [] { node });
         } catch (PropertyVetoException e) {
-            e.printStackTrace();
+            ErrorManager.getDefault().notify(e);
         }
     }
 

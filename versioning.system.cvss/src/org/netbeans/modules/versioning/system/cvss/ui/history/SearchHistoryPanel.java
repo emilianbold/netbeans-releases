@@ -161,7 +161,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return explorerManager;
     }
     
-    void refreshComponents(boolean refreshResults) {
+    final void refreshComponents(boolean refreshResults) {
         if (refreshResults) {
             resultsPanel.removeAll();
             if (results == null) {

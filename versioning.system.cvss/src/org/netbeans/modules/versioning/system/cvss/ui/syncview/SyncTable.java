@@ -188,7 +188,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      * 
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.  
      */ 
-    void setColumns(String [] columns) {
+    final void setColumns(String [] columns) {
         if (Arrays.equals(columns, tableColumns)) return;
         setDefaultColumnSizes();
         setModelProperties(columns);

@@ -67,7 +67,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 } catch (EOFException e) {
                     // reached EOF, no entry for this key
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ErrorManager.getDefault().notify(e);
                 } finally {
                     if (dis != null) try { dis.close(); } catch (IOException e) {}
                 }
@@ -119,7 +119,7 @@ class DiskMapTurboProvider implements TurboProvider {
         } catch (EOFException e) {
             // reached EOF, no entry for this key
         } catch (Exception e) {
-            e.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             readFailed = true;
         } finally {
             if (dis != null) try { dis.close(); } catch (IOException e) {}
