@@ -29,15 +29,12 @@ public class XMLUtil {
     }
 
     public static void printXML(StringBuffer out, String msg, boolean attribute) {
-        if (msg == null)
-            return;
-        int msgLength = msg.length();
-        for (int i = 0; i < msgLength; ++i) {
-            char c = msg.charAt(i);
-            printXML(out, c, attribute);
-        }
+        if (msg == null) return;
+        appendLine(out, msg, attribute);
     }
 
+    /** @deprecated this public method is not expected to be used by schema2beans client 
+     */
     public static void printXML(StringBuffer out, char msg, boolean attribute) {
         if (msg == '&')
             out.append("&amp;");
@@ -59,7 +56,7 @@ public class XMLUtil {
         } else
             out.append(msg);
     }
-
+    
 	/**
 	 * Takes some text to be printed into an XML stream and escapes any
 	 * characters that might make it invalid XML (like '<').
@@ -69,15 +66,12 @@ public class XMLUtil {
 	}
 
 	public static void writeXML(java.io.Writer out, String msg, boolean attribute) throws java.io.IOException {
-		if (msg == null)
-			return;
-		int msgLength = msg.length();
-		for (int i = 0; i < msgLength; ++i) {
-			char c = msg.charAt(i);
-			writeXML(out, c, attribute);
-		}
+            if (msg == null) return;
+            appendLine(out,msg,attribute);
 	}
-
+        
+        /** @deprecated this public method is not expected to be used by schema2beans client 
+         */ 
 	public static void writeXML(java.io.Writer out, char msg, boolean attribute) throws java.io.IOException {
 		if (msg == '&')
 			out.write("&amp;");
@@ -131,15 +125,41 @@ public class XMLUtil {
     }
 
     public static void printXML(java.io.Writer out, String msg, boolean attribute) throws java.io.IOException {
-        if (msg == null)
-            return;
-        int msgLength = msg.length();
-        for (int i = 0; i < msgLength; ++i) {
-            char c = msg.charAt(i);
-            printXML(out, c, attribute);
-        }
+        if (msg == null) return;
+        appendLine(out,msg,attribute);
+    }
+    
+    private static void appendLine(StringBuffer out, String msg, boolean attribute) {
+        out.append(convertChars(msg,attribute));
+    }
+    
+    private static void appendLine(java.io.Writer out, String msg, boolean attribute) throws java.io.IOException  {
+        out.write(convertChars(msg,attribute));
     }
 
+    private static String convertChars(String msg, boolean attribute) {
+        String result=msg;
+        if (msg.indexOf("&")>=0) //NOI18N
+            result = result.replaceAll("&","&amp;"); //NOI18N
+        if (msg.indexOf("<")>=0) //NOI18N
+            result = result.replaceAll("<","&lt;"); //NOI18N
+        if (msg.indexOf(">")>=0) //NOI18N   
+            result = result.replaceAll(">","&gt;"); //NOI18N
+        if (attribute) { //NOI18N
+            if (msg.indexOf("\"")>=0) //NOI18N
+                result = result.replaceAll("\"","&quot;"); //NOI18N
+            if (msg.indexOf("'")>=0) //NOI18N
+                result = result.replaceAll("'","&apos;"); //NOI18N
+            if (msg.indexOf("\n")>=0) //NOI18N
+                result = result.replaceAll("\n","&#xA"); //NOI18N
+            if (msg.indexOf("\t")>=0) //NOI18N
+                result = result.replaceAll("\t","&#x9"); //NOI18N
+        }
+        return result;
+    }
+    
+    /** @deprecated this public method is not expected to be used by schema2beans client 
+     */
     public static void printXML(java.io.Writer out, char msg, boolean attribute) throws java.io.IOException {
         if (msg == '&')
             out.write("&amp;");
