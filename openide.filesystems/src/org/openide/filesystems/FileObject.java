@@ -132,21 +132,11 @@ public abstract class FileObject extends Object implements Serializable {
      * @return some representation of this file object
      */
     public String toString() {
-        try {
-            URL u = getURL();
-
-            if (u == null) {
-                return "[invalid]" + getPath();
-            }
-
-            String cname = getClass().getName();
-            String cnameShort = cname.substring(cname.lastIndexOf('.') + 1);
-
-            return cnameShort + '@' + Integer.toHexString(System.identityHashCode(this)) + '[' + u.toExternalForm() +
-            ']'; // NOI18N
-        } catch (FileStateInvalidException e) {
-            return "[invalid]" + getPath(); // NOI18N
-        }
+        String cname = getClass().getName();
+        String cnameShort = cname.substring(cname.lastIndexOf('.') + 1);
+        
+        return cnameShort + '@' + Integer.toHexString(System.identityHashCode(this)) + '[' + getPath() +
+                ']'; // NOI18N
     }
 
     /** Get the full resource path of this file object starting from the filesystem root.
