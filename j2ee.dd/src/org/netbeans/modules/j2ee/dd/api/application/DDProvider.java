@@ -62,49 +62,54 @@ public final class DDProvider {
      * @return EjbJar object - root of the deployment descriptor bean graph
      */
     public synchronized Application getDDRoot(FileObject fo) throws java.io.IOException {
-        ApplicationProxy ejbJarProxy = getFromCache (fo);
-        if (ejbJarProxy!=null) {
-            return ejbJarProxy;
+        ApplicationProxy ejbJarProxy = null;
+        synchronized (ddMap) {
+            ejbJarProxy = getFromCache (fo);
+            if (ejbJarProxy!=null) {
+                return ejbJarProxy;
+            }
         }
         
         fo.addFileChangeListener(new FileChangeAdapter() {
             public void fileChanged(FileEvent evt) {
                 FileObject fo=evt.getFile();
                 try {
-                    ApplicationProxy ejbJarProxy = getFromCache (fo);
-                    String version = null;
-                    if (ejbJarProxy!=null) {
-                        try {
-                            DDParse parseResult = parseDD(fo);
-                            version = parseResult.getVersion();
-                            setProxyErrorStatus(ejbJarProxy, parseResult);
-                            Application newValue = createApplication(parseResult);
-                            // replacing original file in proxy EjbJar
-                            if (!version.equals(ejbJarProxy.getVersion().toString())) {
-                                ejbJarProxy.setOriginal(newValue);
-                            } else {// the same version
+                    synchronized (ddMap) {
+                        ApplicationProxy ejbJarProxy = getFromCache (fo);
+                        String version = null;
+                        if (ejbJarProxy!=null) {
+                            try {
+                                DDParse parseResult = parseDD(fo);
+                                version = parseResult.getVersion();
+                                setProxyErrorStatus(ejbJarProxy, parseResult);
+                                Application newValue = createApplication(parseResult);
                                 // replacing original file in proxy EjbJar
-                                if (ejbJarProxy.getOriginal()==null) {
+                                if (!version.equals(ejbJarProxy.getVersion().toString())) {
                                     ejbJarProxy.setOriginal(newValue);
-                                } else {
-                                    ejbJarProxy.getOriginal().merge(newValue,Application.MERGE_UPDATE);
+                                } else {// the same version
+                                    // replacing original file in proxy EjbJar
+                                    if (ejbJarProxy.getOriginal()==null) {
+                                        ejbJarProxy.setOriginal(newValue);
+                                    } else {
+                                        ejbJarProxy.getOriginal().merge(newValue,Application.MERGE_UPDATE);
+                                    }
                                 }
+                            } catch (SAXException ex) {
+                                if (ex instanceof SAXParseException) {
+                                    ejbJarProxy.setError((SAXParseException)ex);
+                                } else if ( ex.getException() instanceof SAXParseException) {
+                                    ejbJarProxy.setError((SAXParseException)ex.getException());
+                                }
+                                ejbJarProxy.setStatus(Application.STATE_INVALID_UNPARSABLE);
+                                // cbw if the state of the xml file transitions from
+                                // parsable to unparsable this could be due to a user
+                                // change or cvs change. We would like to still
+                                // receive events when the file is restored to normal
+                                // so lets not set the original to null here but wait
+                                // until the file becomes parsable again to do a merge
+                                //ejbJarProxy.setOriginal(null);
+                                ejbJarProxy.setProxyVersion(version);
                             }
-                        } catch (SAXException ex) {
-                            if (ex instanceof SAXParseException) {
-                                ejbJarProxy.setError((SAXParseException)ex);
-                            } else if ( ex.getException() instanceof SAXParseException) {
-                                ejbJarProxy.setError((SAXParseException)ex.getException());
-                            }
-                            ejbJarProxy.setStatus(Application.STATE_INVALID_UNPARSABLE);
-                            // cbw if the state of the xml file transitions from
-                            // parsable to unparsable this could be due to a user
-                            // change or cvs change. We would like to still
-                            // receive events when the file is restored to normal
-                            // so lets not set the original to null here but wait
-                            // until the file becomes parsable again to do a merge
-                            //ejbJarProxy.setOriginal(null);
-                            ejbJarProxy.setProxyVersion(version);
                         }
                     }
                 } catch (java.io.IOException ex){}

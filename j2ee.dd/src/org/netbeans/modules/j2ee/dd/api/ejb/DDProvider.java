@@ -86,11 +86,14 @@ public final class DDProvider {
         } catch (DataObjectNotFoundException e) {
             return null; // should not occur
         }
-        EjbJarProxy ejbJarProxy = getFromCache(fo);
-        if (ejbJarProxy != null) {
-            return ejbJarProxy;
+        EjbJarProxy ejbJarProxy = null;
+        synchronized (ddMap) {
+            ejbJarProxy = getFromCache(fo);
+            if (ejbJarProxy != null) {
+                return ejbJarProxy;
+            }
         }
-
+        
         fo.addFileChangeListener(new DDFileChangeListener());
 
         ejbJarProxy = DDUtils.createEjbJarProxy(fo.getInputStream());
@@ -99,10 +102,13 @@ public final class DDProvider {
     }
 
     private synchronized EjbJar getDDRoot(final DDProviderDataObject ddProviderDataObject) throws java.io.IOException {
-        EjbJarProxy ejbJarProxy = getFromCache(ddProviderDataObject) ;
-        if (ejbJarProxy == null) {
-            ejbJarProxy = DDUtils.createEjbJarProxy(ddProviderDataObject.createReader());
-            putToCache(ddProviderDataObject, ejbJarProxy);
+        EjbJarProxy ejbJarProxy = null;
+        synchronized (ddMap) {
+            ejbJarProxy = getFromCache(ddProviderDataObject) ;
+            if (ejbJarProxy == null) {
+                ejbJarProxy = DDUtils.createEjbJarProxy(ddProviderDataObject.createReader());
+                putToCache(ddProviderDataObject, ejbJarProxy);
+            }
         }
         return ejbJarProxy;
     }
@@ -276,13 +282,15 @@ public final class DDProvider {
         public void fileChanged(FileEvent evt) {
             FileObject fo = evt.getFile();
             try {
-                EjbJarProxy ejbJarProxy = getFromCache(fo);
-                if (ejbJarProxy != null) {
-                    String encoding = EncodingUtil.detectEncoding(new BufferedInputStream(fo.getInputStream()));
-                    if (encoding == null) {
-                        encoding = "UTF8";
+                synchronized (ddMap) {
+                    EjbJarProxy ejbJarProxy = getFromCache(fo);
+                    if (ejbJarProxy != null) {
+                        String encoding = EncodingUtil.detectEncoding(new BufferedInputStream(fo.getInputStream()));
+                        if (encoding == null) {
+                            encoding = "UTF8";
+                        }
+                        DDUtils.merge(ejbJarProxy, new InputStreamReader(fo.getInputStream(), encoding));
                     }
-                    DDUtils.merge(ejbJarProxy, new InputStreamReader(fo.getInputStream(), encoding));
                 }
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);

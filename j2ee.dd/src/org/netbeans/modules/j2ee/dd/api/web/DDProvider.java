@@ -70,9 +70,13 @@ public final class DDProvider {
         if (fo == null) {
             throw new IllegalArgumentException("FileObject is null");  //NOI18N;
         }
-        WebAppProxy webApp = getFromCache(fo);
-        if (webApp != null) {
-            return webApp;
+        WebAppProxy webApp = null;
+        
+        synchronized (ddMap) {
+            webApp = getFromCache(fo);
+            if (webApp!=null) {
+                return webApp;
+            }
         }
 
         fo.addFileChangeListener(fileChangeListener);
@@ -80,16 +84,20 @@ public final class DDProvider {
         String version = null;
         SAXParseException error = null;
         try {
-            WebApp original = getOriginalFromCache(fo);
-            if (original == null) {
-                version = getVersion(fo.getInputStream());
-                // preparsing
-                error = parse(fo);
-                original = DDUtils.createWebApp(fo.getInputStream(), version);
-                baseBeanMap.put(fo.getURL(), new WeakReference(original));
-            } else {
-                version = original.getVersion();
-                error = (SAXParseException) errorMap.get(fo.getURL());
+            WebApp original = null;
+            synchronized (baseBeanMap) {
+                original = getOriginalFromCache(fo);
+                if (original == null) {
+                    version = getVersion(fo.getInputStream());
+                    // preparsing
+                    error = parse(fo);
+                    original = DDUtils.createWebApp(fo.getInputStream(), version);
+                    baseBeanMap.put(fo.getURL(), new WeakReference(original));
+                    errorMap.put(fo.getURL(), error);
+                } else {
+                    version = original.getVersion();
+                    error = (SAXParseException) errorMap.get(fo.getURL());
+                }
             }
             webApp = new WebAppProxy(original, version);
             if (error != null) {
@@ -292,47 +300,51 @@ public final class DDProvider {
                 } catch (DataObjectNotFoundException e) {
                 }
                 try {
-                    WebAppProxy webApp = getFromCache (fo);
-                    WebApp orig = getOriginalFromCache (fo);
-                    if (webApp!=null) {
-                        String version = null;
-                        try {
-                            version = getVersion(fo.getInputStream());
-                            // preparsing
-                            SAXParseException error = parse(fo);
-                            if (error!=null) {
-                                webApp.setError(error);
-                                webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
-                            } else {
-                                webApp.setError(null);
-                                webApp.setStatus(WebApp.STATE_VALID);
+                    synchronized (ddMap) {
+                        synchronized (baseBeanMap) {
+                            WebAppProxy webApp = getFromCache (fo);
+                            WebApp orig = getOriginalFromCache (fo);
+                            if (webApp!=null) {
+                                String version = null;
+                                try {
+                                    version = getVersion(fo.getInputStream());
+                                    // preparsing
+                                    SAXParseException error = parse(fo);
+                                    if (error!=null) {
+                                        webApp.setError(error);
+                                        webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
+                                    } else {
+                                        webApp.setError(null);
+                                        webApp.setStatus(WebApp.STATE_VALID);
+                                    }
+                                    WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
+                                    baseBeanMap.put(fo.getURL(), new WeakReference (original));
+                                    errorMap.put(fo.getURL(), webApp.getError ());
+                                    webApp.merge(original, WebApp.MERGE_UPDATE);
+                                } catch (SAXException ex) {
+                                    if (ex instanceof SAXParseException) {
+                                        webApp.setError((SAXParseException)ex);
+                                    } else if ( ex.getException() instanceof SAXParseException) {
+                                        webApp.setError((SAXParseException)ex.getException());
+                                    }
+                                    webApp.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
+                                    webApp.setOriginal(null);
+                                    webApp.setProxyVersion(version);
+                                }
+                            } else if (orig != null) {
+                                String version = null;
+                                try {
+                                    version = getVersion(fo.getInputStream());
+                                    WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
+                                    if (original.getClass().equals (orig.getClass())) {
+                                        orig.merge(original,WebApp.MERGE_UPDATE);
+                                    } else {
+                                        baseBeanMap.put(fo.getURL(), new WeakReference (original));
+                                    }
+                                } catch (SAXException ex) {
+                                    baseBeanMap.remove(fo.getURL());
+                                }
                             }
-                            WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
-                            baseBeanMap.put(fo.getURL(), new WeakReference (original));
-                            errorMap.put(fo.getURL(), webApp.getError ());
-                            webApp.merge(original, WebApp.MERGE_UPDATE);
-                        } catch (SAXException ex) {
-                            if (ex instanceof SAXParseException) {
-                                webApp.setError((SAXParseException)ex);
-                            } else if ( ex.getException() instanceof SAXParseException) {
-                                webApp.setError((SAXParseException)ex.getException());
-                            }
-                            webApp.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
-                            webApp.setOriginal(null);
-                            webApp.setProxyVersion(version);
-                        }
-                    } else if (orig != null) {
-                        String version = null;
-                        try {
-                            version = getVersion(fo.getInputStream());
-                            WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
-                            if (original.getClass().equals (orig.getClass())) {
-                                orig.merge(original,WebApp.MERGE_UPDATE);
-                            } else {
-                                baseBeanMap.put(fo.getURL(), new WeakReference (original));
-                            }
-                        } catch (SAXException ex) {
-                            baseBeanMap.remove(fo.getURL());
                         }
                     }
                 } catch (java.io.IOException ex){}
