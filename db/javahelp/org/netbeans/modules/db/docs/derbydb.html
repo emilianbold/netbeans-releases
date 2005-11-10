@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<HTML>
+<HEAD>
+    <TITLE>Connecting to a Derby Database</TITLE>
+    <link rel="StyleSheet" href="../../usersguide/ide.css" type="text/css">
+</HEAD>
+<BODY>
+<h2>Connecting to a Derby Database</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The IDE includes a bundled Derby database server. You can create and work with 
+  Derby databases without installing any additional software. </p>
+<p>Version 8.2 of the Sun Java System Application Server also bundles the Derby 
+  database server. When you register the application server, the IDE switches 
+  from using the bundled Derby installation to using the installation in the application 
+  server. The IDE also registers the connections to the application server's sample 
+  databases in the Runtime window. All of the databases that you created with 
+  the IDE's bundled Derby installation are still available.</p>
+<p><b>To connect to a Derby database:</b> </p>
+<ol>
+  <li>In the Runtime window, expand Databases &gt; Drivers.</li>
+  <li>Right-click the appropriate Apache Derby driver node and choose Connect 
+    Using.</li>
+  <li>Enter the URL of the database. The URL format is given in the textbox:<br>
+    <tt>jdbc:derby://&lt;HOST&gt;[:&lt;PORT&gt;]/&lt;DB&gt;</tt></li>
+  <li>Enter the User name and Password. By default, the Derby database server 
+    has an empty username and password.</li>
+  <li>Click OK. The IDE registers the connection under the Databases node.</li>
+</ol>
+<p><b>To create a new Derby database:</b></p>
+<ol>
+  <li>Choost Tools &gt; Derby Database &gt; Create Derby Database from the main 
+    window.</li>
+  <li>Enter a name for the database.</li>
+  <li>Optionally, select a new location for the database folder and click OK. 
+    The IDE starts the database server if it is not already running, creates the 
+    database, and registers the connection under the Databases node.</li>
+</ol>
+<p><b>Notes:</b></p>
+<ul>
+  <li>Selecting Remember password will store the password for the current IDE 
+    session. If left unselected, a dialog box appears prompting you for the password 
+    every time you connect to the database.</li>
+</ul>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd> <a href="connectdb.html">Connecting to a Database</a></dd>
+  <dd> <a href="pointbasedb.html">Connecting to a Pointbase Database</a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="50">
+    <tr><td>&nbsp;</td></tr>
+</table>
+</body>
+
+</html>
