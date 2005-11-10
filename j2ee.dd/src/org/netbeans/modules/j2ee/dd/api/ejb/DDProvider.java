@@ -26,16 +26,19 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.parsers.DOMParser;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.BufferedInputStream;
 import java.util.Map;
 import java.util.HashMap;
@@ -141,7 +144,9 @@ public final class DDProvider {
      */
     public EjbJar getDDRoot(InputSource inputSource) throws IOException, SAXException {
         ErrorHandler errorHandler = new ErrorHandler();
-        Document document = createDocument(inputSource, errorHandler);
+        DOMParser parser = createParser(errorHandler);
+        parser.parse(inputSource);
+        Document document = parser.getDocument();
         SAXParseException error = errorHandler.getError();
         String version = extractVersion(document);
         EjbJar original = createEjbJar(version, document);
@@ -196,12 +201,20 @@ public final class DDProvider {
         return EjbJar.VERSION_2_1;
 
     }
-    
-    private static Document createDocument(InputSource inputSource, ErrorHandler errorHandler)
-        throws SAXException, IOException  {
-        return XMLUtil.parse(inputSource, true, true, errorHandler, DDResolver.getInstance());
+
+    private static DOMParser createParser(ErrorHandler errorHandler)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        DOMParser parser = new DOMParser();
+        parser.setErrorHandler(errorHandler);
+        parser.setEntityResolver(DDResolver.getInstance());
+        // XXX do we need validation here, if no one is using this then
+        // the dependency on xerces can be removed and JAXP can be used
+        parser.setFeature("http://xml.org/sax/features/validation", true); //NOI18N
+        parser.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
+        parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true); //NOI18N
+        return parser;
     }
-    
+
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;
         static synchronized DDResolver getInstance() {
