@@ -121,7 +121,7 @@ public final class Main extends Object {
         } catch (Error e) {
             // Can happen if we try to start NB twice in the same VM.
             // Print the error but try to continue.
-            System.err.println("While calling URL.setURLStreamHandlerFactory, got: " + e);
+            e.printStackTrace();
         }
         nbFactoryInitialized = true;
     }
