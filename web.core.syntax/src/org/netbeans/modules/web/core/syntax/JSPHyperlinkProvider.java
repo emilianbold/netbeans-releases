@@ -31,7 +31,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.ErrorManager;
-import org.openide.cookies.OpenCookie;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -290,9 +290,9 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                return; 
             }
             if (dobj != null){
-                Node.Cookie cookie = dobj.getCookie(OpenCookie.class);
+                Node.Cookie cookie = dobj.getCookie(EditCookie.class);
                 if (cookie != null)
-                    ((OpenCookie)cookie).open();
+                    ((EditCookie)cookie).edit();
             }
         }
     }
