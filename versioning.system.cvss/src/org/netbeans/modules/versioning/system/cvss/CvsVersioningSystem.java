@@ -88,27 +88,26 @@ public class CvsVersioningSystem {
 
     private void init() {
         defaultGlobalOptions = CvsVersioningSystem.createGlobalOptions();
-        MetadataAttic.cleanUp();
         sah = new CvsLiteAdminHandler();
-        loadCache();
+        fileStatusCache = new FileStatusCache(this);
         filesystemHandler  = new FilesystemHandler(this);
         annotator = new Annotator(this);
-        filesystemHandler.init();
-        // HACK: FileStatusProvider cannot do it itself
-        if (FileStatusProvider.getInstance() != null) {
-            fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
-            FileStatusProvider.getInstance().init();
-        }
+        cleanup();
     }
 
-    /**
-     * Simple cache deserialization.
-     */ 
-    private void loadCache() {
-        fileStatusCache = new FileStatusCache(this);
+    private void cleanup() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                // HACK: FileStatusProvider cannot do it itself
+                if (FileStatusProvider.getInstance() != null) {
+                    // must be called BEFORE cache is cleaned up
+                    fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
+                    FileStatusProvider.getInstance().init();
+                }
+                MetadataAttic.cleanUp();
+                // must be called AFTER the filestatusprovider is attached
                 fileStatusCache.cleanUp();
+                filesystemHandler.init();
             }
         }, 3000);
     }
