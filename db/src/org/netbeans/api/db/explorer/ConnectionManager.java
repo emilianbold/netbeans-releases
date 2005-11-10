@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.api.db.explorer;
+
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.ConnectionList;
@@ -110,22 +111,35 @@ public final class ConnectionManager {
     }
     
     /**
-     * Shows the dialog for adding a new connection. The specified driver is
-     * selected by default in the dialog.
+     * Shows the dialog for adding a new connection. The specified driver will be
+     * selected by default in the Add Connection dialog.
      *
      * @param driver the JDBC driver; can be null.
      */
     public void showAddConnectionDialog(JDBCDriver driver) {
+        showAddConnectionDialog(driver, null);
+    }
+    
+    /**
+     * Shows the dialog for adding a new connection with specified database URL. 
+     * The database URL will be filled in the Database URL field in the Add Connection dialog box.
+     * The specified driver be filled as the single element of the 
+     * Driver combo box of the Add Connection dialog box.
+     *
+     * @param driver the JDBC driver; can be null.
+     * @param databaseUrl the database URL; can be null.
+     */
+    public void showAddConnectionDialog(JDBCDriver driver, final String databaseUrl) {
         final String driverClass = (driver != null) ? driver.getClassName() : null;
         final String driverName = (driver != null) ? driver.getName() : null;
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driverClass, driverName);
+                    new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driverName, driverClass, databaseUrl);
                 }
             });
         } else {
-            new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driverClass, driverName);
+            new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driverName, driverClass, databaseUrl);
         }
     }
 

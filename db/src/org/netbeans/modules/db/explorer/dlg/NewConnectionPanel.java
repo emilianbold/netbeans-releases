@@ -293,7 +293,9 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         }
         
         urlComboBox.removeAllItems();
-        if (urls != null)
+        if (!connection.getDatabase().equals("")) // NOI18N
+            urlComboBox.addItem(connection.getDatabase());
+        else if (urls != null)
             for (int i = 0; i < urls.size(); i++)
                 urlComboBox.addItem((String) urls.get(i));
         

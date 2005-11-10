@@ -21,6 +21,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JTabbedPane;
@@ -52,9 +54,6 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
@@ -78,9 +77,17 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         boolean okPressed = false;
 
         public void showDialog(String driverName, String driverClass) {
+            showDialog(driverName, driverClass, null);
+        }
+        
+        public void showDialog(String driverName, String driverClass, String databaseUrl) {
             
             Vector drvs = new Vector();
-            JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
+            JDBCDriver[] drivers = null;
+            if ((null != databaseUrl) && (null != driverClass))
+                drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
+            else
+                drivers = JDBCDriverManager.getDefault().getDrivers();
             for (int i = 0; i < drivers.length; i++)
                 if (JDBCDriverSupport.isAvailable(drivers[i])) {
                     drvs.add(drivers[i]);
@@ -94,6 +101,10 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             cinfo.setDriverName(driverName);
             cinfo.setDriver(driverClass);
 
+            if (null != databaseUrl) {
+                cinfo.setDatabase(databaseUrl);
+            }
+                
             final NewConnectionPanel basePanel = new NewConnectionPanel(this, drvs, cinfo);
             final SchemaPanel schemaPanel = new SchemaPanel(this, cinfo);
 
