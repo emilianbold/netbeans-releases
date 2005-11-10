@@ -71,7 +71,8 @@ public class WLStartServer extends StartServer {
         WLServerProgress serverProgress = new WLServerProgress(this);
         
         // send a message denoting that the startup process has begun
-        serverProgress.notifyStart(StateType.RUNNING,  ""); // NOI18N
+        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,  NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
         
         // run the startup process in a separate thread
         RequestProcessor.getDefault().post(new WLStartDebugRunnable(
@@ -154,7 +155,8 @@ public class WLStartServer extends StartServer {
         WLServerProgress serverProgress = new WLServerProgress(this);
         
         // send a message denoting that the shutdown process has begun
-        serverProgress.notifyStop(StateType.RUNNING, ""); // NOI18N
+        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,  NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)); // NOI18N
         
         // run the shutdown process in a separate thread
         RequestProcessor.getDefault().post(new WLStopRunnable(serverProgress), 0, Thread.NORM_PRIORITY);
@@ -179,7 +181,8 @@ public class WLStartServer extends StartServer {
         WLServerProgress serverProgress = new WLServerProgress(this);
         
         // send a message denoting that the startup process has begun
-        serverProgress.notifyStart(StateType.RUNNING,  ""); // NOI18N
+        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,  NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
         
         // run the startup process in a separate thread
         RequestProcessor.getDefault().post(new WLStartRunnable(
@@ -341,17 +344,17 @@ public class WLStartServer extends StartServer {
                 // can observe the progress
                 new WLTailer(serverProcess.getInputStream(), dm.getURI());
                 
+                String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     // is the server is not yet running send the 'progressing'
                     // event, else send trhe 'completed' event and return
                     if (!isRunning()) {
-                        serverProgress.notifyStart(StateType.RUNNING, 
-                                "");                                   // NOI18N
+                        serverProgress.notifyStart(StateType.RUNNING, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
                     } else {
-                        serverProgress.notifyStart(StateType.COMPLETED, 
-                                "");                                   // NOI18N
+                        serverProgress.notifyStart(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName)); // NOI18N
                         return;
                     }
 
@@ -364,7 +367,7 @@ public class WLStartServer extends StartServer {
 
                 // if the server did not start in the designated time limits
                 // we consider the startup as failed and kill the process
-                serverProgress.notifyStart(StateType.FAILED, "");      // NOI18N
+                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName)); // NOI18N
                 serverProcess.destroy();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
@@ -461,17 +464,17 @@ public class WLStartServer extends StartServer {
                 // can observe the progress
                 new WLTailer(serverProcess.getInputStream(), dm.getURI());
                 
+                String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+                
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     // is the server is not yet running send the 'progressing'
                     // event, else send trhe 'completed' event and return
                     if (!isRunning()) {
-                        serverProgress.notifyStart(StateType.RUNNING, 
-                                "");                                   // NOI18N
+                        serverProgress.notifyStart(StateType.RUNNING, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
                     } else {
-                        serverProgress.notifyStart(StateType.COMPLETED, 
-                                "");                                   // NOI18N
+                        serverProgress.notifyStart(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName)); // NOI18N
                         return;
                     }
 
@@ -484,7 +487,7 @@ public class WLStartServer extends StartServer {
 
                 // if the server did not start in the designated time limits
                 // we consider the startup as failed and kill the process
-                serverProgress.notifyStart(StateType.FAILED, ""); // NOI18N
+                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName)); // NOI18N
                 serverProcess.destroy();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
@@ -566,11 +569,12 @@ public class WLStartServer extends StartServer {
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
                 new WLTailer(serverProcess.getInputStream(), dm.getURI());
+
+                String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
                 
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     if (isRunning()) {
-                        serverProgress.notifyStop(StateType.RUNNING, 
-                                "");                                   // NOI18N
+                        serverProgress.notifyStop(StateType.RUNNING, NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)); // NOI18N
                     } else {
                         try {
                             serverProcess.waitFor();
@@ -580,8 +584,7 @@ public class WLStartServer extends StartServer {
                         try {
                             Thread.sleep(pbLagTime);
                         } catch (InterruptedException e) {}
-                        serverProgress.notifyStop(StateType.COMPLETED, 
-                                "");                                   // NOI18N
+                        serverProgress.notifyStop(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STOPPED", serverName)); // NOI18N
                         return;
                     }
 
@@ -594,7 +597,7 @@ public class WLStartServer extends StartServer {
                     
                 // if the server did not stop in the designated time limits
                 // we consider the stop process as failed and kill the process
-                serverProgress.notifyStop(StateType.FAILED, "");       // NOI18N
+                serverProgress.notifyStop(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_FAILED", serverName)); // NOI18N
                 serverProcess.destroy();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
