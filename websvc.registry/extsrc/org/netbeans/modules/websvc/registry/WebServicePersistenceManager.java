@@ -36,21 +36,14 @@ import org.netbeans.modules.websvc.registry.model.WebServiceData;
 import org.netbeans.modules.websvc.registry.model.WebServiceDataPersistenceDelegate;
 import org.netbeans.modules.websvc.registry.model.WebServiceGroup;
 import org.netbeans.modules.websvc.registry.model.WebServiceListModel;
-import org.netbeans.modules.websvc.registry.netbeans.SJSASVersion;
 
 public class WebServicePersistenceManager implements ExceptionListener, org.netbeans.modules.websvc.registry.netbeans.PersistenceManagerInterface {
 
-//	// Appserver version strings.  We do not differ between minor versions (e.g. 8.0.0.1 is the same as 8.0)
-//	private static final String APPSERVER_VERSION_8_0 = "8.0"; // NOI18N
-//	private static final String APPSERVER_VERSION_8_1_BETA = "8.1 beta"; // NOI18N	// AKA SJSAS 8.1 2004Q4
-//	private static final String APPSERVER_VERSION_8_1 = "8.1"; // NOI18N  // AKA SJSAS 8.1 2005Q1
-//	private static final String APPSERVER_VERSION_UNKNOWN = "unknown"; // NOI18N
-
 	private static final String SAXParserFactory_PROP = "javax.xml.parsers.SAXParserFactory"; // NOI18N
-
-	private File websvcDir = new File(System.getProperty("netbeans.user"), "websvc"); // NOI18N
-	private File websvcRefFile = new File(websvcDir, "websvc_ref.xml"); // NOI18N
+        private static final String SAX_PARSER = "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"; // NOI18N
 	
+        private File websvcDir = new File(System.getProperty("netbeans.user"), "websvc"); // NOI18N
+	private File websvcRefFile = new File(websvcDir, "websvc_ref.xml"); // NOI18N	
 
 	public WebServicePersistenceManager() {
 	}
@@ -66,8 +59,7 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 			XMLDecoder decoder = null;
 
 			try {
-				SJSASVersion appServerVersion = SJSASVersion.getSJSAppServerVersion();
-				System.getProperties().put(SAXParserFactory_PROP, appServerVersion.getSaxParserImplClass());
+				System.getProperties().put(SAXParserFactory_PROP, SAX_PARSER);
 
 				origClassLoader = Thread.currentThread().getContextClassLoader();
 				Thread.currentThread().setContextClassLoader(cl);
@@ -192,42 +184,4 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 	public void exceptionThrown(Exception e) {
 		e.printStackTrace();
 	}
-
-// <pbuzek>
-//        the j2ee/platform has been removed.
-//        If needed the code to access a ws platform can be rewritten to something like this:
-//
-//		String version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
-//                String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
-//                J2eePlatform platform = null;
-//                for (int i = 0; i < serverInstanceIDs.length(); i++) {
-//                    J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
-//                    if (p.isToolSupported ("wscompile")) {
-//                        platform = p;
-//                        break;
-//                    }
-//                }
-// </pbuzek>       
-//	/** Attempt to discern the application server version we're running against.
-//	 *
-//	 * 8.0 uses sun-domain_1_0.dtd
-//	 * 8.1 uses sun-domain_1_1.dtd (also includes the 1_0 version for backwards compatibility)
-//	 *
-//	 */
-//	public String getAppServerVersion() {
-//		String version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
-//		File asInstallRoot = PlatformProvider.getDefault().getLocation();
-//
-//		if(asInstallRoot != null && asInstallRoot.exists()) {
-//			File sunDomain11Dtd = new File(asInstallRoot, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
-//			if(sunDomain11Dtd.exists()) {
-//				// !PW FIXME put in detection for SJSAS 8.1 2005Q1 (release candidate)
-//				version = APPSERVER_VERSION_8_1_BETA;
-//			} else {
-//				version = APPSERVER_VERSION_8_0;
-//			}
-//		}
-//
-//		return version;
-//	}
 }
