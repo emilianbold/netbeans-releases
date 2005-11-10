@@ -37,7 +37,7 @@ fi
 #     . /etc/netbeans.conf
 # fi
 
-# XXX the following treatment destroys proper usage of spaces in non-userdir params:
+# XXX #68373: the following treatment destroys proper usage of spaces in non-userdir params:
 args=""
 
 userdir="${netbeans_default_userdir}"
