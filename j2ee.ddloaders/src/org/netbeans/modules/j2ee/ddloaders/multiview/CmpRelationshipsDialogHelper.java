@@ -523,6 +523,12 @@ public class CmpRelationshipsDialogHelper {
             validateFields();
         }
 
+        private boolean isCmrFieldSpecified() {
+            boolean a = roleA.createCmrFieldCheckBox.isSelected() && !roleA.fieldNameTextField.getText().trim().equals("");
+            boolean b = roleB.createCmrFieldCheckBox.isSelected() && !roleB.fieldNameTextField.getText().trim().equals("");
+            return a || b;
+        }
+        
         private void validateFields() {
 
             final String roleNameA = roleA.getRoleName();
@@ -531,6 +537,9 @@ public class CmpRelationshipsDialogHelper {
                 errorLabel.setText(Utils.getBundleMessage("LBL_ScanningInProgress"));
             } else if (roleNameA != null && roleNameA.equals(roleNameB)) {
                 errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));
+                dialogDescriptor.setValid(false);
+            } else if (!isCmrFieldSpecified()) {
+                errorLabel.setText(Utils.getBundleMessage("MSG_NoCmrDefined"));
                 dialogDescriptor.setValid(false);
             } else {
                 String s1 = roleA.validateFieldName();
