@@ -102,7 +102,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     protected void initialize() {
         super.initialize();
 	
-	AS_INSTALL_PATH_MAX_LENGTH = 48 - InstallApplicationServerAction.IMAGE_DIRECTORY_NAME.length() - 1;
+	AS_INSTALL_PATH_MAX_LENGTH = 48 - resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)").length() - 1;
         
         GridBagConstraints gridBagConstraints;
         mainPanel = new JPanel();        

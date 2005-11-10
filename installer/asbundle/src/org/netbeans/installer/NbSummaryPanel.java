@@ -82,7 +82,8 @@ public class NbSummaryPanel extends TextDisplayPanel
                         summaryMessage += "<br><br>"
                         + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorAS,"
                         + "$L(org.netbeans.installer.Bundle, AS.shortName),"
-                        +  nbInstallDir + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME + ")";
+                        + nbInstallDir + File.separator
+                        + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)") + ")";
                     } else {
                         InstallAction ia = (InstallAction) getWizardTree().getBean("install");
                         RunnableWizardBeanState state = ia.getState();
@@ -168,12 +169,13 @@ public class NbSummaryPanel extends TextDisplayPanel
             + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
             + nbInstallDir
             + File.separator + resolveString("$L(org.netbeans.installer.Bundle,Product.nbLocationBelowInstallRoot)")
-            + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME;
+            + File.separator + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
         } else {
             summaryMessage += "<br><br>"
             + "$L(org.netbeans.installer.Bundle,AS.shortName)" + " "
             + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
-            + nbInstallDir + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME;
+            + nbInstallDir
+            + File.separator + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
         }
         
         //How to run IDE

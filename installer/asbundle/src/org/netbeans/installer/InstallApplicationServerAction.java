@@ -50,9 +50,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private static final String STATE_FILE_NAME = "statefile";
     public static final String UNINST_DIRECTORY_NAME = "_uninst";
     
-    /** This must be updated when SJS AS version is changed. */
-    public static final String IMAGE_DIRECTORY_NAME = "AS8.2";
-    
     protected static final String JDK_DIRECTORY_NAME = "java";
     protected static final String POINTBASE_DIRECTORY_NAME = "pointbase";
     
@@ -131,7 +128,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         
         instDirPath = rootInstallDir + File.separator + UNINST_DIRECTORY_NAME;
         logEvent(this, Log.DBG,"instDirPath: "+ instDirPath);
-        imageDirPath  = nbInstallDir + File.separator + IMAGE_DIRECTORY_NAME;
+        imageDirPath  = nbInstallDir + File.separator
+        + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
 	asSetupDirPath = instDirPath + File.separator + AS_SETUP_DIR;
 	if (Util.isWindowsOS() || Util.isMacOSX()) {
 	    statefilePath = asSetupDirPath + File.separator + STATE_FILE_NAME;
@@ -484,8 +482,9 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
    
 	    if (Util.isWindowsOS()) {
 		String installDir = (String)System.getProperties().get("installDir");
-		as8License  = new File(installDir + File.separator + IMAGE_DIRECTORY_NAME + 
-				       File.separator + "config",  AS8_LICENSE);
+		as8License  = new File(installDir + File.separator
+                + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)")
+                + File.separator + "config",  AS8_LICENSE);
 	    } else {
 		String configDir = (String)System.getProperties().get("AS_INSTALL_CONFIG_DIR");
 		logEvent(this, Log.DBG,"App Server config dir: " + configDir);
@@ -936,7 +935,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
      */
     public RequiredBytesTable getRequiredBytes() throws ProductException {
 	
-        String imageDirPath = getProductTree().getInstallLocation(this) + File.separator + IMAGE_DIRECTORY_NAME;
+        String imageDirPath = getProductTree().getInstallLocation(this) + File.separator
+        + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
         RequiredBytesTable req = new RequiredBytesTable();
         logEvent(this, Log.DBG,"imageDirPath -> " + imageDirPath);
         req.addBytes(imageDirPath , getCheckSum());
