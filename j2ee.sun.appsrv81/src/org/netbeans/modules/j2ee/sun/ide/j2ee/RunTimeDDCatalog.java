@@ -562,7 +562,9 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         if (name.equals("http://java.sun.com/xml/ns/jax-rpc/ri/config")){
             return prefix +"jax-rpc-ri-config.xsd";
         }
-        
+        if (name.equals("http://java.sun.com/xml/ns/persistence")){
+            return prefix +"persistence.xsd";
+        }        
         // ludo: this is meant to be this way.
         if (name.equals("http://java.sun.com/xml/ns/j2eeppppppp")){
             return prefix +"j2ee_web_services_1_1.xsd";
