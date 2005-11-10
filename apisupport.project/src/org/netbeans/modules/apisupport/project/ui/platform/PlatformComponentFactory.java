@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.text.Collator;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractListModel;
@@ -137,12 +139,21 @@ public final class PlatformComponentFactory {
     public static class NbPlatformListModel extends AbstractListModel
             implements ComboBoxModel {
         
+        private static NbPlatform[] getSortedPlatforms() {
+            NbPlatform[] platforms = (NbPlatform[]) NbPlatform.getPlatforms().toArray(new NbPlatform[0]);
+            Arrays.sort(platforms, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    return Collator.getInstance().compare(((NbPlatform) o1).getLabel(), ((NbPlatform) o2).getLabel());
+                }
+            });
+            return platforms;
+        }
+        
         private NbPlatform[] nbPlafs;
         private Object selectedPlaf;
         
         public NbPlatformListModel() {
-            nbPlafs = new NbPlatform[NbPlatform.getPlatforms().size()];
-            NbPlatform.getPlatforms().toArray(nbPlafs);
+            nbPlafs = getSortedPlatforms();
             selectedPlaf = nbPlafs[0];
         }
         
@@ -169,8 +180,7 @@ public final class PlatformComponentFactory {
         void removePlatform(NbPlatform plaf) {
             try {
                 NbPlatform.removePlatform(plaf);
-                nbPlafs = new NbPlatform[NbPlatform.getPlatforms().size()];
-                NbPlatform.getPlatforms().toArray(nbPlafs); // refresh
+                nbPlafs = getSortedPlatforms(); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -181,8 +191,7 @@ public final class PlatformComponentFactory {
         NbPlatform addPlatform(String id, String destdir, String label) {
             try {
                 NbPlatform plaf = NbPlatform.addPlatform(id, new File(destdir), label);
-                nbPlafs = new NbPlatform[NbPlatform.getPlatforms().size()];
-                NbPlatform.getPlatforms().toArray(nbPlafs); // refresh
+                nbPlafs = getSortedPlatforms(); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
                 return plaf;
             } catch (IOException e) {

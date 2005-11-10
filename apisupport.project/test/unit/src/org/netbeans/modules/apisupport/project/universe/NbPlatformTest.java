@@ -15,11 +15,10 @@ package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
 import java.net.URL;
-import java.text.Collator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.SortedSet;
+import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 
@@ -36,11 +35,8 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testBasicUsage() throws Exception {
-        SortedSet/*<NbPlatform>*/ platforms = NbPlatform.getPlatforms();
+        Set/*<NbPlatform>*/ platforms = NbPlatform.getPlatforms();
         assertEquals("have two platforms", 2, platforms.size());
-        assertTrue("Platforms order", Collator.getInstance().compare(
-                ((NbPlatform) platforms.first()).getLabel(),
-                ((NbPlatform) platforms.last()).getLabel()) < 0);
         NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         assertNotNull("have default platform", def);
         assertEquals("can use a special method call for that", def, NbPlatform.getDefaultPlatform());

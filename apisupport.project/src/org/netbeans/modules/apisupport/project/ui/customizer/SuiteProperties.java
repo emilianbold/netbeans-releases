@@ -79,7 +79,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
         this.moduleListModel = null;
-        activePlatform = project.getActivePlatform();
+        activePlatform = project.getPlatform();
         firePropertiesRefreshed();
     }
     

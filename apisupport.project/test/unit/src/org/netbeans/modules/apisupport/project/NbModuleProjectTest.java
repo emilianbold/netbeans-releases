@@ -25,8 +25,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
-// XXX testGetPlatform
-
 /**
  * Test functionality of NbModuleProject.
  * @author Jesse Glick

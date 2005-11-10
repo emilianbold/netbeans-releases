@@ -71,8 +71,12 @@ public class NbModuleProjectGenerator {
                     createProjectXML(dirFO, cnb, NbModuleTypeProvider.STANDALONE);
                     createPlatformProperties(dirFO, platformID);
                     createManifest(dirFO, cnb, bundlePath, layerPath);
-                    createBundle(dirFO, bundlePath, name);
-                    createLayerInSrc(dirFO, layerPath);
+                    if (bundlePath != null) {
+                        createBundle(dirFO, bundlePath, name);
+                    }
+                    if (layerPath != null) {
+                        createLayerInSrc(dirFO, layerPath);
+                    }
                     createEmptyTestDir(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
@@ -98,8 +102,12 @@ public class NbModuleProjectGenerator {
                     createProjectXML(dirFO, cnb, NbModuleTypeProvider.SUITE_COMPONENT);
                     createSuiteProperties(dirFO, suiteDir);
                     createManifest(dirFO, cnb, bundlePath, layerPath);
-                    createBundle(dirFO, bundlePath, name);
-                    createLayerInSrc(dirFO, layerPath);
+                    if (bundlePath != null) {
+                        createBundle(dirFO, bundlePath, name);
+                    }
+                    if (layerPath != null) {
+                        createLayerInSrc(dirFO, layerPath);
+                    }
                     createEmptyTestDir(dirFO);
                     appendToSuite(cnb, dirFO, suiteDir);
                     ModuleList.refresh();

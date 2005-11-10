@@ -247,6 +247,7 @@ public abstract class TestBase extends NbTestCase {
         }
     }
     public static void dump(File f, String contents) throws IOException {
+        f.getParentFile().mkdirs();
         OutputStream os = new FileOutputStream(f);
         try {
             Writer w = new OutputStreamWriter(os, "UTF-8");

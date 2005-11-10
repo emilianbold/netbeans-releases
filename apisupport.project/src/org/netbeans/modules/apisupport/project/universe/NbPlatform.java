@@ -20,11 +20,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Jesse Glick
  */
-public final class NbPlatform implements Comparable {
+public final class NbPlatform {
     
     private static final String PLATFORM_PREFIX = "nbplatform."; // NOI18N
     private static final String PLATFORM_DEST_DIR_SUFFIX = ".netbeans.dest.dir"; // NOI18N
@@ -64,7 +64,7 @@ public final class NbPlatform implements Comparable {
     private static final String PLATFORM_HARNESS_DIR_SUFFIX = ".harness.dir"; // NOI18N
     public static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
     
-    private static SortedSet/*<NbPlatform>*/ platforms;
+    private static Set/*<NbPlatform>*/ platforms;
 
     /**
      * Reset cached info so unit tests can start from scratch.
@@ -74,11 +74,11 @@ public final class NbPlatform implements Comparable {
     }
     
     /**
-     * Get a sorted set of all registered platforms.
+     * Get a set of all registered platforms.
      */
-    public static SortedSet/*<NbPlatform>*/ getPlatforms() {
+    public static Set/*<NbPlatform>*/ getPlatforms() {
         if (platforms == null) {
-            platforms = new TreeSet();
+            platforms = new HashSet();
             Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.globalPropertyProvider(), new PropertyProvider[0]).getProperties();
             boolean foundDefault = false;
             Iterator keys = p.keySet().iterator();
@@ -118,7 +118,7 @@ public final class NbPlatform implements Comparable {
     public static File defaultPlatformLocation() {
         // XXX cache the result?
         // Semi-arbitrary platform6 component.
-        File bootJar = InstalledFileLocator.getDefault().locate("lib/boot.jar", "org.netbeans.bootstrap", false); // NOI18N
+        File bootJar = InstalledFileLocator.getDefault().locate("core/core.jar", "org.netbeans.core.startup", false); // NOI18N
         if (bootJar == null) {
             return null;
         }
@@ -799,11 +799,6 @@ public final class NbPlatform implements Comparable {
             }
         }
         return true;
-    }
-    
-    public int compareTo(Object o) {
-        return Collator.getInstance().compare(
-                getLabel(), ((NbPlatform) o).getLabel());
     }
     
     public String toString() {

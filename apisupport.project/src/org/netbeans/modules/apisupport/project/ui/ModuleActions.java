@@ -536,7 +536,7 @@ public final class ModuleActions implements ActionProvider {
                         if (suite == null) {
                             return false;
                         }
-                        NbPlatform p = suite.getActivePlatform();
+                        NbPlatform p = suite.getPlatform();
                         if (/* #67148 */p == null || !p.isDefault()) {
                             return false;
                         }

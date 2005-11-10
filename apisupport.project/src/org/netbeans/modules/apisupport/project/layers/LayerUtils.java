@@ -625,7 +625,7 @@ public class LayerUtils {
     }
     
     static Set/*<File>*/ getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
-        NbPlatform platform = suite.getActivePlatform();
+        NbPlatform platform = suite.getPlatform();
         PropertyEvaluator eval = suite.getEvaluator();
         String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
         String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);

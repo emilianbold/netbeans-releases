@@ -119,7 +119,7 @@ public final class SuiteProject implements Project {
      * Get the platform selected for use with this suite.
      * May return null in case the dest dir is unset.
      */
-    public NbPlatform getActivePlatform() {
+    public NbPlatform getPlatform() {
         // #65652: more reliable to use the dest dir, in case nbplatform.active is not set.
         String destdir = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
         if (destdir == null) {
