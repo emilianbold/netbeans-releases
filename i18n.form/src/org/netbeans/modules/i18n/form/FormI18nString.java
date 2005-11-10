@@ -18,6 +18,7 @@ package org.netbeans.modules.i18n.form;
 import org.netbeans.modules.form.FormDesignValue;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nString;
+import org.openide.loaders.DataObject;
 
 /**
  * This class extends the capability of <code>JavaI18nString</code> to be 
@@ -40,7 +41,7 @@ public class FormI18nString extends JavaI18nString implements FormDesignValue {
     /** Cretaes new <code>FormI18nString</code> from <code>JavaI18nString</code>. 
      * @param source source which is created new <code>FormI18nString</code> from. */
     public FormI18nString(JavaI18nString source) {
-        super(source.getSupport());
+        super(createNewSupport(source.getSupport()));
 
         key = source.getKey();
         value = source.getValue();
@@ -50,6 +51,14 @@ public class FormI18nString extends JavaI18nString implements FormDesignValue {
         replaceFormat = source.getReplaceFormat();
     }
 
+    private static I18nSupport createNewSupport(I18nSupport support) {
+        I18nSupport newSupport = new FormI18nSupport.Factory().createI18nSupport(support.getSourceDataObject());
+        DataObject resource = support.getResourceHolder().getResource();
+        if(resource != null) {
+            newSupport.getResourceHolder().setResource(resource);            
+        }                
+        return newSupport;
+    } 
     
     /**
      * Implements <code>FormDesignValue</code> interface. Gets design value. 
