@@ -36,6 +36,7 @@ public class OpenJspFile extends OpenFiles {
     public OpenJspFile(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
+        HEURISTIC_FACTOR = -1; // disable heuristics, wait for all attempts same time
     }
     
     /**
@@ -46,6 +47,7 @@ public class OpenJspFile extends OpenFiles {
     public OpenJspFile(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+        HEURISTIC_FACTOR = -1; // disable heuristics, wait for all attempts same time
     }
     
     public void testOpening20kBJSPFile(){
