@@ -41,7 +41,7 @@ public class AddModulePanelTest extends TestBase {
                 JFrame f = new JFrame();
                 f.getContentPane().add(amp);
                 f.pack();
-                f.setVisible(true);
+                //f.setVisible(true);
             }
         });
         while (amp == null || !amp.filterValue.isEnabled()) {
