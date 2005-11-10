@@ -139,10 +139,8 @@ public final class PackageDisplayUtils {
             if ( !kids[i].isFolder() && VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
                 return false;
             }  
-            else {
-                if (recurse && !isEmpty(kids[i])) {
+            else if (recurse && VisibilityQuery.getDefault().isVisible( kids[i] ) && !isEmpty(kids[i])) {
                     return false;
-                }
             }
         }
         return true;
