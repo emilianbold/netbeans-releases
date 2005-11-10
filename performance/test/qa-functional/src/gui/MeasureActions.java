@@ -88,6 +88,8 @@ public class MeasureActions  {
         suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
         //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
         
+        suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));
+        suite.addTest(new CreateNBProject("testCreateModuleSuiteProject", "Create Module Suite Project"));
         
         /*
         suite.addTest(new DeleteFolder("testDeleteFolderWith50JavaFiles", "Delete folder with 50 java files"));

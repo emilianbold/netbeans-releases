@@ -27,7 +27,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class CreateProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class CreateNBProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private NewProjectNameLocationStepOperator wizard_location;
     
@@ -36,56 +36,41 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     private int index;
     
     /**
-     * Creates a new instance of CreateProject
+     * Creates a new instance of CreateNBProject
      * @param testName the name of the test
      */
-    public CreateProject(String testName) {
+    public CreateNBProject(String testName) {
         super(testName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
     /**
-     * Creates a new instance of CreateProject
+     * Creates a new instance of CreateNBProject
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public CreateProject(String testName, String performanceDataName) {
+    public CreateNBProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
-    public void testCreateJavaApplicationProject(){
-        category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
-        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SE.xml"); // "Java Application"
-        project_type="JavaApplication";
-        index=1;
-        doMeasurement();
-    }
-    
-    public void testCreateJavaLibraryProject(){
-        category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
-        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SElibrary.xml"); // "Java Class Library"
-        project_type="JavaLibrary";
-        index=1;
-        doMeasurement();
-    }
-    
-    public void testCreateWebApplicationProject(){
-        category = "Web"; // org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.projects.Bundle",""); //"Web"
-        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle","Templates/Project/Web/emptyWeb.xml"); //"Web Application"
-        project_type="WebProject";
+    public void testCreateModuleProject(){
+        category = "NetBeans Plug-in Modules";
+        project = "Module Project";
+        project_type="moduleProject";
         index=1;
         doMeasurement();
     }
 
-    /* TODO 
-    public void testCreateJavaProjectWithExistingSources(){
-        category="Standard";
-        project="Java Project with Existing Sources";
+    public void testCreateModuleSuiteProject(){
+        category = "NetBeans Plug-in Modules";
+        project = "Module Suite Project";
+        project_type="moduleSuiteProject";
+        index=1;
         doMeasurement();
-    }*/
+    }
 
     public void initialize(){
     }
@@ -111,6 +96,9 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public ComponentOperator open(){
+        if(project_type.equalsIgnoreCase("moduleProject")){
+            wizard_location.next();
+        }
         wizard_location.finish();
         return null;
     }
@@ -120,6 +108,6 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new CreateProject("testCreateJavaApplicationProject"));
+        junit.textui.TestRunner.run(new CreateNBProject("testCreateModuleProject"));
     }
 }
