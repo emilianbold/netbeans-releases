@@ -301,6 +301,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
     private void onCommitAction() {
+        LifecycleManager.getDefault().saveAll();
         CommitAction.invokeCommit(parentTopComponent.getContentTitle(), context, null);
     }
     
@@ -341,10 +342,12 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         group.progress(NbBundle.getMessage(SynchronizePanel.class, "BK0004"));
         DiffExecutor exec = new DiffExecutor(context, parentTopComponent.getContentTitle());
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
+            LifecycleManager.getDefault().saveAll();
             exec.showLocalDiff(group);
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
             exec.showRemoteDiff(group);
         } else {
+            LifecycleManager.getDefault().saveAll();
             exec.showAllDiff(group);
         }
     }
