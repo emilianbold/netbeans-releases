@@ -212,6 +212,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/jsf/AddManagedBeanDialog.html" />
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html" />
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html" />
+	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html" />
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html" />
 
 
