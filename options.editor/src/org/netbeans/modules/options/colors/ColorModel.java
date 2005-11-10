@@ -199,6 +199,13 @@ public class ColorModel {
     
     // editor categories .......................................................
     
+    /**
+     * Returns Collection of AttributeSets or null, if the profile does 
+     * not exists.
+     *
+     * @param profile a profile name
+     * @return Collection of AttributeSets or null
+     */
     public Collection /*<Category>*/ getHighlightings (String profile) {
         Collection r = editorSettings.getHighlightings (profile);
         if (r == null) return null;
