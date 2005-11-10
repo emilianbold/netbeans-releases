@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.editor.structure.api;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import org.netbeans.modules.editor.structure.DocumentModelProviderFactory;
 import org.netbeans.modules.editor.structure.spi.DocumentModelProvider;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -147,7 +149,7 @@ public final class DocumentModel {
         task = null;
         
         this.changesWatcher = new DocumentChangesWatcher();
-        getDocument().addDocumentListener(changesWatcher);
+        getDocument().addDocumentListener(WeakListeners.document(changesWatcher, doc));
         
         /*create a sorted set which sorts its elements according to their
         startoffsets and endoffsets.
@@ -175,9 +177,10 @@ public final class DocumentModel {
             throw new ClassCastException("Currently it is necessary to pass org.netbeans.editor.BaseDocument instance into the DocumentModel.getDocumentProvider(j.s.t.Document) method.");
         
         //first test if the document has already associated a document model
-        DocumentModel model = (DocumentModel)doc.getProperty(DocumentModel.class);
-        if(model == null) {
-            //create a new model
+        WeakReference modelWR = (WeakReference)doc.getProperty(DocumentModel.class);
+        DocumentModel model = null;
+        if(modelWR == null || modelWR.get() == null) {
+            //create a new modelx
             Class editorKitClass = ((BaseDocument)doc).getKitClass();
             BaseKit kit = BaseKit.getKit(editorKitClass);
             if (kit != null) {
@@ -188,14 +191,16 @@ public final class DocumentModel {
                 if(provider != null) {
                     model = new DocumentModel(doc, provider);
                     //and put it as a document property
-                    doc.putProperty(DocumentModel.class, model);
+                    doc.putProperty(DocumentModel.class, new WeakReference(model));
+                    if(debug) System.out.println("[document model] created a new instance");
+                    return model;
                 }
-                
             } else {
                 throw new IllegalStateException("No editor kit for document " + doc + "!");
             }
         }
-        return model;
+        if(debug) System.out.println("[document model] got from weak reference stored in editor document property");
+        return (DocumentModel)modelWR.get();
     }
     
     /** @return the text document this model is based upon */

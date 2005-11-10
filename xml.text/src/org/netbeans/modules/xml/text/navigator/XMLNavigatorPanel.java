@@ -53,7 +53,6 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     
     /** public no arg constructor needed for system to instantiate the provider. */
     public XMLNavigatorPanel() {
-        navigator = new NavigatorContent();
     }
     
     public String getDisplayHint() {
@@ -73,12 +72,14 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     }
     
     public void panelActivated(Lookup context) {
+        navigator = new NavigatorContent();
         selection = context.lookup(new Lookup.Template(DataObject.class));
         selection.addLookupListener(selectionListener);
         selectionListener.resultChanged(null);
     }
     
     public void panelDeactivated() {
+        navigator = null;
         selection.removeLookupListener(selectionListener);
         selection = null;
     }
