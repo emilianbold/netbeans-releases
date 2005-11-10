@@ -36,6 +36,8 @@ Microsystems, Inc. All Rights Reserved.
         <module name="openide/text" testtypes="unit" attributes="stable"/>
         <module name="openide/actions" testtypes="unit" attributes="stable"/>
         <module name="openide/modules" testtypes="unit" attributes="stable"/>
+        <module name="openide/explorer" testtypes="unit" attributes="stable"/>
+        <module name="openide/windows" testtypes="unit" attributes="stable"/>
         <!-- Needs to be early since many other tests compile against it: -->
         <!-- (in general, check using: 'fgrep /build/test/unit/classes */{,*/}nbproject/project.properties') -->
         <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
