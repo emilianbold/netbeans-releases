@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,7 +49,10 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private static final String AS_SETUP_DIR    = "as_setup";
     private static final String STATE_FILE_NAME = "statefile";
     public static final String UNINST_DIRECTORY_NAME = "_uninst";
-    public static final String IMAGE_DIRECTORY_NAME = "AS8.1";
+    
+    /** This must be updated when SJS AS version is changed. */
+    public static final String IMAGE_DIRECTORY_NAME = "AS8.2";
+    
     protected static final String JDK_DIRECTORY_NAME = "java";
     protected static final String POINTBASE_DIRECTORY_NAME = "pointbase";
     
