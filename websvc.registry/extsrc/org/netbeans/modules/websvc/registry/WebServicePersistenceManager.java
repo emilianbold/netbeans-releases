@@ -73,7 +73,15 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 				Thread.currentThread().setContextClassLoader(cl);
 				
 				decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(websvcRefFile)));
-				int wsDataNums = ((Integer)decoder.readObject()).intValue();
+                                Object o = decoder.readObject();
+                                int wsDataNums = 0;
+                                
+                                if (o instanceof Integer) {
+                                    wsDataNums = ((Integer)o).intValue();
+                                } else {
+                                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while loading in WS registry: " + o);
+                                    return;
+                                }
 
 				for(int i = 0; i< wsDataNums; i++) {
 					try {
@@ -84,8 +92,16 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 					}
 				}
 
-				int wsGroups = ((Integer)decoder.readObject()).intValue();
-				for(int i = 0; i< wsGroups; i++) {
+                                o = decoder.readObject();
+                                int wsGroups = 0;
+                                if (o instanceof Integer) {
+                                    wsGroups = ((Integer)o).intValue();
+                                } else {
+                                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while loading in WS registry: " + o);
+                                    return;
+                                }
+				
+                                for(int i = 0; i< wsGroups; i++) {
 					try {
 						WebServiceGroup group = (WebServiceGroup) decoder.readObject();
 						wsListModel.addWebServiceGroup(group);
