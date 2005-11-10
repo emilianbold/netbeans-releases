@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,7 +41,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -56,8 +54,6 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
-import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -97,7 +93,6 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
-import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
 
@@ -667,7 +662,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             FileObject wsdlFolder = null;
             try {
-                wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+                if (wsClientSupportImpl != null) {
+                    wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -684,7 +681,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             FileObject wsdlFolder = null;
             try {
-                wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+                if (wsClientSupportImpl != null) {
+                    wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
