@@ -13,7 +13,6 @@
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeEvent;
-import java.lang.ref.WeakReference;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -42,7 +41,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private static final String ANT_NAME = "platform.ant.name";             //NOI18N
     private static final String J2SE = "j2se";                              //NOI18N
 
-    private final WeakReference/*<PropertyEvaluator>*/ evaluator;
+    private final PropertyEvaluator evaluator;
     private JavaPlatformManager platformManager;
     //name of project active platform
     private String activePlatformName;
@@ -53,7 +52,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     public BootClassPathImplementation(PropertyEvaluator evaluator) {
         assert evaluator != null;
-        this.evaluator = new CleanableWeakReference (evaluator);
+        this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
@@ -90,11 +89,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         if (this.platformManager == null) {
             this.platformManager = JavaPlatformManager.getDefault();
             this.platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, this.platformManager));
-        }        
-        PropertyEvaluator evaluator = (PropertyEvaluator) this.evaluator.get();
-        if (evaluator == null) {
-            return null;
-        }
+        }                
         this.activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
         final JavaPlatform activePlatform = J2SEProjectUtil.getActivePlatform (this.activePlatformName);
         this.isActivePlatformValid = activePlatform != null;
@@ -102,7 +97,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == this.evaluator.get() && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
+        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
             //Active platform was changed
             resetCache ();
         }
@@ -130,18 +125,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             resourcesCache = null;
         }
         support.firePropertyChange(PROP_RESOURCES, null, null);
-    }
-    
-    private class CleanableWeakReference extends WeakReference implements Runnable {
-        
-        public CleanableWeakReference (Object obj) {
-            super (obj, Utilities.activeReferenceQueue());
-        }
-        
-        public void run () {
-            BootClassPathImplementation.this.resetCache();
-        }
-        
     }
     
 }

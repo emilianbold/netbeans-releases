@@ -13,7 +13,6 @@
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeEvent;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ArrayList;
@@ -38,8 +37,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List resources;
-    private WeakReference/*<SourceRoots>*/ sourceRoots;
-    private WeakReference/*<AntProjectHelper>*/ projectHelper;
+    private SourceRoots sourceRoots;
+    private AntProjectHelper projectHelper;
     
     /**
      * Construct the implementation.
@@ -47,7 +46,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
      */
     public SourcePathImplementation(SourceRoots sourceRoots) {
         assert sourceRoots != null;
-        this.sourceRoots = new CleanableWeakReference (sourceRoots);
+        this.sourceRoots = sourceRoots;
         sourceRoots.addPropertyChangeListener (this);
     }
     
@@ -58,9 +57,9 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
      */
     public SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper) {
         assert sourceRoots != null && projectHelper != null;
-        this.sourceRoots = new CleanableWeakReference (sourceRoots);
+        this.sourceRoots = sourceRoots;
         sourceRoots.addPropertyChangeListener (this);
-        this.projectHelper= new CleanableWeakReference (projectHelper);
+        this.projectHelper = projectHelper;
     }
 
     public List /*<PathResourceImplementation>*/ getResources() {
@@ -68,13 +67,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (this.resources != null) {
                 return this.resources;
             }
-        }        
-        
-        SourceRoots sourceRoots = (SourceRoots) this.sourceRoots.get();        
-        if (sourceRoots == null) {
-            return Collections.EMPTY_LIST;
-        }
-        AntProjectHelper projectHelper = this.projectHelper == null ? null : (AntProjectHelper) this.projectHelper.get ();
+        }                                
         URL[] roots = sourceRoots.getRootURLs();                                
         synchronized (this) {
             if (this.resources == null) {
@@ -115,22 +108,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             }
             this.support.firePropertyChange (PROP_RESOURCES,null,null);
         }
-    }
-    
-    
-    private class CleanableWeakReference extends WeakReference implements Runnable {
-        
-        public CleanableWeakReference (Object obj) {
-            super (obj, Utilities.activeReferenceQueue());
-        }
-        
-        public void run () {
-            synchronized (SourcePathImplementation.this) {
-                SourcePathImplementation.this.resources = null;
-            }
-            SourcePathImplementation.this.support.firePropertyChange (PROP_RESOURCES,null,null);
-        }
-        
-    }
+    }    
 
 }
