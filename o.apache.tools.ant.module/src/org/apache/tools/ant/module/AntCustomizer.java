@@ -186,15 +186,7 @@ ActionListener {
         if (!initialized) return;
         AntSettings settings = AntSettings.getDefault ();
         String antHome = tfAntHome.getText ().trim ();
-        if (settings.getAntHome () == null &&
-            antHome.length () > 0
-        )
-            settings.setAntHome (new File (antHome));
-        else
-        if (settings.getAntHome () != null &&
-            !settings.getAntHome ().equals (new File (antHome))
-        )
-            settings.setAntHome (new File (antHome));
+        settings.setAntHome (new File (antHome));
         if (settings.getAutoCloseTabs () != cbReuseOutput.isSelected ())
             settings.setAutoCloseTabs (cbReuseOutput.isSelected ());
         if (settings.getSaveAll () != cbSaveFiles.isSelected ())
