@@ -42,6 +42,9 @@ public class SaveAction extends CookieAction {
 
     protected void performAction(final Node[] activatedNodes) {
         SaveCookie sc = (SaveCookie) activatedNodes[0].getCookie(SaveCookie.class);
+        assert sc != null : "SaveCookie found for " + activatedNodes[0];
+        
+        // avoid NPE if disabled assertions
         if (sc == null) return ;
 
         try {
