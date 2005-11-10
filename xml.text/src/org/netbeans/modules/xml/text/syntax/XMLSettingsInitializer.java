@@ -7,42 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.text.syntax;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.awt.Color;
-import java.awt.Font;
 import java.util.*;
-
-import javax.swing.KeyStroke;
-
-import org.openide.actions.ToolsAction;
-import org.openide.windows.TopComponent;
-import org.openide.util.HelpCtx;
-import org.openide.actions.OpenAction;
-import org.openide.actions.ViewAction;
-import org.openide.util.actions.SystemAction;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.Coloring;
-import org.netbeans.editor.Syntax;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.MultiKeyBinding;
-import org.netbeans.editor.ext.ExtSettingsNames;
-
-import org.netbeans.modules.xml.core.actions.CollectSystemAction;
 
 /**
  * Editor settings defaults.
