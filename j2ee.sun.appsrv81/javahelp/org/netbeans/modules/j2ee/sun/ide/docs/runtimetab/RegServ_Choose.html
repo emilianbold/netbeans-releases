@@ -33,12 +33,14 @@ Microsystems, Inc. All Rights Reserved.
             Click Browse to navigate to the location.</li>
             <li><b>Type of domain.</b> Select the type of domain to register.
                 <ul>
-                    <li><b>Register local default domain.</b> Select this type to register the default domain directory that was created when you installed the Sun Java System Application Server.
-                    If you select this type, the IDE searches for an accessible domain in the default domain location according to the platform directory path you specified. </li>
-                    <li><b>Register local domain.</b> Select this type to register a local domain other than the default domain.
+                    <li><b>Register local default domain.</b> Select this type to register a domain located in the default domain directory of the platform you specify.
+                    The default domain directory is created when you install the Sun Java System Application Server, and a default domain is created in the default domain directory.
+                    If you select this type, you choose a domain from the list of unregisterd domains found in the default domain directory.</li>
+                    <li><b>Register local domain.</b> Select this type to register a local domain located outside the default domain directory.
                     If you select this type, you need to specify the location of the local domain.</li>
                     <li><b>Register remote domain.</b> Select this type to register a remote domain. 
-                    If you select this type, you need to supply the host and communication port for the remote domain.</li>
+                    If you select this type, you need to supply the host and communication port for the remote domain.
+                    <ul class="note"><li>You cannot stop or start a remote server from within the IDE.</li></ul></li>
                     <li><b>Create personal domain.</b> Select this type to create a new domain.
                     If you select this type, you need to specify where to create the new domain.</li>
                     Choosing this type enables you to specify port settings for the new domain.</li>
@@ -92,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd>    <a href="../general/register_appserver.html">Registering a Sun Java System Application Server Instance</a></dd>
-            <dd>    <a href="../general/working_withSJS.html">Working with the Sun Java System Application Server</a></dd>
+            <dd>    <a href="../general/working_withSJS.html">Working With the Sun Java System Application Server</a></dd>
         </dl>
         <hr>
 

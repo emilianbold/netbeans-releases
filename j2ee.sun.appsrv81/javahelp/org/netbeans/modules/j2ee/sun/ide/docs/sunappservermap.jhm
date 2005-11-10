@@ -31,7 +31,6 @@
     <mapID target="prim_sec_tables" url="cmp/prim_sec_tables.html" />
     
     <!-- sun-web.xml DD editor CSH: -->
-    <mapID target="AS_CFG_ConfigurationEditor"			url="configeditors/ConfigurationEditor.html"  />
     <mapID target="AS_CFG_WebAppGeneral"			url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppGeneral.html"  />
