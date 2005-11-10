@@ -48,7 +48,7 @@ import org.openide.util.MutexException;
  */
 public class JMXSampleProjectGenerator {
 
-    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/2";   //NOI18N
+    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3";   //NOI18N
 
     private JMXSampleProjectGenerator() {}
 
