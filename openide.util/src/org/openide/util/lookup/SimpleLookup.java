@@ -38,10 +38,7 @@ class SimpleLookup extends org.openide.util.Lookup {
         allItems = new ArrayList(instances.size());
 
         for (Iterator i = instances.iterator(); i.hasNext();) {
-            Object next = i.next();
-            if (next != null) {
-                allItems.add(new InstanceContent.SimpleItem(next));
-            }
+            allItems.add(new InstanceContent.SimpleItem(i.next()));
         }
     }
 

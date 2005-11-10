@@ -85,8 +85,9 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
         
         try {
             Lookups.fixed(new Object[] {null});
+            fail("No nulls are allowed");
         } catch (NullPointerException ex) {
-            fail("#68079");
+            // ok, NPE is what we want
         }        
     }
     
