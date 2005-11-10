@@ -161,6 +161,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             // touch all files to flush buffer
             File[] allFiles = workdir.listFiles();
             for(int i=0;i<allFiles.length;i++) {
+                if (!allFiles[i].isFile()) {
+                    continue;
+                }
                 new FileReader(allFiles[i]).close();
             }
             // find file bigger than limit
