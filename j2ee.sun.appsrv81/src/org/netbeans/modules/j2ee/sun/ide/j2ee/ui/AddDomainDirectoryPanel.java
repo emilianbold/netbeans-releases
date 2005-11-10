@@ -57,10 +57,12 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
     }
     
     public HelpCtx getHelp() {
-        // TODO get a help page?
-        return HelpCtx.DEFAULT_HELP; // new HelpCtx(SampleWizardPanel1.class);
+        if (creatingPersonalInstance)
+            return new HelpCtx("AS_RegServ_EnterPIDir"); //NOI18N
+        else 
+            return new HelpCtx("AS_RegServ_EnterDomainDir");
     }
-    
+        
     /** Is the directory usable.
      *
      * see Util.rootOfUsableDomain(File)

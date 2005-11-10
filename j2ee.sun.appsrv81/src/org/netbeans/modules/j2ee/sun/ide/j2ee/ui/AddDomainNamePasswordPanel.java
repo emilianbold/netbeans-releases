@@ -48,10 +48,9 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
     }
     
     public HelpCtx getHelp() {
-        // TODO get help content
-        return HelpCtx.DEFAULT_HELP; // new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx("AS_RegServ_EnterNameAndPassword"); //NOI18N
     }
-    
+        
     /** Determine if the content is valid.
      *
      * The constraints on this is complex.  If there is a user name entry, there

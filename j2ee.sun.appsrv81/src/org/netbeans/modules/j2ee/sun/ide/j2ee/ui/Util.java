@@ -176,10 +176,16 @@ public class Util {
     /** 
      */
     public static boolean rootOfUsableDomain(File f) {
-        File logsDir = new File(f,"logs");
-        if (logsDir.exists() && logsDir.isDirectory() && logsDir.canWrite())
-            return true;
-        return false;
+        File testFile = new File(f,"logs");
+        if (!testFile.exists() || !testFile.isDirectory() || !testFile.canWrite())
+            return false;
+        testFile = new File(f,"config");
+        if (!testFile.exists() || !testFile.isDirectory() || !testFile.canWrite())
+            return false;
+        testFile = new File(testFile,"domain.xml");
+        if (!testFile.exists() || !testFile.canWrite())
+            return false;
+        return true;
     }
     
     static String getHostPort(File domainDir, File platformDir){

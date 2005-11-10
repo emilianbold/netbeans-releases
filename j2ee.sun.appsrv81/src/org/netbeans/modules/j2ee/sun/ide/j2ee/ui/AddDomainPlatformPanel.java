@@ -54,10 +54,9 @@ class AddDomainPlatformPanel implements WizardDescriptor.Panel,
     }
     
     public HelpCtx getHelp() {
-        // TODO get help content?
-        return HelpCtx.DEFAULT_HELP; // new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx("AS_RegServ_EnterPlatformDir"); //NOI18N
     }
-    
+        
     /** Determine if the input is valid.
      *
      * Is the user entered directory an app server install directory?

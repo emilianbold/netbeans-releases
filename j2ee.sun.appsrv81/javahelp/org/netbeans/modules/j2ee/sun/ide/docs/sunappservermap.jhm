@@ -79,10 +79,13 @@
    <mapID target="AS_Wiz_Mail_general" 		url="resourcewizards/Mail_general.html"  />
    <mapID target="AS_Wiz_Mail_props" 		url="resourcewizards/Mail_props.html"  />
 
-  <mapID target="AS_RegServ_Choose" 		url="runtimetab/RegServ_Choose.html"  />
-  <mapID target="AS_RegServ_Create" 		url="runtimetab/RegServ_Create.html"  />
-  <mapID target="AS_RegServ_UserDef" 		url="runtimetab/RegServ_UserDef.html"  />
-  <mapID target="AS_RegServ_Remote" 		url="runtimetab/RegServ_Remote.html"  />
+    <mapID target="AS_RegServ_SelectDomain"      				url="runtimetab/RegServ_DefDomain.html" />
+    <mapID target="AS_RegServ_EnterPIDir"                                       url="runtimetab/RegServ_UserDef.html" />
+    <mapID target="AS_RegServ_EnterDomainDir"      				url="runtimetab/RegServ_UserDef.html" />
+    <mapID target="AS_RegServ_EnterRemoteInfo"      				url="runtimetab/RegServ_Remote.html" />
+    <mapID target="AS_RegServ_EnterNameAndPassword"                             url="runtimetab/RegServ_LogInfo.html" />
+    <mapID target="AS_RegServ_EnterPlatformDir"      				url="runtimetab/RegServ_Choose.html" />
+    <mapID target="AS_RegServ_DefinePorts"      				url="runtimetab/RegServ_Create.html" />
   
     <!-- sun-ejb-jar.xml DD editor CSH: -->
   <mapID target="AS_CFG_EjbJarRoot"                				url="ejbconfigeditors/sunconfig.html" />

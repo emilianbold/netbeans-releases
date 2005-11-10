@@ -54,12 +54,9 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
     }
     
     public HelpCtx getHelp() {
-        // TODO get a help page?
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx("AS_RegServ_EnterRemoteInfo"); //NOI18N
     }
-    
+        
     /** Determine if the page has acceptable values.
      *
      * Fill in the WizardDescriptor properties
@@ -69,6 +66,12 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
      */
     public boolean isValid() {
         String h = component.getHost();
+        if (h.length() < 1) {
+            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(AddDomainHostPortPanel.class, 
+                    "MSG_UnknownHost2",h));                                     //NOI18N
+            return false;            
+        }
         int p = component.getPort();
         try {
             InetAddress ia = InetAddress.getByName(h);

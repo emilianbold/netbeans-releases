@@ -59,7 +59,7 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx("AS_RegServ_Create"); //NOI18N
+        return new HelpCtx("AS_RegServ_DefinePorts"); //NOI18N
     }
     
     public boolean isValid() {

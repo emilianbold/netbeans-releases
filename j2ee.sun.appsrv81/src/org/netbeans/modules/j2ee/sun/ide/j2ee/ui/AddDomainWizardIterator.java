@@ -329,7 +329,8 @@ public final class AddDomainWizardIterator implements
                         (String) wizard.getProperty(DOMAIN));
                 instanceProperties.setProperty("LOCATION",                      //NOI18N
                         domainDir);
-                RegisterPointbase.getDefault().register((File) wizard.getProperty(PLATFORM_LOCATION));
+                if (wizard.getProperty(TYPE) != REMOTE)
+                    RegisterPointbase.getDefault().register((File) wizard.getProperty(PLATFORM_LOCATION));
                 RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
                 return instanceProperties;
             }
