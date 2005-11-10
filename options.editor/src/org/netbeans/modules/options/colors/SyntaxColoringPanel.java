@@ -755,6 +755,8 @@ PropertyChangeListener {
                 return getValue (ColorModel.ALL_LANGUAGES, defaultAS, key);
         }
         
+        if (key == StyleConstants.FontFamily) return "Monospaced";    // NOI18N
+        if (key == StyleConstants.FontSize) return getDefaultFontSize ();
         return null;
     }
     
@@ -785,12 +787,12 @@ PropertyChangeListener {
         else
             def = true;
         if (Boolean.TRUE.equals (category.getAttribute (StyleConstants.Bold)))
-            sb.append ('+').append (loc ("Bold"));   // NOI18N
+            sb.append ('+').append (loc ("CTL_Bold"));   // NOI18N
         if (Boolean.TRUE.equals (category.getAttribute (StyleConstants.Italic)))
-            sb.append ('+').append (loc ("Italic"));
+            sb.append ('+').append (loc ("CTL_Italic"));
         
         if (def) {
-            sb.insert (0, loc ("Default"));
+            sb.insert (0, loc ("CTL_Inherited"));
             return sb.toString ();
         } else {
             String result = sb.toString ();
