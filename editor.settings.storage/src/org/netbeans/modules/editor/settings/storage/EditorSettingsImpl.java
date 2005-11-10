@@ -165,7 +165,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	String profile
     ) {
         // 1) translate profile name
-	profile = getOriginalProfile (profile); // loc name > name
+	profile = getInternalFontColorProfile (profile); // loc name > name
 
         if (!defaultColors.containsKey (profile)) {
             
@@ -207,7 +207,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	String profile
     ) {
         // 1) translate profile name
-	profile = getOriginalProfile (profile); // loc name > name
+	profile = getInternalFontColorProfile (profile); // loc name > name
 
         // 2) get data from cache or disk
         if (!defaultColorDefaults.containsKey (profile)) {
@@ -237,7 +237,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	Collection /*<AttributeSet>*/ fontColors
     ) {
         // 1) translate name of profile
-	profile = getOriginalProfile (profile); // loc name > name
+	profile = getInternalFontColorProfile (profile); // loc name > name
         
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
@@ -275,7 +275,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	String profile
     ) {
         // 1) translate profile name
-	profile = getOriginalProfile (profile);
+	profile = getInternalFontColorProfile (profile);
 
         if (!highlightings.containsKey (profile)) {
             
@@ -317,7 +317,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	String profile
     ) {
         // 1) translate profile name
-	profile = getOriginalProfile (profile);
+	profile = getInternalFontColorProfile (profile);
 
         // 2) read data form disk or cache
         if (!highlightingDefaults.containsKey (profile)) {
@@ -346,7 +346,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	Collection /*<AttributeSet>*/ fontColors
     ) {
         // 1) translate profile name
-	profile = getOriginalProfile (profile);	
+	profile = getInternalFontColorProfile (profile);	
         
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
@@ -581,12 +581,21 @@ public class EditorSettingsImpl extends EditorSettings {
         keyMapProfiles.put (locProfile, profile);
     }
     
-    String getOriginalProfile (String profile) {
+    String getInternalFontColorProfile (String profile) {
 	if (fontColorProfiles == null)
 	    init ();
 	String result = (String) fontColorProfiles.get (profile);
         if (result != null) return result;
         fontColorProfiles.put (profile, profile);
+        return profile;
+    }
+    
+    String getInternalKeymapProfile (String profile) {
+	if (keyMapProfiles == null)
+	    init ();
+	String result = (String) keyMapProfiles.get (profile);
+        if (result != null) return result;
+        keyMapProfiles.put (profile, profile);
         return profile;
     }
 }
