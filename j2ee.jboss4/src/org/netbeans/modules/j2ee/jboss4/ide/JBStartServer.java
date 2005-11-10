@@ -365,7 +365,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
                         }
 
-                        if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] JBoss \\(MX MicroKernel\\) \\[4\\.0[\\S]+ \\(build: CVSTag=[\\S]+ date=[\\d]+\\)\\] Started in [\\d]+s:[\\d]+ms")) {//NOI18N
+                        if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] JBoss \\(MX MicroKernel\\) \\[4\\.0[\\S]+ \\(build: CVSTag=[\\S]+ date=[\\d]+\\)\\] Started in ([\\d]+m:)?[\\d]+s:[\\d]+ms")) {//NOI18N
                             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STARTED")));//NOI18N
                             // start logging
                             JBLogWriter logWriter = JBLogWriter.updateInstance(io, serverProcess.getInputStream(),JBOSS_INSTANCE);
