@@ -69,7 +69,7 @@ public class LoggingControlTest extends LoggingTestCaseHid {
             "THREAD:main MSG:2" +
             "THREAD:Para MSG:C" +
             "THREAD:main MSG:3";
-        registerSwitches(order);
+        registerSwitches(order, 0);
         
         
         RequestProcessor rp = new RequestProcessor("Para");
@@ -119,7 +119,7 @@ public class LoggingControlTest extends LoggingTestCaseHid {
             "THREAD:main MSG:2" +
             "THREAD:Para MSG:C+" +
             "THREAD:main MSG:3";
-        registerSwitches(order);
+        registerSwitches(order, 0);
         
         
         RequestProcessor rp = new RequestProcessor("Para");
@@ -169,7 +169,7 @@ public class LoggingControlTest extends LoggingTestCaseHid {
             "THREAD:main MSG:2" +
             "THREAD:Para MSG:A" +
             "THREAD:main MSG:3";
-        registerSwitches(order);
+        registerSwitches(order, 0);
         
         
         RequestProcessor rp = new RequestProcessor("Para");

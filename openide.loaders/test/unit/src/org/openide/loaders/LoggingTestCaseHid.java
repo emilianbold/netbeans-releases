@@ -46,8 +46,7 @@ class LoggingTestCaseHid extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.loaders.LoggingTestCaseHid$Lkp");
     }
-    
-    
+
     protected LoggingTestCaseHid (String name) {
         super (name);
     }
@@ -98,7 +97,7 @@ class LoggingTestCaseHid extends NbTestCase {
      * @param url the url to read the file from
      * @exception IOException thrown when there is problem reading the url
      */
-    protected final void registerSwitches(URL url) throws IOException {
+    protected final void registerSwitches(URL url, int timeout) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         InputStream is = url.openStream();
         for (;;) {
@@ -109,14 +108,16 @@ class LoggingTestCaseHid extends NbTestCase {
         os.close();
         is.close();
         
-        registerSwitches(new String(os.toByteArray(), "utf-8"));
+        registerSwitches(new String(os.toByteArray(), "utf-8"), timeout);
     }
     
     /** Registers hints for controlling thread switching in multithreaded
      * applications.
     
      */
-    protected final void registerSwitches(String order) {
+    protected final void registerSwitches(String order, int timeout) {
+        ErrManager.timeout = timeout;
+        
         LinkedList switches = new LinkedList();
         
         HashMap exprs = new HashMap();
@@ -184,6 +185,7 @@ class LoggingTestCaseHid extends NbTestCase {
         private String prefix;
 
         private static LinkedList switches;
+        private static int timeout;
         /** maps names of threads to their instances*/
         private static java.util.Map threads = new java.util.HashMap();
         
@@ -308,7 +310,7 @@ class LoggingTestCaseHid extends NbTestCase {
                             if (log) {
                                 messages.append("t: " + threadName + " log: " + s + " waiting\n");
                             }
-                            switches.wait();
+                            switches.wait(timeout);
                             if (log) {
                                 messages.append("t: " + threadName + " log: " + s + " timeout\n");
                             }
@@ -345,6 +347,7 @@ class LoggingTestCaseHid extends NbTestCase {
             ErrManager.messages.append ("Starting test ");
             ErrManager.messages.append (n);
             ErrManager.messages.append ('\n');
+            threads.clear();
         }
         
     } // end of ErrManager

@@ -170,8 +170,11 @@ public class XMLDataObject extends MultiDataObject {
      */
     private InfoParser infoParser;
 
-    /* Lazy initialized. For logging and debugging. */
-    private ErrorManager err;
+    /* For logging and debugging. */
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(XMLDataObject.class.getName());
+    /** is logging enabled? */
+    private static final boolean LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+
                
     /** 
      * Create new XMLDataObject. It is usually called by a loader.
@@ -302,14 +305,26 @@ public class XMLDataObject extends MultiDataObject {
 
         Node.Cookie cake = (Node.Cookie)getIP ().lookupCookie (cls);
        
+        if (LOG) {
+            ERR.log("Query for " + cls + " for " + this); // NOI18N
+            ERR.log("Gives a cake " + cake + " for " + this); // NOI18N
+        }
+        
         if (cake instanceof InstanceCookie) {
             cake = ofCookie ((InstanceCookie)cake, cls);
+        }
+
+        if (LOG) {
+            ERR.log("After ofCookie: " + cake + " for " + this); // NOI18N
         }
         
         if (cake == null) {
             cake = super.getCookie (cls);
         }
         
+        if (LOG) {
+            ERR.log("getCookie returns " + cake + " for " + this); // NOI18N
+        }
         
         return cake;
     }
@@ -428,7 +443,7 @@ public class XMLDataObject extends MultiDataObject {
     * @exception IOException if there is an I/O error
     */
     public final Document getDocument () throws IOException, SAXException {
-        emgr().log ("getDocument");
+        if (LOG) ERR.log ("getDocument" + " for " + this);
         synchronized (this) {
             DelDoc d = doc;
             if (d == null) {
@@ -442,7 +457,7 @@ public class XMLDataObject extends MultiDataObject {
     /** Clears the document. Called when the document file is changed.
      */
     final void clearDocument () {
-        emgr().log ("clearDocument");
+        if (LOG) ERR.log ("clearDocument" + " for " + this);
         //err.notify (ErrorManager.INFORMATIONAL, new Throwable ("stack dump"));
         doc = null;
         firePropertyChange (PROP_DOCUMENT, null, null);
@@ -474,7 +489,7 @@ public class XMLDataObject extends MultiDataObject {
     * @exception IOException if error during parsing occures
     */
     final Document parsePrimaryFile () throws IOException, SAXException {
-        emgr().log ("parsePrimaryFile");
+        if (LOG) ERR.log ("parsePrimaryFile" + " for " + this);
         String loc = getPrimaryFile().getURL().toExternalForm();
         try {
             return XMLUtil.parse(new InputSource(loc), false, /* #36295 */true, errorHandler, getSystemResolver());
@@ -492,19 +507,6 @@ public class XMLDataObject extends MultiDataObject {
     }
 
 
-    /** Return ErrorManager for this instance. */
-    private ErrorManager emgr() {
-        synchronized (emgrLock) {
-            if (err == null) {
-                err = ErrorManager.getDefault ().getInstance(
-                    "org.openide.loaders.XMLDataObject." + getPrimaryFile().getPath() // NOI18N
-                ); 
-            }
-        }
-    
-        return err;
-    }
-    
     // ~~~~~~~~~~~~~~~~~~~~ Start of Utilities ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     /** Provides access to internal XML parser.
@@ -1030,6 +1032,7 @@ public class XMLDataObject extends MultiDataObject {
          */
         public Object lookupCookie (final Class clazz) {
             if (QUERY.get () == clazz) {
+                if (LOG) ERR.log("Cyclic deps on queried class: " + clazz + " for " + XMLDataObject.this); // NOI18N
                 // somebody is querying for the same cookie in the same thread
                 // probably neverending-loop - ignore
                 return new InstanceCookie () {
@@ -1050,16 +1053,33 @@ public class XMLDataObject extends MultiDataObject {
             Object previous = QUERY.get ();
             try {
                 QUERY.set (clazz);
-                waitFinished ();
-
-                Lookup l = lookup != null ? lookup : Lookup.EMPTY;
+                if (LOG) ERR.log("Will do query for class: " + clazz + " for " + XMLDataObject.this); // NOI18N
+                
+                Lookup l;
+                for (;;) {
+                    waitFinished ();
+                    if (LOG) ERR.log("Wait finished is over: " + lookup + " id: " + parsedId + " for " + XMLDataObject.this); // NOI18N
+                    l = lookup;
+                    if (l != null) {
+                        break;
+                    }
+                    if (parsedId == null) {
+                        l = Lookup.EMPTY;
+                        break;
+                    }
+                }
 
                 Lookup.Result r = result;
                 if (r != null) {
+                    if (LOG) ERR.log("Querying the result: " + r); // NOI18N
                     // just to initialize all listeners
                     r.allItems ();
+                } else {
+                    if (LOG) ERR.log("No result for lookup: " + lookup); // NOI18N                
                 }
-                return l.lookup (clazz);
+                Object ret = l.lookup (clazz);
+                if (LOG) ERR.log("Returning value: " + ret + " for " + XMLDataObject.this); // NOI18N
+                return ret;
             } finally {
                 QUERY.set (previous);
             }
@@ -1079,22 +1099,22 @@ public class XMLDataObject extends MultiDataObject {
          */
         private void waitFinished (String ignorePreviousId) {
             if (sharedParserImpl == null) {
-                emgr().log("No sharedParserImpl, exiting"); // NOI18N
+                ERR.log("No sharedParserImpl, exiting"); // NOI18N
                 return;
             }
             
-            boolean willLog = emgr().isLoggable(ErrorManager.INFORMATIONAL);
-
             XMLReader parser = sharedParserImpl;
             FileObject myFileObject = getPrimaryFile();
             String previousID;
             String newID = null;
             
+            if (LOG) ERR.log("Going to read parsedId for " + XMLDataObject.this);
+            
             previousID = parsedId;
 
-            if (parsedId != null) {
-                if (willLog) {
-                    emgr().log("Has already been parsed: " + parsedId); // NOI18N
+            if (parsedId != null && parsedId != NULL) {
+                if (LOG) {
+                    ERR.log("Has already been parsed: " + parsedId + " for " + XMLDataObject.this); // NOI18N
                 }
                 // ok, has already been parsed
                 return;
@@ -1112,13 +1132,14 @@ public class XMLDataObject extends MultiDataObject {
             synchronized (this) {
                 try {
                     if (!myFileObject.isValid()) {
-                        if (willLog) {
-                            emgr().log("Invalid file object: " + myFileObject); // NOI18N
+                        if (LOG) {
+                            ERR.log("Invalid file object: " + myFileObject); // NOI18N
                         }
                         return;
                     }
                     
                     parsedId = NULL;
+                    if (LOG) ERR.log("parsedId set to NULL for " + XMLDataObject.this); // NOI18N
                     try {
                         in =  myFileObject.getInputStream();
                     } catch (IOException ex) {
@@ -1141,33 +1162,33 @@ public class XMLDataObject extends MultiDataObject {
                             input.setByteStream(in);
                             parser.parse (input);
                         }
-                        if (willLog) {
-                            emgr().log("Parse finished"); // NOI18N
+                        if (LOG) {
+                            ERR.log("Parse finished for " + XMLDataObject.this); // NOI18N
                         }
                     } catch (StopSaxException stopped) {
                         newID = parsedId;
-                        emgr().log("Parsing successfully stopped: " + parsedId); // NOI18N
+                        ERR.log("Parsing successfully stopped: " + parsedId + " for " + XMLDataObject.this); // NOI18N
                     } catch (SAXException checkStop) {
                         // stop parsing anyway
                         if (STOP.getMessage ().equals (checkStop.getMessage ())) {
                             newID = parsedId;
-                            emgr().log("Parsing stopped with STOP message: " + parsedId); // NOI18N
+                            ERR.log("Parsing stopped with STOP message: " + parsedId + " for " + XMLDataObject.this); // NOI18N
                         } else {
                             String msg = "Thread:" + Thread.currentThread().getName(); //NOI18N
-                            emgr().annotate(checkStop, "DocListener should not throw SAXException but STOP one.\n" + msg);  //NOI18N
-                            emgr().notify(emgr().INFORMATIONAL, checkStop);
+                            ERR.annotate(checkStop, "DocListener should not throw SAXException but STOP one.\n" + msg);  //NOI18N
+                            ERR.notify(ERR.INFORMATIONAL, checkStop);
                             Exception ex = checkStop.getException();
                             if (ex != null) {
-                                emgr().notify(emgr().INFORMATIONAL, ex);
+                                ERR.notify(ERR.INFORMATIONAL, ex);
                             }
                         }
                     } catch (FileNotFoundException ex) {
                         // thrown when there is a problem with URL for example
-                        emgr().notify(emgr().INFORMATIONAL, ex);
+                        ERR.notify(ERR.INFORMATIONAL, ex);
                     } catch (IOException ex) {
                        // error while parsing for public id hide it.
                         // somebody have deleted the file meanwhile, because I do not lock?
-                        emgr().notify(emgr().INFORMATIONAL, ex);
+                        ERR.notify(ERR.INFORMATIONAL, ex);
                     } finally {
                         
                         // such small memory leak can complicate profiling a lot
@@ -1196,7 +1217,7 @@ public class XMLDataObject extends MultiDataObject {
                     try {
                         if (in != null) in.close();
                     } catch (IOException ex) {
-                        emgr().notify(emgr().INFORMATIONAL, ex);
+                        ERR.notify(ERR.INFORMATIONAL, ex);
                     }
                 }
             
@@ -1204,14 +1225,14 @@ public class XMLDataObject extends MultiDataObject {
             
             if (ignorePreviousId != null && newID.equals (ignorePreviousId)) {
                 // no updates in lookup
-                if (willLog) emgr().log("No update to ID: " + ignorePreviousId); // NOI18N
+                if (LOG) ERR.log("No update to ID: " + ignorePreviousId + " for " + XMLDataObject.this); // NOI18N
                 return;
             }
             
             // out of any synchronized blocks udpate the lookup
             // because it can call into unknown places via its 
             // Environment.findForOne
-            if (willLog) emgr().log("New id: " + newID); // NOI18N
+            if (LOG) ERR.log("New id: " + newID + " for " + XMLDataObject.this); // NOI18N
             
             if (newID != null) {
                 updateLookup (previousID, newID);
@@ -1223,8 +1244,10 @@ public class XMLDataObject extends MultiDataObject {
          */
         private void updateLookup (String previousID, String id) {
             if (previousID != null && previousID.equals (id)) {
+                ERR.log("No need to update lookup: " + id + " for " + XMLDataObject.this); // NOI18N
                 return;
             }
+            
             
             Lookup newLookup;
 
@@ -1234,9 +1257,11 @@ public class XMLDataObject extends MultiDataObject {
             if (info != null) {
                 // use info
                 newLookup = createInfoLookup (XMLDataObject.this, info);
+                if (LOG) ERR.log("Lookup from info: " + newLookup + " for " + XMLDataObject.this); // NOI18N
             } else {
                 // ask the environment for the lookups
                 newLookup = Environment.findForOne (XMLDataObject.this);
+                if (LOG) ERR.log("Lookup from env: " + newLookup + " for " + XMLDataObject.this); // NOI18N
                 if (newLookup == null) {
                     newLookup = Lookup.EMPTY;
                 }
@@ -1247,12 +1272,15 @@ public class XMLDataObject extends MultiDataObject {
                 Lookup.Result prevRes = result;
 
                 lookup = newLookup;
+                if (LOG) ERR.log("Shared lookup updated: " + lookup + " for " + XMLDataObject.this); // NOI18N
                 result = lookup.lookup (TEMPLATE);
                 result.addLookupListener (this);
 
                 if (prevRes != null) {
                     prevRes.removeLookupListener (this);
+                    if (LOG) ERR.log("Firing property change for " + XMLDataObject.this); // NOI18N
                     XMLDataObject.this.firePropertyChange (DataObject.PROP_COOKIE, null, null);
+                    if (LOG) ERR.log("Firing done for " + XMLDataObject.this); // NOI18N
                 }
             }
         }
@@ -1266,13 +1294,13 @@ public class XMLDataObject extends MultiDataObject {
             try {
                 parser.setFeature("http://xml.org/sax/features/validation", validation);  //NOI18N
             } catch (SAXException sex) {
-                emgr().log("Warning: XML parser does not support validation feature.");  //NOI18N                    
+                ERR.log("Warning: XML parser does not support validation feature.");  //NOI18N                    
             }
 
             try {
                 parser.setProperty("http://xml.org/sax/properties/lexical-handler", lex);  //NOI18N
             } catch (SAXException sex) {
-                emgr().log("Warning: XML parser does not support lexical-handler feature.");  //NOI18N
+                ERR.log("Warning: XML parser does not support lexical-handler feature.");  //NOI18N
                 //throw new Error("");
             }
         }
@@ -1286,7 +1314,7 @@ public class XMLDataObject extends MultiDataObject {
         }
 
         public void warning (Throwable ex, String annotation) {
-            ErrorManager emgr = emgr();
+            ErrorManager emgr = ERR;
             if (annotation != null)
                 emgr.annotate(ex, annotation);
             emgr.notify(ErrorManager.INFORMATIONAL, ex);  //do not show until in debug mode
@@ -1296,6 +1324,7 @@ public class XMLDataObject extends MultiDataObject {
 
         public void startDTD(String root, String pID, String sID) throws SAXException {
             parsedId = pID == null ? NULL : pID;
+            ERR.log("Parsed to " + parsedId); // NOI18N
             stop();
         }
 
@@ -1374,6 +1403,7 @@ public class XMLDataObject extends MultiDataObject {
                 clearDocument ();
                 String prevId = parsedId;
                 parsedId = null;
+                ERR.log("cleared parsedId"); // NOI18N
                 // parse update only if the ID is different
                 waitFinished (prevId);
             }
@@ -1893,9 +1923,9 @@ public class XMLDataObject extends MultiDataObject {
                     xmlDocument = new SoftReference (d);
                     return d;
                 } catch (SAXException e) {
-                    emgr ().notify (ErrorManager.INFORMATIONAL, e);
+                    ERR.notify (ErrorManager.INFORMATIONAL, e);
                 } catch (IOException e) {
-                    emgr ().notify (ErrorManager.INFORMATIONAL, e);
+                    ERR.notify (ErrorManager.INFORMATIONAL, e);
                 }
                 
                 status = STATUS_ERROR;

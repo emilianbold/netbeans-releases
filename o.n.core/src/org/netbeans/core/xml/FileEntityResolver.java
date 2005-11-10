@@ -58,6 +58,9 @@ import org.openide.ErrorManager;
 public final class FileEntityResolver extends EntityCatalog implements Environment.Provider {
     private static final String ENTITY_PREFIX = "/xml/entities"; // NOI18N
     private static final String LOOKUP_PREFIX = "/xml/lookups"; // NOI18N
+
+    static final ErrorManager ERR = ErrorManager.getDefault().getInstance(FileEntityResolver.class.getName());
+    static final boolean LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
     
     /** Constructor
      */
@@ -465,6 +468,10 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         /** Check whether all necessary values are updated.
          */
         protected void beforeLookup (Template t) {
+            if (LOG) {
+                ERR.log("beforeLookup: " + t.getType() + " for " + xml); // NOI18N
+            }
+            
             if (folder == null && obj == null) {
                 update ();
             }
@@ -473,6 +480,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         /** Updates current state of the lookup.
          */
         private void update () {
+            if (LOG) ERR.log("update: " + id + " for " + xml); // NOI18N
             FileObject[] last = new FileObject[1];
             FileObject fo = findObject (id, last);
             
@@ -481,39 +489,47 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
             if (fo != null) {
                 try {
                     o = DataObject.find (fo);
+                    if (LOG) ERR.log("object found: " + o + " for " + xml); // NOI18N
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault ().notify (ex);
+                    ERR.notify (ex);
                 }
             }
         
             if (o == obj) {
+                if (LOG) ERR.log("same data object" + " for " + xml); // NOI18N
                 // the data object is still the same as used to be
                 // 
                 Lookup l = findLookup (xml, o);
                 if (o != null && l != null) {
+                    if (LOG) ERR.log("updating lookups" + " for " + xml); // NOI18N
                     // just update the lookups
                     setLookups (new Lookup[] { l });
+                    if (LOG) ERR.log("updating lookups done" + " for " + xml); // NOI18N
                     // and exit
                     return;
                 } 
             } else {
                 // data object changed
                 obj = o;
+                if (LOG) ERR.log("data object updated to " + obj + " for " + xml); // NOI18N
                 
                 Lookup l = findLookup(xml, o);
                 
                 if (o != null && l != null) {
+                    if (LOG) ERR.log("change the lookup"); // NOI18N
                     // add listener to changes of the data object
                     o.addPropertyChangeListener (
                         org.openide.util.WeakListeners.propertyChange (this, o)
                     );
                     // update the lookups
                     setLookups (new Lookup[] { l });
+                    if (LOG) ERR.log("change in lookup done" + " for " + xml); // NOI18N
                     // and exit
                     return;
                 }
             }
             
+            if (LOG) ERR.log("delegating to nobody for " + obj + " for " + xml); // NOI18N
             // object is null => there are no lookups
             setLookups (new Lookup[0]);
             
