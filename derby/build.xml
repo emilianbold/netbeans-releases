@@ -2,33 +2,4 @@
 <project basedir="." default="netbeans" name="db/derby">
     <description>Builds, tests, and runs the project org.netbeans.modules.derby</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <property name="derby.filename" value="derby-10.1.1.0"/>
-    
-    <target name="release" depends="init">
-        <unzip src="../external/${derby.filename}.zip" dest="${cluster}" />
-    </target>
-    
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
-            <license name="derby-license.txt">
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-                <text>For the bundled Apache Derby database:</text>
-                <file location="../external/derby-10.1.1.0-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-    
 </project>

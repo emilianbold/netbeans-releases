@@ -126,7 +126,9 @@ public class RegisterDerby implements DatabaseRuntime {
     public void start(){
         start(5000);//wait 5 seconds
     }
-
+    
+    /** Returns a directory where Derby is installed, or null if no Derby installation
+     * is registered. */
     private File getInstallLocation() {
         return InstalledFileLocator.getDefault().locate(INST_DIR, null, false);
     }
