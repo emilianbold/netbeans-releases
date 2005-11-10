@@ -32,7 +32,7 @@ public class StatusAction extends AbstractSystemAction {
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;  
     
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Status";  // NOI18N
     }
 
@@ -47,7 +47,7 @@ public class StatusAction extends AbstractSystemAction {
 
         Context ctx = Utils.getCurrentContext(nodes);
 
-        stc.setContentTitle(getContextDisplayName());
+        stc.setContentTitle(getContextDisplayName(nodes));
         stc.setContext(ctx);
         stc.requestActive();
         stc.performRefreshAction();

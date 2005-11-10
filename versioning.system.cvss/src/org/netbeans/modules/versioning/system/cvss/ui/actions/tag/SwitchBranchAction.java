@@ -52,7 +52,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
                     | FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY
                     | FileInformation.STATUS_VERSIONED_UPTODATE;
     
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_SwitchBranch";  // NOI18N
     }
 
@@ -76,7 +76,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
         Context context = getContext(nodes);
 
         String title = MessageFormat.format(NbBundle.getBundle(SwitchBranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
-                                         new Object[] { getContextDisplayName() });
+                                         new Object[] { getContextDisplayName(nodes) });
         
         final SwitchBranchPanel settings = new SwitchBranchPanel(context.getFiles());
 
@@ -119,7 +119,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
 
         // Special treatment for Locally New folders. Ww cannot switch them to branch with the Update command.
         // Workaround: add the folder to CVS, then manually create CVS/Tag inside
-        ExecutorGroup group = new ExecutorGroup(getRunningName());
+        ExecutorGroup group = new ExecutorGroup(getRunningName(nodes));
         if (newFolders.size() > 0) {
             AddCommand acmd = new AddCommand();
             final File [] files = (File[]) newFolders.toArray(new File[newFolders.size()]);

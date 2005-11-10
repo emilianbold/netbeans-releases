@@ -39,7 +39,7 @@ import java.io.IOException;
  */
 public class GetCleanAction extends AbstractSystemAction {
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_GetClean";  // NOI18N
     }
 

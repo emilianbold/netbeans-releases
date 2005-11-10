@@ -17,9 +17,13 @@ import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.Lookup;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.SystemActionBridge;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction;
@@ -351,61 +355,63 @@ public class Annotator {
 
     /**
      * Returns array of versioning actions that may be used to construct a popup menu. These actions
-     * will act on currently activated nodes.
-     * 
+     * will act on the supplied Lookup context.
+     *
+     * @param context context similar to {@link org.openide.util.ContextAwareAction#createContextAwareInstance(org.openide.util.Lookup)}   
      * @return Action[] array of versioning actions that may be used to construct a popup menu. These actions
      * will act on currently activated nodes.
      */ 
-    public static Action [] getActions() {
-        File [] files = Utils.getCurrentContext(null).getFiles();
+    public static Action [] getActions(Lookup context) {
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
+        File [] files = Utils.toFileArray(context.lookup(new Lookup.Template(FileObject.class)).allInstances());
+        Node [] fakeNodes = new Node [] { new AbstractNode(Children.LEAF, context) };
         if (onlyFolders(files)) {
             return new Action [] {
-                new SystemActionBridge(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status")),
-                new SystemActionBridge(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff")),
-                new SystemActionBridge(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update")),
-                new SystemActionBridge(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit")),
+                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
+                SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
+                SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
+                SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag")),
+                SystemActionBridge.createAction(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(BranchAction.class), loc.getString("CTL_PopupMenuItem_Branch")),
-                new SystemActionBridge(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch")),
-                new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
+                SystemActionBridge.createAction(SystemAction.get(BranchAction.class), loc.getString("CTL_PopupMenuItem_Branch"), context),
+                SystemActionBridge.createAction(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch"), context),
+                SystemActionBridge.createAction(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory")),
+                SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean")),
-                new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts")),
-                new SystemActionBridge(SystemAction.get(IgnoreAction.class),
-                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus() == IgnoreAction.UNIGNORING ? 
+                SystemActionBridge.createAction(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
+                SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
+                SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(fakeNodes) == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
-                                       loc.getString("CTL_PopupMenuItem_Ignore")),
+                                       loc.getString("CTL_PopupMenuItem_Ignore"), context),
             };
         } else {
             return new Action [] {
-                new SystemActionBridge(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status")),
-                new SystemActionBridge(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff")),
-                new SystemActionBridge(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update")),
-                new SystemActionBridge(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit")),
+                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
+                SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
+                SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
+                SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag")),
+                SystemActionBridge.createAction(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(BranchAction.class), loc.getString("CTL_PopupMenuItem_Branch")),
-                new SystemActionBridge(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch")),
-                new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
+                SystemActionBridge.createAction(SystemAction.get(BranchAction.class), loc.getString("CTL_PopupMenuItem_Branch"), context),
+                SystemActionBridge.createAction(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch"), context),
+                SystemActionBridge.createAction(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
-                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ? 
+                SystemActionBridge.createAction(SystemAction.get(AnnotationsAction.class), 
+                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(fakeNodes) ? 
                                         loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
-                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations")),
-                new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory")),
+                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context),
+                SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
                 null,
-                new SystemActionBridge(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean")),
-                new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts")),
-                new SystemActionBridge(SystemAction.get(IgnoreAction.class), 
-                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus() == IgnoreAction.UNIGNORING ? 
+                SystemActionBridge.createAction(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
+                SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
+                SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), 
+                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(fakeNodes) == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
-                                       loc.getString("CTL_PopupMenuItem_Ignore")),
+                                       loc.getString("CTL_PopupMenuItem_Ignore"), context)
             };
         }
     }

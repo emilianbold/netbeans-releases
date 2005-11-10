@@ -41,7 +41,7 @@ public class DiffAction extends AbstractSystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Diff";  // NOI18N
     }
 
@@ -50,10 +50,10 @@ public class DiffAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(Node[] nodes) {
-        ExecutorGroup group = new ExecutorGroup(getRunningName());
+        ExecutorGroup group = new ExecutorGroup(getRunningName(nodes));
         group.progress(NbBundle.getMessage(DiffAction.class, "BK1001"));
         Context context = getContext(nodes);
-        DiffExecutor executor = new DiffExecutor(context, getContextDisplayName());
+        DiffExecutor executor = new DiffExecutor(context, getContextDisplayName(nodes));
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         File [] files = context.getFiles();
         for (int i = 0; i < files.length; i++) {

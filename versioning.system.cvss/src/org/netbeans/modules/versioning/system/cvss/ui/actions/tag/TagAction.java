@@ -44,7 +44,7 @@ public class TagAction extends AbstractSystemAction {
                     | FileInformation.STATUS_VERSIONED_UPTODATE;
 
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Tag";  // NOI18N
     }
 
@@ -63,7 +63,7 @@ public class TagAction extends AbstractSystemAction {
         copy (cmd, commandTemplate);
         
         String title = MessageFormat.format(NbBundle.getBundle(TagAction.class).getString("CTL_TagDialog_Title"), 
-                                         new Object[] { getContextDisplayName() });
+                                         new Object[] { getContextDisplayName(nodes) });
         
         TagSettings settings = new TagSettings(roots);
         settings.setCommand(cmd);
@@ -89,7 +89,7 @@ public class TagAction extends AbstractSystemAction {
         copy(commandTemplate, cmd);
         cmd.setFiles(roots);
 
-        ExecutorGroup group = new ExecutorGroup(getRunningName());
+        ExecutorGroup group = new ExecutorGroup(getRunningName(nodes));
         group.addExecutors(TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
         group.execute();
     }

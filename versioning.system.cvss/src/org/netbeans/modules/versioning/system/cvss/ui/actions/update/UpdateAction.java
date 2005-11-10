@@ -24,7 +24,6 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 
 /**
@@ -34,7 +33,7 @@ import java.io.File;
  */
 public class UpdateAction extends AbstractSystemAction {
     
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Update";  // NOI18N
     }
 
@@ -48,7 +47,7 @@ public class UpdateAction extends AbstractSystemAction {
 
     public void performCvsAction(Node[] nodes) {
 
-        ExecutorGroup group = new ExecutorGroup(getRunningName());
+        ExecutorGroup group = new ExecutorGroup(getRunningName(nodes));
         group.progress(NbBundle.getMessage(UpdateAction.class, "BK1001"));
         Context context = getContext(nodes);
         GlobalOptions options = null;

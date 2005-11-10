@@ -13,24 +13,20 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions;
 
-import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
-import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Actions;
 import org.openide.LifecycleManager;
+import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.api.project.Project;
 
-import javax.swing.*;
 import java.text.MessageFormat;
 import java.io.File;
 import java.util.MissingResourceException;
@@ -47,7 +43,7 @@ public abstract class AbstractSystemAction extends NodeAction {
      * @return bundle key base name
      * @see #getName
      */
-    protected abstract String getBaseName();
+    protected abstract String getBaseName(Node [] activatedNodes);
 
     protected AbstractSystemAction() {
         setIcon(null);
@@ -100,7 +96,7 @@ public abstract class AbstractSystemAction extends NodeAction {
      * </ul>
      */
     public String getName() {
-        return getName(""); // NOI18N
+        return getName("", TopComponent.getRegistry().getActivatedNodes()); // NOI18N
     }
     
 
@@ -114,24 +110,23 @@ public abstract class AbstractSystemAction extends NodeAction {
      *   <li><code>getBaseName() + "Running_Projects"</code> key for multiple selected projects
      * </ul>
      */    
-    public String getRunningName() {
-        return getName("Running"); // NOI18N
+    public String getRunningName(Node [] activatedNodes) {
+        return getName("Running", activatedNodes); // NOI18N
     }
         
-    private String getName(String role) {
-        String baseName = getBaseName() + role;
+    private String getName(String role, Node [] activatedNodes) {
+        String baseName = getBaseName(activatedNodes) + role;
         if (!isEnabled()) {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = Utils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
         // caused by fact that project contains two source groups.
 
         boolean projectsOnly = true;
-        Node [] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];
             Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
@@ -186,16 +181,15 @@ public abstract class AbstractSystemAction extends NodeAction {
      * @return String name of this action's context, e.g. "3 files", "MyProject", "2 projects", "Foo.java". Returns
      * null if the context is empty
      */ 
-    public String getContextDisplayName() {
+    public String getContextDisplayName(Node [] activatedNodes) {
         // TODO: reuse this code in getName() 
-        File [] nodes = Utils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
         // caused by fact that project contains two source groups.
 
         boolean projectsOnly = true;
-        Node [] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];
             Project project =  (Project) activatedNode.getLookup().lookup(Project.class);

@@ -84,7 +84,7 @@ public class SyncFileNode extends AbstractNode {
     // XXX see SyncTable getPopup that ignores this
     public Action[] getActions(boolean context) {
         if (context) return new Action[0];
-        Action[] actions = Annotator.getActions();
+        Action[] actions = Annotator.getActions(getLookup());
 
         // customize - replace Show status by Delete
         for(int  i = 0;  i < actions.length; i++) {

@@ -52,7 +52,7 @@ public class CommitAction extends AbstractSystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Commit";  // NOI18N
     }
 
@@ -196,7 +196,7 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(Node[] nodes) {
-        invokeCommit(getContextDisplayName(), getContext(nodes), getRunningName());
+        invokeCommit(getContextDisplayName(nodes), getContext(nodes), getRunningName(nodes));
     }
 
     protected boolean asynchronous() {

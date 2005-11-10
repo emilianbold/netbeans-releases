@@ -21,7 +21,6 @@ import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
@@ -36,8 +35,6 @@ import java.awt.Window;
 import java.awt.KeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Provides static utility methods for CVS module.
@@ -46,14 +43,8 @@ import java.beans.PropertyChangeEvent;
  */
 public class Utils {
 
-    private static int      activatedNodesSerial;
-    private static int      currentContextSerial = -1;
+    private static Node []  contextNodesCached;
     private static Context  contextCached;
-    private static ActivatedNodesListener anl = new ActivatedNodesListener();
-
-    static {
-        TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(anl, TopComponent.getRegistry()));
-    }
 
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
@@ -65,11 +56,10 @@ public class Utils {
      * @param nodes or null (then taken from windowsystem, it may be wrong on editor tabs #66700).
      */ 
     public static Context getCurrentContext(Node[] nodes) {
-        int nodesSerial = activatedNodesSerial;
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        if (currentContextSerial == nodesSerial) return contextCached;
+        if (Arrays.equals(contextNodesCached, nodes)) return contextCached;
         List files = new ArrayList(nodes.length);
         List rootFiles = new ArrayList(nodes.length);
         List rootFileExclusions = new ArrayList(5);
@@ -90,7 +80,7 @@ public class Utils {
         }
         
         contextCached = new Context(files, rootFiles, rootFileExclusions);
-        currentContextSerial = nodesSerial;
+        contextNodesCached = nodes;
         return contextCached;
     }
 
@@ -528,16 +518,6 @@ public class Utils {
             return 102;
         default:
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
-        }
-    }
-    
-    private static class ActivatedNodesListener implements PropertyChangeListener {
-        public ActivatedNodesListener () {}
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
-                activatedNodesSerial++;
-            }
         }
     }
 }

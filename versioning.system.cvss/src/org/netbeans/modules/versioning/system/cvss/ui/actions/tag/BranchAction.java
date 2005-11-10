@@ -48,7 +48,7 @@ public class BranchAction extends AbstractSystemAction {
                     | FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY
                     | FileInformation.STATUS_VERSIONED_UPTODATE;
     
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Branch";  // NOI18N
     }
 
@@ -64,7 +64,7 @@ public class BranchAction extends AbstractSystemAction {
         Context context = getContext(nodes);
 
         String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"),
-                                     new Object[] { getContextDisplayName() });
+                                     new Object[] { getContextDisplayName(nodes) });
 
         JButton branch = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Branch"));
         branch.setToolTipText(NbBundle.getMessage(BranchAction.class,  "TT_BranchDialog_Action_Branch"));
@@ -90,7 +90,7 @@ public class BranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
 
-        RequestProcessor.getDefault().post(new BranchExecutor(context, settings, getRunningName()));
+        RequestProcessor.getDefault().post(new BranchExecutor(context, settings, getRunningName(nodes)));
     }
     
     private static class BranchExecutor implements Runnable {

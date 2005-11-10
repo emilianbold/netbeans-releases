@@ -66,7 +66,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_ExportDiff";  // NOI18N
     }
 
@@ -78,7 +78,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         if (activated instanceof DiffSetupSource) {
             String setupName = ((DiffSetupSource)activated).getSetupDisplayName();
             if (setupName != null) {
-                return NbBundle.getMessage(this.getClass(), getBaseName() + "_Context",  // NOI18N
+                return NbBundle.getMessage(this.getClass(), getBaseName(getActivatedNodes()) + "_Context",  // NOI18N
                                             setupName);
             }
         }
@@ -168,7 +168,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
-        ExecutorGroup group = new ExecutorGroup(getRunningName());
+        ExecutorGroup group = new ExecutorGroup(getRunningName(nodes));
         try {
 
             // prepare setups and common parent - root

@@ -45,8 +45,8 @@ import java.io.IOException;
  */
 public class AnnotationsAction extends AbstractSystemAction {
 
-    protected String getBaseName() {
-        if (visible(null)) {
+    protected String getBaseName(Node [] activatedNodes) {
+        if (visible(activatedNodes)) {
             return "CTL_MenuItem_HideAnnotations";  // NOI18N
         } else {
             return "CTL_MenuItem_Annotations"; // NOI18N

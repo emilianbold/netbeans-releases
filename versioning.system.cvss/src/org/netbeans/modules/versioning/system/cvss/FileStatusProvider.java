@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.CvsCommandsMenuItem;
@@ -112,8 +113,9 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public Action[] actions(Set files) {
+        CvsCommandsMenuItem menu = (CvsCommandsMenuItem) SystemAction.get(CvsCommandsMenuItem.class);
         return new Action[] {
-            SystemAction.get(CvsCommandsMenuItem.class)
+            menu.createContextAwareInstance(Lookups.fixed(files.toArray(new FileObject[files.size()])))
         };
     }
 
@@ -176,6 +178,9 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         CvsModuleConfig.getDefault().addPropertyChangeListener(this);        
     }
 
+    /**
+     * Called upon startup and shutdown of the module. This is required to show/remove CVS badges and other annotations.
+     */ 
     private void refreshModifiedFiles() {
         Map files = CvsVersioningSystem.getInstance().getStatusCache().getAllModifiedFiles();
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {

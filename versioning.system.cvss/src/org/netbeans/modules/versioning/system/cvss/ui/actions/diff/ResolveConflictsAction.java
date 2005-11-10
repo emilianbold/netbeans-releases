@@ -39,7 +39,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_ResolveConflicts"; // NOI18N
     }
 

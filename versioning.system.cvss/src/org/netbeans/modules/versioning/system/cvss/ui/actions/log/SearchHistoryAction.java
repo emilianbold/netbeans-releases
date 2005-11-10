@@ -34,7 +34,7 @@ import java.io.File;
  */
 public class SearchHistoryAction extends AbstractSystemAction  {
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_SearchHistory"; // NOI18N
     }
 
@@ -51,7 +51,7 @@ public class SearchHistoryAction extends AbstractSystemAction  {
     }
 
     public void performCvsAction(Node[] nodes) {
-        String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName());
+        String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes));
         openHistory(getContext(nodes), title);
     }
 

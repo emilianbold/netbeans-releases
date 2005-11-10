@@ -21,7 +21,6 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.openide.nodes.Node;
 
 import java.io.File;
-import java.awt.event.ActionEvent;
 
 /**
  * Adds files to .cvsignore file.
@@ -34,8 +33,8 @@ public class IgnoreAction extends AbstractSystemAction {
     public static final int IGNORING   = 1;
     public static final int UNIGNORING = 2;
     
-    protected String getBaseName() {
-        int actionStatus = getActionStatus();
+    protected String getBaseName(Node [] activatedNodes) {
+        int actionStatus = getActionStatus(activatedNodes);
         switch (actionStatus) {
         case UNDEFINED:
         case IGNORING:
@@ -47,10 +46,13 @@ public class IgnoreAction extends AbstractSystemAction {
         }
     }
 
-    public int getActionStatus() {
+    public int getActionStatus(Node [] nodes) {
+        return getActionStatus(Utils.getCurrentContext(nodes).getFiles());
+    }
+
+    public int getActionStatus(File [] files) {
         int actionStatus = -1;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getCurrentContext(null).getFiles();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().equals(".cvsignore")) { // NOI18N
                 actionStatus = UNDEFINED;
@@ -68,17 +70,17 @@ public class IgnoreAction extends AbstractSystemAction {
         }
         return actionStatus == -1 ? UNDEFINED : actionStatus;
     }
-
+    
     private boolean canBeUnignored(File file) {
         return CvsVersioningSystem.getInstance().isInCvsIgnore(file);
     }
 
     protected boolean enable(Node[] nodes) {
-        return getActionStatus() != UNDEFINED;
+        return getActionStatus(nodes) != UNDEFINED;
     }
 
     public void performCvsAction(Node[] nodes) {
-        int actionStatus = getActionStatus();
+        int actionStatus = getActionStatus(nodes);
         if (actionStatus == IGNORING) {
             CvsVersioningSystem.getInstance().setIgnored(Utils.getCurrentContext(nodes).getFiles());
         } else if (actionStatus == UNIGNORING) {

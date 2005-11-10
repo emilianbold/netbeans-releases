@@ -49,7 +49,7 @@ public class MergeBranchAction extends AbstractSystemAction {
                     | FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY
                     | FileInformation.STATUS_VERSIONED_UPTODATE;
     
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_MergeBranch"; // NOI18N
     }
 
@@ -65,7 +65,7 @@ public class MergeBranchAction extends AbstractSystemAction {
         Context context = getContext(nodes);
 
         String title = MessageFormat.format(NbBundle.getBundle(MergeBranchAction.class).getString("CTL_MergeBranchDialog_Title"), 
-                                         new Object[] { getContextDisplayName() });
+                                         new Object[] { getContextDisplayName(nodes) });
         
         MergeBranchPanel settings = new MergeBranchPanel(context.getFiles());
 
@@ -91,7 +91,7 @@ public class MergeBranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
        
-        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings, getRunningName()));
+        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings, getRunningName(nodes)));
     }
 
     protected boolean asynchronous() {

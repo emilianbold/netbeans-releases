@@ -64,7 +64,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
         return LOCALLY_DELETABLE_MASK;
     }
 
-    protected String getBaseName() {
+    protected String getBaseName(Node [] activatedNodes) {
         return "Delete";  // NOI18N
     }
 
