@@ -13,11 +13,32 @@
 <h2>Server Manager Dialog Box</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>Before you can deploy an enterprise application, web application, JSP file, servlet, or EJB module, the server 
-  to which you are going to deploy needs to be registered with the IDE. For versions 
+to which you are going to deploy needs to be registered with the IDE.
+
+<p>For versions 
   of the IDE that are bundled only with the Tomcat Web Server, the Tomcat Web 
   Server is automatically registered in the IDE. For versions of the IDE that 
   are bundled with both the Tomcat Web Server and Sun Java System Application Server, both 
   servers are automatically registered in the IDE. You must register all other servers yourself. 
+
+  <p>You can open the dialog box by choosing Tools &#8212; Server Manager.
+
+  <p>Using the Server Manager, you can:
+
+  <ul>
+	  <li>Register a new server.
+	  <li>View registered servers' classpaths.
+	  <li>Register source code for a server in the Sources tab.
+	  <li>Register Javadoc documentation for a server in the Javadoc tab.
+  </ul>
+
+  <p>The Server Manager provides additional functionality for certain servers. For example,
+   for the Tomcat Web Server, you can set port numbers in the Server Manager.
+  
+  <p>Once you have registered a server, you can configure a project to use that server for compilation, 
+  execution, and debugging. Right-click the project, choose Properties, select the Run node, and 
+  choose the appropriate server in the Server drop-down list.
+
 
 <dl> 
 	<dt><a name="seealso">See Also</a></dt>
