@@ -255,12 +255,20 @@ PropertyChangeListener {
                     getDefault (currentLanguage, category, StyleConstants.FontSize)
                 ))
                     fontSize = null;
-                if (bold.equals (getDefault (currentLanguage, category, StyleConstants.Bold)) ||
-                    bold.equals (Boolean.FALSE)
+                if (bold.equals (getDefault (currentLanguage, category, StyleConstants.Bold))
                 )
                     bold = null;
-                if (italic.equals (getDefault (currentLanguage, category, StyleConstants.Italic)) ||
-                    italic.equals (Boolean.FALSE)
+                else
+                if (bold.equals (Boolean.FALSE) &&
+                    getDefault (currentLanguage, category, StyleConstants.Bold) == null
+                )
+                    bold = null;
+                if (italic.equals (getDefault (currentLanguage, category, StyleConstants.Italic))
+                )
+                    italic = null;
+                else
+                if (italic.equals (Boolean.FALSE) &&
+                    getDefault (currentLanguage, category, StyleConstants.Italic) == null
                 )
                     italic = null;
                 SimpleAttributeSet c = new SimpleAttributeSet (category);
@@ -787,12 +795,16 @@ PropertyChangeListener {
         else
             def = true;
         if (Boolean.TRUE.equals (category.getAttribute (StyleConstants.Bold)))
-            sb.append ('+').append (loc ("CTL_Bold"));   // NOI18N
+            sb.append ('+').append (loc ("CTL_Bold"));                // NOI18N
+        if (Boolean.FALSE.equals (category.getAttribute (StyleConstants.Bold)))
+            sb.append ('-').append (loc ("CTL_Bold"));                // NOI18N
         if (Boolean.TRUE.equals (category.getAttribute (StyleConstants.Italic)))
-            sb.append ('+').append (loc ("CTL_Italic"));
+            sb.append ('+').append (loc ("CTL_Italic"));              // NOI18N
+        if (Boolean.FALSE.equals (category.getAttribute (StyleConstants.Italic)))
+            sb.append ('-').append (loc ("CTL_Italic"));              // NOI18N
         
         if (def) {
-            sb.insert (0, loc ("CTL_Inherited"));
+            sb.insert (0, loc ("CTL_Inherited"));                     // NOI18N
             return sb.toString ();
         } else {
             String result = sb.toString ();
