@@ -16,33 +16,20 @@ package org.netbeans.modules.jmx.mbeanwizard.generator;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.jmi.reflect.RefClass;
-import javax.jmi.reflect.RefException;
-import javax.jmi.reflect.RefFeatured;
-import javax.jmi.reflect.RefObject;
-import javax.jmi.reflect.RefPackage;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.ElementPartKind;
 import org.netbeans.jmi.javamodel.Field;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaDoc;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.MultipartId;
 import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.TypeParameter;
-import org.netbeans.jmi.javamodel.ParameterClass;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.Introspector;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.MBeanDO;
-import org.netbeans.modules.jmx.MBeanNotification;
 import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
@@ -51,7 +38,6 @@ import org.netbeans.modules.jmx.WizardHelpers;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 
 /**
  * Standard MBean code generator class
@@ -89,7 +75,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         //generation of MBean interface
         MBeanInterfaceGen intfGen = new MBeanInterfaceGen();
         intfGen.generateMBean(mbean);
-        
+        FileObject mbeanFile = null;
         boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
@@ -97,25 +83,62 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             DataObject dTemplate = mbean.getTemplate();                
             mbeanDObj = dTemplate.createFromTemplate( 
                     mbeanFolder, mbeanName );
-            FileObject mbeanFile = mbeanDObj.getPrimaryFile();
+            mbeanFile = mbeanDObj.getPrimaryFile();
             mbeanRc = JavaModel.getResource(mbeanFile);
             mbeanClass = WizardHelpers.getJavaClass(mbeanRc,mbeanName);
             
             if (!mbean.getPackageName().equals("")) // NOI18N
                 addNeededImport(mbean, mbeanRc);
-            updateDescription(mbean,mbeanClass);
-            updateMBeanType(mbean,mbeanClass);
-            createAttributes(mbeanClass, mbeanRc, mbean);
-            createOperations(mbeanClass, mbeanRc, mbean);
-            
-            createdFile = mbeanFile;
         } catch (Exception e) {
             rollback = true;
             e.printStackTrace();
+            return null;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            updateDescription(mbean,mbeanClass);
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
+            return null;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            updateMBeanType(mbean,mbeanClass);
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
+            return null;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }   
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            createAttributes(mbeanClass, mbeanRc, mbean);
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
+            return null;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }   
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            createOperations(mbeanClass, mbeanRc, mbean);
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
+            return null;
         } finally {
             JavaModel.getJavaRepository().endTrans(rollback);
         }
         
+        createdFile = mbeanFile;
+       
         rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
@@ -123,6 +146,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                 addNeededImport(mbean, mbeanRc);
         } catch (Exception e) {
             rollback = true;
+            return null;
         } finally {
             JavaModel.getJavaRepository().endTrans(rollback);
         }
@@ -218,13 +242,18 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             // update getDescription(MBeanOperationInfo) method body
             formBody = new MessageFormat(getDescMOpInfo.getBodyText());
             args = new Object[] { getOpDescCode(tgtClass,mbean) };  
-            getDescMOpInfo.setBodyText(formBody.format(args).substring(1));
+            getDescMOpInfo.setBodyText(formBody.format(args).substring(1));  
         } else {
             // remove throws of constructor and clear body text
             Constructor construct = tgtClass.getConstructor(new ArrayList(),false);
             construct.getExceptionNames().clear();
             construct.setBodyText(""); // NOI18N
             // remove all get informations methods of StandardMBean class 
+            // And the JavaDoc
+            JavaDoc doc = getDescMInfo.getJavadoc();
+            if(doc != null)
+                doc.refDelete();
+
             getDescMInfo.refDelete();
             getDescMAttrInfo.refDelete();
             getDescMParam.refDelete();
