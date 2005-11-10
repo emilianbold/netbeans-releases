@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -293,23 +292,22 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         final FileObject fo = folder.getPrimaryFile ();
         final DataShadow[] arr = new DataShadow[1];
 
-        DataObjectPool.getPOOL().runAtomicAction (fo, new FileSystem.AtomicAction () {
-                                                 public void run () throws IOException {
-                                                     FileObject file = writeOriginal (name, ext, fo, original);
-                                                     DataObject obj = DataObject.find (file);
-                                                     if (obj instanceof DataShadow) {
-                                                         arr[0] = (DataShadow)obj;
-                                                     } else {
-                                                         // wrong instance => shadow was not found
-                                                         DataObjectNotFoundException dnfe = 
-                                                             new DataObjectNotFoundException (obj.getPrimaryFile ());
-                                                         ErrorManager errMan = ErrorManager.getDefault ();
-                                                         errMan.annotate( dnfe, obj.getClass().toString());
-                                                         errMan.annotate( dnfe, file == null ? null : file.getPath());
-                                                         throw dnfe;
-                                                     }
-                                                 }
-                                             });
+        DataObjectPool.getPOOL().runAtomicAction(fo, new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileObject file = writeOriginal(name, ext, fo, original);
+                final DataObject obj = DataObject.find(file);
+                if (obj instanceof DataShadow) {
+                    arr[0] = (DataShadow)obj;
+                } else {
+                    // wrong instance => shadow was not found
+                    throw new DataObjectNotFoundException(obj.getPrimaryFile()) {
+                        public String getMessage() {
+                            return super.getMessage() + ": " + obj.getClass().getName(); // NOI18N
+                        }
+                    };
+                }
+            }
+        });
 
         return arr[0];
     }
