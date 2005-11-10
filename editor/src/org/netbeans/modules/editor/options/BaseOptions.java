@@ -167,7 +167,7 @@ public class BaseOptions extends OptionSupport {
         INDENT_ENGINE_PROP,
         KEY_BINDING_LIST_PROP,
         LINE_HEIGHT_CORRECTION_PROP,
-        LINE_NUMBER_VISIBLE_PROP,
+        //LINE_NUMBER_VISIBLE_PROP,
         MACRO_MAP_PROP,
         MARGIN_PROP,
         SCROLL_FIND_INSETS_PROP,

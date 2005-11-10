@@ -46,6 +46,7 @@ import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
 import org.openide.filesystems.FileObject;
@@ -302,7 +303,7 @@ public class NbEditorUI extends ExtEditorUI {
     protected JComponent createExtComponent() {
 
         final JTextComponent component = getComponent();
-        setLineNumberEnabled(true); // enable line numbering
+//        setLineNumberEnabled(true); // enable line numbering
 
         // extComponent will be a panel
         final JComponent ec = new JPanel(new BorderLayout());
@@ -349,6 +350,14 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
 
+    public boolean isLineNumberEnabled() {
+        return AllOptionsFolder.getDefault().getLineNumberVisible();
+    }
+
+    public void setLineNumberEnabled(boolean lineNumberEnabled) {
+        AllOptionsFolder.getDefault().setLineNumberVisible(lineNumberEnabled);
+    }
+    
     private void processSideBars(Map sideBars, JScrollPane scroller, JComponent ec){
         ec.removeAll();
         scroller.setRowHeader(null);

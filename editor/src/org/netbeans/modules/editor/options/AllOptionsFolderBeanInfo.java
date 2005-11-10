@@ -29,6 +29,7 @@ public class AllOptionsFolderBeanInfo extends BaseOptionsBeanInfo {
         EDITOR_STATE_PROP,
         BaseOptions.OPTIONS_VERSION_PROP,
         BaseOptions.TOOLBAR_VISIBLE_PROP,
+        BaseOptions.LINE_NUMBER_VISIBLE_PROP,
         BaseOptions.TEXT_ANTIALIASING_PROP
     };
     

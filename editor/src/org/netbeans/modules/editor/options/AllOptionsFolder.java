@@ -261,6 +261,14 @@ public class AllOptionsFolder{
     public void setToolbarVisible(boolean toolbarVisible) {
         getBase().setToolbarVisible(toolbarVisible);
     }
+
+    public boolean getLineNumberVisible(){
+        return getBase().getLineNumberVisible();
+    }
+    
+    public void setLineNumberVisible(boolean lineVisible) {
+        getBase().setLineNumberVisible(lineVisible);
+    }
     
     public boolean isTextAntialiasing() {
         return getBase().isTextAntialiasing();

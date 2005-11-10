@@ -17,6 +17,7 @@ import java.awt.event.InputEvent;
 import java.util.Map;
 import org.netbeans.editor.BaseSettingsInitializer;
 import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.ExtSettingsInitializer;
 import org.netbeans.modules.editor.options.OptionUtilities;
@@ -65,6 +66,7 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
 
         if (kitClass == BaseKit.class) {
             settingsMap.put(BaseOptions.TOOLBAR_VISIBLE_PROP, Boolean.TRUE);
+            settingsMap.put(BaseOptions.LINE_NUMBER_VISIBLE_PROP, SettingsDefaults.defaultLineNumberVisible);
             
 	    //Fix for IZ bug #53744:
 	    //On MAC OS X, Ctrl+left click has the same meaning as the right-click.

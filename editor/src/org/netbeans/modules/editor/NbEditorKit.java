@@ -530,26 +530,25 @@ public class NbEditorKit extends ExtKit {
     /** Switch visibility of line numbers in editor */
     public class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
-        private BaseOptions bo;
-        
         // no options for the kit, bugfix of #27568
         private boolean lineNumbersVisible = false;
         
         public NbToggleLineNumbersAction() {
-            bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
         }
         
         protected boolean isLineNumbersVisible() {
-            return (bo != null) ? bo.getLineNumberVisible() : lineNumbersVisible;
+            return AllOptionsFolder.getDefault().getLineNumberVisible();
         }
         
         protected void toggleLineNumbers() {
-            if (bo != null){
-                bo.setLineNumberVisible(!isLineNumbersVisible());
-            }else{
-                lineNumbersVisible = !lineNumbersVisible;
-            }
+            boolean numbersVisible = AllOptionsFolder.getDefault().getLineNumberVisible();
+            AllOptionsFolder.getDefault().setLineNumberVisible(!numbersVisible);
         }
+        
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            toggleLineNumbers();
+        }
+        
         
     }
 
