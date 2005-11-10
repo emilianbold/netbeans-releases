@@ -315,7 +315,7 @@ public final class NbModuleProject implements Project {
         File nbroot;
         if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             nbroot = ModuleList.findNetBeansOrg(dir);
-            assert nbroot != null : dir;
+            assert nbroot != null : "netbeans.org-type module not in a complete netbeans.org source root " + dir;
         } else {
             nbroot = null;
         }
@@ -1099,12 +1099,19 @@ public final class NbModuleProject implements Project {
         protected void projectOpened() {
             // register project's classpaths to GlobalClassPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, boot = cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            assert boot != null : "No BOOT path";
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, source = cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            assert source != null : "No SOURCE path";
-            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            assert compile != null : "No COMPILE path";
+            ClassPath[] _boot = cpProvider.getProjectClassPaths(ClassPath.BOOT);
+            assert _boot != null : "No BOOT path";
+            ClassPath[] _source = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
+            assert _source != null : "No SOURCE path";
+            ClassPath[] _compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE);
+            assert _compile != null : "No COMPILE path";
+            // Possible cause of #68414: do not change instance vars until after the dangerous stuff has been computed.
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, _boot);
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, _source);
+            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, _compile);
+            boot = _boot;
+            source = _source;
+            compile = _compile;
             // write user.properties.file=$userdir/build.properties to platform-private.properties
             if (getModuleType() == NbModuleTypeProvider.STANDALONE) {
                 // XXX skip this in case nbplatform.active is not defined
@@ -1151,7 +1158,6 @@ public final class NbModuleProject implements Project {
             // XXX could discard caches, etc.
             
             // unregister project's classpaths to GlobalClassPathRegistry
-            // XXX behave more gracefully in case an exception was thrown during projectOpened
             assert boot != null && source != null && compile != null : "#46802: project being closed which was never opened?? " + NbModuleProject.this;
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);
