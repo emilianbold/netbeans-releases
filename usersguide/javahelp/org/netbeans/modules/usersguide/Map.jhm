@@ -195,7 +195,16 @@ under Print Settings in the Options window)
 <mapID target="refactor.moveClass" url="refactor/moveClass.html" />
 <mapID target="refactor.encapsulateField" url="refactor/encapsulateField.html" />
 <mapID target="refactor.changeParameters" url="refactor/changeParameters.html" />
-
+<mapID target="refactor.convertAnonymous" url="refactor/convertAnonymous.html" />
+<mapID target="refactor.extractInterface" url="refactor/extractInterface.html" />
+<mapID target="refactor.extractMethod" url="refactor/extractMethod.html" />
+<mapID target="refactor.extractSuperclass" url="refactor/extractSuperclass.html" />
+<mapID target="refactor.moveInner" url="refactor/moveInner.html" />
+<mapID target="refactor.pullUp" url="refactor/pullUp.html" />
+<mapID target="refactor.pushDown" url="refactor/pushDown.html" />
+<mapID target="refactor.refactorQuickRef" url="refactor/refactorQuickRef.html" />
+<mapID target="refactor.safeDelete" url="refactor/safeDelete.html" />
+<mapID target="refactor.useSupertype" url="refactor/useSupertype.html" />
 <!-- begin XML Online Help IDs :-->
 <mapID target="xml_about" url="xml/xml_about.html" />
 <mapID target="xml_overview" url="xml/xml_overview.html" />
