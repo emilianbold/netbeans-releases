@@ -31,6 +31,8 @@ import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
+
 /**
  * Test of typing in opened source editor.
  *
@@ -121,11 +123,12 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     }
     
     public void prepare() {
-        // do nothing
+        repaintManager().setRegionFilter(ERRORSTRIPE_FILTER);
     }
     
     public ComponentOperator open(){
-        new Action(null, null, new Shortcut(KeyEvent.VK_A)).perform(editorOperator);
+        //new Action(null, null, new Shortcut(KeyEvent.VK_A)).perform(editorOperator);
+        editorOperator.typeKey('a');
         return null;
     }
     
@@ -135,10 +138,22 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     
     public void shutdown() {
         turnBack();
-        editorOperator.closeDiscard();
         repaintManager().setOnlyEditor(false);
+        repaintManager().setRegionFilter(null);
+        editorOperator.closeDiscard();
         super.shutdown();
     }
+    
+    
+    
+    private static final RegionFilter ERRORSTRIPE_FILTER =
+            new RegionFilter() {
+        public boolean accept(javax.swing.JComponent c) {
+            Class clz = null;
+            return c.getClass().getName().equals("org.netbeans.modules.editor.errorstripe.AnnotationView");
+        }
+    };
+
     
     
     public static void main(java.lang.String[] args) {
