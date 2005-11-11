@@ -157,6 +157,8 @@ abstract class BaseTable extends JTable implements FocusListener {
     private boolean searchArmed = false;
     private transient SearchField searchField = null;
     private transient JPanel searchpanel = null;
+    private transient ChangeListener viewportListener;
+    private transient Point prevViewPosition = null;
 
     /** Creates a new instance of BaseTable. */
     public BaseTable(TableModel dm, TableColumnModel cm, ListSelectionModel sm) {
@@ -879,6 +881,19 @@ abstract class BaseTable extends JTable implements FocusListener {
             JViewport jvp = (JViewport) getParent();
             loc = jvp.getViewPosition();
             loc.x += getColumnModel().getColumn(0).getWidth();
+            //#68516 repaint the table when scrolling
+            viewportListener = new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    if( null != searchField && searchField.isVisible() ) {
+                        if( null != prevViewPosition )
+                            repaint( 0, prevViewPosition.y, getWidth(), searchpanel.getHeight() );
+                        assert getParent() instanceof JViewport;
+                        prevViewPosition = new Point( ((JViewport)getParent()).getViewPosition() );
+                    }
+                }
+            };
+            jvp.addChangeListener( viewportListener );
+            prevViewPosition = new Point( loc );
         } else {
             loc = new Point(getColumnModel().getColumn(0).getWidth(), getRowHeight() / 2);
         }
@@ -907,6 +922,12 @@ abstract class BaseTable extends JTable implements FocusListener {
 
         searchpanel.setVisible(false);
 
+        if (getParent() instanceof JViewport && null != viewportListener ) {
+            JViewport jvp = (JViewport) getParent();
+            jvp.removeChangeListener( viewportListener );
+            viewportListener = null;
+        }
+        
         if (searchpanel.getParent() != null) {
             searchpanel.getParent().remove(searchpanel);
         }
@@ -939,7 +960,7 @@ abstract class BaseTable extends JTable implements FocusListener {
 
         //Issue 41546 - bad repaint when scrolling
         if ((searchField != null) && searchField.isVisible()) {
-            searchField.repaint();
+            searchpanel.repaint();
         }
     }
 
