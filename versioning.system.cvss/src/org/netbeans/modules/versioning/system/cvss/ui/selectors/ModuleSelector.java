@@ -27,9 +27,11 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.openide.nodes.*;
 import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
+import org.openide.filesystems.FileUtil;
 
 import java.util.*;
 import java.util.List;
+import java.io.File;
 
 /**
  * Prototype impl of defined modules listing.
@@ -148,7 +150,9 @@ public final class ModuleSelector {
         AdminHandler localEnv = new VirtualAdminHandler(root, path); // NOI18N
         client.setAdminHandler(localEnv);
         String tmpDir = System.getProperty("java.io.tmpdir");  // NOI18N
-        client.setLocalPath(tmpDir);
+        File tmp = new File(tmpDir);
+        tmp = FileUtil.normalizeFile(tmp);
+        client.setLocalPath(tmp.getAbsolutePath());
         EventManager mgr = client.getEventManager();
         mgr.addCVSListener(new CVSListener() {
             public void messageSent(MessageEvent e) {

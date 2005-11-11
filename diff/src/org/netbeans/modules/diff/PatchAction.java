@@ -322,7 +322,7 @@ public class PatchAction extends NodeAction {
         //System.out.println("applyDiffsTo("+fo.getPackageNameExt('/', '.')+")");
         File tmp;
         try {
-            tmp = File.createTempFile("patch", "tmp");
+            tmp = FileUtil.normalizeFile(File.createTempFile("patch", "tmp"));
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return false;

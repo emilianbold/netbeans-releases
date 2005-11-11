@@ -92,9 +92,9 @@ public class ResolveConflictsExecutor {
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         String ext = "."+fo.getExt(); // NOI18N
-        File f1 = File.createTempFile(TMP_PREFIX, ext);
-        File f2 = File.createTempFile(TMP_PREFIX, ext);
-        File f3 = File.createTempFile(TMP_PREFIX, ext);
+        File f1 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
+        File f2 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
+        File f3 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
         f1.deleteOnExit();
         f2.deleteOnExit();
         f3.deleteOnExit();

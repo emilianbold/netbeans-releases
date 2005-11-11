@@ -29,6 +29,7 @@ import java.io.Writer;
 import java.io.IOException;
 
 import org.openide.util.io.ReaderInputStream;
+import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.diff.EncodedReaderFactory;
 
@@ -131,7 +132,7 @@ public abstract class StreamSource extends Object {
         
         private File createReaderSource(Reader r) throws IOException {
             File tmp = null;
-            tmp = File.createTempFile("sss", "tmp");
+            tmp = FileUtil.normalizeFile(File.createTempFile("sss", "tmp"));
             tmp.deleteOnExit();
             tmp.createNewFile();
             InputStream in = null;
