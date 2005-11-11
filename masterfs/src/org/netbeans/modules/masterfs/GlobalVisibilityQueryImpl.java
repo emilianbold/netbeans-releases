@@ -40,7 +40,8 @@ import java.util.regex.Pattern;
  * This class has hidden dependency on IDESettings in module org.netbeans.core.
  */ 
 public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation {
-    private SystemOption ideSettings;
+    static GlobalVisibilityQueryImpl INSTANCE;
+    private SystemOption ideSettings;    
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
     /**
@@ -51,11 +52,16 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
     private Pattern ignoreFilesPattern = null;
 
     public GlobalVisibilityQueryImpl() {
+        INSTANCE = this;
     }
 
     public boolean isVisible(FileObject file) {
+        return isVisible(file.getNameExt());
+    }
+
+    boolean isVisible(final String fileName) {
         Pattern ignoreFilesPattern = getIgnoreFilesPattern();
-        return (ignoreFilesPattern != null) ? !(ignoreFilesPattern.matcher(file.getNameExt()).find()) : true;
+        return (ignoreFilesPattern != null) ? !(ignoreFilesPattern.matcher(fileName).find()) : true;
     }
 
     /**
@@ -96,7 +102,7 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
         return ignoreFilesPattern;
     }
 
-    private String getIgnoredFiles() {
+    protected String getIgnoredFiles() {
         String retVal = "";//NOI18N
         try {
             if (ideSettings == null) {
