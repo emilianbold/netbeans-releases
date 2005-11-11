@@ -30,7 +30,7 @@ import java.awt.*;
  */
 public class StatusAction extends AbstractSystemAction {
     
-    private static final int enabledForStatus = FileInformation.STATUS_MANAGED;  
+    private static final int enabledForStatus = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;  
     
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Status";  // NOI18N
