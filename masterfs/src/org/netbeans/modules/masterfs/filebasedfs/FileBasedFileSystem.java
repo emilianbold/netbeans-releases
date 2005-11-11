@@ -92,7 +92,7 @@ public final class FileBasedFileSystem extends FileSystem {
             issue45485 = !f2.getName().endsWith(".");
             if (issue45485) return null;
         }
-        final BaseFileObj retVal = (BaseFileObj)(getFactory().findFileObject(fInfo));
+        final FileObject retVal = (getFactory().findFileObject(fInfo));
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 
