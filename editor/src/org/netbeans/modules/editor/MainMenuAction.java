@@ -148,6 +148,13 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         return (val != null) ? val.booleanValue() : false;
     }
 
+    /** If there is no kit sensitive action, some global kit action can be returned
+     * by subclasses. Returning null by default */
+    protected Action getGlobalKitAction(){
+        return null;
+    }
+    
+    
     /** Sets the state of JMenuItem*/
     protected void setMenu(){
         ActionMap am = getContextActionMap();
@@ -156,6 +163,9 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         if (am!=null){
             action = am.get(getActionName());
+            if (action == null){
+                action = getGlobalKitAction();
+            }
             Action presenterAction = presenter.getAction();
             if (presenterAction == null){
                 if (action != null){
@@ -211,6 +221,11 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             super(false, null);
             SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
             setMenu();
+        }
+
+        protected Action getGlobalKitAction(){
+            BaseKit kit = BaseKit.getKit(NbEditorKit.class);
+            return (kit!=null) ? kit.getActionByName(getActionName()) : null;
         }
         
         protected void setMenu(){
