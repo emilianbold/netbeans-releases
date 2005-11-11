@@ -2,10 +2,10 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Databases">
-        <folder name="JDBCDrivers">
+        <!--<folder name="JDBCDrivers">
             <file name="DerbyDriver.xml" url="DerbyDriver.xml"/>
             <file name="DerbyEmbeddedDriver.xml" url="DerbyEmbeddedDriver.xml"/>
-        </folder>
+        </folder>-->
         <folder name="Runtimes">
             <file name="DerbyRuntime.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>
@@ -30,6 +30,22 @@
                 <file name="CreateDatabaseAction.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.CreateDatabaseAction"/>
                 </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <file name="org-netbeans-modules-derby-DerbyOptions.settings" url="DerbyOptions.settings"/>
+    </folder>
+    
+    <folder name="UI">
+        <folder name="Services">
+            <folder name="IDEConfiguration">
+                <folder name="ServerAndExternalToolSettings">
+                    <file name="org-netbeans-modules-derby-DerbyOptions.shadow">
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-derby-DerbyOptions.settings"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

@@ -27,7 +27,6 @@ import org.openide.util.actions.CallableSystemAction;
  */
 public class StartAction extends CallableSystemAction {
     
-    
     public StartAction(){
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
@@ -35,8 +34,6 @@ public class StartAction extends CallableSystemAction {
     public String getName() {
         return NbBundle.getMessage(StartAction.class, "LBL_StartAction");
     }
-    
-    
     
     public HelpCtx getHelpCtx() {
         return null; // HelpCtx.DEFAULT_HELP;
@@ -48,6 +45,10 @@ public class StartAction extends CallableSystemAction {
     }
     
     public void performAction()  {
+        if (!RegisterDerby.getDefault().hasInstallLocation()) {
+            RegisterDerby.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+            return;
+        }
         RegisterDerby.getDefault().start();
         
     }

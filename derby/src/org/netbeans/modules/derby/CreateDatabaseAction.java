@@ -14,14 +14,15 @@
 
 package org.netbeans.modules.derby;
 
+import java.awt.Dialog;
 import java.io.File;
+import org.netbeans.modules.derby.ui.CreateDatabasePanel;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-
 
 /**
  *
@@ -37,41 +38,51 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }    
     
     public void performAction() {
-        NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine(
-            NbBundle.getMessage(CreateDatabaseAction.class, "CTL_SelectName"),
-            NbBundle.getMessage(CreateDatabaseAction.class, "CTL_CreateDBAction"));
-        if (DialogDisplayer.getDefault().notify(il) == NotifyDescriptor.OK_OPTION) {
-            try {
-                if (!RegisterDerby.getDefault().isRunning()) {
-                    RegisterDerby.getDefault().start(5000);
-                }
-                makeDatabase(il.getInputText());
-            }
-            catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-            }
-        }        
+        if (!RegisterDerby.getDefault().hasInstallLocation()) {
+            RegisterDerby.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+            return;
+        }
         
+        CreateDatabasePanel panel = new CreateDatabasePanel();
+        DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(CreateDatabaseAction.class, "LBL_CreateDatabaseTitle"), true, null);
+        panel.setDialogDescriptor(desc);
+        panel.setDatabaseLocation(DerbyOptions.getDefault().getLastDatabaseLocation());
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        dialog.setVisible(true);
+        dialog.dispose();
+        
+        if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
+            return;
+        }
+        
+        String databaseLocation = panel.getDatabaseLocation();
+        File databaseLocationFile = new File(databaseLocation);
+        databaseLocationFile.mkdirs();
+        String databaseName = new File(databaseLocationFile, panel.getDatabaseName()).getAbsolutePath();
+        
+        DerbyOptions.getDefault().setLastDatabaseLocation(databaseLocation);
+        
+        try {
+            if (!RegisterDerby.getDefault().isRunning()) {
+                RegisterDerby.getDefault().start(5000);
+            }
+            makeDatabase(databaseName);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        }
     }
-    
-/*    DataSource makeDataSource(String dbname) throws Exception {
-        JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers();
-        //ClassLoader cl = new ClassLo
-        return null;
-    }*/
     
     void makeDatabase(String dbname) throws Exception {
         RegisterDerby.getDefault().postCreateNewDatabase(new File(dbname));
     }
 
     protected boolean asynchronous() {
-        return true;
+        return false;
     }
-
 
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
-        return NbBundle.getBundle(CreateDatabaseAction.class).getString("CTL_CreateDBAction");
+        return NbBundle.getBundle(CreateDatabaseAction.class).getString("LBL_CreateDBAction");
     }
 
     /** Gets the action's help context. Implemenst superclass abstract method. */

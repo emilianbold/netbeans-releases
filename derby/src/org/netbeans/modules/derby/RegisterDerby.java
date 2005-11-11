@@ -61,7 +61,7 @@ public class RegisterDerby implements DatabaseRuntime {
     private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(RegisterDerby.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
-    public static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
+    
     public static final String NET_DRIVER_CLASS_NAME = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     
     
@@ -74,7 +74,7 @@ public class RegisterDerby implements DatabaseRuntime {
     private RegisterDerby() {
     }
     
-    public static  RegisterDerby getDefault(){
+    public static synchronized RegisterDerby getDefault(){
         if (reg==null)
             reg= new RegisterDerby();
         return reg;
@@ -126,13 +126,7 @@ public class RegisterDerby implements DatabaseRuntime {
     public void start(){
         start(5000);//wait 5 seconds
     }
-    
-    /** Returns a directory where Derby is installed, or null if no Derby installation
-     * is registered. */
-    private File getInstallLocation() {
-        return InstalledFileLocator.getDefault().locate(INST_DIR, null, false);
-    }
-    
+
     private String getNetworkServerClasspath() {
         return 
             getDerbyFile("lib/derby.jar").getAbsolutePath() + File.pathSeparator + 
@@ -140,8 +134,17 @@ public class RegisterDerby implements DatabaseRuntime {
             getDerbyFile("lib/derbynet.jar").getAbsolutePath();
     }
     
+    private File getInstallLocation() {
+        return new File(DerbyOptions.getDefault().getDerbyLocation());
+    }
+    
+    boolean hasInstallLocation() {
+        File location = getInstallLocation();
+        return location.isAbsolute() && location.isDirectory() && location.exists();
+    }
+    
     private File getDerbyFile(String relPath) {
-        return InstalledFileLocator.getDefault().locate(INST_DIR + "/" + relPath, null, false);
+        return new File(getInstallLocation(), relPath);
     }
     
     private URL[] getDerbyNetDriverURLs() throws MalformedURLException {
@@ -159,7 +162,7 @@ public class RegisterDerby implements DatabaseRuntime {
     
     /* Returns the registered Derby driver.
      */
-    public JDBCDriver getRegisteredDerbyDriver() throws IOException {
+    private JDBCDriver getRegisteredDerbyDriver() throws IOException {
       
         JDBCDriverManager dm = JDBCDriverManager.getDefault();
         JDBCDriver[] drvs = dm.getDrivers(NET_DRIVER_CLASS_NAME);
@@ -205,7 +208,7 @@ public class RegisterDerby implements DatabaseRuntime {
             JDBCDriver jdbcDriver = getRegisteredDerbyDriver();
 
             DatabaseConnection cinfo = DatabaseConnection.create(jdbcDriver, url, null, 
-                    null, null, false);
+                    "APP", null, false); // NOI18N
 
             ConnectionManager cm = ConnectionManager.getDefault();
             cm.addConnection(cinfo);
@@ -269,6 +272,10 @@ public class RegisterDerby implements DatabaseRuntime {
         if (process!=null){// seems to be already running?
             stop();
         }
+        if (!hasInstallLocation()) {
+            showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+            return;
+        }
         try {
             ExecSupport ee= new ExecSupport();
             ee.setStringToLookFor("" + getPort());
@@ -310,9 +317,6 @@ public class RegisterDerby implements DatabaseRuntime {
             showInformation(e.getLocalizedMessage());
         }
     }
-    
-    
-    
     
     /**
      * Stop the database server.
@@ -358,7 +362,7 @@ public class RegisterDerby implements DatabaseRuntime {
         }
     }
     
-    public static void showInformation(final String msg){
+    static void showInformation(final String msg){
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
