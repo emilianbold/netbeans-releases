@@ -659,6 +659,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             super.addNotify();
             getSources().addChangeListener(this);
             project.getProjectDirectory().addFileChangeListener(wsdlListener);
+            //XXX: Not very nice, the wsdlFolder should be hold by this class because it listens on it            
             WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             FileObject wsdlFolder = null;
             try {
@@ -666,7 +667,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                     wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ex);
             }
             if (wsdlFolder != null) {
                 wsdlFolder.addFileChangeListener(wsdlListener);
@@ -685,7 +686,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                     wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ex);
             }
             if (wsdlFolder != null) {
                 wsdlFolder.removeFileChangeListener(wsdlListener);
@@ -836,14 +837,16 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         private final class WsdlCreationListener extends FileChangeAdapter {
             public void fileFolderCreated (FileEvent fe) {
                 WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-                FileObject wsdlFolder = null;
-                try {
-                    wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                if (wsdlFolder != null) {
-                    wsdlFolder.addFileChangeListener(wsdlListener);
+                if (wsClientSupportImpl != null) {
+                    FileObject wsdlFolder = null;
+                    try {
+                        wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                    if (wsdlFolder != null) {
+                        wsdlFolder.addFileChangeListener(wsdlListener);
+                    }
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
