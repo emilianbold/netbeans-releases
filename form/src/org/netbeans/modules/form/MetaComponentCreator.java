@@ -385,18 +385,13 @@ public class MetaComponentCreator {
         else if (targetPlacement == TARGET_VISUAL) {
             RADVisualComponent newVisual = (RADVisualComponent) newMetaComp;
             Object constraints;
+            boolean addLayoutComponent = false;
             if (targetComp != null) {
                 RADVisualContainer targetCont = (RADVisualContainer)targetComp;
                 LayoutSupportManager layoutSupport = targetCont.getLayoutSupport();
                 if (layoutSupport == null) {
                     constraints = null;
-                    RADComponent parent = sourceComp.getParentComponent();
-                    LayoutComponent source = null;
-                    if ((parent instanceof RADVisualContainer)
-                        && (((RADVisualContainer)parent).getLayoutSupport() == null)) {
-                        source = sourceComp.getFormModel().getLayoutModel().getLayoutComponent(sourceComp.getId());
-                    }
-                    createAndAddLayoutComponent(newVisual, targetCont, source);
+                    addLayoutComponent = true;
                 } else {
                     constraints = layoutSupport.getStoredConstraints(newVisual);
                 }
@@ -405,6 +400,16 @@ public class MetaComponentCreator {
 
             newMetaComp = addVisualComponent2(newVisual, targetComp, constraints);
             // might be null if layout support did not accept the component
+
+            if (addLayoutComponent) {
+                RADComponent parent = sourceComp.getParentComponent();
+                LayoutComponent source = null;
+                if ((parent instanceof RADVisualContainer)
+                    && (((RADVisualContainer)parent).getLayoutSupport() == null)) {
+                    source = sourceComp.getFormModel().getLayoutModel().getLayoutComponent(sourceComp.getId());
+                }
+                createAndAddLayoutComponent(newVisual, (RADVisualContainer)targetComp, source);
+            }
         }
         else if (targetPlacement == TARGET_OTHER) {
             addOtherComponent(newMetaComp, targetComp);
