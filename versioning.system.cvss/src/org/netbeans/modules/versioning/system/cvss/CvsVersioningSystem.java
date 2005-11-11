@@ -257,6 +257,11 @@ public class CvsVersioningSystem {
             if (pattern.matcher(name).matches()) return true;
         }
 
+        // backward compatability #68124
+        if (".nbintdb".equals(name)) {  // NOI18N
+            return true;
+        }
+
         return SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE;
     }
     
