@@ -139,7 +139,10 @@ final class MIMESupport extends Object {
                                 synchronized (CachedFileObject.class) {
                                     result.removeLookupListener(this);
                                     ERR.log("Clearing cache"); // NOI18N
-                                    previousResolvers = (MIMEResolver[]) resolvers;
+                                    Object prev = resolvers;
+                                    if (prev instanceof MIMEResolver[]) {
+                                        previousResolvers = (MIMEResolver[]) prev;
+                                    }
                                     resolvers = null;
                                 }
                             }
