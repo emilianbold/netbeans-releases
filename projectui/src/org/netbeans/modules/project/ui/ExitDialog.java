@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
  */
 final public class ExitDialog extends JPanel implements ActionListener {
 
+    /*for tests only!*/static boolean SAVE_ALL_UNCONDITIONALLY = false;
 
     private static Object[] exitOptions;
 
@@ -179,6 +180,21 @@ final public class ExitDialog extends JPanel implements ActionListener {
         }
     }
  
+    private static void doSave (DataObject dataObject) {
+        try {
+            SaveCookie sc = (SaveCookie)dataObject.getCookie(SaveCookie.class);
+            if (sc != null) {
+                sc.save();
+            }
+        } catch (IOException exc) {
+            ErrorManager em = ErrorManager.getDefault();
+            Throwable t = em.annotate(
+                exc, NbBundle.getBundle(ExitDialog.class).getString("EXC_Save")
+            );
+            em.notify(ErrorManager.EXCEPTION, t);
+        }
+    }
+    
     /** Exit the IDE
     */
     private void theEnd() {
@@ -221,6 +237,16 @@ final public class ExitDialog extends JPanel implements ActionListener {
      */
     private static boolean innerShowDialog (Set/*DataObject*/ openedFiles) {
         if (!openedFiles.isEmpty()) {
+            if (SAVE_ALL_UNCONDITIONALLY) {
+                //this section should be invoked only by tests!
+                for (Iterator i = openedFiles.iterator(); i.hasNext(); ) {
+                    DataObject d = (DataObject) i.next();
+                    
+                    doSave(d);
+                }
+                
+                return true;
+            }
 
             // XXX(-ttran) caching this dialog is fatal.  If the user
             // cancels the Exit action, modifies some more files and tries to

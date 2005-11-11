@@ -122,6 +122,19 @@ public class ProjectUtilities {
                 }
             }
             
+            Iterator iter = DataObject.getRegistry().getModifiedSet().iterator();
+            while (iter.hasNext()) {
+                DataObject dobj = (DataObject) iter.next();
+                if (dobj != null) {
+                    FileObject fobj = dobj.getPrimaryFile();
+                    Project owner = FileOwnerQuery.getOwner(fobj);
+                    if (listOfProjects.contains(owner) &&
+                            !openFiles.contains(dobj)) {
+                        openFiles.add(dobj);
+                    }
+                }
+            }
+            
             if (!openFiles.isEmpty () && ExitDialog.showDialog (openFiles)) {
                 // close documents
                 Iterator it = tc2close.iterator ();

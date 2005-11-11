@@ -13,17 +13,20 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -42,7 +45,7 @@ import org.w3c.dom.NodeList;
  * @author Jiri Rechtacek
  */
 public class ProjectUtilitiesTest extends NbTestCase {
-    DataObject do1_1_open, do1_2_open, do1_3_close;
+    DataObject do1_1_open, do1_2_open, do1_3_close, do1_4_close;
     DataObject do2_1_open;
     Project project1, project2;
     Set openFilesSet = new HashSet ();
@@ -72,9 +75,11 @@ public class ProjectUtilitiesTest extends NbTestCase {
         FileObject f1_1 = p1.createData("f1_1.java");
         FileObject f1_2 = p1.createData("f1_2.java");
         FileObject f1_3 = p1.createData("f1_3.java");
+        FileObject f1_4 = p1.createData("f1_4.java");
         do1_1_open = DataObject.find (f1_1);
         do1_2_open = DataObject.find (f1_2);
         do1_3_close = DataObject.find (f1_3);
+        do1_4_close = DataObject.find (f1_4);
         openFilesSet.add (do1_1_open);
         openFilesSet.add (do1_2_open);
 
@@ -92,6 +97,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         new SimpleTopComponent (do1_2_open).open ();
         new SimpleTopComponent (do2_1_open).open ();
         
+        ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
     }
 
     public void testCloseAllDocuments () {
@@ -138,6 +144,59 @@ public class ProjectUtilitiesTest extends NbTestCase {
             }
         }
         
+    }
+    
+    private void modifyDO(DataObject toModify) throws BadLocationException, IOException {
+        System.err.println("toModify = " + toModify );
+        EditorCookie ec = (EditorCookie) toModify.getCookie(EditorCookie.class);
+        
+        ec.openDocument().insertString(0, "test", null);
+    }
+    
+    public void testSavingModifiedNotOpenedFiles67526() throws BadLocationException, IOException {
+        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project1.getLookup ().lookup (AuxiliaryConfiguration.class);
+        assertNotNull ("AuxiliaryConfiguration must be present if project's lookup", aux);
+        
+        Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
+        if (openFilesEl != null) {
+            assertEquals ("OpenFiles element is empty or null.", 0, openFilesEl.getChildNodes ().getLength ());
+        }
+        
+        modifyDO(do1_4_close);
+        
+        Project[] projects = new Project[] {project1};
+        
+        if (ProjectUtilities.closeAllDocuments (projects)) {
+            OpenProjectList.getDefault ().close (projects);
+        }
+        
+        assertFalse("the do1_4_close not modified", do1_4_close.isModified());
+        
+        openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
+        assertNotNull ("OPEN_FILES_ELEMENT found in the private configuration.", openFilesEl);
+        
+        NodeList list = openFilesEl.getElementsByTagName (ProjectUtilities.FILE_ELEMENT);
+        
+        assertNotNull ("FILE_ELEMENT must be present", list);
+        assertTrue ("Same count of FILE_ELEMENTs and open files, elements count " + list.getLength (), openFilesSet.size () == list.getLength ());
+        
+        for (int i = 0; i < list.getLength (); i++) {
+            String url = list.item (i).getChildNodes ().item (0).getNodeValue ();
+            FileObject fo = null;
+            try {
+                fo = URLMapper.findFileObject (new URL (url));
+                assertNotNull ("Found file for URL " + url, fo);
+                DataObject dobj = DataObject.find (fo);
+                System.err.println("openFilesSet = " + openFilesSet );
+                assertTrue (dobj + " is present in the set of open files.", openFilesSet.contains (dobj));
+                assertNotSame ("The closed file are not present.", do1_3_close, dobj);
+                assertNotSame ("The open file of other project is not present.", do2_1_open, dobj);
+            } catch (MalformedURLException mue) {
+                fail ("MalformedURLException in " + url);
+            } catch (DataObjectNotFoundException donfo) {
+                fail ("DataObject must exist for " + fo);
+            }
+        }
     }
     
     public void testCloseAndOpenProjectAndClosedWithoutOpenFiles () {
