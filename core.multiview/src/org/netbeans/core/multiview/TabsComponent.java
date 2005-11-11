@@ -404,11 +404,14 @@ class TabsComponent extends JPanel {
             b.getModel().setRollover(false);
         }
         
-        /** for user triggered clicks, do activate the current element.. */
-        public void mouseClicked(MouseEvent e) {
+        /** for user triggered clicks, do activate the current element..
+            make it on mousePressed to be in synch with the topcpomponent activation code in the winsys impl #68505
+         */
+        public void mousePressed(MouseEvent e) {
             AbstractButton b = (AbstractButton)e.getComponent();
             MultiViewModel model = TabsComponent.this.model;
             if (model != null) {
+                model.getButtonGroup().setSelected(b.getModel(), true);
                 model.fireActivateCurrent();
             }
 
