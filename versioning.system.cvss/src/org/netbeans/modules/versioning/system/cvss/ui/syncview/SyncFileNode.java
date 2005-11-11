@@ -26,8 +26,6 @@ import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.DeleteLocalAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
@@ -79,23 +77,6 @@ public class SyncFileNode extends AbstractNode {
             return SystemAction.get(ResolveConflictsAction.class);
         }
         return SystemAction.get(DiffAction.class);
-    }
-
-    // XXX see SyncTable getPopup that ignores this
-    public Action[] getActions(boolean context) {
-        if (context) return new Action[0];
-        Action[] actions = Annotator.getActions(getLookup());
-
-        // customize - replace Show status by Delete
-        for(int  i = 0;  i < actions.length; i++) {
-            Action action = actions[i];
-            if (action instanceof StatusAction) {
-                actions[i] = SystemAction.get(DeleteLocalAction.class);
-                break;
-            }
-        }
-
-        return actions;
     }
 
     /**
