@@ -228,8 +228,14 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             return true;
         }        
         SpecificationVersion platformVersion = activePlatform.getSpecification().getVersion();
-        return (javaSource != null && new SpecificationVersion (javaSource).compareTo(platformVersion)>0)
-               || (javaTarget != null && new SpecificationVersion (javaTarget).compareTo(platformVersion)>0);
+        try {
+            return (javaSource != null && new SpecificationVersion (javaSource).compareTo(platformVersion)>0)
+                   || (javaTarget != null && new SpecificationVersion (javaTarget).compareTo(platformVersion)>0);
+        } catch (NumberFormatException nfe) {
+            ErrorManager.getDefault().log("Invalid javac.source: "+javaSource+" or javac.target: "+javaTarget+" of project:"
+                +this.project.getProjectDirectory().getPath());
+            return true;
+        }
     }
     
     private String[] getBreakableProperties() {

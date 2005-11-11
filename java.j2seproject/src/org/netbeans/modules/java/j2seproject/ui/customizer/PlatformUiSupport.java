@@ -38,6 +38,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlRenderer;
 import org.openide.modules.SpecificationVersion;
@@ -449,7 +450,12 @@ public class PlatformUiSupport {
             this.activePlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
             this.platformComboBoxModel.addListDataListener (this);
             if (initialValue != null && initialValue.length()>0) {
-                this.originalSourceLevel = this.selectedSourceLevel = new SpecificationVersion (initialValue);
+                try {
+                    this.originalSourceLevel = this.selectedSourceLevel = new SpecificationVersion (initialValue);
+                } catch (NumberFormatException nfe) {
+                    //If the javac.source has invalid value, do not preselect and log it
+                    ErrorManager.getDefault().log("Invalid javac.source: "+initialValue);
+                }
             }            
         }
                 
