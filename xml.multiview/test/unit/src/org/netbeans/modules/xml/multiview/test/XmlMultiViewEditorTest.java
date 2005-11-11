@@ -145,6 +145,8 @@ public class XmlMultiViewEditorTest extends NbTestCase {
             throw new AssertionFailedErrorException("Lock problem : ", ex);
         }
         
+        Helper.sleep(2000); // wait for external change update
+        
         XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) bookDO.getCookie(EditorCookie.class);
         Document doc = editor.getDocument();
         try {
