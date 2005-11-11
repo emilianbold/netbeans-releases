@@ -43,9 +43,14 @@ public final class MasterURLMapper extends URLMapper {
         try {
             filePath = FileUtil.normalizeFile(new File(URI.create(url.toExternalForm()))).getAbsolutePath();
         } catch (IllegalArgumentException e) {
-            StringBuffer sb = new StringBuffer();
+            StringBuffer sb = new StringBuffer();            
             sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append("]");//NOI18N
-            ErrorManager.getDefault().notify(new IllegalArgumentException(sb.toString()));
+            IllegalArgumentException iax = new IllegalArgumentException(sb.toString());
+            if (Utilities.isWindows() && url.getAuthority() != null) {
+                ErrorManager.getDefault().annotate(iax, 
+                        "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive letters.");//NOI18N                
+            }            
+            ErrorManager.getDefault().notify(iax);
             return null;
         }
 
