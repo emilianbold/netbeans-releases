@@ -207,7 +207,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         return mvtc;
     }
 
-    private MultiViewDescription[] getMultiViewDescriptions() {
+    MultiViewDescription[] getMultiViewDescriptions() {
         if (multiViewDescriptions == null) {
             if (suppressXmlView) {
                 multiViewDescriptions = dObj.getMultiViewDesc();

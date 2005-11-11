@@ -90,6 +90,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
         if(editorSupport == null) {
             editorSupport = new XmlMultiViewEditorSupport(this);
+            editorSupport.getMultiViewDescriptions();
         }
         return editorSupport;
     }
