@@ -13,6 +13,8 @@
 
 package org.openide.util.lookup;
 
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import org.openide.util.*;
 
 import java.lang.ref.WeakReference;
@@ -20,6 +22,9 @@ import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.Serializable;
+import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Result;
+import org.openide.util.Lookup.Template;
 
 public class AbstractLookupBaseHid extends NbTestCase {
     private static AbstractLookupBaseHid running;
@@ -1223,6 +1228,142 @@ public class AbstractLookupBaseHid extends NbTestCase {
         if (it2.hasNext ()) {
             fail ("List has more elements than iterator");
         }
+    }
+    
+    
+    public void testResultsAreUnmodifyableOrAtLeastTheyDoNotPropagateToCache() throws Exception {
+        String s = "Ahoj";
+        
+        ic.add(s);
+        
+        Lookup.Result res = lookup.lookup(new Template(String.class));
+        
+        for (int i = 1; i < 5; i++) {
+            Collection c1 = res.allInstances();
+            Collection c2 = res.allClasses();
+            Collection c3 = res.allItems();
+
+            assertTrue(i + ": c1 has it", c1.contains(s));
+            assertTrue(i + ": c2 has it", c2.contains(s.getClass()));
+            assertEquals(i + ": c3 has one", 1, c3.size());
+            Lookup.Item item = (Lookup.Item) c3.iterator().next();
+            assertEquals(i + ": c3 has it", s, item.getInstance());
+
+            try {
+                c1.remove(s);
+                assertEquals("No elements now", 0, c1.size());
+            } catch (UnsupportedOperationException ex) {
+                // ok, this need not be supported
+            }
+            try {
+                c2.remove(s.getClass());
+                assertEquals("No elements now", 0, c2.size());
+            } catch (UnsupportedOperationException ex) {
+                // ok, this need not be supported
+            }
+            try {
+                c3.remove(item);
+                assertEquals("No elements now", 0, c3.size());
+            } catch (UnsupportedOperationException ex) {
+                // ok, this need not be supported
+            }
+        }
+    }
+    
+    
+    public void testChangeOfNodeDoesNotFireChangeInActionMap() {
+        ActionMap am = new ActionMap();
+        Lookup s = Lookups.singleton(am);
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s);
+    }
+
+    public void testChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookup() {
+        final ActionMap am = new ActionMap();
+        
+        class Before extends AbstractLookup {
+            public InstanceContent ic;
+            public Before() {
+                this(new InstanceContent());
+            }
+            
+            private Before(InstanceContent ic) {
+                super(ic);
+                this.ic = ic;
+            }
+
+            protected void beforeLookup(Template template) {
+                if (ic != null) {
+                    ic.add(am);
+                    ic = null;
+                }
+            }
+        }
+        
+        Before s = new Before();
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s);
+        
+        assertNull("beforeLookup called once", s.ic);
+    }
+    
+    private void doChangeOfNodeDoesNotFireChangeInActionMap(final ActionMap am, Lookup actionMapLookup) {
+        Lookup[] lookups = { lookup, actionMapLookup };
+        ProxyLookup proxy = new ProxyLookup(lookups);
+        Lookup.Result res = proxy.lookup(new Lookup.Template(ActionMap.class));
+        LL ll = new LL();
+        res.addLookupListener(ll);
+
+        Collection c = res.allInstances();
+        assertFalse("Has next", c.isEmpty());
+        
+        ActionMap am1 = (ActionMap)c.iterator().next();
+        assertEquals("Am is there", am, am1);
+        
+        assertEquals("No change in first get", 0, ll.getCount());
+        
+        Object m1 = new InputMap();
+        Object m2 = new InputMap();
+        
+        ic.add(m1);
+        assertEquals("No change in ActionMap 1", 0, ll.getCount());
+        ic.set(Collections.singletonList(m2), null);
+        assertEquals("No change in ActionMap 2", 0, ll.getCount());
+        ic.add(m2);
+        assertEquals("No change in ActionMap 3", 0, ll.getCount());
+        proxy.setLookups(new Lookup[]{ lookup, actionMapLookup, Lookup.EMPTY });
+        assertEquals("No change in ActionMap 4", 0, ll.getCount());
+        
+        ActionMap am2 = (ActionMap)proxy.lookup(ActionMap.class);
+        assertEquals("Still the same action map", am, am2);
+        
+        
+        class Before extends AbstractLookup {
+            public InstanceContent ic;
+            public Before() {
+                this(new InstanceContent());
+            }
+            
+            private Before(InstanceContent ic) {
+                super(ic);
+                this.ic = ic;
+            }
+
+            protected void beforeLookup(Template template) {
+                if (ic != null) {
+                    ic.add(am);
+                    ic = null;
+                }
+            }
+        }
+        
+        Before s = new Before();
+        
+        // adding different Before, but returning the same instance
+        // this happens with metaInfServices lookup often, moreover
+        // it adds the instance in beforeLookup, which confuses a lot
+        proxy.setLookups(new Lookup[]{ lookup, new Before() });
+        assertEquals("No change in ActionMap 5", 0, ll.getCount());
+        
+        
     }
     
     /** Adds instances to the instance lookup.

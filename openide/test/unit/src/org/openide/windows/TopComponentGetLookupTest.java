@@ -293,7 +293,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         
         top.setActivatedNodes (new N[0]);
         assertEquals("The nodes are empty", 0, top.getActivatedNodes ().length);
-        listener.checkAtLeast ("There should be no change, but there is one now, improve if possible", checkAtLeastCount());
+        listener.check ("No change", 0);
         
         cnt.queries = 0;
         ic.add (obj);
@@ -436,7 +436,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         top.setActivatedNodes (new Node[] { Node.EMPTY });
         assertEquals ("Map remains the same", map, res.allInstances().toArray()[0]);
         
-        l.checkAtLeast ("There should be no change, but alas there is one right now", checkAtLeastCount());
+        l.check ("There is no change", 0);
         
     }
 
@@ -445,10 +445,6 @@ public class TopComponentGetLookupTest extends NbTestCase {
     }
      
      
-    protected int checkAtLeastCount() {
-        return 1;
-    }
-    
     /**
      * Check that even if a node has a <em>different</em> node in its lookup, a
      * query on Node.class will produce only the actual activated nodes.

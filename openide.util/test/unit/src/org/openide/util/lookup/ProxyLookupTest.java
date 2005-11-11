@@ -28,8 +28,10 @@ implements AbstractLookupBaseHid.Impl {
         super(testName, null);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite (ProxyLookupTest.class));
+    public static Test suite() {
+        return new NbTestSuite (ProxyLookupTest.class);
+        
+        //return new ProxyLookupTest("testChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookup"); 
     }
     
     /** Creates an lookup for given lookup. This class just returns 
@@ -67,7 +69,9 @@ implements AbstractLookupBaseHid.Impl {
            fail ("Calling setLookups (emptyarray) fired a change");
         }
         
-        Lookup del = new AbstractLookup ();
+        InstanceContent t = new InstanceContent();
+        Lookup del = new AbstractLookup (t);
+        t.add("Ahoj");
         lookup.setLookups (new Lookup[] { del });
         
         if (ll.getCount () != 1) {
@@ -200,6 +204,7 @@ implements AbstractLookupBaseHid.Impl {
         Lookup.Result r3 = proxy.lookup(new Lookup.Template(Integer.class, null, null));
         assertEquals ("There is only one instance of Integer.class in proxyLookup:", //NOI18N
                 1, r3.allInstances().size());
-        
     }
+    
+    
 }

@@ -897,7 +897,8 @@ public class AbstractLookup extends Lookup implements Serializable {
                     s.add(obj);
                 }
             }
-
+            
+            s = Collections.unmodifiableList((ArrayList)s);
             setInstancesCache(s);
 
             return s;
@@ -928,6 +929,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 }
             }
 
+            s = Collections.unmodifiableSet(s);
             setClassesCache(s);
 
             return s;

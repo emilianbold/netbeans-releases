@@ -299,8 +299,6 @@ public class ProxyLookup extends Lookup {
                     return results;
                 }
 
-                cache = new Collection[3];
-
                 for (int i = 0; i < arr.length; i++) {
                     arr[i].addLookupListener(this);
                 }
@@ -414,71 +412,117 @@ public class ProxyLookup extends Lookup {
 
             // if the call to beforeLookup resulted in deletion of caches
             synchronized (this) {
-                if ((cache != null) && (cache[indexToCache] != null)) {
-                    return cache[indexToCache];
+                if (cache != null) {
+                    Collection result = cache[indexToCache];
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
 
             // initialize the collection to hold result
-            Collection ll;
+            Collection compute;
+            Collection ret;
 
             if (indexToCache == 1) {
-                ll = new HashSet();
+                compute = new HashSet();
+                ret = Collections.unmodifiableSet((Set)compute);
             } else {
-                ll = new ArrayList(arr.length * 2);
+                compute = new ArrayList(arr.length * 2);
+                ret = Collections.unmodifiableList((List)compute);
             }
 
             // fill the collection
             for (int i = 0; i < arr.length; i++) {
                 switch (indexToCache) {
                 case 0:
-                    ll.addAll(arr[i].allInstances());
-
+                    compute.addAll(arr[i].allInstances());
                     break;
-
                 case 1:
-                    ll.addAll(arr[i].allClasses());
-
+                    compute.addAll(arr[i].allClasses());
                     break;
-
                 case 2:
-                    ll.addAll(arr[i].allItems());
-
+                    compute.addAll(arr[i].allItems());
                     break;
+                default:
+                    assert false : "Wrong index: " + indexToCache;
                 }
             }
+            
+            
 
             synchronized (this) {
-                if ((arr == results) && (cache != null)) {
+                if (cache == null) {
+                    // initialize the cache to indicate this result is in use
+                    cache = new Collection[3];
+                }
+                
+                if (arr == results) {
                     // updates the results, if the results have not been
                     // changed during the computation of allInstances
-                    cache[indexToCache] = ll;
+                    cache[indexToCache] = ret;
                 }
             }
 
-            return ll;
+            return ret;
         }
 
         /** When the result changes, fire the event.
          */
         public void resultChanged(LookupEvent ev) {
             // clear cached instances
+            Collection oldItems;
+            Collection oldInstances;
             synchronized (this) {
-                cache = null;
-
-                if (listeners == null) {
+                if (cache == null) {
+                    // nobody queried the result yet
                     return;
                 }
+                oldInstances = cache[0];
+                oldItems = cache[2];
+                
+
+                if (listeners == null || listeners.getListenerCount() == 0) {
+                    // clear the cache
+                    cache = new Collection[3];
+                    return;
+                }
+                
+                // ignore events if they arrive as a result of call to allItems
+                // or allInstances, bellow...
+                cache = null;
             }
 
-            Object[] arr = listeners.getListenerList();
+            boolean modified = true;
 
-            if (arr.length == 0) {
-                return;
+            if (oldItems != null) {
+                Collection newItems = allItems();
+                if (oldItems.equals(newItems)) {
+                    modified = false;
+                }
+            } else {
+                if (oldInstances != null) {
+                    Collection newInstances = allInstances();
+                    if (oldInstances.equals(newInstances)) {
+                        modified = false;
+                    }
+                } else {
+                    synchronized (this) {
+                        if (cache == null) {
+                            // we have to initialize the cache
+                            // to show that the result has been initialized
+                            cache = new Collection[3];
+                        }
+                    }
+                }
             }
+            
+            assert cache != null;
 
-            ev = new LookupEvent(this);
-            AbstractLookup.notifyListeners(arr, ev);
+            if (modified) {
+                ev = new LookupEvent(this);
+                AbstractLookup.notifyListeners(listeners.getListenerList(), ev);
+            }
         }
 
         /** Implementation of my before lookup.

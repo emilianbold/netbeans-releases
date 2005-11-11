@@ -22,6 +22,33 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="less-events-from-proxylookup" >
+      <api name="lookup"/>
+      <summary>Less change notifications from ProxyLookup</summary>
+      <version major="6" minor="7"/>
+      <date day="11" month="11" year="2005"/>
+      <author login="jtulach"/>
+      <compatibility addition="no" modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+        <a href="@TOP@/org/openide/util/lookup/ProxyLookup.html">ProxyLookup.setLookups</a>
+        used to fire <a href="@TOP@/org/openide/util/LookupEvent.html">LookupEvent</a> every 
+        time it was called. Now it always checks whether there was a change to the
+        previous state. This will reduce the number of events delivered when a small
+        change is made. Also results from both 
+        <a href="@TOP@/org/openide/util/lookup/ProxyLookup.html">ProxyLookup</a>
+        and <a href="@TOP@/org/openide/util/lookup/AbstractLookup.html">AbstractLookup</a>
+        were modified to return immutable <code>Collection</code>s. 
+        So do not try to modify them. It was always documented that the
+        results, are immutable and also it was never said that a change is
+        delivered when there is no change in the result, so this is considered
+        compatible change, even it is know that at least one piece of code 
+        in NetBeans relied on this behaviour.
+      </description>
+      <class package="org.openide.util.lookup" name="ProxyLookup"/>
+      <class package="org.openide.util.lookup" name="AbstractLookup"/>
+      <issue number="68031"/>
+    </change>
+    
     <change>
       <api name="util"/>
       <summary>DynamicMenuContent interface added</summary>
