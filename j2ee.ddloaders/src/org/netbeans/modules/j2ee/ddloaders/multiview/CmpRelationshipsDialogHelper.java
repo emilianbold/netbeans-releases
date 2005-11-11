@@ -372,9 +372,9 @@ public class CmpRelationshipsDialogHelper {
 
         listener.validate();
 
-        final DialogDescriptor dialogDescriptor = new DialogDescriptor(form, title);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(form, title);
         dialogDescriptor.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setFocusTraversalPolicy(form.createFocusTraversalPolicy());
         DialogListener dialogListener = new DialogListener(errorLabel, dialogDescriptor);
         form.getFieldNameTextField().getDocument().addDocumentListener(dialogListener);
@@ -386,6 +386,8 @@ public class CmpRelationshipsDialogHelper {
         form.getEjbComboBox().addActionListener(dialogListener);
         form.getEjbComboBox2().addActionListener(dialogListener);
         dialogListener.validateFields();
+        if (dataObject.getEjbJar().getEnterpriseBeans().getEntity().length==0)
+            dialogDescriptor.setValid(false);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
 //            listener.validate();
