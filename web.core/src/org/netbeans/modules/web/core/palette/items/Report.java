@@ -107,7 +107,7 @@ public class Report implements ActiveEditorDrop {
                         strQuery +
                         "</sql:query>\n" + // NOI18N
                         "\n" + // NOI18N
-                        "<table>\n" + // NOI18N
+                        "<table border=\"1\">\n" + // NOI18N
                         "<!-- column headers -->\n" + // NOI18N
                         "<tr>\n" + // NOI18N
                         "<c:forEach var=\"columnName\" items=\"${" + variable + ".columnNames}\">\n" + // NOI18N
