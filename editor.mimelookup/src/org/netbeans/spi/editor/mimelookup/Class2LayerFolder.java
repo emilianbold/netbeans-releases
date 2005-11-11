@@ -32,9 +32,9 @@ package org.netbeans.spi.editor.mimelookup;
 public interface Class2LayerFolder {
     
     /**
-     * Gets class of the lookuped object, i.e. FoldManager.class
+     * Gets class of the looked-up object, i.e. FoldManager.class
      *
-     * @return class of the lookuped object.
+     * @return class of the looked-up object.
      */
     Class getClazz();
     

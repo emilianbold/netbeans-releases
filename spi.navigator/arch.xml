@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
             <li><b>panelActivated and panelDeactivated</b> methods wraps an 
             'active' life of your panel implementation. In panelActivated, grab
             your data from given <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a>,
-            usually by lookuping its asociated
+            usually by looking up its asociated
             <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>
             or 
             <a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">FileObject</a>

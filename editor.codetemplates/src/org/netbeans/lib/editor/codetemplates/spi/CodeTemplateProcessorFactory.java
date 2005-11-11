@@ -18,7 +18,7 @@ import java.util.Collection;
 /**
  * Factory constructs code template processor for a given insert request.
  * <br/>
- * The factory instances are lookup-ed
+ * The factory instances are looked up
  * by {@link org.netbeans.api.editor.mimelookup.MimeLookup}
  * so they should be registered in an xml-layer in
  * <i>Editors/&lt;mime-type&gt;/CodeTemplateProcessorFactories</i> directory.

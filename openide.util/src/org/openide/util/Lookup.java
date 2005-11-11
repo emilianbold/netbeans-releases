@@ -412,23 +412,12 @@ public abstract class Lookup {
     //
     private static final class Empty extends Lookup {
         private static final Result NO_RESULT = new Result() {
-                /** Registers a listener that is invoked when there is a possible
-                 * change in this result.
-                 *
-                 * @param l listener to invoke when there is an change
-                 */
                 public void addLookupListener(LookupListener l) {
                 }
 
-                /** Unregisters a listener previously added by addChangeListener.
-                 * @param l the listener
-                 */
                 public void removeLookupListener(LookupListener l) {
                 }
 
-                /** Access to all instances in the result.
-                 * @return collection of all instances
-                 */
                 public java.util.Collection allInstances() {
                     return java.util.Collections.EMPTY_SET;
                 }
@@ -437,22 +426,10 @@ public abstract class Lookup {
         Empty() {
         }
 
-        /** Lookups an object of given interface. This is the simplest method
-         * for the lookuping, if more registered objects implement the given
-         * class any of them can be returned.
-         *
-         * @param clazz class of the object we are searching for
-         * @return the object implementing given class or null if no such
-         *   has been found
-         */
         public Object lookup(Class clazz) {
             return null;
         }
 
-        /** The general lookup method.
-         * @param template the template describing the services we are looking for
-         * @return object containing the results
-         */
         public Result lookup(Template template) {
             return NO_RESULT;
         }

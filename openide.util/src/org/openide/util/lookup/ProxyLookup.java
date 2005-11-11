@@ -163,14 +163,6 @@ public class ProxyLookup extends Lookup {
     protected void beforeLookup(Template template) {
     }
 
-    /* Lookups an object of given interface. This is the simplest method
-     * for the lookuping, if more registered objects implement the given
-     * class any of them can be returned.
-     *
-     * @param clazz class of the object we are searching for
-     * @return the object implementing given class or null if no such
-     *    has been found
-     */
     public final Object lookup(Class clazz) {
         beforeLookup(new Template(clazz));
 
@@ -187,10 +179,6 @@ public class ProxyLookup extends Lookup {
         return null;
     }
 
-    /* Lookups the first item that matches given template.
-     * @param template the template to check
-     * @return item or null
-     */
     public final Item lookupItem(Template template) {
         beforeLookup(template);
 
@@ -207,10 +195,6 @@ public class ProxyLookup extends Lookup {
         return null;
     }
 
-    /* The general lookup method.
-     * @param template the template describing the services we are looking for
-     * @return object containing the results
-     */
     public final synchronized Result lookup(Lookup.Template template) {
         R r;
 

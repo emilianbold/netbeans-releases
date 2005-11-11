@@ -330,24 +330,12 @@ public class AbstractLookup extends Lookup implements Serializable {
         }
     }
 
-    /** Lookups an object of given interface. This is the simplest method
-     * for the lookuping, if more registered objects implement the given
-     * class any of them can be returned.
-     *
-     * @param clazz class of the object we are searching for
-     * @return the object implementing given class or null if no such
-     *    has been found
-     */
     public final Object lookup(Class clazz) {
         Lookup.Item item = lookupItem(new Lookup.Template(clazz));
 
         return (item == null) ? null : item.getInstance();
     }
 
-    /** Lookups just one item.
-     * @param template a template for what to find
-     * @return item or null
-     */
     public final Lookup.Item lookupItem(Lookup.Template template) {
         AbstractLookup.this.beforeLookup(template);
 
@@ -403,10 +391,6 @@ public class AbstractLookup extends Lookup implements Serializable {
         return res;
     }
 
-    /** The general lookup method.
-     * @param template the template describing the services we are looking for
-     * @return object containing the results
-     */
     public final Lookup.Result lookup(Lookup.Template template) {
         for (;;) {
             AbstractLookup.ISE toRun = null;

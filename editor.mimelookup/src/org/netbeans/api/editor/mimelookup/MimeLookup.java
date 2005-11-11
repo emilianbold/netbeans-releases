@@ -41,7 +41,7 @@ import org.openide.util.lookup.ProxyLookup;
  * {@link #getMimeLookup(String) getMimeLookup(String mimeType)} static method can be used.
  * <p>
  * Because embeded languages (like JSP) can contain embeded mime types, the mime 
- * lookup also provides the functionality of lookuping over these embeded
+ * lookup also provides the functionality of lookup over these embeded
  * mime types.
  * <p>
  * For obtaining mime-type specific embeded lookup
