@@ -68,7 +68,7 @@
     <tocitem text="About Configuring the IDE" target="configure.about" />    
     <tocitem text="Working with IDE Configurations" target="configure.overview" />    
     <tocitem text="Configuration Tasks: Quick Reference" target="configure.quickref" />          
-
+    <tocitem text="Importing Settings from a Previous Version of the IDE" target="configure.importing" />  
     <tocitem text="Configuring General IDE Settings" >
       <tocitem text="Using the Options Window" target="configure.options" />
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />

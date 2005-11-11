@@ -332,6 +332,7 @@ under Print Settings in the Options window)
 <mapID target="configure.about" url="configure/configure_about.html" />
 <mapID target="configure.overview" url="configure/configure_overview.html" />
 <mapID target="configure.quickref" url="configure/configure_quickref.html" />
+<mapID target="configure.importing" url="configure/configure_importing.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
 <mapID target="configure.system.settings" url="configure/system_settings.html" />
