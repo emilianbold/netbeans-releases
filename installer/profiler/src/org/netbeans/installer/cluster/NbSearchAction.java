@@ -31,6 +31,10 @@ public class NbSearchAction extends CancelableWizardAction {
     
     private static Vector nbHomeList = new Vector();
     
+    private String [] nbUIDArray = new String[0];
+    
+    private static String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
+    
     public NbSearchAction() {
     }
     
@@ -52,24 +56,50 @@ public class NbSearchAction extends CancelableWizardAction {
             return;
         }
         
-        String searchMsg = resolveString
-        ("$L(org.netbeans.installer..cluster.Bundle, NbSearchAction.searchMessage)");
+        String searchMsg = resolveString(BUNDLE + "NbSearchAction.searchMessage)");
         evt.getUserInterface().setBusy(searchMsg);
         
+        initNbUIDArray();
         findNb();
+    }
+    
+    private void initNbUIDArray () {
+        int arrLength = 0;
+        String s = resolveString(BUNDLE + "NetBeans.UIDLength)");
+        try {
+            arrLength = Integer.parseInt(s);
+        } catch (NumberFormatException exc) {
+            logEvent(this, Log.ERROR,"Incorrect number for NetBeans.UIDLength: " + s);
+        }
+        
+        //No order is defined.
+        if (arrLength == 0) {
+            return;
+        }
+        nbUIDArray = new String[arrLength];
+        for (int i = 0; i < arrLength; i++) {
+            nbUIDArray[i] = resolveString(BUNDLE + "NetBeans.UID" + i + ")");
+            logEvent(this, Log.DBG,"nbUIDArray[" + i + "]: " + nbUIDArray[i]);
+        }
+    }
+    
+    private boolean acceptNbUID (String nbUID) {
+        for (int i = 0; i < nbUIDArray.length; i++) {
+            if (nbUID.equals(nbUIDArray[i])) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /** Look for all installation of NetBeans IDE using vpd.properties.
      */
-    void findNb () {
+    private void findNb () {
         try {
             // Get the instance of RegistryService
-            String nbUID = resolveString
-            ("$L(org.netbeans.installer.cluster.Bundle,NetBeans.productUID)");
-            String minUIDSubstring = resolveString
-            ("$L(org.netbeans.installer.cluster.Bundle,NetBeans.nbMinUIDSubstring)");
-            String maxUIDSubstring = resolveString
-            ("$L(org.netbeans.installer.cluster.Bundle,NetBeans.nbMaxUIDSubstring)");
+            //String nbUID = resolveString(BUNDLE + "NetBeans.productUID)");
+            //String minUIDSubstring = resolveString(BUNDLE + "NetBeans.nbMinUIDSubstring)");
+            //String maxUIDSubstring = resolveString(BUNDLE + "NetBeans.nbMaxUIDSubstring)");
             RegistryService regserv = (RegistryService)getService(RegistryService.NAME);  
             String [] arr = regserv.getAllSoftwareObjectUIDs();
             /*for (int i = 0; i < arr.length; i++) {
@@ -79,7 +109,8 @@ public class NbSearchAction extends CancelableWizardAction {
             SoftwareObject [] soArr = null;
             //System.out.println("substring:" + nbUID.substring(26,32));
             for (int i = 0; i < arr.length; i++) {
-                if (arr[i].startsWith(nbUID.substring(0,26))) {
+                if (acceptNbUID(arr[i])) {
+                //if (arr[i].startsWith(nbUID.substring(0,26))) {
                     soArr = regserv.getSoftwareObjects(arr[i]);
                     System.out.println("so.length:" + soArr.length);
                     for (int j = 0; j < soArr.length; j++) {
@@ -88,9 +119,10 @@ public class NbSearchAction extends CancelableWizardAction {
                         + " name: " + soArr[j].getName()
                         + " productNumber: " + soArr[j].getProductNumber()
                         + " installLocation: " + soArr[j].getInstallLocation());
+                        nbHomeList.add(soArr[j]);
                         //Fix: Due to unresolved product properties for NB 4.0 and NB 4.1
                         //we must check UID not ProductNumber.
-                        if ((minUIDSubstring.length() > 0) && (maxUIDSubstring.length() > 0)) {
+                        /*if ((minUIDSubstring.length() > 0) && (maxUIDSubstring.length() > 0)) {
                             if ((minUIDSubstring.compareTo(soArr[j].getKey().getUID().substring(26,29)) <= 0) && 
                                 (maxUIDSubstring.compareTo(soArr[j].getKey().getUID().substring(26,29)) >= 0)) {
                                 nbHomeList.add(soArr[j]);
@@ -105,7 +137,7 @@ public class NbSearchAction extends CancelableWizardAction {
                             }
                         } else {
                             nbHomeList.add(soArr[j]);
-                        }
+                        }*/
                     }
                 }
             }
