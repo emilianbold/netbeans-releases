@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.jar.*;
 import java.util.*;
 import java.io.*;
+import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 
 import org.openide.*;
@@ -24,9 +25,10 @@ import org.openide.nodes.Node;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.SourceCookie;
-import org.openide.src.ClassElement;
 
 import org.netbeans.modules.form.project.*;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  * This class provides methods for installing new items to Palete.
@@ -37,6 +39,7 @@ import org.netbeans.modules.form.project.*;
 public final class BeanInstaller {
 
     private static WeakReference wizardRef;
+    private static final List NO_PARAMETERS = new ArrayList();
 
     private BeanInstaller() {
     }
@@ -55,33 +58,28 @@ public final class BeanInstaller {
 
     /** Installs beans represented by given nodes (selected by the user). Lets
      * the user choose the palette category. */
-    public static void installBeans(Node[] nodes) {
+    public static void installBeans(Node[] nodes) {       
         final List beans = new LinkedList();
-        List unableToInstall = new LinkedList();
-        for (int i=0; i < nodes.length; i++) {
-            SourceCookie source = (SourceCookie)
-                                      nodes[i].getCookie(SourceCookie.class);
+        final List unableToInstall = new LinkedList();                        
+        for (int i=0; i < nodes.length; i++) {            
             DataObject dobj = (DataObject) nodes[i].getCookie(DataObject.class);
-            if (source == null || dobj == null)
+            if (dobj == null)
                 continue;
 
-            ClassElement[] cls = source.getSource().getClasses();
-            for (int j=0; j < cls.length; j++)
-                if (cls[j].getName().getName().equals(dobj.getName())
-                    && cls[j].isDeclaredAsJavaBean())
-                {
-                    String classname = cls[j].getName().getFullName();
-                    FileObject fo = dobj.getPrimaryFile();
-                    ClassSource classSource =
-                        ClassPathUtils.getProjectClassSource(fo, classname);
+            final FileObject fo = dobj.getPrimaryFile();            
+            JavaClassHandler handler = new JavaClassHandler() {
+                public void handle(JavaClass javaClass) {
+                    ClassSource classSource = 
+                            ClassPathUtils.getProjectClassSource(fo, javaClass.getName());
                     if (classSource == null) {
                         // Issue 47947
-                        unableToInstall.add(classname);
+                        unableToInstall.add(javaClass.getName());
                     } else {
                         beans.add(classSource);
-                    }
-                    break;
-                }
+                    }                
+                } 
+            };            
+            scanFileObject(fo.getParent(), fo, handler);
         }
         
         if (unableToInstall.size() > 0) {
@@ -191,8 +189,9 @@ public final class BeanInstaller {
             if (foRoot != null) {
                 if (FileUtil.isArchiveFile(foRoot))
                     foRoot = FileUtil.getArchiveRoot(foRoot);
-                if (foRoot != null && foRoot.isFolder())
-                    scanFolderForBeans(foRoot, beans, roots[i].getAbsolutePath());
+                if (foRoot != null && foRoot.isFolder()) {
+                    scanFolderForBeans(foRoot, beans, roots[i].getAbsolutePath());                                            
+                }                    
             }
         }
 
@@ -240,10 +239,19 @@ public final class BeanInstaller {
 
     /** Recursive method scanning folders for classes (class files) that could
      * be JavaBeans. */
-    private static void scanFolderForBeans(FileObject folder, Map beans, String root) {
+    private static void scanFolderForBeans(FileObject folder, final Map beans, final String root) {
         DataObject dobj;
         SourceCookie source;
 
+        JavaClassHandler handler = new JavaClassHandler() {
+            public void handle(JavaClass javaClass) {
+                ItemInfo ii = new ItemInfo();
+                ii.classname = javaClass.getName();
+                ii.source = root;
+                beans.put(ii.classname, ii);                            
+            }
+        };
+                    
         FileObject[] files = folder.getChildren();
         for (int i=0; i < files.length; i++) {
             FileObject fo = files[i];
@@ -252,26 +260,48 @@ public final class BeanInstaller {
             }
             else try {
                 if ("class".equals(fo.getExt()) // NOI18N
-                     && (dobj = DataObject.find(fo)) != null
-                     && (source = (SourceCookie)dobj.getCookie(SourceCookie.class)) != null)
-                {
-                    ClassElement[] cls = source.getSource().getClasses();
-                    for (int j=0; j < cls.length; j++)
-                        if (cls[j].getName().getName().equals(dobj.getName())
-                            && cls[j].isDeclaredAsJavaBean())
-                        {
-                            ItemInfo ii = new ItemInfo();
-                            ii.classname = cls[j].getName().getFullName();
-                            ii.source = root;
-                            beans.put(ii.classname, ii);
-                            break;
-                        }
+                     && (dobj = DataObject.find(fo)) != null)
+                {                   
+                    scanFileObject(folder, fo, handler);
                 }
             }
             catch (org.openide.loaders.DataObjectNotFoundException ex) {} // should not happen
         }
+    }    
+    
+    private static void scanFileObject(FileObject folder, FileObject fileObject, JavaClassHandler handler) {          
+        JavaModel.getJavaRepository().beginTrans(false);
+        JavaModel.setClassPath(fileObject);
+        try {                                                
+            Resource resource = JavaModel.getResource(folder, fileObject.getNameExt());		    		    
+            java.util.List classifiers = resource.getClassifiers();
+            Iterator classIter = classifiers.iterator();
+            while (classIter.hasNext()) {
+                Object classifier = classIter.next();
+                if(classifier instanceof JavaClass) {                            
+                    JavaClass javaClass = (JavaClass)classifier;                                                                                                                
+                    if( javaClass.getSimpleName().equals(fileObject.getName()) && 
+                        isDeclaredAsJavaBean(javaClass) ) 
+                    {			
+                        handler.handle(javaClass);
+                        break;
+                    }                                
+                } 
+            }	          
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
+    }     
+        
+    private static boolean isDeclaredAsJavaBean(JavaClass jc) {
+        int modifiers = jc.getModifiers();
+        if (Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers)) {            
+            Constructor constructor = jc.getConstructor(NO_PARAMETERS , false);
+            return constructor != null && Modifier.isPublic(constructor.getModifiers());            
+        }
+        return false;
     }
-
+    
     private static AddToPaletteWizard getAddWizard() {
         AddToPaletteWizard wizard = null;
         if (wizardRef != null)
@@ -299,4 +329,9 @@ public final class BeanInstaller {
             return name1.compareTo(name2);
         }
     }
+    
+    private interface JavaClassHandler {        
+        public void handle(JavaClass javaClass);        
+    }
+    
 }
