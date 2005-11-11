@@ -84,7 +84,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
      * @return the associated help article
      */
     public HelpCtx getHelp() {
-        return new HelpCtx("j2eeplugins_registering_app_server_weblogic"); //NOI18N
+        return new HelpCtx("j2eeplugins_registering_app_server_weblogic_properties"); //NOI18N
     }
     
     /**

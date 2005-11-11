@@ -87,7 +87,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
      * @return the associated help article
      */
     public HelpCtx getHelp() {
-        return new HelpCtx("j2eeplugins_registering_app_server_weblogic"); // NOI18N
+        return new HelpCtx("j2eeplugins_registering_app_server_weblogic_location"); // NOI18N
     }
     
     /**
