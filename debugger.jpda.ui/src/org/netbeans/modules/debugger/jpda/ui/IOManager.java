@@ -48,7 +48,6 @@ public class IOManager {
     protected InputOutput                   debuggerIO = null;
     private OutputWriter                    debuggerOut;
     private String                          name;
-    private JPDADebugger                    debugger;
     private boolean                         closed = false;
     
     /** output writer Thread */
@@ -58,14 +57,10 @@ public class IOManager {
     
     // init ....................................................................
     
-    public IOManager (
-        String title,
-        JPDADebugger debugger
-    ) {
+    public IOManager(String title) {
         debuggerIO = IOProvider.getDefault ().getIO (title, true);
         debuggerIO.setFocusTaken (false);
         debuggerOut = debuggerIO.getOut ();
-        this.debugger = debugger;
     }
     
     

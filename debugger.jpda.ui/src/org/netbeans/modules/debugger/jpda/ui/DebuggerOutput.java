@@ -86,7 +86,7 @@ PropertyChangeListener {
         if (title == null)
             title = NbBundle.getBundle (IOManager.class).getString 
                 ("CTL_DebuggerConsole_Title");
-        ioManager = new IOManager (title, debugger);
+        ioManager = new IOManager (title);
         managers.add (ioManager);
         
         debugger.addPropertyChangeListener (
