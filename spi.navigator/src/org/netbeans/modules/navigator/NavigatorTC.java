@@ -154,11 +154,22 @@ final class NavigatorTC extends TopComponent {
             panelSelector.setVisible(panelsCount != 1);
             // fill with new content
             NavigatorPanel curPanel = null;
+            JComponent curComp = null;
             int i = 0;
             for (Iterator iter = panels.iterator(); iter.hasNext(); i++) {
                 curPanel = (NavigatorPanel)iter.next();
                 panelSelector.addItem(curPanel.getDisplayName());
-                contentArea.add(curPanel.getComponent(), String.valueOf(i));
+                curComp = curPanel.getComponent();
+                // for better error report in cases like #68544
+                if (curComp == null) {
+                    Throwable npe = new NullPointerException(
+                            "Method " + curPanel.getClass().getName() +  //NOI18N
+                            ".getComponent() must not return null under any condition!"  //NOI18N
+                    );
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, npe);
+                } else {
+                    contentArea.add(curComp, String.valueOf(i));
+                }
                 if (i == 0) {
                     selectedPanel = curPanel;
                 }
