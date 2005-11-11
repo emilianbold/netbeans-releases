@@ -115,13 +115,17 @@ public final class RecentViewListAction extends AbstractAction
             if (name == null || name.trim().length() == 0) {
                 name = tc.getName();
             }
+            String htmlName = tc.getHtmlDisplayName();
+            if (htmlName == null) {
+                htmlName = name;
+            }
             Image image = tc.getIcon();
             String description = tc.getToolTipText();
             ImageIcon imageIcon = (image != null ? new ImageIcon(image) : null);
             items[i] = new SwitcherTableItem(
                     new ActivatableTC(tc),
                     name,
-                    name,
+                    htmlName,
                     imageIcon,
                     false,
                     description != null ? description : name);
