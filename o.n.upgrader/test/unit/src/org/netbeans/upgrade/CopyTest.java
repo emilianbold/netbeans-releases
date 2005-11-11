@@ -12,11 +12,14 @@
  */
 
 package org.netbeans.upgrade;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 
 /** Tests to check that copy of files works.
@@ -31,11 +34,11 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
     protected void setUp() throws java.lang.Exception {
         super.setUp();
         
-        org.openide.filesystems.TestUtilHid.destroyLocalFileSystem(getName ());
+        clearWorkDir();
     }    
     
     public void testDoesSomeCopy () throws Exception {
-        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), new String[] {
+        FileSystem fs = createLocalFileSystem (new String[] {
             "root/X.txt", 
             "root/Y.txt",
             "nonroot/Z.txt"
@@ -55,7 +58,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
     }
     
     public void testDoesDeepCopy () throws Exception {
-        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), new String[] {
+        FileSystem fs = createLocalFileSystem (new String[] {
             "root/subdir/X.txt", 
             "root/Y.txt",
             "nonroot/Z.txt"
@@ -76,7 +79,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
     }
     
     public void testCopyAttributes () throws Exception {
-        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), new String[] {
+        FileSystem fs = createLocalFileSystem (new String[] {
             "root/X.txt", 
             "root/Y.txt",
             "nonroot/Z.txt"
@@ -97,7 +100,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
     }
     
     public void testCopyFolderAttributes () throws Exception {
-        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), new String[] {
+        FileSystem fs = createLocalFileSystem (new String[] {
             "root/sub/X.txt", 
             "root/Y.txt",
             "nonroot/Z.txt"
@@ -120,7 +123,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
     }
     
     public void testDoNotCopyEmptyDirs () throws Exception {
-        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), new String[] {
+        FileSystem fs = createLocalFileSystem (new String[] {
             "root/sub/X.txt", 
             "root/Y.txt",
             "nonroot/Z.txt"
@@ -140,7 +143,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         java.util.HashSet set = new java.util.HashSet ();
         set.add ("X.txt");
         
-        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), new String[] {
+        FileSystem fs = createLocalFileSystem (new String[] {
             "root/project/X.txt", 
             "root/X.txt",
             "nonroot/Z.txt"
@@ -175,7 +178,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
             "root/Yes.txt", 
             "root/X.txt_hidden", 
         };
-        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), res);
+        FileSystem fs = createLocalFileSystem (res);
         MultiFileSystem mfs = new MultiFileSystem (new FileSystem[] { fs });
         
         FileObject fo = mfs.findResource ("root");
@@ -197,5 +200,32 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         os.write (content.getBytes ());
         os.close ();
         lock.releaseLock ();
+    }
+    
+    public FileSystem createLocalFileSystem(String[] resources) throws IOException {
+        File mountPoint = new File(getWorkDir(), "tmpfs"); 
+        mountPoint.mkdir();
+        
+        for (int i = 0; i < resources.length; i++) {                        
+            File f = new File (mountPoint,resources[i]);
+            if (f.isDirectory() || resources[i].endsWith("/")) {
+                f.mkdirs();
+            }
+            else {
+                f.getParentFile().mkdirs();
+                try {
+                    f.createNewFile();
+                } catch (IOException iex) {
+                    throw new IOException ("While creating " + resources[i] + " in " + mountPoint.getAbsolutePath() + ": " + iex.toString() + ": " + f.getAbsolutePath() + " with resource list: " + Arrays.asList(resources));
+                }
+            }
+        }
+        
+        LocalFileSystem lfs = new LocalFileSystem();
+        try {
+            lfs.setRootDirectory(mountPoint);
+        } catch (Exception ex) {}
+        
+        return lfs;
     }
  }

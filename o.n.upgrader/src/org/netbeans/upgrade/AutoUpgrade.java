@@ -15,6 +15,7 @@ package org.netbeans.upgrade;
 import java.io.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +33,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 /** pending
  *
@@ -100,7 +103,7 @@ public final class AutoUpgrade {
         return new Integer (JOptionPane.YES_OPTION).equals (p.getValue ());
     }
     
-    private static void doUpgrade (File source, String oldVersion) 
+    static void doUpgrade (File source, String oldVersion) 
     throws java.io.IOException, java.beans.PropertyVetoException {
         
         
@@ -180,8 +183,19 @@ public final class AutoUpgrade {
         {
             LocalFileSystem lfs = new LocalFileSystem ();
             lfs.setRootDirectory (oldConfig);
+            
+            XMLFileSystem xmlfs = null;
+            try {
+                URL url = AutoUpgrade.class.getResource("layer" + oldVersion + ".xml"); // NOI18N
+                xmlfs = new XMLFileSystem(url);
+            } catch (SAXException ex) {
+                IOException e = new IOException ("Cannot import from version: " + oldVersion); // NOI18N
+                e.initCause (ex);
+                throw e;
+            }
+            
             old = new org.openide.filesystems.MultiFileSystem (
-                new org.openide.filesystems.FileSystem[] { lfs }
+                new org.openide.filesystems.FileSystem[] { lfs, xmlfs }
             );
         }
         org.openide.filesystems.FileSystem mine = Repository.getDefault ().
