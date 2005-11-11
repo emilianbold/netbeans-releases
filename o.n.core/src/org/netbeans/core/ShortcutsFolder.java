@@ -78,6 +78,10 @@ class ShortcutsFolder {
         refresh ();
     }
     
+    static void waitFinished () {
+        shortcutsFolder.listener.task.waitFinished ();
+    }
+    
     private void refresh () {
         
         // get keymap and delete old shortcuts
@@ -102,6 +106,7 @@ class ShortcutsFolder {
             currentFolder.addFileChangeListener (listener);
         }
     }
+    
     
     private void readShortcuts (NbKeymap keymap, FileObject fileObject) {
         debug.log ("\nreadShortcuts " + fileObject);
@@ -155,33 +160,29 @@ class ShortcutsFolder {
     
     private class Listener extends FileChangeAdapter implements Runnable {
         
-        private Task task;
+        private RequestProcessor.Task task = new RequestProcessor ("ShortcutsFolder").create (this);
         
         public void run () {
             refresh ();
         }
         
         public void fileDataCreated (FileEvent fe) {
-            if (task != null) task.cancel ();
-            task = RequestProcessor.getDefault ().post (this, 500);
+            task.schedule (500);
         }
 
         public void fileChanged (FileEvent fe) {
-            if (task != null) task.cancel ();
-            task = RequestProcessor.getDefault ().post (this, 500);
+            task.schedule (500);
         }
 
         public void fileDeleted (FileEvent fe) {
-            if (task != null) task.cancel ();
-            task = RequestProcessor.getDefault ().post (this, 500);
+            task.schedule (500);
         }
         
         public void fileAttributeChanged (FileAttributeEvent fe) {
             if (fe.getName () != null &&
                 !fe.getName ().equals (CURRENT_PROFILE_ATTRIBUTE)
             ) return;
-            if (task != null) task.cancel ();
-            task = RequestProcessor.getDefault ().post (this, 500);
+            task.schedule (500);
         }
     }
 }

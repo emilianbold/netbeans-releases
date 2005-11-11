@@ -84,7 +84,7 @@ public class ShortcutsFolderTest extends NbTestCase {
         inst = null;
         assertGC ("File can disappear", ref);
 
-        Thread.sleep (1000);
+//        ShortcutsFolder.waitFinished ();
 
         assertEquals ("Nothing registered", Collections.EMPTY_LIST, Arrays.asList (keymap.getBoundActions ()));
         
@@ -93,7 +93,8 @@ public class ShortcutsFolderTest extends NbTestCase {
         FileObject inst2 = FileUtil.createData (fs.getRoot (), "/Shortcuts/CA-F9.shadow");
         inst2.setAttribute ("originalFile", "/Actions/Tools/TestAction.instance");
 
-        Thread.sleep (1000);
+        ShortcutsFolder.waitFinished ();
+
         FileObject[] arr = shortcuts.getChildren ();
         assertEquals ("One element is there", 1, arr.length);
         org.openide.loaders.DataObject obj = org.openide.loaders.DataObject.find (arr[0]);
@@ -127,13 +128,13 @@ public class ShortcutsFolderTest extends NbTestCase {
 
         final KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F11, KeyEvent.CTRL_MASK);
         
-        Thread.sleep (1000);
+        ShortcutsFolder.waitFinished ();
 
         Action action = keymap.getAction(stroke);
         assertNotNull ("There is some action", action);
         
         inst.delete ();
-        Thread.sleep (1000);
+        ShortcutsFolder.waitFinished ();
         action = keymap.getAction (stroke);
         assertNull ("Action removed", action);
     }
