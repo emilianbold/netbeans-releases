@@ -110,7 +110,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private CallStackFrame              currentCallStackFrame;
     private int                         suspend = SUSPEND_ALL;
     public final Object                 LOCK = new Object ();
-    public final Object                 LOCK2 = new Object ();
+    private final Object                LOCK2 = new Object ();
+    private boolean                     starting;
     private JavaEngineProvider          javaEngineProvider;
     private Set                         languages;
     private String                      lastStratumn;
@@ -238,7 +239,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 else 
                     return;
             }
-            
+            if (!starting) {
+                return ; // We're already running
+            }
             try {
                 LOCK2.wait ();
             } catch (InterruptedException e) {
@@ -450,6 +453,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void setException (Exception e) {
         synchronized (LOCK2) {
             exception = e;
+            starting = false;
             LOCK2.notify ();
         }
     }
@@ -701,6 +705,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             System.out.println("\nS JPDADebuggerImpl.setRunning ()");
             JPDAUtils.printFeatures (vm);
         }
+        synchronized (LOCK2) {
+            starting = true;
+        }
         virtualMachine = vm;
         synchronized (canBeModifiedLock) {
             canBeModified = null; // Reset the can be modified flag
@@ -741,6 +748,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (startVerbose)
             System.out.println("\nS JPDADebuggerImpl.setRunning () - end");
         synchronized (LOCK2) {
+            starting = false;
             LOCK2.notify ();
         }
     }
@@ -772,6 +780,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (getState () == STATE_DISCONNECTED) return;
             if (startingThread != null) startingThread.interrupt ();
             startingThread = null;
+            Operator o = getOperator();
+            if (o != null) o.stop();
+            try {
+                waitRunning(); // First wait till the debugger comes up
+            } catch (DebuggerStartException dsex) {
+                // We do not want to start it anyway when we're finishing - do not bother
+            }
             try {
                 if (virtualMachine != null) {
                     if (di instanceof AttachingDICookie) {
@@ -812,6 +827,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             
             //Notify LOCK2 so that no one is waiting forever
             synchronized (LOCK2) {
+                starting = false;
                 LOCK2.notify ();
             }
         //}

@@ -205,6 +205,13 @@ public class Operator {
     public void unregister (EventRequest req) {
         req.putProperty ("executor", null); // NOI18N
     }
+    
+    /**
+     * Stop the operator thread.
+     */
+    public void stop() {
+        thread.interrupt();
+    }
 
     private void printEvent (Event e, Executor exec) {
         try {
