@@ -68,7 +68,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx("j2eeplugins_registering_app_server_jboss"); //NOI18N
+        return new HelpCtx("j2eeplugins_registering_app_server_jboss_location"); //NOI18N
     }
     
     public boolean isValid() {
