@@ -15,7 +15,10 @@ package org.netbeans.modules.java.freeform.ui;
 
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
@@ -23,11 +26,13 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -516,10 +521,25 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
         }
         chooser.setDialogTitle(NbBundle.getMessage(ClasspathPanel.class, "LBL_Browse_Classpath"));
+        
+        //#65354: prevent adding a non-folder element on the classpath:
+        FileFilter fileFilter = new SimpleFileFilter (
+            NbBundle.getMessage( ClasspathPanel.class, "LBL_ZipJarFolderFilter" ),   // NOI18N
+            new String[] {"ZIP","JAR"} );   // NOI18N
+        chooser.setFileFilter(fileFilter);                                                                 
+        chooser.setAcceptAllFileFilterUsed( false );
+            
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File files[] = chooser.getSelectedFiles();
             for (int i=0; i<files.length; i++) {
                 File file = FileUtil.normalizeFile(files[i]);
+                
+                //Check if the file is acceted by the FileFilter,
+                //user may enter the name of non displayed file into JFileChooser
+                if (!fileFilter.accept(file)) {
+                    continue;
+                }
+                
                 listModel.addElement(file.getAbsolutePath());
                 lastChosenFile = file;
             }
@@ -593,4 +613,30 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private javax.swing.JComboBox sourceFolder;
     // End of variables declaration//GEN-END:variables
     
+    private static class SimpleFileFilter extends FileFilter {
+
+        private String description;
+        private Collection extensions;
+
+
+        public SimpleFileFilter (String description, String[] extensions) {
+            this.description = description;
+            this.extensions = Arrays.asList(extensions);
+        }
+
+        public boolean accept(File f) {
+            if (f.isDirectory())
+                return true;            
+            try {
+                return FileUtil.isArchiveFile(f.toURI().toURL());
+            } catch (MalformedURLException mue) {
+                ErrorManager.getDefault().notify(mue);
+                return false;
+            }
+        }
+
+        public String getDescription() {
+            return this.description;
+        }
+    }
 }
