@@ -100,6 +100,13 @@ class ShortcutsFolder {
             currentFolder.removeFileChangeListener (listener);
         currentFolder = Repository.getDefault ().getDefaultFileSystem ().
             getRoot ().getFileObject (PROFILES_FOLDER + '/' + keymapName);
+        if (currentFolder == null) {
+            try {
+                currentFolder = profilesFileObject.createFolder(keymapName);
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+        }
         if (currentFolder != null) {
             readShortcuts (keymap, currentFolder);
             // add listener to current profile folder
