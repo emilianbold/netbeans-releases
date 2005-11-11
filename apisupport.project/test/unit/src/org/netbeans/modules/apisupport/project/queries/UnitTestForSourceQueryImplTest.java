@@ -47,7 +47,7 @@ public class UnitTestForSourceQueryImplTest extends TestBase {
         assertEquals("Test root defined", 1, testRoots.length);
         assertTrue("Test root exists", new File(URI.create(testRoots[0].toExternalForm())).exists());
         assertEquals("Test root", URLMapper.findFileObject(testRoots[0]), nbroot.getFileObject("apisupport/project/test/unit/src"));
-        assertEquals("No tests for this project", Collections.EMPTY_LIST, Arrays.asList(UnitTestForSourceQuery.findUnitTests(nbroot.getFileObject("openide/windows/src"))));
+        assertEquals("One test for this project", 1, UnitTestForSourceQuery.findUnitTests(nbroot.getFileObject("openide/windows/src")).length);
     }
 
     public void testFindSource() {
