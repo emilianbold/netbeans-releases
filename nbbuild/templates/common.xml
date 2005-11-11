@@ -377,15 +377,26 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="do-debug-test-single">
         <fail unless="test.class">Must set test.class</fail>
-        <java fork="true" classname="junit.textui.TestRunner">
+        <property name="test.report.file" location="${build.test.unit.results.dir}/TEST-${test.class}.xml"/>
+        <delete file="${test.report.file}"/>
+        <mkdir dir="${build.test.unit.results.dir}"/>
+        <touch file="${test.report.file}" verbose="false"/>   <!-- must exist, otherwise the XML formatter would fail -->
+        <java fork="true" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner">
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
             <jvmarg value="-ea"/>
-            <classpath refid="test.unit.run.cp"/>
+            <classpath>
+                <path refid="test.unit.run.cp"/>
+                <pathelement location="${ant.home}/lib/ant.jar"/>
+                <pathelement location="${ant.home}/lib/ant-junit.jar"/>
+            </classpath>
             <syspropertyset refid="test.unit.properties"/>
-            <arg line="${test.class}"/>
+            <arg value="${test.class}"/>
+            <arg value="showoutput=true"/>
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
         </java>
     </target>
 
