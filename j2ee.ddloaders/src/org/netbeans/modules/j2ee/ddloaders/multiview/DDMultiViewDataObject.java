@@ -61,12 +61,10 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
     public void checkParseable() {
         if (!isDocumentParseable()) {
             NotifyDescriptor desc = new org.openide.NotifyDescriptor.Message(
-                    NbBundle.getMessage(XmlMultiViewDataObject.class, "TXT_DocumentUnparsable",
+                    NbBundle.getMessage(DDMultiViewDataObject.class, "TXT_DocumentUnparsable",
                             getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            if (!isModelCreated()) {
-                goToXmlView();
-            }
+            goToXmlView();
         }
     }
 
