@@ -26,7 +26,9 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.WeakHashMap;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
@@ -62,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.UserQuestionException;
 import org.openide.windows.TopComponent;
 
 
@@ -71,6 +74,14 @@ import org.openide.windows.TopComponent;
  * @version 1.0
  */
 public class NavigatorContent extends JPanel   {
+    
+    private static NavigatorContent navigatorContentInstance = null;
+    
+    public static synchronized NavigatorContent getDefault() {
+        if(navigatorContentInstance == null)
+            navigatorContentInstance = new NavigatorContent();
+        return navigatorContentInstance;
+    }
     
     //suppose we always have only one instance of the navigator panel at one time
     //so using the static fields is OK. TheeNodeAdapter is reading these two
@@ -83,7 +94,11 @@ public class NavigatorContent extends JPanel   {
     
     private JLabel msgLabel;
     
-    public NavigatorContent() {
+    private DataObject peerDO = null;
+    
+    private WeakHashMap uiCache = new WeakHashMap();
+    
+    private NavigatorContent() {
         setLayout(new BorderLayout());
         //init empty panel
         emptyPanel = new JPanel();
@@ -95,31 +110,103 @@ public class NavigatorContent extends JPanel   {
         emptyPanel.add(msgLabel, BorderLayout.CENTER);
     }
     
+    public void navigate(DataObject d) {
+        if(peerDO != null && peerDO != d) {
+            //release the original document (see closeDocument() javadoc)
+            closeDocument(peerDO);
+        }
+        
+        EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
+        if(ec == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
+        } else {
+            try {
+                //test if the document is opened in editor
+                BaseDocument bdoc = (BaseDocument)ec.openDocument();
+                //create & show UI
+                if(bdoc != null) {
+                    //there is something we can navigate in
+                    navigate(bdoc);
+                    //remember the peer dataobject to be able the call EditorCookie.close() when closing navigator
+                    this.peerDO = d;
+                }
+                
+            }catch(UserQuestionException uqe) {
+                //do not open a question dialog when the document is just loaded into the navigator
+                showDocumentTooLarge();
+            }catch(IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+    }
+    
     public void navigate(final BaseDocument bdoc) {
         //called from AWT thread
         showWaitPanel();
+        
+        //try to find the UI in the UIcache
+        final JPanel cachedPanel;
+        WeakReference panelWR = (WeakReference)uiCache.get(bdoc);
+        if(panelWR != null) {
+            cachedPanel = (JPanel)panelWR.get();
+        } else
+            cachedPanel = null;
         
         //get the model and create the new UI on background
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 //get document model for the file
                 try {
-                    final DocumentModel model = DocumentModel.getDocumentModel(bdoc);
-                    if(model != null) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                JPanel panel = new NavigatorContentPanel(model);
-                                removeAll();
-                                add(panel, BorderLayout.CENTER);
-                                revalidate();
+                    final DocumentModel model;
+                    if(cachedPanel == null)
+                        model = DocumentModel.getDocumentModel(bdoc);
+                    else
+                        model = null; //if the panel is cached it holds a refs to the model - not need to init it again
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            JPanel panel = null;
+                            if(cachedPanel == null) {
+                                //cache the newly created panel
+                                panel = new NavigatorContentPanel(model);
+                                uiCache.put(bdoc, new WeakReference(panel));
+//                                System.out.println("creating new xml nav panel");
+                            } else {
+                                panel = cachedPanel;
+//                                System.out.println("panel gotten from cache");
                             }
-                        });
-                    } else System.out.println("model is null!!!!");
+                            
+                            removeAll();
+                            add(panel, BorderLayout.CENTER);
+                            revalidate();
+                            //panel.revalidate();
+                            repaint();
+                        }
+                    });
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
                 }
             }
         });
+    }
+    
+    public void release() {
+        removeAll();
+        repaint();
+        
+        closeDocument(peerDO);
+    }
+    
+    /** A hacky fix for XMLSyncSupport - I need to call EditorCookie.close when the navigator 
+     * is deactivated and there is not view pane for the navigated document. Then a the synchronization
+     * support releases a strong reference to NbEditorDocument. */
+    private void closeDocument(DataObject dobj) {
+        if(dobj != null) {
+            EditorCookie ec = (EditorCookie)peerDO.getCookie(EditorCookie.class);
+            if(ec != null) {
+                JEditorPane panes[] = ec.getOpenedPanes();
+                if(panes == null || panes.length == 0) ec.close();
+            }
+        }
     }
     
     public void showDocumentTooLarge() {

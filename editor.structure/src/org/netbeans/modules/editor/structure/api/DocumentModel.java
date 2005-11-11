@@ -178,8 +178,11 @@ public final class DocumentModel {
         
         //first test if the document has already associated a document model
         WeakReference modelWR = (WeakReference)doc.getProperty(DocumentModel.class);
-        DocumentModel model = null;
-        if(modelWR == null || modelWR.get() == null) {
+        DocumentModel cachedInstance = modelWR == null ? null : (DocumentModel)modelWR.get();
+        if(cachedInstance != null) {
+//            System.out.println("[document model] got from weak reference stored in editor document property");
+            return cachedInstance;
+        } else {
             //create a new modelx
             Class editorKitClass = ((BaseDocument)doc).getKitClass();
             BaseKit kit = BaseKit.getKit(editorKitClass);
@@ -189,18 +192,17 @@ public final class DocumentModel {
                 DocumentModelProvider provider =
                         DocumentModelProviderFactory.getDefault().getDocumentModelProvider(mimeType);
                 if(provider != null) {
-                    model = new DocumentModel(doc, provider);
+                    DocumentModel model = new DocumentModel(doc, provider);
                     //and put it as a document property
                     doc.putProperty(DocumentModel.class, new WeakReference(model));
-                    if(debug) System.out.println("[document model] created a new instance");
+//                    System.out.println("[document model] created a new instance");
                     return model;
-                }
+                } else 
+                    return null; //no provider ??? should not happen?!?!
             } else {
                 throw new IllegalStateException("No editor kit for document " + doc + "!");
             }
         }
-        if(debug) System.out.println("[document model] got from weak reference stored in editor document property");
-        return (DocumentModel)modelWR.get();
     }
     
     /** @return the text document this model is based upon */
