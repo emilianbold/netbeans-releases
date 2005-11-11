@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -161,6 +162,11 @@ public final class OpenProjectList {
     }
     
     public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously ) {
+        if (projects.length == 0) {
+            //nothing to do:
+            return ;
+        }
+        
         long start = System.currentTimeMillis();
         
 	if (asynchronously) {
@@ -216,39 +222,81 @@ public final class OpenProjectList {
     }
     
     private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, OpeningProjectPanel panel) {
+        assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
+            
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
-        int  workPerProject = maxWork / (projects.length > 0 ? projects.length : 1);
-        Collection projectsOpened = new LinkedHashSet(); // Collects all project opened by the call
+        int  workForSubprojects = maxWork / 2;
+        double currentWork = 0;
+        Collection projectsToOpen = new LinkedHashSet();
         
 	if (handle != null) {
 	    handle.start(maxWork);
 	    handle.progress(0);
 	}
         
-        Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
-        
-        for (int i=0; i<projects.length; i++) {
-            assert projects[i] != null : "Projects can't be null";
+        if (panel != null) {
+            assert projects.length > 0 : "at least one project to open";
             
-            if (!projectsOpened.add(projects[i])) {
-                //already opened:
-                continue;
+            panel.setProjectName(ProjectUtils.getInformation(projects[0]).getDisplayName());
+        }
+        
+        Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
+
+        List toHandle = new LinkedList(Arrays.asList(projects));
+        
+        while (!toHandle.isEmpty()) {
+            Project p = (Project) toHandle.remove(0);
+            Set/*<Project>*/ subprojects = openSubprojects ? (Set) subprojectsCache.get(p) : Collections.EMPTY_SET;
+            
+            if (subprojects == null) {
+                SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
+                if (spp != null) {
+                    subprojects = spp.getSubprojects();
+                } else {
+                    subprojects = Collections.EMPTY_SET;
+                }
+                subprojectsCache.put(p, subprojects);
             }
+            
+            projectsToOpen.add(p);
+            
+            for (Iterator i = subprojects.iterator(); i.hasNext(); ) {
+                Project sub = (Project) i.next();
+                
+                if (!projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
+                    toHandle.add(sub);
+                }
+            }
+            
+            double workPerOneProject = (workForSubprojects - currentWork) / (toHandle.size() + 1);
+            int lastState = (int) currentWork;
+            
+            currentWork += workPerOneProject;
+            
+            if (handle != null && lastState < (int) currentWork) {
+                handle.progress((int) currentWork);
+            }
+        }
+        
+        double workPerProject = (maxWork - workForSubprojects) / projectsToOpen.size();
+        
+        for (Iterator i = projectsToOpen.iterator(); i.hasNext(); ) {
+            Project p = (Project) i.next();
             
             if (panel != null) {
-                panel.setProjectName(ProjectUtils.getInformation(projects[i]).getDisplayName());
+                panel.setProjectName(ProjectUtils.getInformation(p).getDisplayName());
             }
             
-            recentProjectsChanged |= doOpenProject(projects[i]);
+            recentProjectsChanged |= doOpenProject(p);
             
-            if ( openSubprojects ) {
-                recentProjectsChanged |= openSubprojects(projects[i], projectsOpened, subprojectsCache, handle, panel, i * workPerProject, (i + 1) * workPerProject);
+            int lastState = (int) currentWork;
+            
+            currentWork += workPerProject;
+            
+            if (handle != null && lastState < (int) currentWork) {
+                handle.progress((int) currentWork);
             }
-            
-	    if (handle != null) {
-		handle.progress((i + 1) * workPerProject);
-	    }
         }
         
         synchronized ( this ) {
@@ -534,53 +582,6 @@ public final class OpenProjectList {
                 ErrorManager.getDefault().notify(e);
             }
         }
-    }
-    
-    /** Will recursively open subprojects of given project.
-     * @return True if the recent projects list has changed
-     */
-    private boolean openSubprojects(Project p, Collection projectsOpened, Map/*<Project,Set<Project>>*/ subprojectsCache, ProgressHandle handle, OpeningProjectPanel panel, int start, int end) {
-        Set/*<Project>*/ subprojects = (Set) subprojectsCache.get(p);
-        if (subprojects == null) {
-            SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
-            if (spp != null) {
-                subprojects = spp.getSubprojects();
-            } else {
-                subprojects = Collections.EMPTY_SET;
-            }
-            subprojectsCache.put(p, subprojects);
-        }
-        
-        int workToDo = end - start;
-        int workPerProject = subprojects.size() > 0 ? workToDo / subprojects.size() : 0;
-        int tick = workPerProject;
-        int current = start;
-        boolean recentProjectsChanged = false;
-        int doneProjects = 0;
-        
-        for (Iterator/*<Project>*/ it = subprojects.iterator(); it.hasNext(); ) {
-            Project sp = (Project)it.next();
-            
-            if (!projectsOpened.add(sp)) {
-                //already opened:
-                continue;
-            }
-            
-            if (panel != null) {
-                panel.setProjectName(ProjectUtils.getInformation(sp).getDisplayName());
-            }
-
-            recentProjectsChanged |= doOpenProject(sp);
-            recentProjectsChanged |= openSubprojects(sp, projectsOpened, subprojectsCache, handle, panel, current, current + tick);
-            doneProjects++;
-            current += tick;
-        }
-        
-        if (handle != null && end > start) {
-            handle.progress(end);
-        }
-        
-        return recentProjectsChanged;
     }
     
     private boolean doOpenProject(final Project p) {
