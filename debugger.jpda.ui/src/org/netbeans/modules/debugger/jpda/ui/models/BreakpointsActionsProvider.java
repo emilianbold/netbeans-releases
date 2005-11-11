@@ -14,6 +14,8 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -134,49 +136,44 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
 
         c.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(BreakpointsActionsProvider.class, "ACSD_Breakpoint_Customizer_Dialog")); // NOI18N
+        HelpCtx helpCtx = HelpCtx.findHelp (c);
+        if (helpCtx == null) {
+            helpCtx = new HelpCtx ("debug.add.breakpoint");  // NOI18N
+        }
+        final Controller[] cPtr = new Controller[] { (Controller) c };
+        final DialogDescriptor[] descriptorPtr = new DialogDescriptor[1];
+        final Dialog[] dialogPtr = new Dialog[1];
+        ActionListener buttonsActionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                if (descriptorPtr[0].getValue() == DialogDescriptor.OK_OPTION) {
+                    boolean ok = cPtr[0].ok();
+                    if (ok) {
+                        dialogPtr[0].setVisible(false);
+                    }
+                } else {
+                    dialogPtr[0].setVisible(false);
+                }
+            }
+        };
         DialogDescriptor descriptor = new DialogDescriptor (
             c,
             NbBundle.getMessage (
                 BreakpointsActionsProvider.class,
                 "CTL_Breakpoint_Customizer_Title" // NOI18N
-            )
+            ),
+            true,
+            DialogDescriptor.OK_CANCEL_OPTION,
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.DEFAULT_ALIGN,
+            helpCtx,
+            buttonsActionListener
         );
-
-        JButton bOk = null;
-        JButton bClose = null;
-        descriptor.setOptions (new JButton[] {
-            bOk = new JButton (NbBundle.getMessage (
-                BreakpointsActionsProvider.class,
-                "CTL_Ok" // NOI18N
-            )),
-            bClose = new JButton (NbBundle.getMessage (
-                BreakpointsActionsProvider.class,
-                "CTL_Cancel" // NOI18N
-            ))
-        });
-        HelpCtx helpCtx = HelpCtx.findHelp (c);
-        if (helpCtx == null)
-            helpCtx = new HelpCtx ("debug.add.breakpoint");  // NOI18N
-        descriptor.setHelpCtx (helpCtx);
-        bOk.getAccessibleContext ().setAccessibleDescription (
-            NbBundle.getMessage (
-                BreakpointsActionsProvider.class,
-                "ACSD_CTL_Ok" // NOI18N
-            )
-        );
-        bClose.getAccessibleContext ().setAccessibleDescription (
-            NbBundle.getMessage (
-                BreakpointsActionsProvider.class,
-                "ACSD_CTL_Cancel" // NOI18N
-            )
-        );
-        descriptor.setClosingOptions (null);
+        descriptor.setClosingOptions(new Object[] {});
         Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
         d.pack ();
+        descriptorPtr[0] = descriptor;
+        dialogPtr[0] = d;
         d.setVisible (true);
-        if (descriptor.getValue () == bOk && c.getClientProperty("WatchCanceled") == null) {
-            ((Controller) c).ok ();
-        }
     }
     
     private static void goToSource (LineBreakpoint b) {

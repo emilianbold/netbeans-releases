@@ -17,6 +17,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -25,10 +27,14 @@ import org.netbeans.modules.debugger.jpda.ui.FilteredKeymap;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import java.net.URI;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,6 +91,29 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
+    }
+    
+    private static int findNumLines(String url) {
+        FileObject file;
+        try {
+            file = URLMapper.findFileObject (new URL(url));
+        } catch (MalformedURLException e) {
+            return 0;
+        }
+        if (file == null) return 0;
+        DataObject dataObject;
+        try {
+            dataObject = DataObject.find (file);
+        } catch (DataObjectNotFoundException ex) {
+            return 0;
+        }
+        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+        if (ec == null) return 0;
+        ec.prepareDocument().waitFinished();
+        Document d = ec.getDocument();
+        if (!(d instanceof StyledDocument)) return 0;
+        StyledDocument sd = (StyledDocument) d;
+        return NbDocument.findLineNumber(sd, sd.getLength());
     }
     
     private void setupConditionPane() {
@@ -247,10 +276,9 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
      * @return whether customizer can be closed
      */
     public boolean ok () {
-        if (!isFilled()) {
-            JOptionPane.showMessageDialog(this,
-                java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle")
-                    .getString("MSG_No_Line_Number_Spec"));
+        String msg = valiadateMsg();
+        if (msg != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             return false;
         }
         actionsPanel.ok ();
@@ -281,13 +309,24 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         return true;
     }
     
-    boolean isFilled () {
+    private String valiadateMsg () {
         try {
             int line = Integer.parseInt(tfLineNumber.getText().trim());
-            return line > 0;
+            if (line <= 0) {
+                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
+            }
+            int maxLine = findNumLines(breakpoint.getURL());
+            if (maxLine == 0) { // Not found
+                maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
+            }
+            if (line > maxLine) {
+                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
+                        Integer.toString(line), Integer.toString(maxLine));
+            }
         } catch (NumberFormatException e) {
-            return false;
+            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_Line_Number_Spec");
         }
+        return null;
     }
     
     
