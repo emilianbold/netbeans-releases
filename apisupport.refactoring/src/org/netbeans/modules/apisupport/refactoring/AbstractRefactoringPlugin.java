@@ -107,6 +107,9 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         String name = clzz.getName();
         String pathName = name.replace('.', '/') + ".class"; //NOI18N
         Manifest mf = project.getManifest();
+        if (mf == null) {
+            return;
+        }
         Attributes attrs = mf.getMainAttributes();
         Iterator it = attrs.entrySet().iterator();
         while (it.hasNext()) {
