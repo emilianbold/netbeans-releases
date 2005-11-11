@@ -33,6 +33,7 @@ import org.openide.actions.CopyAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.ErrorManager;
 //import org.openide.windows.Workspace;
 //import org.openide.windows.Mode;
 
@@ -816,17 +817,23 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         //s.addAttribute(StyleConstants.ColorConstants.Background, color);
         for(int line = line1-1; line < line2; line++) {
             if (line < 0) continue;
-            int offset = org.openide.text.NbDocument.findLineOffset(doc, line);
-            //System.out.println("setHighlight(): I got offset = "+offset); // NOI18N
-            if (offset >= 0) {
-                Style s = doc.getLogicalStyle(offset);
-                if (s == null) {
-                    //System.out.println("setHighlight(): logical style is NULL"); // NOI18N
-                    s = doc.addStyle("diff-style("+color+"):1500", null); // NOI18N
+            try {
+                int offset = org.openide.text.NbDocument.findLineOffset(doc, line);
+                //System.out.println("setHighlight(): I got offset = "+offset); // NOI18N
+                if (offset >= 0) {
+                    Style s = doc.getLogicalStyle(offset);
+                    if (s == null) {
+                        //System.out.println("setHighlight(): logical style is NULL"); // NOI18N
+                        s = doc.addStyle("diff-style("+color+"):1500", null); // NOI18N
+                    }
+                    s.addAttribute(StyleConstants.ColorConstants.Background, color);
+                    doc.setLogicalStyle(offset, s);
+                    //doc.setParagraphAttributes(offset, 1, s, false);
                 }
-                s.addAttribute(StyleConstants.ColorConstants.Background, color);
-                doc.setLogicalStyle(offset, s);
-                //doc.setParagraphAttributes(offset, 1, s, false);
+            } catch (IndexOutOfBoundsException ex) {
+                // diagnostics
+                ErrorManager.getDefault().annotate(ex,  "#67631 reappreared. Please reopen with details.");   // NOI18N
+                ErrorManager.getDefault().notify(ex);
             }
         }
         //doc.setParagraphAttributes(offset, 100, s, true);
