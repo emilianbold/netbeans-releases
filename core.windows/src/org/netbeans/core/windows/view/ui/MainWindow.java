@@ -279,7 +279,7 @@ public final class MainWindow extends JFrame {
     }
     
     private static final String ICON_SMALL = "org/netbeans/core/startup/frame.gif"; // NOI18N
-    private static final String ICON_BIG = "org/netbeans/core/statup/frame32.gif"; // NOI18N
+    private static final String ICON_BIG = "org/netbeans/core/startup/frame32.gif"; // NOI18N
     static Image createIDEImage() {
         return Utilities.loadImage(Utilities.isLargeFrameIcons() ? ICON_BIG : ICON_SMALL, true);
     }
