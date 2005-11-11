@@ -202,7 +202,6 @@ public class WLPluginProperties {
     
     
     public void setInstallLocation(String installLocation){
-System.out.println("\t setInstallLocation(): " + installLocation);        
         if ( installLocation.endsWith("/") || installLocation.endsWith("\\") ){
             installLocation = installLocation.substring(0, installLocation.length() - 1 );
         }
@@ -212,7 +211,6 @@ System.out.println("\t setInstallLocation(): " + installLocation);
     }
     
     public String getInstallLocation(){
-System.out.println("getInstallLocation(): " + installLocation);        
         return this.installLocation;
     }
     
