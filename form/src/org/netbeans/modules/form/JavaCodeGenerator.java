@@ -2034,12 +2034,27 @@ class JavaCodeGenerator extends CodeGenerator {
                     {
                         codeWriter.write(k == 0 ? "if (" : "else if ("); // NOI18N
                         codeWriter.write(paramNames[0]);
+                        codeWriter.write(".getSource() == "); // NOI18N                                                
+			String componentParameterString = getComponentParameterString(
+							    event.getComponent(), false);
+			
+			int varType = event.getComponent().getCodeExpression().getVariable().getType();			
+			if( (varType & CodeVariable.LOCAL) == CodeVariable.LOCAL ) {
+			    codeWriter.write(
+				FormUtils.getFormattedBundleString(
+				    "MSG_WrongLocalVariableSettingComment",
+				    new Object[] { componentParameterString })); // NOI18N
+			}
+			
+                        codeWriter.write(k == 0 ? "if (" : "else if ("); // NOI18N
+                        codeWriter.write(paramNames[0]);
                         codeWriter.write(".getSource() == "); // NOI18N
-                        codeWriter.write(getComponentParameterString(
-                                             event.getComponent(), false));
-                        codeWriter.write(") {\n"); // NOI18N
+                        codeWriter.write(componentParameterString);
+                        codeWriter.write(") {\n"); // NOI18N						
+
                         generateEventHandlerCalls(event, paramNames, codeWriter, false);
                         codeWriter.write("}\n"); // NOI18N
+                        
                     }
                     else { // the listener method returns something
                         if (k > 0)
