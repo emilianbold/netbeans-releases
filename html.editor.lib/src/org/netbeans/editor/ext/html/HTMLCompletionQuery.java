@@ -599,12 +599,33 @@ else System.err.println( "Inside token " + item.getTokenID() );
     
     static class EndTagItem extends HTMLResultItem {
         
+        private int order = 0;
+        
         public EndTagItem( String baseText, int offset, int length ) {
             super( baseText, offset, length );
         }
         
         public EndTagItem( String baseText, int offset, int length, String helpID ) {
             super( baseText, offset, length, helpID );
+        }
+        
+        public EndTagItem( String baseText, int offset, int length, String helpID, int order ) {
+            this(baseText, offset, length, helpID);
+            this.order = order;
+        }
+        
+        public CharSequence getSortText() {
+            return getSortText(this.order);
+        }
+        
+        private String getSortText(int index) {
+            int zeros = index > 100 ? 0 : index > 10 ? 1 : 2; 
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < zeros; i++) {
+                sb.append('0');
+            }
+            sb.append("" + index);
+            return sb.toString();
         }
         
         Color getPaintColor() { return Color.blue; }
