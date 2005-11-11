@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -74,16 +75,26 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         return null;
     }
     
-    private static final class SuiteRootNode extends AbstractNode implements PropertyChangeListener {
+    private static final class SuiteRootNode extends AnnotatedNode
+            implements PropertyChangeListener {
+        
+        private static final Image ICON = Utilities.loadImage(SuiteProject.SUITE_ICON_PATH, true);
         
         private final SuiteProject suite;
         private final ProjectInformation info;
         
-        public SuiteRootNode(final SuiteProject suite) {
+        SuiteRootNode(final SuiteProject suite) {
             super(createRootChildren(suite), Lookups.fixed(new Object[] {suite}));
             this.suite = suite;
             info = ProjectUtils.getInformation(suite);
             info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            setFiles(getProjectFiles());
+        }
+        
+        private Set getProjectFiles() {
+            Set files = new HashSet();
+            files.add(suite.getProjectDirectory());
+            return files;
         }
         
         public String getName() {
@@ -95,7 +106,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public String getShortDescription() {
-            return NbBundle.getMessage(SuiteLogicalView.class, "HINT_suite_project_root_node", FileUtil.getFileDisplayName(suite.getProjectDirectory()));
+            return NbBundle.getMessage(SuiteLogicalView.class, "HINT_suite_project_root_node",
+                    FileUtil.getFileDisplayName(suite.getProjectDirectory()));
         }
         
         public Action[] getActions(boolean context) {
@@ -103,11 +115,11 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public Image getIcon(int type) {
-            return Utilities.loadImage(SuiteProject.SUITE_ICON_PATH, true);
+            return annotateIcon(ICON, type);
         }
         
         public Image getOpenedIcon(int type) {
-            return getIcon(type);
+            return getIcon(type); // the same in the meantime
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
@@ -117,7 +129,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 fireDisplayNameChange(null, getDisplayName());
             }
         }
-
+        
     }
     
     private static Children createRootChildren(final SuiteProject suite) {
