@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.awt.event.*;
 import java.awt.*;
@@ -29,6 +30,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
@@ -141,6 +143,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private boolean refreshedQuery = false;
     /** Whether it's explicit or automatic query. Changed in AWT only. */
     private boolean explicitQuery = false;
+    
+    private boolean tabCompletionWaiting = false;
+    private LinkedList waitingEvents = new LinkedList();
     
     /** Ending offset of the recent insertion or removal. */
     private int modEndOffset;
@@ -418,6 +423,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private synchronized void dispatchKeyEvent(KeyEvent e) {
         if (e == null)
             return;
+        if (tabCompletionWaiting) {
+            waitingEvents.add(e);
+            e.consume();
+            return;
+        }
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
         Object obj = inputMap.get(ks);
         if (obj != null) {
@@ -441,6 +451,17 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     item.defaultAction(getActiveComponent());
                     return;
                 }
+            }
+            if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                e.consume();
+                synchronized (this) {
+                    if (!isAllResultsFinished(completionResult.getResultSets())) {
+                        tabCompletionWaiting = true;
+                    } else {
+                        insertCommonPrefix();
+                    }
+                }
+                return;
             }
             layout.completionProcessKeyEvent(e);
             if (e.isConsumed()) {
@@ -491,7 +512,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
      * <br>
      * Must be called in AWT thread.
      */
-    private void completionRefresh() {
+    private void completionRefresh() {        
         Result localCompletionResult;
         synchronized (this) {
             localCompletionResult = completionResult;
@@ -511,9 +532,79 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         synchronized (this) {
             oldCompletionResult = completionResult;
             completionResult = null;
+            if (tabCompletionWaiting) {
+                tabCompletionWaiting = false;
+                waitingEvents.clear();
+            }
         }
         if (oldCompletionResult != null) {
             oldCompletionResult.cancel();
+        }
+    }
+    
+    /**
+     * Called from dispatchKeyEvent() to insert prefix common to all items in the 
+     * completion result after TAB.<br>
+     * Must be called in AWT thread after all tasks of the current completionResult are finished.
+     */
+    private void insertCommonPrefix() {
+        JTextComponent c = getActiveComponent();
+        Result localCompletionResult;
+        synchronized (this) {
+            localCompletionResult = completionResult;
+        }
+        if (localCompletionResult != null) {
+            CharSequence commonText = null;
+            int anchorOffset = -1;
+outer:      for (Iterator it = localCompletionResult.getResultSets().iterator(); it.hasNext();) {
+                CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
+                if (anchorOffset == -1)
+                    anchorOffset = resultSet.getAnchorOffset();
+                for (Iterator itt = resultSet.getItems().iterator(); itt.hasNext();) {
+                    CharSequence text = ((CompletionItem)itt.next()).getInsertPrefix();
+                    if (text == null) {
+                        commonText = null;
+                        break outer;
+                    }
+                    if (commonText == null) {
+                        commonText = text;
+                    } else {
+                        // Get the largest common part
+                        int minLen = Math.min(text.length(), commonText.length());
+                        for (int commonInd = 0; commonInd < minLen; commonInd++) {
+                            if (text.charAt(commonInd) != commonText.charAt(commonInd)) {
+                                if (commonInd == 0) {
+                                    commonText = null;
+                                    break outer; // no common text
+                                }
+                                commonText = commonText.subSequence(0, commonInd);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (commonText != null) {
+                int caretOffset = c.getCaret().getDot();
+                if (anchorOffset > -1)
+                    commonText = commonText.subSequence(caretOffset - anchorOffset, commonText.length());
+                BaseDocument doc = (BaseDocument)getActiveDocument();
+                doc.atomicLock();
+                try {
+                    doc.insertString(caretOffset, commonText.toString(), null);
+                } catch (BadLocationException e) {
+                } finally {
+                    doc.atomicUnlock();
+                }
+            }
+        }
+        if (tabCompletionWaiting) {
+            tabCompletionWaiting = false;
+            while(!waitingEvents.isEmpty()) {
+                KeyEvent e = (KeyEvent)waitingEvents.removeFirst();
+                e = new KeyEvent((Component)e.getSource(), e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar(), e.getKeyLocation());
+                c.dispatchEvent(e);
+            }
         }
     }
     
@@ -965,6 +1056,15 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 if (finishedResult.getResultId() == localCompletionResult) {
                     if (isAllResultsFinished(localCompletionResult.getResultSets())) {
                         requestShowCompletionPane(localCompletionResult);
+                        synchronized (this) {
+                            if (tabCompletionWaiting) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        insertCommonPrefix();
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
                 break;
