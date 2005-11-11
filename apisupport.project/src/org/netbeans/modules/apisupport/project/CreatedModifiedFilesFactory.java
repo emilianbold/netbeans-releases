@@ -360,7 +360,7 @@ public final class CreatedModifiedFilesFactory {
             ProjectXMLManager pxm = new ProjectXMLManager(getProject().getHelper());
             
             // firstly check if the dependency is already not there
-            Set currentDeps = pxm.getDirectDependencies(getProject().getPlatform());
+            Set currentDeps = pxm.getDirectDependencies(getProject().getPlatform(false));
             for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
                 ModuleDependency md = (ModuleDependency) it.next();
                 if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {

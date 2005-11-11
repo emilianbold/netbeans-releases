@@ -220,7 +220,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         //5. update project.xml with dependencies
         ProjectXMLManager manager = new ProjectXMLManager(model.getProject().getHelper());
         try {
-            SortedSet set = manager.getDirectDependencies(model.getProject().getPlatform());
+            SortedSet set = manager.getDirectDependencies(model.getProject().getPlatform(false));
             if (set != null) {
                 Iterator it = set.iterator();
                 boolean filesystems = false;

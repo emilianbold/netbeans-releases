@@ -620,12 +620,12 @@ public class LayerUtils {
      * Get the platform JARs associated with a standalone module project.
      */
     static Set/*<File>*/ getPlatformJarsForStandaloneProject(NbModuleProject project) {
-        NbPlatform platform = project.getPlatform();
+        NbPlatform platform = project.getPlatform(true);
         return getPlatformJars(platform, null, null);
     }
     
     static Set/*<File>*/ getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
-        NbPlatform platform = suite.getPlatform();
+        NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();
         String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
         String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
@@ -658,6 +658,9 @@ public class LayerUtils {
      * Can optionally pass non-null lists of cluster names and module CNBs to exclude, as per suite properties.
      */
     private static Set/*<File>*/ getPlatformJars(NbPlatform platform, String[] excludedClusters, String[] excludedModules) {
+        if (platform == null) {
+            return Collections.EMPTY_SET;
+        }
         Set/*<String>*/ excludedClustersS = (excludedClusters != null) ? new HashSet(Arrays.asList(excludedClusters)) : Collections.EMPTY_SET;
         Set/*<String>*/ excludedModulesS = (excludedModules != null) ? new HashSet(Arrays.asList(excludedModules)) : Collections.EMPTY_SET;
         ModuleEntry[] entries = platform.getModules();

@@ -49,7 +49,7 @@ public final class ModuleProjectClassPathExtender implements ProjectClassPathExt
     public boolean addLibrary(Library library) throws IOException {
         if (library.getName().equals(LIBRARY_NAME)) {
             ProjectXMLManager mgr = new ProjectXMLManager(project.getHelper());
-            Iterator it = mgr.getDirectDependencies(project.getPlatform()).iterator();
+            Iterator it = mgr.getDirectDependencies(project.getPlatform(false)).iterator();
             while (it.hasNext()) {
                 ModuleDependency dep = (ModuleDependency) it.next();
                 if (dep.getModuleEntry().getCodeNameBase().equals(MODULE_NAME)) {

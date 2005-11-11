@@ -166,7 +166,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         // 2. update project dependencies
         ProjectXMLManager manager = new ProjectXMLManager(project.getHelper());
         try {
-            SortedSet set = manager.getDirectDependencies(project.getPlatform());
+            SortedSet set = manager.getDirectDependencies(project.getPlatform(false));
             if (set != null) {
                 Iterator it = set.iterator();
                 boolean filesystems = false;

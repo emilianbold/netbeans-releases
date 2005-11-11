@@ -79,7 +79,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
         this.moduleListModel = null;
-        activePlatform = project.getPlatform();
+        activePlatform = project.getPlatform(true);
         firePropertiesRefreshed();
     }
     
@@ -92,10 +92,6 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
     public NbPlatform getActivePlatform() {
-        if (activePlatform == null || !activePlatform.isValid()) {
-            ModuleProperties.reportLostPlatform(activePlatform);
-            activePlatform = NbPlatform.getDefaultPlatform();
-        }
         return activePlatform;
     }
     

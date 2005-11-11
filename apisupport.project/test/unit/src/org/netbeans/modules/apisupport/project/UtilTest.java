@@ -195,7 +195,7 @@ public class UtilTest extends TestBase {
         assertTrue(index.createNewFile());
         
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        NbPlatform platform = project.getPlatform();
+        NbPlatform platform = project.getPlatform(false);
         URL oneModuleDocURL = Util.urlForDir(oneModuleDoc);
         platform.addJavadocRoot(oneModuleDocURL);
         ModuleDependency md = new ModuleDependency(project.getModuleList().getEntry(project.getCodeNameBase()));

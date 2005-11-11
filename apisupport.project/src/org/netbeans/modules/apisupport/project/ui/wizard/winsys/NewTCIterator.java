@@ -182,7 +182,7 @@ final class NewTCIterator extends BasicWizardIterator {
         //TODO how to figure the currect specification version for module?
         replaceTokens.put("@@SPECVERSION@@", project.getSpecVersion()); // NOI18N
         try {
-            SortedSet set = manager.getDirectDependencies(project.getPlatform());
+            SortedSet set = manager.getDirectDependencies(project.getPlatform(false));
             if (set != null) {
                 Iterator it = set.iterator();
                 boolean windows = false;

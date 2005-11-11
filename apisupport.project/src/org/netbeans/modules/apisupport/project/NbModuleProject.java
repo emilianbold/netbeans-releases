@@ -954,8 +954,19 @@ public final class NbModuleProject implements Project {
         }
     }
     
-    public NbPlatform getPlatform() {
-        return getPlatform(null);
+    /**
+     * Get the platform which this project is currently associated with.
+     * @param fallback if true, fall back to the default platform if necessary
+     * @return the current platform; or null if fallback is false and there is no
+     *         platform specified, or an invalid platform is specified, or even if
+     *         fallback is true but even the default platform is not available
+     */
+    public NbPlatform getPlatform(boolean fallback) {
+        NbPlatform p = getPlatform(null);
+        if (fallback && (p == null || !p.isValid())) {
+            p = NbPlatform.getDefaultPlatform();
+        }
+        return p;
     }
     
     private NbPlatform getPlatform(PropertyEvaluator eval) {

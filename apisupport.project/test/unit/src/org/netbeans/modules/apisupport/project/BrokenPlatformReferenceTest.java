@@ -71,14 +71,15 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         File d = new File(getWorkDir(), "standalone");
         NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
-        NbPlatform pl = p.getPlatform();
+        NbPlatform pl = p.getPlatform(false);
         assertNotNull(pl);
         assertEquals(install, pl.getDestDir());
+        assertEquals(pl, p.getPlatform(true));
         // Same but w/ a non-default platform.
         d = new File(getWorkDir(), "standalone2");
         NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, "install2");
         p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
-        pl = p.getPlatform();
+        pl = p.getPlatform(false);
         assertNotNull(pl);
         assertEquals(install2, pl.getDestDir());
         // Same for suites.
@@ -87,30 +88,30 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         d = new File(getWorkDir(), "suitecomp");
         NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
         SuiteProject s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
-        pl = s.getPlatform();
+        pl = s.getPlatform(false);
         assertNotNull(pl);
         assertEquals(install, pl.getDestDir());
+        assertEquals(pl, s.getPlatform(true));
         p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
-        assertEquals(pl, p.getPlatform());
+        assertEquals(pl, p.getPlatform(false));
         // And again w/ a non-default platform.
         sd = new File(getWorkDir(), "suite2");
         SuiteProjectGenerator.createSuiteProject(sd, "install2");
         d = new File(getWorkDir(), "suitecomp2");
         NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
         s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
-        pl = s.getPlatform();
+        pl = s.getPlatform(false);
         assertNotNull(pl);
         assertEquals(install2, pl.getDestDir());
         p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
-        assertEquals(pl, p.getPlatform());
+        assertEquals(pl, p.getPlatform(false));
     }
     
     // XXX to test, for suite projects, suite component module projects, and standalone projects:
     // - return default platform if ${netbeans.dest.dir} undefined in any way or not pointing to valid platform
-    // -- but introduce boolean param to return null instead, and ensure null return value is always handled somehow
     // - OpenProjectHook fixes, or creates, platform-private.properties to point to current build.properties
     // - in OPH, platform.properties is fixed to use default if no value for nbplatform.active or points to invalid platform
-    // - any changes in evaluator, or build.properties, resulting in an invalid platform choice for loaded project make evaluator use default platform
+    // - any changes in evaluator, or build.properties, resulting in an invalid platform choice for loaded project make evaluator use default platform (?)
     // - all problems are notified to user (maybe move ModuleProperties.reportLostPlatform, and change MP.runFromTests)
     // - migrate hacks around getModuleList to work just on platform (if module not listed in own module list, too bad...)?
     

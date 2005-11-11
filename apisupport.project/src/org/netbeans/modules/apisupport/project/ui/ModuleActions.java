@@ -528,7 +528,8 @@ public final class ModuleActions implements ActionProvider {
                 if (type == NbModuleTypeProvider.NETBEANS_ORG) {
                     return true;
                 } else if (type == NbModuleTypeProvider.STANDALONE) {
-                    return project.getPlatform().isDefault();
+                    NbPlatform p = project.getPlatform(false);
+                    return p != null && p.isDefault();
                 } else {
                     assert type == NbModuleTypeProvider.SUITE_COMPONENT : type;
                     try {
@@ -536,7 +537,7 @@ public final class ModuleActions implements ActionProvider {
                         if (suite == null) {
                             return false;
                         }
-                        NbPlatform p = suite.getPlatform();
+                        NbPlatform p = suite.getPlatform(false);
                         if (/* #67148 */p == null || !p.isDefault()) {
                             return false;
                         }
