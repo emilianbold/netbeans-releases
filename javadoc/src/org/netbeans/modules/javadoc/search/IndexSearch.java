@@ -644,7 +644,7 @@ public final class IndexSearch
     }
 
     void go() {
-        String toFind = searchComboBox.getEditor().getItem().toString();
+        String toFind = searchComboBox.getEditor().getItem().toString().trim();
 
         // Alocate array for results
         results = new ArrayList();
