@@ -15,7 +15,6 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.CvsCommandsMenuItem;
@@ -113,9 +112,8 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public Action[] actions(Set files) {
-        CvsCommandsMenuItem menu = (CvsCommandsMenuItem) SystemAction.get(CvsCommandsMenuItem.class);
         return new Action[] {
-            menu.createContextAwareInstance(Lookups.fixed(files.toArray(new FileObject[files.size()])))
+            SystemAction.get(CvsCommandsMenuItem.class)
         };
     }
 

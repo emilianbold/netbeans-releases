@@ -21,9 +21,7 @@ import org.openide.util.Lookup;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.SystemActionBridge;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction;
@@ -363,8 +361,8 @@ public class Annotator {
      */ 
     public static Action [] getActions(Lookup context) {
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-        File [] files = Utils.toFileArray(context.lookup(new Lookup.Template(FileObject.class)).allInstances());
-        Node [] fakeNodes = new Node [] { new AbstractNode(Children.LEAF, context) };
+        Node [] nodes = (Node[]) context.lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
+        File [] files = Utils.getCurrentContext(nodes).getRootFiles();
         if (onlyFolders(files)) {
             return new Action [] {
                 SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
@@ -383,7 +381,7 @@ public class Annotator {
                 SystemActionBridge.createAction(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
                 SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
                 SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(fakeNodes) == IgnoreAction.UNIGNORING ? 
+                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
                                        loc.getString("CTL_PopupMenuItem_Ignore"), context),
             };
@@ -401,7 +399,7 @@ public class Annotator {
                 SystemActionBridge.createAction(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch"), context),
                 null,
                 SystemActionBridge.createAction(SystemAction.get(AnnotationsAction.class), 
-                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(fakeNodes) ? 
+                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(nodes) ? 
                                         loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
                                         loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context),
                 SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
@@ -409,7 +407,7 @@ public class Annotator {
                 SystemActionBridge.createAction(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
                 SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
                 SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), 
-                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(fakeNodes) == IgnoreAction.UNIGNORING ? 
+                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
                                        loc.getString("CTL_PopupMenuItem_Ignore"), context)
             };
