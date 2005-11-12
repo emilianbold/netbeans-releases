@@ -244,7 +244,7 @@ final class ModuleListParser {
                 continue;
             }
             Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", ParseProjectXml.NBM_NS);
-            File binary;
+            File binary = null;
             if (binaryOrigin != null) {
                 String reltext = XMLUtil.findText(binaryOrigin);
                 String nball = (String) properties.get("nb_all");
@@ -255,7 +255,9 @@ final class ModuleListParser {
                 }
                 fakeproj.setBaseDir(dir);
                 binary = fakeproj.resolveFile(fakeproj.replaceProperties(reltext));
-            } else {
+            } 
+            
+            if (binary == null || !binary.exists()) {
                 Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", ParseProjectXml.NBM_NS);
                 if (runtimeRelativePath == null) {
                     throw new IOException("Have malformed <class-path-extension> in " + projectxml);
