@@ -264,7 +264,10 @@ final class ModuleListParser {
                 }
                 String reltext = XMLUtil.findText(runtimeRelativePath);
                 // No need to evaluate property refs in it - it is *not* substitutable-text in the schema.
-                binary = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
+                File resultBin = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
+                if (binary == null || resultBin.exists()) {
+                    binary = resultBin;
+                }
             }
             exts.add(binary);
         }
