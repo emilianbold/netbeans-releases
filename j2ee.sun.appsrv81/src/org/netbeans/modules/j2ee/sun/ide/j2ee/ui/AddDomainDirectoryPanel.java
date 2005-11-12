@@ -71,17 +71,24 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
     public boolean isValid() {
         File domainDir = new File(component.getInstanceDirectory());
         if (!creatingPersonalInstance) {
+            if (component.getInstanceDirectory().length() < 1) {
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
+                        "Msg_EneterValidDomainDir",                                 //NOI18N
+                        component.getInstanceDirectory()));
+                component.setAdminPort("");
+                return false;                
+            }
             if (!Util.rootOfUsableDomain(domainDir)) {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
                         "Msg_InValidDomainDir",                                 //NOI18N
                         component.getInstanceDirectory()));
-                component.setDeploymentUri("");
+                component.setAdminPort("");
                 return false;
             }
             Util.fillDescriptorFromDomainXml(wiz, domainDir);
-            component.setDeploymentUri(Util.getDeploymentUri(domainDir,
-                    (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION)));
+            component.setAdminPort((String)wiz.getProperty(AddDomainWizardIterator.PORT));
             return true;
         } else {
             File parent = domainDir.getParentFile();

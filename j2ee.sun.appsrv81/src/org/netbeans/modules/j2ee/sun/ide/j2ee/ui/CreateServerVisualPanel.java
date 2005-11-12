@@ -151,7 +151,6 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jTextArea1 = new javax.swing.JTextArea();
         portConfPanel = new javax.swing.JPanel();
         adminJmxLbl = new javax.swing.JLabel();
         instancePortLbl = new javax.swing.JLabel();
@@ -169,30 +168,14 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         orbMutualauthPort = new javax.swing.JSpinner();
         adminPortLbl = new javax.swing.JLabel();
         adminPort = new javax.swing.JSpinner();
+        spacingHack = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setFocusable(false);
         getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("Step_ChooseUserDefinedLocalServer"));
         getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("AddUserDefinedLocalServerPanel_Desc"));
-        jTextArea1.setEditable(false);
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("CreateServerVisualPanel_Desc"));
-        jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setFocusable(false);
-        jTextArea1.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 2, 7, 5);
-        add(jTextArea1, gridBagConstraints);
-        jTextArea1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("AddUserDefinedLocalServerPanel_Desc"));
-        jTextArea1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("AddUserDefinedLocalServerPanel_Desc"));
-
         portConfPanel.setLayout(new java.awt.GridBagLayout());
 
         adminJmxLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_AdminJmxPort_Mnemonic").charAt(0));
@@ -203,7 +186,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 3);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(adminJmxLbl, gridBagConstraints);
 
         instancePortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_InstancePort_Mnemonic").charAt(0));
@@ -214,7 +197,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 3);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(instancePortLbl, gridBagConstraints);
 
         jmsPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_JmsPort_Mnemonic").charAt(0));
@@ -225,7 +208,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 3);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(jmsPortLbl, gridBagConstraints);
 
         orbListenerPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbListener_Mnemonic").charAt(0));
@@ -236,7 +219,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 3);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(orbListenerPortLbl, gridBagConstraints);
 
         httpslPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_HttpSslPort_Mnemonic").charAt(0));
@@ -247,7 +230,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 3);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(httpslPortLbl, gridBagConstraints);
 
         orbSslPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbSslPort_Mnemonic").charAt(0));
@@ -258,7 +241,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 3);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(orbSslPortLbl, gridBagConstraints);
 
         orbMutualauthPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbMutualauthPort_Mnemonic").charAt(0));
@@ -270,7 +253,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 3);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(orbMutualauthPortLbl, gridBagConstraints);
 
         instanceHttpPort.setModel(instanceHttpPortValue);
@@ -280,7 +263,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(instanceHttpPort, gridBagConstraints);
 
         adminJmxPort.setModel(adminJmxPortValue);
@@ -290,7 +273,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(adminJmxPort, gridBagConstraints);
 
         jmsPort.setModel(jmsPortValue);
@@ -300,7 +283,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(jmsPort, gridBagConstraints);
 
         orbListenerPort.setModel(orbPortValue);
@@ -310,7 +293,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         portConfPanel.add(orbListenerPort, gridBagConstraints);
 
         httpsPort.setModel(httpsPortValue);
@@ -320,7 +303,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(httpsPort, gridBagConstraints);
 
         orbSslPort.setModel(orbSslPortValue);
@@ -330,7 +313,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         portConfPanel.add(orbSslPort, gridBagConstraints);
 
         orbMutualauthPort.setModel(orbMutualauthPortValue);
@@ -339,7 +322,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 5, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         portConfPanel.add(orbMutualauthPort, gridBagConstraints);
 
         adminPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "MNM_adminPortLbl").charAt(0));
@@ -350,7 +333,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 3);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
         portConfPanel.add(adminPortLbl, gridBagConstraints);
 
         adminPort.setModel(adminPortValue);
@@ -360,7 +343,6 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
         portConfPanel.add(adminPort, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -371,8 +353,25 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(portConfPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        spacingHack.setEnabled(false);
+        spacingHack.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.weighty = 1.0;
+        add(spacingHack, gridBagConstraints);
+
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("CreateServerVisualPanel_Desc"));
+        jLabel1.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        add(jLabel1, gridBagConstraints);
+
+    }// </editor-fold>//GEN-END:initComponents
    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -384,7 +383,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
     private javax.swing.JLabel httpslPortLbl;
     private javax.swing.JSpinner instanceHttpPort;
     private javax.swing.JLabel instancePortLbl;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JSpinner jmsPort;
     private javax.swing.JLabel jmsPortLbl;
     private javax.swing.JSpinner orbListenerPort;
@@ -394,6 +393,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
     private javax.swing.JSpinner orbSslPort;
     private javax.swing.JLabel orbSslPortLbl;
     private javax.swing.JPanel portConfPanel;
+    private javax.swing.JLabel spacingHack;
     // End of variables declaration//GEN-END:variables
         
 }

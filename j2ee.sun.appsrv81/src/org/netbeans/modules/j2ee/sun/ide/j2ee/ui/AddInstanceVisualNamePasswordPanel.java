@@ -96,92 +96,88 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
         jLabel1 = new javax.swing.JLabel();
+        description = new javax.swing.JLabel();
         adminNameLabel = new javax.swing.JLabel();
         adminName = new javax.swing.JTextField();
         adminPasswordLabel = new javax.swing.JLabel();
         adminPassword = new javax.swing.JPasswordField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        namePasswordDescription = new javax.swing.JTextArea();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        namePasswordWarning = new javax.swing.JTextArea();
+        warning = new javax.swing.JLabel();
+        spacingHack = new javax.swing.JLabel();
 
         jLabel1.setText("jLabel1");
+
+        setLayout(new java.awt.GridBagLayout());
+
+        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_namePasswordDescription"));
+        description.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(description, gridBagConstraints);
 
         adminNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "MNM_adminNameLabel").charAt(0));
         adminNameLabel.setLabelFor(adminName);
         adminNameLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminNameLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
+        add(adminNameLabel, gridBagConstraints);
 
         adminName.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "VAL_adminName_NOI18N"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        add(adminName, gridBagConstraints);
         adminName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_adminName"));
 
         adminPasswordLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "MNM_adminPasswordLabel").charAt(0));
         adminPasswordLabel.setLabelFor(adminPassword);
         adminPasswordLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminPasswordLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
+        add(adminPasswordLabel, gridBagConstraints);
 
         adminPassword.setColumns(10);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        add(adminPassword, gridBagConstraints);
         adminPassword.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_adminPassword"));
 
-        jScrollPane1.setBorder(null);
-        namePasswordDescription.setColumns(10);
-        namePasswordDescription.setEditable(false);
-        namePasswordDescription.setLineWrap(true);
-        namePasswordDescription.setRows(2);
-        namePasswordDescription.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_namePasswordDescription"));
-        namePasswordDescription.setWrapStyleWord(true);
-        namePasswordDescription.setFocusable(false);
-        namePasswordDescription.setOpaque(false);
-        jScrollPane1.setViewportView(namePasswordDescription);
+        warning.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_namePasswordWarning"));
+        warning.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(warning, gridBagConstraints);
 
-        jScrollPane2.setBorder(null);
-        namePasswordWarning.setColumns(20);
-        namePasswordWarning.setEditable(false);
-        namePasswordWarning.setLineWrap(true);
-        namePasswordWarning.setRows(2);
-        namePasswordWarning.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_namePasswordWarning"));
-        namePasswordWarning.setWrapStyleWord(true);
-        namePasswordWarning.setFocusable(false);
-        namePasswordWarning.setOpaque(false);
-        jScrollPane2.setViewportView(namePasswordWarning);
+        spacingHack.setEnabled(false);
+        spacingHack.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.weighty = 1.0;
+        add(spacingHack, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(adminNameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(adminName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(adminPasswordLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(adminPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(adminNameLabel)
-                    .add(adminName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(adminPasswordLabel)
-                    .add(adminPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 7, Short.MAX_VALUE)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -189,11 +185,10 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
     private javax.swing.JLabel adminNameLabel;
     private javax.swing.JPasswordField adminPassword;
     private javax.swing.JLabel adminPasswordLabel;
+    private javax.swing.JLabel description;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea namePasswordDescription;
-    private javax.swing.JTextArea namePasswordWarning;
+    private javax.swing.JLabel spacingHack;
+    private javax.swing.JLabel warning;
     // End of variables declaration//GEN-END:variables
 
 }

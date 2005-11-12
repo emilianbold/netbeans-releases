@@ -152,22 +152,63 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
         instanceTypeButtonGroup = new javax.swing.ButtonGroup();
+        description = new javax.swing.JLabel();
         platformFieldLabel = new javax.swing.JLabel();
         platformField = new javax.swing.JTextField();
+        openDirectoryCooser = new javax.swing.JButton();
         registerDefault = new javax.swing.JRadioButton();
         registerLocal = new javax.swing.JRadioButton();
         registerRemote = new javax.swing.JRadioButton();
         createPersonal = new javax.swing.JRadioButton();
-        openDirectoryCooser = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        platformPanelDescription = new javax.swing.JTextArea();
+        spacingHack = new javax.swing.JLabel();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_platformPanelDescription"));
+        description.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(description, gridBagConstraints);
 
         platformFieldLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_platformFieldLabel").charAt(0));
         platformFieldLabel.setLabelFor(platformField);
         platformFieldLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "platformFieldLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
+        add(platformFieldLabel, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 6);
+        add(platformField, gridBagConstraints);
         platformField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_platformField"));
+
+        openDirectoryCooser.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_openDirectoryChooser").charAt(0));
+        openDirectoryCooser.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_openDirectoryChooser"));
+        openDirectoryCooser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDirectoryCooserActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(6, 7, 5, 0);
+        add(openDirectoryCooser, gridBagConstraints);
+        openDirectoryCooser.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_openDirectoryChooser"));
 
         instanceTypeButtonGroup.add(registerDefault);
         registerDefault.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_registerDefault").charAt(0));
@@ -180,6 +221,13 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             }
         });
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
+        add(registerDefault, gridBagConstraints);
         registerDefault.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerDefault"));
 
         instanceTypeButtonGroup.add(registerLocal);
@@ -193,6 +241,13 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             }
         });
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
+        add(registerLocal, gridBagConstraints);
         registerLocal.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerLocal"));
 
         instanceTypeButtonGroup.add(registerRemote);
@@ -206,6 +261,13 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             }
         });
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
+        add(registerRemote, gridBagConstraints);
         registerRemote.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerRemote"));
 
         instanceTypeButtonGroup.add(createPersonal);
@@ -219,74 +281,24 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             }
         });
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(createPersonal, gridBagConstraints);
         createPersonal.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_createPersonal"));
 
-        openDirectoryCooser.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_openDirectoryChooser").charAt(0));
-        openDirectoryCooser.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_openDirectoryChooser"));
-        openDirectoryCooser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openDirectoryCooserActionPerformed(evt);
-            }
-        });
+        spacingHack.setEnabled(false);
+        spacingHack.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.weighty = 1.0;
+        add(spacingHack, gridBagConstraints);
 
-        openDirectoryCooser.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_openDirectoryChooser"));
-
-        jScrollPane1.setBorder(null);
-        platformPanelDescription.setColumns(20);
-        platformPanelDescription.setLineWrap(true);
-        platformPanelDescription.setRows(2);
-        platformPanelDescription.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_platformPanelDescription"));
-        platformPanelDescription.setWrapStyleWord(true);
-        platformPanelDescription.setFocusable(false);
-        platformPanelDescription.setOpaque(false);
-        jScrollPane1.setViewportView(platformPanelDescription);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
-                        .add(1, 1, 1))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(registerDefault)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 188, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, registerLocal)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, registerRemote)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, createPersonal)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(platformFieldLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(platformField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(openDirectoryCooser)))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(platformFieldLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(platformField)
-                    .add(openDirectoryCooser))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(registerDefault)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(registerLocal)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(registerRemote)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createPersonal)
-                .addContainerGap())
-        );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void createPersonalItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPersonalItemStateChanged
         setSelectedType(AddDomainWizardIterator.PERSONAL,evt);
@@ -313,15 +325,15 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton createPersonal;
+    private javax.swing.JLabel description;
     private javax.swing.ButtonGroup instanceTypeButtonGroup;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton openDirectoryCooser;
     private javax.swing.JTextField platformField;
     private javax.swing.JLabel platformFieldLabel;
-    private javax.swing.JTextArea platformPanelDescription;
     private javax.swing.JRadioButton registerDefault;
     private javax.swing.JRadioButton registerLocal;
     private javax.swing.JRadioButton registerRemote;
+    private javax.swing.JLabel spacingHack;
     // End of variables declaration//GEN-END:variables
     
 }

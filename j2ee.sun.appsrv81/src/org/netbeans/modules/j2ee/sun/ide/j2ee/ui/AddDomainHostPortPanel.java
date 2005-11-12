@@ -69,7 +69,7 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
         if (h.length() < 1) {
             wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(AddDomainHostPortPanel.class, 
-                    "MSG_UnknownHost2",h));                                     //NOI18N
+                    "MSG_EnterHost",h));                                     //NOI18N
             return false;            
         }
         int p = component.getPort();

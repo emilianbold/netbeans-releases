@@ -37,7 +37,6 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
      */
     public AddInstanceVisualHostPortPanel() {
         initComponents();
-        deploymentUrlDisplay.setText("");
         portValue.setModel(valueModel);
         portValue.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent ev) {
@@ -107,8 +106,6 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
                             while (it.hasNext()) {
                                 ((ChangeListener)it.next()).stateChanged(ev);
                             }
-                            deploymentUrlDisplay.setText(SunURIManager.SUNSERVERSURI+getHost()+":"+ // NOI18N
-                                    getPort());
                         }
                     });
                     
@@ -127,95 +124,80 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        description = new javax.swing.JLabel();
         hostNameLabel = new javax.swing.JLabel();
         hostName = new javax.swing.JTextField();
         portValueLabel = new javax.swing.JLabel();
-        deploymentUrlLabel = new javax.swing.JLabel();
-        deploymentUrlDisplay = new javax.swing.JLabel();
         portValue = new javax.swing.JSpinner();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        hostPortDescription = new javax.swing.JTextArea();
+        spacingHack = new javax.swing.JLabel();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        setFocusable(false);
+        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_hostPortDescription"));
+        description.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(description, gridBagConstraints);
 
         hostNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "MNM_hostNameLabel").charAt(0));
         hostNameLabel.setLabelFor(hostName);
         hostNameLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_hostNameLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
+        add(hostNameLabel, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
+        add(hostName, gridBagConstraints);
         hostName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_hostName"));
 
         portValueLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "MNM_portValueLabel").charAt(0));
         portValueLabel.setLabelFor(portValue);
         portValueLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_portValueLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
+        add(portValueLabel, gridBagConstraints);
 
-        deploymentUrlLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_deploymentUrlLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
+        add(portValue, gridBagConstraints);
 
-        deploymentUrlDisplay.setText("FFFFF");
+        spacingHack.setEnabled(false);
+        spacingHack.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.weighty = 1.0;
+        add(spacingHack, gridBagConstraints);
 
-        jScrollPane1.setBorder(null);
-        hostPortDescription.setColumns(10);
-        hostPortDescription.setEditable(false);
-        hostPortDescription.setLineWrap(true);
-        hostPortDescription.setRows(2);
-        hostPortDescription.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_hostPortDescription"));
-        hostPortDescription.setWrapStyleWord(true);
-        hostPortDescription.setFocusable(false);
-        hostPortDescription.setOpaque(false);
-        jScrollPane1.setViewportView(hostPortDescription);
-        hostPortDescription.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_hostPortDescription"));
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(deploymentUrlLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deploymentUrlDisplay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(hostNameLabel)
-                            .add(portValueLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(portValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(hostName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE))))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(hostNameLabel)
-                    .add(hostName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(portValueLabel)
-                    .add(portValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(24, 24, 24)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(deploymentUrlDisplay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, deploymentUrlLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel deploymentUrlDisplay;
-    private javax.swing.JLabel deploymentUrlLabel;
+    private javax.swing.JLabel description;
     private javax.swing.JTextField hostName;
     private javax.swing.JLabel hostNameLabel;
-    private javax.swing.JTextArea hostPortDescription;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSpinner portValue;
     private javax.swing.JLabel portValueLabel;
+    private javax.swing.JLabel spacingHack;
     // End of variables declaration//GEN-END:variables
 
 }
