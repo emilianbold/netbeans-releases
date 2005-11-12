@@ -103,6 +103,14 @@ PropertyChangeListener {
     public AnnotationsPanel (FontAndColorsPanel fontAndColorsPanel) {
         
         // 1) init components
+        foregroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground_Chooser"));
+        foregroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
+        backgroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
+        backgroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
+        waveUnderlinedColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Wave_Underlined"));
+        waveUnderlinedColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Wave_Underlined"));
+        lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
+        lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
         lCategories.addListSelectionListener (new ListSelectionListener () {
