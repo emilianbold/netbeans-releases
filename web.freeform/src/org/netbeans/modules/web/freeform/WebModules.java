@@ -292,7 +292,11 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         }
         
         public FileObject getDeploymentDescriptor () {
-            return getWebInf ().getFileObject (FILE_DD);
+            FileObject winf = getWebInf ();
+            if (winf == null) {
+                return null;
+            }
+            return winf.getFileObject (FILE_DD);
         }
         
         public FileObject getWebInf () {
