@@ -325,6 +325,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                 container.add(splitter);
                 splitter.setDividerLocation(250);
                 splitter.setDividerSize(7);
+                ((CloneableEditor)allEditors.getComponents().nextElement()).requestFocusInWindow();
                 return null;
             }
         });
