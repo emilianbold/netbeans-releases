@@ -244,7 +244,7 @@ final class ModuleListParser {
                 continue;
             }
             Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", ParseProjectXml.NBM_NS);
-            File binary = null;
+            File origBin = null;
             if (binaryOrigin != null) {
                 String reltext = XMLUtil.findText(binaryOrigin);
                 String nball = (String) properties.get("nb_all");
@@ -254,22 +254,27 @@ final class ModuleListParser {
                     faketask.execute();
                 }
                 fakeproj.setBaseDir(dir);
-                binary = fakeproj.resolveFile(fakeproj.replaceProperties(reltext));
+                origBin = fakeproj.resolveFile(fakeproj.replaceProperties(reltext));
             } 
-            
-            if (binary == null || !binary.exists()) {
+
+            File resultBin = null;
+            if (origBin == null || !origBin.exists()) {
                 Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", ParseProjectXml.NBM_NS);
                 if (runtimeRelativePath == null) {
                     throw new IOException("Have malformed <class-path-extension> in " + projectxml);
                 }
                 String reltext = XMLUtil.findText(runtimeRelativePath);
                 // No need to evaluate property refs in it - it is *not* substitutable-text in the schema.
-                File resultBin = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
-                if (binary == null || resultBin.exists()) {
-                    binary = resultBin;
-                }
+                resultBin = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
             }
-            exts.add(binary);
+
+            if (origBin != null) {
+                exts.add(origBin);
+            }
+
+            if (resultBin != null) {
+                exts.add(resultBin);
+            }
         }
         List/*<String>*/ prereqs = new ArrayList();
         Element depsEl = XMLUtil.findElement(dataEl, "module-dependencies", ParseProjectXml.NBM_NS);
