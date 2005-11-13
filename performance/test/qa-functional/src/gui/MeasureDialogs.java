@@ -49,7 +49,7 @@ public class MeasureDialogs  {
         //remove from test run for NB4.1        suite.addTest(new FilesWindow("measureTime", "Files window open"));
         //remove from test run for NB4.1        suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
         //remove from test run for NB4.1        suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
-// TEMPORARY until Jellytools fixed suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
+        suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
         
 //TODO       suite.addTest(new OutputWindow("measureTime", "Output window open"));
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
@@ -60,7 +60,7 @@ public class MeasureDialogs  {
         suite.addTest(new PropertyEditorString("measureTime", "String Property Editor open"));
 //TODO fails often        suite.addTest(new PropertyEditorColor("measureTime", "Color Property Editor open"));
         
-        suite.addTest(new AddJDBCDriverDialog("measureTime", "Add JDBC Driver dialog open"));
+        suite.addTest(new AddServerInstanceDialog("measureTime", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
         //remove from test run for NB4.1        suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
@@ -75,7 +75,7 @@ public class MeasureDialogs  {
         suite.addTest(new NewBreakpointDialog("measureTime", "New Breakpoint dialog open"));
         suite.addTest(new NewWatchDialog("measureTime", "New Watch dialog open"));
 
-//TODO Javadoc Index Search isn't TopComponent        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
+        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
         
         suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
         suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
@@ -91,10 +91,13 @@ public class MeasureDialogs  {
         
 //TODO        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
         
+        suite.addTest(new AddServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
+        
         suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
         suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
-//TODO        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
+//TODO hard to indentify end of the action        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
         
+        suite.addTest(new CreateTestsDialog("measureTime", "Create Tests dialog open"));
         
         return suite;
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,7 +42,7 @@ public class JavadocIndexSearch extends org.netbeans.performance.test.utilities.
     
     public void initialize() {
         BUNDLE = "org.netbeans.modules.javadoc.search.Bundle";
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_WindowTitle");
     }
     
@@ -55,4 +55,19 @@ public class JavadocIndexSearch extends org.netbeans.performance.test.utilities.
         return new TopComponentOperator(TITLE);
     }
     
+    public void close(){
+        if (testedComponentOperator != null) {
+            ((TopComponentOperator)testedComponentOperator).close();
+        } else {
+            throw new Error("no component to close");
+        }
+    }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new JavadocIndexSearch("measureTime"));
+    }
+
 }

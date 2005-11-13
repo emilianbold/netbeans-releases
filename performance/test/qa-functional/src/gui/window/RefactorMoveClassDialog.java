@@ -7,17 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
 import gui.Utilities;
+
+import java.io.PrintStream;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
 
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -62,5 +63,18 @@ public class RefactorMoveClassDialog extends org.netbeans.performance.test.utili
         testNode.performPopupAction(ACTION);
         return new NbDialogOperator(TITLE);
     }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new RefactorMoveClassDialog("measureTime"));
+    }
+    
+    public PrintStream getLog() {
+        return System.out;
+    }
+    
+
     
 }

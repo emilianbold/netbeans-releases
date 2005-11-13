@@ -177,7 +177,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
      * @param args arguments from command line
      */
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new MainSubMenus("testWinSelectDocumentNodeInMenu"));
+        junit.textui.TestRunner.run(new MainSubMenus("testRunRunOtherMenu"));
     }
     
 }

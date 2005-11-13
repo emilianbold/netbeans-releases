@@ -42,8 +42,8 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Server Registry node popup in Runtime View"));
-        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Servers node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Bundled Tomcat node popup in Runtime View"));
         return suite;
     }
     
@@ -65,5 +65,13 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     public void shutdown(){
         // do nothing runtimeTab.close();
     } 
+
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime"));
+    }
+    
 
 }

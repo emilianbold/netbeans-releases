@@ -33,7 +33,7 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testNavigateMenu", "Navigate main menu"));
         suite.addTest(new MainMenu("testSourceMenu", "Source main menu"));
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
-        suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
+        suite.addTest(new MainMenu("testRunMenu", "Run main menu"));
         suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
         suite.addTest(new MainMenu("testVersioningMenu", "CVS main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
@@ -45,7 +45,7 @@ public class MeasureMenus  {
         // suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
         suite.addTest(new MainSubMenus("testFileSetMainProjectMenu", "File | Set Main Project main menu"));
         suite.addTest(new MainSubMenus("testViewCodeFoldsMenu", "View | Code Folds main menu"));
-        suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run Other main menu"));
+        suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run File main menu"));
         suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
         //suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
         //suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
@@ -81,18 +81,14 @@ public class MeasureMenus  {
         suite.addTest(new SourceEditorPopupMenu("testPopupOnMethod", "Java Editor Method popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnClassName", "Java Editor Class Name popup"));
         
-        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Server Registry node popup in Runtime View"));
-//TODO doesn't work in current trunk        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
-//TODO doesn't work in current trunk        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenuRuntime", "http localhost node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Servers node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Bundled Tomcat node popup in Runtime View"));
         
         suite.addTest(new FormInspectorNodePopupMenu("testFormNodePopupMenuInspector", "Form Inspector node popup"));
         
-        //remove from test run for NB4.1        suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
-
-/*
-    TEMPORARY commented -> try to solve never finixhed tests
- *
-        suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup"));
+/*  TEMPORARY commented -> try to solve never finished tests
+        suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup")); 
+ */
         
         
 //TODO        suite.addTest(new WebNodePopupMenu("measureTime", "Web Filesystem node popup"));  
@@ -101,10 +97,7 @@ public class MeasureMenus  {
         
 //TODO        suite.addTest(new VCSRootNodePopupMenu("measureTime", "CVS Filesystem node popup"));
 //TODO        suite.addTest(new VCSJavaNodePopupMenu("measureTime", "CVS Java node popup"));
-        // it is no more in the production build suite.addTest(new ExplorerPopupSubMenus("testFilesystemsNodeSubMenuVCS", "Mount | Version Control submenu on Filesystems node"));
 //TODO        suite.addTest(new ExplorerPopupSubMenus("testCVSFilesystemsNodeCVSSubMenu", "CVS submenu on CVS Filesystems node"));
-        
-*/        
         
         return suite;
     }

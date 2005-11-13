@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,19 +51,9 @@ public class ExpandNodesInComponentInspector extends org.netbeans.performance.te
         expectedTime = WINDOW_OPEN;
     }
     
-    
-    public void testExpandContainerJFrame(){
-        doMeasurement();
-    }
-    
     public void initialize(){
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|JFrame20kB.java"));
         waitNoEvent(5000);
-        
-        fail("Cannot filter events yet");
-
-//        addClassNameToLookFor("modules.form.");
-//        setPrintClassNames(true);
     }
     
     public void shutdown(){
@@ -84,6 +74,14 @@ public class ExpandNodesInComponentInspector extends org.netbeans.performance.te
     
     public void close(){
         nodeToBeExpanded.collapse();
+    }
+
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        //junit.textui.TestRunner.run(new CloseEditor("testClosing20kBJavaFile"));
+        junit.textui.TestRunner.run(new ExpandNodesInComponentInspector("measureTime"));
     }
     
 }

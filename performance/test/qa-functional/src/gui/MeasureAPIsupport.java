@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,8 @@ public class MeasureAPIsupport  {
         NbTestSuite suite = new NbTestSuite();
 
         //actions
-        //suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
+        suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));
+        suite.addTest(new CreateNBProject("testCreateModuleSuiteProject", "Create Module Suite Project"));
         
         //dialogs
         suite.addTest(new NetBeansPlatformManager("measureTime", "NetBeans Platform Manager open"));

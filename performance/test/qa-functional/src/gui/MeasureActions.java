@@ -65,6 +65,7 @@ public class MeasureActions  {
         
         
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
+        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Java file (20kB)"));
         
         suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
         
@@ -90,6 +91,8 @@ public class MeasureActions  {
         
         suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));
         suite.addTest(new CreateNBProject("testCreateModuleSuiteProject", "Create Module Suite Project"));
+        
+        suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
         
         /*
         suite.addTest(new DeleteFolder("testDeleteFolderWith50JavaFiles", "Delete folder with 50 java files"));

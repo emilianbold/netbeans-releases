@@ -68,7 +68,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         suite.addTest(new MainMenu("testNavigateMenu", "Navigate main menu"));
         suite.addTest(new MainMenu("testSourceMenu", "Source main menu"));
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
-        suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
+        suite.addTest(new MainMenu("testRunMenu", "Run main menu"));
         suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
         suite.addTest(new MainMenu("testVersioningMenu", "CVS main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
