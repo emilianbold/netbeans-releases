@@ -44,19 +44,18 @@ public class ProjectsViewSubMenus extends org.netbeans.performance.test.utilitie
     
     /** Creates a new instance of ProjectsViewPopupMenu */
     public ProjectsViewSubMenus(String testName) {
+        super(testName);
         expectedTime = 250;
         WAIT_AFTER_OPEN = 500;
         track_mouse_event = ActionTracker.TRACK_MOUSE_MOVED;
-        super(testName);
     }
     
     /** Creates a new instance of ProjectsViewPopupMenu */
     public ProjectsViewSubMenus(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
         expectedTime = 250;
         WAIT_AFTER_OPEN = 500;
         track_mouse_event = ActionTracker.TRACK_MOUSE_MOVED;
-        super(testName, performanceDataName);
-        
     }
     
     public static NbTestSuite suite() {
