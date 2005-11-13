@@ -75,7 +75,11 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
             try {
                 OutputStream stream = sqlFo.getOutputStream(lock);
                 try {
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream));
+                    // write an utf-8 byte order mark
+                    stream.write(0xef);
+                    stream.write(0xbb);
+                    stream.write(0xbf);
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, "utf-8")); // NOI18N
                     writer.write(sql);
                     writer.close();
                 } finally {

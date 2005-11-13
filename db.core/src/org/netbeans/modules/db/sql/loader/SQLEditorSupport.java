@@ -16,6 +16,9 @@ package org.netbeans.modules.db.sql.loader;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -24,6 +27,8 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -69,6 +74,8 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
     private static final String MIME_TYPE = "text/x-sql"; // NOI18N
+    
+    private String encoding;
     
     private SQLResultPanel resultComponent;
     private SQLExecutionResults executionResults;
@@ -358,7 +365,58 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     protected CloneableEditor createCloneableEditor() {
         return new SQLCloneableEditor(this);
     }
+
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, javax.swing.text.BadLocationException {
+        encoding = getEncoding(stream);
+        if (LOG) {
+            LOGGER.log(ErrorManager.INFORMATIONAL, "Encoding: " + encoding); // NOI18N
+        }
+        if (encoding != null) {
+            InputStreamReader reader = new InputStreamReader(stream, encoding);
+            try {
+                kit.read(reader, doc, 0);
+            } finally {
+                stream.close();
+            }
+        } else {
+            super.loadFromStreamToKit(doc, stream, kit);
+        }
+    }
+
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, java.io.OutputStream stream) throws IOException, javax.swing.text.BadLocationException {
+        if (encoding != null) {
+            if ("utf-8".equals(encoding)) { // NOI18N
+                // write an utf-8 byte order mark
+                stream.write(0xef);
+                stream.write(0xbb);
+                stream.write(0xbf);
+            }
+            OutputStreamWriter writer = new OutputStreamWriter(stream, encoding);
+            try {
+                kit.write(writer, doc, 0, doc.getLength());
+            } finally {
+                writer.close();
+            }
+        } else {
+            super.saveFromKitToStream(doc, kit, stream);
+        }
+    }
     
+    private static String getEncoding(InputStream stream) throws IOException {
+        if (!stream.markSupported()) {
+            return null;
+        }
+        stream.mark(3);
+        // test a utf-8 byte order mark
+        boolean isUTF8 = (stream.read() == 0xef && stream.read() == 0xbb && stream.read() == 0xbf);
+        if (isUTF8) {
+            return "utf-8"; // NOI18N
+        } else {
+            stream.reset();
+            return null;
+        }
+    }
+
     static class SQLCloneableEditor extends CloneableEditor {
         
         public SQLCloneableEditor() {
