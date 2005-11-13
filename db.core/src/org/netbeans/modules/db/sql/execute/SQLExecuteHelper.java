@@ -34,9 +34,8 @@ public final class SQLExecuteHelper {
     private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
-    public static SQLExecutionResult execute(String statements[], Connection conn) throws SQLException {
-        List/*<Statement>*/ statementList = new ArrayList();
-        List/*<ResultSet>*/ resultSetList = new ArrayList();
+    public static SQLExecutionResults execute(String statements[], Connection conn) throws SQLException {
+        List/*<SQLExecutionResults>*/ resultList = new ArrayList();
                 
         for (int i = 0; i < statements.length; i++) {
             String sql = removeComments(statements[i]).trim();
@@ -44,36 +43,40 @@ public final class SQLExecuteHelper {
                 LOGGER.log(ErrorManager.INFORMATIONAL, "Executing: " + sql); // NOI18N
             }
             
+            SQLExecutionResult result = null;
             String sqlType = sql.substring(0, Math.min(6, sql.length())).toUpperCase();
-            ResultSet rs = null;
             
             // XXX detect procedures call better
             // will be fixed when we support the execution of multiple statements
             if (sqlType.startsWith("{")) { // NOI18N
                 CallableStatement stmt = conn.prepareCall(sql);
-                statementList.add(stmt);
                 if (stmt.execute()) {
-                    rs = stmt.getResultSet();
+                    result = new SQLExecutionResult(stmt, stmt.getResultSet());
+                } else {
+                    result = new SQLExecutionResult(stmt, stmt.getUpdateCount());
                 }
             } else {
                 Statement stmt = conn.createStatement();
-                statementList.add(stmt);
                 if ("SELECT".equals(sqlType)) { // NOI18N
-                    rs = stmt.executeQuery(sql);
+                    result = new SQLExecutionResult(stmt, stmt.executeQuery(sql));
                 } else {
-                    stmt.executeUpdate(sql);
+                    result = new SQLExecutionResult(stmt, stmt.executeUpdate(sql));
                 }
             }
             
-            if (rs != null) {
-                resultSetList.add(rs);
+            assert result != null;
+            if (LOG) {
+                if (result.getResultSet() != null) {
+                    LOGGER.log(ErrorManager.INFORMATIONAL, "Result: " + result.getResultSet()); // NOI18N
+                } else {
+                    LOGGER.log(ErrorManager.INFORMATIONAL, "Result: " + result.getRowCount() + " rows affected"); // NOI18N
+                }
             }
+            resultList.add(result);
         }
         
-        Statement[] statementArray = (Statement[])statementList.toArray(new Statement[statementList.size()]);
-        ResultSet[] resultSetArray = (ResultSet[])resultSetList.toArray(new ResultSet[resultSetList.size()]);
-        
-        return new SQLExecutionResult(statementArray, resultSetArray);
+        SQLExecutionResult[] resultArray = (SQLExecutionResult[])resultList.toArray(new SQLExecutionResult[resultList.size()]);
+        return new SQLExecutionResults(resultArray);
     }
     
     private static int[] getSupportedResultSetTypeConcurrency(Connection conn) throws SQLException {

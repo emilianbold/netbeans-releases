@@ -13,11 +13,12 @@
 
 package org.netbeans.modules.db.sql.execute.ui;
 
+import java.awt.CardLayout;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.sql.SQLException;
-import javax.swing.BorderFactory;
+import java.text.MessageFormat;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -25,6 +26,8 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.db.sql.execute.NullValue;
 import org.openide.util.Lookup;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
+import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard;
 
 /**
@@ -33,7 +36,8 @@ import org.openide.util.datatransfer.ExClipboard;
  */
 public class SQLResultPanel extends javax.swing.JPanel {
     
-    private SQLExecutionResult executionResult;
+    private String cardName;
+    private SQLExecutionResults executionResults;
     private ResultSetTableModel currentModel;
     
     public SQLResultPanel() {
@@ -47,21 +51,52 @@ public class SQLResultPanel extends javax.swing.JPanel {
      * @param executionResult the execution result; may be null, in which
      *        case the result panel will be cleared
      */
-    public void setExecutionResult(SQLExecutionResult executionResult) throws SQLException, IOException {
-        // TODO: the result may be empty
-
-        this.executionResult = executionResult;
-        if (executionResult != null && executionResult.getResultSets().length > 0) {
-            currentModel = new ResultSetTableModel(executionResult.getResultSets()[0]);
+    public void setExecutionResult(SQLExecutionResults executionResults) throws SQLException, IOException {
+        // TODO: the result may be empty -> create new card with a "no results" label
+        
+        this.executionResults = executionResults;
+        
+        String cardName = null;
+        if (executionResults != null && executionResults.getResults().length > 0) {
+            SQLExecutionResult result = executionResults.getResults()[0];
+            if (result.getResultSet() != null) {
+                currentModel = new ResultSetTableModel(result.getResultSet());
+                cardName = "resultSet"; // NOI18N
+            } else {
+                int rowCount = result.getRowCount();
+                Object rowCountObj = null;
+                if (rowCount >= 0) {
+                    rowCountObj = new Integer(rowCount);
+                } else {
+                    rowCountObj = NbBundle.getMessage(SQLResultPanel.class, "LBL_AffectedRowsUnknown");
+                }
+                String format = NbBundle.getMessage(SQLResultPanel.class, "LBL_AffectedRows");
+                String affectedRows = MessageFormat.format(format, new Object[] { rowCountObj });
+                
+                currentModel = new ResultSetTableModel.Empty();
+                rowCountLabel.setText(affectedRows);
+                cardName = "rowCount"; // NOI18N
+            }
         } else {
             currentModel = new ResultSetTableModel.Empty();
+            cardName = "resultSet"; // NOI18N
         }
+        
+        assert cardName != null;
+        showCard(cardName);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 resultTable.setModel(currentModel);
             }
         });
+    }
+    
+    private void showCard(String cardName) {
+        if (!cardName.equals(this.cardName)) {
+            ((CardLayout)getLayout()).show(this, cardName); // NOI18N
+        }
+        this.cardName = cardName;
     }
     
     private void setClipboard(String contents) {
@@ -80,8 +115,11 @@ public class SQLResultPanel extends javax.swing.JPanel {
         tablePopupMenu = new javax.swing.JPopupMenu();
         copyCellValueMenuItem = new javax.swing.JMenuItem();
         copyRowValuesMenuItem = new javax.swing.JMenuItem();
+        resultSetPanel = new javax.swing.JPanel();
         resultScrollPane = new javax.swing.JScrollPane();
         resultTable = new SQLResultTable();
+        rowCountPanel = new javax.swing.JPanel();
+        rowCountLabel = new javax.swing.JLabel();
 
         copyCellValueMenuItem.setText(org.openide.util.NbBundle.getMessage(SQLResultPanel.class, "LBL_CopyCellValue"));
         copyCellValueMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -103,9 +141,11 @@ public class SQLResultPanel extends javax.swing.JPanel {
         tablePopupMenu.add(copyRowValuesMenuItem);
         copyRowValuesMenuItem.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLResultPanel.class, "ACSD_CopyRowValues"));
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.CardLayout());
 
-        resultScrollPane.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        resultSetPanel.setLayout(new java.awt.BorderLayout());
+
+        resultScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         resultScrollPane.getViewport().setBackground(UIManager.getDefaults().getColor("Table.background"));
         resultTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -125,7 +165,17 @@ public class SQLResultPanel extends javax.swing.JPanel {
 
         resultScrollPane.setViewportView(resultTable);
 
-        add(resultScrollPane, java.awt.BorderLayout.CENTER);
+        resultSetPanel.add(resultScrollPane, java.awt.BorderLayout.CENTER);
+
+        add(resultSetPanel, "resultSet");
+
+        rowCountPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 2));
+
+        rowCountPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Table.background"));
+        rowCountLabel.setText("jLabel1");
+        rowCountPanel.add(rowCountLabel);
+
+        add(rowCountPanel, "rowCount");
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -175,7 +225,10 @@ public class SQLResultPanel extends javax.swing.JPanel {
     private javax.swing.JMenuItem copyCellValueMenuItem;
     private javax.swing.JMenuItem copyRowValuesMenuItem;
     private javax.swing.JScrollPane resultScrollPane;
+    private javax.swing.JPanel resultSetPanel;
     private javax.swing.JTable resultTable;
+    private javax.swing.JLabel rowCountLabel;
+    private javax.swing.JPanel rowCountPanel;
     private javax.swing.JPopupMenu tablePopupMenu;
     // End of variables declaration//GEN-END:variables
 

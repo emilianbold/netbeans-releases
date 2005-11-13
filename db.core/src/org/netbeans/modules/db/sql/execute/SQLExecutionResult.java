@@ -24,31 +24,49 @@ import java.sql.Statement;
  */
 public class SQLExecutionResult {
     
-    // TODO: maybe replace this class with something which will call back to the statement
-    // TODO: what did I mean by the TODO above?
+    /**
+     * The executed statement.
+     */
+    private final Statement statement;
     
-    private ResultSet[] resultSets;
-    private Statement[] statements;
+    /**
+     * The ResultSet returned by the statement execution.
+     */
+    private final ResultSet resultSet;
     
-    public SQLExecutionResult(Statement[] statements, ResultSet[] resultSets) {
-        this.resultSets = resultSets;
-        this.statements = statements;
+    /**
+     * The number of the rows affected by the statement execution.
+     */
+    private final int rowCount;
+    
+    public SQLExecutionResult(Statement statement, ResultSet resultSet) {
+        this.statement = statement;
+        this.resultSet = resultSet;
+        this.rowCount = 0;
     }
     
-    public ResultSet[] getResultSets() {
-        return resultSets;
+    public SQLExecutionResult(Statement statement, int rowCount) {
+        this.statement = statement;
+        this.rowCount = rowCount;
+        this.resultSet = null;
     }
     
-    public Statement[] getStatements() {
-        return statements;
+    public ResultSet getResultSet() {
+        return resultSet;
+    }
+    
+    public Statement getStatement() {
+        return statement;
+    }
+    
+    public int getRowCount() {
+        return rowCount;
     }
     
     public void close() throws SQLException {
-        for (int i = 0; i < resultSets.length; i++) {
-            resultSets[i].close();
+        if (resultSet != null) {
+            resultSet.close();
         }
-        for (int i = 0; i < statements.length; i++) {
-            statements[i].close();
-        }
+        statement.close();
     }
 }

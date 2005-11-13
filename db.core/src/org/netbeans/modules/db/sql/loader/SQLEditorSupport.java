@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -51,7 +50,7 @@ import org.openide.windows.CloneableOpenSupport;
 import org.netbeans.modules.db.api.sql.SQLExecuteCookie;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
+import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Mutex;
 
@@ -72,7 +71,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     private static final String MIME_TYPE = "text/x-sql"; // NOI18N
     
     private SQLResultPanel resultComponent;
-    private SQLExecutionResult executionResult;
+    private SQLExecutionResults executionResults;
     
     /**
      * The RequestProcessor used for executing statements.
@@ -280,13 +279,13 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                     }
                     closeExecutionResult();
                     
-                    executionResult = null;
+                    executionResults = null;
 
                     try {
-                        executionResult = SQLExecuteHelper.execute(new String[] { sql }, conn);
+                        executionResults = SQLExecuteHelper.execute(new String[] { sql }, conn);
                         // TODO: use the status bar or not?
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
-                        getResultComponent().setExecutionResult(executionResult);
+                        getResultComponent().setExecutionResult(executionResults);
                     } catch (SQLException e) {
                         showExecuteError(e.getMessage());
                     } catch (IOException e) {
@@ -335,14 +334,14 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     private void closeExecutionResult() {
         assert rp.isRequestProcessorThread();
         
-        if (executionResult != null) {
+        if (executionResults != null) {
             try {
-                executionResult.close();
+                executionResults.close();
             } catch (SQLException e) {
                 // probably broken connection
                 ErrorManager.getDefault().notify(e);
             }
-            executionResult = null;
+            executionResults = null;
             
             try {
                 getResultComponent().setExecutionResult(null);
