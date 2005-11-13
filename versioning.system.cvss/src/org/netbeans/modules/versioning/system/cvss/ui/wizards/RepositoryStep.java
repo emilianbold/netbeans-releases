@@ -66,6 +66,8 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
 
     private ProgressHandle progress;
     private JComponent progressComponent;
+    private JLabel progressLabel;
+
     private volatile boolean internalDocumentChange;
     private Thread backgroundValidationThread;
     private RepositoryPanel repositoryPanel;
@@ -73,6 +75,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     private String scrambledPassword;
     private final String initialCvsRoot;
     private String preferedCvsRoot;
+
 
     /**
      * Creates multiple roots customizer. 
@@ -219,7 +222,8 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                         lconnection.setRepository(root.getRepository());
                         lconnection.verify();
                     } else {
-                        invalid(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
+                        invalid(null);
+                        progress(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
                         SocketFactory factory = SocketFactory.getDefault();
                         if (proxyDescriptor != null && proxyDescriptor.isEffective()) {
                             ConnectivitySettings connectivitySettings = ClientRuntime.toConnectivitySettings(proxyDescriptor);
@@ -237,7 +241,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                             sock.close();
 
                             // try to login
-                            invalid(NbBundle.getMessage(CheckoutWizard.class, "BK2010"));
+                            progress(NbBundle.getMessage(CheckoutWizard.class, "BK2010"));
                             PServerConnection pconnection = new PServerConnection(root, factory);
                             String password = getScrambledPassword();
                             pconnection.setEncodedPassword(password);
@@ -333,6 +337,12 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             });
         }
 
+    }
+
+    private void progress(String message) {
+        if (progressLabel != null) {
+            progressLabel.setText(message);
+        }
     }
 
     private void validationDone() {
@@ -661,6 +671,8 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         });
         progressComponent = new JPanel();
         progressComponent.setLayout(new BorderLayout(6, 0));
+        progressLabel = new JLabel();
+        progressComponent.add(progressLabel, BorderLayout.NORTH);
         progressComponent.add(bar, BorderLayout.CENTER);
         progressComponent.add(stopButton, BorderLayout.LINE_END);
         progress.start(/*2, 5*/);
