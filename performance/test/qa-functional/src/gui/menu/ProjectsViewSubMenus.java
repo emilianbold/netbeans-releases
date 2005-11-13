@@ -13,8 +13,11 @@
 
 package gui.menu;
 
+import org.netbeans.performance.test.guitracker.ActionTracker;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+
 import org.netbeans.jemmy.drivers.MouseDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
