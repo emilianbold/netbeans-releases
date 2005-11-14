@@ -1080,7 +1080,7 @@ public class Controller { //XXX public only for debug access to logging code
                         if (io.out() != null) {
                             io.out().dispose();
                         }
-                    } else if (tab != null) {
+                    } else {
                         if (tab.getParent() != null) {
                             updateName(win, tab);
                             if (tab.getIO().out() != null && tab.getIO().out().getLines().firstListenerLine() == -1) {
