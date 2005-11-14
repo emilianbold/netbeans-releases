@@ -144,38 +144,43 @@ public class AttrSupports extends Object {
                 itemOffset, itemLength, 0);
         }
         
-        /** Returns generated List of items for completion.  
+        /** Returns generated List of items for completion.
          *  It sets itemLength and itemOffset variables as a side effect
          */
-        private List completionResults (int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+        private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             JMIUtils jmiutils = JMIUtils.get(sup.getDocument());
-            String pkgName = "";    // NOI18N
-            JavaPackage pkg = null;
-            String clsNamePart = valuePart;
-            int lastDot = valuePart.lastIndexOf ('.');
-            if (lastDot >= 0) {
-                pkgName = valuePart.substring (0, lastDot);
-                pkg = jmiutils.getExactPackage(pkgName);                
-                clsNamePart = (lastDot == valuePart.length ())? "": valuePart.substring (lastDot+1);    // NOI18N
+            jmiutils.beginTrans(false); //set proper classpath to javamodel
+            try {
+                String pkgName = "";    // NOI18N
+                JavaPackage pkg = null;
+                String clsNamePart = valuePart;
+                int lastDot = valuePart.lastIndexOf('.');
+                if (lastDot >= 0) {
+                    pkgName = valuePart.substring(0, lastDot);
+                    pkg = jmiutils.getExactPackage(pkgName);
+                    clsNamePart = (lastDot == valuePart.length())? "": valuePart.substring(lastDot+1);    // NOI18N
+                }
+                itemOffset = offset - valuePart.length() + lastDot + 1;  // works even with -1
+                itemLength = clsNamePart.length();
+                
+                List res = new ArrayList();
+                res.addAll(jmiutils.findPackages(valuePart, false, false, true)); // Find all possible packages // NOI18N
+                if (pkg != null)
+                    res.addAll(jmiutils.findClasses(pkg, clsNamePart, false, true, true, /*JavaClass context*/ null, true, false));
+                
+                //set substitute offset
+                Iterator i = res.iterator();
+                while(i.hasNext()) {
+                    NbJMIResultItem jmiResultItem = (NbJMIResultItem)i.next();
+                    jmiResultItem.setSubstituteOffset(itemOffset);
+                }
+                
+                return res;
+            } finally {
+                jmiutils.endTrans(false);
             }
-            itemOffset = offset - valuePart.length () + lastDot + 1;  // works even with -1
-            itemLength = clsNamePart.length ();
-            
-            List res = new ArrayList();
-            res.addAll(jmiutils.findPackages (valuePart, false, false, true)); // Find all possible packages // NOI18N
-            if (pkg != null)
-                res.addAll(jmiutils.findClasses(pkg, clsNamePart, false, true, true, /*JavaClass context*/ null, true, false));
-            
-            //set substitute offset
-            Iterator i = res.iterator();
-            while(i.hasNext()) {
-                NbJMIResultItem jmiResultItem = (NbJMIResultItem)i.next();
-                jmiResultItem.setSubstituteOffset(itemOffset);
-            }
-            
-            return res;
         }
-             
+        
     }
 
     public static class GetSetPropertyName extends AttributeValueSupport.Default {
