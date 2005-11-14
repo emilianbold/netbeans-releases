@@ -15,6 +15,7 @@ package gui.action;
 
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jemmy.EventTool;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -105,6 +106,7 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
     
     public void close(){
         ProjectSupport.closeProject(project_name);
+        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static void main(java.lang.String[] args) {

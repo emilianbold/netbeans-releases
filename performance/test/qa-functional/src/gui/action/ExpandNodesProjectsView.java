@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,19 +31,16 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class ExpandNodesProjectsView extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Name of the folder which test creates and expands */
-    private static String project;
+    protected String project;
     
     /** Path to the folder which test creates and expands */
-    private static String pathToFolderNode;
+    protected String pathToFolderNode;
     
     /** Node represantation of the folder which test creates and expands */
-    private static Node nodeToBeExpanded;
+    protected Node nodeToBeExpanded;
     
     /** Projects tab */
-    private static ProjectsTabOperator projectTab;
-    
-    /** Project with data for these tests */
-    private static String testDataProject = "PerformanceTestFoldersData";
+    protected ProjectsTabOperator projectTab;
     
     /**
      * Creates a new instance of ExpandNodesInExplorer
@@ -84,32 +81,32 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     public void testExpandFolderWith50JavaFiles(){
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
-        project = testDataProject;
-        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|javaFolder50";
+        project = "PerformanceTestFoldersData";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.javaFolder50";
         doMeasurement();
     }
     
     public void testExpandFolderWith100JavaFiles(){
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
-        project = testDataProject;
-        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|javaFolder100";
+        project = "PerformanceTestFoldersData";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.javaFolder100";
         doMeasurement();
     }
     
     public void testExpandFolderWith100XmlFiles(){
         WAIT_AFTER_OPEN = 2000;
         WAIT_AFTER_PREPARE = 500;
-        project = testDataProject;
-        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|xmlFolder100";
+        project = "PerformanceTestFoldersData";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.xmlFolder100";
         doMeasurement();
     }
     
     public void testExpandFolderWith100TxtFiles(){
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 500;
-        project = testDataProject;
-        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|txtFolder100";
+        project = "PerformanceTestFoldersData";
+        pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.txtFolder100";
         doMeasurement();
     }
     
@@ -117,9 +114,9 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     public void initialize(){
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
-        
+
         projectTab.getProjectRootNode("jEdit").collapse();
-        //projectTab.getProjectRootNode(testDataProject).collapse();
+        projectTab.getProjectRootNode("PerformanceTestFoldersData").collapse();
         
         turnBadgesOff();
         repaintManager().setOnlyExplorer(true);
@@ -127,10 +124,12 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
         
         
     public void prepare() {
+        log("====== Path to folder: {"+project+"|"+pathToFolderNode+"}");
         if(pathToFolderNode.equals(""))
             nodeToBeExpanded = projectTab.getProjectRootNode(project);
         else
             nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
+        log("====== Node to be expanded: {"+nodeToBeExpanded.getPath()+"}");
     }
     
     public ComponentOperator open(){
@@ -148,7 +147,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     public void shutdown() {
         repaintManager().setOnlyExplorer(false);
         turnBadgesOn();
-        projectTab.getProjectRootNode(testDataProject).collapse();
+        projectTab.getProjectRootNode(project).collapse();
         new RestoreWindowAction().performAPI(projectTab);
     }
 
@@ -164,6 +163,10 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
      */
     protected void turnBadgesOn() {
         System.setProperty("perf.dont.resolve.java.badges", "false");
+    }
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new ExpandNodesProjectsView("testExpandFolderWith100XmlFiles"));
     }
     
 }

@@ -18,7 +18,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  * Tests Add to Favorites.
@@ -27,13 +26,15 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  */
 public class AddToFavorites extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    protected static String ADD_TO_FAVORITES = "Tools|Add to Favorites";
+    protected static String ADD_TO_FAVORITES = "Tools|Add to Favorites"; //NOI18N
     
-    protected static String REMOVE_FROM_FAVORITES = "Remove from Favorites";
+    protected static String REMOVE_FROM_FAVORITES = "Remove from Favorites";  //NOI18N
     
     private String fileProject, filePackage, fileName;
     
     private Node addToFavoritesNode;
+    
+    private FavoritesOperator favoritesWindow;
     
     /**
      * Creates a new instance of AddToFavorites
@@ -63,43 +64,18 @@ public class AddToFavorites extends org.netbeans.performance.test.utilities.Perf
     }
     
     public ComponentOperator open(){
-        JPopupMenuOperator popup =  this.addToFavoritesNode.callPopup();
-        if (popup == null) {
-            new Error("Cannot get context menu for node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
-        }
-        try {
-            popup.pushMenu(ADD_TO_FAVORITES);
-        }
-        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error ("Cannot push Add to Favorites on node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
-        }
-        return new FavoritesOperator();
+        addToFavoritesNode.performMenuAction(ADD_TO_FAVORITES);
+        favoritesWindow = new FavoritesOperator();
+        return favoritesWindow;
     }
 
     public void close() {
-        FavoritesOperator favorites = (FavoritesOperator)testedComponentOperator;
-        Node favoritesNode = new Node(favorites.tree(), fileName);
-        
-        JPopupMenuOperator popup =  favoritesNode.callPopup();
-        if (popup == null) {
-            new Error("Cannot get context menu for node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
-        }
-        try {
-            popup.pushMenu(REMOVE_FROM_FAVORITES);
-        }
-        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error ("Cannot push menu item Remove from Favorites on node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
-        }
-        
-        favorites.close();
+        new Node(favoritesWindow.tree(), fileName).performPopupAction(REMOVE_FROM_FAVORITES);
+        favoritesWindow.close();
     }
     
     public void prepare() {
-        this.addToFavoritesNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject), gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName);
-        
-        if (this.addToFavoritesNode == null) {
-            throw new Error ("Cannot find node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
-        }
+        addToFavoritesNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject), gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName);
     }
     
     public static void main(java.lang.String[] args) {
