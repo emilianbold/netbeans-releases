@@ -287,7 +287,11 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         Rectangle bounds = WindowManager.getDefault().getCurrentWorkspace().getBounds();
         return new Dimension(bounds.width / 2, (int) (bounds.height / 1.25));
     }
-    
+
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_NEVER;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane mergeTabbedPane;
     private javax.swing.JPanel buttonsPanel;
