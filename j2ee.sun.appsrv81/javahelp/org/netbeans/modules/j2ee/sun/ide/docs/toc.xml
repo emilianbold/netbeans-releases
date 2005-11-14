@@ -13,6 +13,7 @@
             <tocitem text="Modifying JVM Properties of the Sun Java System Application Server"  target="sjs_jvm"/>
             <tocitem text="Setting up a Connection Pool on the Sun Java System Application Server"  target="def_connpool"/>
             <tocitem text="Setting up a JDBC Resource on the Sun Java System Application Server"  target="def_jdbcresource"/>
+            <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
             <tocitem text="Setting up a JMS Resource on the Sun Java System Application Server"  target="def_jms"/>
             <tocitem text="Setting up a JavaMail Resource on the Sun Java System Application Server"  target="def_javamail"/>
             <tocitem text="Setting up a Persistence Manager Resource on the Sun Java System Application Server"  target="def_persistence"/>

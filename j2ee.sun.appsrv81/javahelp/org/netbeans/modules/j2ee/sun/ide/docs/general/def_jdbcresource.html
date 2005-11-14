@@ -48,11 +48,18 @@ Microsystems, Inc. All Rights Reserved.
         <li>Click Finish.</li>
     </ol>
     
-    <p>Once you have created a JDBC resource in your project, the resource needs to be registered with the server
-    to make it available to all applications and resources. The resource is automatically registered when the project is
-    deployed. Alternatively, you can manually <a href="register_resource.html">register the
-    resource with the server</a> without deploying or redeploying the project. 
-    Ensure the Sun Java System Application Server is running before manually registering the resource with the server.</p>
+    <p><b>To prepare to use a data source on the Sun Java System Application Server:</b></p>
+    <ol>
+        <li>Ensure the Sun Java System Application Server is running.</li>
+        <li><a href="register_resource.html">Register the resource</a>
+        with the server by right-clicking the resource in the Projects or Files windows and choosing Register.
+        <p>The resource is automatically registered when the project is deployed. 
+        When you register the resource, the resource is available to all applications and resources.</p></li>
+        <li>Create a web application and select the Sun Java System Application Server as the target server.</li>
+        <li>Access the data source in, for example, a <a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html">JSP page</a>.</li>
+        
+    </ol>
+    
     
     <dl>
         <dt><a name="seealso">See Also</a></dt>
