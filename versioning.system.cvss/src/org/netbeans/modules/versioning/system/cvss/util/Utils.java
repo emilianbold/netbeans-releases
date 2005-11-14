@@ -205,7 +205,8 @@ public class Utils {
                 FileObject rootChildFo = rootChildren[i];
                 if (CvsVersioningSystem.FILENAME_CVS.equals(rootChildFo.getNameExt())) continue;
                 File child = FileUtil.toFile(rootChildFo);
-                if (sourceGroup.contains(rootChildFo)) {
+                // #67900 Added special treatment for .cvsignore files
+                if (sourceGroup.contains(rootChildFo) || CvsVersioningSystem.FILENAME_CVSIGNORE.equals(rootChildFo.getNameExt())) {
                     // TODO: #60516 deep scan is required here but not performed due to performace reasons 
                     projectFiles.add(child);
                 } else {
