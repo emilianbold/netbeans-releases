@@ -33,7 +33,6 @@ import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutCodeGenerator;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
 import java.lang.reflect.*; 
@@ -2031,10 +2030,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     Event event = events[k];
                     if (k + 1 < events.length
                         || method.getReturnType() == Void.TYPE)
-                    {
-                        codeWriter.write(k == 0 ? "if (" : "else if ("); // NOI18N
-                        codeWriter.write(paramNames[0]);
-                        codeWriter.write(".getSource() == "); // NOI18N                                                
+                    {                                               
 			String componentParameterString = getComponentParameterString(
 							    event.getComponent(), false);
 			
@@ -2549,7 +2545,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeUpToDate = true;
             regenerateVariables();
             regenerateInitComponents();
-            ensureMainClassImplementsListeners();
+            ensureMainClassImplementsListeners();            
             FormModel.t("code regenerated"); //NOI18N	    
         }
     }
