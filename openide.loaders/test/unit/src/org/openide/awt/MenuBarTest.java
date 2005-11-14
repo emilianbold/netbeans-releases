@@ -15,8 +15,10 @@ package org.openide.awt;
 
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import javax.swing.JMenu;
+import javax.swing.SwingUtilities;
 import junit.framework.*;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileSystem;
@@ -24,6 +26,8 @@ import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.LoggingTestCaseHid.ErrManager;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallbackSystemAction;
 
@@ -31,7 +35,7 @@ import org.openide.util.actions.CallbackSystemAction;
  *
  * @author Jaroslav Tulach
  */
-public class MenuBarTest extends TestCase implements ContainerListener {
+public class MenuBarTest extends LoggingTestCaseHid implements ContainerListener {
     private DataFolder df;
     private MenuBar mb;
     
@@ -135,6 +139,40 @@ public class MenuBarTest extends TestCase implements ContainerListener {
         assertEquals("Still one addition in MenuBar", 1, add);
         
         assertEquals("And now the action is created", 1, MyAction.counter);
+    }
+    
+    public void testSurviveInvalidationOfAFolder() throws Exception {
+        
+        FileObject m1 = FileUtil.createFolder(df.getPrimaryFile(), "m1");
+        final DataFolder f1 = DataFolder.findFolder(m1);
+
+        mb.waitFinished();
+
+        JMenu menu;
+        {
+            Object o1 = mb.getComponent(0);
+            if (!(o1 instanceof JMenu)) {
+                fail("It has to be menu: " + o1);
+            }
+            menu = (JMenu)o1;
+            assertEquals("simple name ", "m1", menu.getText());
+        }
+        
+        Node n = f1.getNodeDelegate();
+        f1.setValid(false);
+        mb.waitFinished();
+        
+        n.setName("othername");
+
+        mb.waitFinished();
+        
+        assertEquals("updated the folder is deleted now", f1.getName(), menu.getText());
+        
+        
+        
+        if (ErrManager.messages.indexOf("fix your code") >= 0) {
+            fail("There were warnings about the use of invalid nodes");
+        }
     }
     
     public void componentAdded(ContainerEvent e) {

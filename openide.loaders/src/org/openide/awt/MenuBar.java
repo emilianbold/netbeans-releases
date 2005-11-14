@@ -441,11 +441,16 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }            
 
         private void updateProps() {
-            // set the text and be aware of mnemonics
-            Node n = master.getNodeDelegate ();
-            Actions.setMenuText(this, n.getDisplayName (), true);
-            if (icon) setIcon (new ImageIcon (
-		    n.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16)));
+            if (master.isValid()) {
+                // set the text and be aware of mnemonics
+                Node n = master.getNodeDelegate ();
+                Actions.setMenuText(this, n.getDisplayName (), true);
+                if (icon) setIcon (new ImageIcon (
+                n.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16)));
+            } else {
+                setText(master.getName());
+                setIcon(null);
+            }
         }
 
         /** Update the properties. Exported via Runnable interface so it

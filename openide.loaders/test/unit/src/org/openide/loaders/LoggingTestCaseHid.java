@@ -42,7 +42,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author  Jaroslav Tulach
  */
-class LoggingTestCaseHid extends NbTestCase {
+public abstract class LoggingTestCaseHid extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.loaders.LoggingTestCaseHid$Lkp");
     }
@@ -222,24 +222,26 @@ class LoggingTestCaseHid extends NbTestCase {
         }
         
         public void log (int severity, String s) {
+            StringBuffer oneMsg = new StringBuffer();
             if (prefix != null) {
-                StringBuffer oneMsg = new StringBuffer();
                 oneMsg.append(prefix);
-                oneMsg.append("THREAD:");
-                oneMsg.append(Thread.currentThread().getName());
-                oneMsg.append(" MSG:");
-                oneMsg.append(s);
-                
-                
-                messages.append(oneMsg.toString());
-                messages.append ('\n');
-                
-                if (messages.length() > 40000) {
-                    messages.delete(0, 20000);
-                }
-                
-                log.println(oneMsg.toString());
+            } else {
+                oneMsg.append("[default] ");
             }
+            oneMsg.append("THREAD:");
+            oneMsg.append(Thread.currentThread().getName());
+            oneMsg.append(" MSG:");
+            oneMsg.append(s);
+
+
+            messages.append(oneMsg.toString());
+            messages.append ('\n');
+
+            if (messages.length() > 40000) {
+                messages.delete(0, 20000);
+            }
+
+            log.println(oneMsg.toString());
             
             if (switches != null) {
                 boolean log = true;
