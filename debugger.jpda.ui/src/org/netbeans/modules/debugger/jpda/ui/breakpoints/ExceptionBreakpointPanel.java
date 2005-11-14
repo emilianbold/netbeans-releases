@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -39,10 +40,11 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
     private ActionsPanel                actionsPanel; 
     private ExceptionBreakpoint         breakpoint;
     private boolean                     createBreakpoint = false;
-    private static Map                  exceptions = new HashMap ();
+    private static Map                  exceptions = new TreeMap ();
     
     static {
         exceptions.put ("ArrayIndexOutOfBoundsException", "java.lang");
+        exceptions.put ("AssertionError", "java.lang");
         exceptions.put ("ClassCastException", "java.lang");
         exceptions.put ("ClassNotFoundException", "java.lang");
         exceptions.put ("IllegalAccessException", "java.lang");
@@ -54,7 +56,6 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         exceptions.put ("StringIndexOutOfBoundsException", "java.lang");
         exceptions.put ("UnsupportedOperationException", "java.lang");
         exceptions.put ("IOException", "java.io");
-        exceptions.put ("UnsupportedOperationException", "java.util");
     }
     
     private static ExceptionBreakpoint creteBreakpoint () {
