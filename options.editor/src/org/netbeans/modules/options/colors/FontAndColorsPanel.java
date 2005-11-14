@@ -242,7 +242,7 @@ ActionListener {
     }
     
     Collection getDefaults () {
-        return syntaxColoringPanel.getDeafults ();
+        return syntaxColoringPanel.getAllLanguages ();
     }
     
     Collection getHighlights () {

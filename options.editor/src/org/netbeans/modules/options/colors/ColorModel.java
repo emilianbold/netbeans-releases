@@ -16,6 +16,7 @@ package org.netbeans.modules.options.colors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -45,6 +46,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.SimpleAttributeSet;
@@ -329,6 +331,7 @@ public class ColorModel {
                     add (editorPane, BorderLayout.CENTER);
                 }
             });
+            setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
         }
         
         private String currentLanguage;
@@ -407,7 +410,7 @@ public class ColorModel {
                     }
                 }
             });
-            // editorPane.setEnabled (false);
+            editorPane.setEnabled (false);
             InputStream is = loadPreviewExample (language);
             if (is == null) {
                 assert true :

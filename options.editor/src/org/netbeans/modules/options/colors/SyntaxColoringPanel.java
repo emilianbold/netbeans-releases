@@ -59,6 +59,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
@@ -84,6 +85,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /**
@@ -105,6 +107,7 @@ PropertyChangeListener {
     private ColorComboBox	effectsColorChooser = new ColorComboBox ();
     private JPanel              previewPanel = new JPanel ();
     private Preview             preview;
+    private Task                selectTask;
  
     private FontAndColorsPanel  fontAndColorsPanel;
     private ColorModel          colorModel = null;
@@ -147,8 +150,7 @@ PropertyChangeListener {
         lCategories.addListSelectionListener (new ListSelectionListener () {
             public void valueChanged (ListSelectionEvent e) {
                 if (!listen) return;
-                refreshUI ();
-                startBlinking ();
+                selectTask.schedule (200);
             }
         });
 	tfFont.setEditable (false);
@@ -219,6 +221,16 @@ PropertyChangeListener {
                           effectsColorChooser,		cc.xyw (5, 13, 3));
         builder.addLabel (loc ("CTL_Preview"),	        lc.xyw (1, 15, 7),
                           previewPanel,                 cc.xyw (1, 17, 7));
+        
+        selectTask = new RequestProcessor ("SyntaxColoringPanel1").create (
+            new Runnable () {
+                public void run () {
+                    refreshUI ();
+                    if (!blink) return;
+                    startBlinking ();
+                }
+            }
+        );
     }
  
     public void actionPerformed (ActionEvent evt) {
@@ -320,8 +332,10 @@ PropertyChangeListener {
                 if (!currentCategory.equals (
                     as.getAttribute (StyleConstants.NameAttribute)
                 )) continue;
+                blink = false;
                 lCategories.setSelectedIndex (i);
                 lCategories.ensureIndexIsVisible (i);
+                blink = true;
                 return;
             }
         }
@@ -393,7 +407,9 @@ PropertyChangeListener {
             cloneScheme (oldProfile, currentProfile);
         Vector categories = getCategories (currentProfile, currentLanguage);
         lCategories.setListData (categories);
+        blink = false;
         lCategories.setSelectedIndex (0);
+        blink = true;
         refreshUI ();
     }
 
@@ -429,7 +445,7 @@ PropertyChangeListener {
         profiles.put (newScheme, m);
     }
     
-    Collection getDeafults () {
+    Collection getAllLanguages () {
         return getCategories (currentProfile, ColorModel.ALL_LANGUAGES);
     }
     
@@ -441,8 +457,10 @@ PropertyChangeListener {
 	currentLanguage = language;
         
         // setup categories list
+        blink = false;
         lCategories.setListData (getCategories (currentProfile, currentLanguage));
         lCategories.setSelectedIndex (0);
+        blink = true;
         refreshUI ();
     }
     
@@ -523,70 +541,59 @@ PropertyChangeListener {
         setToBeSaved (currentProfile, currentLanguage);
         updatePreview ();
     }
-    
-    private RequestProcessor.Task   task;
-    private void startBlinking () {
-        if (task != null) {
-            task.cancel ();
-            unhighlightCurrentCategory ();
+
+    private boolean                 blink = true;
+    private int                     blinkSequence = 0;
+    private RequestProcessor.Task   task = new RequestProcessor 
+        ("SyntaxColoringPanel").create (new Runnable () {
+        public void run () {
+            updatePreview ();
+            if (blinkSequence == 0) return;
+            blinkSequence --;
+            task.schedule (250);
         }
-        blink (5);
-    }
+    });
     
-    private void blink (final int i) {
-        if ((i % 2) == 0)
-            unhighlightCurrentCategory ();
-        else
-            highlightCurrentCategory ();
-        if (i == 0) return;
-        task = RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                blink (i - 1);
-            }
-        }, 250);
-    }
-    
-    private SimpleAttributeSet oldCategory;
-    private Color oldHighlight;
-    private void highlightCurrentCategory () {
-        if (oldCategory != null) unhighlightCurrentCategory ();
-        AttributeSet currentAS = getCurrentCategory ();
-        if (currentAS == null) return;
-        SimpleAttributeSet as = new SimpleAttributeSet (currentAS);
-        Color highlight = Color.red;
-        oldCategory = as;
-        oldHighlight = (Color) as.getAttribute (StyleConstants.Underline);
-        as.addAttribute (
-            StyleConstants.Underline,
-            highlight
-        );
-        replaceCurrrentCategory (as);
-        updatePreview ();
-    }
-    
-    private void unhighlightCurrentCategory () {
-        if (oldCategory == null) return;
-        if (oldHighlight == null)
-            oldCategory.removeAttribute (
-                StyleConstants.Underline
-            );
-        else
-            oldCategory.addAttribute (
-                StyleConstants.Underline,
-                oldHighlight
-            );
-        oldCategory = null;
-        oldHighlight = null;
-        updatePreview ();
+    private void startBlinking () {
+        blinkSequence = 5;
+        task.schedule (0);
     }
     
     private void updatePreview () {
+        Collection syntaxColorings = getSyntaxColorings ();
+        Collection allLanguages = getAllLanguages ();
+        if ((blinkSequence % 2) == 1) {
+            if (currentLanguage == ColorModel.ALL_LANGUAGES)
+                allLanguages = invertCategory (allLanguages, getCurrentCategory ());
+            else
+                syntaxColorings = invertCategory (syntaxColorings, getCurrentCategory ());
+        }
         preview.setParameters (
             currentLanguage,
-            getDeafults (),
+            allLanguages,
             fontAndColorsPanel.getHighlights (),
-            getSyntaxColorings ()
+            syntaxColorings
         );
+    }
+    
+    private Collection invertCategory (Collection c, AttributeSet category) {
+        if (category == null) return c;
+        ArrayList result = new ArrayList (c);
+        int i = result.indexOf (category);
+        SimpleAttributeSet as = new SimpleAttributeSet (category);
+        Color highlight = (Color) getValue (currentLanguage, category, StyleConstants.Background);
+        if (highlight == null) return result;
+        Color newColor = new Color (
+            255 - highlight.getRed (),
+            255 - highlight.getGreen (),
+            255 - highlight.getBlue ()
+        );
+        as.addAttribute (
+            StyleConstants.Underline,
+            newColor
+        );
+        result.set (i, as);
+        return result;
     }
     
     /**
