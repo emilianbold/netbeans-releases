@@ -18,7 +18,8 @@ import java.util.*;
 import java.util.List;
 import javax.swing.*;
 
-import org.jdesktop.layout.*;
+import org.jdesktop.layout.LayoutStyle;
+import org.jdesktop.layout.GroupLayout;
 
 import org.netbeans.modules.form.layoutdesign.*;
 

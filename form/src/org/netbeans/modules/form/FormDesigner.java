@@ -22,7 +22,8 @@ import javax.swing.border.*;
 import java.beans.*;
 import javax.swing.undo.UndoableEdit;
 
-import org.jdesktop.layout.*;
+import org.jdesktop.layout.Baseline;
+import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.core.spi.multiview.*;
 import org.openide.DialogDisplayer;
