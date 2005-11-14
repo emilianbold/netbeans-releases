@@ -102,6 +102,11 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      */
     synchronized void enqueued(ClientRuntime queue, Object id) {
         progress(null);
+        if (started.size() == 0) {
+            progressHandle.progress(NbBundle.getMessage(ExecutorGroup.class, "BK1007"));
+            progressHandle.switchToDeterminate(100);
+            progressHandle.progress(1);
+        }
 
         Collection keys;
         if (queue == null) {
@@ -126,6 +131,9 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      * Called by ExecutorSupport on start.
      */
     synchronized void started(ClientRuntime queue) {
+
+        progressHandle.switchToIndeterminate();
+
         if (started.add(queue)) {
             String msg = NbBundle.getMessage(ExecutorGroup.class, "BK1001", new Date(), getDisplayName());
             String sep = NbBundle.getMessage(ExecutorGroup.class, "BK1000");
