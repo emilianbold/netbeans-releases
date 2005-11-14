@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.web.project.classpath;
 
 import java.beans.PropertyChangeEvent;
@@ -27,8 +28,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.web.project.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileStateInvalidException;
-
 
 /**
  * Implementation of a single classpath that is derived from one Ant property.
@@ -79,13 +78,12 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 // adds build/generated/wsclient to resources to be available for code completion
                 if (projectHelper!=null) {
                     EditableProperties props = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    String wsClientDir = props.getProperty(WebProjectProperties.BUILD_DIR)+"/generated/wsclient/"; //NOI18N
+                    String wsClientDir = projectHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.BUILD_DIR) + "/generated/wsclient/"; //NOI18N
                     try {
-                        String rootURL =projectHelper.getProjectDirectory().getURL().toString();
-                        URL url = new URL(rootURL+wsClientDir);
+                        URL url = new URL(wsClientDir);
                         if (url!=null) result.add(ClassPathSupport.createResource(url));
                     } catch (MalformedURLException ex) {
-                    } catch (FileStateInvalidException ex){}
+                    }
                 }
                 this.resources = Collections.unmodifiableList(result);
             }
