@@ -21,11 +21,14 @@ import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -120,6 +123,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
             return ;
         }
         
+        fixDistJarProperty (nueName);
         project.getReferenceHelper().fixReferences(originalPath);
         
         project.setName(nueName);
@@ -133,9 +137,10 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         if (original == null) {
             project.getAntProjectHelper().notifyDeleted();
             return ;
-        }
+        }                
         
-        project.setName(nueName);
+        fixDistJarProperty (nueName);
+        project.setName(nueName);        
 	project.getReferenceHelper().fixReferences(originalPath);
     }
     
@@ -151,6 +156,21 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         }
         
         return false;
+    }
+    
+    private void fixDistJarProperty (final String newName) {
+        ProjectManager.mutex().writeAccess(new Runnable () {
+            public void run () {
+                ProjectInformation pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+                String oldDistJar = pi == null ? null : "${dist.dir}/"+PropertyUtils.getUsablePropertyName(pi.getDisplayName())+".jar"; //NOI18N
+                EditableProperties ep = project.getUpdateHelper().getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String propValue = ep.getProperty("dist.jar");  //NOI18N
+                if (oldDistJar != null && oldDistJar.equals (propValue)) {
+                    ep.put ("dist.jar","${dist.dir}/"+PropertyUtils.getUsablePropertyName(newName)+".jar"); //NOI18N
+                    project.getUpdateHelper().putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                }
+            }
+        });
     }
     
 }
