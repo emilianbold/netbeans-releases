@@ -24,8 +24,15 @@
         the IDE. This prompt occurs only if you have a user directory on your 
         system from the previous version of the IDE and the user directory is in 
         the default location.</p>
-        <p>For NetBeans IDE 5.0, it is only possible to import settings from 
-NetBeans IDE 4.1.</p>
+        <ul class="note">
+        <li>For NetBeans IDE 5.0, it is only possible to import settings from 
+        NetBeans IDE 4.1. 
+        <p>If your previous version of the IDE is NetBeans IDE 3.6 or 
+        NetBeans IDE 4.0, you can install NetBeans IDE 4.1 and import the settings 
+        from the previous version. Then exit the 5.0 IDE and delete its user directory. 
+        When you restart 5.0, you are then given the option to import the settings 
+        from the 4.1 version.</p></ul>
+
         <p>The settings that are imported include the following items:</p>
         <ul>
             <li>Keyboard shortcuts</li>
@@ -35,43 +42,41 @@ NetBeans IDE 4.1.</p>
             <li>Database drivers</li>
             <li>Servers</li>            
         </ul>
-<h3>Importing Settings After the First Start of the IDE</h3>
+        <h3>Importing Settings After the First Start of the IDE</h3>
         
-<p>The opportunity to have settings imported only occurs the first time you 
-launch the new version of the IDE. If you do not import the 
-settings at the first launch but later decide that 
-you would like to import the settings, you might be able to do so by recreating the 
-conditions of the first launch. Then, 
-when you start the IDE again, the sequence of events from the first launch repeats itself, 
-including the displaying of the software license, creation of the user directory, and 
-the opportunity to import settings from the previous version of the IDE.</p>
-<p><b>To import settings from the previous version of the IDE:</b></p>
-<ol><li>Make sure that you still have the user directory from the previous version of the 
-IDE on your system in its default location.
- <p>On Microsoft Windows systems, the default location is  
-<tt>C:\Documents and Settings\<i>username</i>\.netbeans\41\</tt>.</p>
-<p>On UNIX and Linux systems, the default location is   
-<tt>/home/<i>username</i>/.netbeans/41/</tt>.</p></li>
-<li>If the new version of the IDE is running, exit the IDE.</li>
-<li>Locate the user directory of the new IDE installation.
- <p>On Microsoft Windows systems, the default location is  
-<tt>C:\Documents and Settings\<i>username</i>\.netbeans\50</tt>.</p>
-<p>On UNIX and Linux systems, the default location is   
-<tt>/home/<i>username</i>/.netbeans/50</tt>.</p></li>
-<li>Rename or delete the new installation's user directory.
-<li>Restart the new installation of the IDE.</li>
-<li>In the License Agreement, click Accept.</li>
-<li>In the Confirm Import Settings dialog box, click Yes.</li></ol>
-
-
-<ul class="warning">
-    <li>Do not use this technique to import settings if you have done a significant 
-amount of work in the new version of the IDE, since you could lose other important 
-settings.</li>
-
-</ul>    
+        <p>The opportunity to have settings imported only occurs the first time you 
+        launch the new version of the IDE. If you do not import the 
+        settings at the first launch but later decide that 
+        you would like to import the settings, you might be able to do so by recreating the 
+        conditions of the first launch. Then, 
+        when you start the IDE again, the sequence of events from the first launch repeats itself, 
+        including the displaying of the software license, creation of the user directory, and 
+        the opportunity to import settings from the previous version of the IDE.</p>
         
-
+        <ul class="warning">
+            <li>Do not use the following technique to import settings if you have done a significant 
+            amount of work in the new version of the IDE, since you could lose other important 
+            settings. In addition, you might also lose any modules you have installed 
+            through the Update Center in the new version.</li>
+        </ul>   
+        <p><b>To import settings from the previous version of the IDE if you 
+did not do so the first time you launched the IDE:</b></p>
+        <ol><li>Make sure that you still have the user directory from the previous version of the 
+        IDE on your system in its default location.
+        <p>On Microsoft Windows systems, the default location is  
+        <tt>C:\Documents and Settings\<i>username</i>\.netbeans\41\</tt>.</p>
+        <p>On UNIX and Linux systems, the default location is   
+        <tt>/home/<i>username</i>/.netbeans/41/</tt>.</p></li>
+        <li>If the new version of the IDE is running, exit the IDE.</li>
+        <li>Locate the user directory of the new IDE installation.
+        <p>On Microsoft Windows systems, the default location is  
+        <tt>C:\Documents and Settings\<i>username</i>\.netbeans\5.0</tt>.</p>
+        <p>On UNIX and Linux systems, the default location is   
+        <tt>/home/<i>username</i>/.netbeans/50</tt>.</p></li>
+        <li>Rename or delete the new installation's user directory.
+        <li>Restart the new installation of the IDE.</li>
+        <li>In the License Agreement, click Accept.</li>
+        <li>In the Confirm Import Settings dialog box, click Yes.</li></ol>
 
         <dl>
             <dt>
