@@ -33,6 +33,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -264,6 +265,10 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
         // search in declarative layers
         if (node != null) {
             DataObject dObj = (DataObject)node.getLookup().lookup(DataObject.class);
+            // #64871: Follow DataShadows to their original
+            if (dObj instanceof DataShadow) {
+                dObj = ((DataShadow)dObj).getOriginal();
+            }
             if (dObj != null) {
                 FileObject fo = dObj.getPrimaryFile();
                 // #65589: be no friend with virtual files
