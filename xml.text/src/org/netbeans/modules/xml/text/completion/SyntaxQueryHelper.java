@@ -241,7 +241,7 @@ final class SyntaxQueryHelper {
                         ctx.init(syntaxNode, preText.substring(1));
                         return COMPLETION_TYPE_ELEMENT;
                     }
-                } else if(EndTag.class.equals(syntaxNode.getClass())){
+                } else if(EndTag.class.equals(syntaxNode.getClass()) && preText.startsWith("</")){
                     //endtag
                     ctx.init(syntaxNode, preText.substring(2));
                     return COMPLETION_TYPE_ELEMENT;

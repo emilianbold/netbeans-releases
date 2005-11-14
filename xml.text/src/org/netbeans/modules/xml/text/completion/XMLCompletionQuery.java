@@ -127,7 +127,8 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         break;
                     case SyntaxQueryHelper.COMPLETION_TYPE_NOTATION:
                         list = queryNotations(helper, doc, sup);
-                        break;
+                    case SyntaxQueryHelper.COMPLETION_TYPE_UNKNOWN:
+                        return null; //do not show the CC
                 }
 
                 if (list != null && list.isEmpty() == false) {
