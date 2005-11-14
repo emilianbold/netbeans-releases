@@ -61,15 +61,35 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     private static final String WWW_ACTIVATE      = "WWW_Activate";          // NOI18N
     private static final String WWW_OPEN_URL      = "WWW_OpenURL";           // NOI18N
     
+    private static final String EXTBROWSER_DLL = "extbrowser"; //NOI18N
+    private static final String EXTBROWSER_DLL_64BIT = "extbrowser64"; //NOI18N
+
     static {
         if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
             ExtWebBrowser.getEM().log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + "> NbDdeBrowser: static initializer: ");
         }
         try {
             if (org.openide.util.Utilities.isWindows()) {
-                System.loadLibrary("extbrowser");   // NOI18N
+
+                // should be 32 or 64 bit, but it may not be present on some jdks
+                String sunDataModel = System.getProperty("sun.arch.data.model"); //NOI8N
+                if (sunDataModel != null) {
+                    if ("64".equals(sunDataModel)) { //NOI18N
+                        System.loadLibrary(EXTBROWSER_DLL_64BIT);
+                    } else {
+                        System.loadLibrary(EXTBROWSER_DLL);
+                    }
+                } else {
+                    String javaVMName = System.getProperty("java.vm.name"); //NOI8N
+                    if ((javaVMName != null) && (javaVMName.indexOf("64") > -1)) { //NOI18N
+                        System.loadLibrary(EXTBROWSER_DLL_64BIT);
+                    } else {
+                        System.loadLibrary(EXTBROWSER_DLL);
+                    }
+                }
+
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             DialogDisplayer.getDefault ().notify (
                 new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "ERR_cant_locate_dll"),
                 NotifyDescriptor.INFORMATION_MESSAGE)
