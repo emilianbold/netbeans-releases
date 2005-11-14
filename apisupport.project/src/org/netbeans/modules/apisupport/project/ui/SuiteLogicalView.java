@@ -18,11 +18,13 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -37,6 +39,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -75,7 +78,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         return null;
     }
     
-    private static final class SuiteRootNode extends AnnotatedNode
+    /** Package private for unit test only. */
+    static final class SuiteRootNode extends AnnotatedNode
             implements PropertyChangeListener {
         
         private static final Image ICON = Utilities.loadImage(SuiteProject.SUITE_ICON_PATH, true);
@@ -91,9 +95,16 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             setFiles(getProjectFiles());
         }
         
-        private Set getProjectFiles() {
+        /** Package private for unit test only. */
+        Set getProjectFiles() {
             Set files = new HashSet();
-            files.add(suite.getProjectDirectory());
+            Enumeration en = suite.getProjectDirectory().getChildren(false);
+            while (en.hasMoreElements()) {
+                FileObject child = (FileObject) en.nextElement();
+                if (FileOwnerQuery.getOwner(child) == suite) {
+                    files.add(child);
+                }
+            }
             return files;
         }
         

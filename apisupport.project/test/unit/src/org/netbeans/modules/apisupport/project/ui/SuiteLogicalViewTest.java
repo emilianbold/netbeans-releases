@@ -19,9 +19,12 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectGeneratorTest;
+import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.SuiteRootNode;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 
@@ -67,6 +70,21 @@ public class SuiteLogicalViewTest extends TestBase {
         assertEquals(new HashSet(Arrays.asList(new String[] {Node.PROP_NAME, Node.PROP_DISPLAY_NAME})), nl.changed);
         assertEquals("Sweet_Stuff", n.getName());
         assertEquals("Sweetness is Now!", n.getDisplayName());
+    }
+    
+    public void testProjectFiles() throws Exception {
+        SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite");
+        TestBase.generateSuiteComponent(suite, "module");
+        SuiteProjectGeneratorTest.openProject(suite);
+        SuiteLogicalView.SuiteRootNode rootNode = (SuiteRootNode) ((LogicalViewProvider)
+            suite.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
+        Set expected = new HashSet(Arrays.asList(
+            new FileObject[] {
+                suite.getProjectDirectory().getFileObject("nbproject"),
+                suite.getProjectDirectory().getFileObject("build.xml")
+            }
+        ));
+        assertTrue(expected.equals(rootNode.getProjectFiles()));
     }
     
     private static final class NL extends NodeAdapter {
