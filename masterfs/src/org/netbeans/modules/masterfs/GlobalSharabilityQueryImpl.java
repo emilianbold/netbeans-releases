@@ -14,6 +14,7 @@
 package org.netbeans.modules.masterfs;
 
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
@@ -38,7 +39,8 @@ public class GlobalSharabilityQueryImpl implements SharabilityQueryImplementatio
     public int getSharability(final File file) {
         if (visibilityQuery == null) {
             Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(VisibilityQueryImplementation.class));
-            assert result.allInstances().contains(GlobalVisibilityQueryImpl.INSTANCE);
+            Collection allInstance = result.allInstances();
+            assert allInstance.contains(GlobalVisibilityQueryImpl.INSTANCE);
             visibilityQuery = GlobalVisibilityQueryImpl.INSTANCE;
         }
         return (visibilityQuery.isVisible(file.getName())) ? SharabilityQuery.UNKNOWN : SharabilityQuery.NOT_SHARABLE;
