@@ -479,9 +479,6 @@ public class FileStatusCache {
             if (!cvs.isManaged(file)) {
                 return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
             }
-            if (cvs.isIgnored(file)) {
-                return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
-            }
             return createMissingEntryFileInformation(file, repositoryStatus);            
         } else {
             return createVersionedFileInformation(entry, file, repositoryStatus);            
@@ -582,6 +579,9 @@ public class FileStatusCache {
         }
         if (repositoryStatus == REPOSITORY_STATUS_UNKNOWN || repositoryStatus == '?') {
             if (exists(file)) {
+                if (cvs.isIgnored(file)) {
+                    return isDirectory ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
+                }        
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
                 return new FileInformation(FileInformation.STATUS_UNKNOWN, false);

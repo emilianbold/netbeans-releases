@@ -265,7 +265,13 @@ public class CvsVersioningSystem {
             if (pattern.matcher(name).matches()) return true;
         }
         
-        return SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE;
+        int sharability = SharabilityQuery.getSharability(file);
+        if (sharability == SharabilityQuery.NOT_SHARABLE) {
+            setIgnored(new File [] { file });
+            return true;
+        } else {
+            return false;
+        }
     }
     
     private void addUserPatterns(Set patterns) {
