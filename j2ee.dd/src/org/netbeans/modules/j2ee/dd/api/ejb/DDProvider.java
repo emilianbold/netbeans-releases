@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.j2ee.dd.api.ejb;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
@@ -34,7 +37,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.apache.xerces.parsers.DOMParser;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -150,9 +152,8 @@ public final class DDProvider {
      */
     public EjbJar getDDRoot(InputSource inputSource) throws IOException, SAXException {
         ErrorHandler errorHandler = new ErrorHandler();
-        DOMParser parser = createParser(errorHandler);
-        parser.parse(inputSource);
-        Document document = parser.getDocument();
+        DocumentBuilder parser = createParser(errorHandler);
+        Document document = parser.parse(inputSource);
         SAXParseException error = errorHandler.getError();
         String version = extractVersion(document);
         EjbJar original = createEjbJar(version, document);
@@ -208,19 +209,19 @@ public final class DDProvider {
 
     }
 
-    private static DOMParser createParser(ErrorHandler errorHandler)
-            throws SAXNotRecognizedException, SAXNotSupportedException {
-        DOMParser parser = new DOMParser();
+    private static DocumentBuilder createParser(ErrorHandler errorHandler)
+            throws SAXException {
+        DocumentBuilder parser=null;
+        try {
+            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+            parser = fact.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            throw new SAXException(ex.getMessage());
+        }
         parser.setErrorHandler(errorHandler);
-        parser.setEntityResolver(DDResolver.getInstance());
-        // XXX do we need validation here, if no one is using this then
-        // the dependency on xerces can be removed and JAXP can be used
-        parser.setFeature("http://xml.org/sax/features/validation", true); //NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true); //NOI18N
         return parser;
     }
-
+    /*
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;
         static synchronized DDResolver getInstance() {
@@ -246,7 +247,7 @@ public final class DDProvider {
             return new InputSource(url.toString());
         }
     }
-
+    */
     private static class ErrorHandler implements org.xml.sax.ErrorHandler {
         private int errorType=-1;
         SAXParseException error;
