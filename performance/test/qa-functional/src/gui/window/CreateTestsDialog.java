@@ -18,7 +18,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  * Open Create Tests dialog.
@@ -61,17 +60,8 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
     }
     
     public ComponentOperator open(){
-        JPopupMenuOperator popup =  this.createTestsNode.callPopup();
-        if (popup == null) {
-            new Error("Cannot get context menu for node [" + gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java] in project [PerformanceTestData]");
-        }
-        
-        try {
-            popup.pushMenu(CREATE_JUNIT_TESTS);
-        }
-        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error ("Cannot push Create JUnit Tests on node [" + gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java] in project [PerformanceTestData]");
-        }
+        // invoke Tools|Create JUnit Tests from the popup menu
+        createTestsNode.performPopupAction(CREATE_JUNIT_TESTS);
         return new NbDialogOperator("Create Tests"); //NOI18N
     }
 

@@ -93,11 +93,11 @@ public class MeasureDialogs  {
         
         suite.addTest(new AddServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
         
+        suite.addTest(new CreateTestsDialog("measureTime", "Create Tests dialog open"));
+        
         suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
         suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
 //TODO hard to indentify end of the action        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
-        
-        suite.addTest(new CreateTestsDialog("measureTime", "Create Tests dialog open"));
         
         return suite;
     }
