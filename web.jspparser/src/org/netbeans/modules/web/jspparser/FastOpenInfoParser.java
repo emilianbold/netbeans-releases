@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.jspparser;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -97,7 +98,13 @@ public class FastOpenInfoParser {
             
             //get encoding from the disk file if webmodule is null and useEditor is true (during file save)
             //XXX may be fixed better - to get the editor document instance from the fileobject (but I need to add some deps)
-            InputStream is = fo.getInputStream();
+            
+            //#64418 - create a ByteArrayInputStream - we need a an inputstream with marks supported
+            byte[] buffer = new byte[8192*4];
+            InputStream _is = fo.getInputStream();
+            int readed = _is.read(buffer);
+            InputStream is = new ByteArrayInputStream(buffer,0,readed);
+            _is.close();
             
             if(isXMLDocument(fo)) {
                 //XML document - detect encoding acc. to fisrt 4 bytes or xml prolog
