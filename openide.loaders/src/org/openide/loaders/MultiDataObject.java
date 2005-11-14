@@ -56,6 +56,9 @@ public class MultiDataObject extends DataObject {
     private RequestProcessor.Task delayedPropFilesTask;
     /** lock used in firePropFilesAfterFinishing */
     private static final Object delayedPropFilesLock = new Object();
+    /** logging of operations in multidataobject */
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MultiDataObject.class.getName());
+    private static final boolean LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
     
     /** getPrimaryEntry() is intended to have all inetligence for copy/move/... */
     private Entry primary;
@@ -155,6 +158,9 @@ public class MultiDataObject extends DataObject {
             if (secondary == null) {
                 secondary = new HashMap(4);
             }
+            if (LOG) {
+                ERR.log("getSecondary for " + this + " is " + secondary); // NOI18N
+            }
             return secondary;
         }
     }
@@ -212,7 +218,10 @@ public class MultiDataObject extends DataObject {
     */
     protected final void addSecondaryEntry (Entry fe) {
         synchronized ( getSecondary() ) {
-            getSecondary().put (fe.getFile (), fe);            
+            getSecondary().put (fe.getFile (), fe);  
+            if (LOG) {
+                ERR.log("addSecondaryEntry: " + fe + " for " + this); // NOI18N
+            }
         }
 
         // Fire PROP_FILES only if we have actually finished making the folder.
@@ -247,6 +256,9 @@ public class MultiDataObject extends DataObject {
     protected final void removeSecondaryEntry (Entry fe) {
         synchronized (getSecondary()) {
             getSecondary().remove (fe.getFile ());
+            if (LOG) {
+                ERR.log("removeSecondaryEntry: " + fe + " for " + this); // NOI18N
+            }
         }
         
         firePropertyChangeLater (PROP_FILES, null, null);
@@ -352,15 +364,24 @@ public class MultiDataObject extends DataObject {
     /** Removes all FileObjects that are not isValid from the
      * set of objects.
      */
-    /* package-private */ void removeAllInvalid () {
+    private void removeAllInvalid () {
+        if (LOG) {
+            ERR.log("removeAllInvalid, started " + this); // NOI18N
+        }
         Iterator it = checkSecondary ().entrySet ().iterator ();
         while (it.hasNext ()) {
             Map.Entry e = (Map.Entry)it.next ();
             FileObject fo = (FileObject)e.getKey ();
             if (!fo.isValid ()) {
                 it.remove ();
+                if (LOG) {
+                    ERR.log("removeAllInvalid, removed: " + fo + " for " + this); // NOI18N
+                }
                 firePropertyChangeLater (PROP_FILES, null, null);
             }
+        }
+        if (LOG) {
+            ERR.log("removeAllInvalid, finished " + this); // NOI18N
         }
     }
 
@@ -460,8 +481,12 @@ public class MultiDataObject extends DataObject {
         
         synchronized ( synchObjectSecondary() ) {
             Object[] objects = toRemove.toArray();
-            for (int i = 0; i < objects.length; i++)
+            for (int i = 0; i < objects.length; i++) {
                 getSecondary().remove(objects[i]);
+                if (LOG) {
+                    ERR.log("  handleDelete, removed entry: " + objects[i]);
+                }
+            }
         }
         
         getPrimaryEntry().delete();
@@ -510,12 +535,19 @@ public class MultiDataObject extends DataObject {
                 // remove entries
                 if (!toRemove.isEmpty()) {
                     Object[] objects = toRemove.toArray();
-                    for (int i = 0; i < objects.length; i++)
+                    for (int i = 0; i < objects.length; i++) {
                         getSecondary().remove(objects[i]);
+                        if (LOG) {
+                            ERR.log("handleRename, removed: " + objects[i] + " for " + this); // NOI18N
+                        }
+                    }
                 }
                 // add entries
                 if (add != null) {
                     getSecondary().putAll (add);
+                    if (LOG) {
+                        ERR.log("handleRename, putAll: " + add + " for " + this); // NOI18N
+                    }
                 }
             }
             firePropertyChangeLater (PROP_FILES, null, null);
@@ -578,12 +610,19 @@ public class MultiDataObject extends DataObject {
                     // remove entries
                     if (!toRemove.isEmpty()) {
                         Object[] objects = toRemove.toArray();
-                        for (int i = 0; i < objects.length; i++)
+                        for (int i = 0; i < objects.length; i++) {
                             getSecondary().remove(objects[i]);
+                            if (LOG) {
+                                ERR.log("handleMove, remove: " + objects[i] + " for " + this); // NOI18N
+                            }
+                        }
                     }
                     // add entries
                     if (add != null) {
                         getSecondary().putAll (add);
+                        if (LOG) {
+                            ERR.log("handleMove, putAll: " + add + " for " + this); // NOI18N
+                        }
                     }
                 }
                 firePropertyChangeLater (PROP_FILES, null, null);

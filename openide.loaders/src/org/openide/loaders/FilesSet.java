@@ -69,7 +69,8 @@ final class FilesSet implements Set {
                 lazyWorkDone = true;
 
                 synchronized ( mymdo.synchObjectSecondary() ) {
-                    mymdo.removeAllInvalid ();
+                    // cleans up invalid entries
+                    mymdo.secondaryEntries();
                     primaryFile = mymdo.getPrimaryFile();
                     secondary = mymdo.getSecondary();
                 }
