@@ -125,9 +125,11 @@ public class ColorModel {
                 image = Toolkit.getDefaultToolkit ().getImage (iconURL);
 
             SimpleAttributeSet category = new SimpleAttributeSet ();
+            String description = annotationType.getDescription ();
+            if (description == null) continue;
             category.addAttribute (
                 EditorStyleConstants.DisplayName,
-                annotationType.getDescription ()
+                description
             );
             category.addAttribute (
                 StyleConstants.NameAttribute,
