@@ -240,7 +240,11 @@ public class IDESettings extends SystemOption {
      * @return type of proxy settings
      */
     public int getProxyType () {
-        return (proxyType == -1) ? AUTO_DETECT_PROXY /* as default */: proxyType;
+        int type = (proxyType == -1) ? AUTO_DETECT_PROXY /* as default */: proxyType;
+        if (type == AUTO_DETECT_PROXY && ! isSystemProxyDetect ()) {
+            type = DIRECT_CONNECTION;
+        }
+        return type;
     }
     
     /**
@@ -583,6 +587,10 @@ public class IDESettings extends SystemOption {
                 throw iae;
             }
         }
+    }
+    
+    private boolean isSystemProxyDetect () {
+        return System.getProperty ("netbeans.system_http_proxy") != null; // NOI18N
     }
     
     private String getSystemProxyHost () {
