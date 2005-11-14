@@ -206,6 +206,7 @@ public class Utils {
                 if (CvsVersioningSystem.FILENAME_CVS.equals(rootChildFo.getNameExt())) continue;
                 File child = FileUtil.toFile(rootChildFo);
                 if (sourceGroup.contains(rootChildFo)) {
+                    // TODO: #60516 deep scan is required here but not performed due to performace reasons 
                     projectFiles.add(child);
                 } else {
                     int status = cache.getStatus(child).getStatus();

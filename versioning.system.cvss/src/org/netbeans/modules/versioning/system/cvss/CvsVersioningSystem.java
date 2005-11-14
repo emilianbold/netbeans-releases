@@ -248,6 +248,14 @@ public class CvsVersioningSystem {
             if (cvsRepository.canRead()) return false;
         }
         String name = file.getName();
+
+        // #67900 global sharability query will report .cvsignore as not sharable
+        if (FILENAME_CVSIGNORE.equals(name)) return false;
+        // backward compatability #68124
+        if (".nbintdb".equals(name)) {  // NOI18N
+            return true;
+        }
+
         Set patterns = new HashSet(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
         addUserPatterns(patterns);
         addCvsIgnorePatterns(patterns, file.getParentFile());
@@ -256,12 +264,7 @@ public class CvsVersioningSystem {
             Pattern pattern = (Pattern) i.next();
             if (pattern.matcher(name).matches()) return true;
         }
-
-        // backward compatability #68124
-        if (".nbintdb".equals(name)) {  // NOI18N
-            return true;
-        }
-
+        
         return SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE;
     }
     
