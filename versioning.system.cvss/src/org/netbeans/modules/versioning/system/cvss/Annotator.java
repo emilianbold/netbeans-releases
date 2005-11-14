@@ -248,7 +248,7 @@ public class Annotator {
      * @param includeStatus only files having one of statuses specified will be annotated
      * @return String HTML-annotated name of the file (without HTML prolog)
      */ 
-    public String annotateNameHtml(String name, Set files, int includeStatus) {
+    String annotateNameHtml(String name, Set files, int includeStatus) {
         if (files.size() == 0) return name;
         
         FileInformation mostImportantInfo = null;
@@ -285,8 +285,8 @@ public class Annotator {
         return Utils.getComparableStatus(a.getStatus()) < Utils.getComparableStatus(b.getStatus());
     }
 
-    public String annotateName(String name, Set files) {
-        return name;
+    String annotateName(String name, Set files) {
+        return null;
     }
 
     /**
