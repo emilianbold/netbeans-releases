@@ -180,7 +180,7 @@ public final class JUnitAntLogger extends AntLogger {
                 sessionInfo = null;
             } else {
                 sessionInfo = new AntSessionInfo(new JUnitOutputReader(session),
-                                                 detectSessionType(session));
+                                                 sessionType);
                 session.putCustomData(this, sessionInfo);
             }
         }
