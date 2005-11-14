@@ -240,15 +240,6 @@ public class MetaComponentCreator {
                                 Object constraints)
     {
         if (checkFormClass(preMetaComp.getBeanClass())) {
-            if ((targetComp != null) && JScrollPane.class.isAssignableFrom(targetComp.getBeanClass())) {
-                Object bean = preMetaComp.getBeanInstance();
-                if (bean instanceof JScrollPane) {
-                    if (preMetaComp.getAuxValue("autoScrollPane") != null) { // NOI18N
-                        RADVisualContainer metaCont = (RADVisualContainer)preMetaComp;
-                        preMetaComp = metaCont.getSubComponent(0);
-                    }
-                }
-            }
             addVisualComponent2(preMetaComp,
                                 targetComp,
                                 constraints);
@@ -850,6 +841,17 @@ public class MetaComponentCreator {
                                              RADComponent targetComp,
                                              Object constraints)
     {
+        // Issue 65254: beware of nested JScrollPanes
+        if ((targetComp != null) && JScrollPane.class.isAssignableFrom(targetComp.getBeanClass())) {
+            Object bean = newMetaComp.getBeanInstance();
+            if (bean instanceof JScrollPane) {
+                if (newMetaComp.getAuxValue("autoScrollPane") != null) { // NOI18N
+                    RADVisualContainer metaCont = (RADVisualContainer)newMetaComp;
+                    newMetaComp = metaCont.getSubComponent(0);
+                }
+            }
+        }
+
         // get parent container into which the new component will be added
         RADVisualContainer parentCont;
         if (targetComp != null) {
